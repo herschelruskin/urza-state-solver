@@ -1,0 +1,623 @@
+{
+  "states_seen": 160027,
+  "states_truncated": 1864,
+  "raw_actions_total": 1264176,
+  "kept_actions_total": 1175004,
+  "discarded_actions_total": 89172,
+  "excess_over_cap_total": 89172,
+  "max_pre_cap_actions": 348,
+  "max_kept_actions": 60,
+  "raw_count_histogram": {
+    "72": 93,
+    "71": 58,
+    "264": 6,
+    "262": 21,
+    "263": 8,
+    "260": 35,
+    "261": 32,
+    "78": 15,
+    "281": 4,
+    "280": 6,
+    "79": 14,
+    "248": 13,
+    "247": 14,
+    "246": 1,
+    "70": 70,
+    "258": 17,
+    "259": 21,
+    "113": 1,
+    "173": 1,
+    "67": 33,
+    "64": 79,
+    "76": 35,
+    "63": 100,
+    "94": 3,
+    "65": 64,
+    "66": 59,
+    "61": 202,
+    "62": 114,
+    "74": 58,
+    "73": 113,
+    "69": 29,
+    "338": 3,
+    "314": 6,
+    "290": 3,
+    "348": 1,
+    "68": 13,
+    "75": 19,
+    "96": 2,
+    "77": 8,
+    "130": 2,
+    "159": 2,
+    "128": 17,
+    "133": 5,
+    "132": 6,
+    "148": 10,
+    "157": 3,
+    "129": 4,
+    "86": 1,
+    "186": 1,
+    "105": 3,
+    "103": 20,
+    "104": 14,
+    "102": 14,
+    "109": 1,
+    "108": 1,
+    "101": 2,
+    "217": 6,
+    "218": 7,
+    "257": 4,
+    "249": 3,
+    "250": 3,
+    "219": 3,
+    "301": 4,
+    "302": 3,
+    "215": 8,
+    "282": 4,
+    "252": 3,
+    "299": 3,
+    "305": 1,
+    "300": 12,
+    "285": 3,
+    "284": 3,
+    "279": 1,
+    "253": 3,
+    "251": 3,
+    "91": 1,
+    "90": 2,
+    "145": 2,
+    "119": 41,
+    "118": 69,
+    "120": 14,
+    "150": 23,
+    "149": 20,
+    "151": 7,
+    "117": 61,
+    "116": 36,
+    "147": 4,
+    "146": 1,
+    "114": 3,
+    "115": 14,
+    "144": 1,
+    "111": 1,
+    "156": 1,
+    "142": 1,
+    "153": 2,
+    "154": 1,
+    "203": 1,
+    "193": 1
+  },
+  "truncated_raw_families": {
+    "mana/tap": 4224,
+    "other": 90739,
+    "top": 7226,
+    "draw": 663,
+    "chain": 11367,
+    "tutor": 83012,
+    "cast": 2874,
+    "engine": 156,
+    "untap": 751
+  },
+  "truncated_kept_families": {
+    "top": 6643,
+    "other": 63441,
+    "mana/tap": 4224,
+    "chain": 9834,
+    "draw": 510,
+    "tutor": 23708,
+    "cast": 2747,
+    "engine": 52,
+    "untap": 681
+  },
+  "truncated_dropped_families": {
+    "chain": 1533,
+    "top": 583,
+    "draw": 153,
+    "tutor": 59304,
+    "cast": 127,
+    "other": 27298,
+    "engine": 104,
+    "untap": 70
+  },
+  "worst_states": [
+    {
+      "raw": 348,
+      "kept": 60,
+      "dropped": 288,
+      "context": "normal",
+      "turn": 5,
+      "raw_families": {
+        "cast": 2,
+        "engine": 1,
+        "tutor": 345
+      },
+      "dropped_families": {
+        "engine": 1,
+        "tutor": 287
+      },
+      "kept_families": {
+        "tutor": 58,
+        "cast": 2
+      }
+    },
+    {
+      "raw": 338,
+      "kept": 60,
+      "dropped": 278,
+      "context": "normal",
+      "turn": 5,
+      "raw_families": {
+        "cast": 2,
+        "tutor": 336
+      },
+      "dropped_families": {
+        "tutor": 278
+      },
+      "kept_families": {
+        "cast": 2,
+        "tutor": 58
+      }
+    },
+    {
+      "raw": 338,
+      "kept": 60,
+      "dropped": 278,
+      "context": "normal",
+      "turn": 5,
+      "raw_families": {
+        "cast": 2,
+        "tutor": 336
+      },
+      "dropped_families": {
+        "tutor": 278
+      },
+      "kept_families": {
+        "cast": 2,
+        "tutor": 58
+      }
+    },
+    {
+      "raw": 338,
+      "kept": 60,
+      "dropped": 278,
+      "context": "normal",
+      "turn": 5,
+      "raw_families": {
+        "cast": 2,
+        "tutor": 336
+      },
+      "dropped_families": {
+        "tutor": 278
+      },
+      "kept_families": {
+        "cast": 2,
+        "tutor": 58
+      }
+    },
+    {
+      "raw": 314,
+      "kept": 60,
+      "dropped": 254,
+      "context": "normal",
+      "turn": 5,
+      "raw_families": {
+        "cast": 2,
+        "tutor": 312
+      },
+      "dropped_families": {
+        "tutor": 254
+      },
+      "kept_families": {
+        "cast": 2,
+        "tutor": 58
+      }
+    },
+    {
+      "raw": 314,
+      "kept": 60,
+      "dropped": 254,
+      "context": "normal",
+      "turn": 5,
+      "raw_families": {
+        "cast": 2,
+        "tutor": 312
+      },
+      "dropped_families": {
+        "tutor": 254
+      },
+      "kept_families": {
+        "cast": 2,
+        "tutor": 58
+      }
+    },
+    {
+      "raw": 314,
+      "kept": 60,
+      "dropped": 254,
+      "context": "normal",
+      "turn": 5,
+      "raw_families": {
+        "cast": 2,
+        "tutor": 312
+      },
+      "dropped_families": {
+        "tutor": 254
+      },
+      "kept_families": {
+        "cast": 2,
+        "tutor": 58
+      }
+    },
+    {
+      "raw": 314,
+      "kept": 60,
+      "dropped": 254,
+      "context": "normal",
+      "turn": 5,
+      "raw_families": {
+        "cast": 2,
+        "tutor": 312
+      },
+      "dropped_families": {
+        "tutor": 254
+      },
+      "kept_families": {
+        "cast": 2,
+        "tutor": 58
+      }
+    },
+    {
+      "raw": 314,
+      "kept": 60,
+      "dropped": 254,
+      "context": "normal",
+      "turn": 5,
+      "raw_families": {
+        "cast": 2,
+        "tutor": 312
+      },
+      "dropped_families": {
+        "tutor": 254
+      },
+      "kept_families": {
+        "cast": 2,
+        "tutor": 58
+      }
+    },
+    {
+      "raw": 314,
+      "kept": 60,
+      "dropped": 254,
+      "context": "normal",
+      "turn": 5,
+      "raw_families": {
+        "cast": 2,
+        "tutor": 312
+      },
+      "dropped_families": {
+        "tutor": 254
+      },
+      "kept_families": {
+        "cast": 2,
+        "tutor": 58
+      }
+    },
+    {
+      "raw": 305,
+      "kept": 60,
+      "dropped": 245,
+      "context": "normal",
+      "turn": 4,
+      "raw_families": {
+        "other": 1,
+        "mana/tap": 1,
+        "cast": 3,
+        "untap": 6,
+        "tutor": 293,
+        "chain": 1
+      },
+      "dropped_families": {
+        "cast": 1,
+        "tutor": 244
+      },
+      "kept_families": {
+        "tutor": 49,
+        "mana/tap": 1,
+        "cast": 2,
+        "untap": 6,
+        "other": 1,
+        "chain": 1
+      }
+    },
+    {
+      "raw": 302,
+      "kept": 60,
+      "dropped": 242,
+      "context": "normal",
+      "turn": 4,
+      "raw_families": {
+        "other": 2,
+        "mana/tap": 1,
+        "cast": 2,
+        "untap": 3,
+        "tutor": 293,
+        "chain": 1
+      },
+      "dropped_families": {
+        "cast": 1,
+        "tutor": 241
+      },
+      "kept_families": {
+        "tutor": 52,
+        "mana/tap": 1,
+        "cast": 1,
+        "untap": 3,
+        "other": 2,
+        "chain": 1
+      }
+    },
+    {
+      "raw": 302,
+      "kept": 60,
+      "dropped": 242,
+      "context": "normal",
+      "turn": 4,
+      "raw_families": {
+        "other": 2,
+        "mana/tap": 1,
+        "cast": 2,
+        "untap": 3,
+        "tutor": 293,
+        "chain": 1
+      },
+      "dropped_families": {
+        "cast": 1,
+        "tutor": 241
+      },
+      "kept_families": {
+        "tutor": 52,
+        "mana/tap": 1,
+        "cast": 1,
+        "untap": 3,
+        "other": 2,
+        "chain": 1
+      }
+    },
+    {
+      "raw": 302,
+      "kept": 60,
+      "dropped": 242,
+      "context": "normal",
+      "turn": 4,
+      "raw_families": {
+        "other": 2,
+        "mana/tap": 1,
+        "cast": 2,
+        "untap": 3,
+        "tutor": 293,
+        "chain": 1
+      },
+      "dropped_families": {
+        "cast": 1,
+        "tutor": 241
+      },
+      "kept_families": {
+        "tutor": 52,
+        "mana/tap": 1,
+        "cast": 1,
+        "untap": 3,
+        "other": 2,
+        "chain": 1
+      }
+    },
+    {
+      "raw": 301,
+      "kept": 60,
+      "dropped": 241,
+      "context": "normal",
+      "turn": 4,
+      "raw_families": {
+        "other": 2,
+        "mana/tap": 1,
+        "cast": 2,
+        "untap": 2,
+        "tutor": 293,
+        "chain": 1
+      },
+      "dropped_families": {
+        "cast": 1,
+        "tutor": 240
+      },
+      "kept_families": {
+        "tutor": 53,
+        "mana/tap": 1,
+        "cast": 1,
+        "untap": 2,
+        "other": 2,
+        "chain": 1
+      }
+    },
+    {
+      "raw": 301,
+      "kept": 60,
+      "dropped": 241,
+      "context": "normal",
+      "turn": 4,
+      "raw_families": {
+        "other": 1,
+        "mana/tap": 3,
+        "cast": 3,
+        "tutor": 293,
+        "chain": 1
+      },
+      "dropped_families": {
+        "cast": 1,
+        "tutor": 240
+      },
+      "kept_families": {
+        "tutor": 53,
+        "mana/tap": 3,
+        "cast": 2,
+        "other": 1,
+        "chain": 1
+      }
+    },
+    {
+      "raw": 301,
+      "kept": 60,
+      "dropped": 241,
+      "context": "normal",
+      "turn": 4,
+      "raw_families": {
+        "other": 1,
+        "mana/tap": 3,
+        "cast": 3,
+        "tutor": 293,
+        "chain": 1
+      },
+      "dropped_families": {
+        "cast": 1,
+        "tutor": 240
+      },
+      "kept_families": {
+        "tutor": 53,
+        "mana/tap": 3,
+        "cast": 2,
+        "other": 1,
+        "chain": 1
+      }
+    },
+    {
+      "raw": 301,
+      "kept": 60,
+      "dropped": 241,
+      "context": "normal",
+      "turn": 4,
+      "raw_families": {
+        "other": 1,
+        "mana/tap": 3,
+        "cast": 3,
+        "tutor": 293,
+        "chain": 1
+      },
+      "dropped_families": {
+        "cast": 1,
+        "tutor": 240
+      },
+      "kept_families": {
+        "tutor": 53,
+        "mana/tap": 3,
+        "cast": 2,
+        "other": 1,
+        "chain": 1
+      }
+    },
+    {
+      "raw": 300,
+      "kept": 60,
+      "dropped": 240,
+      "context": "normal",
+      "turn": 4,
+      "raw_families": {
+        "other": 1,
+        "mana/tap": 2,
+        "cast": 3,
+        "tutor": 293,
+        "chain": 1
+      },
+      "dropped_families": {
+        "cast": 1,
+        "tutor": 239
+      },
+      "kept_families": {
+        "tutor": 54,
+        "mana/tap": 2,
+        "cast": 2,
+        "other": 1,
+        "chain": 1
+      }
+    },
+    {
+      "raw": 300,
+      "kept": 60,
+      "dropped": 240,
+      "context": "normal",
+      "turn": 4,
+      "raw_families": {
+        "other": 1,
+        "mana/tap": 2,
+        "cast": 3,
+        "tutor": 293,
+        "chain": 1
+      },
+      "dropped_families": {
+        "cast": 1,
+        "tutor": 239
+      },
+      "kept_families": {
+        "tutor": 54,
+        "mana/tap": 2,
+        "cast": 2,
+        "other": 1,
+        "chain": 1
+      }
+    }
+  ],
+  "truncation_rate": 0.01164803439419598,
+  "mean_raw_actions": 7.899766914333206,
+  "mean_discarded_per_state": 0.5572309672742725,
+  "mean_discarded_when_truncated": 47.83905579399141,
+  "action_cap": 60,
+  "base_seed": 20260826,
+  "count": 3,
+  "rows": [
+    {
+      "seed": 20260826,
+      "win_turn": 5,
+      "family": "Chrome Dome",
+      "oracle_nodes": 63185,
+      "oracle_edges_post_cap": 522371,
+      "cap_states_truncated_delta": 822,
+      "raw_actions_delta": 559529
+    },
+    {
+      "seed": 20260827,
+      "win_turn": 4,
+      "family": "Top + Reality Chip",
+      "oracle_nodes": 83167,
+      "oracle_edges_post_cap": 583357,
+      "cap_states_truncated_delta": 699,
+      "raw_actions_delta": 614391
+    },
+    {
+      "seed": 20260828,
+      "win_turn": 3,
+      "family": "Basalt + Gadgeteer",
+      "oracle_nodes": 13675,
+      "oracle_edges_post_cap": 69276,
+      "cap_states_truncated_delta": 343,
+      "raw_actions_delta": 90256
+    }
+  ],
+  "wall_seconds": 193.010559797287
+}
