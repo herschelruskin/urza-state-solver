@@ -1935,14 +1935,21 @@ def _record_cap_audit(out, kept, context="normal"):
 _TUTOR_CAP_AUDIT_ENABLED=False
 _TUTOR_CAP_AUDIT=None
 
-KNOWN_ENGINE_TARGETS=frozenset({
+DIRECT_COMBO_TARGETS=frozenset({
     "Sensei's Divining Top","The Reality Chip","Fortune Teller's Talent",
     "Forensic Gadgeteer","Grinding Station","Battered Golem",
     "Power Artifact","Grim Monolith","Basalt Monolith","Chrome Dome",
     "Sewer-veillance Cam","Banishing Knack","Retraction Helix",
+})
+VALIDATED_ENGINE_ACCESS_TARGETS=frozenset({
     "Spellseeker","Transmute Artifact","Reshape","Whir of Invention",
     "Uthros Research Craft","Valley Floodcaller",
 })
+KNOWN_ENGINE_TARGETS=DIRECT_COMBO_TARGETS|VALIDATED_ENGINE_ACCESS_TARGETS
+# Useful setup/card-advantage engines are reported separately from the
+# high-confidence combo/validated-access set above.
+KNOWN_SETUP_ENGINE_TARGETS=frozenset(CA_ENGINES-KNOWN_ENGINE_TARGETS)
+KNOWN_ENGINE_COMBO_TARGETS=KNOWN_ENGINE_TARGETS|KNOWN_SETUP_ENGINE_TARGETS
 
 def new_tutor_cap_audit_stats():
     return {
@@ -1954,34 +1961,245 @@ def new_tutor_cap_audit_stats():
         "unique_targets_kept_total":0,
         "lost_target_events":0,
         "lost_engine_target_events":0,
+        "lost_known_engine_combo_target_events":0,
+        "lost_direct_combo_target_events":0,
+        "lost_engine_access_target_events":0,
+        "lost_target_destination_route_events":0,
+        "lost_engine_target_destination_route_events":0,
+        "route_representative_overflow_states":0,
+        "route_representative_overflow_excess_total":0,
+        "target_reserve_overflow_states":0,
+        "max_unique_tutor_routes_before_cap":0,
+        "max_target_aware_reserve_size":0,
         "source_counts_raw":collections.Counter(),
         "source_counts_kept":collections.Counter(),
+        "source_unique_targets_raw_total":collections.Counter(),
+        "source_unique_targets_kept_total":collections.Counter(),
+        "source_lost_target_events":collections.Counter(),
+        "source_lost_engine_target_events":collections.Counter(),
+        "source_lost_target_destination_route_events":collections.Counter(),
+        "source_lost_engine_target_destination_route_events":collections.Counter(),
         "target_counts_raw":collections.Counter(),
         "target_counts_kept":collections.Counter(),
         "lost_targets":collections.Counter(),
         "lost_engine_targets":collections.Counter(),
+        "lost_known_engine_combo_targets":collections.Counter(),
+        "lost_direct_combo_targets":collections.Counter(),
+        "lost_engine_access_targets":collections.Counter(),
+        "lost_engine_target_destination_routes":collections.Counter(),
+        "lost_setup_engine_targets":collections.Counter(),
+        "cap_hit_states":[],
         "worst_states":[],
+        "_current_seed":None,
     }
 
-def _tutor_source_target_from_trace(st):
+def _tutor_action_from_trace(st):
+    """Return (source, target, destination) for a target-selecting search action."""
     if not st.trace:
-        return None,None
+        return None,None,None
     t=st.trace[-1]
     if t.startswith("Transmute ") and "->" in t:
-        return "Transmute Artifact",t.split("->",1)[1].split(";",1)[0].strip()
+        target=t.split("->",1)[1].split(";",1)[0].strip()
+        destination="graveyard" if "; decline " in t else "battlefield"
+        return "Transmute Artifact",target,destination
     if t.startswith("Reshape X=") and "->" in t:
-        return "Reshape",t.split("->",1)[1].split(";",1)[0].strip()
+        return "Reshape",t.split("->",1)[1].split(";",1)[0].strip(),"battlefield"
     if t.startswith("Whir X=") and "->" in t:
-        return "Whir of Invention",t.split("->",1)[1].strip()
+        return "Whir of Invention",t.split("->",1)[1].strip(),"battlefield"
     if t.startswith("Spellseeker ETB -> "):
-        return "Spellseeker",t.split("->",1)[1].strip()
-    if t.startswith("Mystical ->"):
-        target=t.split("top",1)[1].strip() if "top" in t else t.split("->",1)[1].strip()
-        return "Mystical Tutor",target
+        return "Spellseeker",t.split("->",1)[1].strip(),"hand"
+    mystical_prefix="Mystical -> shuffle, then top "
+    if t.startswith(mystical_prefix):
+        return "Mystical Tutor",t[len(mystical_prefix):].strip(),"library top"
     for src in ("Dizzy Spell","Muddle the Mixture","Merchant Scroll"):
         if t.startswith(src+" -> "):
-            return src,t.split("->",1)[1].strip()
-    return None,None
+            return src,t.split("->",1)[1].strip(),"hand"
+    if t.startswith("Tezzeret -3 -> "):
+        return "Tezzeret, Cruel Captain",t.split("->",1)[1].strip(),"hand"
+    saga_prefix="Saga III puts "
+    saga_suffix=" onto battlefield"
+    if t.startswith(saga_prefix) and t.endswith(saga_suffix):
+        return "Urza's Saga",t[len(saga_prefix):-len(saga_suffix)].strip(),"battlefield"
+    if t.startswith("Repurposing Bay sacs ") and " -> " in t:
+        return "Repurposing Bay",t.split(" -> ",1)[1].strip(),"battlefield"
+    scour_prefix="Scour tutors "
+    if t.startswith(scour_prefix):
+        target=t[len(scour_prefix):].split(" + returns ",1)[0].strip()
+        return "Scour for Scrap",target,"hand"
+    # Fetchlands have one fixed modeled target (Island), so they cannot lose
+    # target diversity and are intentionally outside this tutor-choice audit.
+    return None,None,None
+
+def _tutor_source_target_from_trace(st):
+    """Backward-compatible source/target view used by focused diagnostics."""
+    source,target,_destination=_tutor_action_from_trace(st)
+    return source,target
+
+def _select_actions_with_tutor_diversity(actions):
+    """Apply ACTION_CAP while retaining strategically distinct tutor routes.
+
+    A route is (source, target, destination). When all route representatives
+    fit, retain the best-scoring action for every route, then fill unused slots
+    by the existing global score order (including non-tutor actions).
+
+    More than ACTION_CAP routes cannot all be retained under the strict cap.
+    In that overflow case, retain every known engine/combo route first, then
+    one best representative for each still-uncovered target, then the
+    best-scoring remaining route representatives. This makes the unavoidable
+    loss deterministic and prevents redundant payment/sacrifice branches from
+    erasing a whole strategic target.
+    """
+    keep_n=min(ACTION_CAP,len(actions))
+    if keep_n<=0:
+        return []
+    if len(actions)<=ACTION_CAP:
+        return heapq.nlargest(keep_n,actions,key=score)
+
+    scores=[score(action) for action in actions]
+    ranked_indices=sorted(range(len(actions)),key=lambda i:scores[i],reverse=True)
+
+    # Iterating in global rank order makes the first action seen for a route
+    # its best-scoring representative; stable sorting preserves generation
+    # order for exact score ties.
+    route_for_index={}
+    representative_indices=[]
+    seen_routes=set()
+    for i in ranked_indices:
+        route=_tutor_action_from_trace(actions[i])
+        if not route[0] or not route[1]:
+            continue
+        route_for_index[i]=route
+        if route not in seen_routes:
+            seen_routes.add(route)
+            representative_indices.append(i)
+
+    if not representative_indices:
+        return [actions[i] for i in ranked_indices[:keep_n]]
+
+    selected=set()
+
+    def retain(i):
+        if len(selected)<keep_n:
+            selected.add(i)
+
+    if len(representative_indices)<=keep_n:
+        for i in representative_indices:
+            retain(i)
+    else:
+        # All known strategic routes fit in the deterministic audit corpus.
+        # The target-first sub-fallback keeps this safe if that changes later.
+        known_representatives=[
+            i for i in representative_indices
+            if route_for_index[i][1] in KNOWN_ENGINE_COMBO_TARGETS
+        ]
+        if len(known_representatives)>keep_n:
+            covered_targets=set()
+            for i in known_representatives:
+                target=route_for_index[i][1]
+                if target not in covered_targets:
+                    retain(i)
+                    covered_targets.add(target)
+            for i in known_representatives:
+                retain(i)
+        else:
+            for i in known_representatives:
+                retain(i)
+
+        # Preserve whole target identities before choosing between additional
+        # source/destination routes for the same target.
+        covered_targets={route_for_index[i][1] for i in selected}
+        for i in representative_indices:
+            target=route_for_index[i][1]
+            if target not in covered_targets:
+                retain(i)
+                covered_targets.add(target)
+
+        # The route guarantee is mathematically impossible in overflow, so use
+        # remaining capacity for the best-scoring unrepresented routes.
+        for i in representative_indices:
+            retain(i)
+
+    # Ordinary cap hits can have spare capacity after route protection. Keep
+    # the old global competition among non-tutors and duplicate tutor routes.
+    for i in ranked_indices:
+        retain(i)
+
+    return [actions[i] for i in ranked_indices if i in selected]
+
+def _tutor_source_retention(raw_actions,kept_actions):
+    """Build per-source action, target, and destination-route retention."""
+    sources=sorted({src for src,_,_ in raw_actions}|{src for src,_,_ in kept_actions})
+    out={}
+    for src in sources:
+        raw=[x for x in raw_actions if x[0]==src]
+        kept=[x for x in kept_actions if x[0]==src]
+        raw_targets={target for _,target,_ in raw}
+        kept_targets={target for _,target,_ in kept}
+        raw_routes={(target,destination) for _,target,destination in raw}
+        kept_routes={(target,destination) for _,target,destination in kept}
+        lost_targets=raw_targets-kept_targets
+        lost_routes=raw_routes-kept_routes
+        lost_engine_routes={(target,destination) for target,destination in lost_routes
+                            if target in KNOWN_ENGINE_COMBO_TARGETS}
+        out[src]={
+            "raw_action_count":len(raw),
+            "kept_action_count":len(kept),
+            "action_retention_rate":len(kept)/len(raw) if raw else 1.0,
+            "unique_target_count_before_cap":len(raw_targets),
+            "unique_target_count_after_cap":len(kept_targets),
+            "target_retention_rate":len(kept_targets)/len(raw_targets) if raw_targets else 1.0,
+            "unique_targets_before_cap":sorted(raw_targets),
+            "unique_targets_after_cap":sorted(kept_targets),
+            "targets_completely_lost":sorted(lost_targets),
+            "known_engine_combo_targets_completely_lost":sorted(lost_targets&KNOWN_ENGINE_COMBO_TARGETS),
+            "direct_combo_targets_completely_lost":sorted(lost_targets&DIRECT_COMBO_TARGETS),
+            "validated_engine_access_targets_completely_lost":sorted(lost_targets&VALIDATED_ENGINE_ACCESS_TARGETS),
+            "target_destination_routes_before_cap":[
+                {"target":target,"destination":destination}
+                for target,destination in sorted(raw_routes)
+            ],
+            "target_destination_routes_after_cap":[
+                {"target":target,"destination":destination}
+                for target,destination in sorted(kept_routes)
+            ],
+            "target_destination_routes_completely_lost":[
+                {"target":target,"destination":destination}
+                for target,destination in sorted(lost_routes)
+            ],
+            "known_engine_combo_target_destination_routes_completely_lost":[
+                {"target":target,"destination":destination}
+                for target,destination in sorted(lost_engine_routes)
+            ],
+        }
+    return out
+
+def _tutor_cap_state_fingerprint(state):
+    # Full state except trace, so duplicate-looking rows can be distinguished
+    # without embedding every library card in the report.
+    payload=repr(replace(state,trace=())).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()[:16]
+
+def tutor_source_retention_summary(a):
+    sources=sorted(set(a["source_counts_raw"])|set(a["source_counts_kept"]))
+    out={}
+    for src in sources:
+        raw=a["source_counts_raw"][src]
+        kept=a["source_counts_kept"][src]
+        raw_targets=a["source_unique_targets_raw_total"][src]
+        kept_targets=a["source_unique_targets_kept_total"][src]
+        out[src]={
+            "raw_action_count":raw,
+            "kept_action_count":kept,
+            "action_retention_rate":kept/raw if raw else 1.0,
+            "state_summed_unique_target_count_before_cap":raw_targets,
+            "state_summed_unique_target_count_after_cap":kept_targets,
+            "target_retention_rate":kept_targets/raw_targets if raw_targets else 1.0,
+            "targets_completely_lost_events":a["source_lost_target_events"][src],
+            "known_engine_combo_targets_completely_lost_events":a["source_lost_engine_target_events"][src],
+            "target_destination_routes_completely_lost_events":a["source_lost_target_destination_route_events"][src],
+            "known_engine_combo_target_destination_routes_completely_lost_events":a["source_lost_engine_target_destination_route_events"][src],
+        }
+    return out
 
 def _record_tutor_cap_state(raw_actions,kept_actions,state,context="normal"):
     global _TUTOR_CAP_AUDIT
@@ -1989,48 +2207,146 @@ def _record_tutor_cap_state(raw_actions,kept_actions,state,context="normal"):
         return
     aud=_TUTOR_CAP_AUDIT
     aud["truncated_states"]+=1
-    raw_pairs=[p for p in (_tutor_source_target_from_trace(a) for a in raw_actions) if p[0] and p[1]]
-    kept_pairs=[p for p in (_tutor_source_target_from_trace(a) for a in kept_actions) if p[0] and p[1]]
-    if not raw_pairs:
+    raw_tutors=[p for p in (_tutor_action_from_trace(a) for a in raw_actions) if p[0] and p[1]]
+    kept_tutors=[p for p in (_tutor_action_from_trace(a) for a in kept_actions) if p[0] and p[1]]
+    if not raw_tutors:
         return
     aud["tutor_truncated_states"]+=1
-    aud["raw_tutor_actions"]+=len(raw_pairs)
-    aud["kept_tutor_actions"]+=len(kept_pairs)
-    for src,tgt in raw_pairs:
+    aud["raw_tutor_actions"]+=len(raw_tutors)
+    aud["kept_tutor_actions"]+=len(kept_tutors)
+    for src,tgt,_ in raw_tutors:
         aud["source_counts_raw"][src]+=1; aud["target_counts_raw"][tgt]+=1
-    for src,tgt in kept_pairs:
+    for src,tgt,_ in kept_tutors:
         aud["source_counts_kept"][src]+=1; aud["target_counts_kept"][tgt]+=1
 
-    raw_targets=set(t for _,t in raw_pairs)
-    kept_targets=set(t for _,t in kept_pairs)
+    raw_targets=set(t for _,t,_ in raw_tutors)
+    kept_targets=set(t for _,t,_ in kept_tutors)
     lost=raw_targets-kept_targets
     lost_engine=lost & KNOWN_ENGINE_TARGETS
+    lost_known_engine_combo=lost & KNOWN_ENGINE_COMBO_TARGETS
+    lost_direct=lost & DIRECT_COMBO_TARGETS
+    lost_access=lost & VALIDATED_ENGINE_ACCESS_TARGETS
+    lost_setup=lost & KNOWN_SETUP_ENGINE_TARGETS
+    raw_routes=set(raw_tutors)
+    kept_routes=set(kept_tutors)
+    lost_routes=raw_routes-kept_routes
+    lost_engine_routes={(src,target,destination) for src,target,destination in lost_routes
+                        if target in KNOWN_ENGINE_COMBO_TARGETS}
+    known_routes={route for route in raw_routes if route[1] in KNOWN_ENGINE_COMBO_TARGETS}
+    nonknown_targets={target for _source,target,_destination in raw_routes
+                      if target not in KNOWN_ENGINE_COMBO_TARGETS}
+    target_aware_reserve_size=len(known_routes)+len(nonknown_targets)
+    route_overflow=max(0,len(raw_routes)-ACTION_CAP)
+    source_retention=_tutor_source_retention(raw_tutors,kept_tutors)
 
     aud["unique_targets_raw_total"]+=len(raw_targets)
     aud["unique_targets_kept_total"]+=len(kept_targets)
     aud["lost_target_events"]+=len(lost)
     aud["lost_engine_target_events"]+=len(lost_engine)
+    aud["lost_known_engine_combo_target_events"]+=len(lost_known_engine_combo)
+    aud["lost_direct_combo_target_events"]+=len(lost_direct)
+    aud["lost_engine_access_target_events"]+=len(lost_access)
+    aud["lost_target_destination_route_events"]+=len(lost_routes)
+    aud["lost_engine_target_destination_route_events"]+=len(lost_engine_routes)
+    aud["max_unique_tutor_routes_before_cap"]=max(
+        aud["max_unique_tutor_routes_before_cap"],len(raw_routes)
+    )
+    aud["max_target_aware_reserve_size"]=max(
+        aud["max_target_aware_reserve_size"],target_aware_reserve_size
+    )
+    if route_overflow:
+        aud["route_representative_overflow_states"]+=1
+        aud["route_representative_overflow_excess_total"]+=route_overflow
+    if target_aware_reserve_size>ACTION_CAP:
+        aud["target_reserve_overflow_states"]+=1
     for t in lost: aud["lost_targets"][t]+=1
     for t in lost_engine: aud["lost_engine_targets"][t]+=1
+    for t in lost_known_engine_combo: aud["lost_known_engine_combo_targets"][t]+=1
+    for t in lost_direct: aud["lost_direct_combo_targets"][t]+=1
+    for t in lost_access: aud["lost_engine_access_targets"][t]+=1
+    for t in lost_setup: aud["lost_setup_engine_targets"][t]+=1
+    for src,target,destination in lost_engine_routes:
+        aud["lost_engine_target_destination_routes"][f"{src} -> {target} [{destination}]"]+=1
+    for src,retention in source_retention.items():
+        aud["source_unique_targets_raw_total"][src]+=retention["unique_target_count_before_cap"]
+        aud["source_unique_targets_kept_total"][src]+=retention["unique_target_count_after_cap"]
+        aud["source_lost_target_events"][src]+=len(retention["targets_completely_lost"])
+        aud["source_lost_engine_target_events"][src]+=len(retention["known_engine_combo_targets_completely_lost"])
+        aud["source_lost_target_destination_route_events"][src]+=len(retention["target_destination_routes_completely_lost"])
+        aud["source_lost_engine_target_destination_route_events"][src]+=len(retention["known_engine_combo_target_destination_routes_completely_lost"])
 
     row={
+        "seed":aud.get("_current_seed"),
+        "state_fingerprint":_tutor_cap_state_fingerprint(state),
         "turn":state.turn,
         "raw_actions":len(raw_actions),
         "kept_actions":len(kept_actions),
-        "raw_tutor_actions":len(raw_pairs),
-        "kept_tutor_actions":len(kept_pairs),
+        "raw_tutor_actions":len(raw_tutors),
+        "kept_tutor_actions":len(kept_tutors),
+        "raw_tutor_action_count":len(raw_tutors),
+        "kept_tutor_action_count":len(kept_tutors),
         "raw_unique_targets":len(raw_targets),
         "kept_unique_targets":len(kept_targets),
+        "raw_unique_tutor_routes":len(raw_routes),
+        "kept_unique_tutor_routes":len(kept_routes),
+        "route_representative_overflow":route_overflow,
+        "target_aware_reserve_size":target_aware_reserve_size,
+        "unique_target_count_before_cap":len(raw_targets),
+        "unique_target_count_after_cap":len(kept_targets),
+        "unique_targets_before_cap":sorted(raw_targets),
+        "unique_targets_after_cap":sorted(kept_targets),
         "lost_targets":sorted(lost),
         "lost_engine_targets":sorted(lost_engine),
-        "raw_sources":dict(collections.Counter(src for src,_ in raw_pairs)),
-        "kept_sources":dict(collections.Counter(src for src,_ in kept_pairs)),
+        "lost_known_engine_combo_targets":sorted(lost_known_engine_combo),
+        "lost_direct_combo_targets":sorted(lost_direct),
+        "lost_validated_engine_access_targets":sorted(lost_access),
+        "lost_setup_engine_targets":sorted(lost_setup),
+        "tutor_sources":sorted(source_retention),
+        "targets_completely_lost":sorted(lost),
+        "known_engine_combo_targets_completely_lost":sorted(lost_known_engine_combo),
+        "target_destination_routes_completely_lost":[
+            {"source":src,"target":target,"destination":destination}
+            for src,target,destination in sorted(lost_routes)
+        ],
+        "known_engine_combo_target_destination_routes_completely_lost":[
+            {"source":src,"target":target,"destination":destination}
+            for src,target,destination in sorted(lost_engine_routes)
+        ],
+        "raw_sources":dict(collections.Counter(src for src,_,_ in raw_tutors)),
+        "kept_sources":dict(collections.Counter(src for src,_,_ in kept_tutors)),
+        "source_retention":source_retention,
         "context":context,
+        "state":{
+            "hand":list(state.hand),
+            "battlefield":[{
+                "name":p.name,"tapped":p.tapped,"sick":p.sick,
+                "counters":p.counters,"mode":p.mode,
+            } for p in state.battlefield],
+            "graveyard":list(state.graveyard),
+            "exile":list(state.exile),
+            "blue":state.blue,"colorless":state.colorless,
+            "land_played":state.land_played,
+            "urza":state.urza,
+            "commander_in_command_zone":state.commander_in_command_zone,
+            "commander_casts_from_zone":state.commander_casts_from_zone,
+            "ftt_level":state.ftt_level,
+            "chip_attached":state.chip_attached,
+            "chip_target":state.chip_target,
+            "spell_cast_this_turn":state.spell_cast_this_turn,
+            "knack_target":state.knack_target,
+            "pa_target":state.pa_target,
+            "library_size":len(state.library),
+            "library_top":list(state.library[:10]),
+            "trace_tail":list(state.trace[-8:]),
+        },
     }
+    aud["cap_hit_states"].append(row)
     aud["worst_states"].append(row)
     aud["worst_states"]=sorted(
         aud["worst_states"],
-        key=lambda r:(len(r["lost_engine_targets"]),len(r["lost_targets"]),
+        key=lambda r:(len(r["known_engine_combo_target_destination_routes_completely_lost"]),
+                      len(r["lost_known_engine_combo_targets"]),len(r["lost_engine_targets"]),
+                      len(r["lost_targets"]),
                       r["raw_tutor_actions"]-r["kept_tutor_actions"]),
         reverse=True
     )[:50]
@@ -2074,7 +2390,7 @@ def legal_actions(s:State)->List[State]:
                         ns=update_perm(ns,ti,tapped=False)
                         out.append(add_trace(ns,f"{k.name} during Saga III untaps {x.name}"))
         out=[refresh_observability(x) for x in out]
-        kept=heapq.nlargest(min(ACTION_CAP,len(out)),out,key=score)
+        kept=_select_actions_with_tutor_diversity(out)
         _record_cap_audit(out,kept,context="saga3")
         _record_tutor_cap_state(out,kept,s,context="saga3")
         return kept
@@ -2104,7 +2420,7 @@ def legal_actions(s:State)->List[State]:
 
     out += special_actions(s)
     out=[refresh_observability(x) for x in out]
-    kept=heapq.nlargest(min(ACTION_CAP,len(out)),out,key=score)
+    kept=_select_actions_with_tutor_diversity(out)
     _record_cap_audit(out,kept,context="normal")
     _record_tutor_cap_state(out,kept,s,context="normal")
     return kept
@@ -3650,6 +3966,7 @@ def spellseeker_etb_actions(s:State)->List[State]:
 
 
 def run_tutor_smoke():
+    global ACTION_CAP,_TUTOR_CAP_AUDIT_ENABLED,_TUTOR_CAP_AUDIT
     print("\n=== TUTOR EXECUTION SMOKE ===",flush=True)
 
     # Dizzy transmute -> MV1 card into hand, library changes.
@@ -3722,7 +4039,231 @@ def run_tutor_smoke():
     )
     acts=artifact_tutor_actions(s)
     assert any(has(a,"Sewer-veillance Cam") or has(a,"Sol Ring") for a in acts)
+    transmute_actions=acts
     print("artifact tutor execution: PASS",flush=True)
+
+    # Every target-selecting production search generator must have an auditable
+    # source, target, and destination. These are generated actions, not
+    # hand-written trace fixtures, so label drift cannot silently break parsing.
+    generated_search_actions=[]
+    generated_search_actions += simple_tutor_actions(State(
+        turn=4,
+        library=(
+            "Sewer-veillance Cam","Power Artifact","Whir of Invention",
+            "Banishing Knack","Transmute Artifact","Island"
+        ),
+        hand=("Dizzy Spell","Muddle the Mixture","Merchant Scroll","Mystical Tutor"),
+        battlefield=(Perm("Spellseeker",mode="fresh"),),blue=10
+    ))
+    generated_search_actions += artifact_tutor_actions(State(
+        turn=4,library=("Sol Ring","Island"),
+        hand=("Reshape","Whir of Invention"),
+        battlefield=(Perm("Tormod's Crypt"),),blue=5,colorless=1
+    ))
+    generated_search_actions += tezzeret_actions(State(
+        turn=4,library=("Sensei's Divining Top","Island"),hand=(),
+        battlefield=(Perm("Tezzeret, Cruel Captain",counters=3),)
+    ))
+    generated_search_actions += saga_actions(State(
+        turn=4,library=("Sol Ring","Island"),hand=(),
+        battlefield=(Perm("Urza's Saga",mode="saga3"),)
+    ))
+    generated_search_actions += repurposing_bay_actions(State(
+        turn=4,library=("Battered Golem","Island"),hand=(),
+        battlefield=(Perm("Repurposing Bay"),Perm("Chrome Dome")),colorless=2
+    ))
+    generated_search_actions += scour_actions(State(
+        turn=4,library=("Sol Ring","Island"),hand=("Scour for Scrap",),
+        battlefield=(),graveyard=("Welding Jar",),blue=1,colorless=3
+    ))
+    fixed_fetch_actions=fetch_actions(State(
+        turn=4,library=("Island","Sol Ring"),hand=(),
+        battlefield=(Perm("Flooded Strand"),)
+    ))
+    parsed_searches={_tutor_action_from_trace(a) for a in generated_search_actions}
+    parsed_sources={source for source,_target,_destination in parsed_searches if source}
+    assert {
+        "Dizzy Spell","Muddle the Mixture","Merchant Scroll","Mystical Tutor",
+        "Spellseeker","Reshape","Whir of Invention","Tezzeret, Cruel Captain",
+        "Urza's Saga","Repurposing Bay","Scour for Scrap",
+    } <= parsed_sources
+    assert ("Mystical Tutor","Whir of Invention","library top") in parsed_searches
+    assert ("Tezzeret, Cruel Captain","Sensei's Divining Top","hand") in parsed_searches
+    assert ("Urza's Saga","Sol Ring","battlefield") in parsed_searches
+    assert ("Repurposing Bay","Battered Golem","battlefield") in parsed_searches
+    assert ("Scour for Scrap","Sol Ring","hand") in parsed_searches
+    assert any("Scour tutors Sol Ring + returns Welding Jar"==a.trace[-1]
+               and _tutor_action_from_trace(a)==("Scour for Scrap","Sol Ring","hand")
+               for a in generated_search_actions)
+    assert fixed_fetch_actions
+    assert all(_tutor_action_from_trace(a)==(None,None,None) for a in fixed_fetch_actions)
+    parsed_transmute={_tutor_action_from_trace(a) for a in transmute_actions}
+    assert any(src=="Transmute Artifact" and destination=="battlefield"
+               for src,_target,destination in parsed_transmute)
+    assert any(src=="Transmute Artifact" and destination=="graveyard"
+               for src,_target,destination in parsed_transmute)
+    print("tutor-cap parser covers every target-selecting search source/destination: PASS",flush=True)
+
+    # A real tutor-heavy legal-actions state used to spend the cap on redundant
+    # Transmute payment/sacrifice branches and completely lose Top, Cam, and
+    # Basalt. Every distinct route fits under 60 here, so each must retain its
+    # best-scoring representative while global score fills the other slots.
+    strategic_targets=(
+        "Sensei's Divining Top","Sewer-veillance Cam","The Reality Chip",
+        "Uthros Research Craft","Basalt Monolith","The One Ring",
+    )
+    excluded_artifacts=set(strategic_targets)|{
+        "Seat of the Synod","Repurposing Bay","Grinding Station","Grafdigger's Cage",
+    }
+    diversity_state=State(
+        turn=7,
+        library=strategic_targets+("Island",),
+        hand=("Transmute Artifact",),
+        battlefield=tuple(Perm(name) for name in sorted(ARTIFACTS-excluded_artifacts)[:18]),
+        blue=2,colorless=4,
+    )
+    old_cap=ACTION_CAP
+    try:
+        ACTION_CAP=1000
+        raw_diversity_actions=legal_actions(diversity_state)
+        legacy_kept=heapq.nlargest(60,raw_diversity_actions,key=score)
+        ACTION_CAP=60
+        diverse_kept=legal_actions(diversity_state)
+    finally:
+        ACTION_CAP=old_cap
+
+    raw_by_route=collections.defaultdict(list)
+    kept_by_route=collections.defaultdict(list)
+    for action in raw_diversity_actions:
+        route=_tutor_action_from_trace(action)
+        if route[0]:
+            raw_by_route[route].append(action)
+    for action in diverse_kept:
+        route=_tutor_action_from_trace(action)
+        if route[0]:
+            kept_by_route[route].append(action)
+    legacy_targets={
+        target for source,target,_destination in
+        (_tutor_action_from_trace(action) for action in legacy_kept) if source
+    }
+    kept_targets={target for _source,target,_destination in kept_by_route}
+    assert len(raw_diversity_actions)>60
+    assert len(diverse_kept)==60
+    assert {
+        "Sensei's Divining Top","Sewer-veillance Cam","Basalt Monolith"
+    } <= set(strategic_targets)-legacy_targets
+    assert set(strategic_targets)<=kept_targets
+    assert set(raw_by_route)<=set(kept_by_route)
+    for route,candidates in raw_by_route.items():
+        assert max(map(score,kept_by_route[route]))==max(map(score,candidates))
+
+    # A strict cap cannot retain 61 distinct routes. Verify the deterministic
+    # fallback remains strict and protects known strategic targets even when
+    # higher-scoring synthetic routes compete for every slot.
+    overflow_actions=[]
+    for target in strategic_targets:
+        overflow_actions.append(State(
+            turn=7,library=(),hand=(),battlefield=(),
+            trace=(f"Scour tutors {target}",)
+        ))
+    for n in range(64):
+        overflow_actions.append(State(
+            turn=7,library=(),hand=(),battlefield=(),colorless=100+n,
+            trace=(f"Scour tutors synthetic-{n:02d}",)
+        ))
+    old_cap=ACTION_CAP
+    try:
+        ACTION_CAP=60
+        overflow_kept=_select_actions_with_tutor_diversity(overflow_actions)
+    finally:
+        ACTION_CAP=old_cap
+    overflow_routes={_tutor_action_from_trace(action) for action in overflow_kept}
+    assert len(overflow_kept)==60
+    assert len(overflow_routes)==60
+    assert set(strategic_targets)<={target for _source,target,_destination in overflow_routes}
+    print("target-aware ACTION_CAP route/strategic-target retention: PASS",flush=True)
+
+    # Enabling the audit must leave production ACTION_CAP selection byte-for-byte
+    # equivalent while recording route and target diversity for the cap-hit state.
+    audit_state=State(
+        turn=4,
+        library=("Sewer-veillance Cam","Sol Ring","Basalt Monolith","Grinding Station"),
+        hand=("Transmute Artifact",),
+        battlefield=(Perm("Mox Opal"),Perm("Welding Jar")),
+        blue=2
+    )
+    old_cap=ACTION_CAP
+    old_enabled=_TUTOR_CAP_AUDIT_ENABLED
+    old_audit=_TUTOR_CAP_AUDIT
+    try:
+        _TUTOR_CAP_AUDIT_ENABLED=False
+        _TUTOR_CAP_AUDIT=None
+        ACTION_CAP=1000
+        raw_actions=legal_actions(audit_state)
+        ACTION_CAP=3
+        baseline_kept=legal_actions(audit_state)
+
+        _TUTOR_CAP_AUDIT=new_tutor_cap_audit_stats()
+        _TUTOR_CAP_AUDIT["_current_seed"]=20260826
+        _TUTOR_CAP_AUDIT_ENABLED=True
+        audited_kept=legal_actions(audit_state)
+
+        assert audited_kept==baseline_kept
+        raw_tutors=[p for p in (_tutor_action_from_trace(a) for a in raw_actions) if p[0]]
+        kept_tutors=[p for p in (_tutor_action_from_trace(a) for a in audited_kept) if p[0]]
+        raw_targets={target for _,target,_ in raw_tutors}
+        kept_targets={target for _,target,_ in kept_tutors}
+        lost_targets=raw_targets-kept_targets
+        assert _TUTOR_CAP_AUDIT["tutor_truncated_states"]==1
+        assert _TUTOR_CAP_AUDIT["raw_tutor_actions"]==len(raw_tutors)
+        assert _TUTOR_CAP_AUDIT["kept_tutor_actions"]==len(kept_tutors)
+        assert len(_TUTOR_CAP_AUDIT["cap_hit_states"])==1
+        row=_TUTOR_CAP_AUDIT["cap_hit_states"][0]
+        assert set(row["unique_targets_before_cap"])==raw_targets
+        assert set(row["unique_targets_after_cap"])==kept_targets
+        assert set(row["lost_targets"])==lost_targets
+        assert set(row["lost_engine_targets"])==lost_targets&KNOWN_ENGINE_TARGETS
+        retention=row["source_retention"]["Transmute Artifact"]
+        assert retention["raw_action_count"]==len(raw_tutors)
+        assert retention["kept_action_count"]==len(kept_tutors)
+        assert retention["unique_target_count_before_cap"]==len(raw_targets)
+        assert retention["unique_target_count_after_cap"]==len(kept_targets)
+        assert set(retention["targets_completely_lost"])==lost_targets
+        aggregate_retention=tutor_source_retention_summary(_TUTOR_CAP_AUDIT)["Transmute Artifact"]
+        assert aggregate_retention["raw_action_count"]==len(raw_tutors)
+        assert aggregate_retention["kept_action_count"]==len(kept_tutors)
+
+        # Target identity can survive while its useful destination route does
+        # not (notably Transmute paid-to-battlefield vs decline-to-graveyard).
+        route_retention=_tutor_source_retention(
+            [
+                ("Transmute Artifact","Sewer-veillance Cam","battlefield"),
+                ("Transmute Artifact","Sewer-veillance Cam","graveyard"),
+            ],
+            [("Transmute Artifact","Sewer-veillance Cam","graveyard")]
+        )["Transmute Artifact"]
+        assert route_retention["targets_completely_lost"]==[]
+        assert route_retention["known_engine_combo_target_destination_routes_completely_lost"]==[
+            {"target":"Sewer-veillance Cam","destination":"battlefield"}
+        ]
+
+        # Detailed state rows are not truncated with the display shortlist.
+        all_rows_audit=new_tutor_cap_audit_stats()
+        _TUTOR_CAP_AUDIT=all_rows_audit
+        for occurrence in range(51):
+            all_rows_audit["_current_seed"]=20260826+occurrence
+            _record_tutor_cap_state(raw_actions,baseline_kept,audit_state)
+        assert len(all_rows_audit["cap_hit_states"])==51
+        assert len(all_rows_audit["worst_states"])==50
+    finally:
+        ACTION_CAP=old_cap
+        _TUTOR_CAP_AUDIT_ENABLED=old_enabled
+        _TUTOR_CAP_AUDIT=old_audit
+    assert KNOWN_SETUP_ENGINE_TARGETS==frozenset({
+        "The One Ring","Mystic Remora","Rhystic Study","Faerie Mastermind"
+    })
+    assert KNOWN_ENGINE_COMBO_TARGETS==KNOWN_ENGINE_TARGETS|KNOWN_SETUP_ENGINE_TARGETS
+    print("tutor-cap audit records every hit and preserves retained actions: PASS",flush=True)
 
     print("TUTOR SMOKE: ALL PASS",flush=True)
 
@@ -4095,39 +4636,66 @@ def run_cap_audit(deck,base_seed:int,count:int,max_turn:int,beam:int,depth:int,p
 def run_tutor_cap_audit(deck,base_seed:int,count:int,max_turn:int,beam:int,depth:int,
                         progress_seconds:float=10.0):
     global _TUTOR_CAP_AUDIT_ENABLED,_TUTOR_CAP_AUDIT
+    previous_enabled=_TUTOR_CAP_AUDIT_ENABLED
+    previous_audit=_TUTOR_CAP_AUDIT
+    a=new_tutor_cap_audit_stats()
     _TUTOR_CAP_AUDIT_ENABLED=True
-    _TUTOR_CAP_AUDIT=new_tutor_cap_audit_stats()
+    _TUTOR_CAP_AUDIT=a
     rows=[]
     t0=time.time()
     print("\n=== TUTOR CAP DIVERSITY AUDIT ===",flush=True)
+    print(
+        f"ACTION_CAP={ACTION_CAP} seeds={count} base={base_seed} "
+        f"PYTHONHASHSEED={os.environ.get('PYTHONHASHSEED','<unset>')}",
+        flush=True
+    )
     try:
         for i in range(count):
             seed=base_seed+i
+            _TUTOR_CAP_AUDIT["_current_seed"]=seed
             b_states=_TUTOR_CAP_AUDIT["tutor_truncated_states"]
+            b_raw=_TUTOR_CAP_AUDIT["raw_tutor_actions"]
+            b_kept=_TUTOR_CAP_AUDIT["kept_tutor_actions"]
+            b_targets_raw=_TUTOR_CAP_AUDIT["unique_targets_raw_total"]
+            b_targets_kept=_TUTOR_CAP_AUDIT["unique_targets_kept_total"]
             b_lost=_TUTOR_CAP_AUDIT["lost_target_events"]
             b_eng=_TUTOR_CAP_AUDIT["lost_engine_target_events"]
+            b_known=_TUTOR_CAP_AUDIT["lost_known_engine_combo_target_events"]
+            b_engine_routes=_TUTOR_CAP_AUDIT["lost_engine_target_destination_route_events"]
+            b_route_overflow=_TUTOR_CAP_AUDIT["route_representative_overflow_states"]
             print(f"\n[TUTOR CAP {i+1}/{count}] seed={seed}",flush=True)
             r=oracle_game(seed,deck,max_turn,beam,depth,live_progress=True,progress_seconds=progress_seconds)
+            graph=r.get("graph",{})
             row={
                 "seed":seed,
                 "win_turn":r.get("win_turn"),
                 "family":r.get("family",""),
+                "oracle_nodes":graph.get("nodes_expanded",0),
+                "oracle_edges_post_cap":graph.get("edges_generated",0),
                 "tutor_truncated_states_delta":_TUTOR_CAP_AUDIT["tutor_truncated_states"]-b_states,
+                "raw_tutor_actions_delta":_TUTOR_CAP_AUDIT["raw_tutor_actions"]-b_raw,
+                "kept_tutor_actions_delta":_TUTOR_CAP_AUDIT["kept_tutor_actions"]-b_kept,
+                "unique_targets_before_cap_delta":_TUTOR_CAP_AUDIT["unique_targets_raw_total"]-b_targets_raw,
+                "unique_targets_after_cap_delta":_TUTOR_CAP_AUDIT["unique_targets_kept_total"]-b_targets_kept,
                 "lost_target_events_delta":_TUTOR_CAP_AUDIT["lost_target_events"]-b_lost,
                 "lost_engine_target_events_delta":_TUTOR_CAP_AUDIT["lost_engine_target_events"]-b_eng,
+                "lost_known_engine_combo_target_events_delta":_TUTOR_CAP_AUDIT["lost_known_engine_combo_target_events"]-b_known,
+                "lost_engine_target_destination_route_events_delta":_TUTOR_CAP_AUDIT["lost_engine_target_destination_route_events"]-b_engine_routes,
+                "route_representative_overflow_states_delta":_TUTOR_CAP_AUDIT["route_representative_overflow_states"]-b_route_overflow,
             }
             rows.append(row)
             print(
                 f"[TUTOR CAP] seed={seed} win={row['win_turn'] or '-'} family={row['family'] or '-'} "
                 f"tutor_cap_states={row['tutor_truncated_states_delta']} "
                 f"lost_targets={row['lost_target_events_delta']} "
-                f"lost_engine_targets={row['lost_engine_target_events_delta']}",
+                f"lost_engine_targets={row['lost_known_engine_combo_target_events_delta']} "
+                f"lost_engine_routes={row['lost_engine_target_destination_route_events_delta']}",
                 flush=True
             )
     finally:
-        _TUTOR_CAP_AUDIT_ENABLED=False
+        _TUTOR_CAP_AUDIT_ENABLED=previous_enabled
+        _TUTOR_CAP_AUDIT=previous_audit
 
-    a=_TUTOR_CAP_AUDIT
     print("\n=== TUTOR CAP AUDIT SUMMARY ===",flush=True)
     print(f"truncated states with tutor branches: {a['tutor_truncated_states']:,}",flush=True)
     print(f"raw tutor actions in those states: {a['raw_tutor_actions']:,}",flush=True)
@@ -4135,34 +4703,112 @@ def run_tutor_cap_audit(deck,base_seed:int,count:int,max_turn:int,beam:int,depth
     print(f"unique tutor targets before cap (state-summed): {a['unique_targets_raw_total']:,}",flush=True)
     print(f"unique tutor targets after cap (state-summed): {a['unique_targets_kept_total']:,}",flush=True)
     print(f"lost target events: {a['lost_target_events']:,}",flush=True)
-    print(f"lost KNOWN ENGINE target events: {a['lost_engine_target_events']:,}",flush=True)
+    print(f"lost known engine/combo target events: {a['lost_known_engine_combo_target_events']:,}",flush=True)
+    print(f"lost critical combo/access target events: {a['lost_engine_target_events']:,}",flush=True)
+    print(f"lost known engine/combo target-destination routes: {a['lost_engine_target_destination_route_events']:,}",flush=True)
+    print(
+        f"strict-cap tutor-route overflow states: {a['route_representative_overflow_states']:,} "
+        f"(max routes={a['max_unique_tutor_routes_before_cap']:,}, "
+        f"excess reps={a['route_representative_overflow_excess_total']:,})",
+        flush=True
+    )
+    print(
+        f"target-aware reserve overflow states: {a['target_reserve_overflow_states']:,} "
+        f"(max reserve={a['max_target_aware_reserve_size']:,})",
+        flush=True
+    )
     print(f"lost targets by frequency: {dict(a['lost_targets'].most_common())}",flush=True)
-    print(f"lost engine targets by frequency: {dict(a['lost_engine_targets'].most_common())}",flush=True)
+    print(f"lost known engine/combo targets by frequency: {dict(a['lost_known_engine_combo_targets'].most_common())}",flush=True)
+    print(f"lost direct combo targets by frequency: {dict(a['lost_direct_combo_targets'].most_common())}",flush=True)
+    print(f"lost validated access targets by frequency: {dict(a['lost_engine_access_targets'].most_common())}",flush=True)
+    print(f"lost setup/CA engines by frequency: {dict(a['lost_setup_engine_targets'].most_common())}",flush=True)
     print("\nTutor source retention:",flush=True)
-    for src in sorted(set(a["source_counts_raw"])|set(a["source_counts_kept"])):
-        raw=a["source_counts_raw"][src]; kept=a["source_counts_kept"][src]
-        pct=(100*kept/raw) if raw else 100.0
-        print(f"  {src:20s} raw={raw:7,d} kept={kept:7,d} retention={pct:6.2f}%",flush=True)
+    source_retention=tutor_source_retention_summary(a)
+    action_retention=(a["kept_tutor_actions"]/a["raw_tutor_actions"] if a["raw_tutor_actions"] else 1.0)
+    target_retention=(a["unique_targets_kept_total"]/a["unique_targets_raw_total"] if a["unique_targets_raw_total"] else 1.0)
+    for src,retention in source_retention.items():
+        print(
+            f"  {src:26s} actions={retention['kept_action_count']:7,d}/"
+            f"{retention['raw_action_count']:7,d} ({100*retention['action_retention_rate']:6.2f}%) "
+            f"targets={retention['state_summed_unique_target_count_after_cap']:6,d}/"
+            f"{retention['state_summed_unique_target_count_before_cap']:6,d} "
+            f"({100*retention['target_retention_rate']:6.2f}%) "
+            f"lost_target_events={retention['targets_completely_lost_events']:,}",
+            flush=True
+        )
+
+    print("\nWorst tutor-bearing cap-hit states:",flush=True)
+    for state_row in a["worst_states"][:10]:
+        print(
+            f"  seed={state_row['seed']} id={state_row['state_fingerprint']} "
+            f"T{state_row['turn']} raw={state_row['raw_actions']} "
+            f"tutors={state_row['kept_tutor_actions']}/{state_row['raw_tutor_actions']} "
+            f"targets={state_row['kept_unique_targets']}/{state_row['raw_unique_targets']} "
+            f"lost={len(state_row['lost_targets'])} "
+            f"lost_engine={len(state_row['lost_known_engine_combo_targets'])} "
+            f"lost_engine_routes={len(state_row['known_engine_combo_target_destination_routes_completely_lost'])} "
+            f"sources={','.join(state_row['tutor_sources'])}",
+            flush=True
+        )
 
     payload={
         "base_seed":base_seed,"count":count,"action_cap":ACTION_CAP,
+        "python_hash_seed":os.environ.get("PYTHONHASHSEED"),
+        "scope":"Target-selecting tutors/searches; fixed-target fetchland-to-Island searches are excluded.",
+        "selection_policy":(
+            "Best representative per (source,target,destination); strict-cap overflow "
+            "protects known routes, then whole target identities, then remaining routes by score."
+        ),
+        "known_target_sets":{
+            "direct_combo_targets":sorted(DIRECT_COMBO_TARGETS),
+            "validated_engine_access_targets":sorted(VALIDATED_ENGINE_ACCESS_TARGETS),
+            "critical_combo_access_targets":sorted(KNOWN_ENGINE_TARGETS),
+            "setup_card_advantage_engines":sorted(KNOWN_SETUP_ENGINE_TARGETS),
+            "known_engine_combo_targets":sorted(KNOWN_ENGINE_COMBO_TARGETS),
+        },
         "summary":{
             "truncated_states":a["truncated_states"],
             "tutor_truncated_states":a["tutor_truncated_states"],
             "raw_tutor_actions":a["raw_tutor_actions"],
             "kept_tutor_actions":a["kept_tutor_actions"],
+            "tutor_action_retention_rate":action_retention,
             "unique_targets_raw_total":a["unique_targets_raw_total"],
             "unique_targets_kept_total":a["unique_targets_kept_total"],
+            "state_summed_unique_target_retention_rate":target_retention,
             "lost_target_events":a["lost_target_events"],
             "lost_engine_target_events":a["lost_engine_target_events"],
+            "lost_known_engine_combo_target_events":a["lost_known_engine_combo_target_events"],
+            "lost_direct_combo_target_events":a["lost_direct_combo_target_events"],
+            "lost_engine_access_target_events":a["lost_engine_access_target_events"],
+            "lost_target_destination_route_events":a["lost_target_destination_route_events"],
+            "lost_engine_target_destination_route_events":a["lost_engine_target_destination_route_events"],
+            "route_representative_overflow_states":a["route_representative_overflow_states"],
+            "route_representative_overflow_excess_total":a["route_representative_overflow_excess_total"],
+            "target_reserve_overflow_states":a["target_reserve_overflow_states"],
+            "max_unique_tutor_routes_before_cap":a["max_unique_tutor_routes_before_cap"],
+            "max_target_aware_reserve_size":a["max_target_aware_reserve_size"],
             "lost_targets":dict(a["lost_targets"]),
             "lost_engine_targets":dict(a["lost_engine_targets"]),
+            "lost_known_engine_combo_targets":dict(a["lost_known_engine_combo_targets"]),
+            "lost_direct_combo_targets":dict(a["lost_direct_combo_targets"]),
+            "lost_engine_access_targets":dict(a["lost_engine_access_targets"]),
+            "lost_setup_engine_targets":dict(a["lost_setup_engine_targets"]),
+            "lost_engine_target_destination_routes":dict(a["lost_engine_target_destination_routes"]),
             "source_counts_raw":dict(a["source_counts_raw"]),
             "source_counts_kept":dict(a["source_counts_kept"]),
+            "source_unique_targets_raw_total":dict(a["source_unique_targets_raw_total"]),
+            "source_unique_targets_kept_total":dict(a["source_unique_targets_kept_total"]),
+            "source_lost_target_events":dict(a["source_lost_target_events"]),
+            "source_lost_engine_target_events":dict(a["source_lost_engine_target_events"]),
+            "source_lost_target_destination_route_events":dict(a["source_lost_target_destination_route_events"]),
+            "source_lost_engine_target_destination_route_events":dict(a["source_lost_engine_target_destination_route_events"]),
+            "source_retention":source_retention,
             "target_counts_raw":dict(a["target_counts_raw"]),
             "target_counts_kept":dict(a["target_counts_kept"]),
         },
-        "rows":rows,"worst_states":a["worst_states"],
+        "rows":rows,
+        "cap_hit_states":a["cap_hit_states"],
+        "worst_states":a["worst_states"],
         "wall_seconds":time.time()-t0,
     }
     Path("tutor_cap_audit_report.json").write_text(json.dumps(payload,indent=2),encoding="utf-8")

@@ -73,6 +73,15 @@ The metadata smoke should continue to verify:
 -   Sapphire Medallion generic-X reduction behavior;
 -   Reality Chip / Chrome Dome creature status;
 -   Transmute Artifact unpaid-difference graveyard branch.
+-   tutor-cap diagnostics recognize every target-selecting tutor/search source,
+    distinguish target destinations, record every tutor-bearing cap hit, and
+    leave the retained `legal_actions()` list unchanged when enabled; fixed
+    fetchland-to-Island searches are outside the target-diversity audit.
+-   target-aware action-cap selection keeps the best-scoring representative of
+    each tutor `(source, target, destination)` route when the representatives
+    fit, retains Top, Cam, Reality Chip, Uthros, Basalt Monolith, and One Ring
+    in a focused state with more than 60 raw actions, and applies the documented
+    strict-cap strategic-target fallback when more than 60 routes exist.
 
 ## 5. Major combo-path integration suite
 
@@ -199,6 +208,7 @@ Review:
 -   state-summed unique targets before vs after cap;
 -   targets completely lost;
 -   known engine targets completely lost;
+-   distinct tutor-route overflow under the strict action cap;
 -   retention by tutor source;
 -   worst cap-hit states.
 
