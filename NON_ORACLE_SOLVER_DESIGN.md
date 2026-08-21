@@ -1,467 +1,1387 @@
 # Non-Oracle Solver Design & Implementation Guide
 
-**Project:** Urza State Solver\
-**Status:** Living pre-implementation specification\
-**Target:** Future knowledge-constrained / Monte Carlo branch
+**Project:** Urza State Solver  
+**Status:** Living pre-implementation specification  
+**Target:** Future knowledge-constrained / Monte Carlo branch  
+**Primary goals:** information-faithful play, useful decision guidance, reproducible large-sample data, and throughput that materially exceeds manual goldfishing.
+
+---
 
 ## 1. Purpose
 
-The existing Oracle solver should remain the validated theoretical
-ceiling: given the exact hidden future of the library, what is the best
-line the search can find?
+The existing Oracle solver answers an intentionally unrealistic but useful question:
+
+> Given the exact hidden future of the library, what is the fastest legal winning line the search can find?
+
+That mode should remain preserved as a theoretical ceiling and as a rules/search validation environment.
 
 The next branch should answer a different question:
 
-> Given only information a player is legally entitled to know, what
-> action maximizes the probability of winning by the experimental
-> horizon?
+> Given only information a player is legally entitled to know at the current decision point, what action maximizes the probability of winning by the experimental horizon?
 
 The intended progression is:
 
-**Oracle ceiling → knowledge-constrained heuristic policy → Monte Carlo
-policy → comparison with real/manual play**
+**Oracle ceiling → deterministic knowledge-constrained policy → Monte Carlo policy improvement → comparison with real/manual play**
 
-The non-Oracle tool should eventually provide both high-throughput
-simulation and actionable play guidance: keep/mulligan probabilities,
-bottom recommendations, tutor decisions, Top/scry choices, and engine
-commitments.
+The non-Oracle system should ultimately serve two related but distinct purposes:
 
-## 2. Fundamental architecture: reality versus knowledge
+1. **High-throughput population simulation**
+   - run hundreds or thousands of hands;
+   - estimate cumulative win probabilities;
+   - compare cards/deck configurations;
+   - measure mulligan behavior and win-family frequencies;
+   - substantially outpace manual goldfishing.
 
-The simulator must separate the true game state from the information
-available to the decision-maker.
+2. **Deep decision analysis**
+   - evaluate a particular opening hand or game state;
+   - estimate keep versus mulligan value;
+   - recommend bottom cards;
+   - compare tutor targets;
+   - evaluate Top/scry decisions;
+   - explain expected-value differences between plausible lines.
 
-### TrueState
+These two use cases should share one rules engine and information model but may use different compute budgets.
 
-Contains everything required to resolve one concrete game: exact library
-order, hand, battlefield, graveyard, command zone, exile, mana, tapped
-state, counters, turn/phase, pending effects, and hidden random
-outcomes.
+---
 
-### KnowledgeState
+## 2. Terminology: “non-cheating” versus “realistic”
 
-Contains only information the player may legally know: hand, public
-zones, revealed cards, cards viewed with Top/scry, known top/bottom
-ordering, tutor/search information, and known library composition.
+These terms must not be conflated.
 
-The policy must never inspect hidden portions of TrueState.
+### Information-faithful / non-cheating
 
-A shuffle is a hard information boundary: the simulator generates or
-retains a concrete shuffled library, while KnowledgeState loses
-positional information invalidated by that shuffle.
+A policy is information-faithful if it never chooses an action using hidden information unavailable to a real player.
 
-## 3. Prevent indirect clairvoyance
+Examples:
 
-Hiding `library[0]` from a scoring function is insufficient.
+- it cannot know the next natural draw before that card is revealed;
+- it cannot bottom Sea Gate Restoration because it secretly knows three lands are coming;
+- it cannot decide to activate Top because the hidden top three happen to be perfect;
+- after a shuffle, it cannot retain knowledge of the new hidden order.
 
-If two actions are searched through the one actual hidden future and the
-solver chooses the action that happens to draw the better hidden card,
-it has still cheated.
+### Realistic
 
-Therefore decisions must not be selected by comparing outcomes from the
-actual hidden future. The actual true library resolves the action only
-after the policy has chosen it.
+A fully realistic game model would additionally require realistic opponents, interaction, spell timing, table position, threat assessment, and opponent card choices.
 
-## 4. Knowledge transitions
+The initial non-Oracle branch is therefore better described as:
 
--   **Draw:** reveal the actual top card only when drawn.
--   **Scry:** reveal exactly the permitted cards; retain only legally
-    justified ordering knowledge.
--   **Sensei's Divining Top:** reveal the top three and preserve chosen
-    ordering until disrupted.
--   **Tutor/search:** library inspection permitted by the effect is
-    legitimate information.
--   **Shuffle:** erase invalidated top/bottom positional knowledge.
--   **Reality Chip/Future Sight effects:** the exposed top card is
-    legitimate knowledge; deeper cards remain hidden.
+> **an information-faithful goldfish / abstract-table policy**
 
-Dedicated regression tests should cover each transition.
+rather than a complete cEDH table simulator.
 
-## 5. Experimental horizon
+This distinction should appear in reports and documentation.
 
-Primary endpoint:
+---
 
-> Win by the end of our turn 6 = success; otherwise experimental loss.
+## 3. Preserve the Oracle as a separate baseline
 
-This bounds the most complex late-game states and reflects the intended
-competitive goldfish question. Oracle and non-Oracle comparisons should
-use the same horizon.
+Do not weaken, overwrite, or gradually “de-clairvoyance” the Oracle until its original meaning is lost.
 
-## 6. Mulligans are the first priority
+Maintain:
 
-Mulligans are expected to be the largest source of Oracle advantage.
+- **Oracle mode:** exact hidden information; best line found under the search limits.
+- **Knowledge policy mode:** no illegal information access; deterministic policy.
+- **Monte Carlo policy mode:** no illegal information access; decisions improved using sampled plausible futures.
 
-The realistic branch should support Commander London mulligans to a
-keep-3 floor, but decisions must use only the visible seven and legal
-information.
+For paired experiments, all modes should use the same:
 
-### First implementation
+- deck version;
+- rules engine;
+- environmental assumptions;
+- turn horizon;
+- starting-seat model;
+- root seed set where meaningful.
 
-Build a deterministic knowledge-only mulligan heuristic using visible
-features such as lands, colored mana, acceleration, Urza accessibility,
-card advantage, tutors, engines, combo pieces, interaction, redundancy,
-and dependence on future draws.
+The difference between Oracle and policy is itself useful data.
 
-### Monte Carlo mulligans
+---
 
-Mulligans should be the first Monte Carlo decision class.
+## 4. Core architecture: TrueState, InformationState, and PolicyView
 
-For each candidate keep/bottom package:
+The original design proposed duplicating public game information in a `KnowledgeState`. A safer architecture is to avoid maintaining two copies of the same battlefield/hand data.
 
-1.  condition only on visible information;
-2.  sample plausible hidden libraries consistent with that information;
-3.  simulate the candidate across those worlds;
-4.  estimate P(win by T6) and secondary metrics;
-5.  choose by expected performance rather than the one actual hidden
-    future.
+Use three conceptual layers.
 
-Example output:
+### 4.1 TrueState
 
-``` text
-Keep 6; bottom Sea Gate Restoration
-P(win by T6) = 0.61
+Contains the complete concrete game needed to resolve events:
 
-Alternative: bottom Mystic Remora
-P(win by T6) = 0.48
+- exact hidden library order;
+- hand;
+- battlefield;
+- graveyard;
+- exile;
+- command zone;
+- mana;
+- tapped/untapped/sick status;
+- counters;
+- turn and timing window;
+- pending triggers/effects;
+- actual randomized outcomes;
+- any future opponent/environment events if those are later modeled.
+
+Only the simulator/rules engine may directly inspect all of TrueState.
+
+### 4.2 InformationState
+
+Stores persistent facts about hidden information that the player legitimately knows.
+
+Examples:
+
+- exact known top sequence;
+- exact known bottom sequence where rules permit it;
+- cards revealed by scry/Top;
+- cards known to have moved to hidden zones;
+- whether positional information has been invalidated by a shuffle;
+- known remaining library multiset;
+- revealed opponent/environment information if introduced later.
+
+This should be a compact set of constraints, **not an explicitly enumerated probability distribution over every possible library order**.
+
+### 4.3 PolicyView
+
+A read-only observation derived from `TrueState + InformationState`.
+
+The policy receives PolicyView, not TrueState.
+
+It may expose:
+
+- our hand;
+- public battlefield/graveyard/exile;
+- mana/resources;
+- known top/bottom cards;
+- known library composition;
+- turn/timing;
+- legal actions at the current information set;
+- visible pregame conditions such as seat / Caverns eligibility.
+
+It must not expose:
+
+- exact unknown library order;
+- unknown future shuffle results;
+- unrevealed future random events.
+
+### Why this design is safer
+
+Duplicating hand/battlefield inside a separate knowledge object risks stale or inconsistent copies. A derived PolicyView makes public information authoritative in one place while creating a hard API boundary around hidden data.
+
+---
+
+## 5. Make information leakage difficult by construction
+
+Do not rely only on developer discipline.
+
+Architectural constraints should make cheating hard.
+
+Recommended rules:
+
+- policy functions never accept a raw `TrueState`;
+- policy functions accept only `PolicyView` / `InformationState`;
+- hidden library fields are not reachable through the policy object;
+- define a `true_state_key()` for simulation/transposition;
+- define a separate `information_state_key()` for policy caching;
+- never reuse a true-state key as a policy-state key;
+- sort/canonicalize collections used in policy decisions so Python hash iteration does not silently change choices;
+- pin and report `PYTHONHASHSEED`, but also remove avoidable hash-order dependence from production decisions.
+
+A dedicated test should fail if a policy-facing object exposes exact hidden library order.
+
+---
+
+## 6. Prevent indirect clairvoyance
+
+Simply hiding `library[0]` from `score()` is not sufficient.
+
+Suppose two actions are considered from the same visible state:
+
+- Action A eventually draws a hidden combo card in the actual library.
+- Action B eventually draws a land.
+
+If the solver searches both actions through the **one actual hidden future** and chooses A because it sees that future outcome, the solver has cheated even though no scoring function directly read the top card.
+
+Therefore:
+
+> **The actual hidden future may resolve the action after the policy chooses it; it may not be used to choose the action.**
+
+This is the central anti-clairvoyance invariant.
+
+---
+
+## 7. A second major leakage risk: strategy fusion in Monte Carlo rollouts
+
+This is important enough to treat as a hard design rule.
+
+A tempting implementation is:
+
+1. sample 50 possible hidden libraries;
+2. run the existing Oracle search inside each sampled library;
+3. average each candidate action’s Oracle result.
+
+Do **not** treat that as a valid realistic policy estimate.
+
+Why?
+
+Inside each sampled world, Oracle would make future decisions using that world’s hidden information. It would effectively use a different clairvoyant strategy in every possible world.
+
+That is a classic **strategy-fusion / determinization** problem.
+
+It overestimates what a single information-constrained player can actually achieve.
+
+### Required rule
+
+All future decisions inside a Monte Carlo rollout must also be made by an information-constrained rollout policy that only uses information revealed by that point in that rollout.
+
+The Oracle engine may be used as:
+
+- an upper bound;
+- a diagnostic;
+- a rules-transition reference;
+
+but not as the default continuation policy inside “realistic” rollouts.
+
+---
+
+## 8. Recommended Monte Carlo method: rollout policy improvement
+
+The first Monte Carlo implementation should use a **base deterministic policy** plus one-step rollout improvement.
+
+At an important decision:
+
+1. enumerate serious legal root actions;
+2. sample hidden worlds consistent with current InformationState;
+3. apply one candidate root action;
+4. for the rest of that sampled game, follow the fast deterministic knowledge-constrained base policy;
+5. estimate each root action’s outcome over many sampled worlds;
+6. choose the root action with the best expected value.
+
+This gives a strong practical property:
+
+> Monte Carlo improves decisions without recursively running expensive Monte Carlo at every future node.
+
+Later, selective recursive Monte Carlo may be explored, but it should not be the starting architecture.
+
+---
+
+## 9. Action → observation → contingent choice must be modeled explicitly
+
+Many Magic actions reveal information *after* the player commits to an action.
+
+The non-Oracle engine must not collapse those stages into one clairvoyant branch.
+
+### Example: Sensei’s Divining Top
+
+Incorrect non-Oracle action generation:
+
+```text
+choose among all six reorderings of the actual hidden top three
 ```
 
-## 7. Selective Monte Carlo, not Monte Carlo everywhere
+before the policy has chosen to activate Top.
 
-Naively evaluating every action over many deep rollout worlds will
-explode computationally.
+That leaks the top three into the activation decision.
 
-Use tiers:
+Correct structure:
 
-1.  **Deterministic policy** for routine or clearly dominant actions.
-2.  **Monte Carlo** for high-impact uncertain decisions: mulligans,
-    Top/scry, tutor timing/targets, major engine commitments.
-3.  **Adaptive sampling:** start with perhaps 8--16 worlds, eliminate
-    clearly inferior actions, then spend 32--64 or 100+ only where
-    needed.
+```text
+Decision 1: activate Top or not?
+    ↓
+pay cost / activate
+    ↓
+Observation: reveal actual top three
+    ↓
+Decision 2: choose ordering using the now-known three cards
+```
 
-Exact budgets must be calibrated empirically.
+### Example: scry
 
-## 8. Hidden-world sampling
+Casting Witching Well must be chosen without seeing unknown top cards.
 
-Rollout worlds must satisfy KnowledgeState constraints. Known top cards,
-known bottom cards, revealed information, and remaining library
-composition must be respected.
+After the spell resolves and scry occurs, the cards become known and the scry ordering decision may use them.
 
-After a shuffle, invalid positional constraints disappear.
+### Example: tutor/search
 
-For action comparison at one decision point, consider common random
-numbers: evaluate competing actions against the same sampled worlds when
-appropriate to reduce variance.
+Choosing to spend a tutor is made under current knowledge.
 
-Random streams for the actual game, rollout sampling, and tie-breaking
-should ideally be separated/deterministically derived.
+Once the search effect resolves, inspecting the library and choosing a legal target is legitimate.
 
-## 9. Actual game versus rollout worlds
+This separation is essential for:
 
-Each simulated game has one actual TrueState.
+- Top;
+- scry;
+- tutors;
+- draw-then-discard effects;
+- random reveal effects;
+- future opponent/environment observations.
 
-At a decision:
+---
 
-1.  observe KnowledgeState;
-2.  sample temporary worlds consistent with it;
-3.  evaluate legal actions across those worlds;
-4.  choose one action;
-5.  apply it to the actual TrueState;
-6.  reveal/update KnowledgeState only as rules permit;
-7.  continue.
+## 10. Knowledge transitions
 
-The policy must not know whether the actual hidden world is favorable
-before information is revealed.
+Every information-changing rule should explicitly update InformationState.
 
-## 10. Objective
+### Draw
 
-Primary objective should be **P(win by T6)**.
+The actual top card moves to hand and becomes known at that moment.
 
-Earlier expected win turn is a useful secondary objective. Do not
-optimize only mean win turn if that favors fragile fast lines over
-substantially more reliable lines.
+### Scry N
 
-The utility function should be configurable and documented.
+- reveal exactly the top N cards;
+- policy may choose the legal top/bottom arrangement;
+- retained top order becomes known;
+- bottomed cards become known to the degree the effect permits.
 
-## 11. Preserve Oracle
+For standard scry, the player chooses the order of cards placed on top/bottom and can therefore know that chosen order.
 
-Do not weaken or delete Oracle mode.
+### Sensei’s Divining Top
 
-For identical experimental configurations, retain:
+The viewed top three are legitimate knowledge. Chosen ordering remains known until cards move or a shuffle invalidates it.
 
--   Oracle perfect-information ceiling;
--   deterministic knowledge-constrained heuristic;
--   Monte Carlo knowledge-constrained policy.
+### Reality Chip / top-card visibility
 
-Compare win rate, win turn, family distribution, keep sizes, and
-Oracle-to-policy gap.
+If the top card is legally exposed/viewable, that card is known.
 
-## 12. Throughput is a product requirement
+Do not expose deeper cards.
 
-The tool must ultimately outpace manual goldfishing.
+### Tutor/search
 
-Performance is part of correctness for the intended use case. Record
-wall time, nodes, edges, policy decisions, Monte Carlo decisions,
-rollout worlds, early stops, cache hits, and memory where practical.
+Information explicitly available through the search is legitimate.
 
-The desired architecture is:
+### Shuffle
 
-**fast deterministic policy for routine play + adaptive Monte Carlo for
-important uncertainty.**
+A shuffle is a hard positional-information reset.
 
-## 13. Parallelism and scaling
+After a shuffle:
 
-Independent rollout worlds and independent games are naturally parallel.
+- the actual game gets a concrete random library order;
+- known top/bottom positional facts invalidated by the shuffle are cleared;
+- the player still knows the remaining library composition to the extent inferable from decklist and known zones;
+- the policy cannot inspect the new actual hidden permutation.
 
-Order of work:
+### Draw from a known top
 
-1.  establish single-process correctness;
-2.  parallelize rollout worlds across CPU workers;
-3.  parallelize games;
-4.  profile memory/serialization;
-5.  consider high-core workstations or cluster/cloud execution only
-    after profiling.
+If the player knows the top card, drawing it should consume that known-top entry and expose the next known entry if one exists.
 
-GPU acceleration is not assumed initially because the workload is
-dominated by branching, Python state transitions, hashing, and rules
-evaluation.
+---
 
-## 14. Caching
+## 11. Belief state should be represented implicitly
 
-Policy caching should consider normalized information states rather than
-unknowable exact library orders.
+Do not store millions of possible libraries.
 
-Two different TrueStates may be identical from the player's perspective
-and therefore share a policy decision.
+For this deck, a compact belief representation is normally enough:
 
-A future information-state key may include observable zones, resources,
-turn, known top/bottom information, remaining known library composition,
-pending effects, and policy configuration.
+- exact remaining card multiset;
+- known ordered prefix;
+- known ordered suffix where applicable;
+- known cards in other zones;
+- constraints created by recent observations.
 
-## 15. Tutors
+A function such as:
 
-Tutors are not inherently Oracle behavior. If an effect legally searches
-the library, selecting among legal targets using that information is
-valid.
+```text
+sample_hidden_world(information_state, rng)
+```
 
-Potential uncertainty lies in whether to tutor now and which target has
-the best expected value under uncertain future draws.
+can generate concrete library orders consistent with those constraints.
 
-Reuse the validated target-aware tutor retention logic unless later
-evidence justifies a change.
+This keeps the information model exact enough for play while avoiding an enormous explicit POMDP belief distribution.
 
-## 16. Shared rules engine
+---
 
-Do not independently rewrite Magic rules for the non-Oracle branch.
+## 12. Randomness must be split into independent deterministic streams
 
-Reuse validated Oracle mechanics for casting, mana, commander tax,
-tutors, transmute, artifacts, combo engines, Remora upkeep, bounce
-legality, state transitions, card metadata, and terminal detection.
+This should be mandatory, not optional.
 
-The branch point should primarily be the **information/decision layer**.
+The actual game’s randomness must not change because the policy used more or fewer rollout samples.
 
-## 17. Auditability
+Derive independent RNG streams from the root seed, for example:
 
-Every draw should name the card and source.
+- `game_rng` — actual opening hands, actual shuffles, actual hidden world;
+- `environment_rng` — future abstract opponent events if modeled;
+- `policy_rng` — Monte Carlo world sampling;
+- `tie_rng` — policy tie-breaking if stochastic tie-breaking is retained.
 
-Policy decisions should be capable of producing summaries such as:
+Changing rollout budget must not change the actual game’s library order.
 
-``` text
+Reports should record the root seed and RNG scheme/version.
+
+---
+
+## 13. Mulligans are the first and highest-value realistic decision
+
+Mulligans are likely the largest source of Oracle advantage.
+
+The realistic implementation must be **sequential**, not retrospective.
+
+### 13.1 Critical rule
+
+A real player sees the current seven and must decide:
+
+> keep this hand, or take another mulligan?
+
+They do not get to inspect the next fresh seven first.
+
+Therefore the policy must never generate all future mulligan hands and retrospectively choose the best stage.
+
+### 13.2 Stages
+
+The current Commander model should remain the rules source of truth, with the experimental keep floor of 3:
+
+- initial seven;
+- free multiplayer seven;
+- keep 6: fresh seven, bottom 1;
+- keep 5: fresh seven, bottom 2;
+- keep 4: fresh seven, bottom 3;
+- keep 3: fresh seven, bottom 4.
+
+Keep-3 is an **experimental simulation floor**, not a Magic rules floor.
+
+### 13.3 Sequential policy
+
+At each stage:
+
+1. observe the current seven;
+2. evaluate the best legal keep/bottom option using only current information;
+3. compare it with the expected value of taking the next mulligan;
+4. keep or mull;
+5. only if mulligan is chosen does the actual next fresh seven get generated/revealed.
+
+### 13.4 Useful computational shortcut
+
+Because the hand is shuffled back before drawing a new seven, the distribution of the **next fresh seven** at a given mulligan stage does not depend on the identities in the current rejected hand, assuming no earlier effect changed deck composition.
+
+Therefore the expected value of “mulligan again” can often be precomputed/cached by:
+
+- deck version;
+- mulligan stage;
+- seat/Caverns eligibility;
+- policy configuration;
+- environmental model.
+
+This can make realistic mulligan decisions substantially cheaper.
+
+---
+
+## 14. Bottom-card selection
+
+Bottom selection must also avoid hidden-future knowledge.
+
+At keep 3 or 4 there are only:
+
+```text
+C(7,4) = 35
+C(7,3) = 35
+```
+
+possible card subsets.
+
+That is small enough that the realistic policy should not blindly inherit a heuristic that might permanently hide strong bottom choices.
+
+Recommended approach:
+
+### Fast deterministic mode
+
+- score all legal bottom subsets using visible hand features;
+- choose the best policy score;
+- no hidden library inspection.
+
+### Monte Carlo mode
+
+Use a two-stage procedure:
+
+1. cheaply score **all** legal bottom subsets;
+2. retain a diverse top K;
+3. evaluate those finalists with Monte Carlo.
+
+For calibration or single-hand analysis, exhaustive Monte Carlo over all 35 subsets is feasible.
+
+Bottom ordering should be modeled only if it can matter to reachable gameplay; otherwise use a documented canonical ordering to avoid meaningless branching.
+
+---
+
+## 15. Pregame information must be visible to the policy
+
+If seating/start position is known before mulligans, the policy may use it.
+
+This matters for:
+
+- Gemstone Caverns;
+- whether the player is first;
+- future abstract opponent-turn assumptions.
+
+Do not encode Caverns as a hidden 75% fact if the simulated player should already know whether they are eligible in that game.
+
+If a 75% seat approximation is retained for batch simulation, first sample seat/eligibility as part of the actual game environment, then expose that fact to the mulligan policy.
+
+---
+
+## 16. Experimental horizon and outputs
+
+Primary goldfish endpoint:
+
+> **Win by the end of our turn 6 = success; otherwise no win within horizon.**
+
+Do not describe a T6 miss as proof the deck cannot win.
+
+Reports should preserve the full cumulative curve:
+
+- P(win by T1);
+- P(win by T2);
+- P(win by T3);
+- P(win by T4);
+- P(win by T5);
+- P(win by T6).
+
+This is more informative than only a binary T6 result and supports card/deck comparisons.
+
+Conditional win-turn distributions should also be retained.
+
+---
+
+## 17. Environmental assumptions must be explicit
+
+Removing clairvoyance does not automatically make the simulation realistic.
+
+Current or historical abstractions have included effects such as:
+
+- Mystic Remora drawing an assumed number of cards from opponents;
+- Rhystic Study drawing an assumed number;
+- Faerie Mastermind environmental draws;
+- Mana Drain banking assumed mana;
+- Battered Golem receiving multiplayer artifact untaps;
+- Chrome Dome use in an opponent end step.
+
+These assumptions can materially affect results.
+
+### Initial plan
+
+Preserve validated assumptions so Oracle and policy remain comparable, but expose them as a named configuration such as:
+
+```text
+environment = baseline_goldfish
+```
+
+### Later plan
+
+Introduce stochastic abstract-table scenarios rather than fixed guaranteed events.
+
+Possible modes:
+
+- conservative;
+- baseline;
+- high-action table.
+
+The policy must not know future sampled opponent events before they occur.
+
+This should be a later branch milestone, not mixed into the first anti-clairvoyance implementation.
+
+---
+
+## 18. Deterministic knowledge-constrained base policy
+
+Before Monte Carlo, build a fast base policy that chooses one action from PolicyView.
+
+It should use only legal information.
+
+Possible features:
+
+- current mana and future visible mana;
+- land drop availability;
+- ability to cast Urza;
+- fast mana;
+- card advantage;
+- tutors;
+- engine pieces;
+- combo proximity;
+- redundancy;
+- interaction;
+- known top cards;
+- graveyard recursion;
+- turn/horizon urgency.
+
+The policy should be deterministic under a fixed policy version unless an explicit stochastic policy is being tested.
+
+This base policy has three roles:
+
+1. fast high-throughput simulation;
+2. future continuation policy for Monte Carlo rollouts;
+3. baseline against which Monte Carlo improvement is measured.
+
+---
+
+## 19. Decision classes for Monte Carlo
+
+Do not invoke Monte Carlo because an action “looks complicated.”
+
+Invoke it when uncertainty about hidden information plausibly changes the best action.
+
+Initial priority:
+
+1. mulligan / keep;
+2. bottom-card selection;
+3. Top activation and post-look ordering;
+4. scry commit and post-look ordering;
+5. tutor timing;
+6. tutor target when multiple strategic targets compete;
+7. major engine deployment;
+8. resource-preservation choices only if later profiling shows meaningful value.
+
+Mechanical combo continuation after all relevant information is public should normally use deterministic rules/policy.
+
+---
+
+## 20. Monte Carlo rollout procedure
+
+At an eligible decision state:
+
+1. derive PolicyView and InformationState;
+2. enumerate serious root actions without using hidden information;
+3. sample N hidden worlds consistent with InformationState;
+4. preferably use the same sampled worlds for competing root actions;
+5. apply each root action in each world;
+6. continue each rollout using the deterministic knowledge-constrained base policy;
+7. update InformationState normally as cards are revealed during each rollout;
+8. stop at win, T6 horizon, or other defined rollout terminal;
+9. aggregate outcomes;
+10. select the root action.
+
+Do not let continuation policy inspect the sampled world’s hidden library.
+
+---
+
+## 21. Common random numbers and paired action evaluation
+
+When comparing root actions, evaluate them against the same sampled hidden worlds where possible.
+
+This produces paired outcomes such as:
+
+```text
+world 1: A wins T4, B wins T5
+world 2: A loses,   B wins T4
+world 3: A wins T3, B wins T3
+...
+```
+
+Paired sampling substantially reduces noise in action-value differences.
+
+For statistical comparison, track the paired difference in utility, not only two independent means.
+
+---
+
+## 22. Adaptive rollout budgets
+
+Do not assign 100 rollouts to every decision automatically.
+
+A practical “racing” strategy:
+
+1. evaluate all serious actions over a small initial batch, e.g. 8–16 worlds;
+2. drop actions that are clearly inferior;
+3. allocate additional worlds to close contenders;
+4. stop when:
+   - one action is sufficiently ahead;
+   - the maximum budget is reached;
+   - the actions are effectively tied within a configured tolerance.
+
+The exact confidence method and thresholds should be calibrated empirically.
+
+For a Bernoulli endpoint such as win-by-T6, use a documented interval method such as Wilson or a beta-binomial posterior rather than a naive normal approximation at very small N.
+
+---
+
+## 23. Utility function
+
+Primary objective:
+
+> maximize P(win by T6)
+
+Secondary preferences may include:
+
+1. earlier win turn conditional on comparable win probability;
+2. resource robustness;
+3. retained interaction.
+
+Do not optimize only mean win turn if that favors a fragile T3 line with a much lower win probability than a reliable T4 line.
+
+A practical lexicographic utility may be easier to interpret than an arbitrary weighted scalar.
+
+The exact policy utility must be versioned and reported.
+
+---
+
+## 24. High-throughput mode versus deep-analysis mode
+
+One compute configuration should not be forced to serve every purpose.
+
+### `policy-fast`
+
+Goal: maximum hands/hour.
+
+- deterministic knowledge policy;
+- no or minimal Monte Carlo;
+- ideal for thousands of games and broad deck comparisons.
+
+### `policy-mc`
+
+Goal: realistic large-sample estimate with selective policy improvement.
+
+- Monte Carlo at high-value decisions only;
+- adaptive budgets;
+- intended for hundreds or thousands of games if throughput permits.
+
+### `decision-analysis`
+
+Goal: robust advice for one opening hand/state.
+
+- larger rollout budgets;
+- exhaustive bottom packages where feasible;
+- detailed action-value table;
+- confidence intervals;
+- slower runtime acceptable.
+
+These modes should share semantics and differ primarily in compute budget.
+
+---
+
+## 25. Throughput is a first-class product requirement
+
+The tool should materially outpace manual goldfishing.
+
+Track:
+
+- hands/hour;
+- CPU-seconds/hand;
+- wall time/hand;
+- median and tail latency;
+- number of policy decisions;
+- number of Monte Carlo decisions;
+- rollout worlds;
+- early-stopped worlds;
+- nodes/edges if search remains inside rollouts;
+- cache hit rate;
+- memory.
+
+Do not optimize only median runtime. A handful of pathological 20-minute hands can dominate total batch cost.
+
+Profile P50, P90, P95, and worst-case runtime.
+
+---
+
+## 26. Parallelism strategy
+
+Avoid uncontrolled nested multiprocessing.
+
+For large batch throughput, the simplest efficient first design is often:
+
+> **one process per game, with rollouts executed locally/sequentially inside that game**
+
+Advantages:
+
+- low cross-process serialization;
+- simple deterministic RNG ownership;
+- independent games scale naturally;
+- easier cancellation/progress accounting.
+
+For deep analysis of one hand, parallelizing rollout worlds across workers may be preferable.
+
+Eventually support a worker-budget policy:
+
+```text
+batch mode: parallelize games
+single-hand analysis: parallelize rollouts
+never multiply both axes beyond configured CPU budget
+```
+
+This is particularly important on Windows where worker startup/interrupt behavior has already required care.
+
+---
+
+## 27. Caching
+
+Different TrueStates can correspond to the same information state.
+
+Potential cache layers:
+
+### Policy action cache
+
+Keyed by normalized InformationState/PolicyView plus policy configuration.
+
+### Mulligan stage value cache
+
+Expected value of taking another mulligan at a given stage can be reused extensively.
+
+### Monte Carlo statistics cache
+
+For repeated decision states, accumulate rollout statistics rather than restarting from zero, but only if RNG/reproducibility semantics are carefully defined.
+
+### True-state engine cache
+
+Existing rules/search caches may remain keyed by concrete state where appropriate.
+
+Never include unknowable exact hidden order in a policy cache key.
+
+---
+
+## 28. Policy distillation as a future speed path
+
+If deep Monte Carlo becomes too expensive for large batches, use it as a teacher.
+
+Possible later workflow:
+
+1. collect many information states;
+2. run high-budget Monte Carlo offline;
+3. store action-value labels;
+4. fit/refine a fast heuristic or lightweight model;
+5. use that distilled policy in `policy-fast`;
+6. periodically re-evaluate against the teacher.
+
+This can preserve much of the Monte Carlo decision quality while dramatically increasing hands/hour.
+
+Do not start here; first build trustworthy labels.
+
+---
+
+## 29. Tutors
+
+Tutors are not inherently clairvoyant.
+
+Once a search effect legally resolves, the player may inspect the permitted library information and choose a legal target.
+
+The uncertainty often lies in:
+
+- whether to tutor now;
+- whether to preserve the tutor;
+- which strategic target maximizes expected win probability.
+
+Reuse the validated target-aware tutor retention infrastructure in underlying search/diagnostics.
+
+In non-Oracle action sequencing:
+
+```text
+Decision: cast/activate tutor?
+    ↓
+resolve search / legal observation
+    ↓
+Decision: choose target using legally revealed library information
+```
+
+Do not expose exact post-shuffle order after the tutor.
+
+---
+
+## 30. Shared rules engine
+
+The non-Oracle branch should not reimplement Magic rules independently.
+
+Reuse validated mechanics for:
+
+- casting;
+- mana payment;
+- commander tax;
+- tutors/transmute;
+- artifacts;
+- combo engines;
+- Remora cumulative upkeep;
+- bounce legality;
+- card metadata;
+- draw sequencing;
+- named draw traces;
+- state transitions;
+- terminal combo detection.
+
+The main fork is the **decision/information layer**, not the underlying rules engine.
+
+A rules bug fixed in one mode should ideally be fixed in shared code and inherited by all modes.
+
+---
+
+## 31. Traceability and auditability
+
+Every actual draw should name the card and source.
+
+Every important policy decision should be able to emit an audit record such as:
+
+```text
+Decision: Keep current 6?
+Visible hand: ...
+Stage: keep-6
+Policy: MC-v1
+Worlds evaluated: 64
+
+Keep / bottom Sea Gate Restoration:
+P(win by T6) = 0.61
+
+Mulligan to 5:
+Estimated continuation value = 0.52
+
+Selected: KEEP
+```
+
+For in-game decisions:
+
+```text
 Decision: activate Top?
-Worlds: 64
+Worlds evaluated: 48
 
-Do nothing: P(win T6)=0.31
-Activate Top: P(win T6)=0.46
+Do nothing:
+P(win by T6)=0.31
+
+Activate Top:
+P(win by T6)=0.46
 
 Selected: activate Top
 ```
 
-Actual-game traces and temporary rollout evaluation must be clearly
-distinguished. Full rollout traces should be diagnostic-only to avoid
-massive logs.
+Actual-game traces and temporary rollout traces must be distinct.
 
-## 18. Statistical outputs
+Full rollout traces should be disabled by default and available in diagnostic mode.
 
-Per-game data should eventually include seed, opening seven, mulligan
-sequence, final keep, bottoms, keep size, policy estimates, Urza cast
-turn, win/loss, win turn, family, draw sources, tutors/targets, Monte
-Carlo decision counts, rollout counts, wall time, graph metrics, and
-final trace.
+---
 
-Large-run summaries should include uncertainty/confidence intervals
-where appropriate.
+## 32. Machine-readable decision dataset
 
-## 19. Development phases
+In addition to per-game output, create a decision-level dataset.
 
-### Phase A --- freeze Oracle reference
+Each important decision row should record:
 
-Before branching, require rules smoke suites, tutor-cap tests,
-Remora/upkeep tests, bounce legality, named draws, reproducibility
-provenance, worker parameter propagation, T6, and keep-3 validation.
+- game seed;
+- decision ID;
+- turn/timing window;
+- information-state fingerprint;
+- policy version;
+- candidate actions;
+- rollout counts;
+- action value estimates;
+- uncertainty intervals;
+- chosen action;
+- realized eventual game outcome.
 
-### Phase B --- KnowledgeState skeleton
+This dataset will be valuable for:
 
-Separate TrueState and KnowledgeState without Monte Carlo. Add
-anti-clairvoyance tests.
+- debugging;
+- policy calibration;
+- identifying recurring decision patterns;
+- later policy distillation;
+- studying actual keep/bottom recommendations.
 
-### Phase C --- deterministic realistic policy
+---
 
-Implement knowledge-only mulligan and action heuristics. Benchmark
-against Oracle.
+## 33. Per-game and aggregate statistical outputs
 
-### Phase D --- Monte Carlo mulligans
+Per-game fields should include:
 
-Add hidden-world sampling only for mulligans. Measure convergence,
-stability, and runtime.
+- root seed;
+- commit hash;
+- policy version;
+- environment configuration;
+- starting seat/Caverns eligibility;
+- opening hands shown sequentially;
+- keep/mulligan decisions;
+- final kept hand;
+- bottoms;
+- keep size;
+- Urza cast turn;
+- win/no-win by T6;
+- win turn;
+- win family;
+- named draw sources;
+- tutors and targets;
+- number of policy/MC decisions;
+- rollout count;
+- wall time;
+- resource metrics;
+- actual trace.
 
-### Phase E --- selective in-game Monte Carlo
+Aggregate reports should include:
 
-Add decision classes incrementally: Top/scry first, then tutor
-timing/targets, then major engine decisions where justified.
+- cumulative win curve T1–T6;
+- confidence intervals;
+- keep-size distribution;
+- mulligan rate by stage;
+- family distribution;
+- Urza cast-turn distribution;
+- runtime distribution;
+- policy decision frequencies.
 
-### Phase F --- scale
+---
 
-Adaptive rollout budgets, caching, parallelism, and hundreds/thousands
-of games.
+## 34. Statistical uncertainty has two layers
 
-## 20. Mandatory anti-clairvoyance tests
+Keep separate:
 
--   **Hidden-top invariance:** two TrueStates with identical visible
-    information but different unknown top cards must yield the same
-    deterministic policy action.
--   **Shuffle invariance:** known positional information disappears
-    after shuffle.
--   **Known-top sensitivity:** after Top/scry legally reveals cards, the
-    policy may react to those cards.
--   **Mulligan future invariance:** identical opening sevens with
-    different hidden futures must produce the same deterministic
-    mulligan decision.
--   **Actual-world isolation:** changing unrevealed actual future cards
-    must not change a decision before those cards become known.
--   **Monte Carlo isolation:** rollout distributions must be sampled
-    from KnowledgeState, not conditioned on the actual hidden future.
+1. **Empirical game uncertainty**
+   - how often games actually win across root seeds.
 
-These should become mandatory regression tests.
+2. **Monte Carlo action-value uncertainty**
+   - uncertainty in an estimated action value because only a finite number of hidden worlds were sampled.
 
-## 21. Monte Carlo convergence tests
+Do not report a rollout confidence interval as if it were the confidence interval for the deck’s overall win rate.
 
-For representative decisions compare rollout budgets such as 8, 16, 32,
-64, 128, and larger calibration runs.
+---
 
-Track selected action, estimated win probability, confidence interval,
-ranking stability, and runtime.
+## 35. Deck/card comparison experiments should be paired
 
-Use the smallest budget that provides sufficiently stable decisions for
-each decision class.
+A major intended use is comparing card choices or deck versions.
 
-## 22. Prevent compute explosion
+Whenever possible use paired experimental design:
 
-Candidate tools:
+- same root seeds;
+- same seat/environment streams;
+- same policy version;
+- same rollout-budget rules;
+- common random numbers where compatible.
 
--   adaptive sampling;
--   early stopping;
--   safe heuristic action pre-filtering;
--   information-state caching;
--   common random numbers;
--   bounded rollout depth;
--   validated terminal combo shortcuts;
--   dominance pruning;
--   target-aware action retention;
--   selective Monte Carlo;
--   parallel rollouts.
+Report differences such as:
 
-Every optimization must be audited for strategic loss or information
-leakage.
+```text
+Δ P(win by T4)
+Δ P(win by T6)
+Δ keep rate
+Δ median win turn
+Δ runtime
+```
 
-## 23. Manual goldfish comparison
+with paired uncertainty estimates.
 
-Later, compare predetermined opening hands across human play,
-deterministic policy, Monte Carlo policy, and Oracle.
+This is far more sensitive than comparing two unrelated batches.
 
-Record keep/bottom choices, major decisions, win results, disagreements,
-solver-discovered lines, and human-discovered missing behaviors.
+For a card swap, also record:
 
-This validates practical usefulness.
+- how often each card appears in kept hands;
+- how often it is drawn;
+- how often tutored;
+- how often it participates in the winning line;
+- whether it changes mulligan decisions.
 
-## 24. Git strategy
+---
 
-Recommended structure:
+## 36. Anti-clairvoyance regression tests
 
--   `oracle-stable`: preserved validated Oracle;
--   `development`: current Oracle development until freeze;
--   future `knowledge-policy` / `non-oracle`: knowledge-constrained
-    architecture;
--   optional Monte Carlo sub-branches before merging.
+These should become mandatory.
 
-Reports should record commit hashes and experimental configuration.
+### Hidden-top invariance
 
-## 25. Initial Codex implementation order
+Create two TrueStates with identical PolicyView but different unknown top cards.
 
-When this document is handed to Codex, do **not** begin with Monte
-Carlo.
+A deterministic policy must choose the same action.
 
-1.  Read project docs and architecture.
-2.  Freeze/confirm Oracle.
-3.  Design KnowledgeState.
-4.  Add anti-clairvoyance tests.
-5.  Implement deterministic knowledge-constrained policy.
-6.  Implement realistic mulligan heuristic.
-7.  Run paired Oracle/heuristic experiments.
-8.  Add hidden-world sampler.
-9.  Add Monte Carlo only to mulligans.
-10. Benchmark convergence/runtime.
-11. Add selective Top/scry Monte Carlo.
-12. Add tutor/engine Monte Carlo only if justified.
-13. Add adaptive budgets.
-14. Parallelize.
-15. Scale.
+### Hidden-future invariance
+
+Change several unrevealed future cards while keeping visible information identical.
+
+The policy decision must remain identical.
+
+### Mulligan future invariance
+
+Same current seven, different actual next seven / future library.
+
+The current keep/mull decision must not change.
+
+### Monte Carlo actual-world isolation
+
+With identical InformationState and identical policy RNG stream, changing the actual hidden world must not change the root Monte Carlo decision before any differing hidden card is revealed.
+
+### Shuffle reset
+
+Known top/bottom positional information disappears after shuffle.
+
+### Known-top sensitivity
+
+After Top/scry legitimately reveals cards, the policy may respond differently.
+
+### Commit-before-observation
+
+The decision to activate Top or cast a scry spell must not depend on the unknown cards that the action would reveal.
+
+### Post-observation contingency
+
+Once those cards are legitimately revealed, the follow-up ordering decision may depend on them.
+
+### Rollout no-strategy-fusion
+
+Instrument rollout policy access and prove it never receives the sampled world’s unknown library order.
+
+---
+
+## 37. Reproducibility tests
+
+A formal benchmark should record:
+
+- Git commit;
+- deck hash/version;
+- root seeds;
+- turn horizon;
+- action cap;
+- beam/depth if used;
+- mulligan floor;
+- environment model;
+- policy version;
+- rollout budget;
+- RNG scheme/version;
+- `PYTHONHASHSEED`.
+
+Repeated runs with the same configuration should reproduce:
+
+- actual game hidden world;
+- policy decision sequence;
+- selected actions;
+- final outcome;
+
+except when intentionally testing stochastic-policy variance.
+
+---
+
+## 38. Monte Carlo convergence tests
+
+For representative decision classes evaluate:
+
+- 8 worlds;
+- 16;
+- 32;
+- 64;
+- 128;
+- 256+ for calibration where useful.
+
+Track:
+
+- chosen action;
+- P(win by T6);
+- uncertainty interval;
+- action ranking stability;
+- wall time.
+
+Different decision classes may need different budgets.
+
+The objective is not “use as many rollouts as possible.”
+
+It is:
+
+> **find the smallest budget that produces sufficiently stable decisions for the intended mode.**
+
+---
+
+## 39. Oracle comparison must use the same rules/environment
+
+If Oracle and policy use different Remora assumptions, horizon, bounce rules, or worker parameters, the gap is uninterpretable.
+
+Before paired comparison, freeze a shared semantic configuration.
+
+Oracle differs in information access and search policy—not in card rules.
+
+---
+
+## 40. Validation against manual goldfishing
+
+Later, create a fixed set of opening hands.
+
+For each:
+
+1. human records keep/mulligan decision;
+2. human records bottom choices;
+3. human plays the hand without future knowledge;
+4. deterministic policy evaluates it;
+5. Monte Carlo policy evaluates it;
+6. Oracle may provide ceiling.
+
+Compare:
+
+- keep agreement;
+- bottom agreement;
+- major decision agreement;
+- realized win rate/turn;
+- cases where solver finds a strong line human missed;
+- cases where human reasoning reveals missing solver mechanics.
+
+Do not use human agreement as the sole definition of correctness. The purpose is calibration and discovery.
+
+---
+
+## 41. Development phases
+
+### Phase A — finish and freeze Oracle
+
+Before branching:
+
+- mandatory rules smoke suites pass;
+- target-aware tutor retention passes;
+- Remora cumulative upkeep passes;
+- bounce-target/timing legality passes;
+- named draw tracing passes;
+- Repurposing Bay/mana and other suspicious traces are audited;
+- reproducibility provenance is recorded;
+- workers inherit all parameters;
+- T6 horizon is validated;
+- keep-3 Oracle stage is validated.
+
+Freeze/tag the commit.
+
+### Phase B — information-boundary skeleton
+
+Implement:
+
+- InformationState;
+- PolicyView;
+- separate true/information keys;
+- independent RNG streams;
+- action/observation split;
+- anti-clairvoyance tests.
+
+Do not add Monte Carlo yet.
+
+### Phase C — deterministic base policy
+
+Implement:
+
+- sequential realistic mulligans;
+- non-clairvoyant bottoms;
+- deterministic in-game policy;
+- fast batch mode.
+
+Benchmark against Oracle and manual spot checks.
+
+### Phase D — Monte Carlo mulligans
+
+Implement:
+
+- hidden-world sampler;
+- sequential keep-versus-mull value;
+- Monte Carlo bottom finalists;
+- stage-value caching;
+- convergence tests.
+
+### Phase E — selective in-game policy improvement
+
+Add, one decision class at a time:
+
+1. Top/scry;
+2. tutor timing;
+3. tutor target;
+4. engine deployment;
+5. other decisions only when profiling/data justify them.
+
+### Phase F — performance engineering
+
+Add:
+
+- adaptive racing;
+- caching;
+- process-level batching;
+- runtime-tail diagnostics;
+- policy distillation if justified.
+
+### Phase G — large experiments
+
+Run:
+
+- hundreds/thousands of hands;
+- paired deck/card comparisons;
+- Oracle versus policy comparisons;
+- environment sensitivity analyses.
+
+---
+
+## 42. Initial Codex implementation order
+
+When this document is handed to Codex, do not ask it to “build the Monte Carlo solver” in one task.
+
+Recommended sequence:
+
+1. read `AGENTS.md`, `URZA_SOLVER_SPEC.md`, `TEST_PLAN.md`, this document, and the frozen Oracle;
+2. propose exact PolicyView/InformationState interfaces;
+3. add anti-clairvoyance test fixtures;
+4. implement the API boundary;
+5. split commitment actions from post-observation choices;
+6. implement independent RNG streams;
+7. implement sequential deterministic mulligans;
+8. implement deterministic bottom selection;
+9. implement deterministic in-game base policy;
+10. benchmark fast policy;
+11. add hidden-world sampler;
+12. add one-step Monte Carlo improvement for mulligans;
+13. add convergence/racing;
+14. add Top/scry Monte Carlo;
+15. add tutors/engines only when justified;
+16. parallelize within a strict worker budget;
+17. scale experiments.
 
 At every stage:
 
-**correctness → reproducibility → auditability → performance → scale**
+**rules correctness → information correctness → reproducibility → auditability → decision quality → performance → scale**
 
-## 26. Open design questions
+---
 
-Do not guess these prematurely:
+## 43. Things not to do
 
--   exact mulligan heuristic;
--   rollout policy versus bounded search;
--   utility function;
--   early-stop/confidence thresholds;
--   rollout budgets by decision class;
--   information-state cache representation;
--   known-bottom representation;
--   which in-game decisions deserve Monte Carlo;
--   future opponent modeling;
--   evolution of environmental Remora/Rhystic assumptions beyond
-    goldfish mode.
+Do not:
 
-## 27. Success criteria
+- pass raw TrueState into the policy and merely promise not to read hidden fields;
+- run Oracle independently inside each sampled hidden world and call the average “realistic”;
+- retrospectively choose among future mulligan hands;
+- let Top/scry reorder actions reveal cards before deciding whether to activate the effect;
+- let a shuffle preserve invalid positional knowledge;
+- use the actual game RNG for Monte Carlo sampling;
+- use nested multiprocessing without a global worker budget;
+- optimize only mean win turn;
+- compare deck versions on unrelated random batches when paired seeds are possible;
+- call the model fully realistic while opponent activity remains abstract.
 
-The non-Oracle solver should:
+---
 
-1.  never use hidden information illegally;
-2.  preserve legally acquired information;
-3.  forget positional information after shuffles;
-4.  be reproducible;
-5.  share the validated Oracle rules engine;
-6.  estimate action value under uncertainty;
-7.  explain recommendations;
-8.  outpace manual goldfishing at useful volume;
-9.  scale across CPU workers;
-10. produce machine-readable large-run data;
-11. compare directly with Oracle;
-12. remain replayable/auditable card-by-card.
+## 44. Open design questions
 
-## 28. Guiding principle
+These should be settled empirically rather than guessed:
 
-Do not make the solver "realistic" by arbitrarily weakening it.
+- exact base-policy scoring/features;
+- exact sequential mulligan keep thresholds;
+- root action pre-filtering;
+- utility tie-breaks;
+- rollout budgets by decision class;
+- racing/confidence thresholds;
+- information-state cache representation;
+- bottom-order relevance;
+- extent of future stochastic opponent model;
+- whether recursive Monte Carlo/MCTS is ever worth its compute;
+- whether policy distillation is needed;
+- environment scenarios for Remora/Rhystic/Mana Drain/opponent artifacts.
 
-> **Give it exactly the information a player is legally entitled to
-> possess, then make it as strong as computationally practical at
-> reasoning from that information.**
+---
 
-Oracle asks what is possible with perfect foresight.
+## 45. Success criteria
 
-The knowledge-constrained Monte Carlo solver asks what the **best
-decision is under uncertainty**.
+The project succeeds if the non-Oracle system:
+
+1. never chooses actions using illegal hidden information;
+2. correctly uses legally revealed information;
+3. forgets positional information after shuffles;
+4. makes mulligan decisions sequentially;
+5. separates commitment from later information-revealing choices;
+6. avoids strategy fusion in rollout evaluation;
+7. is reproducible under fixed configuration;
+8. shares the validated rules engine with Oracle;
+9. estimates action value under uncertainty;
+10. explains important recommendations;
+11. materially outpaces manual goldfishing;
+12. scales across CPU resources without uncontrolled process explosion;
+13. produces cumulative T1–T6 and decision-level data;
+14. supports statistically efficient paired deck comparisons;
+15. remains replayable and auditable card-by-card.
+
+---
+
+## 46. Guiding principle
+
+Do not make the solver “realistic” by arbitrarily weakening it.
+
+> **Give it exactly the information a player is legally entitled to possess, then make it as strong as computationally practical at reasoning from that information.**
+
+The Oracle asks:
+
+> What is possible with perfect foresight?
+
+The knowledge-constrained solver asks:
+
+> What should a strong player do with the information actually available?
+
+The Monte Carlo layer asks:
+
+> Under uncertainty, how much better is each available decision in expectation?
+
+The engineering objective is to answer those questions at enough speed to generate more reliable data than manual goldfishing can realistically produce.
