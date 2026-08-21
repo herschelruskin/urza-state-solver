@@ -1931,6 +1931,111 @@ def _record_cap_audit(out, kept, context="normal"):
         a["worst_states"].sort(key=lambda r:r["raw"],reverse=True)
         del a["worst_states"][20:]
 
+
+_TUTOR_CAP_AUDIT_ENABLED=False
+_TUTOR_CAP_AUDIT=None
+
+KNOWN_ENGINE_TARGETS=frozenset({
+    "Sensei's Divining Top","The Reality Chip","Fortune Teller's Talent",
+    "Forensic Gadgeteer","Grinding Station","Battered Golem",
+    "Power Artifact","Grim Monolith","Basalt Monolith","Chrome Dome",
+    "Sewer-veillance Cam","Banishing Knack","Retraction Helix",
+    "Spellseeker","Transmute Artifact","Reshape","Whir of Invention",
+    "Uthros Research Craft","Valley Floodcaller",
+})
+
+def new_tutor_cap_audit_stats():
+    return {
+        "truncated_states":0,
+        "tutor_truncated_states":0,
+        "raw_tutor_actions":0,
+        "kept_tutor_actions":0,
+        "unique_targets_raw_total":0,
+        "unique_targets_kept_total":0,
+        "lost_target_events":0,
+        "lost_engine_target_events":0,
+        "source_counts_raw":collections.Counter(),
+        "source_counts_kept":collections.Counter(),
+        "target_counts_raw":collections.Counter(),
+        "target_counts_kept":collections.Counter(),
+        "lost_targets":collections.Counter(),
+        "lost_engine_targets":collections.Counter(),
+        "worst_states":[],
+    }
+
+def _tutor_source_target_from_trace(st):
+    if not st.trace:
+        return None,None
+    t=st.trace[-1]
+    if t.startswith("Transmute ") and "->" in t:
+        return "Transmute Artifact",t.split("->",1)[1].split(";",1)[0].strip()
+    if t.startswith("Reshape X=") and "->" in t:
+        return "Reshape",t.split("->",1)[1].split(";",1)[0].strip()
+    if t.startswith("Whir X=") and "->" in t:
+        return "Whir of Invention",t.split("->",1)[1].strip()
+    if t.startswith("Spellseeker ETB -> "):
+        return "Spellseeker",t.split("->",1)[1].strip()
+    if t.startswith("Mystical ->"):
+        target=t.split("top",1)[1].strip() if "top" in t else t.split("->",1)[1].strip()
+        return "Mystical Tutor",target
+    for src in ("Dizzy Spell","Muddle the Mixture","Merchant Scroll"):
+        if t.startswith(src+" -> "):
+            return src,t.split("->",1)[1].strip()
+    return None,None
+
+def _record_tutor_cap_state(raw_actions,kept_actions,state,context="normal"):
+    global _TUTOR_CAP_AUDIT
+    if not _TUTOR_CAP_AUDIT_ENABLED or _TUTOR_CAP_AUDIT is None or len(raw_actions)<=ACTION_CAP:
+        return
+    aud=_TUTOR_CAP_AUDIT
+    aud["truncated_states"]+=1
+    raw_pairs=[p for p in (_tutor_source_target_from_trace(a) for a in raw_actions) if p[0] and p[1]]
+    kept_pairs=[p for p in (_tutor_source_target_from_trace(a) for a in kept_actions) if p[0] and p[1]]
+    if not raw_pairs:
+        return
+    aud["tutor_truncated_states"]+=1
+    aud["raw_tutor_actions"]+=len(raw_pairs)
+    aud["kept_tutor_actions"]+=len(kept_pairs)
+    for src,tgt in raw_pairs:
+        aud["source_counts_raw"][src]+=1; aud["target_counts_raw"][tgt]+=1
+    for src,tgt in kept_pairs:
+        aud["source_counts_kept"][src]+=1; aud["target_counts_kept"][tgt]+=1
+
+    raw_targets=set(t for _,t in raw_pairs)
+    kept_targets=set(t for _,t in kept_pairs)
+    lost=raw_targets-kept_targets
+    lost_engine=lost & KNOWN_ENGINE_TARGETS
+
+    aud["unique_targets_raw_total"]+=len(raw_targets)
+    aud["unique_targets_kept_total"]+=len(kept_targets)
+    aud["lost_target_events"]+=len(lost)
+    aud["lost_engine_target_events"]+=len(lost_engine)
+    for t in lost: aud["lost_targets"][t]+=1
+    for t in lost_engine: aud["lost_engine_targets"][t]+=1
+
+    row={
+        "turn":state.turn,
+        "raw_actions":len(raw_actions),
+        "kept_actions":len(kept_actions),
+        "raw_tutor_actions":len(raw_pairs),
+        "kept_tutor_actions":len(kept_pairs),
+        "raw_unique_targets":len(raw_targets),
+        "kept_unique_targets":len(kept_targets),
+        "lost_targets":sorted(lost),
+        "lost_engine_targets":sorted(lost_engine),
+        "raw_sources":dict(collections.Counter(src for src,_ in raw_pairs)),
+        "kept_sources":dict(collections.Counter(src for src,_ in kept_pairs)),
+        "context":context,
+    }
+    aud["worst_states"].append(row)
+    aud["worst_states"]=sorted(
+        aud["worst_states"],
+        key=lambda r:(len(r["lost_engine_targets"]),len(r["lost_targets"]),
+                      r["raw_tutor_actions"]-r["kept_tutor_actions"]),
+        reverse=True
+    )[:50]
+
+
 def new_cap_audit_stats():
     return {
         "states_seen":0,"states_truncated":0,
@@ -1971,6 +2076,7 @@ def legal_actions(s:State)->List[State]:
         out=[refresh_observability(x) for x in out]
         kept=heapq.nlargest(min(ACTION_CAP,len(out)),out,key=score)
         _record_cap_audit(out,kept,context="saga3")
+        _record_tutor_cap_state(out,kept,s,context="saga3")
         return kept
 
     out=[]
@@ -2000,6 +2106,7 @@ def legal_actions(s:State)->List[State]:
     out=[refresh_observability(x) for x in out]
     kept=heapq.nlargest(min(ACTION_CAP,len(out)),out,key=score)
     _record_cap_audit(out,kept,context="normal")
+    _record_tutor_cap_state(out,kept,s,context="normal")
     return kept
 
 def chrome_activation_cost(s:State)->int:
@@ -3984,6 +4091,84 @@ def run_cap_audit(deck,base_seed:int,count:int,max_turn:int,beam:int,depth:int,p
         _CAP_AUDIT=None
 
 
+
+def run_tutor_cap_audit(deck,base_seed:int,count:int,max_turn:int,beam:int,depth:int,
+                        progress_seconds:float=10.0):
+    global _TUTOR_CAP_AUDIT_ENABLED,_TUTOR_CAP_AUDIT
+    _TUTOR_CAP_AUDIT_ENABLED=True
+    _TUTOR_CAP_AUDIT=new_tutor_cap_audit_stats()
+    rows=[]
+    t0=time.time()
+    print("\n=== TUTOR CAP DIVERSITY AUDIT ===",flush=True)
+    try:
+        for i in range(count):
+            seed=base_seed+i
+            b_states=_TUTOR_CAP_AUDIT["tutor_truncated_states"]
+            b_lost=_TUTOR_CAP_AUDIT["lost_target_events"]
+            b_eng=_TUTOR_CAP_AUDIT["lost_engine_target_events"]
+            print(f"\n[TUTOR CAP {i+1}/{count}] seed={seed}",flush=True)
+            r=oracle_game(seed,deck,max_turn,beam,depth,live_progress=True,progress_seconds=progress_seconds)
+            row={
+                "seed":seed,
+                "win_turn":r.get("win_turn"),
+                "family":r.get("family",""),
+                "tutor_truncated_states_delta":_TUTOR_CAP_AUDIT["tutor_truncated_states"]-b_states,
+                "lost_target_events_delta":_TUTOR_CAP_AUDIT["lost_target_events"]-b_lost,
+                "lost_engine_target_events_delta":_TUTOR_CAP_AUDIT["lost_engine_target_events"]-b_eng,
+            }
+            rows.append(row)
+            print(
+                f"[TUTOR CAP] seed={seed} win={row['win_turn'] or '-'} family={row['family'] or '-'} "
+                f"tutor_cap_states={row['tutor_truncated_states_delta']} "
+                f"lost_targets={row['lost_target_events_delta']} "
+                f"lost_engine_targets={row['lost_engine_target_events_delta']}",
+                flush=True
+            )
+    finally:
+        _TUTOR_CAP_AUDIT_ENABLED=False
+
+    a=_TUTOR_CAP_AUDIT
+    print("\n=== TUTOR CAP AUDIT SUMMARY ===",flush=True)
+    print(f"truncated states with tutor branches: {a['tutor_truncated_states']:,}",flush=True)
+    print(f"raw tutor actions in those states: {a['raw_tutor_actions']:,}",flush=True)
+    print(f"kept tutor actions in those states: {a['kept_tutor_actions']:,}",flush=True)
+    print(f"unique tutor targets before cap (state-summed): {a['unique_targets_raw_total']:,}",flush=True)
+    print(f"unique tutor targets after cap (state-summed): {a['unique_targets_kept_total']:,}",flush=True)
+    print(f"lost target events: {a['lost_target_events']:,}",flush=True)
+    print(f"lost KNOWN ENGINE target events: {a['lost_engine_target_events']:,}",flush=True)
+    print(f"lost targets by frequency: {dict(a['lost_targets'].most_common())}",flush=True)
+    print(f"lost engine targets by frequency: {dict(a['lost_engine_targets'].most_common())}",flush=True)
+    print("\nTutor source retention:",flush=True)
+    for src in sorted(set(a["source_counts_raw"])|set(a["source_counts_kept"])):
+        raw=a["source_counts_raw"][src]; kept=a["source_counts_kept"][src]
+        pct=(100*kept/raw) if raw else 100.0
+        print(f"  {src:20s} raw={raw:7,d} kept={kept:7,d} retention={pct:6.2f}%",flush=True)
+
+    payload={
+        "base_seed":base_seed,"count":count,"action_cap":ACTION_CAP,
+        "summary":{
+            "truncated_states":a["truncated_states"],
+            "tutor_truncated_states":a["tutor_truncated_states"],
+            "raw_tutor_actions":a["raw_tutor_actions"],
+            "kept_tutor_actions":a["kept_tutor_actions"],
+            "unique_targets_raw_total":a["unique_targets_raw_total"],
+            "unique_targets_kept_total":a["unique_targets_kept_total"],
+            "lost_target_events":a["lost_target_events"],
+            "lost_engine_target_events":a["lost_engine_target_events"],
+            "lost_targets":dict(a["lost_targets"]),
+            "lost_engine_targets":dict(a["lost_engine_targets"]),
+            "source_counts_raw":dict(a["source_counts_raw"]),
+            "source_counts_kept":dict(a["source_counts_kept"]),
+            "target_counts_raw":dict(a["target_counts_raw"]),
+            "target_counts_kept":dict(a["target_counts_kept"]),
+        },
+        "rows":rows,"worst_states":a["worst_states"],
+        "wall_seconds":time.time()-t0,
+    }
+    Path("tutor_cap_audit_report.json").write_text(json.dumps(payload,indent=2),encoding="utf-8")
+    print("\nWrote tutor_cap_audit_report.json",flush=True)
+
+
 def main():
     global _parent_cancel_count
     _parent_cancel_count=0
@@ -4013,6 +4198,7 @@ def main():
     ap.add_argument("--combo-smoke",action="store_true",help="Exercise near-complete states for every major win family through normal legal actions")
     ap.add_argument("--family-smoke",type=int,default=0,help="Run N deterministic oracle seeds and report naturally occurring win families")
     ap.add_argument("--cap-audit",type=int,default=0,help="Run N deterministic oracle seeds and audit pre-cap legal-action branching")
+    ap.add_argument("--tutor-cap-audit",type=int,default=0,help="Run N deterministic oracle seeds and audit tutor-target diversity lost to ACTION_CAP")
     ap.add_argument("--smoke-seeds",type=int,default=0,help="Run N deterministic oracle smoke seeds sequentially and audit invariants")
     ap.add_argument("--smoke-seed-step",type=int,default=1,help="Increment between smoke seeds")
     ap.add_argument("--smoke-slow-seconds",type=float,default=60.0,help="Flag a smoke seed slower than this")
@@ -4050,6 +4236,9 @@ def main():
     deck=load_deck(Path(args.deck))
     if args.cap_audit>0:
         run_cap_audit(deck,args.seed,args.cap_audit,args.turns,args.beam,args.depth,args.search_progress_seconds)
+        return
+    if args.tutor_cap_audit>0:
+        run_tutor_cap_audit(deck,args.seed,args.tutor_cap_audit,args.turns,args.beam,args.depth,args.search_progress_seconds)
         return
     if args.family_smoke>0:
         run_family_smoke(

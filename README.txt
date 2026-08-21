@@ -1091,3 +1091,21 @@ v0.4.21 CAP-AUDIT IMPORT HOTFIX
 --------------------------------
 v0.4.20's cap-audit statistics used collections.Counter() but did not import
 the collections module. No rules/search semantics changed.
+
+
+v0.4.22 TUTOR-TARGET CAP DIVERSITY AUDIT
+-----------------------------------------
+Diagnostic only; production search semantics are unchanged.
+
+Run:
+    py -3 urza_solver.py --tutor-cap-audit 3 --seed 20260826 --beam 300 --action-cap 60 --bottom-cap 4 --depth 100 --turns 7 --search-progress-seconds 10
+
+Reports per cap-hit state:
+* tutor source
+* unique targets before cap
+* unique targets after cap
+* targets completely lost
+* known engine/combo targets completely lost
+
+Output:
+    tutor_cap_audit_report.json
