@@ -7,6 +7,7 @@ This module stages scry as:
         -> RevealTopObservation(top N)
         -> post-observation choose top/bottom ordering
         -> apply the chosen physical library arrangement
+        -> refresh continuous top-card look permission after scry completes
 
 The adapter is intentionally effect-scoped.  It does not duplicate spell casting,
 ETB, or trigger mechanics.  Phase 2's non-Oracle rules adapter will invoke this
@@ -14,6 +15,12 @@ staged scry effect after the actual source commitment is made through shared rul
 For Phase 1, the important invariant is that the commit action contains no hidden
 card identities and that all top/bottom choices are generated only from legally
 revealed InformationState.
+
+Important rules boundary: cards being looked at for scry remain the top cards of
+the library for rules purposes.  A Reality Chip / Fortune Teller's Talent look
+permission does not reveal card N+1 while scry N is in progress.  If the scry
+changes the physical top card, the continuous look permission refreshes only after
+the scry placement is complete, before the next policy/priority decision.
 """
 
 from __future__ import annotations
@@ -25,6 +32,7 @@ from typing import Optional, Tuple
 
 import urza_solver as solver
 from solver_architecture import InformationState, make_policy_view
+from information_state_propagation import _top_visible
 from decision_observation import (
     ActionIntent,
     DECISION_COMMIT,
@@ -291,19 +299,32 @@ def resolve_scry_choice(
     # London/scry suffix, so bottom_mode='append'.
     deeper_known = tuple(information_after_reveal.known_top[n:])
     resulting_top = tuple(top_order) + deeper_known
+    events = [
+        LibraryPositionsObservation(
+            known_top=resulting_top,
+            known_bottom=tuple(bottom_order),
+            top_mode="replace",
+            bottom_mode="append",
+            source=spec.source,
+        )
+    ]
+
+    # Continuous look effects do not reveal the card underneath while the scry is
+    # in progress.  Once the placement is complete, however, the physical top may
+    # have changed (notably when all looked-at cards were bottomed).  Refresh that
+    # now-known top before returning to the next policy/priority decision.
+    if next_state.library and _top_visible(next_state):
+        events.append(
+            RevealTopObservation(
+                (str(next_state.library[0]),),
+                source=f"{spec.source} post-scry continuous look",
+                preserve_known_deeper=True,
+            )
+        )
+
     return TransitionEnvelope(
         true_state=next_state,
-        observations=ObservationBatch(
-            (
-                LibraryPositionsObservation(
-                    known_top=resulting_top,
-                    known_bottom=tuple(bottom_order),
-                    top_mode="replace",
-                    bottom_mode="append",
-                    source=spec.source,
-                ),
-            )
-        ),
+        observations=ObservationBatch(tuple(events)),
         pending_decision=None,
         trace_note=f"{spec.source} scry positions committed",
     )
