@@ -146,6 +146,15 @@ class DeterministicBasePolicy:
             return 35.0
         if action.kind == "main_play_land":
             return 30.0 + self.visible_card_score(str(params.get("card", "")), observation)
+        if action.kind == "main_use_x_artifact_tutor":
+            # X is committed before seeing the library.  A fixed public heuristic
+            # centered on X=3 covers the deck's important 1-3 MV artifact engines
+            # without using hidden target identities.  Future DP replaces this.
+            x = int(params.get("x", 0))
+            x_score = 4.5 - 1.5 * abs(x - 3)
+            sacrificed = str(params.get("sacrifice_name", ""))
+            sacrifice_penalty = 0.5 * self.visible_card_score(sacrificed, observation) if sacrificed else 0.0
+            return 28.0 + x_score - sacrifice_penalty
         if action.kind == "main_use_simple_tutor":
             return 27.0 + self.visible_card_score(str(params.get("source", "")), observation)
         if action.kind == "main_cast_proactive_nonartifact":
@@ -176,7 +185,7 @@ class DeterministicBasePolicy:
             return self._scry_score(observation, action)
         if kind == "runtime_chrome_imprint":
             return self._chrome_imprint_score(observation, action)
-        if kind == "choose_tutor_target":
+        if kind in {"choose_tutor_target", "x_artifact_search_target"}:
             return self._tutor_target_score(observation, action)
         if kind == "pass_priority":
             return 0.0
