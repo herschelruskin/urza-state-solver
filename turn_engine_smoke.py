@@ -16,10 +16,18 @@ def end_action(runtime):
 
 def test_end_turn_commit_is_hidden_future_invariant():
     left = make_runtime_state(
-        solver.State(turn=1, library=("A", "B"), hand=(), battlefield=())
+        solver.State(
+            turn=1,
+            library=("SECRET_ALPHA_CARD", "SECRET_BETA_CARD"),
+            hand=(), battlefield=(),
+        )
     )
     right = make_runtime_state(
-        solver.State(turn=1, library=("B", "A"), hand=(), battlefield=())
+        solver.State(
+            turn=1,
+            library=("SECRET_BETA_CARD", "SECRET_ALPHA_CARD"),
+            hand=(), battlefield=(),
+        )
     )
     lreq = rules_decision_request(left, horizon=6)
     rreq = rules_decision_request(right, horizon=6)
@@ -27,7 +35,8 @@ def test_end_turn_commit_is_hidden_future_invariant():
     la = next(a for a in lreq.actions if a.kind == MAIN_END_TURN)
     ra = next(a for a in rreq.actions if a.kind == MAIN_END_TURN)
     assert la.strategic_key() == ra.strategic_key()
-    assert "A" not in repr(la) and "B" not in repr(la)
+    assert "SECRET_ALPHA_CARD" not in repr(la)
+    assert "SECRET_BETA_CARD" not in repr(la)
 
 
 def test_hidden_natural_draw_is_resolved_only_after_end_turn_choice():
@@ -101,8 +110,6 @@ def test_remora_upkeep_is_not_skipped_into_main_phase():
     runtime = apply_main_action(runtime, end_action(runtime))
     assert runtime.true_state.turn == 2
     assert runtime.true_state.remora_upkeep_pending
-    # Two modeled opponent-cycle Remora draws occur, but the natural draw waits
-    # until the mandatory cumulative-upkeep decision is resolved.
     assert runtime.true_state.hand == ("Env1", "Env2")
     assert runtime.true_state.library == ("Natural",)
     assert rules_decision_request(runtime, horizon=6).actions == ()
