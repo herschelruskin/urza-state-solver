@@ -143,6 +143,14 @@ from non_oracle_urza_runtime import (
     handles_urza_stack_top,
     urza_main_intents,
 )
+from non_oracle_engine_activation_runtime import (
+    MAIN_ACTIVATE_CHIP_RECONFIGURE,
+    MAIN_ACTIVATE_UTHROS_STATION,
+    apply_engine_stack_action,
+    begin_engine_activation,
+    engine_activation_main_intents,
+    handles_engine_stack_top,
+)
 
 MAIN_PLAY_LAND = "main_play_land"
 MAIN_MANA_ACTION = "main_mana_action"
@@ -331,6 +339,7 @@ def main_phase_intents(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ..
     rows.extend(remaining_search_main_intents(runtime))
     rows.extend(commander_cast_intents(runtime))
     rows.extend(urza_main_intents(runtime))
+    rows.extend(engine_activation_main_intents(runtime))
     rows.extend(_end_turn_intent(runtime))
     return tuple(sorted(rows, key=lambda action: action.action_id))
 
@@ -448,6 +457,8 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
             resolved = apply_utility_stack_action(runtime, action)
         elif handles_urza_stack_top(runtime):
             resolved = apply_urza_stack_action(runtime, action)
+        elif handles_engine_stack_top(runtime):
+            resolved = apply_engine_stack_action(runtime, action)
         elif handles_chrome_stack_top(runtime):
             resolved = apply_chrome_stack_action(runtime, action)
         elif handles_commander_stack_top(runtime):
@@ -528,6 +539,8 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
         return begin_commander_cast(runtime, action)
     if action.kind in {MAIN_ACTIVATE_URZA_SPIN, MAIN_USE_URZA_PERMISSION}:
         return begin_urza_main_action(runtime, action)
+    if action.kind in {MAIN_ACTIVATE_CHIP_RECONFIGURE, MAIN_ACTIVATE_UTHROS_STATION}:
+        return begin_engine_activation(runtime, action)
     if action.kind == MAIN_END_TURN:
         if can_begin_chrome_end_turn(runtime):
             return begin_chrome_aware_end_turn(runtime)

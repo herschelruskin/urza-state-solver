@@ -251,9 +251,6 @@ class DeterministicBasePolicy:
         params = dict(action.parameters)
         stack_count = int(params.get("top_draws_on_stack", 0))
         if action.kind == "priority_activate_top_draw":
-            # Once A1 is waiting and Key has untapped Top, commit A2 to complete
-            # the known two-draw Top/Key sequence. Do not randomly fire Top into
-            # unrelated stacks under this baseline policy.
             return 40.0 if stack_count > 0 else -5.0
         if action.kind == "priority_activate_key":
             target = str(params.get("target_name", ""))
@@ -279,6 +276,23 @@ class DeterministicBasePolicy:
             return 29.0 + self.visible_card_score(card, observation)
         return -20.0
 
+    @staticmethod
+    def _uthros_station_score(action: ActionIntent) -> float:
+        params = dict(action.parameters)
+        current = int(params.get("current_counters", 0))
+        result = int(params.get("result_counters", current))
+        power = int(params.get("power", 0))
+        if current < 3 <= result:
+            return 34.0 + min(2.0, 0.25 * power)
+        if current < 12 <= result:
+            return 16.0 + min(2.0, 0.25 * power)
+        return 7.0 + min(5.0, float(power))
+
+    @staticmethod
+    def _chip_reconfigure_score(action: ActionIntent) -> float:
+        choice = str(dict(action.parameters).get("choice", ""))
+        return 34.0 if choice == "attach" else 2.0
+
     def _main_action_score(self, observation: RuntimePolicyView, action: ActionIntent) -> float:
         params = dict(action.parameters)
         if action.kind == "main_cast_commander":
@@ -293,11 +307,13 @@ class DeterministicBasePolicy:
             ready_keys = int(params.get("ready_key_count", 0))
             return 38.0 if ready_keys > 0 else 4.0
         if action.kind == "main_activate_urza_spin":
-            # Use spare five-mana windows, but do not outrank a concrete commander,
-            # tutor, or already-known permission line simply because spin is random.
             return 25.0
         if action.kind == "main_use_urza_permission":
             return self._urza_permission_score(observation, action)
+        if action.kind == "main_activate_chip_reconfigure":
+            return self._chip_reconfigure_score(action)
+        if action.kind == "main_activate_uthros_station":
+            return self._uthros_station_score(action)
         if action.kind == "main_use_transmute_artifact":
             return 33.0
         if action.kind == "main_activate_repurposing_bay":

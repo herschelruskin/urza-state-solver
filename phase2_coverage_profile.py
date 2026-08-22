@@ -129,18 +129,18 @@ def _horizon_state_features(state: solver.State):
     if "Grinding Station" in battlefield_names:
         families.add("battlefield_station_activation_unmodeled")
     if state.urza:
-        # The {5} spin and same-turn land/artifact permissions are modeled.  The
-        # remaining gap is nonartifact permission casting/priority timing, so do
-        # not label mere Urza presence as an unimplemented spin anymore.
         families.add("battlefield_urza_spin_main_modeled_present")
-    if "The Reality Chip" in battlefield_names and not state.chip_attached:
-        families.add("battlefield_chip_reconfigure_unmodeled")
+    if "The Reality Chip" in battlefield_names:
+        # Reconfigure itself is modeled, including attach/move/unattach.  Playing
+        # and casting from the top while attached remains the next information-
+        # sensitive Chip slice, so this is still a deliberate partial signal.
+        families.add("battlefield_chip_reconfigure_modeled_top_play_partial")
     if key_live:
         families.add("battlefield_key_activation_modeled_present")
     if top_live and key_live:
         families.add("top_key_double_activation_modeled_present")
     if "Uthros Research Craft" in battlefield_names:
-        families.add("battlefield_uthros_activation_unmodeled")
+        families.add("battlefield_uthros_station_modeled_present")
     if "Sewer-veillance Cam" in battlefield_names:
         families.add("battlefield_cam_draw_activation_modeled_present")
         if (
@@ -148,12 +148,8 @@ def _horizon_state_features(state: solver.State):
             or "Transmute Artifact" in hand
             or "Repurposing Bay" in battlefield_names
         ):
-            # Cam's own 3U sacrifice/draw route stages LTB correctly. Sacrifice
-            # through tutor/Bay costs still needs the same typed LTB integration.
             families.add("cam_tutor_sacrifice_ltb_partial")
     if "Chrome Dome" in battlefield_names:
-        # Opponent-before-us end-step copying is modeled. Main/priority activation
-        # remains a separate Phase-2 action surface.
         families.add("battlefield_chrome_main_activation_partial")
 
     return tuple(sorted(families))

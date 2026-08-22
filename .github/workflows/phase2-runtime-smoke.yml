@@ -28,6 +28,7 @@ jobs:
             non_oracle_utility_artifact_runtime.py \
             non_oracle_top_draw_runtime.py \
             non_oracle_urza_runtime.py \
+            non_oracle_engine_activation_runtime.py \
             non_oracle_draw_engine_runtime.py \
             non_oracle_runtime_view.py \
             non_oracle_runtime_value_key.py \
@@ -49,6 +50,7 @@ jobs:
             utility_artifact_runtime_smoke.py \
             top_draw_runtime_smoke.py \
             urza_runtime_smoke.py \
+            engine_activation_runtime_smoke.py \
             draw_engine_runtime_smoke.py \
             base_policy_smoke.py \
             commander_adapter_smoke.py \
@@ -73,6 +75,8 @@ jobs:
         run: python top_draw_runtime_smoke.py
       - name: Urza spin and permission runtime
         run: python urza_runtime_smoke.py
+      - name: Chip and Uthros engine activations
+        run: python engine_activation_runtime_smoke.py
       - name: Draw and cantrip runtime
         run: python draw_engine_runtime_smoke.py
       - name: Deterministic base policy
