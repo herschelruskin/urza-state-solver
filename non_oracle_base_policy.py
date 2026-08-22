@@ -262,6 +262,23 @@ class DeterministicBasePolicy:
             return -2.0
         return 0.0
 
+    def _urza_permission_score(self, observation: RuntimePolicyView, action: ActionIntent) -> float:
+        params = dict(action.parameters)
+        card = str(params.get("card", ""))
+        use = str(params.get("use", ""))
+        if use == "play_land":
+            return 36.0 + self.visible_card_score(card, observation)
+        if use == "cast_artifact":
+            if card == "Everflowing Chalice":
+                kicks = int(params.get("kicks", 0))
+                if kicks == 1:
+                    return 32.0
+                if kicks == 0:
+                    return 25.0
+                return 28.0 - 0.5 * kicks
+            return 29.0 + self.visible_card_score(card, observation)
+        return -20.0
+
     def _main_action_score(self, observation: RuntimePolicyView, action: ActionIntent) -> float:
         params = dict(action.parameters)
         if action.kind == "main_cast_commander":
@@ -275,6 +292,12 @@ class DeterministicBasePolicy:
         if action.kind == "main_activate_top_draw":
             ready_keys = int(params.get("ready_key_count", 0))
             return 38.0 if ready_keys > 0 else 4.0
+        if action.kind == "main_activate_urza_spin":
+            # Use spare five-mana windows, but do not outrank a concrete commander,
+            # tutor, or already-known permission line simply because spin is random.
+            return 25.0
+        if action.kind == "main_use_urza_permission":
+            return self._urza_permission_score(observation, action)
         if action.kind == "main_use_transmute_artifact":
             return 33.0
         if action.kind == "main_activate_repurposing_bay":

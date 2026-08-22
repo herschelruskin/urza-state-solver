@@ -129,7 +129,10 @@ def _horizon_state_features(state: solver.State):
     if "Grinding Station" in battlefield_names:
         families.add("battlefield_station_activation_unmodeled")
     if state.urza:
-        families.add("battlefield_urza_spin_unmodeled")
+        # The {5} spin and same-turn land/artifact permissions are modeled.  The
+        # remaining gap is nonartifact permission casting/priority timing, so do
+        # not label mere Urza presence as an unimplemented spin anymore.
+        families.add("battlefield_urza_spin_main_modeled_present")
     if "The Reality Chip" in battlefield_names and not state.chip_attached:
         families.add("battlefield_chip_reconfigure_unmodeled")
     if key_live:
