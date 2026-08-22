@@ -4,7 +4,8 @@
 The first ETB patcher proved its preceding anchors in CI but used a fragile two-step
 indentation edit for ``repurposing_bay_actions``. This wrapper replaces only that
 patch-program section with a whole-function region replacement, then executes the
-rest of the original assertion-heavy patcher unchanged.
+rest of the original assertion-heavy patcher unchanged. It also updates legacy Bay
+smoke assertions whose trace shape intentionally changes when ETBs become explicit.
 """
 
 from pathlib import Path
@@ -89,6 +90,22 @@ replace_region(
 
 """
 
-patched_program = SOURCE[:start] + ROBUST_BAY_PATCH + SOURCE[end:]
+POST_PATCH = r"""
+# Explicit ETB resolution now contributes trace entries before the Bay summary.
+# Preserve all physical/accounting assertions while relaxing the obsolete
+# one-action == one-trace-entry assumption.
+replace_once(
+    "urza_solver.py",
+    '''    assert len(result.trace)==len(base.trace)+1\n    assert "pay {2}, tap" in result.trace[-1]\n''',
+    '''    assert len(result.trace)>=len(base.trace)+1\n    assert result.trace[-1].splitlines()[0].startswith("Repurposing Bay sacs ")\n    assert "pay {2}, tap" in result.trace[-1]\n''',
+)
+replace_once(
+    "urza_solver.py",
+    '''    assert well_result.trace[-2].startswith("Witching Well: scry 2")\n''',
+    '''    assert any(\n        line.startswith("Witching Well ETB: scry 2")\n        for entry in well_result.trace\n        for line in entry.splitlines()\n    )\n''',
+)
+"""
+
+patched_program = SOURCE[:start] + ROBUST_BAY_PATCH + SOURCE[end:] + POST_PATCH
 compiled = compile(patched_program, "apply_oracle_etb_stack_fix.py[v2]", "exec")
 exec(compiled, {"__name__": "__main__"})
