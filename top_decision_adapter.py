@@ -230,12 +230,16 @@ def resolve_top_reorder(
         library=tuple(order) + tuple(state_after_activation.library[n:]),
     )
     next_state = solver.add_trace(next_state, "Top reorder")
+    # If deeper top cards were already legally known before this look, Top changes
+    # only the viewed prefix. Preserve that remembered suffix in value identity.
+    remembered_deeper = tuple(information_after_reveal.known_top[n:])
+    resulting_known_top = tuple(order) + remembered_deeper
     return TransitionEnvelope(
         true_state=next_state,
         observations=ObservationBatch(
             (
                 LibraryPositionsObservation(
-                    known_top=tuple(order),
+                    known_top=resulting_known_top,
                     top_mode="replace",
                     bottom_mode="preserve",
                     source=TOP_SOURCE,
