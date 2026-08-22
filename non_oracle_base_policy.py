@@ -244,10 +244,23 @@ class DeterministicBasePolicy:
     def _draw_activation_score(action: ActionIntent) -> float:
         params = dict(action.parameters)
         kind = str(params.get("ability_kind", ""))
-        base = DRAW_ACTIVATION_PRIORITY.get(kind, 0.0)
-        # Expensive draw engines should not outrank an available tutor simply
-        # because they draw two; their base priorities already account for tempo.
-        return base
+        return DRAW_ACTIVATION_PRIORITY.get(kind, 0.0)
+
+    @staticmethod
+    def _priority_top_key_score(action: ActionIntent) -> float:
+        params = dict(action.parameters)
+        stack_count = int(params.get("top_draws_on_stack", 0))
+        if action.kind == "priority_activate_top_draw":
+            # Once A1 is waiting and Key has untapped Top, commit A2 to complete
+            # the known two-draw Top/Key sequence. Do not randomly fire Top into
+            # unrelated stacks under this baseline policy.
+            return 40.0 if stack_count > 0 else -5.0
+        if action.kind == "priority_activate_key":
+            target = str(params.get("target_name", ""))
+            if target == "Sensei's Divining Top" and stack_count > 0:
+                return 42.0
+            return -2.0
+        return 0.0
 
     def _main_action_score(self, observation: RuntimePolicyView, action: ActionIntent) -> float:
         params = dict(action.parameters)
@@ -259,6 +272,9 @@ class DeterministicBasePolicy:
             return -20.0 if bool(params.get("will_be_countered_by_own_bauble", False)) else 40.0
         if action.kind == "main_draw_activation":
             return self._draw_activation_score(action)
+        if action.kind == "main_activate_top_draw":
+            ready_keys = int(params.get("ready_key_count", 0))
+            return 38.0 if ready_keys > 0 else 4.0
         if action.kind == "main_use_transmute_artifact":
             return 33.0
         if action.kind == "main_activate_repurposing_bay":
@@ -334,6 +350,8 @@ class DeterministicBasePolicy:
             return self._transmute_sacrifice_score(observation, action)
         if kind == "transmute_pay_difference":
             return self._transmute_payment_score(action)
+        if kind in {"priority_activate_top_draw", "priority_activate_key"}:
+            return self._priority_top_key_score(action)
         if kind == "upkeep_pay_remora":
             return 50.0
         if kind == "upkeep_decline_remora":

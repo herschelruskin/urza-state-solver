@@ -123,6 +123,18 @@ from non_oracle_draw_engine_runtime import (
     draw_engine_main_intents,
     handles_draw_stack_top,
 )
+from non_oracle_top_draw_runtime import (
+    MAIN_ACTIVATE_TOP_DRAW,
+    PRIORITY_ACTIVATE_KEY,
+    PRIORITY_ACTIVATE_TOP_DRAW,
+    apply_top_priority_action,
+    apply_top_stack_action,
+    begin_top_draw_main_action,
+    handles_top_stack_top,
+    top_draw_main_intents,
+    top_priority_actions,
+    top_priority_request,
+)
 
 MAIN_PLAY_LAND = "main_play_land"
 MAIN_MANA_ACTION = "main_mana_action"
@@ -302,6 +314,7 @@ def main_phase_intents(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ..
     rows.extend(row.action for row in _mana_rows(runtime))
     rows.extend(_ordinary_artifact_cast_intents(runtime))
     rows.extend(utility_main_intents(runtime))
+    rows.extend(top_draw_main_intents(runtime))
     rows.extend(draw_engine_main_intents(runtime))
     rows.extend(proactive_nonartifact_intents(runtime))
     rows.extend(simple_tutor_runtime_intents(runtime))
@@ -351,7 +364,17 @@ def rules_decision_request(
             runtime, horizon=horizon, objective=objective,
             policy_id=policy_id, caverns_live=caverns_live,
         )
-    if runtime.pending is not None or runtime.stack.objects:
+    if runtime.pending is not None:
+        return runtime_decision_request(
+            runtime, horizon=horizon, objective=objective,
+            policy_id=policy_id, caverns_live=caverns_live,
+        )
+    if runtime.stack.objects:
+        if top_priority_actions(runtime):
+            return top_priority_request(
+                runtime, horizon=horizon, objective=objective,
+                policy_id=policy_id, caverns_live=caverns_live,
+            )
         return runtime_decision_request(
             runtime, horizon=horizon, objective=objective,
             policy_id=policy_id, caverns_live=caverns_live,
@@ -394,6 +417,8 @@ def _find_mechanical_successor(runtime: NonOracleRuntimeState, action: ActionInt
 
 def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> NonOracleRuntimeState:
     if runtime.pending is not None or runtime.stack.objects:
+        if action.kind in {PRIORITY_ACTIVATE_TOP_DRAW, PRIORITY_ACTIVATE_KEY}:
+            return apply_top_priority_action(runtime, action)
         if handles_utility_pending(runtime):
             resolved = apply_utility_pending(runtime, action)
         elif handles_simple_tutor_pending(runtime):
@@ -406,6 +431,8 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
             resolved = apply_remaining_pending(runtime, action)
         elif handles_chrome_pending(runtime):
             resolved = apply_chrome_pending(runtime, action)
+        elif handles_top_stack_top(runtime):
+            resolved = apply_top_stack_action(runtime, action)
         elif handles_draw_stack_top(runtime):
             resolved = apply_draw_stack_action(runtime, action)
         elif handles_utility_stack_top(runtime):
@@ -472,6 +499,8 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
 
     if action.kind in {MAIN_CAST_UTILITY_ARTIFACT, MAIN_ACTIVATE_TOP, MAIN_ACTIVATE_KEY}:
         return begin_utility_main_action(runtime, action)
+    if action.kind == MAIN_ACTIVATE_TOP_DRAW:
+        return begin_top_draw_main_action(runtime, action)
     if action.kind in {MAIN_CAST_PROBE, MAIN_DRAW_ACTIVATION}:
         return begin_draw_engine_main_action(runtime, action)
     if action.kind == MAIN_CAST_PROACTIVE_NONARTIFACT:

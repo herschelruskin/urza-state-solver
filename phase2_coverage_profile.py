@@ -120,10 +120,8 @@ def _horizon_state_features(state: solver.State):
     top_live = "Sensei's Divining Top" in battlefield_names
     key_live = bool(battlefield_names & {"Voltaic Key", "Manifold Key"})
     if top_live:
-        # The 1-mana look/reorder ability is modeled.  The tap-to-draw ability is
-        # a separate stack interaction and remains a Phase-2 action-surface gap.
         families.add("battlefield_top_reorder_modeled_present")
-        families.add("battlefield_top_draw_activation_partial")
+        families.add("battlefield_top_draw_activation_modeled_present")
     if "The One Ring" in battlefield_names:
         families.add("battlefield_one_ring_draw_modeled_present")
     if any(p.mode == "clue" for p in state.battlefield):
@@ -135,11 +133,9 @@ def _horizon_state_features(state: solver.State):
     if "The Reality Chip" in battlefield_names and not state.chip_attached:
         families.add("battlefield_chip_reconfigure_unmodeled")
     if key_live:
-        # Main-phase Key untaps are modeled. Priority-time Key use, including the
-        # Top double-activation line, is not yet connected.
-        families.add("battlefield_key_main_activation_modeled_present")
+        families.add("battlefield_key_activation_modeled_present")
     if top_live and key_live:
-        families.add("top_key_double_activation_partial")
+        families.add("top_key_double_activation_modeled_present")
     if "Uthros Research Craft" in battlefield_names:
         families.add("battlefield_uthros_activation_unmodeled")
     if "Sewer-veillance Cam" in battlefield_names:
@@ -149,7 +145,7 @@ def _horizon_state_features(state: solver.State):
             or "Transmute Artifact" in hand
             or "Repurposing Bay" in battlefield_names
         ):
-            # Cam's own 3U sacrifice/draw route now stages LTB correctly. Sacrifice
+            # Cam's own 3U sacrifice/draw route stages LTB correctly. Sacrifice
             # through tutor/Bay costs still needs the same typed LTB integration.
             families.add("cam_tutor_sacrifice_ltb_partial")
     if "Chrome Dome" in battlefield_names:
