@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Seed-independent strategic value-state projection for non-Oracle DP/MC.
 
-This module is deliberately decision-neutral. It does not alter Oracle State,
-legal actions, pruning, beam search, shuffles, or winners. It provides a separate
+This module is deliberately decision-neutral.  It does not alter Oracle State,
+legal actions, pruning, beam search, shuffles, or winners.  It provides a separate
 identity for expected-value memoization and instrumentation.
 
 The central rule is that a non-Oracle value key represents what is strategically
-relevant under legal information. Exact hidden library order and the concrete RNG
-root therefore do not belong in this identity. Hidden-library order is replaced
+relevant under legal information.  Exact hidden library order and the concrete RNG
+root therefore do not belong in this identity.  Hidden-library order is replaced
 by a belief key consisting of the remaining multiset plus currently legal hidden-
 zone knowledge.
 """
@@ -73,16 +73,16 @@ class LibraryBeliefKey:
     """Information-safe identity for the current hidden library.
 
     ``remaining_counts`` intentionally forgets exact hidden order while retaining
-    the exact remaining multiset. In this fixed-deck simulator that multiset is
+    the exact remaining multiset.  In this fixed-deck simulator that multiset is
     inferable from the known decklist plus observed zones/draws, so it does not
     grant Oracle knowledge.
 
     ``known_top`` and ``known_bottom`` retain legally acquired order/constraints.
     ``known_library_counts`` retains any additional information-state count facts.
 
-    ``InformationState.shuffle_epoch`` is intentionally *not* keyed. If two
+    ``InformationState.shuffle_epoch`` is intentionally *not* keyed.  If two
     states have the same remaining multiset and the same current knowledge after
-    different numbers of shuffles, their expected future value is the same. The
+    different numbers of shuffles, their expected future value is the same.  The
     epoch remains useful for replay/invalidation bookkeeping, not V(s) identity.
     """
 
@@ -104,13 +104,7 @@ class LibraryBeliefKey:
 
 @dataclass(frozen=True)
 class StrategicValueState:
-    """Base state for V_win_by_horizon under a legal-information policy.
-
-    This follows the completed State/Perm audit. It excludes concrete RNG and
-    replay history, excludes legacy redundant ``construct``/``top_access`` flags,
-    and leaves path-dependent analytics to ``objective_memory`` when an objective
-    actually needs them.
-    """
+    """Base state for V_win_by_horizon under a legal-information policy."""
 
     turn: int
     library_belief: LibraryBeliefKey
@@ -149,7 +143,7 @@ def project_strategic_value_state(
 ) -> StrategicValueState:
     """Project a concrete solver state into seed-independent value identity.
 
-    ``information`` is required on purpose. Production non-Oracle callers must
+    ``information`` is required on purpose.  Production non-Oracle callers must
     never silently assume that no hidden-zone knowledge exists.
     """
     return StrategicValueState(
@@ -201,20 +195,34 @@ def canonical_strategic_state_key(
 class StrategicKeyProfiler:
     """Decision-neutral measurement of concrete -> strategic state collapse.
 
-    ``depth`` is optional so generic callers can profile by turn only. Search
-    diagnostics should supply the zero-based action depth at which a candidate
-    state is observed; summaries then expose both by-turn and turn-by-depth views.
+    In addition to the legacy concrete sampled-world count, this profiler tracks
+    ``concrete_information_unique``: the pair of concrete Markov state and legal
+    InformationState.  Once knowledge propagation exists, that is the correct
+    pre-value identity to compare against a strategic value key.  Two identical
+    concrete worlds reached with different remembered information are not safely
+    interchangeable for a legal-information policy.
     """
 
     def __init__(self) -> None:
         self.observations = 0
         self._concrete = set()
+        self._concrete_information = set()
         self._strategic = set()
         self._by_turn: MutableMapping[int, Dict[str, Any]] = defaultdict(
-            lambda: {"observations": 0, "concrete": set(), "strategic": set()}
+            lambda: {
+                "observations": 0,
+                "concrete": set(),
+                "concrete_information": set(),
+                "strategic": set(),
+            }
         )
         self._by_turn_depth: MutableMapping[Tuple[int, int], Dict[str, Any]] = defaultdict(
-            lambda: {"observations": 0, "concrete": set(), "strategic": set()}
+            lambda: {
+                "observations": 0,
+                "concrete": set(),
+                "concrete_information": set(),
+                "strategic": set(),
+            }
         )
 
     def observe(
@@ -226,6 +234,7 @@ class StrategicKeyProfiler:
         depth: Optional[int] = None,
     ) -> None:
         concrete = canonical_markov_state_key(state)
+        concrete_information = (concrete, information.key())
         strategic = canonical_strategic_state_key(
             state,
             information,
@@ -234,26 +243,40 @@ class StrategicKeyProfiler:
         turn = int(getattr(state, "turn", 0))
         self.observations += 1
         self._concrete.add(concrete)
+        self._concrete_information.add(concrete_information)
         self._strategic.add(strategic)
         bucket = self._by_turn[turn]
         bucket["observations"] += 1
         bucket["concrete"].add(concrete)
+        bucket["concrete_information"].add(concrete_information)
         bucket["strategic"].add(strategic)
         if depth is not None:
             td = self._by_turn_depth[(turn, int(depth))]
             td["observations"] += 1
             td["concrete"].add(concrete)
+            td["concrete_information"].add(concrete_information)
             td["strategic"].add(strategic)
 
     @staticmethod
-    def _metrics(observations: int, concrete: int, strategic: int) -> Dict[str, float | int]:
-        collapse = 0.0 if concrete == 0 else 1.0 - (strategic / concrete)
+    def _metrics(
+        observations: int,
+        concrete: int,
+        concrete_information: int,
+        strategic: int,
+    ) -> Dict[str, float | int]:
+        legacy_collapse = 0.0 if concrete == 0 else 1.0 - (strategic / concrete)
+        information_collapse = (
+            0.0 if concrete_information == 0
+            else 1.0 - (strategic / concrete_information)
+        )
         estimated_hit = 0.0 if observations == 0 else 1.0 - (strategic / observations)
         return {
             "observations": observations,
             "concrete_unique": concrete,
+            "concrete_information_unique": concrete_information,
             "strategic_unique": strategic,
-            "concrete_to_strategic_collapse_fraction": collapse,
+            "concrete_to_strategic_collapse_fraction": legacy_collapse,
+            "concrete_information_to_strategic_collapse_fraction": information_collapse,
             "estimated_strategic_cache_hit_fraction": estimated_hit,
         }
 
@@ -264,6 +287,7 @@ class StrategicKeyProfiler:
             by_turn[turn] = self._metrics(
                 int(bucket["observations"]),
                 len(bucket["concrete"]),
+                len(bucket["concrete_information"]),
                 len(bucket["strategic"]),
             )
         by_turn_depth: Dict[str, Dict[str, float | int]] = {}
@@ -272,10 +296,16 @@ class StrategicKeyProfiler:
             by_turn_depth[f"T{turn}D{depth}"] = self._metrics(
                 int(bucket["observations"]),
                 len(bucket["concrete"]),
+                len(bucket["concrete_information"]),
                 len(bucket["strategic"]),
             )
         return {
-            **self._metrics(self.observations, len(self._concrete), len(self._strategic)),
+            **self._metrics(
+                self.observations,
+                len(self._concrete),
+                len(self._concrete_information),
+                len(self._strategic),
+            ),
             "by_turn": by_turn,
             "by_turn_depth": by_turn_depth,
         }
