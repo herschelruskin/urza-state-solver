@@ -6,9 +6,10 @@ Oracle action generator contains already-resolved hidden-information branches an
 search pruning whose candidate set can depend on the concrete hidden future.
 
 The adapter admits only audited safe families: land plays, public mana abilities,
-Urza artifact taps, ordinary artifact casts through the typed stack, and end-turn
-commitment followed by typed chance observations. Hidden-information families are
-added through their Phase-1 staged adapters, never by importing Oracle successors.
+Urza artifact taps, ordinary artifact casts through the typed stack, command-zone
+Urza casting through the typed commander stack, and end-turn commitment followed
+by typed chance observations. Hidden-information families are added through their
+Phase-1 staged adapters, never by importing Oracle successors.
 """
 
 from __future__ import annotations
@@ -18,6 +19,13 @@ from typing import Dict, Iterable, Tuple
 
 import urza_solver as solver
 from decision_observation import ActionIntent, DECISION_COMMIT, DecisionRequest, PolicyDecisionContext
+from non_oracle_commander_adapter import (
+    MAIN_CAST_COMMANDER,
+    apply_commander_stack_action,
+    begin_commander_cast,
+    commander_cast_intents,
+    handles_commander_stack_top,
+)
 from non_oracle_runtime import (
     NonOracleRuntimeState,
     apply_runtime_action,
@@ -180,6 +188,7 @@ def main_phase_intents(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ..
     rows = [row.action for row in _land_rows(runtime)]
     rows.extend(row.action for row in _mana_rows(runtime))
     rows.extend(_ordinary_artifact_cast_intents(runtime))
+    rows.extend(commander_cast_intents(runtime))
     rows.extend(_end_turn_intent(runtime))
     return tuple(sorted(rows, key=lambda action: action.action_id))
 
@@ -225,7 +234,12 @@ def _find_mechanical_successor(runtime: NonOracleRuntimeState, action: ActionInt
 
 def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> NonOracleRuntimeState:
     if runtime.pending is not None or runtime.stack.objects:
-        return _normalize_empty_stack_main_window(apply_runtime_action(runtime, action))
+        if handles_commander_stack_top(runtime):
+            resolved = apply_commander_stack_action(runtime, action)
+        else:
+            resolved = apply_runtime_action(runtime, action)
+        return _normalize_empty_stack_main_window(resolved)
+
     runtime = _normalize_empty_stack_main_window(runtime)
     legal = {candidate.canonical_key(): candidate for candidate in main_phase_intents(runtime)}
     if action.canonical_key() not in legal:
@@ -250,6 +264,9 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
             replace(runtime, true_state=paid), card,
             mana_spent=int(params["mana_spent"]), from_zone="hand",
         )
+
+    if action.kind == MAIN_CAST_COMMANDER:
+        return begin_commander_cast(runtime, action)
 
     if action.kind == MAIN_END_TURN:
         return advance_after_end_turn(runtime)
