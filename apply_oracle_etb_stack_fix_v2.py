@@ -10,6 +10,11 @@ smoke assertions whose trace shape intentionally changes when ETBs become explic
 
 from pathlib import Path
 
+TARGET = Path("urza_solver.py")
+if "def oracle_scry_variants(" in TARGET.read_text(encoding="utf-8"):
+    print("ORACLE ARTIFACT ETB STACK SOURCE PATCH: ALREADY APPLIED")
+    raise SystemExit(0)
+
 SOURCE = Path("apply_oracle_etb_stack_fix.py").read_text(encoding="utf-8")
 START_MARKER = "# Repurposing Bay target entry.\n"
 END_MARKER = "# Main-phase Offer macro: two Treasure tokens enter simultaneously.\n"
