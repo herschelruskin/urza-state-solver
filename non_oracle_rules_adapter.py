@@ -7,9 +7,9 @@ search pruning whose candidate set can depend on the concrete hidden future.
 
 The adapter admits only audited safe families: land plays, public mana abilities,
 Urza artifact taps, ordinary artifact casts, command-zone Urza, proactive
-nonartifact casts, staged simple tutors, staged artifact tutors, and end-turn
-commitment followed by typed chance observations. Hidden-information families are
-routed through staged adapters, never by importing Oracle successors.
+nonartifact casts, staged tutors/searches, and end-turn commitment followed by
+typed chance observations. Hidden-information families are routed through staged
+adapters, never by importing Oracle successors.
 """
 
 from __future__ import annotations
@@ -62,6 +62,18 @@ from non_oracle_transmute_runtime import (
     handles_transmute_stack_top,
     transmute_pending_request,
     transmute_runtime_intents,
+)
+from non_oracle_remaining_search_runtime import (
+    MAIN_ACTIVATE_BAY,
+    MAIN_ACTIVATE_TEZZ_MINUS3,
+    MAIN_CAST_SCOUR,
+    apply_remaining_main_action,
+    apply_remaining_pending,
+    apply_remaining_stack_action,
+    handles_remaining_pending,
+    handles_remaining_stack_top,
+    remaining_pending_request,
+    remaining_search_main_intents,
 )
 from non_oracle_runtime import (
     NonOracleRuntimeState,
@@ -228,6 +240,7 @@ def main_phase_intents(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ..
     rows.extend(simple_tutor_runtime_intents(runtime))
     rows.extend(x_artifact_runtime_intents(runtime))
     rows.extend(transmute_runtime_intents(runtime))
+    rows.extend(remaining_search_main_intents(runtime))
     rows.extend(commander_cast_intents(runtime))
     rows.extend(_end_turn_intent(runtime))
     return tuple(sorted(rows, key=lambda action: action.action_id))
@@ -253,6 +266,11 @@ def rules_decision_request(
         )
     if handles_transmute_pending(runtime):
         return transmute_pending_request(
+            runtime, horizon=horizon, objective=objective,
+            policy_id=policy_id, caverns_live=caverns_live,
+        )
+    if handles_remaining_pending(runtime):
+        return remaining_pending_request(
             runtime, horizon=horizon, objective=objective,
             policy_id=policy_id, caverns_live=caverns_live,
         )
@@ -295,6 +313,8 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
             resolved = apply_x_artifact_pending(runtime, action)
         elif handles_transmute_pending(runtime):
             resolved = apply_transmute_pending(runtime, action)
+        elif handles_remaining_pending(runtime):
+            resolved = apply_remaining_pending(runtime, action)
         elif handles_commander_stack_top(runtime):
             resolved = apply_commander_stack_action(runtime, action)
         elif handles_proactive_stack_top(runtime):
@@ -305,6 +325,8 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
             resolved = apply_x_artifact_stack_action(runtime, action)
         elif handles_transmute_stack_top(runtime):
             resolved = apply_transmute_stack_action(runtime, action)
+        elif handles_remaining_stack_top(runtime):
+            resolved = apply_remaining_stack_action(runtime, action)
         else:
             resolved = apply_runtime_action(runtime, action)
         return _normalize_empty_stack_main_window(resolved)
@@ -342,6 +364,8 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
         return begin_x_artifact_tutor(runtime, action)
     if action.kind == MAIN_USE_TRANSMUTE_ARTIFACT:
         return begin_transmute(runtime, action)
+    if action.kind in {MAIN_ACTIVATE_BAY, MAIN_CAST_SCOUR, MAIN_ACTIVATE_TEZZ_MINUS3}:
+        return apply_remaining_main_action(runtime, action)
     if action.kind == MAIN_CAST_COMMANDER:
         return begin_commander_cast(runtime, action)
     if action.kind == MAIN_END_TURN:
