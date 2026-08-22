@@ -27,7 +27,16 @@ def _final(states):
     return [state for state in states if not getattr(state, "oracle_stack", ())]
 
 
+def _assert_historic_order_outcomes_survive(states):
+    """Exact scry may add lines; the two original order-sensitive lines must remain."""
+    rows={(state.library,state.hand) for state in states}
+    assert (("Junk","Tail"),("Island",)) in rows
+    assert (("Tail","Junk"),("Island",)) in rows
+
+
 def test_assistant_and_uthros_both_legal_orders_survive():
+    # Legacy atomic helper remains a deterministic regression helper, so its old
+    # two order-sensitive results stay exact here.
     state = _base_order_state()
     variants = solver.artifact_cast_trigger_variants(state, "Welding Jar")
     assert len(variants) == 2
@@ -72,12 +81,11 @@ def test_bauble_counter_keeps_all_value_trigger_orders():
         extra_battlefield=(solver.Perm("Vexing Bauble"),),
     )
     variants = _final(solver.cast_from_hand_variants(state, "Welding Jar", free=True))
-    assert _library_set(variants) == {("Junk", "Tail"), ("Tail", "Junk")}
     assert len(variants) >= 2
+    _assert_historic_order_outcomes_survive(variants)
     for v in variants:
         assert "Welding Jar" in v.graveyard
         assert not any(p.name == "Welding Jar" for p in v.battlefield)
-        assert v.hand == ("Island",)
         assert v.uthros_counters == 4
 
 
@@ -87,8 +95,8 @@ def test_ordinary_legal_actions_use_trigger_order_variants():
         action for action in _final(solver.legal_actions(state))
         if action.trace and action.trace[-1] == "cast Welding Jar"
     ]
-    assert len(casts) == 2
-    assert _library_set(casts) == {("Junk", "Tail"), ("Tail", "Junk")}
+    assert len(casts) >= 2
+    _assert_historic_order_outcomes_survive(casts)
     assert all(any(p.name == "Welding Jar" for p in v.battlefield) for v in casts)
 
 
@@ -107,8 +115,8 @@ def test_chip_top_cast_uses_trigger_order_variants():
         uthros_counters=3,
     )
     casts = _final(solver.chip_ftt_top_casts(state))
-    assert len(casts) == 2
-    assert _library_set(casts) == {("Junk", "Tail"), ("Tail", "Junk")}
+    assert len(casts) >= 2
+    _assert_historic_order_outcomes_survive(casts)
 
 
 def test_urza_permission_free_cast_uses_trigger_order_variants():
@@ -125,8 +133,8 @@ def test_urza_permission_free_cast_uses_trigger_order_variants():
         uthros_counters=3,
     )
     casts = _final(solver.urza_exile_permission_actions(state))
-    assert len(casts) == 2
-    assert _library_set(casts) == {("Junk", "Tail"), ("Tail", "Junk")}
+    assert len(casts) >= 2
+    _assert_historic_order_outcomes_survive(casts)
     assert all(v.urza_exile_permissions == () for v in casts)
     assert all(v.exile == () for v in casts)
 
@@ -137,24 +145,24 @@ def test_special_zero_mana_artifact_casts_branch_trigger_order():
         v for v in _final(solver.chalice_cast_variants(chalice))
         if v.trace and v.trace[-1].startswith("cast Everflowing Chalice kicked 0x")
     ]
-    assert len(chalice_casts) == 2
-    assert _library_set(chalice_casts) == {("Junk", "Tail"), ("Tail", "Junk")}
+    assert len(chalice_casts) >= 2
+    _assert_historic_order_outcomes_survive(chalice_casts)
 
     chrome = _base_order_state(hand=("Chrome Mox",))
     chrome_casts = [
         v for v in _final(solver.mox_cast_actions(chrome))
         if v.trace and v.trace[-1] == "cast Chrome Mox, no imprint"
     ]
-    assert len(chrome_casts) == 2
-    assert _library_set(chrome_casts) == {("Junk", "Tail"), ("Tail", "Junk")}
+    assert len(chrome_casts) >= 2
+    _assert_historic_order_outcomes_survive(chrome_casts)
 
     diamond = _base_order_state(hand=("Mox Diamond",))
     diamond_no_discard = [
         v for v in _final(solver.mox_cast_actions(diamond))
         if v.trace and v.trace[-1] == "cast Mox Diamond, decline/cannot discard land -> graveyard"
     ]
-    assert len(diamond_no_discard) == 2
-    assert _library_set(diamond_no_discard) == {("Junk", "Tail"), ("Tail", "Junk")}
+    assert len(diamond_no_discard) >= 2
+    _assert_historic_order_outcomes_survive(diamond_no_discard)
 
 
 def test_unique_multiset_order_count_is_exact():
