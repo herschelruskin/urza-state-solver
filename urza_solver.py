@@ -813,6 +813,94 @@ def artifact_cast_triggers(s:State, card:str)->State:
         s=add_trace(s,f"Gadgeteer trigger {k+1}/{gadgets} -> Clue")
     return s
 
+def _artifact_cast_trigger_tokens(s:State,card:str)->Tuple[str,...]:
+    """Strategic simultaneous triggers fired by one artifact cast.
+
+    Vexing Bauble is intentionally not included in the permutation. Its counter
+    trigger does not erase already-triggered abilities; all of those abilities
+    still resolve whether Bauble is above or below them. The existing caller-side
+    Bauble resolution is therefore the same final modeled state without a fake
+    factorial multiplier.
+    """
+    tokens=[]
+    if card not in CREATURES and has(s,"Valley Floodcaller"):
+        tokens.append("vfc")
+    tokens.extend(["assistant"]*count_bf(s,"Artificer's Assistant"))
+    if has(s,"Uthros Research Craft") and s.uthros_counters>=3 and s.library:
+        tokens.append("uthros")
+    tokens.extend(["gadgeteer"]*count_bf(s,"Forensic Gadgeteer"))
+    return tuple(tokens)
+
+def _unique_multiset_orders(tokens:Tuple[str,...])->Tuple[Tuple[str,...],...]:
+    """Unique permutations without factorial duplicate copies."""
+    counts=Counter(tokens)
+    kinds=tuple(sorted(counts))
+    n=len(tokens)
+    rows=[]
+
+    def visit(prefix):
+        if len(prefix)==n:
+            rows.append(tuple(prefix)); return
+        for kind in kinds:
+            if counts[kind]<=0:
+                continue
+            counts[kind]-=1; prefix.append(kind)
+            visit(prefix)
+            prefix.pop(); counts[kind]+=1
+
+    visit([])
+    return tuple(rows)
+
+def _resolve_artifact_cast_trigger_order(s:State,card:str,order:Tuple[str,...])->State:
+    totals=Counter(order); resolved=Counter()
+    for kind in order:
+        resolved[kind]+=1
+        if kind=="vfc":
+            s=vfc_noncreature_cast_trigger(s,card)
+        elif kind=="assistant":
+            s=apply_scry(
+                s,1,
+                f"Artificer's Assistant trigger {resolved[kind]}/{totals[kind]}"
+            )
+        elif kind=="uthros":
+            if s.library:
+                s,drawn=draw_from_library(s,1)
+                s=replace(s,uthros_counters=s.uthros_counters+1)
+                s=add_trace(
+                    s,
+                    f"Uthros trigger draws: {drawn[0]}; "
+                    "+1 station counter before artifact resolves"
+                )
+        elif kind=="gadgeteer":
+            s=add_perm(s,"Clue",mode="clue")
+            # Any ETB triggers created by this resolving investigate trigger are
+            # stacked above the older unresolved cast triggers, so resolving the
+            # ETB bundle here before continuing the order is the correct nesting.
+            s=artifact_etb_triggers(s,"Clue")
+            s=add_trace(
+                s,
+                f"Gadgeteer trigger {resolved[kind]}/{totals[kind]} -> Clue"
+            )
+        else:
+            raise AssertionError(f"unknown artifact cast trigger kind {kind!r}")
+    return s
+
+def artifact_cast_trigger_variants(s:State,card:str)->List[State]:
+    """Return every distinct modeled legal resolution order for our cast triggers."""
+    tokens=_artifact_cast_trigger_tokens(s,card)
+    if not tokens:
+        return [s]
+    unique={}
+    for order in _unique_multiset_orders(tokens):
+        ns=_resolve_artifact_cast_trigger_order(s,card,order)
+        # Different orders can be strategically identical (for example VFC and
+        # Gadgeteer when neither changes library decisions). Collapse only after
+        # the complete order has resolved, using trace-free Markov identity.
+        key=canonical_markov_state_key(ns)
+        if key not in unique:
+            unique[key]=ns
+    return list(unique.values())
+
 def remove_one(tup:Tuple[str,...], card:str)->Tuple[str,...]:
     x=list(tup); x.remove(card); return tuple(x)
 
@@ -854,19 +942,19 @@ def chalice_cast_variants(s:State, outside:bool=False, free:bool=False)->List[St
         ps=pay(s,generic,0)
         if ps is None:
             continue
-        ns=replace(ps,hand=remove_one(ps.hand,"Everflowing Chalice"),
-                   spell_cast_this_turn=True)
-        ns=artifact_cast_triggers(ns,"Everflowing Chalice")
-        countered=vexing_bauble_countered_cast(
-            ns,"Everflowing Chalice",generic,
-            f"cast Everflowing Chalice kicked {k}x; no mana spent -> Vexing Bauble counters"
-        )
-        if countered is not None:
-            out.append(countered)
-            continue
-        ns=add_perm(ns,"Everflowing Chalice",counters=k)
-        ns=artifact_etb_triggers(ns,"Everflowing Chalice")
-        out.append(add_trace(check_win(ns),f"cast Everflowing Chalice kicked {k}x -> {k} charge counter(s)"))
+        cast_state=replace(ps,hand=remove_one(ps.hand,"Everflowing Chalice"),
+                           spell_cast_this_turn=True)
+        for ns in artifact_cast_trigger_variants(cast_state,"Everflowing Chalice"):
+            countered=vexing_bauble_countered_cast(
+                ns,"Everflowing Chalice",generic,
+                f"cast Everflowing Chalice kicked {k}x; no mana spent -> Vexing Bauble counters"
+            )
+            if countered is not None:
+                out.append(countered)
+                continue
+            ns=add_perm(ns,"Everflowing Chalice",counters=k)
+            ns=artifact_etb_triggers(ns,"Everflowing Chalice")
+            out.append(add_trace(check_win(ns),f"cast Everflowing Chalice kicked {k}x -> {k} charge counter(s)"))
     return out
 
 
@@ -969,6 +1057,37 @@ def cast_from_hand(s:State,card:str,outside:bool=False,free:bool=False)->Optiona
         s=replace(s,graveyard=s.graveyard+(card,))
         return add_trace(s,"cast Sink into Stupor (opponent target assumed)")
     return None
+
+def cast_from_hand_variants(s:State,card:str,outside:bool=False,free:bool=False)->List[State]:
+    """Oracle cast branches, expanding controlled trigger order for artifacts."""
+    if card not in ARTIFACTS:
+        one=cast_from_hand(s,card,outside=outside,free=free)
+        return [one] if one is not None else []
+    if card not in s.hand or card in ALL_LANDS:
+        return []
+    if card in {"Chrome Mox","Mox Diamond","Everflowing Chalice"}:
+        return []
+
+    g,b=spell_cost(s,card,outside=outside)
+    mana_spent=0
+    if free:
+        ps=s
+    else:
+        ps=pay(s,g,b); mana_spent=g+b
+    if ps is None:
+        return []
+    cast_state=replace(ps,hand=remove_one(ps.hand,card),spell_cast_this_turn=True)
+    out=[]
+    for ns in artifact_cast_trigger_variants(cast_state,card):
+        countered=vexing_bauble_countered_cast(ns,card,mana_spent)
+        if countered is not None:
+            out.append(countered); continue
+        ns=add_perm(ns,card,sick=card in CREATURES)
+        if card=="Uthros Research Craft": ns=replace(ns,uthros_counters=0)
+        if card=="The One Ring": ns=replace(ns,ring_counters=0)
+        ns=artifact_etb_triggers(ns,card)
+        out.append(check_win(add_trace(ns,f"cast {card}")))
+    return out
 
 def play_land(s:State,card:str)->Optional[State]:
     if s.land_played or card not in s.hand or card not in ALL_LANDS: return None
@@ -1075,8 +1194,7 @@ def chip_ftt_top_casts(s:State)->List[State]:
             for cs in chalice_cast_variants(ns,outside=True,free=False):
                 out.append(add_trace(cs,f"{src}: cast Chalice from top"))
         else:
-            cs=cast_from_hand(ns,card,outside=True)
-            if cs:
+            for cs in cast_from_hand_variants(ns,card,outside=True):
                 out.append(add_trace(cs,f"{src}: cast {card} from top"))
     return out
 
@@ -1362,38 +1480,47 @@ def draw_sac_actions(s:State)->List[State]:
 def mox_cast_actions(s:State)->List[State]:
     out=[]
     if "Chrome Mox" in s.hand:
-        # Artifact cast triggers happen even if we choose no imprint.
-        base=replace(s,hand=remove_one(s.hand,"Chrome Mox"),spell_cast_this_turn=True)
-        base=artifact_cast_triggers(base,"Chrome Mox")
-        countered=vexing_bauble_countered_cast(
-            base,"Chrome Mox",0,"Vexing Bauble counters Chrome Mox after cast triggers"
-        )
-        if countered is not None:
-            out.append(countered); base=None
-        if base is not None:
-            base=add_perm(base,"Chrome Mox"); base=artifact_etb_triggers(base,"Chrome Mox")
-            out.append(add_trace(base,"cast Chrome Mox, no imprint"))
-        if base is not None:
-          for c in sorted(set(s.hand)-{"Chrome Mox"}):
-            if c in BLUE_NONARTIFACT_FRONT:
-                ns=replace(base,hand=remove_one(base.hand,c),exile=base.exile+(c,))
-                # mark the newly entered Chrome Mox as imprinted
+        cast_base=replace(s,hand=remove_one(s.hand,"Chrome Mox"),spell_cast_this_turn=True)
+        for triggered in artifact_cast_trigger_variants(cast_base,"Chrome Mox"):
+            countered=vexing_bauble_countered_cast(
+                triggered,"Chrome Mox",0,
+                "Vexing Bauble counters Chrome Mox after cast triggers"
+            )
+            if countered is not None:
+                out.append(countered); continue
+            entered=add_perm(triggered,"Chrome Mox")
+            entered=artifact_etb_triggers(entered,"Chrome Mox")
+            out.append(add_trace(entered,"cast Chrome Mox, no imprint"))
+            for c in sorted(set(s.hand)-{"Chrome Mox"}):
+                if c not in BLUE_NONARTIFACT_FRONT:
+                    continue
+                ns=replace(entered,hand=remove_one(entered.hand,c),exile=entered.exile+(c,))
                 for j in range(len(ns.battlefield)-1,-1,-1):
-                    if ns.battlefield[j].name=="Chrome Mox": ns=update_perm(ns,j,mode="imprinted"); break
+                    if ns.battlefield[j].name=="Chrome Mox":
+                        ns=update_perm(ns,j,mode="imprinted"); break
                 out.append(add_trace(ns,f"Chrome Mox imprints {c}"))
+
     if "Mox Diamond" in s.hand:
-        # No land discard: spell was still cast but Diamond never enters.
-        no=replace(s,hand=remove_one(s.hand,"Mox Diamond"),graveyard=s.graveyard+("Mox Diamond",),spell_cast_this_turn=True)
-        no=artifact_cast_triggers(no,"Mox Diamond"); out.append(add_trace(no,"cast Mox Diamond, decline/cannot discard land -> graveyard"))
+        no_base=replace(
+            s,hand=remove_one(s.hand,"Mox Diamond"),
+            graveyard=s.graveyard+("Mox Diamond",),spell_cast_this_turn=True
+        )
+        for no in artifact_cast_trigger_variants(no_base,"Mox Diamond"):
+            out.append(add_trace(no,"cast Mox Diamond, decline/cannot discard land -> graveyard"))
+
         if not has(s,"Vexing Bauble"):
-          for c in sorted(set(s.hand)-{"Mox Diamond"}):
-            if c in TRUE_LAND_CARDS:
-                ns=replace(s,hand=remove_one(remove_one(s.hand,"Mox Diamond"),c),graveyard=s.graveyard+(c,),spell_cast_this_turn=True)
-                ns=artifact_cast_triggers(ns,"Mox Diamond")
-                if has(ns,"Vexing Bauble"):
-                    ns=replace(ns,graveyard=ns.graveyard+("Mox Diamond",)); out.append(add_trace(ns,f"Mox Diamond discards {c}; Vexing Bauble counters spell"))
-                else:
-                    ns=add_perm(ns,"Mox Diamond",mode="diamond"); ns=artifact_etb_triggers(ns,"Mox Diamond"); out.append(add_trace(ns,f"Mox Diamond discards true land card {c}"))
+            for c in sorted(set(s.hand)-{"Mox Diamond"}):
+                if c not in TRUE_LAND_CARDS:
+                    continue
+                cast_base=replace(
+                    s,
+                    hand=remove_one(remove_one(s.hand,"Mox Diamond"),c),
+                    graveyard=s.graveyard+(c,),spell_cast_this_turn=True
+                )
+                for ns in artifact_cast_trigger_variants(cast_base,"Mox Diamond"):
+                    ns=add_perm(ns,"Mox Diamond",mode="diamond")
+                    ns=artifact_etb_triggers(ns,"Mox Diamond")
+                    out.append(add_trace(ns,f"Mox Diamond discards true land card {c}"))
     return out
 
 def fetch_actions(s:State)->List[State]:
@@ -1722,13 +1849,23 @@ def offer_actions(s:State)->List[State]:
         first=pay(s,g,b)
         if first is None: continue
         first=replace(first,hand=remove_one(first.hand,card),spell_cast_this_turn=True)
-        if card in ARTIFACTS: first=artifact_cast_triggers(first,card)
-        elif card not in CREATURES: first=vfc_noncreature_cast_trigger(first,card)
-        if not can_pay(first,0,1): continue
-        ns=pay(first,0,1); ns=replace(ns,hand=remove_one(ns.hand,offer),graveyard=ns.graveyard+(card,offer)); ns=vfc_noncreature_cast_trigger(ns,offer)
-        ns=add_perm(ns,"Treasure",mode="treasure"); ns=artifact_etb_triggers(ns,"Treasure")
-        ns=add_perm(ns,"Treasure",mode="treasure"); ns=artifact_etb_triggers(ns,"Treasure")
-        out.append(add_trace(ns,f"Offer counters our {card} -> two Treasures"))
+        first_states=(
+            artifact_cast_trigger_variants(first,card)
+            if card in ARTIFACTS
+            else [vfc_noncreature_cast_trigger(first,card)]
+        )
+        for first_state in first_states:
+            if not can_pay(first_state,0,1):
+                continue
+            ns=pay(first_state,0,1)
+            ns=replace(
+                ns,hand=remove_one(ns.hand,offer),
+                graveyard=ns.graveyard+(card,offer)
+            )
+            ns=vfc_noncreature_cast_trigger(ns,offer)
+            ns=add_perm(ns,"Treasure",mode="treasure"); ns=artifact_etb_triggers(ns,"Treasure")
+            ns=add_perm(ns,"Treasure",mode="treasure"); ns=artifact_etb_triggers(ns,"Treasure")
+            out.append(add_trace(ns,f"Offer counters our {card} -> two Treasures"))
     return out
 
 
@@ -2212,8 +2349,7 @@ def urza_exile_permission_actions(s:State)->List[State]:
                         "Urza permission -> free Chalice base cost; optional multikicker paid"
                     ))
             else:
-                cs=cast_from_hand(base,card,outside=True,free=True)
-                if cs:
+                for cs in cast_from_hand_variants(base,card,outside=True,free=True):
                     out.append(add_trace(cs,f"Urza permission -> cast {card} free"))
     return out
 
@@ -3339,9 +3475,7 @@ def legal_actions(s:State)->List[State]:
     }
     for c in set(s.hand):
         if (c not in ALL_LANDS or c in MDFC_BLUE_LANDS) and c not in special_spells:
-            x=cast_from_hand(s,c)
-            if x:
-                out.append(x)
+            out.extend(cast_from_hand_variants(s,c))
 
     out += special_actions(s)
     out=[refresh_observability(x) for x in out]
