@@ -7,9 +7,9 @@ search pruning whose candidate set can depend on the concrete hidden future.
 
 The adapter admits only audited safe families: land plays, public mana abilities,
 Urza artifact taps, ordinary artifact casts, command-zone Urza, proactive
-nonartifact casts, staged simple tutors, and end-turn commitment followed by typed
-chance observations. Hidden-information families are routed through staged
-adapters, never by importing Oracle successors.
+nonartifact casts, staged simple tutors, staged X-artifact tutors, and end-turn
+commitment followed by typed chance observations. Hidden-information families are
+routed through staged adapters, never by importing Oracle successors.
 """
 
 from __future__ import annotations
@@ -42,6 +42,16 @@ from non_oracle_simple_tutor_runtime import (
     handles_simple_tutor_stack_top,
     simple_tutor_pending_request,
     simple_tutor_runtime_intents,
+)
+from non_oracle_x_artifact_tutor_runtime import (
+    MAIN_USE_X_ARTIFACT_TUTOR,
+    apply_x_artifact_pending,
+    apply_x_artifact_stack_action,
+    begin_x_artifact_tutor,
+    handles_x_artifact_pending,
+    handles_x_artifact_stack_top,
+    x_artifact_pending_request,
+    x_artifact_runtime_intents,
 )
 from non_oracle_runtime import (
     NonOracleRuntimeState,
@@ -207,6 +217,7 @@ def main_phase_intents(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ..
     rows.extend(_ordinary_artifact_cast_intents(runtime))
     rows.extend(proactive_nonartifact_intents(runtime))
     rows.extend(simple_tutor_runtime_intents(runtime))
+    rows.extend(x_artifact_runtime_intents(runtime))
     rows.extend(commander_cast_intents(runtime))
     rows.extend(_end_turn_intent(runtime))
     return tuple(sorted(rows, key=lambda action: action.action_id))
@@ -222,6 +233,14 @@ def rules_decision_request(
 ) -> DecisionRequest:
     if handles_simple_tutor_pending(runtime):
         return simple_tutor_pending_request(
+            runtime,
+            horizon=horizon,
+            objective=objective,
+            policy_id=policy_id,
+            caverns_live=caverns_live,
+        )
+    if handles_x_artifact_pending(runtime):
+        return x_artifact_pending_request(
             runtime,
             horizon=horizon,
             objective=objective,
@@ -263,12 +282,16 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
     if runtime.pending is not None or runtime.stack.objects:
         if handles_simple_tutor_pending(runtime):
             resolved = apply_simple_tutor_pending(runtime, action)
+        elif handles_x_artifact_pending(runtime):
+            resolved = apply_x_artifact_pending(runtime, action)
         elif handles_commander_stack_top(runtime):
             resolved = apply_commander_stack_action(runtime, action)
         elif handles_proactive_stack_top(runtime):
             resolved = apply_proactive_stack_action(runtime, action)
         elif handles_simple_tutor_stack_top(runtime):
             resolved = apply_simple_tutor_stack_action(runtime, action)
+        elif handles_x_artifact_stack_top(runtime):
+            resolved = apply_x_artifact_stack_action(runtime, action)
         else:
             resolved = apply_runtime_action(runtime, action)
         return _normalize_empty_stack_main_window(resolved)
@@ -303,6 +326,9 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
 
     if action.kind == MAIN_USE_SIMPLE_TUTOR:
         return begin_simple_tutor(runtime, action)
+
+    if action.kind == MAIN_USE_X_ARTIFACT_TUTOR:
+        return begin_x_artifact_tutor(runtime, action)
 
     if action.kind == MAIN_CAST_COMMANDER:
         return begin_commander_cast(runtime, action)
