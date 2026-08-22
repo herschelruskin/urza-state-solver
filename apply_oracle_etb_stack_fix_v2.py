@@ -2,7 +2,7 @@
 """Apply the Oracle artifact-ETB stack patch with the Bay edit made robust.
 
 The first ETB patcher proved its preceding anchors in CI but used a fragile two-step
-indentation edit for ``repurposing_bay_actions``.  This wrapper replaces only that
+indentation edit for ``repurposing_bay_actions``. This wrapper replaces only that
 patch-program section with a whole-function region replacement, then executes the
 rest of the original assertion-heavy patcher unchanged.
 """
@@ -20,7 +20,7 @@ if start < 0 or end < 0:
 if SOURCE.find(START_MARKER, start + 1) >= 0:
     raise RuntimeError("Bay patch-program start marker is not unique")
 
-ROBUST_BAY_PATCH = r'''# Repurposing Bay target entry: replace the complete function so indentation is
+ROBUST_BAY_PATCH = r"""# Repurposing Bay target entry: replace the complete function so indentation is
 # not coupled to a second formatting-sensitive patch step.
 replace_region(
     "urza_solver.py",
@@ -87,8 +87,8 @@ replace_region(
 ''',
 )
 
-'''
+"""
 
 patched_program = SOURCE[:start] + ROBUST_BAY_PATCH + SOURCE[end:]
-compile(patched_program, "apply_oracle_etb_stack_fix.py[v2]", "exec")
-exec(compile(patched_program, "apply_oracle_etb_stack_fix.py[v2]", "exec"), {"__name__": "__main__"})
+compiled = compile(patched_program, "apply_oracle_etb_stack_fix.py[v2]", "exec")
+exec(compiled, {"__name__": "__main__"})
