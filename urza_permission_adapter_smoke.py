@@ -22,6 +22,7 @@ def urza_state(library, *, mana=10):
     return solver.State(
         turn=3,
         library=tuple(library),
+        hand=(),
         battlefield=(solver.Perm(solver.COMMANDER), solver.Perm("Sol Ring")),
         urza=True,
         colorless=mana,
@@ -60,6 +61,7 @@ def test_permission_survives_unrelated_action_and_remains_available_later():
     state = solver.State(
         turn=3,
         library=("Tail",),
+        hand=(),
         exile=("Mana Vault",),
         battlefield=(solver.Perm(solver.COMMANDER), solver.Perm("Sol Ring")),
         urza=True,
@@ -102,6 +104,7 @@ def test_normal_timing_is_preserved_for_delayed_permissions():
     state = solver.State(
         turn=3,
         library=("Tail",),
+        hand=(),
         exile=("Mana Vault", "An Offer You Can't Refuse"),
         battlefield=(solver.Perm(solver.COMMANDER),),
         urza=True,
@@ -124,6 +127,7 @@ def test_cast_selection_does_not_prematurely_move_card_or_consume_permission():
     state = solver.State(
         turn=3,
         library=("Tail",),
+        hand=(),
         exile=("Mana Vault",),
         battlefield=(solver.Perm(solver.COMMANDER),),
         urza=True,
@@ -147,6 +151,7 @@ def test_land_use_consumes_exact_permission_and_card():
     state = solver.State(
         turn=3,
         library=("Tail",),
+        hand=(),
         exile=("Island", "Island"),
         battlefield=(),
         land_played=False,
@@ -164,7 +169,7 @@ def test_land_use_consumes_exact_permission_and_card():
 
 
 def test_unused_permission_expires_at_end_of_turn_but_card_remains_exiled():
-    state = solver.State(turn=3, library=("Tail",), exile=("Mana Vault",))
+    state = solver.State(turn=3, library=("Tail",), hand=(), exile=("Mana Vault",))
     permissions = UrzaPermissionState().grant("Mana Vault", 3)
     expired = permissions.expire_end_of_turn(3)
     assert expired.permissions == ()
