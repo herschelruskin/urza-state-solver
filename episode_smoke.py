@@ -45,15 +45,9 @@ def test_hidden_futures_do_not_change_pre_observation_turn_one_policy_actions():
         simple_runtime(("SECRET_BETA", "Island", "Tail")),
         horizon=1,
     )
-    lturn1 = tuple(
-        step.action_strategic_key for step in left.steps if step.turn_before == 1
-    )
-    rturn1 = tuple(
-        step.action_strategic_key for step in right.steps if step.turn_before == 1
-    )
+    lturn1 = tuple(step.action_strategic_key for step in left.steps if step.turn_before == 1)
+    rturn1 = tuple(step.action_strategic_key for step in right.steps if step.turn_before == 1)
     assert lturn1 == rturn1
-    # The hidden card becomes a legitimate observation only after the common
-    # end-turn choice, so the resulting hands may then differ.
     assert "SECRET_ALPHA" in left.runtime.true_state.hand
     assert "SECRET_BETA" in right.runtime.true_state.hand
 
@@ -67,21 +61,21 @@ def test_episode_runner_never_calls_oracle_legal_actions():
     assert "oracle_game(" not in episode_source
 
 
-def test_episode_stops_at_mandatory_unimplemented_window_instead_of_skipping():
+def test_episode_crosses_remora_upkeep_without_oracle_search():
     runtime = make_runtime_state(
         solver.State(
             turn=1,
-            library=("R1", "R2", "Natural"),
+            library=("R1", "R2", "Natural", "Tail"),
             hand=(),
-            battlefield=(solver.Perm("Mystic Remora"),),
+            battlefield=(solver.Perm("Mystic Remora"), solver.Perm("Island")),
         )
     )
-    result = run_deterministic_episode(runtime, horizon=3)
-    assert result.terminal_reason == "unsupported_remora_upkeep"
-    assert result.runtime.true_state.turn == 2
-    assert result.runtime.true_state.remora_upkeep_pending
-    assert result.runtime.true_state.hand == ("R1", "R2")
-    assert result.runtime.true_state.library == ("Natural",)
+    result = run_deterministic_episode(runtime, horizon=2)
+    assert result.terminal_reason == "horizon"
+    assert result.runtime.true_state.turn == 3
+    assert any(step.action_kind == "upkeep_pay_remora" for step in result.steps)
+    assert all("unsupported_remora" not in step.action_kind for step in result.steps)
+    assert "Natural" in result.runtime.true_state.hand
 
 
 def test_already_winning_public_state_records_exact_turn():
@@ -126,7 +120,7 @@ def main():
         test_episode_crosses_multiple_turns_through_policy_and_typed_runtime,
         test_hidden_futures_do_not_change_pre_observation_turn_one_policy_actions,
         test_episode_runner_never_calls_oracle_legal_actions,
-        test_episode_stops_at_mandatory_unimplemented_window_instead_of_skipping,
+        test_episode_crosses_remora_upkeep_without_oracle_search,
         test_already_winning_public_state_records_exact_turn,
         test_episode_is_repeatable_for_same_concrete_world,
     )

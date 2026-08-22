@@ -32,10 +32,11 @@ from urza_permission_adapter import UrzaPermissionState
 
 NON_ORACLE_RUNTIME_VALUE_KEY_VERSION = "urza-non-oracle-runtime-value-v4"
 WINDOW_MAIN_EMPTY = "main_empty"
+WINDOW_UPKEEP = "upkeep"
 WINDOW_PRIORITY = "priority"
 WINDOW_POST_OBSERVATION = "post_observation"
 VALID_RUNTIME_WINDOWS = frozenset(
-    {WINDOW_MAIN_EMPTY, WINDOW_PRIORITY, WINDOW_POST_OBSERVATION}
+    {WINDOW_MAIN_EMPTY, WINDOW_UPKEEP, WINDOW_PRIORITY, WINDOW_POST_OBSERVATION}
 )
 
 # Execution coordinates that must not fragment expected-value identity.  The

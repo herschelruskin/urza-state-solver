@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Deterministic information-constrained base policy for Phase 2.
 
-This policy is intentionally simple.  Its job is to provide one legal continuation
-strategy that Monte Carlo/DP can later evaluate and improve.  It is NOT intended to
+This policy is intentionally simple. Its job is to provide one legal continuation
+strategy that Monte Carlo/DP can later evaluate and improve. It is NOT intended to
 encode an Oracle search in heuristics.
 
 Hard boundary: ``choose`` accepts RuntimePolicyView + ActionIntent objects only.
@@ -90,7 +90,6 @@ class DeterministicBasePolicy:
         }
         n = len(order)
         score = sum(base_priority.get(kind, 0.0) * (n - i) for i, kind in enumerate(order))
-
         if "uthros_draw_and_counter" in order and "assistant_scry_1" in order:
             known = observation.base.known_top
             known_value = self.visible_card_score(known[0], observation) if known else 0.0
@@ -100,7 +99,6 @@ class DeterministicBasePolicy:
                 score += 25.0 if u < a else -25.0
             else:
                 score += 25.0 if a < u else -25.0
-
         if "vexing_bauble_counter" in order:
             score += 15.0 if order[-1] == "vexing_bauble_counter" else -15.0
         return score
@@ -188,20 +186,13 @@ class DeterministicBasePolicy:
         if action.kind == "main_cast_artifact":
             return 20.0 + self.visible_card_score(str(params.get("card", "")), observation)
         if action.kind == "main_mana_action":
-            gain = max(0, int(params.get("blue_delta", 0))) + max(
-                0, int(params.get("colorless_delta", 0))
-            )
+            gain = max(0, int(params.get("blue_delta", 0))) + max(0, int(params.get("colorless_delta", 0)))
             return 10.0 + 2.0 * gain
         if action.kind == "main_end_turn":
             return -100.0
         return 0.0
 
-    def action_score(
-        self,
-        observation: RuntimePolicyView,
-        action: ActionIntent,
-        context: PolicyDecisionContext,
-    ) -> float:
+    def action_score(self, observation: RuntimePolicyView, action: ActionIntent, context: PolicyDecisionContext) -> float:
         kind = action.kind
         if kind == "runtime_stack_order":
             return self._stack_order_score(observation, action)
@@ -211,29 +202,23 @@ class DeterministicBasePolicy:
             return self._scry_score(observation, action)
         if kind == "runtime_chrome_imprint":
             return self._chrome_imprint_score(observation, action)
-        if kind in {
-            "choose_tutor_target",
-            "x_artifact_search_target",
-            "transmute_choose_target",
-            "remaining_search_target",
-        }:
+        if kind in {"choose_tutor_target", "x_artifact_search_target", "transmute_choose_target", "remaining_search_target"}:
             return self._tutor_target_score(observation, action)
         if kind == "transmute_choose_sacrifice":
             return self._transmute_sacrifice_score(observation, action)
         if kind == "transmute_pay_difference":
             return self._transmute_payment_score(action)
+        if kind == "upkeep_pay_remora":
+            return 50.0
+        if kind == "upkeep_decline_remora":
+            return -25.0
         if kind == "pass_priority":
             return 0.0
         if kind.startswith("main_"):
             return self._main_action_score(observation, action)
         return 0.0
 
-    def choose(
-        self,
-        observation: RuntimePolicyView,
-        actions: Sequence[ActionIntent],
-        context: PolicyDecisionContext,
-    ) -> ActionIntent:
+    def choose(self, observation: RuntimePolicyView, actions: Sequence[ActionIntent], context: PolicyDecisionContext) -> ActionIntent:
         if not actions:
             raise ValueError("base policy cannot choose from an empty action set")
         ranked = sorted(

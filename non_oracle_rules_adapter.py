@@ -1,15 +1,9 @@
 #!/usr/bin/env python3
-"""Phase-2 non-Oracle rules adapter: public main-phase actions + typed runtime.
+"""Phase-2 non-Oracle rules adapter: public actions + typed runtime.
 
-This is intentionally NOT a wrapper around ``urza_solver.legal_actions``.  The
+This is intentionally NOT a wrapper around ``urza_solver.legal_actions``. The
 Oracle action generator contains already-resolved hidden-information branches and
 search pruning whose candidate set can depend on the concrete hidden future.
-
-The adapter admits only audited safe families: land plays, public mana abilities,
-Urza artifact taps, ordinary artifact casts, command-zone Urza, proactive
-nonartifact casts, staged tutors/searches, and end-turn commitment followed by
-typed chance observations. Hidden-information families are routed through staged
-adapters, never by importing Oracle successors.
 """
 
 from __future__ import annotations
@@ -86,13 +80,20 @@ from non_oracle_runtime_value_key import (
     RuntimeDecisionWindow,
     WINDOW_MAIN_EMPTY,
     WINDOW_PRIORITY,
+    WINDOW_UPKEEP,
 )
-from non_oracle_turn_engine import advance_after_end_turn, can_commit_end_turn
+from non_oracle_turn_engine import (
+    advance_after_end_turn,
+    can_commit_end_turn,
+    resolve_remora_upkeep,
+)
 
 MAIN_PLAY_LAND = "main_play_land"
 MAIN_MANA_ACTION = "main_mana_action"
 MAIN_CAST_ARTIFACT = "main_cast_artifact"
 MAIN_END_TURN = "main_end_turn"
+UPKEEP_PAY_REMORA = "upkeep_pay_remora"
+UPKEEP_DECLINE_REMORA = "upkeep_decline_remora"
 SPECIAL_ARTIFACT_CASTS = frozenset({"Mox Diamond", "Everflowing Chalice"})
 
 
@@ -215,6 +216,34 @@ def _end_turn_intent(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ...]
     ),)
 
 
+def _remora_upkeep_intents(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ...]:
+    state = runtime.true_state
+    if not state.remora_upkeep_pending or not solver.has(state, "Mystic Remora"):
+        return ()
+    cost = int(state.remora_age) + 1
+    rows = [row.action for row in _mana_rows(runtime)]
+    rows.append(ActionIntent(
+        action_id="upkeep.remora.decline",
+        kind=UPKEEP_DECLINE_REMORA,
+        parameters=(("cost", cost),),
+        equivalence_key=(UPKEEP_DECLINE_REMORA, cost),
+        label=f"Decline Mystic Remora cumulative upkeep {{{cost}}}",
+        decision_stage=DECISION_COMMIT,
+        source="Mystic Remora",
+    ))
+    if solver.can_pay(state, cost, 0):
+        rows.append(ActionIntent(
+            action_id="upkeep.remora.pay",
+            kind=UPKEEP_PAY_REMORA,
+            parameters=(("cost", cost),),
+            equivalence_key=(UPKEEP_PAY_REMORA, cost),
+            label=f"Pay Mystic Remora cumulative upkeep {{{cost}}}",
+            decision_stage=DECISION_COMMIT,
+            source="Mystic Remora",
+        ))
+    return tuple(sorted(rows, key=lambda action: action.action_id))
+
+
 def _normalize_empty_stack_main_window(runtime: NonOracleRuntimeState) -> NonOracleRuntimeState:
     if (
         runtime.pending is None
@@ -279,6 +308,16 @@ def rules_decision_request(
             runtime, horizon=horizon, objective=objective,
             policy_id=policy_id, caverns_live=caverns_live,
         )
+    if runtime.true_state.remora_upkeep_pending:
+        return DecisionRequest(
+            observation=runtime.policy_view(caverns_live=caverns_live),
+            actions=_remora_upkeep_intents(runtime),
+            context=PolicyDecisionContext(
+                horizon=horizon, objective=objective, policy_id=policy_id,
+                decision_id=f"upkeep.remora.turn.{runtime.true_state.turn}",
+                decision_stage=DECISION_COMMIT,
+            ),
+        )
     runtime = _normalize_empty_stack_main_window(runtime)
     return DecisionRequest(
         observation=runtime.policy_view(caverns_live=caverns_live),
@@ -302,7 +341,7 @@ def _find_mechanical_successor(runtime: NonOracleRuntimeState, action: ActionInt
     try:
         return legal[action.canonical_key()]
     except KeyError as exc:
-        raise ValueError("main action is no longer legal in current state") from exc
+        raise ValueError("mechanical action is no longer legal in current state") from exc
 
 
 def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> NonOracleRuntimeState:
@@ -330,6 +369,23 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
         else:
             resolved = apply_runtime_action(runtime, action)
         return _normalize_empty_stack_main_window(resolved)
+
+    if runtime.true_state.remora_upkeep_pending:
+        legal = {candidate.canonical_key(): candidate for candidate in _remora_upkeep_intents(runtime)}
+        if action.canonical_key() not in legal:
+            raise ValueError("action is not legal in the current Remora upkeep request")
+        if action.kind == MAIN_MANA_ACTION:
+            next_state = _find_mechanical_successor(runtime, action)
+            return replace(
+                runtime,
+                true_state=solver._ensure_oracle_instance_tags(next_state),
+                window=RuntimeDecisionWindow(WINDOW_UPKEEP),
+            )
+        if action.kind == UPKEEP_PAY_REMORA:
+            return resolve_remora_upkeep(runtime, pay_upkeep=True)
+        if action.kind == UPKEEP_DECLINE_REMORA:
+            return resolve_remora_upkeep(runtime, pay_upkeep=False)
+        raise AssertionError(f"unhandled upkeep action kind {action.kind!r}")
 
     runtime = _normalize_empty_stack_main_window(runtime)
     legal = {candidate.canonical_key(): candidate for candidate in main_phase_intents(runtime)}

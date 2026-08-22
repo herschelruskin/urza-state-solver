@@ -3,20 +3,14 @@
 
 Ending the turn is a policy commitment made BEFORE future hidden draws are known.
 Only after that commitment may this rules layer inspect the concrete library and
-emit typed observations.  This is the same anti-clairvoyance boundary used by Top,
-scry, and tutors.
-
-Chrome-Dome end-step copy automation remains intentionally blocked because it is a
-real optional decision. Ordinary turns, environmental draw engines, Urza permission
-expiry, natural draw, Saga lore advancement, and Mana Drain bank release are handled
-here. Saga III is materialized as a mandatory runtime stack trigger rather than a
-blocking boolean-only window.
+emit typed observations. This module also owns the cumulative-upkeep bridge so a
+Remora choice is completed before the natural draw becomes policy-visible.
 """
 
 from __future__ import annotations
 
 from dataclasses import replace
-from typing import Iterable, Tuple
+from typing import Tuple
 
 import urza_solver as solver
 from decision_observation import (
@@ -31,6 +25,7 @@ from non_oracle_runtime_value_key import (
     RuntimeDecisionWindow,
     WINDOW_MAIN_EMPTY,
     WINDOW_PRIORITY,
+    WINDOW_UPKEEP,
 )
 
 
@@ -38,12 +33,7 @@ class UnsupportedTurnBoundary(RuntimeError):
     """A real decision exists at the boundary but its Phase-2 adapter is not built."""
 
 
-def _draw_one(
-    state: solver.State,
-    information,
-    *,
-    source: str,
-):
+def _draw_one(state: solver.State, information, *, source: str):
     if not state.library:
         return state, information, ()
     state, drawn = solver.draw_from_library(state, 1)
@@ -80,6 +70,116 @@ def _environment_draw_plan(state: solver.State) -> Tuple[str, ...]:
     if "Faerie Mastermind" in names:
         rows.append("Faerie Mastermind")
     return tuple(rows)
+
+
+def _enter_precombat_main(runtime: NonOracleRuntimeState) -> NonOracleRuntimeState:
+    """Resolve the natural draw and first-main turn resources after upkeep."""
+    state = runtime.true_state
+    information = runtime.information
+    if state.remora_upkeep_pending:
+        raise ValueError("cannot enter main phase while Remora upkeep is pending")
+
+    state, information, drawn = _draw_one(
+        state,
+        information,
+        source=f"natural draw turn {state.turn}",
+    )
+    if drawn:
+        state = solver.append_trace_detail(
+            state,
+            f"Phase2 normal draw for turn {state.turn}: {drawn[0]}",
+        )
+
+    battlefield = []
+    saga3_count = 0
+    for perm in state.battlefield:
+        next_perm = perm
+        if next_perm.name == "Urza's Saga":
+            counters = next_perm.counters + 1
+            next_perm = replace(
+                next_perm,
+                counters=counters,
+                mode="saga3" if counters >= 3 else next_perm.mode,
+            )
+            if counters >= 3:
+                saga3_count += 1
+        battlefield.append(next_perm)
+
+    state = replace(
+        state,
+        battlefield=tuple(battlefield),
+        saga3_pending=False,
+        blue=0,
+        colorless=state.drain_bank,
+        drain_bank=0,
+    )
+    information = _refresh_continuous_top(
+        state,
+        information,
+        source="post-natural-draw continuous look",
+    )
+    runtime = replace(
+        runtime,
+        true_state=solver._ensure_oracle_instance_tags(state),
+        information=information,
+        window=RuntimeDecisionWindow(WINDOW_MAIN_EMPTY),
+        pending=None,
+    )
+
+    if saga3_count:
+        stack = runtime.stack
+        triggers = []
+        for _ in range(saga3_count):
+            trigger, stack = stack.allocate(
+                object_type=STACK_TRIGGER,
+                kind="saga3_search_trigger",
+                source="Urza's Saga",
+                card="Urza's Saga",
+            )
+            triggers.append(trigger)
+        runtime = replace(
+            runtime,
+            stack=stack.push_existing(tuple(triggers)),
+            window=RuntimeDecisionWindow(WINDOW_PRIORITY),
+        )
+    return runtime
+
+
+def resolve_remora_upkeep(
+    runtime: NonOracleRuntimeState,
+    *,
+    pay_upkeep: bool,
+) -> NonOracleRuntimeState:
+    """Resolve the pending cumulative upkeep, then expose the natural draw."""
+    state = runtime.true_state
+    if not state.remora_upkeep_pending or not solver.has(state, "Mystic Remora"):
+        raise ValueError("no live Mystic Remora cumulative upkeep to resolve")
+
+    cost = int(state.remora_age) + 1
+    if pay_upkeep:
+        paid = solver.pay(state, cost, 0)
+        if paid is None:
+            raise ValueError("Mystic Remora cumulative upkeep cannot currently be paid")
+        state = replace(paid, remora_age=cost, remora_upkeep_pending=False)
+        state = solver.add_trace(state, f"Phase2 Mystic Remora cumulative upkeep {{{cost}}}: pay")
+    else:
+        index = next(i for i, perm in enumerate(state.battlefield) if perm.name == "Mystic Remora")
+        state = solver.remove_perm(state, index, to_grave=True)
+        state = solver.add_trace(
+            state,
+            f"Phase2 Mystic Remora cumulative upkeep {{{cost}}}: decline; sacrifice Mystic Remora",
+        )
+
+    # Mana floated to resolve cumulative upkeep empties before the precombat main.
+    state = replace(state, blue=0, colorless=0)
+    return _enter_precombat_main(
+        replace(
+            runtime,
+            true_state=solver._ensure_oracle_instance_tags(state),
+            window=RuntimeDecisionWindow(WINDOW_MAIN_EMPTY),
+            pending=None,
+        )
+    )
 
 
 def can_commit_end_turn(runtime: NonOracleRuntimeState) -> bool:
@@ -157,7 +257,7 @@ def advance_after_end_turn(runtime: NonOracleRuntimeState) -> NonOracleRuntimeSt
         colorless=0,
         bauble_draws=0,
         land_played=False,
-        remora_age=(state.remora_age if solver.has(state, "Mystic Remora") else 0),
+        remora_age=(state.remora_age if remora_pending else 0),
         remora_upkeep_pending=remora_pending,
         spell_cast_this_turn=False,
         vfc_pumps=0,
@@ -167,88 +267,25 @@ def advance_after_end_turn(runtime: NonOracleRuntimeState) -> NonOracleRuntimeSt
         state = solver.append_trace_detail(state, f"Phase2 opponent-cycle draw observed: {card}")
 
     permissions = runtime.permissions.expire_end_of_turn(ending_turn)
-
-    if remora_pending:
-        state = solver.add_trace(
-            state,
-            "Phase2 Mystic Remora cumulative-upkeep decision pending",
-        )
-        return replace(
-            runtime,
-            true_state=state,
-            information=information,
-            permissions=permissions,
-            window=RuntimeDecisionWindow(WINDOW_MAIN_EMPTY),
-            pending=None,
-        )
-
-    state, information, drawn = _draw_one(
-        state,
-        information,
-        source=f"natural draw turn {next_turn}",
-    )
-    if drawn:
-        state = solver.append_trace_detail(
-            state,
-            f"Phase2 normal draw for turn {next_turn}: {drawn[0]}",
-        )
-
-    battlefield = []
-    saga3_count = 0
-    for perm in state.battlefield:
-        next_perm = perm
-        if next_perm.name == "Urza's Saga":
-            counters = next_perm.counters + 1
-            next_perm = replace(
-                next_perm,
-                counters=counters,
-                mode="saga3" if counters >= 3 else next_perm.mode,
-            )
-            if counters >= 3:
-                saga3_count += 1
-        battlefield.append(next_perm)
-    state = replace(
-        state,
-        battlefield=tuple(battlefield),
-        # Once a real trigger object exists, the old boolean is no longer the
-        # authority. The trigger remains independently even if Saga later leaves.
-        saga3_pending=False,
-        blue=0,
-        colorless=state.drain_bank,
-        drain_bank=0,
-    )
-    information = _refresh_continuous_top(
-        state,
-        information,
-        source="post-natural-draw continuous look",
-    )
-
     runtime = replace(
         runtime,
         true_state=solver._ensure_oracle_instance_tags(state),
         information=information,
         permissions=permissions,
-        window=RuntimeDecisionWindow(WINDOW_MAIN_EMPTY),
         pending=None,
     )
 
-    if saga3_count:
-        stack = runtime.stack
-        triggers = []
-        for _ in range(saga3_count):
-            trigger, stack = stack.allocate(
-                object_type=STACK_TRIGGER,
-                kind="saga3_search_trigger",
-                source="Urza's Saga",
-                card="Urza's Saga",
-            )
-            triggers.append(trigger)
-        # One singleton Saga is normal. Multiple simultaneous copies are execution
-        # equivalent search triggers; deterministic order is sufficient here.
-        runtime = replace(
+    if remora_pending:
+        state = solver.add_trace(
+            runtime.true_state,
+            "Phase2 Mystic Remora cumulative-upkeep decision pending",
+        )
+        return replace(
             runtime,
-            stack=stack.push_existing(tuple(triggers)),
-            window=RuntimeDecisionWindow(WINDOW_PRIORITY),
+            true_state=state,
+            window=RuntimeDecisionWindow(WINDOW_UPKEEP),
         )
 
-    return runtime
+    return _enter_precombat_main(
+        replace(runtime, window=RuntimeDecisionWindow(WINDOW_MAIN_EMPTY))
+    )
