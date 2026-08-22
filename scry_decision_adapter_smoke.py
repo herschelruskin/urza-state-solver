@@ -6,7 +6,7 @@ from dataclasses import replace
 import urza_solver as solver
 from solver_architecture import InformationState, canonical_markov_state_key
 from decision_observation import DECISION_COMMIT, DECISION_POST_OBSERVATION, RevealTopObservation
-from information_state_propagation import validate_information_against_state
+from information_state_propagation import initial_information, validate_information_against_state
 from scry_decision_adapter import (
     SCRY_CHOICE_KIND,
     ScrySourceSpec,
@@ -197,6 +197,60 @@ def test_duplicate_scry_cards_have_deterministic_unique_results():
     assert len(actions) == 3
 
 
+def test_continuous_look_does_not_peek_under_active_scry_cards():
+    one = ScrySourceSpec("Artificer's Assistant", 1, "assistant-trigger-chip")
+    state = solver.State(
+        turn=2,
+        library=("Seen By Scry", "Underneath", "Tail"),
+        hand=(),
+        battlefield=(solver.Perm("The Reality Chip"),),
+        rng_root_seed=20260822,
+    )
+    prior = initial_information(state)
+    assert prior.known_top == ("Seen By Scry",)
+
+    commit = scry_commit_request(state, prior, one, horizon=6).actions[0]
+    reveal = resolve_scry_commit(state, one, commit)
+    info = information_after_scry_reveal(prior, reveal)
+
+    # The looked-at card remains the rules-defined top while the scry is active.
+    # Chip does not expose card N+1 before the top/bottom choice is made.
+    assert info.known_top == ("Seen By Scry",)
+    assert "Underneath" not in info.known_top
+
+
+def test_continuous_look_reveals_new_top_after_scry_finishes():
+    one = ScrySourceSpec("Artificer's Assistant", 1, "assistant-trigger-chip-bottom")
+    state = solver.State(
+        turn=2,
+        library=("Bottom This", "New Top", "Tail"),
+        hand=(),
+        battlefield=(solver.Perm("The Reality Chip"),),
+        rng_root_seed=20260822,
+    )
+    prior = initial_information(state)
+    commit = scry_commit_request(state, prior, one, horizon=6).actions[0]
+    reveal = resolve_scry_commit(state, one, commit)
+    info = information_after_scry_reveal(prior, reveal)
+
+    chosen = next(
+        action for action in scry_choice_intents(info, one, revealed_count=1)
+        if dict(action.parameters)["top"] == ()
+        and dict(action.parameters)["bottom"] == ("Bottom This",)
+    )
+    resolved = resolve_scry_choice(reveal.true_state, info, one, chosen)
+    final_info = information_after_scry_choice(info, resolved)
+
+    assert resolved.true_state.library == ("New Top", "Tail", "Bottom This")
+    assert final_info.known_top == ("New Top",)
+    assert final_info.known_bottom == ("Bottom This",)
+    assert any(
+        isinstance(event, RevealTopObservation) and event.cards == ("New Top",)
+        for event in resolved.observations.events
+    )
+    validate_information_against_state(final_info, resolved.true_state)
+
+
 def main():
     tests = [
         test_scry_commit_hidden_future_invariance,
@@ -207,6 +261,8 @@ def main():
         test_scry_preserves_deeper_known_top_and_appends_below_london_bottom,
         test_scry_one_has_exact_keep_or_bottom_choices,
         test_duplicate_scry_cards_have_deterministic_unique_results,
+        test_continuous_look_does_not_peek_under_active_scry_cards,
+        test_continuous_look_reveals_new_top_after_scry_finishes,
     ]
     for test in tests:
         test()
