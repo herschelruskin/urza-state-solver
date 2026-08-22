@@ -14,6 +14,7 @@ def actions_for(card, *, battlefield=()):
     state = solver.State(
         turn=3,
         library=("Tail",),
+        hand=(),
         exile=(card,),
         battlefield=tuple(battlefield),
         land_played=False,
