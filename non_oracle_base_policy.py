@@ -133,8 +133,12 @@ class DeterministicBasePolicy:
 
     def _main_action_score(self, observation: RuntimePolicyView, action: ActionIntent) -> float:
         params = dict(action.parameters)
+        if action.kind == "main_cast_commander":
+            # Urza is the engine enabling artifact mana, Construct lines, and the
+            # eventual win recognizers.  Once legally payable, prioritize him over
+            # discretionary development spells without needing hidden information.
+            return 35.0
         if action.kind == "main_play_land":
-            # Establish the land drop before discretionary spell/mana sequencing.
             return 30.0 + self.visible_card_score(str(params.get("card", "")), observation)
         if action.kind == "main_cast_artifact":
             return 20.0 + self.visible_card_score(str(params.get("card", "")), observation)
@@ -144,7 +148,6 @@ class DeterministicBasePolicy:
             )
             return 10.0 + 2.0 * gain
         if action.kind == "main_end_turn":
-            # End only after currently modeled productive actions are exhausted.
             return -100.0
         return 0.0
 
