@@ -811,6 +811,31 @@ def remove_one(tup:Tuple[str,...], card:str)->Tuple[str,...]:
     x=list(tup); x.remove(card); return tuple(x)
 
 
+def vexing_bauble_counters_spell(s:State,mana_spent:int)->bool:
+    """True iff our in-play Bauble counters this cast for spending no mana.
+
+    Vexing Bauble cares about mana actually spent to cast the spell, not printed
+    mana value. Additional costs such as multikicker count when mana is actually
+    paid; nonmana alternate/additional costs do not.
+    """
+    return has(s,"Vexing Bauble") and mana_spent==0
+
+
+def vexing_bauble_countered_cast(s:State,card:str,mana_spent:int,
+                                  message:str="")->Optional[State]:
+    """Return the post-counter state, or None when Bauble does not counter.
+
+    Callers must run all modeled cast triggers before this helper because
+    Bauble's ability itself triggers on cast and can be ordered below our other
+    cast triggers. Resolution/ETB/spell effects must happen only if this returns
+    None.
+    """
+    if not vexing_bauble_counters_spell(s,mana_spent):
+        return None
+    ns=replace(s,graveyard=s.graveyard+(card,))
+    return add_trace(ns,message or f"Vexing Bauble counters {card}; no mana spent to cast it")
+
+
 def chalice_cast_variants(s:State, outside:bool=False, free:bool=False)->List[State]:
     if "Everflowing Chalice" not in s.hand:
         return []
@@ -826,9 +851,12 @@ def chalice_cast_variants(s:State, outside:bool=False, free:bool=False)->List[St
         ns=replace(ps,hand=remove_one(ps.hand,"Everflowing Chalice"),
                    spell_cast_this_turn=True)
         ns=artifact_cast_triggers(ns,"Everflowing Chalice")
-        if has(ns,"Vexing Bauble") and generic==0:
-            ns=replace(ns,graveyard=ns.graveyard+("Everflowing Chalice",))
-            out.append(add_trace(ns,f"cast Everflowing Chalice kicked {k}x; no mana spent -> Vexing Bauble counters"))
+        countered=vexing_bauble_countered_cast(
+            ns,"Everflowing Chalice",generic,
+            f"cast Everflowing Chalice kicked {k}x; no mana spent -> Vexing Bauble counters"
+        )
+        if countered is not None:
+            out.append(countered)
             continue
         ns=add_perm(ns,"Everflowing Chalice",counters=k)
         ns=artifact_etb_triggers(ns,"Everflowing Chalice")
@@ -841,14 +869,22 @@ def cast_from_hand(s:State,card:str,outside:bool=False,free:bool=False)->Optiona
     if card in ALL_LANDS and card not in MDFC_BLUE_LANDS: return None
     if card in {"Chrome Mox","Mox Diamond","Everflowing Chalice"}: return None  # special branching actions
     g,b=spell_cost(s,card,outside=outside)
-    ps=s if free else pay(s,g,b)
+    mana_spent=0
+    if free:
+        ps=s
+    elif card in {"Gitaxian Probe","Mental Misstep"} and has(s,"Vexing Bauble") and s.blue>=1:
+        # Choose the normal {U} payment instead of a no-mana Phyrexian payment
+        # when that is what allows the spell to survive our own Bauble.
+        ps=pay(s,0,1); mana_spent=1
+    else:
+        ps=pay(s,g,b); mana_spent=g+b
     if ps is None: return None
     s=replace(ps,hand=remove_one(ps.hand,card),spell_cast_this_turn=True)
     if card in ARTIFACTS:
         s=artifact_cast_triggers(s,card)
-        if has(s,"Vexing Bauble") and (0 if free else g+b)==0:
-            s=replace(s,graveyard=s.graveyard+(card,))
-            return add_trace(s,f"Vexing Bauble counters zero-mana cast {card}")
+        countered=vexing_bauble_countered_cast(s,card,mana_spent)
+        if countered is not None:
+            return countered
         s=add_perm(s,card,sick=card in CREATURES)
         if card=="Uthros Research Craft": s=replace(s,uthros_counters=0)
         if card=="The One Ring": s=replace(s,ring_counters=0)
@@ -858,6 +894,8 @@ def cast_from_hand(s:State,card:str,outside:bool=False,free:bool=False)->Optiona
     if card==COMMANDER:
         if has(s,"Artificer's Assistant"): s=apply_scry(s,1,"Artificer's Assistant (legendary cast)")
         s=vfc_noncreature_cast_trigger(s,card) if False else s
+        countered=vexing_bauble_countered_cast(s,card,mana_spent)
+        if countered is not None: return countered
         s=add_perm(s,COMMANDER,sick=True); s=replace(
             s,urza=True,construct=True,commander_in_command_zone=False,
             urza_cast_turn=(s.urza_cast_turn or s.turn)
@@ -865,22 +903,27 @@ def cast_from_hand(s:State,card:str,outside:bool=False,free:bool=False)->Optiona
         s=add_perm(s,"Construct",sick=True,mode="construct"); s=artifact_etb_triggers(s,"Construct")
         return check_win(add_trace(s,"cast Urza -> Construct"))
     if card in CREATURES or card=="Hydroelectric Specimen":
+        countered=vexing_bauble_countered_cast(s,card,mana_spent)
+        if countered is not None: return countered
         s=add_perm(s,card,sick=True); return check_win(add_trace(s,f"cast {card}"))
     if card in {"Mystic Remora","Rhystic Study","Fortune Teller's Talent"}:
+        countered=vexing_bauble_countered_cast(s,card,mana_spent)
+        if countered is not None: return countered
         s=add_perm(s,card)
         if card=="Fortune Teller's Talent": s=replace(s,ftt_level=1)
         return check_win(add_trace(s,f"cast {card}"))
     if card=="Tezzeret, Cruel Captain":
         if has(s,"Artificer's Assistant"): s=apply_scry(s,1,"Artificer's Assistant (legendary cast)")
         s=vfc_noncreature_cast_trigger(s,card)
+        countered=vexing_bauble_countered_cast(s,card,mana_spent)
+        if countered is not None: return countered
         s=add_perm(s,card,counters=4,mode="tez_ready"); return add_trace(s,"cast Tezzeret (4 loyalty)")
     if card=="Gitaxian Probe":
         s=vfc_noncreature_cast_trigger(s,card)
-        if has(s,"Vexing Bauble"):
-            if s.blue>=1:
-                s=replace(s,blue=s.blue-1)
-            else:
-                return add_trace(replace(s,graveyard=s.graveyard+(card,)),"Probe cast for life; Vexing Bauble counters it")
+        countered=vexing_bauble_countered_cast(
+            s,card,mana_spent,"Probe cast with no mana spent; Vexing Bauble counters it"
+        )
+        if countered is not None: return countered
         s,drawn=draw_from_library(s,1)
         return add_trace(
             s,
@@ -889,6 +932,8 @@ def cast_from_hand(s:State,card:str,outside:bool=False,free:bool=False)->Optiona
         )
     if card=="Dramatic Reversal":
         s=vfc_noncreature_cast_trigger(s,card)
+        countered=vexing_bauble_countered_cast(s,card,mana_spent)
+        if countered is not None: return countered
         b=[]
         for p in s.battlefield:
             b.append(p if is_land_perm(p) else replace(p,tapped=False,producer_urza_ready=False))
@@ -898,9 +943,13 @@ def cast_from_hand(s:State,card:str,outside:bool=False,free:bool=False)->Optiona
         )
     if card=="Mana Drain":
         s=vfc_noncreature_cast_trigger(s,card)
+        countered=vexing_bauble_countered_cast(s,card,mana_spent)
+        if countered is not None: return countered
         return add_trace(replace(s,drain_bank=s.drain_bank+2),"Mana Drain assumption: bank +2 next turn")
     if card=="Sea Gate Restoration":
         s=vfc_noncreature_cast_trigger(s,card)
+        countered=vexing_bauble_countered_cast(s,card,mana_spent)
+        if countered is not None: return countered
         s,drawn=draw_from_library(s,len(s.hand)+1)
         return add_trace(
             s,
@@ -909,6 +958,8 @@ def cast_from_hand(s:State,card:str,outside:bool=False,free:bool=False)->Optiona
         )
     if card=="Sink into Stupor":
         s=vfc_noncreature_cast_trigger(s,card)
+        countered=vexing_bauble_countered_cast(s,card,mana_spent)
+        if countered is not None: return countered
         s=replace(s,graveyard=s.graveyard+(card,))
         return add_trace(s,"cast Sink into Stupor (opponent target assumed)")
     return None
@@ -1308,8 +1359,11 @@ def mox_cast_actions(s:State)->List[State]:
         # Artifact cast triggers happen even if we choose no imprint.
         base=replace(s,hand=remove_one(s.hand,"Chrome Mox"),spell_cast_this_turn=True)
         base=artifact_cast_triggers(base,"Chrome Mox")
-        if has(base,"Vexing Bauble"):
-            base=replace(base,graveyard=base.graveyard+("Chrome Mox",)); out.append(add_trace(base,"Vexing Bauble counters Chrome Mox after cast triggers")); base=None
+        countered=vexing_bauble_countered_cast(
+            base,"Chrome Mox",0,"Vexing Bauble counters Chrome Mox after cast triggers"
+        )
+        if countered is not None:
+            out.append(countered); base=None
         if base is not None:
             base=add_perm(base,"Chrome Mox"); base=artifact_etb_triggers(base,"Chrome Mox")
             out.append(add_trace(base,"cast Chrome Mox, no imprint"))
@@ -2152,18 +2206,12 @@ def special_actions(s:State)->List[State]:
             if pl: out.append(add_trace(pl,f"Urza spin -> play {card}"))
         elif card not in ALL_LANDS or card in MDFC_BLUE_LANDS:
             ns=replace(ns,hand=ns.hand+(card,),exile=ns.exile[:-1])
-            if has(ns,"Vexing Bauble"):
-                # Cast still happens (and cast triggers happen) but is countered for no mana spent.
-                if card in ARTIFACTS:
-                    tr=artifact_cast_triggers(ns,card); tr=replace(tr,hand=remove_one(tr.hand,card),graveyard=tr.graveyard+(card,),spell_cast_this_turn=True)
-                    out.append(add_trace(tr,f"Urza spin casts {card}; Vexing Bauble counters it"))
+            if card=="Everflowing Chalice":
+                for cs in chalice_cast_variants(ns,outside=True,free=True):
+                    out.append(add_trace(cs,"Urza spin -> free Chalice base cost; optional multikicker paid"))
             else:
-                if card=="Everflowing Chalice":
-                    for cs in chalice_cast_variants(ns,outside=True,free=True):
-                        out.append(add_trace(cs,"Urza spin -> free Chalice base cost; optional multikicker paid"))
-                else:
-                    cs=cast_from_hand(ns,card,outside=True,free=True)
-                    if cs: out.append(add_trace(cs,f"Urza spin -> free {card}"))
+                cs=cast_from_hand(ns,card,outside=True,free=True)
+                if cs: out.append(add_trace(cs,f"Urza spin -> free {card}"))
     # Key generic untap
     for ki,k in enumerate(s.battlefield):
         if k.name in {"Voltaic Key","Manifold Key"} and not k.tapped and can_pay(s,1,0):
