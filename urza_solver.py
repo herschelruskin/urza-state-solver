@@ -259,6 +259,10 @@ class State:
     battlefield: Tuple[Perm,...]
     graveyard: Tuple[str,...] = ()
     exile: Tuple[str,...] = ()
+    # Cards exiled by Urza's {5} ability that remain legally playable until
+    # end of the current turn.  Card-name multiplicity is sufficient because
+    # same-name physical copies are strategically interchangeable here.
+    urza_exile_permissions: Tuple[str,...] = ()
     blue: int = 0
     colorless: int = 0
     land_played: bool = False
@@ -311,7 +315,9 @@ class State:
         return (self.turn, tuple(sorted(self.hand)), bf, self.blue, self.colorless,
                 self.land_played,self.drain_bank,self.bauble_draws,
                 self.remora_age,self.remora_upkeep_pending,self.saga3_pending,
-                tuple(sorted(self.graveyard)),self.ring_counters,self.ftt_level,self.uthros_counters,
+                tuple(sorted(self.graveyard)),tuple(sorted(self.exile)),
+                tuple(sorted(self.urza_exile_permissions)),
+                self.ring_counters,self.ftt_level,self.uthros_counters,
                 self.urza,self.construct,self.top_access,self.chip_attached,self.chip_target,
                 self.spell_cast_this_turn,self.pa_target,self.vfc_pumps,
                 self.commander_in_command_zone,self.commander_casts_from_zone,
@@ -2170,6 +2176,48 @@ def cast_urza_from_command_zone_actions(s:State)->List[State]:
     return [check_win(ns)]
 
 
+def urza_exile_permission_actions(s:State)->List[State]:
+    """Use any still-live card permission created by Urza's {5} ability.
+
+    Not using a permission is represented by choosing another ordinary action.
+    The permission therefore survives arbitrary sequencing and additional spins
+    until it is consumed or end_turn() expires it.
+    """
+    out=[]
+    for card in sorted(set(s.urza_exile_permissions)):
+        if card not in s.exile:
+            continue
+        base=replace(
+            s,
+            exile=remove_one(s.exile,card),
+            urza_exile_permissions=remove_one(s.urza_exile_permissions,card),
+            hand=s.hand+(card,),
+        )
+
+        # "Play that card" permits the land face when legal.  MDFCs also retain
+        # their independent front-face spell option below.
+        if card in ALL_LANDS and not s.land_played:
+            pl=play_land(base,card)
+            if pl:
+                out.append(add_trace(pl,f"Urza permission -> play {card}"))
+
+        if card not in ALL_LANDS or card in MDFC_BLUE_LANDS:
+            if card=="Everflowing Chalice":
+                # Without paying the mana cost fixes X=0; multikicker remains an
+                # optional additional cost and chalice_cast_variants already
+                # models the payable {2}-per-kick branches.
+                for cs in chalice_cast_variants(base,outside=True,free=True):
+                    out.append(add_trace(
+                        cs,
+                        "Urza permission -> free Chalice base cost; optional multikicker paid"
+                    ))
+            else:
+                cs=cast_from_hand(base,card,outside=True,free=True)
+                if cs:
+                    out.append(add_trace(cs,f"Urza permission -> cast {card} free"))
+    return out
+
+
 def special_actions(s:State)->List[State]:
     out=[]
     out += cast_urza_from_command_zone_actions(s)
@@ -2197,21 +2245,24 @@ def special_actions(s:State)->List[State]:
     if has(s,"Fortune Teller's Talent"):
         if s.ftt_level==1 and can_pay(s,3,1): out.append(add_trace(replace(pay(s,3,1),ftt_level=2),"FTT -> level 2"))
         if s.ftt_level==2 and can_pay(s,2,1): out.append(add_trace(replace(pay(s,2,1),ftt_level=3),"FTT -> level 3"))
-    # Real Urza shuffle/reset. Free-cast top card if legal; Vexing Bauble can counter free spell.
+    # Urza {5}: shuffle, exile the top card, and grant a play permission
+    # lasting until end of turn.  Do NOT force an immediate play/cast; Oracle
+    # search may sequence other actions or additional spins first.
     if s.urza and can_pay(s,5,0) and s.library:
-        ps=pay(s,5,0); ps=replace(ps,library=shuffled_library(ps,"urza-spin")); card=ps.library[0]
-        ns=replace(ps,library=ps.library[1:],exile=ps.exile+(card,))
-        if card in ALL_LANDS and not ns.land_played:
-            ns=replace(ns,hand=ns.hand+(card,),exile=ns.exile[:-1]); pl=play_land(ns,card)
-            if pl: out.append(add_trace(pl,f"Urza spin -> play {card}"))
-        elif card not in ALL_LANDS or card in MDFC_BLUE_LANDS:
-            ns=replace(ns,hand=ns.hand+(card,),exile=ns.exile[:-1])
-            if card=="Everflowing Chalice":
-                for cs in chalice_cast_variants(ns,outside=True,free=True):
-                    out.append(add_trace(cs,"Urza spin -> free Chalice base cost; optional multikicker paid"))
-            else:
-                cs=cast_from_hand(ns,card,outside=True,free=True)
-                if cs: out.append(add_trace(cs,f"Urza spin -> free {card}"))
+        ps=pay(s,5,0)
+        ps=replace(ps,library=shuffled_library(ps,"urza-spin"))
+        card=ps.library[0]
+        ns=replace(
+            ps,
+            library=ps.library[1:],
+            exile=ps.exile+(card,),
+            urza_exile_permissions=ps.urza_exile_permissions+(card,),
+        )
+        out.append(add_trace(
+            ns,
+            f"Urza spin -> exile {card}; playable until end of turn"
+        ))
+    out += urza_exile_permission_actions(s)
     # Key generic untap
     for ki,k in enumerate(s.battlefield):
         if k.name in {"Voltaic Key","Manifold Key"} and not k.tapped and can_pay(s,1,0):
@@ -2336,7 +2387,8 @@ def dominance_signature(s:State):
                     for p in s.battlefield))
     return (
         s.turn,bf,tuple(sorted(s.hand)),s.library[:5],
-        tuple(sorted(s.graveyard)),s.land_played,s.drain_bank,
+        tuple(sorted(s.graveyard)),tuple(sorted(s.exile)),
+        tuple(sorted(s.urza_exile_permissions)),s.land_played,s.drain_bank,
         s.remora_age,s.remora_upkeep_pending,
         s.urza,s.ftt_level,s.uthros_counters,
         s.chip_attached,s.chip_target,
@@ -2454,6 +2506,7 @@ def score(s:State)->float:
     sc += (s.blue+s.colorless)*4
     sc += deferred_producer_blue(s)*0.25  # tie-break toward strictly richer equivalent state
     sc += len(s.hand)*5
+    sc += len(s.urza_exile_permissions)*7
     # combo proximity
     if "Chrome Dome" in names and names&{"Grinding Station","Battered Golem"}: sc+=80
     if "Power Artifact" in names and names&{"Grim Monolith","Basalt Monolith"}: sc+=100
@@ -3443,6 +3496,7 @@ def end_turn(s:State,schedule_remora_upkeep:bool=True)->State:
                blue=0,colorless=0,bauble_draws=0,land_played=False,
                remora_age=(s.remora_age if has(s,"Mystic Remora") else 0),
                remora_upkeep_pending=remora_pending,
+               urza_exile_permissions=(),
                spell_cast_this_turn=False,vfc_pumps=0)
     ns=add_trace(ns,f"--- Turn {ns.turn} ---")
     for event in draw_events:

@@ -127,6 +127,7 @@ class StrategicValueState:
     commander_in_command_zone: bool
     commander_casts_from_zone: int
     won: bool
+    urza_exile_permissions: Tuple[str, ...] = ()
     objective_memory: Tuple[Tuple[str, Any], ...] = ()
 
 
@@ -163,6 +164,7 @@ def project_strategic_value_state(
         commander_in_command_zone=bool(getattr(state, "commander_in_command_zone", True)),
         commander_casts_from_zone=int(getattr(state, "commander_casts_from_zone", 0)),
         won=bool(getattr(state, "won", False)),
+        urza_exile_permissions=_sorted_cards(getattr(state, "urza_exile_permissions", ())),
         objective_memory=_normalize_objective_memory(objective_memory),
     )
 

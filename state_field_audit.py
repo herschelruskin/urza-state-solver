@@ -65,6 +65,8 @@ STATE_FIELD_AUDIT: Mapping[str, FieldAudit] = {
         "Scour/Codex and threshold effects depend on graveyard contents; order is not modeled as relevant."),
     "exile": FieldAudit("zone accounting", "state_coordinate", PUBLIC, RETAIN,
         "Exiled cards remain unavailable; order is not modeled as relevant."),
+    "urza_exile_permissions": FieldAudit("temporary play permission", "state_coordinate", PUBLIC, RETAIN,
+        "Urza's {5} ability grants until-end-of-turn permission to play specific exiled card(s); multiplicity changes future legal actions."),
     "blue": FieldAudit("mana resource", "state_coordinate", PUBLIC, RETAIN,
         "Colored payment legality and protection depend on floating blue."),
     "colorless": FieldAudit("mana resource", "state_coordinate", PUBLIC, RETAIN,
