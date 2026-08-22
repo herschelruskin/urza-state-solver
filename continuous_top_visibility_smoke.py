@@ -14,6 +14,7 @@ def test_unattached_reality_chip_still_reveals_current_top():
     state = solver.State(
         turn=2,
         library=("Hidden A", "Hidden B"),
+        hand=(),
         battlefield=(solver.Perm("The Reality Chip"),),
         chip_attached=False,
     )
@@ -25,6 +26,7 @@ def test_level_one_ftt_reveals_top_before_play_permission_is_active():
     state = solver.State(
         turn=2,
         library=("Hidden A", "Hidden B"),
+        hand=(),
         battlefield=(solver.Perm("Fortune Teller's Talent"),),
         ftt_level=1,
         spell_cast_this_turn=False,
@@ -37,6 +39,7 @@ def test_look_permission_refreshes_after_known_top_changes():
     before = solver.State(
         turn=2,
         library=("Hidden A", "Hidden B", "Hidden C"),
+        hand=(),
         battlefield=(solver.Perm("The Reality Chip"),),
     )
     prior = initial_information(before)
@@ -50,6 +53,7 @@ def test_memory_survives_source_leaving_but_new_unknown_top_does_not_leak():
     before = solver.State(
         turn=2,
         library=("Known A", "Unknown B", "Unknown C"),
+        hand=(),
         battlefield=(solver.Perm("Fortune Teller's Talent"),),
     )
     prior = initial_information(before)
