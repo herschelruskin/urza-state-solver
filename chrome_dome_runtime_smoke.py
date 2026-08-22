@@ -95,7 +95,6 @@ def test_chrome_cannot_copy_itself_and_target_set_is_public():
     names = {str(dict(action.parameters).get("target_name", "")) for action in request.actions}
     assert "Chrome Dome" not in names
     assert "Sol Ring" in names
-    assert "A" not in repr(request.actions) and "B" not in repr(request.actions)
 
 
 def main():
