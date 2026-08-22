@@ -7,7 +7,7 @@ search pruning whose candidate set can depend on the concrete hidden future.
 
 The adapter admits only audited safe families: land plays, public mana abilities,
 Urza artifact taps, ordinary artifact casts, command-zone Urza, proactive
-nonartifact casts, staged simple tutors, staged X-artifact tutors, and end-turn
+nonartifact casts, staged simple tutors, staged artifact tutors, and end-turn
 commitment followed by typed chance observations. Hidden-information families are
 routed through staged adapters, never by importing Oracle successors.
 """
@@ -52,6 +52,16 @@ from non_oracle_x_artifact_tutor_runtime import (
     handles_x_artifact_stack_top,
     x_artifact_pending_request,
     x_artifact_runtime_intents,
+)
+from non_oracle_transmute_runtime import (
+    MAIN_USE_TRANSMUTE_ARTIFACT,
+    apply_transmute_pending,
+    apply_transmute_stack_action,
+    begin_transmute,
+    handles_transmute_pending,
+    handles_transmute_stack_top,
+    transmute_pending_request,
+    transmute_runtime_intents,
 )
 from non_oracle_runtime import (
     NonOracleRuntimeState,
@@ -194,7 +204,6 @@ def _end_turn_intent(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ...]
 
 
 def _normalize_empty_stack_main_window(runtime: NonOracleRuntimeState) -> NonOracleRuntimeState:
-    """Empty stack + our main-phase priority is the main_empty decision window."""
     if (
         runtime.pending is None
         and not runtime.stack.objects
@@ -218,6 +227,7 @@ def main_phase_intents(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ..
     rows.extend(proactive_nonartifact_intents(runtime))
     rows.extend(simple_tutor_runtime_intents(runtime))
     rows.extend(x_artifact_runtime_intents(runtime))
+    rows.extend(transmute_runtime_intents(runtime))
     rows.extend(commander_cast_intents(runtime))
     rows.extend(_end_turn_intent(runtime))
     return tuple(sorted(rows, key=lambda action: action.action_id))
@@ -233,19 +243,18 @@ def rules_decision_request(
 ) -> DecisionRequest:
     if handles_simple_tutor_pending(runtime):
         return simple_tutor_pending_request(
-            runtime,
-            horizon=horizon,
-            objective=objective,
-            policy_id=policy_id,
-            caverns_live=caverns_live,
+            runtime, horizon=horizon, objective=objective,
+            policy_id=policy_id, caverns_live=caverns_live,
         )
     if handles_x_artifact_pending(runtime):
         return x_artifact_pending_request(
-            runtime,
-            horizon=horizon,
-            objective=objective,
-            policy_id=policy_id,
-            caverns_live=caverns_live,
+            runtime, horizon=horizon, objective=objective,
+            policy_id=policy_id, caverns_live=caverns_live,
+        )
+    if handles_transmute_pending(runtime):
+        return transmute_pending_request(
+            runtime, horizon=horizon, objective=objective,
+            policy_id=policy_id, caverns_live=caverns_live,
         )
     if runtime.pending is not None or runtime.stack.objects:
         return runtime_decision_request(
@@ -284,6 +293,8 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
             resolved = apply_simple_tutor_pending(runtime, action)
         elif handles_x_artifact_pending(runtime):
             resolved = apply_x_artifact_pending(runtime, action)
+        elif handles_transmute_pending(runtime):
+            resolved = apply_transmute_pending(runtime, action)
         elif handles_commander_stack_top(runtime):
             resolved = apply_commander_stack_action(runtime, action)
         elif handles_proactive_stack_top(runtime):
@@ -292,6 +303,8 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
             resolved = apply_simple_tutor_stack_action(runtime, action)
         elif handles_x_artifact_stack_top(runtime):
             resolved = apply_x_artifact_stack_action(runtime, action)
+        elif handles_transmute_stack_top(runtime):
+            resolved = apply_transmute_stack_action(runtime, action)
         else:
             resolved = apply_runtime_action(runtime, action)
         return _normalize_empty_stack_main_window(resolved)
@@ -323,16 +336,14 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
 
     if action.kind == MAIN_CAST_PROACTIVE_NONARTIFACT:
         return begin_proactive_nonartifact_cast(runtime, action)
-
     if action.kind == MAIN_USE_SIMPLE_TUTOR:
         return begin_simple_tutor(runtime, action)
-
     if action.kind == MAIN_USE_X_ARTIFACT_TUTOR:
         return begin_x_artifact_tutor(runtime, action)
-
+    if action.kind == MAIN_USE_TRANSMUTE_ARTIFACT:
+        return begin_transmute(runtime, action)
     if action.kind == MAIN_CAST_COMMANDER:
         return begin_commander_cast(runtime, action)
-
     if action.kind == MAIN_END_TURN:
         return advance_after_end_turn(runtime)
 
