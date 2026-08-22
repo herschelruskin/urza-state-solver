@@ -12,7 +12,9 @@ Current modeled knowledge events:
 - Mystical Tutor shuffle-then-known-top placement;
 - every current library-search shuffle and Urza spin;
 - draws/mills/top casts consuming an already-known prefix;
-- continuous top visibility from attached Reality Chip or active FTT top access.
+- continuous top visibility from The Reality Chip or Fortune Teller's Talent
+  whenever either permanent is present, independent of whether its play-from-top
+  permission is currently active.
 
 The concrete State is used only to validate/infer the consequences of an event the
 player observed.  Exact unknown order is never copied wholesale into InformationState.
@@ -74,6 +76,23 @@ def new_trace_lines(before, after) -> Tuple[str, ...]:
 
 
 def _top_visible(state) -> bool:
+    """Whether the player may legally look at the current library top.
+
+    Both The Reality Chip and Fortune Teller's Talent grant the look permission
+    independently of their separate play-from-top permissions.  Keep the legacy
+    derived flags as compatibility fallbacks for synthetic tests / old snapshots,
+    but actual battlefield presence is sufficient by itself.
+    """
+    battlefield_names = {
+        str(getattr(perm, "name", "")) for perm in getattr(state, "battlefield", ())
+    }
+    if "The Reality Chip" in battlefield_names:
+        return True
+    if "Fortune Teller's Talent" in battlefield_names:
+        return True
+
+    # Compatibility for old synthetic states that encoded only derived runtime
+    # flags.  Real transitions clear these flags when the source permanent leaves.
     return bool(
         getattr(state, "chip_attached", False)
         or (
@@ -317,7 +336,9 @@ def propagate_information(before, after, prior: InformationState) -> Information
             ),
         )
 
-    # Chip/FTT reveal the current top continuously after all other action effects.
+    # Chip/FTT look permissions reveal the current top continuously after all
+    # other action effects, even when their separate play-from-top condition is
+    # not active.
     info = _reveal_continuous_top(info, after)
     validate_information_against_state(info, after)
     return info
