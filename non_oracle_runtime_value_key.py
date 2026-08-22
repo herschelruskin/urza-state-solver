@@ -3,10 +3,10 @@
 
 The strategic state projection intentionally excludes provenance, exact hidden
 permutation, and RNG.  Policy-mode execution additionally carries public rules
-resources that are not part of the legacy Oracle State:
+resources that are not part of the base strategic projection:
 
 - live until-end-of-turn Urza play permissions;
-- ordered pending controlled triggers;
+- ordered pending stack objects;
 - the current decision/priority window.
 
 Those resources change future legal actions and therefore MUST participate in
@@ -23,7 +23,7 @@ from strategic_value_state import canonical_strategic_state_key
 from trigger_order_adapter import PendingTriggerStack
 from urza_permission_adapter import UrzaPermissionState
 
-NON_ORACLE_RUNTIME_VALUE_KEY_VERSION = "urza-non-oracle-runtime-value-v1"
+NON_ORACLE_RUNTIME_VALUE_KEY_VERSION = "urza-non-oracle-runtime-value-v2"
 WINDOW_MAIN_EMPTY = "main_empty"
 WINDOW_PRIORITY = "priority"
 WINDOW_POST_OBSERVATION = "post_observation"
@@ -62,12 +62,25 @@ def urza_permissions_strategic_key(
     return ("urza-permissions-strategic-v1", rows)
 
 
+def _stack_strategic_key(
+    trigger_stack: PendingTriggerStack,
+    runtime_stack,
+) -> Tuple[object, ...]:
+    if runtime_stack is not None:
+        method = getattr(runtime_stack, "strategic_key", None)
+        if method is None:
+            raise TypeError("runtime_stack must provide strategic_key()")
+        return tuple(method())
+    return trigger_stack.strategic_key()
+
+
 def canonical_non_oracle_runtime_value_key(
     state,
     information: InformationState,
     *,
     permissions: Optional[UrzaPermissionState] = None,
     trigger_stack: Optional[PendingTriggerStack] = None,
+    runtime_stack=None,
     window: Optional[RuntimeDecisionWindow] = None,
     objective_memory=None,
 ) -> Tuple[object, ...]:
@@ -83,7 +96,7 @@ def canonical_non_oracle_runtime_value_key(
                 objective_memory=objective_memory,
             ),
             urza_permissions_strategic_key(permissions),
-            trigger_stack.strategic_key(),
+            _stack_strategic_key(trigger_stack, runtime_stack),
             window.strategic_key(),
         ),
         version=NON_ORACLE_RUNTIME_VALUE_KEY_VERSION,
