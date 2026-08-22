@@ -34,6 +34,7 @@ jobs:
             phase2_runtime_smoke.py \
             base_policy_smoke.py \
             commander_adapter_smoke.py \
+            runtime_pending_value_key_smoke.py \
             rules_adapter_smoke.py \
             turn_engine_smoke.py \
             episode_smoke.py
@@ -43,6 +44,8 @@ jobs:
         run: python base_policy_smoke.py
       - name: Typed commander casting
         run: python commander_adapter_smoke.py
+      - name: Pending runtime V key identity
+        run: python runtime_pending_value_key_smoke.py
       - name: Main-phase rules adapter
         run: python rules_adapter_smoke.py
       - name: Typed turn engine
