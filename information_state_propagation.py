@@ -245,10 +245,23 @@ def propagate_information(before, after, prior: InformationState) -> Information
     validate_information_against_state(prior, before)
     lines = new_trace_lines(before, after)
     shuffled = _action_shuffled(lines)
+    has_scry = any(_SCRY_RE.search(line.strip()) for line in lines)
 
     if shuffled:
         info = prior.after_shuffle()
     else:
+        # A scry moves newly-bottomed cards *below* an already-known bottom suffix.
+        # Therefore the old suffix may no longer be the physical end of the final
+        # library during this intermediate step. Preserve it through the generic
+        # transition; _apply_scry_event appends each newly bottomed card afterward.
+        # Non-scry transitions still use the strict suffix trimmer.
+        carried_bottom = (
+            tuple(prior.known_bottom)
+            if has_scry
+            else _trim_known_bottom(
+                prior.known_bottom, getattr(after, "library", ())
+            )
+        )
         info = replace(
             prior,
             known_top=_trim_known_top(
@@ -256,9 +269,7 @@ def propagate_information(before, after, prior: InformationState) -> Information
                 getattr(before, "library", ()),
                 getattr(after, "library", ()),
             ),
-            known_bottom=_trim_known_bottom(
-                prior.known_bottom, getattr(after, "library", ())
-            ),
+            known_bottom=carried_bottom,
         )
 
     universe = _card_universe(before, after)
