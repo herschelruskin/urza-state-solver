@@ -1,15 +1,9 @@
 #!/usr/bin/env python3
 """Seed-independent strategic value-state projection for non-Oracle DP/MC.
 
-This module is deliberately decision-neutral.  It does not alter Oracle State,
-legal actions, pruning, beam search, shuffles, or winners.  It provides a separate
+This module is deliberately decision-neutral. It does not alter Oracle State,
+legal actions, pruning, beam search, shuffles, or winners. It provides a separate
 identity for expected-value memoization and instrumentation.
-
-The central rule is that a non-Oracle value key represents what is strategically
-relevant under legal information.  Exact hidden library order and the concrete RNG
-root therefore do not belong in this identity.  Hidden-library order is replaced
-by a belief key consisting of the remaining multiset plus currently legal hidden-
-zone knowledge.
 """
 
 from __future__ import annotations
@@ -26,6 +20,7 @@ from solver_architecture import (
 )
 
 STRATEGIC_VALUE_KEY_VERSION = "urza-strategic-value-v1"
+INFORMATION_VALUE_KEY_VERSION = "urza-information-value-v1"
 
 
 def _sorted_cards(values: Iterable[str]) -> Tuple[str, ...]:
@@ -33,7 +28,6 @@ def _sorted_cards(values: Iterable[str]) -> Tuple[str, ...]:
 
 
 def _canonical_permanent(perm: Any) -> PublicPermanent:
-    """Project an Oracle Perm onto future-relevant permanent identity."""
     return PublicPermanent(
         name=str(getattr(perm, "name")),
         tapped=bool(getattr(perm, "tapped", False)),
@@ -68,23 +62,24 @@ def _normalize_objective_memory(
     return tuple(sorted(((str(k), v) for k, v in items), key=lambda kv: kv[0]))
 
 
+def canonical_information_value_key(information: InformationState) -> Tuple[Any, ...]:
+    """Value-relevant legal knowledge, deliberately excluding shuffle_epoch.
+
+    ``shuffle_epoch`` is useful for replay/invalidation bookkeeping but is not
+    observable strategic information once current top/bottom/count knowledge is
+    identical. It therefore must not inflate concrete+information denominators.
+    """
+    payload = (
+        tuple(str(card) for card in information.known_top),
+        tuple(str(card) for card in information.known_bottom),
+        _normalize_known_counts(information.known_library_counts),
+    )
+    return stable_key(payload, version=INFORMATION_VALUE_KEY_VERSION)
+
+
 @dataclass(frozen=True)
 class LibraryBeliefKey:
-    """Information-safe identity for the current hidden library.
-
-    ``remaining_counts`` intentionally forgets exact hidden order while retaining
-    the exact remaining multiset.  In this fixed-deck simulator that multiset is
-    inferable from the known decklist plus observed zones/draws, so it does not
-    grant Oracle knowledge.
-
-    ``known_top`` and ``known_bottom`` retain legally acquired order/constraints.
-    ``known_library_counts`` retains any additional information-state count facts.
-
-    ``InformationState.shuffle_epoch`` is intentionally *not* keyed.  If two
-    states have the same remaining multiset and the same current knowledge after
-    different numbers of shuffles, their expected future value is the same.  The
-    epoch remains useful for replay/invalidation bookkeeping, not V(s) identity.
-    """
+    """Information-safe identity for the current hidden library."""
 
     remaining_counts: Tuple[Tuple[str, int], ...]
     known_top: Tuple[str, ...] = ()
@@ -141,11 +136,6 @@ def project_strategic_value_state(
     *,
     objective_memory: Optional[Mapping[str, Any] | Iterable[Tuple[str, Any]]] = None,
 ) -> StrategicValueState:
-    """Project a concrete solver state into seed-independent value identity.
-
-    ``information`` is required on purpose.  Production non-Oracle callers must
-    never silently assume that no hidden-zone knowledge exists.
-    """
     return StrategicValueState(
         turn=int(getattr(state, "turn")),
         library_belief=LibraryBeliefKey.from_state(state, information),
@@ -183,7 +173,6 @@ def canonical_strategic_state_key(
     *,
     objective_memory: Optional[Mapping[str, Any] | Iterable[Tuple[str, Any]]] = None,
 ) -> Tuple[Any, ...]:
-    """Return deterministic seed-independent identity suitable for V/Q caches."""
     projection = project_strategic_value_state(
         state,
         information,
@@ -193,15 +182,7 @@ def canonical_strategic_state_key(
 
 
 class StrategicKeyProfiler:
-    """Decision-neutral measurement of concrete -> strategic state collapse.
-
-    In addition to the legacy concrete sampled-world count, this profiler tracks
-    ``concrete_information_unique``: the pair of concrete Markov state and legal
-    InformationState.  Once knowledge propagation exists, that is the correct
-    pre-value identity to compare against a strategic value key.  Two identical
-    concrete worlds reached with different remembered information are not safely
-    interchangeable for a legal-information policy.
-    """
+    """Decision-neutral concrete/information -> strategic collapse measurement."""
 
     def __init__(self) -> None:
         self.observations = 0
@@ -234,7 +215,7 @@ class StrategicKeyProfiler:
         depth: Optional[int] = None,
     ) -> None:
         concrete = canonical_markov_state_key(state)
-        concrete_information = (concrete, information.key())
+        concrete_information = (concrete, canonical_information_value_key(information))
         strategic = canonical_strategic_state_key(
             state,
             information,
