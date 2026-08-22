@@ -2,11 +2,11 @@
 """Phase-1 staged non-Oracle adapters for Reshape and Whir of Invention.
 
 The critical anti-clairvoyance invariant for both spells is that X is chosen while
-casting, before a library search reveals eligible artifact targets.  Reshape also
-sacrifices an artifact as an additional casting cost.  Whir may use improvise as
+casting, before a library search reveals eligible artifact targets. Reshape also
+sacrifices an artifact as an additional casting cost. Whir may use improvise as
 part of paying the generic portion of its cast cost.
 
-This module intentionally lives beside the Oracle macros.  It reuses validated
+This module intentionally lives beside the Oracle macros. It reuses validated
 mana/permanent helpers but does not alter Oracle search behavior.
 """
 
@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from itertools import combinations
-from typing import Dict, Iterable, Optional, Sequence, Tuple
+from typing import Dict, Optional, Tuple
 
 import urza_solver as solver
 from solver_architecture import InformationState, make_policy_view
@@ -73,6 +73,10 @@ class PermanentSlot:
         )
 
 
+def _source_prefix(source: str) -> str:
+    return source.lower().replace(" ", ".").replace("'", "")
+
+
 def _slot_base(perm) -> Tuple[object, ...]:
     return (
         str(getattr(perm, "name", "")),
@@ -102,10 +106,11 @@ def _public_slots(state, predicate) -> Tuple[PermanentSlot, ...]:
 
 def _slot_index(state, wanted: PermanentSlot) -> int:
     occurrence = 0
+    wanted_base = tuple(wanted.key()[:-1])
     for index, perm in sorted(
         enumerate(state.battlefield), key=lambda row: (_slot_base(row[1]), row[0])
     ):
-        if _slot_base(perm) != tuple(wanted.key()[:-1]):
+        if _slot_base(perm) != wanted_base:
             continue
         if occurrence == wanted.occurrence:
             return index
@@ -153,10 +158,13 @@ def _artifact_search_event(state, source: str, x: int) -> SearchZoneObservation:
     )
 
 
-def _target_intents(context: SearchContext, search: SearchZoneObservation) -> Tuple[ActionIntent, ...]:
+def _target_intents(
+    context: SearchContext, search: SearchZoneObservation
+) -> Tuple[ActionIntent, ...]:
+    prefix = _source_prefix(context.source)
     rows = [
         ActionIntent(
-            action_id=f"{context.source.lower().replace(' ', '.').replace("'", '')}.target.fail",
+            action_id=f"{prefix}.target.fail",
             kind=SEARCH_KIND,
             parameters=(("target", ""), ("x", context.x)),
             equivalence_key=(context.source, "fail", context.x),
@@ -166,7 +174,6 @@ def _target_intents(context: SearchContext, search: SearchZoneObservation) -> Tu
             contingent_on=context.cast_action_id,
         )
     ]
-    prefix = context.source.lower().replace(" ", ".").replace("'", "")
     for index, card in enumerate(search.legal_cards):
         rows.append(
             ActionIntent(
@@ -207,7 +214,9 @@ def _target_request(
     )
 
 
-def _target_from_action(action: ActionIntent, context: SearchContext, search: SearchZoneObservation) -> str:
+def _target_from_action(
+    action: ActionIntent, context: SearchContext, search: SearchZoneObservation
+) -> str:
     if action.kind != SEARCH_KIND or action.decision_stage != DECISION_POST_OBSERVATION:
         raise ValueError("not an X-artifact search target action")
     params = dict(action.parameters)
@@ -221,9 +230,11 @@ def _target_from_action(action: ActionIntent, context: SearchContext, search: Se
 
 def _finish_search(state, context: SearchContext, target: str) -> TransitionEnvelope:
     if not target:
-        salt = f"{context.source.lower().replace(' ', '-')}:no-target:x{context.x}"
+        salt = f"{_source_prefix(context.source)}:no-target:x{context.x}"
         shuffled = replace(state, library=solver.shuffled_library(state, salt))
-        shuffled = solver.add_trace(shuffled, f"{context.source} X={context.x}: find no card; shuffle")
+        shuffled = solver.add_trace(
+            shuffled, f"{context.source} X={context.x}: find no card; shuffle"
+        )
         return TransitionEnvelope(
             true_state=shuffled,
             observations=ObservationBatch((ShuffleObservation(context.source),)),
@@ -239,12 +250,14 @@ def _finish_search(state, context: SearchContext, target: str) -> TransitionEnve
     entered = solver.add_perm(without, target, sick=target in solver.CREATURES)
     salt = ("reshape:" + target) if context.source == RESHAPE else ("whir:" + target)
     shuffled = replace(entered, library=solver.shuffled_library(entered, salt))
-    shuffled = solver.add_trace(shuffled, f"{context.source} X={context.x} -> {target}; shuffle")
+    shuffled = solver.add_trace(
+        shuffled, f"{context.source} X={context.x} -> {target}; shuffle"
+    )
     return TransitionEnvelope(
         true_state=shuffled,
         observations=ObservationBatch((ShuffleObservation(context.source),)),
         pending_decision=PendingDecisionSpec(
-            decision_id=f"{context.source.lower().replace(' ', '.')}.etb",
+            decision_id=f"{_source_prefix(context.source)}.etb",
             kind=ETB_KIND,
             source=target,
             decision_stage=DECISION_MECHANICAL,
@@ -316,8 +329,12 @@ def reshape_cast_request(
     )
 
 
-def resolve_reshape_cast(state, action: ActionIntent) -> Tuple[TransitionEnvelope, SearchContext, SearchZoneObservation]:
-    legal = {candidate.canonical_key(): candidate for candidate in reshape_cast_intents(state)}
+def resolve_reshape_cast(
+    state, action: ActionIntent
+) -> Tuple[TransitionEnvelope, SearchContext, SearchZoneObservation]:
+    legal = {
+        candidate.canonical_key(): candidate for candidate in reshape_cast_intents(state)
+    }
     if action.canonical_key() not in legal:
         raise ValueError("Reshape cast action is not legal in current state")
     params = dict(action.parameters)
@@ -334,12 +351,12 @@ def resolve_reshape_cast(state, action: ActionIntent) -> Tuple[TransitionEnvelop
         graveyard=paid.graveyard + (RESHAPE,),
         spell_cast_this_turn=True,
     )
-    # The sacrifice is an additional casting cost and therefore happens before
-    # the search observation.  Use the publicly selected object, never a library target.
     index = _slot_index(paid, slot)
     paid = solver.remove_perm(paid, index)
     paid = solver.vfc_noncreature_cast_trigger(paid, RESHAPE)
-    paid = solver.add_trace(paid, f"cast Reshape X={x}; artifact sacrificed as additional cost")
+    paid = solver.add_trace(
+        paid, f"cast Reshape X={x}; artifact sacrificed as additional cost"
+    )
 
     search = _artifact_search_event(paid, RESHAPE, x)
     context = SearchContext(RESHAPE, x, "reshape.search.target", action.action_id)
@@ -381,7 +398,12 @@ def reshape_target_request(
     )
 
 
-def resolve_reshape_target(state_after_cast, context: SearchContext, search: SearchZoneObservation, action: ActionIntent) -> TransitionEnvelope:
+def resolve_reshape_target(
+    state_after_cast,
+    context: SearchContext,
+    search: SearchZoneObservation,
+    action: ActionIntent,
+) -> TransitionEnvelope:
     target = _target_from_action(action, context, search)
     return _finish_search(state_after_cast, context, target)
 
@@ -391,7 +413,9 @@ def resolve_reshape_target(state_after_cast, context: SearchContext, search: Sea
 # ---------------------------------------------------------------------------
 
 
-def _whir_payment_plans(state, x: int) -> Tuple[Tuple[Tuple[PermanentSlot, ...], int], ...]:
+def _whir_payment_plans(
+    state, x: int
+) -> Tuple[Tuple[Tuple[PermanentSlot, ...], int], ...]:
     """Return legal (improvise slots, floating generic paid) plans for fixed X."""
     if state.blue < 3:
         return ()
@@ -419,7 +443,12 @@ def whir_cast_intents(state) -> Tuple[ActionIntent, ...]:
     after_blue = solver.pay(state, 0, 3)
     if after_blue is None:
         return ()
-    max_x = reduction + after_blue.blue + after_blue.colorless + len(_artifact_slots(after_blue, untapped_only=True))
+    max_x = (
+        reduction
+        + after_blue.blue
+        + after_blue.colorless
+        + len(_artifact_slots(after_blue, untapped_only=True))
+    )
     rows = []
     serial = 0
     for x in range(max_x + 1):
@@ -433,10 +462,20 @@ def whir_cast_intents(state) -> Tuple[ActionIntent, ...]:
                         ("improvise", tuple(slot.key() for slot in slots)),
                         ("floating_generic", floating),
                     ),
-                    equivalence_key=("whir", x, tuple(slot.key() for slot in slots), floating),
+                    equivalence_key=(
+                        "whir",
+                        x,
+                        tuple(slot.key() for slot in slots),
+                        floating,
+                    ),
                     label=(
                         f"Cast Whir X={x}"
-                        + ("; improvise " + ", ".join(slot.name or slot.mode for slot in slots) if slots else "")
+                        + (
+                            "; improvise "
+                            + ", ".join(slot.name or slot.mode for slot in slots)
+                            if slots
+                            else ""
+                        )
                     ),
                     decision_stage=DECISION_COMMIT,
                     source=WHIR,
@@ -468,8 +507,12 @@ def whir_cast_request(
     )
 
 
-def resolve_whir_cast(state, action: ActionIntent) -> Tuple[TransitionEnvelope, SearchContext, SearchZoneObservation]:
-    legal = {candidate.canonical_key(): candidate for candidate in whir_cast_intents(state)}
+def resolve_whir_cast(
+    state, action: ActionIntent
+) -> Tuple[TransitionEnvelope, SearchContext, SearchZoneObservation]:
+    legal = {
+        candidate.canonical_key(): candidate for candidate in whir_cast_intents(state)
+    }
     if action.canonical_key() not in legal:
         raise ValueError("Whir cast action is not legal in current state")
     params = dict(action.parameters)
@@ -481,11 +524,11 @@ def resolve_whir_cast(state, action: ActionIntent) -> Tuple[TransitionEnvelope, 
     paid = solver.pay(state, 0, 3)
     if paid is None:
         raise ValueError("Whir colored cost could not be paid")
-    # Improvise is part of paying the cast cost.  Resolve the publicly committed
-    # tap choices before the spell is considered cast / before any search occurs.
     for slot in slots:
         index = _slot_index(paid, slot)
-        if paid.battlefield[index].tapped or not solver.is_artifact_perm(paid.battlefield[index]):
+        if paid.battlefield[index].tapped or not solver.is_artifact_perm(
+            paid.battlefield[index]
+        ):
             raise ValueError("committed improvise object is no longer legal")
         paid = solver.update_perm(paid, index, tapped=True)
     paid = solver.pay(paid, floating, 0)
@@ -498,7 +541,9 @@ def resolve_whir_cast(state, action: ActionIntent) -> Tuple[TransitionEnvelope, 
         spell_cast_this_turn=True,
     )
     paid = solver.vfc_noncreature_cast_trigger(paid, WHIR)
-    paid = solver.add_trace(paid, f"cast Whir X={x}; payment plan committed before search")
+    paid = solver.add_trace(
+        paid, f"cast Whir X={x}; payment plan committed before search"
+    )
 
     search = _artifact_search_event(paid, WHIR, x)
     context = SearchContext(WHIR, x, "whir.search.target", action.action_id)
@@ -540,10 +585,17 @@ def whir_target_request(
     )
 
 
-def resolve_whir_target(state_after_cast, context: SearchContext, search: SearchZoneObservation, action: ActionIntent) -> TransitionEnvelope:
+def resolve_whir_target(
+    state_after_cast,
+    context: SearchContext,
+    search: SearchZoneObservation,
+    action: ActionIntent,
+) -> TransitionEnvelope:
     target = _target_from_action(action, context, search)
     return _finish_search(state_after_cast, context, target)
 
 
-def information_after_x_search_transition(prior: InformationState, envelope: TransitionEnvelope) -> InformationState:
+def information_after_x_search_transition(
+    prior: InformationState, envelope: TransitionEnvelope
+) -> InformationState:
     return apply_observation_batch(prior, envelope.observations)
