@@ -18,6 +18,7 @@ def trigger_state(top):
     return solver.State(
         turn=3,
         library=(top, "Tail"),
+        hand=(),
         battlefield=(
             solver.Perm("Fortune Teller's Talent"),
             solver.Perm("Artificer's Assistant"),
@@ -121,6 +122,7 @@ def test_duplicate_trigger_copies_are_collapsed_by_strategic_order():
     state = solver.State(
         turn=3,
         library=("Top",),
+        hand=(),
         battlefield=(
             solver.Perm("Artificer's Assistant"),
             solver.Perm("Forensic Gadgeteer"),
