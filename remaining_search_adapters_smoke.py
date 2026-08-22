@@ -75,6 +75,7 @@ def test_bay_target_only_appears_after_search_and_shuffle_resets_information():
     state = solver.State(
         turn=2,
         library=("Mana Vault", "Tail"),
+        hand=(),
         battlefield=(solver.Perm(BAY), clue()),
         colorless=2,
         rng_root_seed=20260822,
@@ -100,6 +101,7 @@ def test_tezzeret_minus3_commit_is_hidden_future_invariant_and_loyalty_paid_firs
     base = solver.State(
         turn=2,
         library=cards,
+        hand=(),
         battlefield=(solver.Perm(TEZZ, counters=4),),
         rng_root_seed=20260822,
     )
@@ -124,6 +126,7 @@ def test_tezzeret_target_to_hand_occurs_only_after_search():
     state = solver.State(
         turn=2,
         library=("Mana Vault", "Tail"),
+        hand=(),
         battlefield=(solver.Perm(TEZZ, counters=4),),
         rng_root_seed=20260822,
     )
@@ -143,6 +146,7 @@ def test_saga_pending_trigger_goes_directly_to_search_observation():
     state = solver.State(
         turn=3,
         library=cards,
+        hand=(),
         battlefield=(solver.Perm(SAGA, counters=3, mode="landface"),),
         saga3_pending=True,
         rng_root_seed=20260822,
@@ -160,6 +164,7 @@ def test_saga_target_choice_occurs_after_observation_and_final_chapter_sacrifice
     state = solver.State(
         turn=3,
         library=("Sensei's Divining Top", "Tail"),
+        hand=(),
         battlefield=(solver.Perm(SAGA, counters=3, mode="landface"),),
         saga3_pending=True,
         rng_root_seed=20260822,
