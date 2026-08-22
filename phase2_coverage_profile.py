@@ -5,6 +5,10 @@ Diagnostic only: this intentionally does NOT choose mulligans yet.  Each sample 
 fresh shuffled seven plus the modeled multiplayer turn-one draw.  The purpose is to
 rank missing runtime adapters by how often they actually stop a deterministic
 base-policy trajectory.
+
+Unsupported runtime slices are measurements, not profiler failures: a
+NotImplementedError is converted into a stable blocker category so one missing card
+adapter cannot hide the blocker distribution for the rest of the sample.
 """
 
 from __future__ import annotations
@@ -42,6 +46,20 @@ def opening_runtime(seed: int, deck):
     )
 
 
+def _unsupported_reason(exc: NotImplementedError) -> str:
+    text = str(exc).strip().lower()
+    if "cam etb target" in text:
+        return "unsupported_cam_etb_target"
+    if "cam ltb target" in text:
+        return "unsupported_cam_ltb_target"
+    if "mox diamond" in text:
+        return "unsupported_mox_diamond"
+    if "everflowing chalice" in text or "chalice" in text:
+        return "unsupported_everflowing_chalice"
+    compact = "_".join(text.split())[:80]
+    return "unsupported_exception:" + (compact or exc.__class__.__name__.lower())
+
+
 def profile(*, base_seed: int, count: int, horizon: int):
     deck = solver.load_deck(Path("decklist.txt"))
     reasons = Counter()
@@ -50,7 +68,27 @@ def profile(*, base_seed: int, count: int, horizon: int):
     examples = {}
 
     for seed in range(int(base_seed), int(base_seed) + int(count)):
-        result = run_deterministic_episode(opening_runtime(seed, deck), horizon=horizon)
+        runtime = opening_runtime(seed, deck)
+        try:
+            result = run_deterministic_episode(runtime, horizon=horizon)
+        except NotImplementedError as exc:
+            reason = _unsupported_reason(exc)
+            reasons[reason] += 1
+            examples.setdefault(
+                reason,
+                {
+                    "seed": seed,
+                    "turn": runtime.true_state.turn,
+                    "hand": runtime.true_state.hand,
+                    "battlefield": tuple(
+                        (p.name, p.mode, p.tapped) for p in runtime.true_state.battlefield
+                    ),
+                    "steps": None,
+                    "detail": str(exc),
+                },
+            )
+            continue
+
         reasons[result.terminal_reason] += 1
         if result.win_turn is not None:
             win_turns[result.win_turn] += 1
@@ -65,6 +103,7 @@ def profile(*, base_seed: int, count: int, horizon: int):
                     (p.name, p.mode, p.tapped) for p in result.runtime.true_state.battlefield
                 ),
                 "steps": len(result.steps),
+                "detail": "",
             },
         )
 
@@ -73,13 +112,14 @@ def profile(*, base_seed: int, count: int, horizon: int):
     for reason, n in reasons.most_common():
         print(f"  {reason:36s} {n:4d}  {100*n/count:6.2f}%")
     print("win turns:", dict(sorted(win_turns.items())))
-    print(f"mean steps: {sum(steps)/len(steps):.2f}" if steps else "mean steps: 0")
+    print(f"mean completed steps: {sum(steps)/len(steps):.2f}" if steps else "mean completed steps: 0")
     print("first example by terminal reason:")
     for reason in sorted(examples):
         row = examples[reason]
+        detail = f" detail={row['detail']}" if row.get("detail") else ""
         print(
             f"  {reason}: seed={row['seed']} turn={row['turn']} steps={row['steps']} "
-            f"hand={row['hand']} battlefield={row['battlefield']}"
+            f"hand={row['hand']} battlefield={row['battlefield']}{detail}"
         )
     return reasons
 
