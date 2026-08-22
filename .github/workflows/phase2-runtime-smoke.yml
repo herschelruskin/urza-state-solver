@@ -31,6 +31,7 @@ jobs:
             non_oracle_simple_tutor_runtime.py \
             non_oracle_x_artifact_tutor_runtime.py \
             non_oracle_transmute_runtime.py \
+            non_oracle_remaining_search_runtime.py \
             non_oracle_rules_adapter.py \
             non_oracle_turn_engine.py \
             non_oracle_episode.py \
@@ -42,6 +43,7 @@ jobs:
             simple_tutor_runtime_smoke.py \
             x_artifact_tutor_runtime_smoke.py \
             transmute_runtime_smoke.py \
+            remaining_search_runtime_smoke.py \
             runtime_pending_value_key_smoke.py \
             rules_adapter_smoke.py \
             turn_engine_smoke.py \
@@ -60,6 +62,8 @@ jobs:
         run: python x_artifact_tutor_runtime_smoke.py
       - name: Staged Transmute Artifact
         run: python transmute_runtime_smoke.py
+      - name: Remaining staged artifact searches
+        run: python remaining_search_runtime_smoke.py
       - name: Pending runtime V key identity
         run: python runtime_pending_value_key_smoke.py
       - name: Main-phase rules adapter
