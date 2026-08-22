@@ -67,6 +67,8 @@ STATE_FIELD_AUDIT: Mapping[str, FieldAudit] = {
         "Exiled cards remain unavailable; order is not modeled as relevant."),
     "urza_exile_permissions": FieldAudit("temporary play permission", "state_coordinate", PUBLIC, RETAIN,
         "Urza's {5} ability grants until-end-of-turn permission to play specific exiled card(s); multiplicity changes future legal actions."),
+    "oracle_stack": FieldAudit("Oracle pending stack", "state_coordinate", RUNTIME_ONLY, RETAIN,
+        "Clairvoyant Oracle-only compact stack for priority windows. Non-Oracle policy mode uses the typed runtime stack sidecar, so this raw compression is not projected directly to PolicyView."),
     "blue": FieldAudit("mana resource", "state_coordinate", PUBLIC, RETAIN,
         "Colored payment legality and protection depend on floating blue."),
     "colorless": FieldAudit("mana resource", "state_coordinate", PUBLIC, RETAIN,
