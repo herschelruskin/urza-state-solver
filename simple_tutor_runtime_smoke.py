@@ -27,19 +27,6 @@ def pass_action(runtime):
     )
 
 
-def settle_until_target_or_main(runtime, limit=20):
-    for _ in range(limit):
-        request = rules_decision_request(runtime, horizon=6)
-        if request.actions and all(action.kind == "choose_tutor_target" for action in request.actions):
-            return runtime
-        if runtime.pending is None and not runtime.stack.objects:
-            return runtime
-        if not request.actions:
-            raise AssertionError("simple tutor runtime stopped with unresolved stack")
-        runtime = apply_main_action(runtime, DeterministicBasePolicy().choose_request(request))
-    raise AssertionError("simple tutor runtime did not settle")
-
-
 def test_tutor_commit_actions_do_not_expose_hidden_targets_or_order():
     hand = ("Muddle the Mixture", "Mystical Tutor")
     left = make_runtime_state(solver.State(
@@ -164,7 +151,7 @@ def test_mystical_target_shuffle_then_known_top_is_preserved():
 def test_spellseeker_resolves_then_etb_searches_as_separate_stack_object():
     runtime = make_runtime_state(solver.State(
         turn=3,
-        library=("Power Artifact", "Retraction Helix", "Island"),
+        library=("Power Artifact", "Retraction Helix", "Merchant Scroll", "Island"),
         hand=("Spellseeker",),
         battlefield=(),
         blue=1,
@@ -183,7 +170,9 @@ def test_spellseeker_resolves_then_etb_searches_as_separate_stack_object():
     request = rules_decision_request(runtime, horizon=6)
     assert request.actions and all(a.kind == "choose_tutor_target" for a in request.actions)
     targets = {dict(a.parameters)["target"] for a in request.actions}
-    assert "Power Artifact" in targets and "Retraction Helix" in targets
+    assert "Retraction Helix" in targets and "Merchant Scroll" in targets
+    assert "Power Artifact" not in targets  # enchantment: not a Spellseeker target
+    assert "Island" not in targets
 
 
 def test_base_policy_target_choice_uses_revealed_target_value_not_library_order():
