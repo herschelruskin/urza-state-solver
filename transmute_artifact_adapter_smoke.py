@@ -150,8 +150,10 @@ def test_difference_can_use_mana_ability_during_resolution_not_only_floating_man
 
 
 def test_searched_target_cannot_pay_its_own_difference():
-    # The found Mana Vault is still a library card when the X=3 payment is asked
-    # for, so with no other mana sources there must be no pay option.
+    # The found Mana Vault has MV 1.  Sacrificing a Clue (MV 0) therefore asks
+    # for a difference payment of 1.  The found Vault is still the searched card,
+    # not a battlefield permanent, so with no other mana sources there must be no
+    # pay option: it cannot fund even its own {1} difference.
     state=base_state(
         ("Mana Vault","Sensei's Divining Top","Tail"),
         battlefield=(clue(),),
@@ -163,7 +165,7 @@ def test_searched_target_cannot_pay_its_own_difference():
     target_env,target_context,payment_options=resolve_transmute_target(
         sac_env.true_state,context,search,target
     )
-    assert target_context.difference==3
+    assert target_context.difference==1
     assert "Mana Vault" not in target_env.true_state.library
     assert not any(p.name=="Mana Vault" for p in target_env.true_state.battlefield)
     assert payment_options==(), "searched Mana Vault illegally funded its own payment"
