@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
-"""Profile current Phase-2 episode coverage on real shuffled deck openings.
+"""Profile Phase-2 episode coverage on real shuffled deck openings.
 
-Diagnostic only: this intentionally does NOT choose mulligans yet. Each sample is a
-fresh shuffled seven plus the modeled multiplayer turn-one draw. The purpose is to
-rank hard runtime blockers and expose both terminal failures and silent action gaps.
+This diagnostic intentionally does NOT choose mulligans yet. Each sample is a fresh
+shuffled seven plus the modeled multiplayer turn-one draw. The purpose is to measure
+three different things separately:
 
-A horizon feature is not automatically a bug: modeled cards can remain unused
-because they were uncastable, deprioritized, or drawn late. Rows explicitly ending
-in ``_unmodeled`` or ``_partial`` are implementation audit signals and should be
-worked down before Phase 2 is considered breadth-complete.
+1. hard runtime blockers that stop a trajectory before the requested horizon;
+2. silent Phase-2 action-surface gaps still present in horizon states;
+3. the deterministic base policy's observed win-turn distribution.
+
+A horizon feature is not automatically a bug: modeled cards can remain unused because
+they were uncastable, deprioritized, or drawn late. Rows ending in ``_unmodeled`` or
+``_partial`` are implementation-audit signals. Reactive interaction is reported
+separately because leaving a counterspell unused in a goldfish trajectory is expected.
 """
 
 from __future__ import annotations
@@ -38,6 +42,8 @@ COMBO_SPELL_CARDS = frozenset({
     "Power Artifact", "Banishing Knack", "Retraction Helix", "Dramatic Reversal",
 })
 SPECIAL_ARTIFACT_CASTS = frozenset({"Mox Diamond", "Everflowing Chalice"})
+REACTIVE_INTERACTION_CARDS = frozenset(getattr(solver, "INTERACTION_CARDS", frozenset()))
+SUCCESS_TERMINALS = frozenset({"horizon", "win"})
 
 
 def opening_runtime(seed: int, deck):
@@ -75,7 +81,6 @@ def _unsupported_reason(exc: NotImplementedError) -> str:
 
 
 def _horizon_state_features(state: solver.State):
-    """Strategic families still present at T7 after a T6 no-win trajectory."""
     hand = set(state.hand)
     battlefield_names = {p.name for p in state.battlefield}
     families = set()
@@ -101,7 +106,11 @@ def _horizon_state_features(state: solver.State):
         and card not in NONARTIFACT_ENGINE_CARDS
         and card not in COMBO_SPELL_CARDS
     }
-    if generic_nonartifact:
+    reactive = generic_nonartifact & REACTIVE_INTERACTION_CARDS
+    other = generic_nonartifact - reactive
+    if reactive:
+        families.add("hand_reactive_interaction_present")
+    if other:
         families.add("hand_other_nonartifact_unmodeled")
 
     if "Sensei's Divining Top" in battlefield_names:
@@ -129,8 +138,8 @@ def _horizon_state_features(state: solver.State):
         ):
             families.add("cam_ltb_sacrifice_route_partial")
     if "Chrome Dome" in battlefield_names:
-        # Opponent-before-us end-step copying is now modeled; arbitrary main/priority
-        # Chrome activation remains a separate action-surface slice.
+        # Opponent-before-us end-step copying is modeled. Main/priority activation
+        # remains a separate Phase-2 action surface.
         families.add("battlefield_chrome_main_activation_partial")
 
     return tuple(sorted(families))
@@ -143,10 +152,15 @@ def _horizon_nonartifact_cards(state: solver.State):
     )
 
 
+def _hard_blockers(reasons: Counter):
+    return Counter({reason: count for reason, count in reasons.items() if reason not in SUCCESS_TERMINALS})
+
+
 def profile(*, base_seed: int, count: int, horizon: int):
     deck = solver.load_deck(Path("decklist.txt"))
     reasons = Counter()
     win_turns = Counter()
+    win_families = Counter()
     steps = []
     examples = {}
     horizon_features = Counter()
@@ -178,6 +192,7 @@ def profile(*, base_seed: int, count: int, horizon: int):
         reasons[result.terminal_reason] += 1
         if result.win_turn is not None:
             win_turns[result.win_turn] += 1
+            win_families[result.win_family or "unspecified"] += 1
         steps.append(len(result.steps))
 
         if result.terminal_reason == "horizon":
@@ -202,22 +217,28 @@ def profile(*, base_seed: int, count: int, horizon: int):
             },
         )
 
+    wins = reasons.get("win", 0)
     print(f"PHASE2 COVERAGE: seeds={base_seed}..{base_seed+count-1} horizon=T{horizon}")
     print("terminal reasons:")
     for reason, n in reasons.most_common():
         print(f"  {reason:36s} {n:4d}  {100*n/count:6.2f}%")
+    print(f"wins by T{horizon}: {wins}/{count} = {100*wins/count:.2f}%")
     print("win turns:", dict(sorted(win_turns.items())))
+    print("win families:", dict(win_families.most_common()))
     print(f"mean completed steps: {sum(steps)/len(steps):.2f}" if steps else "mean completed steps: 0")
+
+    blockers = _hard_blockers(reasons)
+    print("hard runtime blockers:", dict(blockers) if blockers else "none")
 
     horizon_n = reasons.get("horizon", 0)
     if horizon_n:
-        print(f"horizon-state feature prevalence among {horizon_n} T6 no-win trajectories:")
-        print("  (_unmodeled/_partial rows are implementation audit signals)")
+        print(f"horizon-state feature prevalence among {horizon_n} T{horizon} no-win trajectories:")
+        print("  (_unmodeled/_partial rows are implementation signals; reactive interaction is separate)")
         for family, n in horizon_features.most_common():
             print(f"  {family:44s} {n:4d}  {100*n/horizon_n:6.2f}%")
         print(f"  {'urza_cast_or_left_command_zone':44s} {horizon_urza_cast:4d}  {100*horizon_urza_cast/horizon_n:6.2f}%")
         print("most common nonartifact hand cards at the horizon:")
-        for card, n in horizon_cards.most_common(20):
+        for card, n in horizon_cards.most_common(25):
             print(f"  {card:36s} {n:4d}")
 
     print("first example by terminal reason:")
@@ -236,10 +257,18 @@ def main():
     ap.add_argument("--seed", type=int, default=20260821)
     ap.add_argument("--count", type=int, default=20)
     ap.add_argument("--horizon", type=int, default=6)
+    ap.add_argument(
+        "--fail-on-blocker",
+        action="store_true",
+        help="exit nonzero if any trajectory terminates for a reason other than win/horizon",
+    )
     args = ap.parse_args()
     if args.count <= 0:
         raise SystemExit("--count must be positive")
-    profile(base_seed=args.seed, count=args.count, horizon=args.horizon)
+    reasons = profile(base_seed=args.seed, count=args.count, horizon=args.horizon)
+    blockers = _hard_blockers(reasons)
+    if args.fail_on_blocker and blockers:
+        raise SystemExit(f"hard Phase-2 runtime blockers observed: {dict(blockers)}")
 
 
 if __name__ == "__main__":

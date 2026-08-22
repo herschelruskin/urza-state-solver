@@ -80,8 +80,8 @@ jobs:
         run: python turn_engine_smoke.py
       - name: Multi-turn deterministic episode
         run: python episode_smoke.py
-      - name: Real-deck blocker profile
-        run: python phase2_coverage_profile.py --seed 20260821 --count 50 --horizon 6
+      - name: 250-seed real-deck blocker sweep
+        run: python phase2_coverage_profile.py --seed 20260821 --count 250 --horizon 6 --fail-on-blocker
       - name: Phase 1 regression gate
         run: python phase1_acceptance_smoke.py
       - name: Architecture regressions
