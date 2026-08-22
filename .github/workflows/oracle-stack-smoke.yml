@@ -9,9 +9,14 @@ on:
       - development
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   smoke:
     runs-on: ubuntu-latest
+    env:
+      PYTHONHASHSEED: '0'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -48,3 +53,15 @@ jobs:
           python urza_solver.py --worker-config-smoke
       - name: Diff check
         run: git diff --check
+      - name: Persist validated ETB source patch
+        if: github.event_name == 'push'
+        run: |
+          if git diff --quiet -- urza_solver.py; then
+            echo "ETB source already committed"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add urza_solver.py
+          git commit -m "Model Oracle artifact ETB stack and priority"
+          git push origin HEAD:oracle-ceiling-permissions-trigger-order
