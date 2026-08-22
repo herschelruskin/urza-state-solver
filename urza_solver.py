@@ -21,6 +21,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Tuple, List, Dict, Optional, Iterable
 from functools import lru_cache
+from solver_architecture import RandomStreams, canonical_markov_state_key, stable_digest
 
 try:
     import psutil
@@ -283,6 +284,9 @@ class State:
     interaction_seen: Tuple[str,...] = ()
     won: bool = False
     win_family: str = ""
+    # Root seed selecting the deterministic game-randomness tape.  This is true
+    # simulator state, never policy-visible information.
+    rng_root_seed: int = 0
     trace: Tuple[str,...] = ()
 
     @property
@@ -459,9 +463,22 @@ def apply_scry(s:State,n:int,label:str)->State:
     return add_trace(replace(s,library=lib),f"{label}: scry {n} ({', '.join(seen)})")
 
 def shuffled_library(s:State,salt:str)->Tuple[str,...]:
+    """Return a reproducible shuffle without consulting trajectory history.
+
+    The root seed selects an immutable game-randomness tape.  The event coordinate
+    is derived from the action salt plus the canonical Markov state, which excludes
+    trace/provenance fields but retains every future-legality distinction.
+
+    Consequences:
+    - identical Markov state + action + root seed -> identical shuffle;
+    - different root seeds sample different deterministic worlds;
+    - adding/removing trace text cannot change a game outcome;
+    - policy/Monte-Carlo RNG usage cannot perturb the actual game stream.
+    """
     lib=list(s.library)
-    h=hashlib.sha256((salt+'|'+str(s.turn)+'|'+str(len(s.trace))+'|'+repr(lib)).encode()).digest()
-    rng=random.Random(int.from_bytes(h[:8],'big'))
+    state_fingerprint=stable_digest(canonical_markov_state_key(s))
+    event_id=("shuffle",salt,state_fingerprint)
+    rng=RandomStreams(s.rng_root_seed).game_rng(event_id)
     rng.shuffle(lib)
     return tuple(lib)
 
@@ -3556,9 +3573,10 @@ def london_opening_zones(deck_order:List[str],keep_n:int,bottom:List[str]):
 
 def search_hand(deck_order:List[str], keep_n:int, bottom:List[str], max_turn=7,
                 beam=2500, max_actions_per_turn=60, caverns_live=True,
-                progress_tag:str="", progress_seconds:float=0.0, graph_stats=None)->Tuple[Optional[int],str,Tuple[str,...],int]:
+                progress_tag:str="", progress_seconds:float=0.0, graph_stats=None,
+                rng_root_seed:int=0)->Tuple[Optional[int],str,Tuple[str,...],int]:
     hand,lib=london_opening_zones(deck_order,keep_n,bottom)
-    s=State(turn=1,library=lib,hand=tuple(hand),battlefield=(),trace=("--- Turn 1 ---",))
+    s=State(turn=1,library=lib,hand=tuple(hand),battlefield=(),rng_root_seed=rng_root_seed,trace=("--- Turn 1 ---",))
     # Gemstone Caverns seating is fixed for all mulligan candidates in this game.
     if "Gemstone Caverns" in s.hand and caverns_live and len(s.hand)>1:
         # Exile the lowest-priority non-Caverns card after London bottoming.
@@ -3644,7 +3662,7 @@ def search_hand(deck_order:List[str], keep_n:int, bottom:List[str], max_turn=7,
 
 def profile_single_hand(deck_order:List[str], max_turn:int=3, beam:int=300,
                         max_actions_per_turn:int=60, caverns_live:bool=True,
-                        print_every_depth:int=1):
+                        print_every_depth:int=1, rng_root_seed:int=0):
     """
     Run ONE deterministic opening-7 candidate with no oracle mulligan branching.
     This is diagnostic only. It prints per-depth search statistics so we can
@@ -3652,7 +3670,7 @@ def profile_single_hand(deck_order:List[str], max_turn:int=3, beam:int=300,
     """
     hand=deck_order[:7]
     lib=tuple(deck_order[7:])
-    s=State(turn=1,library=lib,hand=tuple(hand),battlefield=(),trace=("--- Turn 1 ---",))
+    s=State(turn=1,library=lib,hand=tuple(hand),battlefield=(),rng_root_seed=rng_root_seed,trace=("--- Turn 1 ---",))
     if caverns_live and "Gemstone Caverns" in s.hand:
         # Keep same pregame handling philosophy as normal search by letting the
         # regular search/actions decide actual use; this profiler is about branching.
@@ -3763,7 +3781,7 @@ def profile_seed(seed:int, deck:List[str], max_turn:int, beam:int, depth:int):
     rng.shuffle(d)
     return profile_single_hand(
         d,max_turn=max_turn,beam=beam,
-        max_actions_per_turn=depth,caverns_live=True
+        max_actions_per_turn=depth,caverns_live=True,rng_root_seed=seed
     )
 
 def oracle_mulligan_stages(min_keep:int=4):
@@ -3957,7 +3975,7 @@ def profile_oracle_seed(seed:int, deck:List[str], max_turn:int=7, beam:int=300,
                 d,7-bottom_n,bottom,
                 max_turn=max_turn,beam=beam,
                 max_actions_per_turn=depth,caverns_live=caverns_live,
-                candidate_tag=tag
+                candidate_tag=tag,rng_root_seed=seed
             )
             dt=time.time()-t0
             total_searches += 1
@@ -3991,13 +4009,13 @@ def profile_oracle_seed(seed:int, deck:List[str], max_turn:int=7, beam:int=300,
 
 def profile_search_hand(deck_order:List[str], keep_n:int, bottom:List[str], max_turn=7,
                         beam=300, max_actions_per_turn=60, caverns_live=True,
-                        candidate_tag="candidate"):
+                        candidate_tag="candidate", rng_root_seed:int=0):
     """
     Exact search_hand initialization + depth-by-depth diagnostics.
     Used by --profile-oracle so a slow candidate never disappears into a silent call.
     """
     hand,lib=london_opening_zones(deck_order,keep_n,bottom)
-    s=State(turn=1,library=lib,hand=tuple(hand),battlefield=(),trace=("--- Turn 1 ---",))
+    s=State(turn=1,library=lib,hand=tuple(hand),battlefield=(),rng_root_seed=rng_root_seed,trace=("--- Turn 1 ---",))
 
     if "Gemstone Caverns" in s.hand and caverns_live and len(s.hand)>1:
         choices=[c for c in s.hand if c!="Gemstone Caverns"]
@@ -4251,7 +4269,8 @@ def oracle_game(seed:int,deck:List[str],max_turn:int,beam:int,depth:int,
                 caverns_live=caverns_live,
                 progress_tag=(f"seed={seed} {tag}" if live_progress else ""),
                 progress_seconds=progress_seconds,
-                graph_stats=hand_graph
+                graph_stats=hand_graph,
+                rng_root_seed=seed
             )
             merge_graph_stats(oracle_graph,hand_graph)
             turn,fam,trace,states,urza_turn,interaction_seen,final_hand,max_depth=result
