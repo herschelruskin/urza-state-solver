@@ -134,12 +134,13 @@ class DeterministicBasePolicy:
     def _main_action_score(self, observation: RuntimePolicyView, action: ActionIntent) -> float:
         params = dict(action.parameters)
         if action.kind == "main_cast_commander":
-            # Urza is the engine enabling artifact mana, Construct lines, and the
-            # eventual win recognizers.  Once legally payable, prioritize him over
-            # discretionary development spells without needing hidden information.
             return 35.0
         if action.kind == "main_play_land":
             return 30.0 + self.visible_card_score(str(params.get("card", "")), observation)
+        if action.kind == "main_cast_proactive_nonartifact":
+            # Combo/engine cards become useful before generic artifact development,
+            # but the visible card score keeps CA engines below direct combo pieces.
+            return 24.0 + self.visible_card_score(str(params.get("card", "")), observation)
         if action.kind == "main_cast_artifact":
             return 20.0 + self.visible_card_score(str(params.get("card", "")), observation)
         if action.kind == "main_mana_action":
