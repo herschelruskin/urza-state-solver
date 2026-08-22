@@ -195,6 +195,7 @@ class PolicyView:
     vfc_pumps: int
     commander_in_command_zone: bool
     commander_casts_from_zone: int
+    urza_exile_permissions: Tuple[str, ...] = ()
     known_top: Tuple[str, ...] = ()
     known_bottom: Tuple[str, ...] = ()
     known_library_counts: Tuple[Tuple[str, int], ...] = ()
@@ -233,6 +234,7 @@ def make_policy_view(true_state: Any, information: InformationState, *, caverns_
         vfc_pumps=int(getattr(true_state, "vfc_pumps", 0)),
         commander_in_command_zone=bool(getattr(true_state, "commander_in_command_zone", True)),
         commander_casts_from_zone=int(getattr(true_state, "commander_casts_from_zone", 0)),
+        urza_exile_permissions=tuple(sorted(getattr(true_state, "urza_exile_permissions", ()))),
         known_top=tuple(information.known_top),
         known_bottom=tuple(information.known_bottom),
         known_library_counts=tuple(sorted(information.known_library_counts)),

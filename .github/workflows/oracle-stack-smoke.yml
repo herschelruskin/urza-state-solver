@@ -1,0 +1,67 @@
+name: Oracle stack priority smoke
+
+on:
+  push:
+    branches:
+      - oracle-ceiling-permissions-trigger-order
+  pull_request:
+    branches:
+      - development
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Apply artifact ETB stack patch in workspace
+        run: python apply_oracle_etb_stack_fix_v2.py
+      - name: Compile
+        run: python -m py_compile urza_solver.py solver_architecture.py state_field_audit.py strategic_value_state.py apply_oracle_etb_stack_fix.py apply_oracle_etb_stack_fix_v2.py oracle_etb_stack_smoke.py
+      - name: Focused Oracle ceiling smokes
+        run: |
+          python oracle_etb_stack_smoke.py
+          python oracle_stack_priority_smoke.py
+          python oracle_trigger_order_smoke.py
+          python oracle_urza_permission_smoke.py
+      - name: Architecture regressions
+        run: |
+          python architecture_smoke.py
+          python state_field_audit_smoke.py
+          python strategic_value_state_smoke.py
+          python phase1_acceptance_smoke.py
+      - name: Mandatory Oracle rules suite
+        run: |
+          python urza_solver.py --metadata-smoke
+          python urza_solver.py --tutor-smoke
+          python urza_solver.py --cam-smoke
+          python urza_solver.py --commander-smoke
+          python urza_solver.py --combo-smoke
+          python urza_solver.py --remora-smoke
+          python urza_solver.py --bounce-smoke --action-cap 60 --bottom-cap 4
+          python urza_solver.py --bay-smoke --action-cap 60 --bottom-cap 4
+          python urza_solver.py --draw-trace-smoke
+          python urza_solver.py --mulligan-smoke
+          python urza_solver.py --worker-config-smoke
+      - name: Diff check
+        run: git diff --check
+      - name: Persist validated ETB source patch
+        if: github.event_name == 'push'
+        run: |
+          if git diff --quiet -- urza_solver.py; then
+            echo "ETB source already committed"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add urza_solver.py
+          git commit -m "Model Oracle artifact ETB stack and priority"
+          git push origin HEAD:oracle-ceiling-permissions-trigger-order

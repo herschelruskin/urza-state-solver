@@ -259,6 +259,17 @@ class State:
     battlefield: Tuple[Perm,...]
     graveyard: Tuple[str,...] = ()
     exile: Tuple[str,...] = ()
+    # Cards exiled by Urza's {5} ability that remain legally playable until
+    # end of the current turn.  Card-name multiplicity is sufficient because
+    # same-name physical copies are strategically interchangeable here.
+    urza_exile_permissions: Tuple[str,...] = ()
+    # Oracle-only compact top-first stack.  Each entry is a tuple of strings:
+    #   ("trigger", spell_id, kind, card, aux)
+    #   ("spell",   spell_id, card, mode, aux)
+    # Non-Oracle policy mode keeps its richer typed stack in the Phase-1 runtime
+    # sidecar; this field exists so the clairvoyant Oracle can search legal
+    # priority windows without consuming hidden mechanical depth.
+    oracle_stack: Tuple[Tuple[str,...], ...] = ()
     blue: int = 0
     colorless: int = 0
     land_played: bool = False
@@ -311,7 +322,9 @@ class State:
         return (self.turn, tuple(sorted(self.hand)), bf, self.blue, self.colorless,
                 self.land_played,self.drain_bank,self.bauble_draws,
                 self.remora_age,self.remora_upkeep_pending,self.saga3_pending,
-                tuple(sorted(self.graveyard)),self.ring_counters,self.ftt_level,self.uthros_counters,
+                tuple(sorted(self.graveyard)),tuple(sorted(self.exile)),
+                tuple(sorted(self.urza_exile_permissions)),tuple(self.oracle_stack),
+                self.ring_counters,self.ftt_level,self.uthros_counters,
                 self.urza,self.construct,self.top_access,self.chip_attached,self.chip_target,
                 self.spell_cast_this_turn,self.pa_target,self.vfc_pumps,
                 self.commander_in_command_zone,self.commander_casts_from_zone,
@@ -461,6 +474,28 @@ def apply_scry(s:State,n:int,label:str)->State:
     bottom=[c for c in seen if c not in kept]
     lib=tuple(kept+rest+bottom)
     return add_trace(replace(s,library=lib),f"{label}: scry {n} ({', '.join(seen)})")
+
+def oracle_scry_variants(s:State,n:int,label:str)->List[State]:
+    """Enumerate every distinct legal scry result, legacy-preferred first."""
+    n=min(n,len(s.library))
+    if n<=0:
+        return [s]
+    seen=tuple(s.library[:n]); rest=tuple(s.library[n:])
+    rows=[apply_scry(s,n,label)]
+    known={canonical_markov_state_key(rows[0])}
+    for perm in sorted(set(itertools.permutations(seen)),key=repr):
+        for top_count in range(n,-1,-1):
+            top=tuple(perm[:top_count]); bottom=tuple(perm[top_count:])
+            ns=replace(s,library=top+rest+bottom)
+            ns=add_trace(
+                ns,
+                f"{label}: scry {n} ({', '.join(seen)}) -> "
+                f"top [{', '.join(top)}]; bottom [{', '.join(bottom)}]"
+            )
+            key=canonical_markov_state_key(ns)
+            if key not in known:
+                known.add(key); rows.append(ns)
+    return rows
 
 def shuffled_library(s:State,salt:str)->Tuple[str,...]:
     """Return a reproducible shuffle without consulting trajectory history.
@@ -807,6 +842,715 @@ def artifact_cast_triggers(s:State, card:str)->State:
         s=add_trace(s,f"Gadgeteer trigger {k+1}/{gadgets} -> Clue")
     return s
 
+def _artifact_cast_trigger_tokens(s:State,card:str)->Tuple[str,...]:
+    """Strategic simultaneous triggers fired by one artifact cast.
+
+    Vexing Bauble is intentionally not included in the permutation. Its counter
+    trigger does not erase already-triggered abilities; all of those abilities
+    still resolve whether Bauble is above or below them. The existing caller-side
+    Bauble resolution is therefore the same final modeled state without a fake
+    factorial multiplier.
+    """
+    tokens=[]
+    if card not in CREATURES and has(s,"Valley Floodcaller"):
+        tokens.append("vfc")
+    tokens.extend(["assistant"]*count_bf(s,"Artificer's Assistant"))
+    if has(s,"Uthros Research Craft") and s.uthros_counters>=3 and s.library:
+        tokens.append("uthros")
+    tokens.extend(["gadgeteer"]*count_bf(s,"Forensic Gadgeteer"))
+    return tuple(tokens)
+
+def _unique_multiset_orders(tokens:Tuple[str,...])->Tuple[Tuple[str,...],...]:
+    """Unique permutations without factorial duplicate copies."""
+    counts=Counter(tokens)
+    kinds=tuple(sorted(counts))
+    n=len(tokens)
+    rows=[]
+
+    def visit(prefix):
+        if len(prefix)==n:
+            rows.append(tuple(prefix)); return
+        for kind in kinds:
+            if counts[kind]<=0:
+                continue
+            counts[kind]-=1; prefix.append(kind)
+            visit(prefix)
+            prefix.pop(); counts[kind]+=1
+
+    visit([])
+    return tuple(rows)
+
+def _resolve_artifact_cast_trigger_order(s:State,card:str,order:Tuple[str,...])->State:
+    totals=Counter(order); resolved=Counter()
+    for kind in order:
+        resolved[kind]+=1
+        if kind=="vfc":
+            s=vfc_noncreature_cast_trigger(s,card)
+        elif kind=="assistant":
+            s=apply_scry(
+                s,1,
+                f"Artificer's Assistant trigger {resolved[kind]}/{totals[kind]}"
+            )
+        elif kind=="uthros":
+            if s.library:
+                s,drawn=draw_from_library(s,1)
+                s=replace(s,uthros_counters=s.uthros_counters+1)
+                s=add_trace(
+                    s,
+                    f"Uthros trigger draws: {drawn[0]}; "
+                    "+1 station counter before artifact resolves"
+                )
+        elif kind=="gadgeteer":
+            s=add_perm(s,"Clue",mode="clue")
+            # Any ETB triggers created by this resolving investigate trigger are
+            # stacked above the older unresolved cast triggers, so resolving the
+            # ETB bundle here before continuing the order is the correct nesting.
+            s=artifact_etb_triggers(s,"Clue")
+            s=add_trace(
+                s,
+                f"Gadgeteer trigger {resolved[kind]}/{totals[kind]} -> Clue"
+            )
+        else:
+            raise AssertionError(f"unknown artifact cast trigger kind {kind!r}")
+    return s
+
+def artifact_cast_trigger_variants(s:State,card:str)->List[State]:
+    """Return every distinct modeled legal resolution order for our cast triggers."""
+    tokens=_artifact_cast_trigger_tokens(s,card)
+    if not tokens:
+        return [s]
+    unique={}
+    for order in _unique_multiset_orders(tokens):
+        ns=_resolve_artifact_cast_trigger_order(s,card,order)
+        # Different orders can be strategically identical (for example VFC and
+        # Gadgeteer when neither changes library decisions). Collapse only after
+        # the complete order has resolved, using trace-free Markov identity.
+        key=canonical_markov_state_key(ns)
+        if key not in unique:
+            unique[key]=ns
+    return list(unique.values())
+
+FLASH_CREATURES=frozenset({
+    "Faerie Mastermind","Valley Floodcaller","Hydroelectric Specimen",
+})
+
+
+def _can_cast_card_at_priority(s:State,card:str)->bool:
+    """Normal instant timing plus native flash and Valley Floodcaller."""
+    if card in TRUE_LAND_CARDS:
+        return False
+    if card in INSTANTS or card in FLASH_CREATURES:
+        return True
+    if has(s,"Valley Floodcaller") and card not in CREATURES and card!=COMMANDER:
+        return True
+    return False
+
+
+def _next_oracle_stack_id(s:State)->str:
+    ids=[]
+    for entry in s.oracle_stack:
+        if len(entry)>=2:
+            try:
+                ids.append(int(entry[1]))
+            except (TypeError,ValueError):
+                pass
+    return str(max(ids,default=0)+1)
+
+
+def _stack_trigger_entry(spell_id:str,kind:str,card:str,aux:str="")->Tuple[str,...]:
+    return ("trigger",str(spell_id),str(kind),str(card),str(aux))
+
+
+def _stack_spell_entry(spell_id:str,card:str,mode:str="ordinary",aux:str="")->Tuple[str,...]:
+    return ("spell",str(spell_id),str(card),str(mode),str(aux))
+
+
+def _resolve_vfc_trigger_already_on_stack(s:State)->State:
+    """Resolve an existing Floodcaller trigger even if its source left play."""
+    s=replace(s,vfc_pumps=s.vfc_pumps+1)
+    b=list(s.battlefield); changed=[]
+    for i,p in enumerate(b):
+        # These are the only modeled Birds/Frogs/Otters/Rats in this deck.
+        if p.name in {"Valley Floodcaller","Artificer's Assistant"} and p.tapped:
+            b[i]=replace(p,tapped=False,producer_urza_ready=False)
+            changed.append(p.name)
+    if changed:
+        s=replace(s,battlefield=tuple(b))
+        s=add_trace(s,"VFC trigger resolves -> untap "+", ".join(changed))
+    else:
+        s=add_trace(s,"VFC trigger resolves")
+    return s
+
+
+def _remove_pending_spell_entry(s:State,spell_id:str,*,to_grave:bool)->Tuple[State,str]:
+    stack=list(s.oracle_stack)
+    for i,entry in enumerate(stack):
+        if len(entry)>=5 and entry[0]=="spell" and entry[1]==spell_id:
+            card=entry[2]
+            stack.pop(i)
+            ns=replace(s,oracle_stack=tuple(stack))
+            if to_grave:
+                ns=replace(ns,graveyard=ns.graveyard+(card,))
+            return ns,card
+    return s,""
+
+
+def _resolve_chrome_imprint_trigger(s:State,source_tag:str="")->List[State]:
+    out=[add_trace(s,"cast Chrome Mox, no imprint")]
+    wanted=int(source_tag) if source_tag else 0
+    for card in sorted(set(s.hand)):
+        if card not in BLUE_NONARTIFACT_FRONT:
+            continue
+        ns=replace(s,hand=remove_one(s.hand,card),exile=s.exile+(card,))
+        for j in range(len(ns.battlefield)-1,-1,-1):
+            p=ns.battlefield[j]
+            if p.name!="Chrome Mox" or p.mode=="imprinted":
+                continue
+            if wanted and p.instance_tag!=wanted:
+                continue
+            ns=update_perm(ns,j,mode="imprinted"); break
+        else:
+            continue
+        out.append(add_trace(ns,f"Chrome Mox imprints {card}"))
+    return out
+
+
+def _ensure_oracle_instance_tags(s:State)->State:
+    """Assign stable runtime-only permanent ids without retagging live objects."""
+    used={p.instance_tag for p in s.battlefield if p.instance_tag>0}
+    next_tag=max(used,default=0)+1
+    b=[]; changed=False
+    for p in s.battlefield:
+        if p.instance_tag>0:
+            b.append(p); continue
+        while next_tag in used:
+            next_tag+=1
+        b.append(replace(p,instance_tag=next_tag))
+        used.add(next_tag); next_tag+=1; changed=True
+    return replace(s,battlefield=tuple(b)) if changed else s
+
+
+def _perm_index_for_tag(s:State,tag:str)->Optional[int]:
+    try:
+        wanted=int(tag)
+    except (TypeError,ValueError):
+        return None
+    return next((i for i,p in enumerate(s.battlefield) if p.instance_tag==wanted),None)
+
+
+def _artifact_entry_label(entered_cards:Tuple[str,...])->str:
+    counts=Counter(entered_cards)
+    return ", ".join(
+        f"{name} x{counts[name]}" if counts[name]>1 else name
+        for name in sorted(counts)
+    )
+
+
+def _artifact_etb_token_sets(s:State,entered_cards:Tuple[str,...])->Tuple[Tuple[str,...],...]:
+    """Controlled ETBs generated by one simultaneous artifact-entry event."""
+    tokens=[]
+
+    # Tezzeret and every Station/Golem trigger once PER artifact that entered.
+    for p in s.battlefield:
+        if p.name=="Tezzeret, Cruel Captain":
+            tokens.extend([f"tezz|{p.instance_tag}"]*len(entered_cards))
+    for p in s.battlefield:
+        if p.name in {"Grinding Station","Battered Golem"}:
+            tokens.extend([f"producer|{p.instance_tag}"]*len(entered_cards))
+
+    # Entry abilities of the objects that just entered.
+    cam_count=0
+    chrome_count=0
+    for card in entered_cards:
+        if card in {"Giant's Boulder","Witching Well"}:
+            tokens.append(f"scry2|{card}")
+        elif card=="Sewer-veillance Cam":
+            cam_count+=1
+        elif card=="Prized Statue":
+            tokens.append("prized|")
+        elif card=="Chrome Mox":
+            chrome_count+=1
+
+    if chrome_count:
+        tags=sorted(
+            (p.instance_tag for p in s.battlefield
+             if p.name=="Chrome Mox" and p.mode!="imprinted"),
+            reverse=True,
+        )[:chrome_count]
+        for tag in reversed(tags):
+            tokens.append(f"chrome|{tag}")
+
+    token_sets=[tuple(tokens)]
+    if cam_count:
+        targets=tuple(
+            p.instance_tag for p in s.battlefield
+            if is_creature_perm(p)
+        )
+        # A targeted trigger with no legal target is removed rather than stacked.
+        if targets:
+            for _ in range(cam_count):
+                token_sets=[row+(f"cam|{tag}",) for row in token_sets for tag in targets]
+
+    # Stable dedup for pathological same-target/same-card copy cases.
+    seen=set(); rows=[]
+    for row in token_sets:
+        if row not in seen:
+            seen.add(row); rows.append(row)
+    return tuple(rows)
+
+
+def _etb_token_to_entry(event_id:str,token:str,label:str)->Tuple[str,...]:
+    kind,_,aux=token.partition("|")
+    mapped={
+        "tezz":"etb_tezz",
+        "producer":"etb_producer",
+        "scry2":"etb_scry2",
+        "cam":"etb_cam",
+        "prized":"etb_prized_treasure",
+        "chrome":"etb_chrome_imprint",
+    }.get(kind)
+    if mapped is None:
+        raise AssertionError(f"unknown artifact ETB token {token!r}")
+    return _stack_trigger_entry(event_id,mapped,label,aux)
+
+
+def _preferred_multiset_orders(tokens:Tuple[str,...])->Tuple[Tuple[str,...],...]:
+    orders=_unique_multiset_orders(tokens) if tokens else ((),)
+    preferred=tuple(tokens)
+    if preferred in orders:
+        return (preferred,)+tuple(order for order in orders if order!=preferred)
+    return orders
+
+
+def _push_artifact_etb_stack_variants(
+    s:State,entered_cards:Tuple[str,...]
+)->List[State]:
+    """Put all ETBs from one entry event above older stack objects."""
+    if not entered_cards:
+        return [s]
+    tagged=_ensure_oracle_instance_tags(s)
+    label=_artifact_entry_label(entered_cards)
+    event_id=_next_oracle_stack_id(tagged)
+    unique={}
+    for tokens in _artifact_etb_token_sets(tagged,entered_cards):
+        for order in _preferred_multiset_orders(tokens):
+            triggers=tuple(_etb_token_to_entry(event_id,t,label) for t in order)
+            ns=replace(tagged,oracle_stack=triggers+tagged.oracle_stack)
+            key=canonical_markov_state_key(ns)
+            if key not in unique:
+                unique[key]=ns
+    return list(unique.values()) if unique else [tagged]
+
+
+def _resolve_producer_etb_trigger(s:State,source_tag:str,label:str)->List[State]:
+    """Exact may-untap branch plus the established legal fast-Urza compression."""
+    idx=_perm_index_for_tag(s,source_tag)
+    if idx is None:
+        return [add_trace(s,f"producer ETB from {label}: source absent")]
+    p=s.battlefield[idx]
+    if p.name not in {"Grinding Station","Battered Golem"}:
+        return [add_trace(s,f"producer ETB from {label}: source changed/absent")]
+
+    rows=[add_trace(s,f"{p.name} ETB trigger from {label}: decline untap")]
+    if p.tapped:
+        untapped=update_perm(s,idx,tapped=False)
+        rows.append(add_trace(untapped,f"{p.name} ETB trigger from {label}: untap"))
+    else:
+        untapped=s
+
+    # Preserve the old maximum-mana Oracle compression as an additional LEGAL
+    # representative.  If the source was untapped, this represents Urza tap ->
+    # resolve untap -> Urza tap (+2U).  If it was tapped, it represents untap ->
+    # Urza tap (+1U).  The final tap remains refundable exactly as before.
+    if s.urza:
+        if p.tapped:
+            fast=update_perm(s,idx,tapped=False)
+            fast=update_perm(fast,idx,tapped=True,producer_urza_ready=True)
+            fast=replace(fast,blue=fast.blue+1)
+            gain=1
+        else:
+            fast=update_perm(s,idx,tapped=True,producer_urza_ready=True)
+            fast=replace(fast,blue=fast.blue+2)
+            gain=2
+        rows.append(add_trace(
+            fast,f"{p.name} ETB fast Urza line from {label}: +{gain}U"
+        ))
+
+    unique={}
+    for row in rows:
+        key=canonical_markov_state_key(row)
+        if key not in unique:
+            unique[key]=row
+    return list(unique.values())
+
+
+def _resolve_cam_etb_trigger(s:State,target_tag:str,label:str)->List[State]:
+    idx=_perm_index_for_tag(s,target_tag)
+    if idx is None or not is_creature_perm(s.battlefield[idx]):
+        return [add_trace(s,f"Cam {label} trigger: target absent")]
+    target=s.battlefield[idx]
+    rows=[add_trace(s,f"Cam {label} trigger: decline on {target.name or target.mode}")]
+
+    if not target.tapped:
+        rows.append(add_trace(
+            update_perm(s,idx,tapped=True),
+            f"Cam {label} taps {target.name or target.mode}"
+        ))
+    if target.tapped:
+        untapped=update_perm(s,idx,tapped=False)
+        rows.append(add_trace(
+            untapped,f"Cam {label} untaps {target.name or target.mode}"
+        ))
+        if s.urza and is_artifact_perm(target):
+            fast=update_perm(untapped,idx,tapped=True,
+                             producer_urza_ready=(target.name in {"Grinding Station","Battered Golem"}))
+            fast=replace(fast,blue=fast.blue+1)
+            rows.append(add_trace(
+                fast,
+                f"Cam {label} untaps {target.name or target.mode}; Urza converts it to +U"
+            ))
+
+    unique={}
+    for row in rows:
+        key=canonical_markov_state_key(row)
+        if key not in unique:
+            unique[key]=row
+    return list(unique.values())
+
+
+
+def _resolve_oracle_stack_top(s:State)->List[State]:
+    """Resolve exactly the current top object; callers choose when to pass."""
+    if not s.oracle_stack:
+        return [s]
+    entry=s.oracle_stack[0]
+    base=replace(s,oracle_stack=s.oracle_stack[1:])
+    if len(entry)<5:
+        raise AssertionError(f"malformed Oracle stack entry: {entry!r}")
+
+    etype,spell_id,a,b,aux=entry
+    if etype=="trigger":
+        kind=a; card=b
+        if kind=="vfc":
+            return [_resolve_vfc_trigger_already_on_stack(base)]
+        if kind=="assistant":
+            return oracle_scry_variants(base,1,"Artificer's Assistant stack trigger")
+        if kind=="uthros":
+            ns=base
+            if ns.library:
+                ns,drawn=draw_from_library(ns,1)
+                if has(ns,"Uthros Research Craft"):
+                    ns=replace(ns,uthros_counters=ns.uthros_counters+1)
+                ns=add_trace(ns,f"Uthros stack trigger draws: {drawn[0]}")
+            else:
+                ns=add_trace(ns,"Uthros stack trigger resolves with empty library")
+            return [ns]
+        if kind=="gadgeteer":
+            ns=add_perm(base,"Clue",mode="clue")
+            rows=_push_artifact_etb_stack_variants(ns,("Clue",))
+            return [add_trace(row,"Gadgeteer stack trigger -> Clue") for row in rows]
+        if kind=="bauble":
+            ns,removed=_remove_pending_spell_entry(base,spell_id,to_grave=True)
+            if removed:
+                return [add_trace(ns,f"Vexing Bauble stack trigger counters {removed}")]
+            return [add_trace(base,"Vexing Bauble stack trigger resolves; spell already absent")]
+        if kind=="chrome_imprint":
+            return _resolve_chrome_imprint_trigger(base)
+
+        # Artifact-entry triggers.
+        if kind=="etb_tezz":
+            idx=_perm_index_for_tag(base,aux)
+            if idx is None or base.battlefield[idx].name!="Tezzeret, Cruel Captain":
+                return [add_trace(base,f"Tezzeret ETB trigger from {card}: source absent")]
+            ns=update_perm(base,idx,counters=base.battlefield[idx].counters+1)
+            return [add_trace(ns,f"Tezzeret artifact-entry trigger from {card}: +1 loyalty")]
+        if kind=="etb_producer":
+            return _resolve_producer_etb_trigger(base,aux,card)
+        if kind=="etb_scry2":
+            return oracle_scry_variants(base,2,f"{aux} ETB")
+        if kind=="etb_cam":
+            return _resolve_cam_etb_trigger(base,aux,"ETB")
+        if kind=="etb_prized_treasure":
+            ns=add_perm(base,"Treasure",mode="treasure")
+            rows=_push_artifact_etb_stack_variants(ns,("Treasure",))
+            return [add_trace(row,"Prized Statue ETB -> Treasure") for row in rows]
+        if kind=="etb_chrome_imprint":
+            return _resolve_chrome_imprint_trigger(base,aux)
+        raise AssertionError(f"unknown Oracle stack trigger kind {kind!r}")
+
+    if etype!="spell":
+        raise AssertionError(f"unknown Oracle stack object type {etype!r}")
+
+    card=a; mode=b
+    if mode=="ordinary":
+        ns=add_perm(base,card,sick=card in CREATURES)
+        if card=="Uthros Research Craft":
+            ns=replace(ns,uthros_counters=0)
+        if card=="The One Ring":
+            ns=replace(ns,ring_counters=0)
+        ns=add_trace(ns,f"cast {card}")
+        return [check_win(row) for row in _push_artifact_etb_stack_variants(ns,(card,))]
+
+    if mode=="chalice":
+        k=int(aux or 0)
+        ns=add_perm(base,"Everflowing Chalice",counters=k)
+        ns=add_trace(ns,f"cast Everflowing Chalice kicked {k}x -> {k} charge counter(s)")
+        return [check_win(row) for row in _push_artifact_etb_stack_variants(
+            ns,("Everflowing Chalice",)
+        )]
+
+    if mode=="chrome_mox":
+        ns=add_perm(base,"Chrome Mox")
+        ns=add_trace(ns,"Chrome Mox resolves")
+        # Chrome Mox's imprint trigger and producer/Tezzeret triggers are all
+        # generated by the same entry event and are ordered together.
+        return _push_artifact_etb_stack_variants(ns,("Chrome Mox",))
+
+    if mode=="mox_diamond":
+        # The land discard replacement choice is made as Diamond would enter.
+        out=[add_trace(
+            replace(base,graveyard=base.graveyard+("Mox Diamond",)),
+            "cast Mox Diamond, decline/cannot discard land -> graveyard"
+        )]
+        for land in sorted(set(base.hand)&TRUE_LAND_CARDS):
+            ns=replace(
+                base,
+                hand=remove_one(base.hand,land),
+                graveyard=base.graveyard+(land,),
+            )
+            ns=add_perm(ns,"Mox Diamond",mode="diamond")
+            ns=add_trace(ns,f"Mox Diamond discards true land card {land}")
+            out.extend(_push_artifact_etb_stack_variants(ns,("Mox Diamond",)))
+        return out
+
+    raise AssertionError(f"unknown Oracle pending artifact spell mode {mode!r}")
+
+
+
+def _dedup_states(states:Iterable[State])->List[State]:
+    unique={}
+    for st in states:
+        key=canonical_markov_state_key(st)
+        if key not in unique:
+            unique[key]=st
+    return list(unique.values())
+
+
+def _oracle_stack_pause_frontier(s:State)->List[State]:
+    """All pass-only pause points from this priority window, finals first.
+
+    The unchanged state is retained as the current priority window.  Every
+    prefix obtained by passing through one or more stack objects is also exposed,
+    plus every fully resolved final state.  Mechanical pass/resolution therefore
+    does not consume the Oracle's strategic action depth.
+    """
+    rows=[s]
+    frontier=[s]
+    seen={canonical_markov_state_key(s)}
+    guard=0
+    while frontier:
+        guard+=1
+        if guard>64:
+            raise AssertionError("Oracle stack pass frontier exceeded 64 layers")
+        nxt=[]
+        for st in frontier:
+            if not st.oracle_stack:
+                continue
+            for ns in _resolve_oracle_stack_top(st):
+                key=canonical_markov_state_key(ns)
+                if key in seen:
+                    continue
+                seen.add(key); rows.append(ns)
+                if ns.oracle_stack:
+                    nxt.append(ns)
+        frontier=nxt
+    finals=[x for x in rows if not x.oracle_stack]
+    pauses=[x for x in rows if x.oracle_stack]
+    return finals+pauses
+
+
+def _artifact_entry_state_variants(
+    s:State,entered_cards:Tuple[str,...]
+)->List[State]:
+    rows=[]
+    for pushed in _push_artifact_etb_stack_variants(s,entered_cards):
+        rows.extend(_oracle_stack_pause_frontier(pushed))
+    return _dedup_states(rows)
+
+
+def _stack_artifact_cast_state_variants(
+    cast_state:State,card:str,mana_spent:int,*,mode:str="ordinary",aux:str=""
+)->List[State]:
+    """Put one artifact spell and its simultaneous cast triggers on the stack."""
+    tokens=list(_artifact_cast_trigger_tokens(cast_state,card))
+    if vexing_bauble_counters_spell(cast_state,mana_spent):
+        tokens.append("bauble")
+    orders=_unique_multiset_orders(tuple(tokens)) if tokens else ((),)
+    spell_id=_next_oracle_stack_id(cast_state)
+    rows=[]
+    for order in orders:
+        triggers=tuple(
+            _stack_trigger_entry(spell_id,kind,card)
+            for kind in order
+        )
+        spell=_stack_spell_entry(spell_id,card,mode,aux)
+        ns=replace(cast_state,oracle_stack=triggers+(spell,)+cast_state.oracle_stack)
+        ns=add_trace(
+            ns,
+            f"cast {card} -> pending stack "
+            + (" > ".join(order) if order else "spell only")
+        )
+        rows.extend(_oracle_stack_pause_frontier(ns))
+    return _dedup_states(rows)
+
+
+def _pending_stack_spells(s:State)->List[Tuple[int,Tuple[str,...]]]:
+    return [
+        (i,e) for i,e in enumerate(s.oracle_stack)
+        if len(e)>=5 and e[0]=="spell"
+    ]
+
+
+def offer_pending_stack_actions(s:State)->List[State]:
+    """Cast Offer targeting one of our still-pending noncreature spells."""
+    offer="An Offer You Can't Refuse"
+    if offer not in s.hand or not can_pay(s,0,1):
+        return []
+    out=[]
+    for index,entry in _pending_stack_spells(s):
+        _etype,_sid,card,_mode,_aux=entry
+        if card in CREATURES or card==COMMANDER:
+            continue
+        ns=pay(s,0,1)
+        stack=list(ns.oracle_stack); stack.pop(index)
+        ns=replace(
+            ns,
+            oracle_stack=tuple(stack),
+            hand=remove_one(ns.hand,offer),
+            graveyard=ns.graveyard+(card,offer),
+            spell_cast_this_turn=True,
+        )
+        ns=vfc_noncreature_cast_trigger(ns,offer)
+        ns=add_perm(ns,"Treasure",mode="treasure")
+        ns=add_perm(ns,"Treasure",mode="treasure")
+        for row in _push_artifact_etb_stack_variants(ns,("Treasure","Treasure")):
+            out.append(add_trace(row,f"Offer counters pending {card} -> two Treasures"))
+    return _dedup_states(out)
+
+
+
+def urza_spin_actions(s:State)->List[State]:
+    if not (s.urza and can_pay(s,5,0) and s.library):
+        return []
+    ps=pay(s,5,0)
+    ps=replace(ps,library=shuffled_library(ps,"urza-spin"))
+    card=ps.library[0]
+    ns=replace(
+        ps,
+        library=ps.library[1:],
+        exile=ps.exile+(card,),
+        urza_exile_permissions=ps.urza_exile_permissions+(card,),
+    )
+    return [add_trace(ns,f"Urza spin -> exile {card}; playable until end of turn")]
+
+
+def _trace_prefix_filter(actions:Iterable[State],prefixes:Tuple[str,...])->List[State]:
+    out=[]
+    for st in actions:
+        action=st.trace[-1].splitlines()[0] if st.trace else ""
+        if any(action.startswith(prefix) for prefix in prefixes):
+            out.append(st)
+    return out
+
+
+def _oracle_priority_raw_actions(s:State)->List[State]:
+    """Modeled legal actions while another Oracle stack object is pending."""
+    out=[]
+
+    # Activated abilities with no sorcery-only restriction.
+    out += intrinsic_mana_actions(s)
+    out += tap_artifact_for_urza_actions(s)
+    out += clue_draw_actions(s)+ring_actions(s)+top_actions(s)
+    out += draw_sac_actions(s)+fetch_actions(s)
+    out += otawara_channel_actions(s)+oboro_minamo_actions(s)
+    out += producer_native_actions(s)+top_key_combo_actions(s)
+    out += faerie_mastermind_actions(s)+chrome_dome_actions(s)
+    out += urza_spin_actions(s)
+    out += offer_pending_stack_actions(s)
+
+    # Saga chapter-II's gained activated ability has no sorcery restriction;
+    # keep only that branch, not the separate chapter-III resolution macro.
+    out += _trace_prefix_filter(saga_actions(s),("Saga II ability",))
+
+    # Current-turn Knack/Helix granted tap abilities and the instant spells that
+    # grant them are both legal in a priority window.
+    out += knack_bounce_actions(s)
+    out += chain_of_vapor_actions(s)
+    out += scour_actions(s)
+
+    # Search spells: Mystical and Whir are naturally instant.  Floodcaller also
+    # gives flash to Merchant Scroll, Reshape and Transmute Artifact as
+    # noncreature spells.  Transmute abilities of Dizzy/Muddle remain sorcery-only
+    # activated abilities and are deliberately not enabled by Floodcaller.
+    simple=simple_tutor_actions(s)
+    prefixes=["Mystical ->"]
+    if has(s,"Valley Floodcaller"):
+        prefixes.append("Merchant Scroll ->")
+    out += _trace_prefix_filter(simple,tuple(prefixes))
+
+    artifact_tutors=artifact_tutor_actions(s)
+    prefixes=["Whir X="]
+    if has(s,"Valley Floodcaller"):
+        prefixes.extend(("Reshape X=","Transmute "))
+    out += _trace_prefix_filter(artifact_tutors,tuple(prefixes))
+
+    # Top/exile permissions obey the same timing rules as the card itself.
+    out += urza_exile_permission_actions(s,priority=True)
+    out += chip_ftt_top_casts(s,priority=True)
+
+    flood=has(s,"Valley Floodcaller")
+    if flood:
+        out += chalice_cast_variants(s)
+        out += mox_cast_actions(s)
+        out += power_artifact_actions(s)
+
+    special={
+        "Dizzy Spell","Muddle the Mixture","Mystical Tutor","Merchant Scroll",
+        "Reshape","Transmute Artifact","Whir of Invention","Chain of Vapor",
+        "Banishing Knack","Retraction Helix","Chrome Mox","Mox Diamond",
+        "Scour for Scrap","An Offer You Can't Refuse","Power Artifact",
+        "Everflowing Chalice",
+    }
+    for card in sorted(set(s.hand)):
+        if card in special or not _can_cast_card_at_priority(s,card):
+            continue
+        out.extend(cast_from_hand_variants(s,card))
+
+    # Generic Key untap ability (the normal main-phase code keeps this inline).
+    for ki,key in enumerate(s.battlefield):
+        if key.name not in {"Voltaic Key","Manifold Key"} or key.tapped or not can_pay(s,1,0):
+            continue
+        for ti,target in enumerate(s.battlefield):
+            if ti==ki or not target.tapped or not is_artifact_perm(target):
+                continue
+            ns=pay(s,1,0)
+            ns=update_perm(ns,ki,tapped=True)
+            ns=update_perm(ns,ti,tapped=False)
+            out.append(add_trace(ns,f"{key.name} untaps {target.name or target.mode}"))
+    return out
+
+
+def oracle_stack_priority_actions(s:State)->List[State]:
+    """Take one real priority action, then expose every legal pass/pause point."""
+    rows=[]
+    for ns in _oracle_priority_raw_actions(s):
+        if ns.oracle_stack:
+            rows.extend(_oracle_stack_pause_frontier(ns))
+        else:
+            rows.append(ns)
+    return _dedup_states(rows)
+
+
 def remove_one(tup:Tuple[str,...], card:str)->Tuple[str,...]:
     x=list(tup); x.remove(card); return tuple(x)
 
@@ -848,20 +1592,14 @@ def chalice_cast_variants(s:State, outside:bool=False, free:bool=False)->List[St
         ps=pay(s,generic,0)
         if ps is None:
             continue
-        ns=replace(ps,hand=remove_one(ps.hand,"Everflowing Chalice"),
-                   spell_cast_this_turn=True)
-        ns=artifact_cast_triggers(ns,"Everflowing Chalice")
-        countered=vexing_bauble_countered_cast(
-            ns,"Everflowing Chalice",generic,
-            f"cast Everflowing Chalice kicked {k}x; no mana spent -> Vexing Bauble counters"
+        cast_state=replace(
+            ps,hand=remove_one(ps.hand,"Everflowing Chalice"),
+            spell_cast_this_turn=True
         )
-        if countered is not None:
-            out.append(countered)
-            continue
-        ns=add_perm(ns,"Everflowing Chalice",counters=k)
-        ns=artifact_etb_triggers(ns,"Everflowing Chalice")
-        out.append(add_trace(check_win(ns),f"cast Everflowing Chalice kicked {k}x -> {k} charge counter(s)"))
-    return out
+        out.extend(_stack_artifact_cast_state_variants(
+            cast_state,"Everflowing Chalice",generic,mode="chalice",aux=str(k)
+        ))
+    return _dedup_states(out)
 
 
 def cast_from_hand(s:State,card:str,outside:bool=False,free:bool=False)->Optional[State]:
@@ -964,21 +1702,75 @@ def cast_from_hand(s:State,card:str,outside:bool=False,free:bool=False)->Optiona
         return add_trace(s,"cast Sink into Stupor (opponent target assumed)")
     return None
 
-def play_land(s:State,card:str)->Optional[State]:
-    if s.land_played or card not in s.hand or card not in ALL_LANDS: return None
+def cast_from_hand_variants(s:State,card:str,outside:bool=False,free:bool=False)->List[State]:
+    """Oracle cast branches; artifact spells expose their real priority stack."""
+    if card not in ARTIFACTS:
+        one=cast_from_hand(s,card,outside=outside,free=free)
+        return [one] if one is not None else []
+    if card not in s.hand or card in ALL_LANDS:
+        return []
+    if card in {"Chrome Mox","Mox Diamond","Everflowing Chalice"}:
+        return []
+    g,b=spell_cost(s,card,outside=outside)
+    mana_spent=0
+    if free:
+        ps=s
+    else:
+        ps=pay(s,g,b); mana_spent=g+b
+    if ps is None:
+        return []
+    cast_state=replace(ps,hand=remove_one(ps.hand,card),spell_cast_this_turn=True)
+    return _stack_artifact_cast_state_variants(
+        cast_state,card,mana_spent,mode="ordinary"
+    )
+
+def _play_land_physical(s:State,card:str)->Optional[Tuple[State,str]]:
+    if s.land_played or card not in s.hand or card not in ALL_LANDS:
+        return None
     b=list(s.battlefield); gy=list(s.graveyard); city_bonus=0
     if card!="City of Traitors":
         for i in reversed(range(len(b))):
             if b[i].name=="City of Traitors":
-                # Playing another land triggers City. If it was untapped, tap it for CC in response, then sacrifice.
-                if not b[i].tapped: city_bonus += 2
+                if not b[i].tapped:
+                    city_bonus+=2
                 gy.append("City of Traitors"); b.pop(i)
-    s=replace(s,hand=remove_one(s.hand,card),battlefield=tuple(b),graveyard=tuple(gy),land_played=True,colorless=s.colorless+city_bonus)
-    tapped=card=="Saprazzan Skerry"; counters=2 if card=="Saprazzan Skerry" else (1 if card=="Urza's Saga" else 0)
-    s=add_perm(s,card,tapped=tapped,counters=counters,mode="landface" if card in MDFC_BLUE_LANDS else "")
-    if card=="Seat of the Synod": s=artifact_etb_triggers(s,card)
-    msg=f"play land {card}" + (" (back face)" if card in MDFC_BLUE_LANDS else "") + ("; City trigger -> +CC then sacrifice" if city_bonus else "")
-    return add_trace(s,msg)
+    ns=replace(
+        s,hand=remove_one(s.hand,card),battlefield=tuple(b),graveyard=tuple(gy),
+        land_played=True,colorless=s.colorless+city_bonus
+    )
+    tapped=card=="Saprazzan Skerry"
+    counters=2 if card=="Saprazzan Skerry" else (1 if card=="Urza's Saga" else 0)
+    ns=add_perm(ns,card,tapped=tapped,counters=counters,
+                mode="landface" if card in MDFC_BLUE_LANDS else "")
+    msg=(f"play land {card}"
+         + (" (back face)" if card in MDFC_BLUE_LANDS else "")
+         + ("; City trigger -> +CC then sacrifice" if city_bonus else ""))
+    return ns,msg
+
+
+def play_land(s:State,card:str)->Optional[State]:
+    physical=_play_land_physical(s,card)
+    if physical is None:
+        return None
+    ns,msg=physical
+    if card=="Seat of the Synod":
+        ns=artifact_etb_triggers(ns,card)
+    return add_trace(ns,msg)
+
+
+def play_land_variants(s:State,card:str)->List[State]:
+    physical=_play_land_physical(s,card)
+    if physical is None:
+        return []
+    ns,msg=physical
+    if card!="Seat of the Synod":
+        return [add_trace(ns,msg)]
+    return [add_trace(row,msg) for row in _artifact_entry_state_variants(
+        ns,("Seat of the Synod",)
+    )]
+
+
+# --------------------------- Draw/card engines ------------------------------
 
 # --------------------------- Draw/card engines ------------------------------
 
@@ -1039,12 +1831,14 @@ def cage_in_play(s:State)->bool:
     return has(s,"Grafdigger's Cage")
 
 def cage_blocks_library_cast(s:State, card:str)->bool:
-    return cage_in_play(s) and card not in ALL_LANDS
+    # MDFCs are land cards in the library but are still *spells* when their front
+    # face is cast from the library, so Cage blocks those spell-face casts too.
+    return cage_in_play(s) and card not in TRUE_LAND_CARDS
 
 def cage_blocks_library_battlefield_entry(s:State, card:str)->bool:
     return cage_in_play(s) and card in CREATURES
 
-def chip_ftt_top_casts(s:State)->List[State]:
+def chip_ftt_top_casts(s:State,priority:bool=False)->List[State]:
     chip_active = s.chip_attached
     ftt_active = (s.ftt_level>=2 and s.spell_cast_this_turn)
     if not (chip_active or ftt_active) or not s.library:
@@ -1053,14 +1847,18 @@ def chip_ftt_top_casts(s:State)->List[State]:
     card=s.library[0]
     out=[]
 
-    if card in ALL_LANDS and not s.land_played:
+    if card in ALL_LANDS and not priority and not s.land_played:
         ns=replace(s,library=s.library[1:],hand=s.hand+(card,))
-        pl=play_land(ns,card)
-        if pl:
+        for pl in play_land_variants(ns,card):
             out.append(add_trace(pl,"top access: play land from library"))
-        return out
+        if card not in MDFC_BLUE_LANDS:
+            return out
 
-    if card not in ALL_LANDS:
+    # MDFCs may still use their spell face.  At a priority window, enforce
+    # instant/native-flash/Floodcaller timing before moving the card off top.
+    if card not in ALL_LANDS or card in MDFC_BLUE_LANDS:
+        if priority and not _can_cast_card_at_priority(s,card):
+            return out
         if cage_blocks_library_cast(s,card):
             return out
         ns=replace(s,library=s.library[1:],hand=s.hand+(card,))
@@ -1069,8 +1867,7 @@ def chip_ftt_top_casts(s:State)->List[State]:
             for cs in chalice_cast_variants(ns,outside=True,free=False):
                 out.append(add_trace(cs,f"{src}: cast Chalice from top"))
         else:
-            cs=cast_from_hand(ns,card,outside=True)
-            if cs:
+            for cs in cast_from_hand_variants(ns,card,outside=True):
                 out.append(add_trace(cs,f"{src}: cast {card} from top"))
     return out
 
@@ -1171,8 +1968,8 @@ def artifact_tutor_actions(s:State)->List[State]:
                         ns=replace(ns,library=tuple(lib2))
                         ns=replace(ns,library=shuffled_library(ns,f"transmute-paid:{p.name}:{t}"))
                         ns=add_perm(ns,t,sick=t in CREATURES)
-                        ns=artifact_etb_triggers(ns,t)
-                        out.append(add_trace(check_win(ns),f"Transmute {p.name}->{t}; pay difference {diff}"))
+                        for row in _artifact_entry_state_variants(ns,(t,)):
+                            out.append(add_trace(check_win(row),f"Transmute {p.name}->{t}; pay difference {diff}"))
 
                     if diff>0:
                         # Legal choice to decline the difference even if mana is available.
@@ -1202,8 +1999,8 @@ def artifact_tutor_actions(s:State)->List[State]:
                         ns=replace(ns,library=tuple(lib))
                         ns=replace(ns,library=shuffled_library(ns,"reshape:"+t))
                         ns=add_perm(ns,t,sick=t in CREATURES)
-                        ns=artifact_etb_triggers(ns,t)
-                        out.append(add_trace(check_win(ns),f"Reshape X={x}->{t}; generic paid {generic}"))
+                        for row in _artifact_entry_state_variants(ns,(t,)):
+                            out.append(add_trace(check_win(row),f"Reshape X={x}->{t}; generic paid {generic}"))
 
     # Whir: XUUU with improvise. Sapphire Medallion reduces generic X by 1.
     if "Whir of Invention" in s.hand and s.blue>=3:
@@ -1236,8 +2033,8 @@ def artifact_tutor_actions(s:State)->List[State]:
                     ns=replace(ns,library=tuple(lib))
                     ns=replace(ns,library=shuffled_library(ns,"whir:"+t))
                     ns=add_perm(ns,t,sick=t in CREATURES)
-                    ns=artifact_etb_triggers(ns,t)
-                    out.append(add_trace(check_win(ns),f"Whir X={x}->{t}"))
+                    for row in _artifact_entry_state_variants(ns,(t,)):
+                        out.append(add_trace(check_win(row),f"Whir X={x}->{t}"))
     return out
 
 
@@ -1269,8 +2066,9 @@ def chrome_dome_actions(s:State)->List[State]:
     useful={"Grinding Station","Battered Golem","Mana Vault","Grim Monolith","Basalt Monolith","Sol Ring","Voltaic Key","Manifold Key","Forensic Gadgeteer","Prized Statue"}
     for p in s.battlefield:
         if p.name=="Chrome Dome" or p.name not in useful: continue
-        ns=pay(s,g,0); ns=add_perm(ns,p.name,sick=False,mode="chrome_copy"); ns=artifact_etb_triggers(ns,p.name)
-        out.append(add_trace(check_win(ns),f"Chrome Dome copies {p.name} (haste)"))
+        ns=pay(s,g,0); ns=add_perm(ns,p.name,sick=False,mode="chrome_copy")
+        for row in _artifact_entry_state_variants(ns,(p.name,)):
+            out.append(add_trace(check_win(row),f"Chrome Dome copies {p.name} (haste)"))
     return out
 
 def aether_spellbomb_actions(s:State)->List[State]:
@@ -1356,39 +2154,20 @@ def draw_sac_actions(s:State)->List[State]:
 def mox_cast_actions(s:State)->List[State]:
     out=[]
     if "Chrome Mox" in s.hand:
-        # Artifact cast triggers happen even if we choose no imprint.
-        base=replace(s,hand=remove_one(s.hand,"Chrome Mox"),spell_cast_this_turn=True)
-        base=artifact_cast_triggers(base,"Chrome Mox")
-        countered=vexing_bauble_countered_cast(
-            base,"Chrome Mox",0,"Vexing Bauble counters Chrome Mox after cast triggers"
+        cast_base=replace(
+            s,hand=remove_one(s.hand,"Chrome Mox"),spell_cast_this_turn=True
         )
-        if countered is not None:
-            out.append(countered); base=None
-        if base is not None:
-            base=add_perm(base,"Chrome Mox"); base=artifact_etb_triggers(base,"Chrome Mox")
-            out.append(add_trace(base,"cast Chrome Mox, no imprint"))
-        if base is not None:
-          for c in sorted(set(s.hand)-{"Chrome Mox"}):
-            if c in BLUE_NONARTIFACT_FRONT:
-                ns=replace(base,hand=remove_one(base.hand,c),exile=base.exile+(c,))
-                # mark the newly entered Chrome Mox as imprinted
-                for j in range(len(ns.battlefield)-1,-1,-1):
-                    if ns.battlefield[j].name=="Chrome Mox": ns=update_perm(ns,j,mode="imprinted"); break
-                out.append(add_trace(ns,f"Chrome Mox imprints {c}"))
+        out.extend(_stack_artifact_cast_state_variants(
+            cast_base,"Chrome Mox",0,mode="chrome_mox"
+        ))
     if "Mox Diamond" in s.hand:
-        # No land discard: spell was still cast but Diamond never enters.
-        no=replace(s,hand=remove_one(s.hand,"Mox Diamond"),graveyard=s.graveyard+("Mox Diamond",),spell_cast_this_turn=True)
-        no=artifact_cast_triggers(no,"Mox Diamond"); out.append(add_trace(no,"cast Mox Diamond, decline/cannot discard land -> graveyard"))
-        if not has(s,"Vexing Bauble"):
-          for c in sorted(set(s.hand)-{"Mox Diamond"}):
-            if c in TRUE_LAND_CARDS:
-                ns=replace(s,hand=remove_one(remove_one(s.hand,"Mox Diamond"),c),graveyard=s.graveyard+(c,),spell_cast_this_turn=True)
-                ns=artifact_cast_triggers(ns,"Mox Diamond")
-                if has(ns,"Vexing Bauble"):
-                    ns=replace(ns,graveyard=ns.graveyard+("Mox Diamond",)); out.append(add_trace(ns,f"Mox Diamond discards {c}; Vexing Bauble counters spell"))
-                else:
-                    ns=add_perm(ns,"Mox Diamond",mode="diamond"); ns=artifact_etb_triggers(ns,"Mox Diamond"); out.append(add_trace(ns,f"Mox Diamond discards true land card {c}"))
-    return out
+        cast_base=replace(
+            s,hand=remove_one(s.hand,"Mox Diamond"),spell_cast_this_turn=True
+        )
+        out.extend(_stack_artifact_cast_state_variants(
+            cast_base,"Mox Diamond",0,mode="mox_diamond"
+        ))
+    return _dedup_states(out)
 
 def fetch_actions(s:State)->List[State]:
     out=[]
@@ -1596,8 +2375,8 @@ def saga_actions(s:State)->List[State]:
         if p.name=="Urza's Saga" and p.counters>=2 and not p.tapped and can_pay(s,2,0):
             ns=pay(s,2,0); ns=update_perm(ns,i,tapped=True)
             ns=add_perm(ns,"Construct",sick=True,mode="construct")
-            ns=artifact_etb_triggers(ns,"Construct")
-            out.append(add_trace(ns,"Saga II ability -> Construct"))
+            for row in _artifact_entry_state_variants(ns,("Construct",)):
+                out.append(add_trace(row,"Saga II ability -> Construct"))
 
     # Once III triggers it exists independently of the Saga permanent. A legal
     # response (notably Otawara) may remove Saga, but the pending search still
@@ -1623,38 +2402,39 @@ def saga_actions(s:State)->List[State]:
         ns=add_perm(ns,target,sick=target in CREATURES)
         ns=replace(ns,library=shuffled_library(ns,"saga:"+target))
         ns=_sacrifice_final_saga_if_present(ns)
-        ns=artifact_etb_triggers(ns,target)
-        out.append(add_trace(
-            check_win(ns),
-            f"Saga III puts {target} onto battlefield\nSaga III search resolves; shuffle"
-        ))
+        for row in _artifact_entry_state_variants(ns,(target,)):
+            out.append(add_trace(
+                check_win(row),
+                f"Saga III puts {target} onto battlefield\nSaga III search resolves; shuffle"
+            ))
     return out
 
 
 def repurposing_bay_actions(s:State)->List[State]:
     out=[]
     for bi,bay in enumerate(s.battlefield):
-        if bay.name!="Repurposing Bay" or bay.tapped: continue
+        if bay.name!="Repurposing Bay" or bay.tapped:
+            continue
         g=2
-        if has(s,"Forensic Gadgeteer"): g=max(1,g-1)
-        if s.pa_target=="Repurposing Bay": g=max(1,g-2)
-        if not can_pay(s,g,0): continue
+        if has(s,"Forensic Gadgeteer"):
+            g=max(1,g-1)
+        if s.pa_target=="Repurposing Bay":
+            g=max(1,g-2)
+        if not can_pay(s,g,0):
+            continue
         for ai,a in enumerate(s.battlefield):
-            if ai==bi or not is_artifact_perm(a): continue
-            # Ordinary tokens have no mana cost and therefore MV 0. A copy
-            # token copies the original artifact's mana cost and mana value.
+            if ai==bi or not is_artifact_perm(a):
+                continue
             sacmv=(
                 0 if a.mode in {"clue","construct","treasure"}
                 else mana_value(a.name)
             )
             targetmv=sacmv+1
-            ns0=pay(s,g,0); ns0=update_perm(ns0,bi,tapped=True)
-            # index remains valid after Bay tap; sacrifice other artifact
+            ns0=pay(s,g,0)
+            ns0=update_perm(ns0,bi,tapped=True)
             ns0=remove_perm(ns0,ai)
             sac_name=a.name or a.mode
 
-            # A qualified hidden-zone search may legally fail to find. Costs
-            # remain paid and the library still shuffles.
             no_find=replace(
                 ns0,
                 library=shuffled_library(ns0,"bay:no-target:"+sac_name),
@@ -1672,20 +2452,22 @@ def repurposing_bay_actions(s:State)->List[State]:
                 and not cage_blocks_library_battlefield_entry(ns0,x)
             )
             for target in targets:
-                ns=ns0; lib=list(ns.library); lib.remove(target)
+                ns=ns0
+                lib=list(ns.library); lib.remove(target)
                 ns=replace(ns,library=tuple(lib))
                 ns=add_perm(ns,target,sick=target in CREATURES)
-                # Bay finishes by shuffling. Only then can the target's ETB
-                # triggers resolve (notably Well/Boulder scry).
+                # Search/shuffle completes before the entered artifact's ETB
+                # triggers are put on the Oracle stack.
                 ns=replace(ns,library=shuffled_library(ns,"bay:"+target))
-                ns=artifact_etb_triggers(ns,target)
-                out.append(add_trace(
-                    check_win(ns),
-                    f"Repurposing Bay sacs {sac_name} -> {target}\n"
-                    f"Repurposing Bay activation: pay {{{g}}}, tap; put "
-                    f"{target} (MV {targetmv}) onto battlefield; shuffle"
-                ))
-    return out
+                for row in _artifact_entry_state_variants(ns,(target,)):
+                    out.append(add_trace(
+                        check_win(row),
+                        f"Repurposing Bay sacs {sac_name} -> {target}\n"
+                        f"Repurposing Bay activation: pay {{{g}}}, tap; put "
+                        f"{target} (MV {targetmv}) onto battlefield; shuffle"
+                    ))
+    return _dedup_states(out)
+
 
 def scour_actions(s:State)->List[State]:
     out=[]
@@ -1707,23 +2489,38 @@ def scour_actions(s:State)->List[State]:
 
 def offer_actions(s:State)->List[State]:
     out=[]; offer="An Offer You Can't Refuse"
-    if offer not in s.hand: return out
+    if offer not in s.hand:
+        return out
     # Counter our own castable noncreature spell; its cast triggers still happen.
     for card in sorted(set(s.hand)-{offer}):
-        if card in ALL_LANDS or card in CREATURES or card in {COMMANDER,"Hydroelectric Specimen"}: continue
+        if card in ALL_LANDS or card in CREATURES or card in {COMMANDER,"Hydroelectric Specimen"}:
+            continue
         g,b=spell_cost(s,card)
-        if not can_pay(s,g,b): continue
+        if not can_pay(s,g,b):
+            continue
         first=pay(s,g,b)
-        if first is None: continue
+        if first is None:
+            continue
         first=replace(first,hand=remove_one(first.hand,card),spell_cast_this_turn=True)
-        if card in ARTIFACTS: first=artifact_cast_triggers(first,card)
-        elif card not in CREATURES: first=vfc_noncreature_cast_trigger(first,card)
-        if not can_pay(first,0,1): continue
-        ns=pay(first,0,1); ns=replace(ns,hand=remove_one(ns.hand,offer),graveyard=ns.graveyard+(card,offer)); ns=vfc_noncreature_cast_trigger(ns,offer)
-        ns=add_perm(ns,"Treasure",mode="treasure"); ns=artifact_etb_triggers(ns,"Treasure")
-        ns=add_perm(ns,"Treasure",mode="treasure"); ns=artifact_etb_triggers(ns,"Treasure")
-        out.append(add_trace(ns,f"Offer counters our {card} -> two Treasures"))
-    return out
+        first_states=(artifact_cast_trigger_variants(first,card) if card in ARTIFACTS
+                      else [vfc_noncreature_cast_trigger(first,card)])
+        for first in first_states:
+            if not can_pay(first,0,1):
+                continue
+            ns=pay(first,0,1)
+            ns=replace(
+                ns,hand=remove_one(ns.hand,offer),
+                graveyard=ns.graveyard+(card,offer)
+            )
+            ns=vfc_noncreature_cast_trigger(ns,offer)
+            ns=add_perm(ns,"Treasure",mode="treasure")
+            ns=add_perm(ns,"Treasure",mode="treasure")
+            for row in _artifact_entry_state_variants(ns,("Treasure","Treasure")):
+                out.append(add_trace(row,f"Offer counters our {card} -> two Treasures"))
+    return _dedup_states(out)
+
+
+_CHAIN_RESULT_CACHE = {}
 
 
 
@@ -2161,13 +2958,57 @@ def cast_urza_from_command_zone_actions(s:State)->List[State]:
 
     ns=add_perm(ns,COMMANDER,sick=True)
     ns=add_perm(ns,"Construct",sick=True,mode="construct")
-    ns=artifact_etb_triggers(ns,"Construct")
-    ns=add_trace(
-        ns,
-        f"cast Urza from command zone -> Construct"
-        + (" (infinite colorless paid generic)" if infinite_colorless_online(s) else "")
-    )
-    return [check_win(ns)]
+    rows=[]
+    for row in _artifact_entry_state_variants(ns,("Construct",)):
+        row=add_trace(
+            row,
+            f"cast Urza from command zone -> Construct"
+            + (" (infinite colorless paid generic)" if infinite_colorless_online(s) else "")
+        )
+        rows.append(check_win(row))
+    return _dedup_states(rows)
+
+
+def urza_exile_permission_actions(s:State,priority:bool=False)->List[State]:
+    """Use any still-live card permission created by Urza's {5} ability.
+
+    Not using a permission is represented by choosing another ordinary action.
+    The permission therefore survives arbitrary sequencing and additional spins
+    until it is consumed or end_turn() expires it.
+    """
+    out=[]
+    for card in sorted(set(s.urza_exile_permissions)):
+        if card not in s.exile:
+            continue
+        base=replace(
+            s,
+            exile=remove_one(s.exile,card),
+            urza_exile_permissions=remove_one(s.urza_exile_permissions,card),
+            hand=s.hand+(card,),
+        )
+
+        # "Play that card" permits the land face when legal.  MDFCs also retain
+        # their independent front-face spell option below.
+        if card in ALL_LANDS and not priority and not s.land_played:
+            for pl in play_land_variants(base,card):
+                out.append(add_trace(pl,f"Urza permission -> play {card}"))
+
+        if card not in ALL_LANDS or card in MDFC_BLUE_LANDS:
+            if priority and not _can_cast_card_at_priority(s,card):
+                continue
+            if card=="Everflowing Chalice":
+                # Without paying the mana cost fixes X=0; multikicker remains an
+                # optional additional cost and chalice_cast_variants already
+                # models the payable {2}-per-kick branches.
+                for cs in chalice_cast_variants(base,outside=True,free=True):
+                    out.append(add_trace(
+                        cs,
+                        "Urza permission -> free Chalice base cost; optional multikicker paid"
+                    ))
+            else:
+                for cs in cast_from_hand_variants(base,card,outside=True,free=True):
+                    out.append(add_trace(cs,f"Urza permission -> cast {card} free"))
+    return out
 
 
 def special_actions(s:State)->List[State]:
@@ -2197,21 +3038,8 @@ def special_actions(s:State)->List[State]:
     if has(s,"Fortune Teller's Talent"):
         if s.ftt_level==1 and can_pay(s,3,1): out.append(add_trace(replace(pay(s,3,1),ftt_level=2),"FTT -> level 2"))
         if s.ftt_level==2 and can_pay(s,2,1): out.append(add_trace(replace(pay(s,2,1),ftt_level=3),"FTT -> level 3"))
-    # Real Urza shuffle/reset. Free-cast top card if legal; Vexing Bauble can counter free spell.
-    if s.urza and can_pay(s,5,0) and s.library:
-        ps=pay(s,5,0); ps=replace(ps,library=shuffled_library(ps,"urza-spin")); card=ps.library[0]
-        ns=replace(ps,library=ps.library[1:],exile=ps.exile+(card,))
-        if card in ALL_LANDS and not ns.land_played:
-            ns=replace(ns,hand=ns.hand+(card,),exile=ns.exile[:-1]); pl=play_land(ns,card)
-            if pl: out.append(add_trace(pl,f"Urza spin -> play {card}"))
-        elif card not in ALL_LANDS or card in MDFC_BLUE_LANDS:
-            ns=replace(ns,hand=ns.hand+(card,),exile=ns.exile[:-1])
-            if card=="Everflowing Chalice":
-                for cs in chalice_cast_variants(ns,outside=True,free=True):
-                    out.append(add_trace(cs,"Urza spin -> free Chalice base cost; optional multikicker paid"))
-            else:
-                cs=cast_from_hand(ns,card,outside=True,free=True)
-                if cs: out.append(add_trace(cs,f"Urza spin -> free {card}"))
+    out += urza_spin_actions(s)
+    out += urza_exile_permission_actions(s)
     # Key generic untap
     for ki,k in enumerate(s.battlefield):
         if k.name in {"Voltaic Key","Manifold Key"} and not k.tapped and can_pay(s,1,0):
@@ -2336,7 +3164,9 @@ def dominance_signature(s:State):
                     for p in s.battlefield))
     return (
         s.turn,bf,tuple(sorted(s.hand)),s.library[:5],
-        tuple(sorted(s.graveyard)),s.land_played,s.drain_bank,
+        tuple(sorted(s.graveyard)),tuple(sorted(s.exile)),
+        tuple(sorted(s.urza_exile_permissions)),tuple(s.oracle_stack),
+        s.land_played,s.drain_bank,
         s.remora_age,s.remora_upkeep_pending,
         s.urza,s.ftt_level,s.uthros_counters,
         s.chip_attached,s.chip_target,
@@ -2454,6 +3284,7 @@ def score(s:State)->float:
     sc += (s.blue+s.colorless)*4
     sc += deferred_producer_blue(s)*0.25  # tie-break toward strictly richer equivalent state
     sc += len(s.hand)*5
+    sc += len(s.urza_exile_permissions)*7
     # combo proximity
     if "Chrome Dome" in names and names&{"Grinding Station","Battered Golem"}: sc+=80
     if "Power Artifact" in names and names&{"Grim Monolith","Basalt Monolith"}: sc+=100
@@ -3241,6 +4072,22 @@ def legal_actions(s:State)->List[State]:
     if s.won:
         return []
 
+    # A paused Oracle stack is a real priority window.  Do not expose lands,
+    # planeswalker loyalty, Station, class-leveling, Reconfigure, Repurposing
+    # Bay, or other sorcery-only actions here.
+    if s.oracle_stack:
+        out=oracle_stack_priority_actions(s)
+        if not out:
+            # Defensive fallback for a hand-built pending-stack state: permit
+            # pure passing even though normal cast/priority predecessors already
+            # materialize all pass-only frontiers for free.
+            out=[x for x in _oracle_stack_pause_frontier(s)
+                 if canonical_markov_state_key(x)!=canonical_markov_state_key(s)]
+        out=[refresh_observability(x) for x in out]
+        kept=_select_actions_with_tutor_diversity(out)
+        _record_cap_audit(out,kept,context="oracle_stack_priority")
+        return kept
+
     # Cumulative upkeep resolves after untap and before all ordinary actions.
     # Only its pay/sacrifice choice and relevant mana abilities are exposed.
     if s.remora_upkeep_pending:
@@ -3270,9 +4117,7 @@ def legal_actions(s:State)->List[State]:
     out=[]
     for c in set(s.hand):
         if c in ALL_LANDS:
-            x=play_land(s,c)
-            if x:
-                out.append(x)
+            out.extend(play_land_variants(s,c))
 
     out += intrinsic_mana_actions(s)
     out += tap_artifact_for_urza_actions(s)
@@ -3286,9 +4131,7 @@ def legal_actions(s:State)->List[State]:
     }
     for c in set(s.hand):
         if (c not in ALL_LANDS or c in MDFC_BLUE_LANDS) and c not in special_spells:
-            x=cast_from_hand(s,c)
-            if x:
-                out.append(x)
+            out.extend(cast_from_hand_variants(s,c))
 
     out += special_actions(s)
     out=[refresh_observability(x) for x in out]
@@ -3443,6 +4286,7 @@ def end_turn(s:State,schedule_remora_upkeep:bool=True)->State:
                blue=0,colorless=0,bauble_draws=0,land_played=False,
                remora_age=(s.remora_age if has(s,"Mystic Remora") else 0),
                remora_upkeep_pending=remora_pending,
+               urza_exile_permissions=(),
                spell_cast_this_turn=False,vfc_pumps=0)
     ns=add_trace(ns,f"--- Turn {ns.turn} ---")
     for event in draw_events:
@@ -3465,6 +4309,7 @@ def can_end_turn_state(s:State)->bool:
     return (
         not s.remora_upkeep_pending
         and not s.saga3_pending
+        and not s.oracle_stack
     )
 
 
@@ -7280,7 +8125,8 @@ def run_bay_smoke():
     assert result.graveyard==("Sapphire Medallion",)
     assert "Battered Golem" not in result.library
     assert result.hand==() and not result.spell_cast_this_turn
-    assert len(result.trace)==len(base.trace)+1
+    assert len(result.trace)>=len(base.trace)+1
+    assert result.trace[-1].splitlines()[0].startswith("Repurposing Bay sacs ")
     assert "pay {2}, tap" in result.trace[-1]
     assert _tutor_action_from_trace(result)==(
         "Repurposing Bay","Battered Golem","battlefield",
@@ -7361,7 +8207,11 @@ def run_bay_smoke():
     )
     expected=artifact_etb_triggers(expected,"Witching Well")
     assert well_result.library==expected.library
-    assert well_result.trace[-2].startswith("Witching Well: scry 2")
+    assert any(
+        line.startswith("Witching Well ETB: scry 2")
+        for entry in well_result.trace
+        for line in entry.splitlines()
+    )
     assert well_result.trace[-1].splitlines()[0]==(
         "Repurposing Bay sacs Treasure -> Witching Well"
     )
