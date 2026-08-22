@@ -135,10 +135,25 @@ class DeterministicBasePolicy:
         target = str(dict(action.parameters).get("target", ""))
         if not target:
             return -100.0
-        # The target identity is legitimate only after the search observation.
-        # Static visible-card value supplies a deterministic rollout continuation;
-        # DP/MC will later replace this coarse target judgment.
         return 20.0 + self.visible_card_score(target, observation)
+
+    def _transmute_sacrifice_score(self, observation: RuntimePolicyView, action: ActionIntent) -> float:
+        signature = tuple(dict(action.parameters).get("signature", ()))
+        name = str(signature[0]) if signature else ""
+        # Sacrifice the least valuable visible resource; Statue receives a small
+        # bonus because its public death trigger replaces itself with a Treasure.
+        score = -self.visible_card_score(name, observation)
+        if name == "Prized Statue":
+            score += 4.0
+        return score
+
+    @staticmethod
+    def _transmute_payment_score(action: ActionIntent) -> float:
+        params = dict(action.parameters)
+        if params.get("choice") == "decline":
+            return -50.0
+        steps = tuple(params.get("mana_steps", ()))
+        return 15.0 - float(len(steps))
 
     def _main_action_score(self, observation: RuntimePolicyView, action: ActionIntent) -> float:
         params = dict(action.parameters)
@@ -146,10 +161,9 @@ class DeterministicBasePolicy:
             return 35.0
         if action.kind == "main_play_land":
             return 30.0 + self.visible_card_score(str(params.get("card", "")), observation)
+        if action.kind == "main_use_transmute_artifact":
+            return 33.0
         if action.kind == "main_use_x_artifact_tutor":
-            # X is committed before seeing the library.  A fixed public heuristic
-            # centered on X=3 covers the deck's important 1-3 MV artifact engines
-            # without using hidden target identities.  Future DP replaces this.
             x = int(params.get("x", 0))
             x_score = 4.5 - 1.5 * abs(x - 3)
             sacrificed = str(params.get("sacrifice_name", ""))
@@ -185,8 +199,12 @@ class DeterministicBasePolicy:
             return self._scry_score(observation, action)
         if kind == "runtime_chrome_imprint":
             return self._chrome_imprint_score(observation, action)
-        if kind in {"choose_tutor_target", "x_artifact_search_target"}:
+        if kind in {"choose_tutor_target", "x_artifact_search_target", "transmute_choose_target"}:
             return self._tutor_target_score(observation, action)
+        if kind == "transmute_choose_sacrifice":
+            return self._transmute_sacrifice_score(observation, action)
+        if kind == "transmute_pay_difference":
+            return self._transmute_payment_score(action)
         if kind == "pass_priority":
             return 0.0
         if kind.startswith("main_"):
