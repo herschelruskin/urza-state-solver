@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Focused regressions for Oracle controlled artifact-cast trigger ordering."""
 
+from dataclasses import replace
+
 from solver_architecture import canonical_markov_state_key
 import urza_solver as solver
 
@@ -38,7 +40,10 @@ def test_assistant_and_uthros_both_legal_orders_survive():
 def test_legacy_fixed_helper_is_still_one_of_the_oracle_variants():
     state = _base_order_state()
     legacy = solver.artifact_cast_triggers(state, "Welding Jar")
-    variant_keys = {canonical_markov_state_key(v) for v in solver.artifact_cast_trigger_variants(state, "Welding Jar")}
+    variant_keys = {
+        canonical_markov_state_key(v)
+        for v in solver.artifact_cast_trigger_variants(state, "Welding Jar")
+    }
     assert canonical_markov_state_key(legacy) in variant_keys
 
 
@@ -54,9 +59,6 @@ def test_duplicate_or_commuting_orders_are_collapsed_after_resolution():
         ),
         urza=True,
     )
-    # VFC and Gadgeteer can be stacked either way here, but their complete
-    # resulting Markov state is identical. The Oracle should not carry two fake
-    # branches merely because the trigger labels were permuted.
     variants = solver.artifact_cast_trigger_variants(state, "Welding Jar")
     assert len(variants) == 1
     only = variants[0]
@@ -154,15 +156,10 @@ def test_special_zero_mana_artifact_casts_branch_trigger_order():
 
 
 def test_offer_self_counter_retains_first_artifact_trigger_order():
-    state = _base_order_state(hand=("Welding Jar", "An Offer You Can't Refuse"))
-    state = solver.replace(state, blue=1) if hasattr(solver, "replace") else state
-    # urza_solver imports dataclasses.replace at module scope; use a constructor
-    # rebuild fallback only if that implementation detail ever changes.
-    if state.blue != 1:
-        state = solver.State(
-            turn=state.turn, library=state.library, hand=state.hand,
-            battlefield=state.battlefield, blue=1, uthros_counters=3,
-        )
+    state = replace(
+        _base_order_state(hand=("Welding Jar", "An Offer You Can't Refuse")),
+        blue=1,
+    )
     actions = [
         v for v in solver.offer_actions(state)
         if v.trace and v.trace[-1].startswith("Offer counters our Welding Jar")
