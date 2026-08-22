@@ -16,6 +16,7 @@ import information_state_propagation_smoke
 import non_oracle_runtime_value_key_smoke
 import non_oracle_runtime_view_smoke
 import opening_information_state_smoke
+import phase1_state_fixture_audit_smoke
 import random_observation_adapters_smoke
 import remaining_search_adapters_smoke
 import scry_decision_adapter_smoke
@@ -32,6 +33,7 @@ import x_artifact_search_adapter_smoke
 
 def main():
     suites = (
+        ("state_fixture_audit", phase1_state_fixture_audit_smoke.main),
         ("decision_observation", decision_observation_smoke.main),
         ("top", top_decision_adapter_smoke.main),
         ("scry", scry_decision_adapter_smoke.main),
