@@ -169,7 +169,13 @@ def test_land_use_consumes_exact_permission_and_card():
 
 
 def test_unused_permission_expires_at_end_of_turn_but_card_remains_exiled():
-    state = solver.State(turn=3, library=("Tail",), hand=(), exile=("Mana Vault",))
+    state = solver.State(
+        turn=3,
+        library=("Tail",),
+        hand=(),
+        battlefield=(),
+        exile=("Mana Vault",),
+    )
     permissions = UrzaPermissionState().grant("Mana Vault", 3)
     expired = permissions.expire_end_of_turn(3)
     assert expired.permissions == ()
