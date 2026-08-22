@@ -3,7 +3,7 @@
 
 import urza_solver as solver
 from non_oracle_rules_adapter import MAIN_END_TURN, apply_main_action, rules_decision_request
-from non_oracle_runtime import make_runtime_state
+from non_oracle_runtime import ACTION_PASS_PRIORITY, make_runtime_state
 from non_oracle_turn_engine import can_commit_end_turn
 from solver_architecture import InformationState
 from urza_permission_adapter import UrzaPermissionState
@@ -82,11 +82,11 @@ def test_end_turn_expires_urza_permission_but_keeps_exiled_card():
     assert runtime.true_state.exile == ("Mana Vault",)
 
 
-def test_saga_lore_advances_after_natural_draw_and_blocks_main_at_chapter_three():
+def test_saga_lore_advances_after_natural_draw_and_creates_mandatory_stack_trigger():
     runtime = make_runtime_state(
         solver.State(
             turn=1,
-            library=("Draw", "Tail"),
+            library=("Draw", "Sol Ring", "Tail"),
             hand=(),
             battlefield=(solver.Perm("Urza's Saga", counters=2),),
         )
@@ -94,8 +94,19 @@ def test_saga_lore_advances_after_natural_draw_and_blocks_main_at_chapter_three(
     runtime = apply_main_action(runtime, end_action(runtime))
     saga = next(p for p in runtime.true_state.battlefield if p.name == "Urza's Saga")
     assert saga.counters == 3 and saga.mode == "saga3"
-    assert runtime.true_state.saga3_pending
-    assert rules_decision_request(runtime, horizon=6).actions == ()
+    assert not runtime.true_state.saga3_pending
+    assert runtime.stack.top().kind == "saga3_search_trigger"
+
+    request = rules_decision_request(runtime, horizon=6)
+    assert len(request.actions) == 1
+    assert request.actions[0].action_id == ACTION_PASS_PRIORITY
+    assert "Sol Ring" not in repr(request.actions)
+
+    runtime = apply_main_action(runtime, request.actions[0])
+    request = rules_decision_request(runtime, horizon=6)
+    assert request.actions and all(a.kind == "remaining_search_target" for a in request.actions)
+    targets = {dict(a.parameters).get("target") for a in request.actions}
+    assert "Sol Ring" in targets
 
 
 def test_remora_upkeep_is_not_skipped_into_main_phase():
@@ -135,7 +146,7 @@ def main():
         test_hidden_natural_draw_is_resolved_only_after_end_turn_choice,
         test_known_top_is_consumed_by_natural_draw,
         test_end_turn_expires_urza_permission_but_keeps_exiled_card,
-        test_saga_lore_advances_after_natural_draw_and_blocks_main_at_chapter_three,
+        test_saga_lore_advances_after_natural_draw_and_creates_mandatory_stack_trigger,
         test_remora_upkeep_is_not_skipped_into_main_phase,
         test_chrome_dome_turn_boundary_is_explicitly_blocked_not_auto_oracled,
     )
