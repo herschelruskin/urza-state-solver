@@ -27,8 +27,8 @@ import random
 TState = TypeVar("TState")
 TValue = TypeVar("TValue")
 
-RNG_SCHEME_VERSION = "urza-rng-v2"
-STATE_KEY_VERSION = "urza-state-key-v2"
+RNG_SCHEME_VERSION = "urza-rng-v3-keyed-state"
+STATE_KEY_VERSION = "urza-state-key-v3"
 POLICY_VIEW_VERSION = "urza-policy-view-v2"
 TRAJECTORY_VERSION = "urza-trajectory-v2"
 
@@ -100,30 +100,48 @@ def _canonical_battlefield(permanents: Iterable[Any]) -> Tuple[PublicPermanent, 
     return tuple(sorted((_public_perm(p) for p in permanents)))
 
 
-def canonical_true_state_key(state: Any) -> Tuple[Any, ...]:
-    """Conservative exact transposition/replay key.
-
-    Every State dataclass field is included.  Ordered hidden library contents are
-    included exactly.  Hand and battlefield ordering are canonicalized because
-    tuple insertion order in those zones is not strategic identity.
-
-    The current Oracle still has history-dependent deterministic shuffles, so
-    `trace` remains part of this *true* exact key. A future narrower DP strategic
-    key should only drop history after shuffle randomness is fully migrated to
-    explicit RandomStreams.
-    """
+def _canonical_state_values(state: Any, *, exclude: frozenset[str] = frozenset()) -> Dict[str, Any]:
     if not is_dataclass(state):
-        return stable_key(state)
-
+        raise TypeError("canonical state projection requires a dataclass state")
     values: Dict[str, Any] = {}
     for f in fields(state):
+        if f.name in exclude:
+            continue
         value = getattr(state, f.name)
         if f.name == "hand":
             value = tuple(sorted(value))
         elif f.name == "battlefield":
             value = _canonical_battlefield(value)
+        elif f.name in {"graveyard", "exile", "interaction_seen"}:
+            value = tuple(sorted(value))
         values[f.name] = value
-    return stable_key(values)
+    return values
+
+
+def canonical_true_state_key(state: Any) -> Tuple[Any, ...]:
+    """Conservative replay/debug key including trajectory provenance."""
+    if not is_dataclass(state):
+        return stable_key(state)
+    return stable_key(_canonical_state_values(state))
+
+
+def canonical_markov_state_key(state: Any) -> Tuple[Any, ...]:
+    """Canonical future-relevant true state for Markov transitions.
+
+    `trace`, `interaction_seen`, and `urza_cast_turn` are reporting/provenance
+    history rather than rules state.  They must not influence future shuffles or
+    transposition identity.  Hidden library order, the explicit RNG root seed,
+    pending phases, mana, exact permanent grants/refund credits, commander state,
+    and all other dataclass fields remain represented.
+    """
+    if not is_dataclass(state):
+        return stable_key(state)
+    return stable_key(
+        _canonical_state_values(
+            state,
+            exclude=frozenset({"trace", "interaction_seen", "urza_cast_turn"}),
+        )
+    )
 
 
 @dataclass(frozen=True)

@@ -7,7 +7,7 @@ Run:
 
 from dataclasses import replace
 
-from urza_solver import Perm, State
+from urza_solver import Perm, State, shuffled_library
 from solver_architecture import (
     EpisodeOutcome,
     InformationState,
@@ -16,6 +16,7 @@ from solver_architecture import (
     RandomStreams,
     Trajectory,
     TrajectoryEvent,
+    canonical_markov_state_key,
     canonical_true_state_key,
     collapse_action_equivalence,
     cumulative_win_curve,
@@ -30,6 +31,7 @@ def base_state() -> State:
         library=("A", "B", "C"),
         hand=("Island", "Sol Ring"),
         battlefield=(Perm("Grinding Station"),),
+        rng_root_seed=20260822,
     )
 
 
@@ -86,6 +88,49 @@ def test_exact_key_tracks_final_oracle_state_fields():
 
     assert key == canonical_true_state_key(
         replace(state, hand=tuple(reversed(state.hand)))
+    )
+
+
+def test_markov_key_drops_reporting_history_but_keeps_rng_world():
+    state = base_state()
+    key = canonical_markov_state_key(state)
+    assert key == canonical_markov_state_key(
+        replace(
+            state,
+            trace=("different route", "same physical state"),
+            interaction_seen=("Swan Song",),
+            urza_cast_turn=1,
+        )
+    )
+    assert key != canonical_markov_state_key(replace(state, rng_root_seed=20260823))
+    assert key != canonical_markov_state_key(replace(state, remora_upkeep_pending=True))
+    assert key != canonical_markov_state_key(
+        replace(
+            state,
+            battlefield=(replace(state.battlefield[0], knack_granted=True),),
+        )
+    )
+
+
+def test_in_game_shuffle_is_trace_independent_and_seeded():
+    cards=tuple(f"C{i}" for i in range(12))
+    state=replace(base_state(),library=cards,trace=("short",))
+    same_physical=replace(
+        state,
+        trace=("a", "much", "longer", "trajectory", "history"),
+        interaction_seen=("Force of Will",),
+        urza_cast_turn=1,
+    )
+    a=shuffled_library(state,"rng-smoke")
+    b=shuffled_library(same_physical,"rng-smoke")
+    assert a==b, "trace/reporting history changed the actual shuffle"
+    assert a==shuffled_library(state,"rng-smoke"), "same seeded event was not reproducible"
+
+    other_seed=replace(state,rng_root_seed=20260823)
+    assert RandomStreams(state.rng_root_seed).seed_for(
+        "game", ("shuffle","rng-smoke",stable_digest(canonical_markov_state_key(state)))
+    ) != RandomStreams(other_seed.rng_root_seed).seed_for(
+        "game", ("shuffle","rng-smoke",stable_digest(canonical_markov_state_key(other_seed)))
     )
 
 
@@ -218,6 +263,8 @@ def main():
     tests = [
         test_true_vs_observation_boundary,
         test_exact_key_tracks_final_oracle_state_fields,
+        test_markov_key_drops_reporting_history_but_keeps_rng_world,
+        test_in_game_shuffle_is_trace_independent_and_seeded,
         test_policy_view_tracks_future_legality_without_hidden_future,
         test_information_state_shuffle_reset,
         test_rng_namespaces_are_reproducible_and_independent,
