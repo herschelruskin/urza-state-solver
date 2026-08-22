@@ -12,6 +12,7 @@ from state_field_audit import (
     REPLACE_WITH_BELIEF,
     RETAIN,
     STATE_FIELD_AUDIT,
+    base_win_value_exclusions,
     source_usage_signals,
     suspicious_zero_usage_fields,
     validate_audit_tables,
@@ -32,7 +33,6 @@ def test_base_win_value_history_is_not_accidentally_keyed():
     assert STATE_FIELD_AUDIT["rng_root_seed"].win_by_horizon_value_key == EXCLUDE
     assert STATE_FIELD_AUDIT["rng_root_seed"].policy_visibility == HIDDEN_SIMULATOR
 
-    # Valuable analytics are preserved, but not allowed to fragment base V(s).
     for name in ("urza_cast_turn", "interaction_seen", "win_family"):
         assert STATE_FIELD_AUDIT[name].win_by_horizon_value_key == OBJECTIVE_AUGMENT
 
@@ -49,47 +49,34 @@ def test_nonoracle_library_requires_belief_projection():
 
 def test_critical_future_legality_fields_are_retained():
     critical = {
-        "turn",
-        "hand",
-        "battlefield",
-        "graveyard",
-        "exile",
-        "blue",
-        "colorless",
-        "land_played",
-        "drain_bank",
-        "bauble_draws",
-        "remora_age",
-        "remora_upkeep_pending",
-        "saga3_pending",
-        "ring_counters",
-        "ftt_level",
-        "uthros_counters",
-        "urza",
-        "construct",
-        "top_access",
-        "chip_attached",
-        "chip_target",
-        "spell_cast_this_turn",
-        "pa_target",
-        "vfc_pumps",
-        "commander_in_command_zone",
-        "commander_casts_from_zone",
-        "won",
+        "turn", "hand", "battlefield", "graveyard", "exile",
+        "blue", "colorless", "land_played", "drain_bank", "bauble_draws",
+        "remora_age", "remora_upkeep_pending", "saga3_pending", "ring_counters",
+        "ftt_level", "uthros_counters", "urza", "chip_attached", "chip_target",
+        "spell_cast_this_turn", "pa_target", "vfc_pumps",
+        "commander_in_command_zone", "commander_casts_from_zone", "won",
     }
     for name in critical:
         assert STATE_FIELD_AUDIT[name].win_by_horizon_value_key == RETAIN, name
 
 
+def test_usage_audit_proves_legacy_flags_do_not_fragment_value_state():
+    # Both fields remain in State/PolicyView for compatibility, but focused source
+    # tracing found no future-rule read that justifies separating V(s).
+    assert STATE_FIELD_AUDIT["construct"].win_by_horizon_value_key == EXCLUDE
+    assert STATE_FIELD_AUDIT["top_access"].win_by_horizon_value_key == EXCLUDE
+    assert {"construct", "top_access", "rng_root_seed", "trace"} <= set(base_win_value_exclusions())
+
+
+def test_terminal_semantics_vs_terminal_analytics():
+    assert STATE_FIELD_AUDIT["won"].win_by_horizon_value_key == RETAIN
+    assert STATE_FIELD_AUDIT["win_family"].win_by_horizon_value_key == OBJECTIVE_AUGMENT
+
+
 def test_perm_identity_keeps_real_resources_not_provenance():
     for name in (
-        "name",
-        "tapped",
-        "sick",
-        "counters",
-        "mode",
-        "knack_granted",
-        "producer_urza_ready",
+        "name", "tapped", "sick", "counters", "mode",
+        "knack_granted", "producer_urza_ready",
     ):
         assert PERM_FIELD_AUDIT[name].win_by_horizon_value_key == RETAIN, name
 
@@ -100,12 +87,8 @@ def test_perm_identity_keeps_real_resources_not_provenance():
 
 def test_static_usage_scan_runs_and_surfaces_review_signal():
     signals = source_usage_signals()
-    # These are unquestionably active in the current rules implementation.
     for name in ("library", "hand", "battlefield", "blue", "turn", "tapped", "mode"):
         assert signals[name].total > 0, name
-
-    # Zero-use fields are allowed only as an informational signal: generic getattr
-    # adapters and dataclass iteration are not fully visible to this AST scanner.
     zeros = suspicious_zero_usage_fields(signals)
     assert isinstance(zeros, tuple)
 
@@ -117,6 +100,8 @@ def main():
         test_base_win_value_history_is_not_accidentally_keyed,
         test_nonoracle_library_requires_belief_projection,
         test_critical_future_legality_fields_are_retained,
+        test_usage_audit_proves_legacy_flags_do_not_fragment_value_state,
+        test_terminal_semantics_vs_terminal_analytics,
         test_perm_identity_keeps_real_resources_not_provenance,
         test_static_usage_scan_runs_and_surfaces_review_signal,
     ]
