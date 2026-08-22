@@ -82,6 +82,15 @@ KEY_TARGET_PRIORITY = {
     "Voltaic Key": -100.0,
     "Manifold Key": -100.0,
 }
+DRAW_ACTIVATION_PRIORITY = {
+    "activated_one_ring_draw": 38.0,
+    "activated_bauble_delayed_draw": 31.0,
+    "activated_vexing_bauble_draw": 28.0,
+    "activated_clue_draw": 22.0,
+    "activated_aether_spellbomb_draw": 21.0,
+    "activated_witching_well_draw": 18.0,
+    "activated_cam_draw_two": 17.0,
+}
 
 
 @dataclass(frozen=True)
@@ -231,12 +240,25 @@ class DeterministicBasePolicy:
             20.0 + 4.0 * self.visible_card_score(target, observation),
         ) / 10.0
 
+    @staticmethod
+    def _draw_activation_score(action: ActionIntent) -> float:
+        params = dict(action.parameters)
+        kind = str(params.get("ability_kind", ""))
+        base = DRAW_ACTIVATION_PRIORITY.get(kind, 0.0)
+        # Expensive draw engines should not outrank an available tutor simply
+        # because they draw two; their base priorities already account for tempo.
+        return base
+
     def _main_action_score(self, observation: RuntimePolicyView, action: ActionIntent) -> float:
         params = dict(action.parameters)
         if action.kind == "main_cast_commander":
             return 35.0
         if action.kind == "main_play_land":
             return 30.0 + self.visible_card_score(str(params.get("card", "")), observation)
+        if action.kind == "main_cast_gitaxian_probe":
+            return -20.0 if bool(params.get("will_be_countered_by_own_bauble", False)) else 40.0
+        if action.kind == "main_draw_activation":
+            return self._draw_activation_score(action)
         if action.kind == "main_use_transmute_artifact":
             return 33.0
         if action.kind == "main_activate_repurposing_bay":

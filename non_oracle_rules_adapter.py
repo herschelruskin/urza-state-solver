@@ -115,6 +115,14 @@ from non_oracle_utility_artifact_runtime import (
     utility_main_intents,
     utility_pending_request,
 )
+from non_oracle_draw_engine_runtime import (
+    MAIN_CAST_PROBE,
+    MAIN_DRAW_ACTIVATION,
+    apply_draw_stack_action,
+    begin_draw_engine_main_action,
+    draw_engine_main_intents,
+    handles_draw_stack_top,
+)
 
 MAIN_PLAY_LAND = "main_play_land"
 MAIN_MANA_ACTION = "main_mana_action"
@@ -294,6 +302,7 @@ def main_phase_intents(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ..
     rows.extend(row.action for row in _mana_rows(runtime))
     rows.extend(_ordinary_artifact_cast_intents(runtime))
     rows.extend(utility_main_intents(runtime))
+    rows.extend(draw_engine_main_intents(runtime))
     rows.extend(proactive_nonartifact_intents(runtime))
     rows.extend(simple_tutor_runtime_intents(runtime))
     rows.extend(x_artifact_runtime_intents(runtime))
@@ -397,6 +406,8 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
             resolved = apply_remaining_pending(runtime, action)
         elif handles_chrome_pending(runtime):
             resolved = apply_chrome_pending(runtime, action)
+        elif handles_draw_stack_top(runtime):
+            resolved = apply_draw_stack_action(runtime, action)
         elif handles_utility_stack_top(runtime):
             resolved = apply_utility_stack_action(runtime, action)
         elif handles_chrome_stack_top(runtime):
@@ -461,6 +472,8 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
 
     if action.kind in {MAIN_CAST_UTILITY_ARTIFACT, MAIN_ACTIVATE_TOP, MAIN_ACTIVATE_KEY}:
         return begin_utility_main_action(runtime, action)
+    if action.kind in {MAIN_CAST_PROBE, MAIN_DRAW_ACTIVATION}:
+        return begin_draw_engine_main_action(runtime, action)
     if action.kind == MAIN_CAST_PROACTIVE_NONARTIFACT:
         return begin_proactive_nonartifact_cast(runtime, action)
     if action.kind == MAIN_USE_SIMPLE_TUTOR:

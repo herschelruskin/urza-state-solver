@@ -42,6 +42,7 @@ COMBO_SPELL_CARDS = frozenset({
     "Power Artifact", "Banishing Knack", "Retraction Helix", "Dramatic Reversal",
 })
 SPECIAL_ARTIFACT_CASTS = frozenset({"Mox Diamond", "Everflowing Chalice"})
+MODELED_CANTRIP_CARDS = frozenset({"Gitaxian Probe"})
 REACTIVE_INTERACTION_CARDS = frozenset(getattr(solver, "INTERACTION_CARDS", frozenset()))
 SUCCESS_TERMINALS = frozenset({"horizon", "win"})
 
@@ -95,6 +96,8 @@ def _horizon_state_features(state: solver.State):
         families.add("hand_combo_nonartifact_present")
     if hand & SPECIAL_ARTIFACT_CASTS:
         families.add("hand_special_artifact_present")
+    if hand & MODELED_CANTRIP_CARDS:
+        families.add("hand_modeled_cantrip_present")
 
     generic_nonartifact = {
         card for card in hand
@@ -105,6 +108,7 @@ def _horizon_state_features(state: solver.State):
         and card not in ARTIFACT_TUTOR_CARDS
         and card not in NONARTIFACT_ENGINE_CARDS
         and card not in COMBO_SPELL_CARDS
+        and card not in MODELED_CANTRIP_CARDS
     }
     reactive = generic_nonartifact & REACTIVE_INTERACTION_CARDS
     other = generic_nonartifact - reactive
@@ -113,30 +117,41 @@ def _horizon_state_features(state: solver.State):
     if other:
         families.add("hand_other_nonartifact_unmodeled")
 
-    if "Sensei's Divining Top" in battlefield_names:
-        families.add("battlefield_top_activation_modeled_present")
+    top_live = "Sensei's Divining Top" in battlefield_names
+    key_live = bool(battlefield_names & {"Voltaic Key", "Manifold Key"})
+    if top_live:
+        # The 1-mana look/reorder ability is modeled.  The tap-to-draw ability is
+        # a separate stack interaction and remains a Phase-2 action-surface gap.
+        families.add("battlefield_top_reorder_modeled_present")
+        families.add("battlefield_top_draw_activation_partial")
     if "The One Ring" in battlefield_names:
-        families.add("battlefield_one_ring_draw_unmodeled")
+        families.add("battlefield_one_ring_draw_modeled_present")
     if any(p.mode == "clue" for p in state.battlefield):
-        families.add("battlefield_clue_draw_unmodeled")
+        families.add("battlefield_clue_draw_modeled_present")
     if "Grinding Station" in battlefield_names:
         families.add("battlefield_station_activation_unmodeled")
     if state.urza:
         families.add("battlefield_urza_spin_unmodeled")
     if "The Reality Chip" in battlefield_names and not state.chip_attached:
         families.add("battlefield_chip_reconfigure_unmodeled")
-    if any(name in battlefield_names for name in {"Voltaic Key", "Manifold Key"}):
-        families.add("battlefield_key_activation_modeled_present")
+    if key_live:
+        # Main-phase Key untaps are modeled. Priority-time Key use, including the
+        # Top double-activation line, is not yet connected.
+        families.add("battlefield_key_main_activation_modeled_present")
+    if top_live and key_live:
+        families.add("top_key_double_activation_partial")
     if "Uthros Research Craft" in battlefield_names:
         families.add("battlefield_uthros_activation_unmodeled")
     if "Sewer-veillance Cam" in battlefield_names:
-        families.add("battlefield_cam_draw_activation_unmodeled")
+        families.add("battlefield_cam_draw_activation_modeled_present")
         if (
             "Reshape" in hand
             or "Transmute Artifact" in hand
             or "Repurposing Bay" in battlefield_names
         ):
-            families.add("cam_ltb_sacrifice_route_partial")
+            # Cam's own 3U sacrifice/draw route now stages LTB correctly. Sacrifice
+            # through tutor/Bay costs still needs the same typed LTB integration.
+            families.add("cam_tutor_sacrifice_ltb_partial")
     if "Chrome Dome" in battlefield_names:
         # Opponent-before-us end-step copying is modeled. Main/priority activation
         # remains a separate Phase-2 action surface.

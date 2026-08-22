@@ -26,6 +26,7 @@ jobs:
             non_oracle_cam_runtime.py \
             non_oracle_chrome_dome_runtime.py \
             non_oracle_utility_artifact_runtime.py \
+            non_oracle_draw_engine_runtime.py \
             non_oracle_runtime_view.py \
             non_oracle_runtime_value_key.py \
             non_oracle_base_policy.py \
@@ -44,6 +45,7 @@ jobs:
             cam_runtime_smoke.py \
             chrome_dome_runtime_smoke.py \
             utility_artifact_runtime_smoke.py \
+            draw_engine_runtime_smoke.py \
             base_policy_smoke.py \
             commander_adapter_smoke.py \
             proactive_spell_smoke.py \
@@ -63,6 +65,8 @@ jobs:
         run: python chrome_dome_runtime_smoke.py
       - name: Utility artifact runtime
         run: python utility_artifact_runtime_smoke.py
+      - name: Draw and cantrip runtime
+        run: python draw_engine_runtime_smoke.py
       - name: Deterministic base policy
         run: python base_policy_smoke.py
       - name: Typed commander casting
