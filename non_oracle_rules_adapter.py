@@ -11,7 +11,8 @@ The adapter instead admits action families only after they are audited as safe:
 - intrinsic mana abilities: public permanent/resource state only;
 - Urza artifact-mana taps: public permanent/resource state only;
 - ordinary artifact casts: commit cost/payment first, then enter the typed Phase-2
-  cast/trigger/ETB stack; no hidden card is inspected to decide whether to cast.
+  cast/trigger/ETB stack; no hidden card is inspected to decide whether to cast;
+- end turn: a public commitment followed by typed chance observations.
 
 Hidden-information families (Top, scry, tutors/search, draw-then-choose) are added
 through their Phase-1 staged adapters, never by importing Oracle successors.
@@ -20,7 +21,7 @@ through their Phase-1 staged adapters, never by importing Oracle successors.
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
-from typing import Dict, Iterable, Optional, Tuple
+from typing import Dict, Iterable, Tuple
 
 import urza_solver as solver
 from decision_observation import (
@@ -36,12 +37,13 @@ from non_oracle_runtime import (
     record_artifact_entry,
     runtime_decision_request,
 )
-from non_oracle_runtime_value_key import WINDOW_MAIN_EMPTY, RuntimeDecisionWindow
-from solver_architecture import canonical_markov_state_key
+from non_oracle_runtime_value_key import WINDOW_MAIN_EMPTY
+from non_oracle_turn_engine import advance_after_end_turn, can_commit_end_turn
 
 MAIN_PLAY_LAND = "main_play_land"
 MAIN_MANA_ACTION = "main_mana_action"
 MAIN_CAST_ARTIFACT = "main_cast_artifact"
+MAIN_END_TURN = "main_end_turn"
 
 # These need dedicated cast-time/entry adapters before policy-mode use.
 SPECIAL_ARTIFACT_CASTS = frozenset({"Mox Diamond", "Everflowing Chalice"})
@@ -84,12 +86,7 @@ def _safe_successor_actions(
     *,
     family: str,
 ) -> Tuple[_MechanicalSuccessor, ...]:
-    """Turn safe public mechanical successors into deterministic ActionIntents.
-
-    Successors in these audited families do not read the library.  Exact duplicate
-    public transitions are collapsed.  Runtime-only permanent tags never appear in
-    the policy parameters/equivalence keys.
-    """
+    """Turn safe public mechanical successors into deterministic ActionIntents."""
     unique: Dict[Tuple[object, ...], solver.State] = {}
     for successor in successors:
         signature = _state_resource_delta(state, successor)
@@ -101,7 +98,11 @@ def _safe_successor_actions(
         action = ActionIntent(
             action_id=f"{family}.{index:03d}",
             kind=family,
-            parameters=(("mechanical_index", index),),
+            parameters=(
+                ("blue_delta", int(successor.blue - state.blue)),
+                ("colorless_delta", int(successor.colorless - state.colorless)),
+                ("mechanical_index", index),
+            ),
             equivalence_key=(family, signature),
             label=label,
             decision_stage=DECISION_COMMIT,
@@ -122,12 +123,7 @@ def _land_rows(runtime: NonOracleRuntimeState) -> Tuple[_MechanicalSuccessor, ..
             continue
         next_state, message = physical
         next_state = solver.add_trace(next_state, message)
-        # Seat is an artifact entry and therefore cannot be treated as an atomic
-        # mechanical successor; its ETB stack is created in apply_main_action.
-        signature = (
-            card,
-            _state_resource_delta(state, next_state),
-        )
+        signature = (card, _state_resource_delta(state, next_state))
         action = ActionIntent(
             action_id=f"main.land.{card}",
             kind=MAIN_PLAY_LAND,
@@ -169,12 +165,7 @@ def _ordinary_artifact_cast_intents(runtime: NonOracleRuntimeState) -> Tuple[Act
                     ("generic_cost", int(generic)),
                     ("mana_spent", mana_spent),
                 ),
-                equivalence_key=(
-                    MAIN_CAST_ARTIFACT,
-                    card,
-                    int(generic),
-                    int(blue_req),
-                ),
+                equivalence_key=(MAIN_CAST_ARTIFACT, card, int(generic), int(blue_req)),
                 label=f"Cast {card}",
                 decision_stage=DECISION_COMMIT,
                 source=card,
@@ -183,15 +174,36 @@ def _ordinary_artifact_cast_intents(runtime: NonOracleRuntimeState) -> Tuple[Act
     return tuple(rows)
 
 
+def _end_turn_intent(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ...]:
+    if not can_commit_end_turn(runtime):
+        return ()
+    return (
+        ActionIntent(
+            action_id="main.end_turn",
+            kind=MAIN_END_TURN,
+            parameters=(("ending_turn", int(runtime.true_state.turn)),),
+            equivalence_key=(MAIN_END_TURN, int(runtime.true_state.turn)),
+            label=f"End turn {runtime.true_state.turn}",
+            decision_stage=DECISION_COMMIT,
+            source="turn structure",
+        ),
+    )
+
+
 def main_phase_intents(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ...]:
     """Audited public main-phase actions. Exact hidden library is never inspected."""
+    state = runtime.true_state
     if runtime.pending is not None or runtime.stack.objects:
         return ()
     if runtime.window.kind != WINDOW_MAIN_EMPTY:
         return ()
+    # Mandatory windows are never skipped just to keep an episode moving.
+    if state.remora_upkeep_pending or state.saga3_pending:
+        return ()
     rows = [row.action for row in _land_rows(runtime)]
     rows.extend(row.action for row in _mana_rows(runtime))
     rows.extend(_ordinary_artifact_cast_intents(runtime))
+    rows.extend(_end_turn_intent(runtime))
     return tuple(sorted(rows, key=lambda action: action.action_id))
 
 
@@ -274,5 +286,8 @@ def apply_main_action(
             mana_spent=int(params["mana_spent"]),
             from_zone="hand",
         )
+
+    if action.kind == MAIN_END_TURN:
+        return advance_after_end_turn(runtime)
 
     raise AssertionError(f"unhandled main action kind {action.kind!r}")
