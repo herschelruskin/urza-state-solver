@@ -25,9 +25,13 @@ jobs:
             non_oracle_runtime.py \
             non_oracle_runtime_view.py \
             non_oracle_runtime_value_key.py \
-            phase2_runtime_smoke.py
+            non_oracle_base_policy.py \
+            phase2_runtime_smoke.py \
+            base_policy_smoke.py
       - name: Phase 2 runtime kernel
         run: python phase2_runtime_smoke.py
+      - name: Deterministic base policy
+        run: python base_policy_smoke.py
       - name: Phase 1 regression gate
         run: python phase1_acceptance_smoke.py
       - name: Architecture regressions
