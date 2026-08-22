@@ -35,7 +35,7 @@ def process_rss_mb():
     except Exception:
         return None
 
-import argparse, csv, hashlib, heapq, json, math, multiprocessing as mp, os, random, statistics, sys, time, traceback, threading, signal, itertools, itertools
+import argparse, csv, hashlib, heapq, json, math, multiprocessing as mp, os, random, statistics, subprocess, sys, time, traceback, threading, signal, itertools
 
 # ----------------------------- Card groups ---------------------------------
 
@@ -75,6 +75,7 @@ CREATURES = {
     "Forensic Gadgeteer","Hope of Ghirapur","Spellseeker","Spellskite",
     "The Reality Chip","Valley Floodcaller","Hydroelectric Specimen",
 }
+LEGENDARY_CREATURES = {COMMANDER,"Hope of Ghirapur","The Reality Chip"}
 KNUCKS = {"Banishing Knack","Retraction Helix"}
 PRODUCERS = {"Grinding Station","Battered Golem","Forensic Gadgeteer"}
 CA_ENGINES = {"The Reality Chip","Uthros Research Craft","The One Ring",
@@ -161,6 +162,22 @@ SAGA_TARGETS = frozenset(SAGA_ZERO_PRINTED | SAGA_ONE_PRINTED)
 ACTION_CAP = 80
 BOTTOM_CAP = 8
 
+@dataclass(frozen=True)
+class OracleSearchConfig:
+    max_turn: int
+    beam: int
+    depth: int
+    action_cap: int
+    bottom_cap: int
+    min_keep: int
+
+@dataclass(frozen=True)
+class OracleWorkerJob:
+    seed: int
+    deck: List[str]
+    config: OracleSearchConfig
+    verbose_worker: bool = False
+
 BLUE_NONARTIFACT_FRONT = {c for c,(g,u) in COST.items() if u>0 and c not in ARTIFACTS and c not in TRUE_LAND_CARDS and c!=COMMANDER}
 BLUE_NONARTIFACT_FRONT |= {
     "An Offer You Can't Refuse","Fierce Guardianship","Flusterstorm","Force of Negation","Force of Will",
@@ -218,6 +235,11 @@ class Perm:
     sick: bool = False
     counters: int = 0
     mode: str = ""     # e.g. chip_attached, skerry, saga etc.
+    # Current-turn Knack/Helix grants belong to the exact creature object.
+    # ``knack_source`` is trace/pruning provenance only; the two spells grant
+    # the same ability, so canonical state identity uses only knack_granted.
+    knack_granted: bool = False
+    knack_source: str = field(default="",compare=False,hash=False)
 
 @dataclass(frozen=True)
 class State:
@@ -233,6 +255,8 @@ class State:
     drain_bank: int = 0
     bauble_draws: int = 0
     remora_age: int = 0
+    remora_upkeep_pending: bool = False
+    saga3_pending: bool = False
     ring_counters: int = 0
     ftt_level: int = 1
     uthros_counters: int = 0
@@ -242,7 +266,6 @@ class State:
     chip_attached: bool = False
     chip_target: str = ""
     spell_cast_this_turn: bool = False
-    knack_target: str = ""
     pa_target: str = ""
     vfc_pumps: int = 0
     urza_cast_turn: int = 0
@@ -256,16 +279,76 @@ class State:
     def key(self):
         # Preserve exact shuffled/top-access states without storing the full tuple twice in the key.
         libp = (self.library[:10], hash(self.library))
-        bf = tuple(sorted((p.name,p.tapped,p.sick,p.counters,p.mode) for p in self.battlefield))
+        bf = tuple(sorted((p.name,p.tapped,p.sick,p.counters,p.mode,
+                           p.knack_granted) for p in self.battlefield))
         return (self.turn, tuple(sorted(self.hand)), bf, self.blue, self.colorless,
-                self.land_played,self.drain_bank,self.bauble_draws,self.ring_counters,self.ftt_level,self.uthros_counters,
+                self.land_played,self.drain_bank,self.bauble_draws,
+                self.remora_age,self.remora_upkeep_pending,self.saga3_pending,
+                tuple(sorted(self.graveyard)),self.ring_counters,self.ftt_level,self.uthros_counters,
                 self.urza,self.construct,self.top_access,self.chip_attached,self.chip_target,
-                self.spell_cast_this_turn,self.knack_target,self.pa_target,self.vfc_pumps,
+                self.spell_cast_this_turn,self.pa_target,self.vfc_pumps,
                 self.commander_in_command_zone,self.commander_casts_from_zone,
                 libp,self.won,self.win_family)
 
 def add_trace(s:State, msg:str)->State:
     return replace(s, trace=s.trace+(msg,))
+
+def append_trace_detail(s:State,msg:str)->State:
+    """Add a visible sub-line without changing the semantic action count.
+
+    Deterministic shuffles and Oracle's established same-stage tie-break use
+    ``len(trace)``. Automatic draws were historically silent, so representing
+    them as new tuple entries would change search results. Appending the text to
+    the current trace entry makes the draw visible while preserving that count.
+    """
+    if not s.trace:
+        return add_trace(s,msg)
+    trace=list(s.trace)
+    trace[-1]=trace[-1]+"\n"+msg
+    return replace(s,trace=tuple(trace))
+
+def draw_from_library(s:State,n:int)->Tuple[State,Tuple[str,...]]:
+    """Draw up to ``n`` top cards, returning the state and exact card names."""
+    count=min(max(0,n),len(s.library))
+    drawn=tuple(s.library[:count])
+    if not drawn:
+        return s,drawn
+    return replace(
+        s,hand=s.hand+drawn,library=s.library[count:]
+    ),drawn
+
+def drawn_cards_text(drawn:Tuple[str,...])->str:
+    return ", ".join(drawn) if drawn else "no cards (empty library)"
+
+_DELAYED_BAUBLE_TRACE_SUFFIX=": tap+sacrifice -> delayed next-upkeep draw"
+
+def pending_bauble_draw_sources(s:State)->Tuple[str,...]:
+    """Recover unresolved Bauble source names without adding search state.
+
+    ``bauble_draws`` remains the sole gameplay field. Source provenance already
+    exists in the activation trace, so keeping it there avoids changing exact
+    keys, dominance groups, caches, or graph size for an observability patch.
+    """
+    if s.bauble_draws<=0:
+        return ()
+    latest_turn=0
+    for i,msg in enumerate(s.trace):
+        if msg.startswith("--- Turn "):
+            latest_turn=i+1
+    sources=[]
+    for msg in s.trace[latest_turn:]:
+        for line in msg.splitlines():
+            if line.endswith(_DELAYED_BAUBLE_TRACE_SUFFIX):
+                sources.append(line[:-len(_DELAYED_BAUBLE_TRACE_SUFFIX)])
+    sources=sources[-s.bauble_draws:]
+    if len(sources)<s.bauble_draws:
+        # A partially preserved legacy trace contains the newest recoverable
+        # activations; any unknown pending activations happened earlier.
+        sources=(
+            ["Mishra's/Urza's Bauble"]*(s.bauble_draws-len(sources))
+            +sources
+        )
+    return tuple(sources)
 
 def bf_names(s): return [p.name for p in s.battlefield]
 def bf_name_set(s): return frozenset(p.name for p in s.battlefield)
@@ -290,6 +373,8 @@ def remove_perm(s:State, idx:int, to_grave=True)->State:
         gy=s.graveyard+(p.name,) if to_grave and p.name not in {"Clue","Treasure","Construct"} and p.mode!="chrome_copy" else s.graveyard
         s=replace(s,battlefield=tuple(b),graveyard=gy)
     if p.name=="Power Artifact": s=replace(s,pa_target="")
+    if p.name=="Mystic Remora":
+        s=replace(s,remora_age=0,remora_upkeep_pending=False)
     if p.name=="Fortune Teller's Talent": s=replace(s,ftt_level=1)
     if p.name=="Uthros Research Craft": s=replace(s,uthros_counters=0)
     if p.name=="The One Ring": s=replace(s,ring_counters=0)
@@ -315,6 +400,10 @@ def remove_perm(s:State, idx:int, to_grave=True)->State:
     return s
 
 def add_perm(s:State,name:str,tapped=False,sick=False,counters=0,mode="")->State:
+    if name=="Mystic Remora":
+        # Age counters belong to this battlefield object and reset on every
+        # zone change/re-entry. The deck contains only one Mystic Remora.
+        s=replace(s,remora_age=0,remora_upkeep_pending=False)
     return replace(s,battlefield=s.battlefield+(Perm(name,tapped,sick,counters,mode),))
 
 
@@ -358,6 +447,47 @@ def is_creature_perm(p:Perm)->bool:
         return False
     return p.name in F_CREATURES or p.name==COMMANDER or p.mode=="construct"
 
+def is_land_perm(p:Perm)->bool:
+    """Use the permanent's battlefield face, especially for MDFCs."""
+    if p.name in MDFC_BLUE_LANDS:
+        return p.mode=="landface"
+    return p.name in F_ALL_LANDS
+
+def is_token_perm(p:Perm)->bool:
+    return p.mode in {
+        "clue","construct","treasure","chrome_copy","chrome_copy_preturn",
+    }
+
+def is_knack_target_perm(s:State,p:Perm)->bool:
+    return bool(
+        s.knack_target
+        and p.name==s.knack_target
+        and p.mode==s.knack_target_mode
+    )
+
+def is_otawara_target_perm(p:Perm)->bool:
+    return bool(
+        is_artifact_perm(p)
+        or is_creature_perm(p)
+        or p.name in ENCHANTMENT_CARDS
+        or p.name=="Tezzeret, Cruel Captain"
+    )
+
+def otawara_channel_cost(s:State)->Tuple[int,int]:
+    legends=sum(
+        1 for p in s.battlefield
+        if p.name in LEGENDARY_CREATURES and is_creature_perm(p)
+    )
+    return max(0,3-legends),1
+
+def bounce_own_perm(s:State,idx:int)->State:
+    """Return one modeled permanent; bounced tokens cease to exist."""
+    p=s.battlefield[idx]
+    ns=remove_perm(s,idx,to_grave=False)
+    if not is_token_perm(p):
+        ns=replace(ns,hand=ns.hand+(p.name,))
+    return ns
+
 def creature_power(s:State,p:Perm)->int:
     if p.mode=="construct": return max(1,artifact_count(s))
     base={COMMANDER:1,"Artificer's Assistant":1,"Battered Golem":3,"Faerie Mastermind":2,
@@ -382,7 +512,7 @@ def cam_untap_best(s:State,label:str)->State:
     # artifact creature directly into +U through Urza, per the user's speed model.
     if s.knack_target:
         for i,p in enumerate(s.battlefield):
-            if p.name==s.knack_target and p.tapped:
+            if is_knack_target_perm(s,p) and p.tapped:
                 return add_trace(update_perm(s,i,tapped=False),f"Cam {label} untaps Knack target {p.name}")
     if s.urza:
         for i,p in enumerate(s.battlefield):
@@ -455,7 +585,7 @@ def intrinsic_mana_actions(s:State)->List[State]:
                                 "Oboro, Palace in the Clouds","Otawara, Soaring City"}:
             ns=update_perm(s,i,tapped=True); ns=replace(ns,blue=ns.blue+1)
             out.append(add_trace(ns,f"tap {n}: +U"))
-        elif n in MDFC_BLUE_LANDS:
+        elif n in MDFC_BLUE_LANDS and p.mode=="landface":
             ns=update_perm(s,i,tapped=True); ns=replace(ns,blue=ns.blue+1)
             out.append(add_trace(ns,f"tap {n} land face: +U"))
         elif n=="Seat of the Synod":
@@ -522,8 +652,16 @@ def artifact_etb_triggers(s:State, entered:str)->State:
             s=replace(s,battlefield=tuple(b),blue=s.blue+gain)
             s=add_trace(s,f"producer ETB mana from {entered}: +{gain}U")
     else:
-        for n in ("Grinding Station","Battered Golem"):
-            if has(s,n): s=untap_named_once(s,n)
+        # Every Station/Golem sees the artifact ETB, including its own. Each
+        # controlled copy therefore gets its own optional untap trigger.
+        b=list(s.battlefield)
+        changed=False
+        for i,p in enumerate(b):
+            if p.name in {"Grinding Station","Battered Golem"} and p.tapped:
+                b[i]=replace(p,tapped=False)
+                changed=True
+        if changed:
+            s=replace(s,battlefield=tuple(b))
     if entered in {"Giant's Boulder","Witching Well"}:
         s=apply_scry(s,2,entered)
     if entered=="Sewer-veillance Cam":
@@ -552,9 +690,13 @@ def artifact_cast_triggers(s:State, card:str)->State:
         s=apply_scry(s,1,f"Artificer's Assistant trigger {k+1}/{assistants}")
 
     if has(s,"Uthros Research Craft") and s.uthros_counters>=3 and s.library:
-        s=replace(s,hand=s.hand+(s.library[0],),library=s.library[1:],
-                  uthros_counters=s.uthros_counters+1)
-        s=add_trace(s,"Uthros trigger: draw 1 before artifact resolves; +1 station counter")
+        s,drawn=draw_from_library(s,1)
+        s=replace(s,uthros_counters=s.uthros_counters+1)
+        s=add_trace(
+            s,
+            f"Uthros trigger draws: {drawn[0]}; "
+            "+1 station counter before artifact resolves"
+        )
 
     gadgets=count_bf(s,"Forensic Gadgeteer")
     for k in range(gadgets):
@@ -637,22 +779,35 @@ def cast_from_hand(s:State,card:str,outside:bool=False,free:bool=False)->Optiona
                 s=replace(s,blue=s.blue-1)
             else:
                 return add_trace(replace(s,graveyard=s.graveyard+(card,)),"Probe cast for life; Vexing Bauble counters it")
-        if s.library: s=replace(s,hand=s.hand+(s.library[0],),library=s.library[1:])
-        return add_trace(s,"Probe targets an opponent -> draw 1")
+        s,drawn=draw_from_library(s,1)
+        return add_trace(
+            s,
+            f"Gitaxian Probe targets an opponent -> draw: "
+            f"{drawn_cards_text(drawn)}"
+        )
     if card=="Dramatic Reversal":
         s=vfc_noncreature_cast_trigger(s,card)
         b=[]
         for p in s.battlefield:
-            b.append(p if p.name in F_ALL_LANDS else replace(p,tapped=False))
-        return add_trace(replace(s,battlefield=tuple(b)),"Dramatic Reversal untaps all nonlands")
+            b.append(p if is_land_perm(p) else replace(p,tapped=False))
+        return add_trace(
+            replace(s,battlefield=tuple(b),graveyard=s.graveyard+(card,)),
+            "Dramatic Reversal untaps all nonlands"
+        )
     if card=="Mana Drain":
         s=vfc_noncreature_cast_trigger(s,card)
         return add_trace(replace(s,drain_bank=s.drain_bank+2),"Mana Drain assumption: bank +2 next turn")
     if card=="Sea Gate Restoration":
         s=vfc_noncreature_cast_trigger(s,card)
-        n=min(len(s.hand)+1,len(s.library)); return add_trace(replace(s,hand=s.hand+s.library[:n],library=s.library[n:]),f"Sea Gate Restoration draws {n}")
+        s,drawn=draw_from_library(s,len(s.hand)+1)
+        return add_trace(
+            s,
+            f"Sea Gate Restoration draws {len(drawn)}: "
+            f"{drawn_cards_text(drawn)}"
+        )
     if card=="Sink into Stupor":
         s=vfc_noncreature_cast_trigger(s,card)
+        s=replace(s,graveyard=s.graveyard+(card,))
         return add_trace(s,"cast Sink into Stupor (opponent target assumed)")
     return None
 
@@ -681,8 +836,10 @@ def clue_draw_actions(s:State)->List[State]:
     for i,p in enumerate(s.battlefield):
         if p.mode=="clue" and can_pay(s,cost,0):
             ns=pay(s,cost,0); ns=remove_perm(ns,i)
-            if ns.library: ns=replace(ns,hand=ns.hand+(ns.library[0],),library=ns.library[1:])
-            out.append(add_trace(ns,"sac Clue -> draw"))
+            ns,drawn=draw_from_library(ns,1)
+            out.append(add_trace(
+                ns,f"sac Clue -> draw: {drawn_cards_text(drawn)}"
+            ))
     return out
 
 def ring_actions(s:State)->List[State]:
@@ -691,9 +848,12 @@ def ring_actions(s:State)->List[State]:
         if p.name=="The One Ring" and not p.tapped:
             ns=update_perm(s,i,tapped=True)
             k=ns.ring_counters+1
-            draw=min(k,len(ns.library))
-            ns=replace(ns,ring_counters=k,hand=ns.hand+ns.library[:draw],library=ns.library[draw:])
-            out.append(add_trace(ns,f"Ring draws {draw}"))
+            ns,drawn=draw_from_library(ns,k)
+            ns=replace(ns,ring_counters=k)
+            out.append(add_trace(
+                ns,
+                f"The One Ring draws {len(drawn)}: {drawn_cards_text(drawn)}"
+            ))
     return out
 
 def top_actions(s:State)->List[State]:
@@ -705,11 +865,15 @@ def top_actions(s:State)->List[State]:
                 for perm in set(itertools.permutations(top)):
                     out.append(add_trace(replace(ps,library=tuple(perm)+rest),"Top reorder"))
             if not p.tapped and s.library:
-                ns=remove_perm(s,i,to_grave=False); drawn=ns.library[0]
+                ns=remove_perm(s,i,to_grave=False)
+                ns,drawn=draw_from_library(ns,1)
                 # Correct Oracle sequencing: draw, then put Top itself on TOP.
-                lib=("Sensei's Divining Top",)+ns.library[1:]
-                ns=replace(ns,hand=ns.hand+(drawn,),library=lib)
-                out.append(add_trace(ns,"Top: draw 1, Top goes on top"))
+                ns=replace(ns,library=("Sensei's Divining Top",)+ns.library)
+                out.append(add_trace(
+                    ns,
+                    f"Sensei's Divining Top -> draw: {drawn[0]}; "
+                    "Top goes on top"
+                ))
     return out
 
 def assistant_scry_actions(s:State)->List[State]:
@@ -952,40 +1116,73 @@ def chrome_dome_actions(s:State)->List[State]:
         out.append(add_trace(check_win(ns),f"Chrome Dome copies {p.name} (haste)"))
     return out
 
-def draw_sac_actions(s:State)->List[State]:
+def aether_spellbomb_actions(s:State)->List[State]:
+    """Both printed Aether Spellbomb activations; neither has a tap cost."""
     out=[]
+    for i,p in enumerate(s.battlefield):
+        if p.name!="Aether Spellbomb":
+            continue
+        if can_pay(s,1,0):
+            ns=pay(s,1,0); ns=remove_perm(ns,i)
+            ns,drawn=draw_from_library(ns,1)
+            out.append(add_trace(
+                ns,
+                "Aether Spellbomb: pay 1, sacrifice -> draw: "
+                f"{drawn_cards_text(drawn)}"
+            ))
+        if can_pay(s,0,1):
+            for j,target in enumerate(s.battlefield):
+                if j==i or not is_creature_perm(target):
+                    continue
+                ns=pay(s,0,1); ns=remove_perm(ns,i)
+                target_i=j-1 if j>i else j
+                ns=bounce_own_perm(ns,target_i)
+                out.append(add_trace(
+                    ns,
+                    "Aether Spellbomb: pay U, sacrifice -> bounce "
+                    f"{target.name or target.mode}"
+                ))
+    return out
+
+def draw_sac_actions(s:State)->List[State]:
+    out=aether_spellbomb_actions(s)
     for i,p in enumerate(s.battlefield):
         n=p.name
 
-        # Aether Spellbomb: {1}, sacrifice -> draw 1. No tap symbol.
-        if n=="Aether Spellbomb" and can_pay(s,1,0):
-            ns=pay(s,1,0); ns=remove_perm(ns,i)
-            if ns.library:
-                ns=replace(ns,hand=ns.hand+(ns.library[0],),library=ns.library[1:])
-            out.append(add_trace(ns,"Aether Spellbomb: pay 1, sacrifice -> draw 1"))
+        if n=="Aether Spellbomb":
+            continue
 
         # Witching Well: 3U, sacrifice -> draw 2. No tap symbol.
-        elif n=="Witching Well" and can_pay(s,3,1):
+        if n=="Witching Well" and can_pay(s,3,1):
             ns=pay(s,3,1); ns=remove_perm(ns,i)
-            d=min(2,len(ns.library))
-            ns=replace(ns,hand=ns.hand+ns.library[:d],library=ns.library[d:])
-            out.append(add_trace(ns,f"Witching Well: pay 3U, sacrifice -> draw {d}"))
+            ns,drawn=draw_from_library(ns,2)
+            out.append(add_trace(
+                ns,
+                f"Witching Well: pay 3U, sacrifice -> draw {len(drawn)}: "
+                f"{drawn_cards_text(drawn)}"
+            ))
 
         # Sewer-veillance Cam: 3U, sacrifice -> draw 2. No tap symbol.
         # Leaving the battlefield also untaps a target creature.
         elif n=="Sewer-veillance Cam" and can_pay(s,3,1):
             # remove_perm() resolves Cam's LTB untap exactly once via cam_untap_best().
             base=pay(s,3,1); base=remove_perm(base,i)
-            d=min(2,len(base.library))
-            base=replace(base,hand=base.hand+base.library[:d],library=base.library[d:])
-            out.append(add_trace(base,f"Cam: pay 3U, sacrifice -> draw {d}"))
+            base,drawn=draw_from_library(base,2)
+            out.append(add_trace(
+                base,
+                f"Cam: pay 3U, sacrifice -> draw {len(drawn)}: "
+                f"{drawn_cards_text(drawn)}"
+            ))
 
         # Vexing Bauble: 1, T, sacrifice -> draw 1.
         elif n=="Vexing Bauble" and not p.tapped and can_pay(s,1,0):
             ns=pay(s,1,0); ns=remove_perm(ns,i)
-            if ns.library:
-                ns=replace(ns,hand=ns.hand+(ns.library[0],),library=ns.library[1:])
-            out.append(add_trace(ns,"Vexing Bauble: pay 1, tap+sacrifice -> draw 1"))
+            ns,drawn=draw_from_library(ns,1)
+            out.append(add_trace(
+                ns,
+                "Vexing Bauble: pay 1, tap+sacrifice -> draw: "
+                f"{drawn_cards_text(drawn)}"
+            ))
 
         # Mishra's / Urza's Bauble: T, sacrifice -> delayed next-upkeep draw.
         elif n in {"Mishra's Bauble","Urza's Bauble"} and not p.tapped:
@@ -1039,6 +1236,33 @@ def fetch_actions(s:State)->List[State]:
             ns=remove_perm(s,i); lib=list(ns.library); lib.remove("Island"); ns=replace(ns,library=tuple(lib)); ns=add_perm(ns,"Island")
             ns=replace(ns,library=shuffled_library(ns,"fetch:"+p.name))
             out.append(add_trace(ns,f"{p.name} fetches Island and shuffles"))
+    return out
+
+def otawara_channel_actions(s:State,only_target:str="")->List[State]:
+    """Channel Otawara from hand; this is an ability, not a spell cast."""
+    card="Otawara, Soaring City"
+    if card not in s.hand:
+        return []
+    generic,blue_req=otawara_channel_cost(s)
+    if not can_pay(s,generic,blue_req):
+        return []
+    out=[]
+    for i,p in enumerate(s.battlefield):
+        if not is_otawara_target_perm(p):
+            continue
+        if only_target and p.name!=only_target:
+            continue
+        ns=pay(s,generic,blue_req)
+        ns=replace(
+            ns,hand=remove_one(ns.hand,card),
+            graveyard=ns.graveyard+(card,),
+        )
+        ns=bounce_own_perm(ns,i)
+        mana=(f"{{{generic}}}{{U}}" if generic else "{U}")
+        out.append(add_trace(
+            ns,
+            f"Otawara channel: pay {mana}, discard -> bounce {p.name or p.mode}"
+        ))
     return out
 
 def oboro_minamo_actions(s:State)->List[State]:
@@ -1136,7 +1360,11 @@ def top_key_combo_actions(s:State)->List[State]:
             ns=pay(s,1,0); ns=update_perm(ns,ki,tapped=True)
             drawn=ns.library[0]; ns=remove_perm(ns,topi if topi<ki else topi,to_grave=False)
             ns=replace(ns,hand=ns.hand+(drawn,"Sensei's Divining Top"),library=ns.library[1:])
-            out.append(add_trace(ns,f"Top + {k.name}: double activation draws {drawn} and returns Top to hand"))
+            out.append(add_trace(
+                ns,
+                f"Top + {k.name}: double activation draws: {drawn}, "
+                "Sensei's Divining Top"
+            ))
     return out
 
 def uthros_station_actions(s:State)->List[State]:
@@ -1175,6 +1403,13 @@ def saga_actions(s:State)->List[State]:
             ns=pay(s,2,0); ns=update_perm(ns,i,tapped=True); ns=add_perm(ns,"Construct",sick=True,mode="construct"); ns=artifact_etb_triggers(ns,"Construct")
             out.append(add_trace(ns,"Saga II ability -> Construct"))
         if p.name=="Urza's Saga" and p.mode=="saga3":
+            # This is a hidden-zone search for a qualified card, so failing to
+            # find is legal. The instruction still shuffles the library.
+            ns=remove_perm(s,i)
+            ns=replace(ns,library=shuffled_library(ns,"saga:no-target"))
+            out.append(add_trace(
+                ns,"Saga III search finds no card; shuffle; sacrifice Saga"
+            ))
             for target in sorted(set(s.library)&SAGA_TARGETS):
                 ns=remove_perm(s,i); lib=list(ns.library); lib.remove(target); ns=replace(ns,library=tuple(lib)); ns=add_perm(ns,target,sick=target in CREATURES); ns=artifact_etb_triggers(ns,target); ns=replace(ns,library=shuffled_library(ns,"saga:"+target))
                 out.append(add_trace(check_win(ns),f"Saga III puts {target} onto battlefield"))
@@ -1190,16 +1425,50 @@ def repurposing_bay_actions(s:State)->List[State]:
         if not can_pay(s,g,0): continue
         for ai,a in enumerate(s.battlefield):
             if ai==bi or not is_artifact_perm(a): continue
-            sacmv=0 if a.mode in {"clue","construct","treasure","chrome_copy","chrome_copy_preturn"} else mana_value(a.name)
+            # Ordinary tokens have no mana cost and therefore MV 0. A copy
+            # token copies the original artifact's mana cost and mana value.
+            sacmv=(
+                0 if a.mode in {"clue","construct","treasure"}
+                else mana_value(a.name)
+            )
             targetmv=sacmv+1
-            targets=[x for x in set(s.library) if x in ARTIFACTS and mana_value(x)==targetmv]
-            if not targets: continue
             ns0=pay(s,g,0); ns0=update_perm(ns0,bi,tapped=True)
             # index remains valid after Bay tap; sacrifice other artifact
             ns0=remove_perm(ns0,ai)
+            sac_name=a.name or a.mode
+
+            # A qualified hidden-zone search may legally fail to find. Costs
+            # remain paid and the library still shuffles.
+            no_find=replace(
+                ns0,
+                library=shuffled_library(ns0,"bay:no-target:"+sac_name),
+            )
+            out.append(add_trace(
+                check_win(no_find),
+                f"Repurposing Bay sacs {sac_name}; finds no card\n"
+                f"Repurposing Bay activation: pay {{{g}}}, tap; shuffle"
+            ))
+
+            targets=sorted(
+                x for x in set(ns0.library)
+                if x in ARTIFACTS
+                and mana_value(x)==targetmv
+                and not cage_blocks_library_battlefield_entry(ns0,x)
+            )
             for target in targets:
-                ns=ns0; lib=list(ns.library); lib.remove(target); ns=replace(ns,library=tuple(lib)); ns=add_perm(ns,target,sick=target in CREATURES); ns=artifact_etb_triggers(ns,target); ns=replace(ns,library=shuffled_library(ns,"bay:"+target))
-                out.append(add_trace(check_win(ns),f"Repurposing Bay sacs {a.name or a.mode} -> {target}"))
+                ns=ns0; lib=list(ns.library); lib.remove(target)
+                ns=replace(ns,library=tuple(lib))
+                ns=add_perm(ns,target,sick=target in CREATURES)
+                # Bay finishes by shuffling. Only then can the target's ETB
+                # triggers resolve (notably Well/Boulder scry).
+                ns=replace(ns,library=shuffled_library(ns,"bay:"+target))
+                ns=artifact_etb_triggers(ns,target)
+                out.append(add_trace(
+                    check_win(ns),
+                    f"Repurposing Bay sacs {sac_name} -> {target}\n"
+                    f"Repurposing Bay activation: pay {{{g}}}, tap; put "
+                    f"{target} (MV {targetmv}) onto battlefield; shuffle"
+                ))
     return out
 
 def scour_actions(s:State)->List[State]:
@@ -1300,8 +1569,7 @@ def _chain_apply_plan(base:State, bounce_names:Tuple[str,...], land_names:Tuple[
         idx=next((i for i,p in enumerate(ns.battlefield) if p.name==name),None)
         if idx is None:
             continue
-        ns=remove_perm(ns,idx,to_grave=False)
-        ns=replace(ns,hand=ns.hand+(name,))
+        ns=bounce_own_perm(ns,idx)
         ns=add_trace(ns,f"Chain resolution {copy_no}: bounce {name}")
 
         if copy_no<=len(lands_order):
@@ -1359,13 +1627,12 @@ def _chain_cache_key(s:State):
     Strategic cache key for Chain macro generation.
     Trace/history is intentionally excluded.
     """
-    bf=tuple(sorted((p.name,p.tapped,p.sick,p.counters,p.mode) for p in s.battlefield))
-    return (
-        bf,tuple(sorted(s.hand)),s.blue,s.colorless,s.land_played,
-        s.ftt_level,s.uthros_counters,s.urza,s.chip_attached,s.chip_target,
-        s.knack_target,s.pa_target,s.spell_cast_this_turn,
-        s.library[:10],hash(s.library)
-    )
+    # Cached values contain complete successor States. Keying by the complete
+    # trace-free source state prevents an omitted legality field (notably a
+    # Remora age/upkeep decision or graveyard contents) from being transplanted
+    # from a superficially similar cached state. ACTION_CAP also changes Chain's
+    # internal shortlist widths and therefore belongs in the cache identity.
+    return (ACTION_CAP,replace(s,trace=()))
 
 def chain_of_vapor_actions(s:State)->List[State]:
     """
@@ -1405,8 +1672,8 @@ def chain_of_vapor_actions(s:State)->List[State]:
     base=vfc_noncreature_cast_trigger(base,"Chain of Vapor")
     base_trace_len=len(base.trace)
 
-    nonlands=tuple(p.name for p in base.battlefield if p.name not in F_ALL_LANDS)
-    lands=tuple(p.name for p in base.battlefield if p.name in F_ALL_LANDS)
+    nonlands=tuple(p.name for p in base.battlefield if not is_land_perm(p))
+    lands=tuple(p.name for p in base.battlefield if is_land_perm(p))
     max_k=min(len(nonlands),1+len(lands))
     if max_k<=0:
         return []
@@ -1418,7 +1685,8 @@ def chain_of_vapor_actions(s:State)->List[State]:
     special_bounce=(
         "Sewer-veillance Cam","Grafdigger's Cage","Power Artifact",
         base.pa_target if base.pa_target else "__none__",
-        "Spellseeker","Prized Statue","The One Ring","Witching Well"
+        "Spellseeker","Prized Statue","The One Ring","Witching Well",
+        "Mystic Remora"
     )
     special_land=("Crystal Vein","City of Traitors","Saprazzan Skerry","Urza's Saga")
 
@@ -1508,16 +1776,23 @@ def knack_bounce_actions(s:State)->List[State]:
         if k in s.hand and can_pay(s,*spell_cost(s,k)):
             for p in s.battlefield:
                 if is_creature_perm(p):
-                    ns=pay(s,*spell_cost(s,k)); ns=replace(ns,hand=remove_one(ns.hand,k),graveyard=ns.graveyard+(k,),knack_target=p.name,spell_cast_this_turn=True)
+                    ns=pay(s,*spell_cost(s,k)); ns=replace(
+                        ns,hand=remove_one(ns.hand,k),
+                        graveyard=ns.graveyard+(k,),knack_target=p.name,
+                        knack_target_mode=p.mode,spell_cast_this_turn=True,
+                    )
                     ns=vfc_noncreature_cast_trigger(ns,k)
                     out.append(add_trace(check_win(ns),f"cast {k} targeting {p.name or p.mode}"))
     if s.knack_target:
-        ti=next((i for i,p in enumerate(s.battlefield) if p.name==s.knack_target and not p.tapped and not p.sick),None)
+        ti=next((
+            i for i,p in enumerate(s.battlefield)
+            if is_knack_target_perm(s,p) and not p.tapped and not p.sick
+        ),None)
         if ti is not None:
             for j,p in enumerate(s.battlefield):
-                if j==ti or p.name in F_ALL_LANDS: continue
+                if is_land_perm(p): continue
                 ns=update_perm(s,ti,tapped=True); name=p.name
-                ns=remove_perm(ns,j if j<ti else j,to_grave=False); ns=replace(ns,hand=ns.hand+(name,))
+                ns=bounce_own_perm(ns,j)
                 out.append(add_trace(ns,f"Knack/Helix target bounces our {name}"))
     return out
 
@@ -1531,8 +1806,8 @@ def graveyard_land_actions(s:State)->List[State]:
             if p.name=="Cephalid Coliseum" and not p.tapped and can_pay(s,0,1):
                 ns=pay(s,0,1)
                 ns=remove_perm(ns,i,to_grave=True)
-                d=min(3,len(ns.library))
-                ns=replace(ns,hand=ns.hand+ns.library[:d],library=ns.library[d:])
+                ns,drawn=draw_from_library(ns,3)
+                d=len(drawn)
                 if len(ns.hand)>=3:
                     import itertools
                     hand=list(ns.hand)
@@ -1545,7 +1820,11 @@ def graveyard_land_actions(s:State)->List[State]:
                         disc=tuple(hand[j] for j in inds)
                         keep=tuple(c for j,c in enumerate(hand) if j not in drop)
                         st=replace(ns,hand=keep,graveyard=ns.graveyard+disc)
-                        out.append(add_trace(st,f"Cephalid Coliseum threshold: draw {d}, discard {', '.join(disc)}"))
+                        out.append(add_trace(
+                            st,
+                            f"Cephalid Coliseum threshold: draw {d}: "
+                            f"{drawn_cards_text(drawn)}; discard {', '.join(disc)}"
+                        ))
 
     # Ipnu Rivulet — 1U, T, sacrifice a Desert: self-mill 4.
     # Ipnu itself is a Desert, so it may be sacrificed to its own ability.
@@ -1567,8 +1846,12 @@ def faerie_mastermind_actions(s:State)->List[State]:
     if not has(s,"Faerie Mastermind") or not can_pay(s,3,1) or not s.library:
         return []
     ns=pay(s,3,1)
-    ns=replace(ns,hand=ns.hand+(ns.library[0],),library=ns.library[1:])
-    return [add_trace(ns,"Faerie Mastermind: pay 3U -> each player draws; we draw 1")]
+    ns,drawn=draw_from_library(ns,1)
+    return [add_trace(
+        ns,
+        f"Faerie Mastermind: pay 3U -> each player draws; we draw: "
+        f"{drawn[0]}"
+    )]
 
 
 # --------------------------- Special activations ----------------------------
@@ -1675,7 +1958,8 @@ def special_actions(s:State)->List[State]:
                 if ti!=ki and t.tapped and is_artifact_perm(t):
                     ns=pay(s,1,0); ns=update_perm(ns,ki,tapped=True); ns=update_perm(ns,ti,tapped=False); out.append(add_trace(ns,f"{k.name} untaps {t.name or t.mode}"))
     out += clue_draw_actions(s)+ring_actions(s)+top_actions(s)+power_artifact_actions(s)+chrome_dome_actions(s)
-    out += draw_sac_actions(s)+mox_cast_actions(s)+fetch_actions(s)+oboro_minamo_actions(s)
+    out += draw_sac_actions(s)+mox_cast_actions(s)+fetch_actions(s)
+    out += otawara_channel_actions(s)+oboro_minamo_actions(s)
     out += producer_native_actions(s)+top_key_combo_actions(s)+uthros_station_actions(s)+tezzeret_actions(s)+saga_actions(s)
     out += repurposing_bay_actions(s)+scour_actions(s)+offer_actions(s)+chain_of_vapor_actions(s)+knack_bounce_actions(s)
     out += simple_tutor_actions(s)+artifact_tutor_actions(s)+chip_ftt_top_casts(s)
@@ -1719,7 +2003,7 @@ def immediately_available_blue_sources(s:State)->int:
         if n in {"Island","Cephalid Coliseum","Ipnu Rivulet","Minamo, School at Water's Edge",
                  "Oboro, Palace in the Clouds","Otawara, Soaring City","Seat of the Synod"}:
             total += 1
-        elif n in MDFC_BLUE_LANDS:
+        elif n in MDFC_BLUE_LANDS and p.mode=="landface":
             total += 1
         elif n=="Gemstone Caverns" and p.mode=="luck":
             total += 1
@@ -1736,6 +2020,11 @@ def can_cast_urza_now_with_infinite_colorless(s:State)->bool:
     return immediately_available_blue_sources(s) >= 2
 
 def check_win(s:State)->State:
+    # A pending cumulative-upkeep trigger must be resolved before the solver
+    # can use main-phase terminal recognizers. Upkeep-specific instant actions
+    # are handled by the restricted transition closure instead.
+    if s.remora_upkeep_pending:
+        return s
     names=bf_name_set(s)
 
     if not s.urza:
@@ -1760,7 +2049,8 @@ def check_win(s:State)->State:
 
     if "Sewer-veillance Cam" in names and s.knack_target:
         target_live=any(
-            p.name==s.knack_target and is_creature_perm(p) and not p.sick and not p.tapped
+            is_knack_target_perm(s,p)
+            and is_creature_perm(p) and not p.sick and not p.tapped
             for p in s.battlefield
         )
         if target_live:
@@ -1784,8 +2074,11 @@ def dominance_signature(s:State):
     bf=tuple(sorted((p.name,p.tapped,p.sick,p.counters,p.mode) for p in s.battlefield))
     return (
         s.turn,bf,tuple(sorted(s.hand)),s.library[:5],
-        s.land_played,s.urza,s.ftt_level,s.uthros_counters,
-        s.chip_attached,s.chip_target,s.knack_target,s.pa_target,
+        tuple(sorted(s.graveyard)),s.land_played,s.drain_bank,
+        s.remora_age,s.remora_upkeep_pending,
+        s.urza,s.ftt_level,s.uthros_counters,
+        s.chip_attached,s.chip_target,s.knack_target,s.knack_target_mode,
+        s.pa_target,
         s.spell_cast_this_turn,s.commander_in_command_zone,s.commander_casts_from_zone,
         s.won,s.win_family
     )
@@ -1810,7 +2103,9 @@ def dominance_prune(states):
 
 
 def classify_action(trace_msg:str)->str:
-    m=trace_msg.lower()
+    # Automatic draw details can share an existing semantic trace entry. Keep
+    # diagnostics classified by the original action/header line.
+    m=trace_msg.splitlines()[0].lower()
     if m.startswith("tap ") or "urza taps" in m or "sac crystal vein" in m or "tap+sac treasure" in m:
         return "mana/tap"
     if "untap" in m:
@@ -1838,11 +2133,25 @@ def new_graph_stats():
         "layers":0,
         "max_frontier":0,
         "max_raw_successors":0,
+        "upkeep_nodes_expanded":0,
+        "upkeep_edges_generated":0,
+        "upkeep_exact_key_merges":0,
+        "upkeep_dominance_pruned":0,
+        "upkeep_beam_pruned":0,
+        "upkeep_layers":0,
+        "upkeep_max_frontier":0,
+        "upkeep_max_raw_successors":0,
+        "remora_pay_results_generated":0,
+        "remora_decline_results_generated":0,
+        "remora_bounce_results_generated":0,
     }
 
 def merge_graph_stats(dst,src):
     for k in dst:
-        if k in {"max_frontier","max_raw_successors"}:
+        if k in {
+            "max_frontier","max_raw_successors",
+            "upkeep_max_frontier","upkeep_max_raw_successors",
+        }:
             dst[k]=max(dst[k],src.get(k,0))
         else:
             dst[k]+=src.get(k,0)
@@ -1850,7 +2159,14 @@ def merge_graph_stats(dst,src):
 
 def finalize_graph_stats(g):
     nodes=max(1,g.get("nodes_expanded",0))
-    return dict(g,average_branching_factor=g.get("edges_generated",0)/nodes)
+    upkeep_nodes=max(1,g.get("upkeep_nodes_expanded",0))
+    return dict(
+        g,
+        average_branching_factor=g.get("edges_generated",0)/nodes,
+        upkeep_average_branching_factor=(
+            g.get("upkeep_edges_generated",0)/upkeep_nodes
+        ),
+    )
 
 
 # ---------------------------- Beam search ----------------------------------
@@ -1886,7 +2202,7 @@ def _action_family_from_state(ns:State)->str:
     """Coarse family label from the action trace's latest transition."""
     if not ns.trace:
         return "unknown"
-    x=ns.trace[-1]
+    x=ns.trace[-1].splitlines()[0]
     if "Chain" in x: return "chain"
     if "Transmute" in x or "Reshape" in x or "Whir" in x or "Spellseeker ETB" in x or "Mystical" in x or "Merchant Scroll" in x or "Dizzy" in x or "Muddle" in x: return "tutor"
     if "Top" in x or "Sensei's Divining Top" in x: return "top"
@@ -1997,7 +2313,7 @@ def _tutor_action_from_trace(st):
     """Return (source, target, destination) for a target-selecting search action."""
     if not st.trace:
         return None,None,None
-    t=st.trace[-1]
+    t=st.trace[-1].splitlines()[0]
     if t.startswith("Transmute ") and "->" in t:
         target=t.split("->",1)[1].split(";",1)[0].strip()
         destination="graveyard" if "; decline " in t else "battlefield"
@@ -2334,6 +2650,7 @@ def _record_tutor_cap_state(raw_actions,kept_actions,state,context="normal"):
             "chip_target":state.chip_target,
             "spell_cast_this_turn":state.spell_cast_this_turn,
             "knack_target":state.knack_target,
+            "knack_target_mode":state.knack_target_mode,
             "pa_target":state.pa_target,
             "library_size":len(state.library),
             "library_top":list(state.library[:10]),
@@ -2374,9 +2691,237 @@ def serializable_cap_audit(a):
     out["mean_discarded_when_truncated"]=(a["discarded_actions_total"]/a["states_truncated"] if a["states_truncated"] else 0.0)
     return out
 
+
+def _enter_precombat_main(s:State)->State:
+    """Take the natural draw, then finish setup for the first main phase."""
+    if s.remora_upkeep_pending:
+        raise ValueError("cannot enter the precombat main phase with Remora upkeep pending")
+
+    s,drawn=draw_from_library(s,1)
+    if drawn:
+        s=append_trace_detail(
+            s,f"normal draw for turn {s.turn}: {drawn[0]}"
+        )
+
+    # Sagas receive their turn-based lore counter in the first precombat main
+    # phase, after cumulative upkeep. In particular, a Saga that did not
+    # already have a lore counter cannot be used to pay Remora first.
+    b=[]
+    for p in s.battlefield:
+        q=p
+        if q.name=="Urza's Saga":
+            nc=q.counters+1
+            q=replace(q,counters=nc,mode="saga3" if nc>=3 else q.mode)
+        b.append(q)
+
+    # Mana Drain's modeled mana is added in our precombat main phase. Any mana
+    # floated while resolving cumulative upkeep has emptied before this point.
+    return replace(
+        s,battlefield=tuple(b),
+        blue=0,colorless=s.drain_bank,drain_bank=0
+    )
+
+
+def _remora_upkeep_mana_actions(s:State,payment_already_available:bool=False)->List[State]:
+    """Mana-producing actions allowed while Remora's upkeep trigger is pending."""
+    # Fetching can be strategically relevant even after enough mana is pooled,
+    # because it shuffles before the normal draw. The actual mana sources are
+    # suppressed once payment is available unless a modeled instant response
+    # still needs additional/colored mana, avoiding strictly wasted extra taps.
+    out=fetch_actions(s)
+    response_needs_mana=bool(
+        ({"Dramatic Reversal","Chain of Vapor","Otawara, Soaring City"}
+         |KNUCKS)&set(s.hand)
+    ) or has(s,"Aether Spellbomb")
+    allow_source_actions=(not payment_already_available or response_needs_mana)
+    if allow_source_actions:
+        out+=intrinsic_mana_actions(s)+tap_artifact_for_urza_actions(s)
+
+    # This modeled instant can untap nonland mana sources while the cumulative
+    # upkeep trigger is on the stack. Sorcery-speed production remains gated.
+    if "Dramatic Reversal" in s.hand:
+        reversal=cast_from_hand(s,"Dramatic Reversal")
+        if reversal is not None:
+            out.append(add_trace(reversal,"Dramatic Reversal during Remora upkeep"))
+
+    # Stored Jeweled Amulet mana can be released after it untaps.
+    for i,p in enumerate(s.battlefield):
+        if (allow_source_actions and p.name=="Jeweled Amulet"
+                and not p.tapped and p.counters>0):
+            ns=update_perm(s,i,tapped=True,counters=0)
+            if p.mode=="amulet_blue":
+                ns=replace(ns,blue=ns.blue+1)
+            else:
+                ns=replace(ns,colorless=ns.colorless+1)
+            out.append(add_trace(ns,"Jeweled Amulet releases stored mana during upkeep"))
+
+    # Prototype's ability and Urza's ability are legal despite summoning
+    # sickness because the creature/artifact being tapped is paying another
+    # permanent's ability, not activating its own tap-symbol ability.
+    for i,p in enumerate(s.battlefield):
+        if (allow_source_actions and p.name=="Moonsnare Prototype"
+                and not p.tapped):
+            for j,q in enumerate(s.battlefield):
+                if j!=i and not q.tapped and (is_artifact_perm(q) or is_creature_perm(q)):
+                    ns=update_perm(s,i,tapped=True)
+                    ns=update_perm(ns,j,tapped=True)
+                    ns=replace(ns,colorless=ns.colorless+1)
+                    out.append(add_trace(ns,f"Moonsnare taps {q.name or q.mode} during upkeep: +C"))
+
+    # A Key can turn already available mana into an untap of a Monolith or
+    # another artifact mana source while the cumulative-upkeep trigger is on
+    # the stack. Ordinary main-phase-only actions remain gated off.
+    for ki,k in enumerate(s.battlefield):
+        if k.name in {"Voltaic Key","Manifold Key"} and not k.tapped and can_pay(s,1,0):
+            for ti,t in enumerate(s.battlefield):
+                if ti!=ki and t.tapped and is_artifact_perm(t):
+                    ns=pay(s,1,0)
+                    ns=update_perm(ns,ki,tapped=True)
+                    ns=update_perm(ns,ti,tapped=False)
+                    out.append(add_trace(ns,f"{k.name} during upkeep untaps {t.name or t.mode}"))
+    return out
+
+
+def _finish_absent_remora_upkeep(ns:State)->State:
+    """Let the old cumulative-upkeep trigger resolve after its source left."""
+    if has(ns,"Mystic Remora"):
+        raise ValueError("cannot finish absent-Remora upkeep while Remora remains")
+    ns=replace(ns,remora_age=0,remora_upkeep_pending=False)
+    ns=add_trace(
+        ns,"Mystic Remora cumulative upkeep resolves with Remora absent"
+    )
+    return _enter_precombat_main(ns)
+
+def _remora_upkeep_bounce_actions(s:State)->List[State]:
+    """Instant-speed ways to act on or bounce Remora before upkeep resolves."""
+    out=[]
+
+    # Preserve the simple one-target line directly. Chain's broader canonical
+    # macro intentionally caps hundreds of copy-chain plans and can otherwise
+    # score away this low-board-value, high-upkeep-value bounce.
+    if "Chain of Vapor" in s.hand and can_pay(s,*spell_cost(s,"Chain of Vapor")):
+        ns=pay(s,*spell_cost(s,"Chain of Vapor"))
+        ns=replace(
+            ns,hand=remove_one(ns.hand,"Chain of Vapor"),
+            graveyard=ns.graveyard+("Chain of Vapor",),
+            spell_cast_this_turn=True,
+        )
+        ns=vfc_noncreature_cast_trigger(ns,"Chain of Vapor")
+        ri=next(i for i,p in enumerate(ns.battlefield) if p.name=="Mystic Remora")
+        ns=bounce_own_perm(ns,ri)
+        ns=add_trace(ns,"Chain of Vapor during upkeep: bounce Mystic Remora")
+        out.append(_finish_absent_remora_upkeep(ns))
+
+    for ns in chain_of_vapor_actions(s):
+        if not has(ns,"Mystic Remora"):
+            ns=_finish_absent_remora_upkeep(ns)
+        out.append(ns)
+
+    # Otawara is a channel ability, so it is legal in this response window and
+    # neither counts as casting a spell nor triggers spell-cast effects.
+    for ns in otawara_channel_actions(s,only_target="Mystic Remora"):
+        out.append(_finish_absent_remora_upkeep(ns))
+
+    # Knack/Helix may be cast now targeting a creature. The pending state is
+    # revisited by upkeep closure; a ready granted creature may then tap to
+    # return Remora. Other ordinary nonland bounces are not expanded here.
+    for ns in knack_bounce_actions(s):
+        action=ns.trace[-1].splitlines()[0] if ns.trace else ""
+        if action.startswith("cast Banishing Knack targeting ") or action.startswith(
+            "cast Retraction Helix targeting "
+        ):
+            out.append(ns)
+        elif action=="Knack/Helix target bounces our Mystic Remora":
+            out.append(_finish_absent_remora_upkeep(ns))
+
+    # Both Spellbomb modes are instant-speed activated abilities. Its creature
+    # bounce cannot target Remora, but its draw may reveal a payment/bounce
+    # enabler before the cumulative-upkeep trigger resolves.
+    out.extend(aether_spellbomb_actions(s))
+    return out
+
+
+def remora_upkeep_actions(s:State)->List[State]:
+    """Resolve one pending Mystic Remora cumulative-upkeep decision."""
+    if not s.remora_upkeep_pending:
+        return []
+    if not has(s,"Mystic Remora"):
+        # Defensive recovery for a state constructed outside normal zone-change
+        # helpers. Normal removal clears both the age and pending flag.
+        ns=replace(s,remora_age=0,remora_upkeep_pending=False)
+        return [refresh_observability(_enter_precombat_main(ns))]
+
+    remora_idx=next(i for i,p in enumerate(s.battlefield) if p.name=="Mystic Remora")
+    # Cumulative upkeep is one triggered ability. Players respond before it
+    # resolves; only on resolution does it add the next age counter and ask for
+    # payment. Keep remora_age as the actual counters currently on the object
+    # throughout that response window.
+    cost=s.remora_age+1
+
+    declined=remove_perm(s,remora_idx,to_grave=True)
+    declined=add_trace(
+        declined,
+        f"Mystic Remora cumulative upkeep {{{cost}}}: decline; sacrifice Mystic Remora"
+    )
+    declined=refresh_observability(_enter_precombat_main(declined))
+    out=[declined]
+
+    # Chain is a legal alternative while the upkeep trigger is on the stack,
+    # including after enough mana has already been floated to pay.
+    out.extend(_remora_upkeep_bounce_actions(s))
+
+    payment_available=can_pay(s,cost,0)
+    if payment_available:
+        paid=pay(s,cost,0)
+        paid=replace(
+            paid,remora_age=cost,remora_upkeep_pending=False
+        )
+        paid=add_trace(paid,f"Mystic Remora cumulative upkeep {{{cost}}}: pay")
+        out.append(refresh_observability(_enter_precombat_main(paid)))
+    out.extend(
+        _remora_upkeep_mana_actions(
+            s,payment_already_available=payment_available
+        )
+    )
+
+    out=[refresh_observability(x) for x in out]
+    kept=_select_actions_with_tutor_diversity(out)
+    # Preserve each terminal resolution family through a per-state cap. This
+    # guarantees the direct Chain bounce as well as pay and sacrifice choices.
+    required=[]
+    for family in ("pay","decline","bounce"):
+        family_actions=[
+            x for x in out
+            if not x.remora_upkeep_pending
+            and _remora_resolution_family(x)==family
+        ]
+        if family_actions:
+            required.append(max(family_actions,key=score))
+    pending_continuations=[x for x in out if x.remora_upkeep_pending]
+    if pending_continuations:
+        required.append(max(pending_continuations,key=score))
+    for required_action in required:
+        if required_action in kept:
+            continue
+        if not kept:
+            kept.append(required_action)
+            continue
+        protected={x for x in required if x in kept}
+        replaceable=[i for i,x in enumerate(kept) if x not in protected]
+        if replaceable:
+            worst=min(replaceable,key=lambda i:score(kept[i]))
+            kept[worst]=required_action
+    _record_cap_audit(out,kept,context="remora_upkeep")
+    return kept
+
 def legal_actions(s:State)->List[State]:
     if s.won:
         return []
+
+    # Cumulative upkeep resolves after untap and before all ordinary actions.
+    # Only its pay/sacrifice choice and relevant mana abilities are exposed.
+    if s.remora_upkeep_pending:
+        return remora_upkeep_actions(s)
 
     # Saga III response/tutor window.
     if any(p.name=="Urza's Saga" and p.mode=="saga3" for p in s.battlefield):
@@ -2460,7 +3005,7 @@ def opponent_endstep_mana_capacity(s:State)->int:
             total += 2
         elif n=="Gemstone Caverns":
             total += 1
-        elif n in MDFC_BLUE_LANDS:
+        elif n in MDFC_BLUE_LANDS and p.mode=="landface":
             total += 1
         elif n=="Sol Ring":
             total += 2
@@ -2506,15 +3051,45 @@ def add_preturn_chrome_copy_if_possible(s:State)->State:
     return add_trace(ns,f"opponent end step Chrome: copy {target.name}; survives through our next turn")
 
 
-def end_turn(s:State)->State:
-    hand=list(s.hand); lib=list(s.library)
-    draws=1+s.bauble_draws
+def end_turn(s:State,schedule_remora_upkeep:bool=True)->State:
+    if not can_end_turn_state(s):
+        raise ValueError("cannot end a turn with a mandatory phase action unresolved")
     names=bf_name_set(s)
-    # Environmental assumptions requested by user. Remora payment remains a search-audit item.
-    if "Mystic Remora" in names: draws += 2
-    if "Rhystic Study" in names: draws += 2
-    if "Faerie Mastermind" in names: draws += 1
-    draws=min(draws,len(lib)); hand += lib[:draws]; lib=lib[draws:]
+    # Environmental opponent-cycle draw assumptions are intentionally separate
+    # from whether Remora is paid for at our following upkeep. A Remora that is
+    # sacrificed then has already generated these modeled intervening draws.
+    # The former implementation consumed one aggregate top slice in this
+    # effective order: delayed Bauble card(s), Remora, Rhystic, Mastermind.
+    # Keeping that order makes the previously tested B/R1/R2 assignment
+    # explicit without changing the total cards or zones. All happen before a
+    # pending Remora decision; the normal draw remains in the library until
+    # _enter_precombat_main() after upkeep.
+    draw_state=s
+    draw_events=[]
+    for source in pending_bauble_draw_sources(s):
+        draw_state,drawn=draw_from_library(draw_state,1)
+        if drawn:
+            draw_events.append(f"{source} delayed draw: {drawn[0]}")
+    for source,count in (
+        ("Mystic Remora",2 if "Mystic Remora" in names else 0),
+        ("Rhystic Study",2 if "Rhystic Study" in names else 0),
+        ("Faerie Mastermind",1 if "Faerie Mastermind" in names else 0),
+    ):
+        if count<=0:
+            continue
+        draw_state,drawn=draw_from_library(draw_state,count)
+        if not drawn:
+            continue
+        if source=="Faerie Mastermind":
+            draw_events.append(
+                f"Faerie Mastermind environmental draw: {drawn[0]}"
+            )
+        else:
+            draw_events.append(
+                f"{source} draws {len(drawn)}: {drawn_cards_text(drawn)}"
+            )
+    hand=draw_state.hand
+    lib=draw_state.library
     # At the beginning of our end step, both Chrome tokens made during our turn
     # and Chrome tokens made in the preceding opponent's end step are sacrificed.
     cur=s
@@ -2533,24 +3108,194 @@ def end_turn(s:State)->State:
         else: q=replace(p,tapped=False,sick=False)
         if q.name=="Battered Golem": q=replace(q,tapped=False)  # multiplayer assumption
         if q.name=="Tezzeret, Cruel Captain": q=replace(q,mode="tez_ready")
-        if q.name=="Urza's Saga":
-            nc=q.counters+1; q=replace(q,counters=nc,mode="saga3" if nc>=3 else q.mode)
         b.append(q)
-    ns=replace(s,turn=s.turn+1,library=tuple(lib),hand=tuple(hand),battlefield=tuple(b),
-               blue=0,colorless=s.drain_bank,drain_bank=0,bauble_draws=0,land_played=False,
-               spell_cast_this_turn=False,knack_target="",vfc_pumps=0)
+    remora_pending=schedule_remora_upkeep and has(s,"Mystic Remora")
+    ns=replace(s,turn=s.turn+1,library=lib,hand=hand,battlefield=tuple(b),
+               blue=0,colorless=0,bauble_draws=0,land_played=False,
+               remora_age=(s.remora_age if has(s,"Mystic Remora") else 0),
+               remora_upkeep_pending=remora_pending,
+               spell_cast_this_turn=False,knack_target="",knack_target_mode="",
+               vfc_pumps=0)
+    ns=add_trace(ns,f"--- Turn {ns.turn} ---")
+    for event in draw_events:
+        ns=append_trace_detail(ns,event)
+    if remora_pending:
+        ns=add_trace(
+            ns,
+            "Mystic Remora cumulative-upkeep trigger pending: on resolution "
+            f"add age counter {ns.remora_age+1}; then pay "
+            f"{{{ns.remora_age+1}}} or sacrifice"
+        )
+    else:
+        ns=_enter_precombat_main(ns)
     ns=refresh_observability(ns)
-    return add_trace(ns,f"--- Turn {ns.turn} ---")
+    return ns
+
+
+def can_end_turn_state(s:State)->bool:
+    """Mandatory upkeep and Saga-III windows cannot be skipped at a depth cap."""
+    return (
+        not s.remora_upkeep_pending
+        and not any(p.name=="Urza's Saga" and p.mode=="saga3"
+                    for p in s.battlefield)
+    )
+
+
+def _remora_resolution_family(s:State)->str:
+    for msg in reversed(s.trace):
+        action_line=msg.splitlines()[0]
+        if action_line.startswith(
+            "Mystic Remora cumulative-upkeep trigger pending:"
+        ):
+            # No resolution marker occurred after the current upkeep boundary.
+            return "none"
+        if action_line.startswith("--- Turn "):
+            return "none"
+        if "Mystic Remora cumulative upkeep" not in action_line:
+            continue
+        if "decline; sacrifice" in action_line:
+            return "decline"
+        if "resolves with Remora absent" in action_line:
+            return "bounce"
+        if action_line.endswith(": pay"):
+            return "pay"
+    return "none"
+
+
+def _resolve_remora_upkeep_frontier(states,beam:int,graph_stats=None)->List[State]:
+    """Close every next-turn upkeep before exposing states to main search."""
+    complete={}
+    pending=list(states)
+    expanded=set()
+
+    while pending:
+        next_pending={}
+        for s in pending:
+            if not s.remora_upkeep_pending:
+                s=check_win(s)
+                k=s.key()
+                old=complete.get(k)
+                if old is not None and graph_stats is not None:
+                    graph_stats["upkeep_exact_key_merges"]+=1
+                if old is None or score(s)>score(old):
+                    complete[k]=s
+                continue
+
+            k=s.key()
+            if k in expanded:
+                continue
+            expanded.add(k)
+            actions=remora_upkeep_actions(s)
+            if graph_stats is not None:
+                graph_stats["upkeep_nodes_expanded"]+=1
+                graph_stats["upkeep_edges_generated"]+=len(actions)
+                graph_stats["upkeep_max_raw_successors"]=max(
+                    graph_stats["upkeep_max_raw_successors"],len(actions)
+                )
+            for ns in actions:
+                if not ns.remora_upkeep_pending:
+                    ns=check_win(ns)
+                    family=_remora_resolution_family(ns)
+                    if graph_stats is not None and family in {"pay","decline","bounce"}:
+                        graph_stats[f"remora_{family}_results_generated"]+=1
+                nk=ns.key()
+                target=next_pending if ns.remora_upkeep_pending else complete
+                old=target.get(nk)
+                if old is not None and graph_stats is not None:
+                    graph_stats["upkeep_exact_key_merges"]+=1
+                if old is None or score(ns)>score(old):
+                    target[nk]=ns
+
+        if graph_stats is not None:
+            graph_stats["upkeep_layers"]+=1
+        if not next_pending:
+            break
+        raw_candidates=list(next_pending.values())
+        candidates=dominance_prune(raw_candidates)
+        if graph_stats is not None:
+            graph_stats["upkeep_dominance_pruned"]+=max(
+                0,len(raw_candidates)-len(candidates)
+            )
+            graph_stats["upkeep_beam_pruned"]+=max(0,len(candidates)-beam)
+        pending=heapq.nlargest(min(beam,len(candidates)),candidates,key=score)
+        if graph_stats is not None:
+            graph_stats["upkeep_max_frontier"]=max(
+                graph_stats["upkeep_max_frontier"],len(pending)
+            )
+
+    raw_complete=list(complete.values())
+    candidates=dominance_prune(raw_complete)
+    if graph_stats is not None:
+        graph_stats["upkeep_dominance_pruned"]+=max(
+            0,len(raw_complete)-len(candidates)
+        )
+    keep_n=min(beam,len(candidates))
+    if keep_n<=0:
+        return []
+
+    ranked=heapq.nlargest(len(candidates),candidates,key=score)
+    best_family={}
+    for s in ranked:
+        family=_remora_resolution_family(s)
+        if family in {"pay","decline","bounce"} and family not in best_family:
+            best_family[family]=s
+
+    # When capacity permits, retain at least one result for each genuinely
+    # different upkeep resolution before filling by the normal global score.
+    required=list(best_family.values())
+    if len(required)>keep_n:
+        required=heapq.nlargest(keep_n,required,key=score)
+    if graph_stats is not None:
+        graph_stats["upkeep_beam_pruned"]+=max(0,len(candidates)-keep_n)
+    selected=[]
+    selected_keys=set()
+    for s in required+ranked:
+        k=s.key()
+        if k in selected_keys:
+            continue
+        selected.append(s)
+        selected_keys.add(k)
+        if len(selected)>=keep_n:
+            break
+    return selected
+
+
+def end_turn_frontier(frontier,beam:int,resolve_remora_upkeep:bool=True,
+                      graph_stats=None)->List[State]:
+    """Advance a beam and, for searched turns, close Remora upkeep first."""
+    resolved=[s for s in frontier if can_end_turn_state(s)]
+    transitioned=[
+        end_turn(s,schedule_remora_upkeep=resolve_remora_upkeep)
+        for s in heapq.nlargest(min(beam,len(resolved)),resolved,key=score)
+    ]
+    if not resolve_remora_upkeep:
+        # The post-horizon state remains a single diagnostic snapshot; do not
+        # branch a turn that the configured search will never explore.
+        return transitioned
+    return _resolve_remora_upkeep_frontier(
+        transitioned,beam,graph_stats=graph_stats
+    )
+
+def london_opening_zones(deck_order:List[str],keep_n:int,bottom:List[str]):
+    """Return the legal London kept hand and library for one fresh seven."""
+    if len(deck_order)<7:
+        raise ValueError("London mulligan construction requires a seven-card opening hand")
+    if keep_n!=7-len(bottom):
+        raise ValueError(
+            f"keep_n={keep_n} requires {7-keep_n} bottom card(s), got {len(bottom)}"
+        )
+    hand=list(deck_order[:7])
+    for card in bottom:
+        try:
+            hand.remove(card)
+        except ValueError as exc:
+            raise ValueError(f"bottom card is not present in opening seven: {card}") from exc
+    return hand,tuple(list(deck_order[7:])+list(bottom))
 
 def search_hand(deck_order:List[str], keep_n:int, bottom:List[str], max_turn=7,
                 beam=2500, max_actions_per_turn=60, caverns_live=True,
                 progress_tag:str="", progress_seconds:float=0.0, graph_stats=None)->Tuple[Optional[int],str,Tuple[str,...],int]:
-    hand=deck_order[:7]
-    rest=deck_order[7:]
-    # bottom chosen cards go to bottom in specified order
-    for c in bottom:
-        hand.remove(c)
-    lib=tuple(rest+bottom)
+    hand,lib=london_opening_zones(deck_order,keep_n,bottom)
     s=State(turn=1,library=lib,hand=tuple(hand),battlefield=(),trace=("--- Turn 1 ---",))
     # Gemstone Caverns seating is fixed for all mulligan candidates in this game.
     if "Gemstone Caverns" in s.hand and caverns_live and len(s.hand)>1:
@@ -2562,8 +3307,9 @@ def search_hand(deck_order:List[str], keep_n:int, bottom:List[str], max_turn=7,
         s=add_trace(s,f"pregame Caverns exiles {ex}")
     # commander is command zone, not deck
     # natural draw T1
-    if s.library:
-        s=replace(s,hand=s.hand+(s.library[0],),library=s.library[1:])
+    s,drawn=draw_from_library(s,1)
+    if drawn:
+        s=append_trace_detail(s,f"normal draw for turn 1: {drawn[0]}")
     s=refresh_observability(s)
     states=[s]
     searched=0
@@ -2626,7 +3372,10 @@ def search_hand(deck_order:List[str], keep_n:int, bottom:List[str], max_turn=7,
                     )
                     _progress_last=_now
         # include end-turn from best surviving states
-        states=[end_turn(x) for x in heapq.nlargest(min(beam,len(frontier)),frontier,key=score)]
+        states=end_turn_frontier(
+            frontier,beam,resolve_remora_upkeep=(turn<max_turn),
+            graph_stats=graph_stats,
+        )
     last=states[0] if states else s
     return None,"",last.trace if states else (),searched,last.urza_cast_turn,last.interaction_seen,tuple(sorted(last.hand)),max_depth_reached
 
@@ -2646,8 +3395,9 @@ def profile_single_hand(deck_order:List[str], max_turn:int=3, beam:int=300,
         # Keep same pregame handling philosophy as normal search by letting the
         # regular search/actions decide actual use; this profiler is about branching.
         pass
-    if s.library:
-        s=replace(s,hand=s.hand+(s.library[0],),library=s.library[1:])
+    s,drawn=draw_from_library(s,1)
+    if drawn:
+        s=append_trace_detail(s,f"normal draw for turn 1: {drawn[0]}")
     s=refresh_observability(s)
     states=[s]
     searched=0
@@ -2737,7 +3487,9 @@ def profile_single_hand(deck_order:List[str], max_turn:int=3, beam:int=300,
 
         if not frontier:
             break
-        states=[end_turn(x) for x in heapq.nlargest(min(beam,len(frontier)),frontier,key=score)]
+        states=end_turn_frontier(
+            frontier,beam,resolve_remora_upkeep=(turn<max_turn)
+        )
 
     print(f"\nPROFILE END: no win through T{max_turn}; searched={searched:,}",flush=True)
     return states[0] if states else None
@@ -2752,26 +3504,171 @@ def profile_seed(seed:int, deck:List[str], max_turn:int, beam:int, depth:int):
         max_actions_per_turn=depth,caverns_live=True
     )
 
+def oracle_mulligan_stages(min_keep:int=4):
+    """Return the shared Commander Oracle mulligan stages in RNG order."""
+    if min_keep not in {3,4}:
+        raise ValueError(f"min_keep must be 3 or 4, got {min_keep}")
+    stages=[("7A",0),("7B",0),("6",1),("5",2),("4",3)]
+    if min_keep==3:
+        stages.append(("3",4))
+    return tuple(stages)
+
+def oracle_mulligan_deals(seed:int,deck:List[str],min_keep:int=4):
+    """Generate the fixed Caverns result and each fresh-seven stage deal."""
+    rng=random.Random(seed)
+    caverns_live=(rng.random()<0.75)
+    deals=[]
+    for label,bottom_n in oracle_mulligan_stages(min_keep):
+        shuffled=deck[:]
+        rng.shuffle(shuffled)
+        deals.append((label,bottom_n,shuffled))
+    return caverns_live,tuple(deals)
+
+def oracle_stage_selection_key(stage_index:int,win_turn):
+    """Earlier win first; equal-turn results prefer the earlier mulligan stage."""
+    return (win_turn if win_turn is not None else 99,stage_index)
+
+def search_config_payload(config:OracleSearchConfig):
+    return {
+        "turn_horizon":config.max_turn,
+        "action_cap":config.action_cap,
+        "bottom_cap":config.bottom_cap,
+        "min_keep":config.min_keep,
+        "mulligan_stages":[
+            {"label":label,"keep_size":7-bottom_n,"bottom_count":bottom_n}
+            for label,bottom_n in oracle_mulligan_stages(config.min_keep)
+        ],
+        "beam":config.beam,
+        "depth":config.depth,
+    }
+
+@lru_cache(maxsize=1)
+def solver_source_provenance():
+    solver_path=Path(__file__).resolve()
+    out={
+        "commit_hash":None,
+        "git_dirty":None,
+        "solver_sha256":hashlib.sha256(solver_path.read_bytes()).hexdigest(),
+        "git_error":None,
+    }
+    try:
+        head=subprocess.run(
+            ["git","rev-parse","HEAD"],cwd=solver_path.parent,
+            capture_output=True,text=True,timeout=2,check=False
+        )
+        status=subprocess.run(
+            ["git","status","--porcelain","--untracked-files=normal"],cwd=solver_path.parent,
+            capture_output=True,text=True,timeout=2,check=False
+        )
+        if head.returncode!=0:
+            raise RuntimeError(head.stderr.strip() or "git rev-parse failed")
+        if status.returncode!=0:
+            raise RuntimeError(status.stderr.strip() or "git status failed")
+        out["commit_hash"]=head.stdout.strip() or None
+        out["git_dirty"]=bool(status.stdout.strip())
+    except Exception as exc:
+        out["git_error"]=str(exc)
+    return out
+
+def seed_provenance(base_seed:int,count:int=1,step:int=1):
+    last=base_seed+(count-1)*step if count>0 else None
+    return {
+        "base":base_seed,"count":count,"step":step,
+        "first":base_seed if count>0 else None,"last":last,
+    }
+
+def report_provenance(mode:str,config:OracleSearchConfig,seeds:dict,deck:List[str],
+                      execution:Optional[dict]=None):
+    hash_seed=os.environ.get("PYTHONHASHSEED") or None
+    source=dict(solver_source_provenance())
+    warnings=[]
+    if hash_seed is None:
+        warnings.append(
+            "PYTHONHASHSEED is unset; unordered iteration can prevent exact cross-process reproduction."
+        )
+    elif hash_seed.lower()=="random":
+        warnings.append(
+            "PYTHONHASHSEED=random requests a new hash seed per process; exact reproduction is not guaranteed."
+        )
+    if source.get("git_dirty"):
+        warnings.append(
+            "Working tree is dirty; commit_hash alone does not identify the executing source."
+        )
+    if source.get("git_error"):
+        warnings.append(f"Git provenance unavailable: {source['git_error']}")
+    deck_bytes=json.dumps(list(deck),ensure_ascii=False,separators=(",",":")).encode("utf-8")
+    return {
+        "mode":mode,
+        "source":source,
+        "search":search_config_payload(config),
+        "seeds":dict(seeds),
+        "environment":{
+            "python_hash_seed":hash_seed,
+            "python_version":sys.version.split()[0],
+        },
+        "execution":dict(execution or {}),
+        "deck":{
+            "card_count":len(deck),
+            "ordered_cards_sha256":hashlib.sha256(deck_bytes).hexdigest(),
+        },
+        "argv":list(sys.argv),
+        "warnings":warnings,
+    }
+
+_HASH_SEED_WARNING_EMITTED=False
+
+def warn_if_unset_python_hash_seed():
+    global _HASH_SEED_WARNING_EMITTED
+    hash_seed=os.environ.get("PYTHONHASHSEED")
+    if not hash_seed and not _HASH_SEED_WARNING_EMITTED:
+        print(
+            "[REPRODUCIBILITY WARNING] PYTHONHASHSEED is unset; "
+            "recorded results may not reproduce exact tie/order behavior.",
+            flush=True
+        )
+        _HASH_SEED_WARNING_EMITTED=True
+    elif hash_seed and hash_seed.lower()=="random" and not _HASH_SEED_WARNING_EMITTED:
+        print(
+            "[REPRODUCIBILITY WARNING] PYTHONHASHSEED=random; "
+            "each process may use a different hash seed.",
+            flush=True,
+        )
+        _HASH_SEED_WARNING_EMITTED=True
 
 
-def profile_oracle_seed(seed:int, deck:List[str], max_turn:int=7, beam:int=300, depth:int=60, bottom_cap:int=4):
+
+def profile_oracle_seed(seed:int, deck:List[str], max_turn:int=7, beam:int=300,
+                        depth:int=60, bottom_cap:int=4, min_keep:int=4):
     """
     Profile the ACTUAL oracle candidate structure for a single seed.
     Prints before/after every independent hand search so a pathological
     mulligan candidate / London-bottom choice is immediately identifiable.
     """
-    rng=random.Random(seed)
+    config=OracleSearchConfig(max_turn,beam,depth,ACTION_CAP,bottom_cap,min_keep)
+    caverns_live,deals=oracle_mulligan_deals(seed,deck,min_keep)
     print("\n=== PROFILE ORACLE SEED ===",flush=True)
-    print(f"seed={seed} turns={max_turn} beam={beam} depth={depth} bottom_cap={bottom_cap}",flush=True)
+    print(
+        f"seed={seed} turns={max_turn} beam={beam} depth={depth} "
+        f"action_cap={ACTION_CAP} bottom_cap={bottom_cap} min_keep={min_keep} "
+        f"PYTHONHASHSEED={os.environ.get('PYTHONHASHSEED','<unset>')}",
+        flush=True
+    )
+    print(
+        "provenance="+json.dumps(
+            report_provenance(
+                "profile-oracle",config,seed_provenance(seed),deck,
+                {"worker_count":1,"parallelism":"sequential"},
+            ),
+            sort_keys=True,
+        ),
+        flush=True,
+    )
 
-    stages=[("7A",0),("7B",0),("6",1),("5",2),("4",3)]
     total_searches=0
     total_wall=time.time()
     candidate_results=[]
 
-    for stage_idx,(label,bottom_n) in enumerate(stages):
-        d=deck[:]
-        rng.shuffle(d)
+    for stage_idx,(label,bottom_n,d) in enumerate(deals):
         seven=d[:7]
         bottoms=bottom_candidates(seven,bottom_n,cap=bottom_cap)
 
@@ -2797,7 +3694,7 @@ def profile_oracle_seed(seed:int, deck:List[str], max_turn:int=7, beam:int=300, 
             result=profile_search_hand(
                 d,7-bottom_n,bottom,
                 max_turn=max_turn,beam=beam,
-                max_actions_per_turn=depth,caverns_live=True,
+                max_actions_per_turn=depth,caverns_live=caverns_live,
                 candidate_tag=tag
             )
             dt=time.time()-t0
@@ -2837,11 +3734,7 @@ def profile_search_hand(deck_order:List[str], keep_n:int, bottom:List[str], max_
     Exact search_hand initialization + depth-by-depth diagnostics.
     Used by --profile-oracle so a slow candidate never disappears into a silent call.
     """
-    hand=deck_order[:7]
-    rest=deck_order[7:]
-    for c in bottom:
-        hand.remove(c)
-    lib=tuple(rest+bottom)
+    hand,lib=london_opening_zones(deck_order,keep_n,bottom)
     s=State(turn=1,library=lib,hand=tuple(hand),battlefield=(),trace=("--- Turn 1 ---",))
 
     if "Gemstone Caverns" in s.hand and caverns_live and len(s.hand)>1:
@@ -2851,8 +3744,9 @@ def profile_search_hand(deck_order:List[str], keep_n:int, bottom:List[str], max_
         s=add_perm(s,"Gemstone Caverns",mode="luck")
         s=add_trace(s,f"pregame Caverns exiles {ex}")
 
-    if s.library:
-        s=replace(s,hand=s.hand+(s.library[0],),library=s.library[1:])
+    s,drawn=draw_from_library(s,1)
+    if drawn:
+        s=append_trace_detail(s,f"normal draw for turn 1: {drawn[0]}")
     s=refresh_observability(s)
 
     states=[s]
@@ -2890,8 +3784,8 @@ def profile_search_hand(deck_order:List[str], keep_n:int, bottom:List[str], max_
                     and can_pay(st,0,1)
                 )
                 if chain_live or state_i==1 or state_i%25==0:
-                    nlands=sum(1 for p in st.battlefield if p.name in F_ALL_LANDS)
-                    nnonlands=sum(1 for p in st.battlefield if p.name not in F_ALL_LANDS)
+                    nlands=sum(1 for p in st.battlefield if is_land_perm(p))
+                    nnonlands=sum(1 for p in st.battlefield if not is_land_perm(p))
                     print(
                         f"        [{candidate_tag}] entering state {state_i}/{incoming} "
                         f"bf={len(st.battlefield)} lands={nlands} nonlands={nnonlands} "
@@ -2973,7 +3867,9 @@ def profile_search_hand(deck_order:List[str], keep_n:int, bottom:List[str], max_
         if not frontier:
             break
         end_start=time.time()
-        states=[end_turn(x) for x in heapq.nlargest(min(beam,len(frontier)),frontier,key=score)]
+        states=end_turn_frontier(
+            frontier,beam,resolve_remora_upkeep=(turn<max_turn)
+        )
         print(
             f"    [{candidate_tag}] T{turn} -> T{turn+1} end-turn expansion "
             f"{len(states)} states in {time.time()-end_start:.2f}s",
@@ -3007,7 +3903,8 @@ def bottom_candidates(seven:List[str], n_bottom:int, cap=None)->List[List[str]]:
     return [[seven[i] for i in inds] for inds in combos[:cap]]
 
 def oracle_game(seed:int,deck:List[str],max_turn:int,beam:int,depth:int,
-                live_progress:bool=False, progress_seconds:float=10.0):
+                live_progress:bool=False, progress_seconds:float=10.0,
+                min_keep:int=4,bottom_cap=None):
     """
     Oracle mulligan search with exact earliest-win branch-and-bound.
 
@@ -3019,19 +3916,19 @@ def oracle_game(seed:int,deck:List[str],max_turn:int,beam:int,depth:int,
     choices are still searched through B (not B-1) so the existing same-stage
     trace tie-break remains reproducible.
     """
-    rng=random.Random(seed)
-    caverns_live=(rng.random()<0.75)
+    if bottom_cap is None:
+        bottom_cap=BOTTOM_CAP
+    caverns_live,deals=oracle_mulligan_deals(seed,deck,min_keep)
+    effective_config=OracleSearchConfig(
+        max_turn,beam,depth,ACTION_CAP,bottom_cap,min_keep
+    )
     candidates=[]
     global_best_turn=None
     total_oracle_states=0
     oracle_graph=new_graph_stats()
     oracle_t0=time.time()
 
-    stage_specs=[("7A",0),("7B",0),("6",1),("5",2),("4",3)]
-
-    for stage,(stage_label,bottom_n) in enumerate(stage_specs):
-        d=deck[:]
-        rng.shuffle(d)
+    for stage,(stage_label,bottom_n,d) in enumerate(deals):
         seven=d[:7]
 
         # Later mulligan stages cannot beat an earlier-stage tie, so only turns
@@ -3049,7 +3946,7 @@ def oracle_game(seed:int,deck:List[str],max_turn:int,beam:int,depth:int,
                 )
             continue
 
-        bottoms=bottom_candidates(seven,bottom_n)
+        bottoms=bottom_candidates(seven,bottom_n,cap=bottom_cap)
         best=None
         stage_best_turn=None
 
@@ -3133,15 +4030,12 @@ def oracle_game(seed:int,deck:List[str],max_turn:int,beam:int,depth:int,
             "urza_cast_turn":0,"interaction_count":0,"interaction_seen":[],
             "final_hand":[],"max_depth_reached":0,"states":0,
             "oracle_states_total":total_oracle_states,
-            "graph":finalize_graph_stats(oracle_graph),"trace":()
+            "graph":finalize_graph_stats(oracle_graph),"trace":(),
+            "_oracle_search_config":search_config_payload(effective_config),
+            "_oracle_mulligan_stage_count":len(deals),
         }
 
-    candidates.sort(
-        key=lambda x:(
-            x[1][1][0] if x[1][1][0] is not None else 99,
-            x[0]
-        )
-    )
+    candidates.sort(key=lambda x:oracle_stage_selection_key(x[0],x[1][1][0]))
     stage,best,seven=candidates[0]
     turn,fam,trace,states,urza_turn,interaction_seen,final_hand,max_depth=best[1]
     kept=list(seven)
@@ -3150,12 +4044,14 @@ def oracle_game(seed:int,deck:List[str],max_turn:int,beam:int,depth:int,
 
     return {
         "seed":seed,"win_turn":turn,"family":fam,"mulligan_stage":stage,
-        "keep_size":[7,7,6,5,4][stage],"bottom":best[2],"opening7":seven,
+        "keep_size":7-len(best[2]),"bottom":best[2],"opening7":seven,
         "kept_hand":kept,"urza_cast_turn":urza_turn,
         "interaction_count":len(interaction_seen),"interaction_seen":list(interaction_seen),
         "final_hand":list(final_hand),"max_depth_reached":max_depth,
         "states":states,"oracle_states_total":total_oracle_states,
-        "graph":finalize_graph_stats(oracle_graph),"trace":trace
+        "graph":finalize_graph_stats(oracle_graph),"trace":trace,
+        "_oracle_search_config":search_config_payload(effective_config),
+        "_oracle_mulligan_stage_count":len(deals),
     }
 
 
@@ -3183,24 +4079,40 @@ def worker_process_initializer():
             pass
 
 
-def worker(args):
-    # Last tuple element is a reporting-only verbose flag.
-    if len(args)==6:
-        seed,deck,max_turn,beam,depth,verbose_worker=args
-        oracle_args=(seed,deck,max_turn,beam,depth)
-    else:
-        seed=args[0]
-        verbose_worker=False
-        oracle_args=args
+def apply_worker_search_config(config:OracleSearchConfig):
+    """Install explicitly transported cap values in a spawned interpreter."""
+    global ACTION_CAP,BOTTOM_CAP
+    ACTION_CAP=config.action_cap
+    BOTTOM_CAP=config.bottom_cap
+
+
+def worker(job:OracleWorkerJob):
+    """Run one Oracle game from a complete, spawn-safe search definition."""
+    seed=job.seed
+    verbose_worker=job.verbose_worker
+    apply_worker_search_config(job.config)
 
     pid=os.getpid()
     t0=time.time()
     if verbose_worker:
         print(f"[worker {pid}] START seed={seed}", flush=True)
     try:
-        result=oracle_game(*oracle_args)
+        result=oracle_game(
+            seed,job.deck,
+            max_turn=job.config.max_turn,
+            beam=job.config.beam,
+            depth=job.config.depth,
+            min_keep=job.config.min_keep,
+            bottom_cap=job.config.bottom_cap,
+        )
         result["_elapsed_worker_s"]=time.time()-t0
         result["_error"]=""
+        result["_worker_pid"]=pid
+        result["_worker_search_config"]=search_config_payload(job.config)
+        result["_worker_effective_caps"]={
+            "action_cap":ACTION_CAP,"bottom_cap":BOTTOM_CAP,
+        }
+        result["_worker_python_hash_seed"]=os.environ.get("PYTHONHASHSEED")
         if verbose_worker:
             wt=result.get("win_turn")
             print(f"[worker {pid}] DONE  seed={seed} win={wt if wt is not None else '-'} "
@@ -3226,6 +4138,12 @@ def worker(args):
             "states":0,
             "trace":(),
             "_elapsed_worker_s":time.time()-t0,
+            "_worker_pid":pid,
+            "_worker_search_config":search_config_payload(job.config),
+            "_worker_effective_caps":{
+                "action_cap":ACTION_CAP,"bottom_cap":BOTTOM_CAP,
+            },
+            "_worker_python_hash_seed":os.environ.get("PYTHONHASHSEED"),
             "_error":traceback.format_exc(),
         }
 
@@ -3263,7 +4181,7 @@ def summarize(results,max_turn):
     return rows,fam,mull
 
 
-def write_partial_checkpoint(out:Path, results, args, reason:str):
+def write_partial_checkpoint(out:Path, results, args, deck:List[str], reason:str):
     """Best-effort checkpoint used on Ctrl+C or abnormal early termination."""
     try:
         out.mkdir(exist_ok=True)
@@ -3279,6 +4197,19 @@ def write_partial_checkpoint(out:Path, results, args, reason:str):
             "depth":args.depth,
             "workers":args.workers,
             "timestamp_unix":time.time(),
+            "provenance":report_provenance(
+                "partial-normal-run",
+                OracleSearchConfig(
+                    args.turns,args.beam,args.depth,args.action_cap,
+                    args.bottom_cap,args.min_keep,
+                ),
+                seed_provenance(args.seed,args.runs),
+                deck,
+                {
+                    "worker_count":args.workers,
+                    "parallelism":"sequential" if args.workers==1 else "multiprocessing",
+                },
+            ),
             "games":[
                 {
                     "seed":r.get("seed"),
@@ -3606,17 +4537,22 @@ def audit_oracle_result(r,depth_limit:int):
 
 
 def run_smoke_seed_batch(deck,base_seed:int,count:int,step:int,max_turn:int,beam:int,
-                         depth:int,slow_seconds:float,progress_seconds:float=10.0):
+                         depth:int,slow_seconds:float,progress_seconds:float=10.0,
+                         min_keep:int=4,bottom_cap=None):
     """
     Sequential deterministic Oracle-Mode rules-engine audit.
 
     This intentionally uses ONE process so runtime differences are attributable
     to game-tree behavior rather than multiprocessing/RAM contention.
     """
+    if bottom_cap is None:
+        bottom_cap=BOTTOM_CAP
+    config=OracleSearchConfig(max_turn,beam,depth,ACTION_CAP,bottom_cap,min_keep)
     print("\n=== ORACLE SMOKE-SEED BATCH ===",flush=True)
     print(
         f"count={count} base_seed={base_seed} step={step} turns={max_turn} "
-        f"beam={beam} action_cap={ACTION_CAP} depth={depth}",
+        f"beam={beam} action_cap={ACTION_CAP} bottom_cap={bottom_cap} "
+        f"min_keep={min_keep} depth={depth}",
         flush=True
     )
 
@@ -3629,7 +4565,8 @@ def run_smoke_seed_batch(deck,base_seed:int,count:int,step:int,max_turn:int,beam
         t0=time.time()
         r=oracle_game(
             seed,deck,max_turn,beam,depth,
-            live_progress=True,progress_seconds=progress_seconds
+            live_progress=True,progress_seconds=progress_seconds,
+            min_keep=min_keep,bottom_cap=bottom_cap,
         )
         dt=time.time()-t0
         issues=audit_oracle_result(r,depth)
@@ -3699,9 +4636,14 @@ def run_smoke_seed_batch(deck,base_seed:int,count:int,step:int,max_turn:int,beam
     print(f"Flagged seeds: {len(flagged)}/{count}",flush=True)
 
     out={
+        "provenance":report_provenance(
+            "smoke-seeds",config,seed_provenance(base_seed,count,step),deck,
+            {"worker_count":1,"parallelism":"sequential"},
+        ),
         "config":{
             "base_seed":base_seed,"count":count,"step":step,"turns":max_turn,
-            "beam":beam,"action_cap":ACTION_CAP,"depth":depth,
+            "beam":beam,"action_cap":ACTION_CAP,"bottom_cap":bottom_cap,
+            "min_keep":min_keep,"depth":depth,
             "slow_seconds":slow_seconds,
         },
         "batch_wall_seconds":wall,
@@ -4524,7 +5466,10 @@ def run_combo_smoke():
 
 
 def run_family_smoke(deck,base_seed:int,count:int,max_turn:int,beam:int,depth:int,
-                     progress_seconds:float=10.0):
+                     progress_seconds:float=10.0,min_keep:int=4,bottom_cap=None):
+    if bottom_cap is None:
+        bottom_cap=BOTTOM_CAP
+    config=OracleSearchConfig(max_turn,beam,depth,ACTION_CAP,bottom_cap,min_keep)
     print("\n=== NATURAL WIN-FAMILY SMOKE ===",flush=True)
     fam=Counter()
     rows=[]
@@ -4536,7 +5481,8 @@ def run_family_smoke(deck,base_seed:int,count:int,max_turn:int,beam:int,depth:in
         print(f"\n[FAMILY {i+1}/{count}] seed={seed}",flush=True)
         r=oracle_game(
             seed,deck,max_turn,beam,depth,
-            live_progress=True,progress_seconds=progress_seconds
+            live_progress=True,progress_seconds=progress_seconds,
+            min_keep=min_keep,bottom_cap=bottom_cap,
         )
         family=r.get("family","")
         fam[family or "NO WIN"] += 1
@@ -4571,6 +5517,10 @@ def run_family_smoke(deck,base_seed:int,count:int,max_turn:int,beam:int,depth:in
     print(f"Wall time: {time.time()-t0:.2f}s",flush=True)
 
     payload={
+        "provenance":report_provenance(
+            "family-smoke",config,seed_provenance(base_seed,count),deck,
+            {"worker_count":1,"parallelism":"sequential"},
+        ),
         "base_seed":base_seed,
         "count":count,
         "families":dict(fam),
@@ -4582,8 +5532,12 @@ def run_family_smoke(deck,base_seed:int,count:int,max_turn:int,beam:int,depth:in
 
 
 
-def run_cap_audit(deck,base_seed:int,count:int,max_turn:int,beam:int,depth:int,progress_seconds:float=10.0):
+def run_cap_audit(deck,base_seed:int,count:int,max_turn:int,beam:int,depth:int,
+                  progress_seconds:float=10.0,min_keep:int=4,bottom_cap=None):
     global _CAP_AUDIT
+    if bottom_cap is None:
+        bottom_cap=BOTTOM_CAP
+    config=OracleSearchConfig(max_turn,beam,depth,ACTION_CAP,bottom_cap,min_keep)
     _CAP_AUDIT=new_cap_audit_stats()
     rows=[]
     t0=time.time()
@@ -4596,7 +5550,11 @@ def run_cap_audit(deck,base_seed:int,count:int,max_turn:int,beam:int,depth:int,p
             print(f"\n[CAP {i+1}/{count}] seed={seed}",flush=True)
             st0=_CAP_AUDIT["states_truncated"]
             raw0=_CAP_AUDIT["raw_actions_total"]
-            r=oracle_game(seed,deck,max_turn,beam,depth,live_progress=True,progress_seconds=progress_seconds)
+            r=oracle_game(
+                seed,deck,max_turn,beam,depth,
+                live_progress=True,progress_seconds=progress_seconds,
+                min_keep=min_keep,bottom_cap=bottom_cap,
+            )
             st1=_CAP_AUDIT["states_truncated"]
             raw1=_CAP_AUDIT["raw_actions_total"]
             row={
@@ -4618,6 +5576,10 @@ def run_cap_audit(deck,base_seed:int,count:int,max_turn:int,beam:int,depth:int,p
         summary["count"]=count
         summary["rows"]=rows
         summary["wall_seconds"]=time.time()-t0
+        summary["provenance"]=report_provenance(
+            "cap-audit",config,seed_provenance(base_seed,count),deck,
+            {"worker_count":1,"parallelism":"sequential"},
+        )
         Path("cap_audit_report.json").write_text(json.dumps(summary,indent=2),encoding="utf-8")
         print("\n=== CAP AUDIT SUMMARY ===",flush=True)
         print(f"states evaluated: {summary['states_seen']:,}",flush=True)
@@ -4634,8 +5596,11 @@ def run_cap_audit(deck,base_seed:int,count:int,max_turn:int,beam:int,depth:int,p
 
 
 def run_tutor_cap_audit(deck,base_seed:int,count:int,max_turn:int,beam:int,depth:int,
-                        progress_seconds:float=10.0):
+                        progress_seconds:float=10.0,min_keep:int=4,bottom_cap=None):
     global _TUTOR_CAP_AUDIT_ENABLED,_TUTOR_CAP_AUDIT
+    if bottom_cap is None:
+        bottom_cap=BOTTOM_CAP
+    config=OracleSearchConfig(max_turn,beam,depth,ACTION_CAP,bottom_cap,min_keep)
     previous_enabled=_TUTOR_CAP_AUDIT_ENABLED
     previous_audit=_TUTOR_CAP_AUDIT
     a=new_tutor_cap_audit_stats()
@@ -4664,7 +5629,11 @@ def run_tutor_cap_audit(deck,base_seed:int,count:int,max_turn:int,beam:int,depth
             b_engine_routes=_TUTOR_CAP_AUDIT["lost_engine_target_destination_route_events"]
             b_route_overflow=_TUTOR_CAP_AUDIT["route_representative_overflow_states"]
             print(f"\n[TUTOR CAP {i+1}/{count}] seed={seed}",flush=True)
-            r=oracle_game(seed,deck,max_turn,beam,depth,live_progress=True,progress_seconds=progress_seconds)
+            r=oracle_game(
+                seed,deck,max_turn,beam,depth,
+                live_progress=True,progress_seconds=progress_seconds,
+                min_keep=min_keep,bottom_cap=bottom_cap,
+            )
             graph=r.get("graph",{})
             row={
                 "seed":seed,
@@ -4752,6 +5721,10 @@ def run_tutor_cap_audit(deck,base_seed:int,count:int,max_turn:int,beam:int,depth
         )
 
     payload={
+        "provenance":report_provenance(
+            "tutor-cap-audit",config,seed_provenance(base_seed,count),deck,
+            {"worker_count":1,"parallelism":"sequential"},
+        ),
         "base_seed":base_seed,"count":count,"action_cap":ACTION_CAP,
         "python_hash_seed":os.environ.get("PYTHONHASHSEED"),
         "scope":"Target-selecting tutors/searches; fixed-target fetchland-to-Island searches are excluded.",
@@ -4815,6 +5788,1324 @@ def run_tutor_cap_audit(deck,base_seed:int,count:int,max_turn:int,beam:int,depth
     print("\nWrote tutor_cap_audit_report.json",flush=True)
 
 
+def _trace_action(states,term):
+    """Return the unique smoke successor whose newest trace contains term."""
+    matches=[s for s in states if s.trace and term in s.trace[-1]]
+    assert len(matches)==1,(term,[s.trace[-1] for s in states if s.trace])
+    return matches[0]
+
+
+def run_remora_smoke():
+    """Focused cumulative-upkeep, reset, and state-identity regressions."""
+    print("\n=== MYSTIC REMORA CUMULATIVE-UPKEEP SMOKE ===",flush=True)
+
+    # First upkeep: the Island was tapped during our prior turn, untaps first,
+    # and can then pay {1}. Opponent-cycle Remora draws remain independent of
+    # the later choice to pay or sacrifice. Mana Drain mana is not yet usable.
+    first=State(
+        turn=1,library=("D1","D2","D3","D4"),hand=(),
+        battlefield=(Perm("Mystic Remora"),Perm("Island",tapped=True)),
+        drain_bank=2,remora_age=0,trace=("--- Turn 1 ---",),
+    )
+    first_due=end_turn(first)
+    assert first_due.turn==2
+    assert first_due.remora_age==0 and first_due.remora_upkeep_pending
+    assert first_due.trace[-1].startswith(
+        "Mystic Remora cumulative-upkeep trigger pending: on resolution "
+        "add age counter 1"
+    )
+    assert first_due.blue==0 and first_due.colorless==0 and first_due.drain_bank==2
+    # Only the two modeled opponent-fed cards exist before upkeep. The normal
+    # draw D3 remains on top until the decision has resolved.
+    assert first_due.hand==("D1","D2") and first_due.library[0]=="D3"
+    assert not next(p for p in first_due.battlefield if p.name=="Island").tapped
+    assert not any("cumulative upkeep {1}: pay" in s.trace[-1]
+                   for s in legal_actions(first_due))
+
+    first_actions=legal_actions(first_due)
+    first_decline=_trace_action(first_actions,"decline; sacrifice Mystic Remora")
+    first_tap=_trace_action(first_actions,"tap Island: +U")
+    assert not has(first_decline,"Mystic Remora")
+    assert first_decline.remora_age==0 and not first_decline.remora_upkeep_pending
+    assert "Mystic Remora" in first_decline.graveyard
+    assert first_decline.hand==("D1","D2","D3")
+    assert first_decline.colorless==2 and first_decline.drain_bank==0
+
+    payable_actions=legal_actions(first_tap)
+    first_paid=_trace_action(payable_actions,"cumulative upkeep {1}: pay")
+    paid_decline=_trace_action(payable_actions,"decline; sacrifice Mystic Remora")
+    assert has(first_paid,"Mystic Remora")
+    assert first_paid.remora_age==1 and not first_paid.remora_upkeep_pending
+    assert first_paid.hand==("D1","D2","D3")
+    assert first_paid.blue==0 and first_paid.colorless==2 and first_paid.drain_bank==0
+    assert next(p for p in first_paid.battlefield if p.name=="Island").tapped
+    assert not has(paid_decline,"Mystic Remora")
+    print("First upkeep {1} + voluntary decline PASS",flush=True)
+
+    upkeep_graph=new_graph_stats()
+    closed=end_turn_frontier(
+        [first],beam=10,resolve_remora_upkeep=True,
+        graph_stats=upkeep_graph,
+    )
+    assert closed and all(not s.remora_upkeep_pending for s in closed)
+    assert {"pay","decline"}<=set(_remora_resolution_family(s) for s in closed)
+    assert upkeep_graph["upkeep_nodes_expanded"]>0
+    assert upkeep_graph["upkeep_edges_generated"]>0
+    assert upkeep_graph["remora_pay_results_generated"]>0
+    assert upkeep_graph["remora_decline_results_generated"]>0
+    diagnostic=end_turn_frontier(
+        [first],beam=10,resolve_remora_upkeep=False
+    )
+    assert len(diagnostic)==1 and not diagnostic[0].remora_upkeep_pending
+    assert diagnostic[0].remora_age==0
+    assert diagnostic[0].hand==("D1","D2","D3")
+    print("Dedicated closure/final snapshot       PASS",flush=True)
+
+    # On the second upkeep, responses still see one existing age counter. On
+    # resolution the second counter is added, so two Islands are required.
+    second=State(
+        turn=2,library=(),hand=(),
+        battlefield=(
+            Perm("Mystic Remora"),Perm("Island",tapped=True),
+            Perm("Island",tapped=True),
+        ),
+        remora_age=1,trace=("--- Turn 2 ---",),
+    )
+    second_due=end_turn(second)
+    assert second_due.remora_age==1 and second_due.remora_upkeep_pending
+    # The two identical first-tap routes exact-compare alike; selecting either
+    # is sufficient for the payment-cost integration check.
+    first_island_taps=[s for s in legal_actions(second_due)
+                       if s.trace and "tap Island: +U" in s.trace[-1]]
+    assert first_island_taps
+    one_tap=first_island_taps[0]
+    second_island_taps=[s for s in legal_actions(one_tap)
+                        if s.trace and "tap Island: +U" in s.trace[-1]]
+    assert second_island_taps
+    two_taps=second_island_taps[0]
+    second_paid=_trace_action(
+        legal_actions(two_taps),"cumulative upkeep {2}: pay"
+    )
+    assert second_paid.remora_age==2 and has(second_paid,"Mystic Remora")
+    assert not second_paid.remora_upkeep_pending
+    assert sum(p.tapped for p in second_paid.battlefield if p.name=="Island")==2
+    second_closed=end_turn_frontier(
+        [second],beam=50,resolve_remora_upkeep=True
+    )
+    assert any(
+        _remora_resolution_family(s)=="pay"
+        and s.remora_age==2
+        and sum(p.tapped for p in s.battlefield if p.name=="Island")==2
+        for s in second_closed
+    )
+    print("Second upkeep {2}                     PASS",flush=True)
+
+    # Saga keeps only its already-earned lore counters during upkeep. It may
+    # use an existing chapter-I mana ability after untap; the next lore counter
+    # is not added until the Remora decision has resolved and main phase begins.
+    saga_start=State(
+        turn=1,library=(),hand=(),
+        battlefield=(
+            Perm("Mystic Remora"),
+            Perm("Urza's Saga",tapped=True,counters=1),
+        ),
+        remora_age=0,
+    )
+    saga_due=end_turn(saga_start)
+    saga_perm=next(p for p in saga_due.battlefield if p.name=="Urza's Saga")
+    assert saga_perm.counters==1 and not saga_perm.tapped
+    saga_mana=_trace_action(legal_actions(saga_due),"tap Saga: +C")
+    saga_paid=_trace_action(
+        legal_actions(saga_mana),"cumulative upkeep {1}: pay"
+    )
+    saga_perm=next(p for p in saga_paid.battlefield if p.name=="Urza's Saga")
+    assert saga_perm.counters==2 and saga_perm.tapped
+    forced_saga3=replace(
+        saga_paid,
+        battlefield=tuple(
+            replace(p,counters=3,mode="saga3") if p.name=="Urza's Saga" else p
+            for p in saga_paid.battlefield
+        ),
+    )
+    assert not can_end_turn_state(forced_saga3)
+    no_find_source=replace(
+        forced_saga3,
+        library=("Power Artifact","Island","Rhystic Study"),
+    )
+    no_find=_trace_action(
+        saga_actions(no_find_source),
+        "Saga III search finds no card; shuffle; sacrifice Saga",
+    )
+    assert not has(no_find,"Urza's Saga") and can_end_turn_state(no_find)
+    assert Counter(no_find.library)==Counter(no_find_source.library)
+    print("Saga upkeep/main-phase ordering        PASS",flush=True)
+
+    # Fetching occurs in upkeep, before the normal draw, and the fetched Island
+    # can then pay. This also protects the meaningful shuffle-before-draw line.
+    fetch_start=State(
+        turn=1,library=("R1","R2","Natural","Island","Tail"),hand=(),
+        battlefield=(Perm("Mystic Remora"),Perm("Polluted Delta",tapped=True)),
+        remora_age=0,
+    )
+    fetch_due=end_turn(fetch_start)
+    assert fetch_due.hand==("R1","R2") and fetch_due.library[0]=="Natural"
+    fetched=_trace_action(
+        legal_actions(fetch_due),"Polluted Delta fetches Island and shuffles"
+    )
+    assert fetched.hand==("R1","R2")
+    fetch_mana=_trace_action(legal_actions(fetched),"tap Island: +U")
+    fetch_paid=_trace_action(
+        legal_actions(fetch_mana),"cumulative upkeep {1}: pay"
+    )
+    assert has(fetch_paid,"Mystic Remora") and len(fetch_paid.hand)==3
+    print("Fetch -> Island payment before draw    PASS",flush=True)
+
+    dramatic=State(
+        turn=3,library=(),hand=("Dramatic Reversal",),
+        battlefield=(Perm("Mystic Remora"),Perm("Mana Vault",tapped=True)),
+        blue=1,colorless=1,remora_age=2,remora_upkeep_pending=True,
+    )
+    reversed_state=_trace_action(
+        legal_actions(dramatic),"Dramatic Reversal during Remora upkeep"
+    )
+    assert "Dramatic Reversal" in reversed_state.graveyard
+    assert not next(
+        p for p in reversed_state.battlefield if p.name=="Mana Vault"
+    ).tapped
+    vault_mana=_trace_action(
+        legal_actions(reversed_state),"tap Mana Vault: +CCC"
+    )
+    dramatic_paid=_trace_action(
+        legal_actions(vault_mana),"cumulative upkeep {3}: pay"
+    )
+    assert has(dramatic_paid,"Mystic Remora")
+
+    dramatic_sources=State(
+        turn=2,library=(),hand=("Dramatic Reversal",),
+        battlefield=(
+            Perm("Mystic Remora"),Perm("Island"),Perm("Sol Ring"),
+            Perm("Mana Vault",tapped=True),
+        ),
+        remora_age=0,remora_upkeep_pending=True,
+    )
+    island_mana=_trace_action(
+        legal_actions(dramatic_sources),"tap Island: +U"
+    )
+    sol_mana=_trace_action(legal_actions(island_mana),"tap Sol Ring: +CC")
+    reversal_from_sources=_trace_action(
+        legal_actions(sol_mana),"Dramatic Reversal during Remora upkeep"
+    )
+    source_paid=_trace_action(
+        legal_actions(reversal_from_sources),"cumulative upkeep {1}: pay"
+    )
+    assert has(source_paid,"Mystic Remora")
+    print("Dramatic Reversal payment enabler      PASS",flush=True)
+
+    # Chain of Vapor is an implemented instant-speed alternative to paying or
+    # sacrificing. Bouncing Remora makes the pending trigger harmless and the
+    # next natural draw then occurs normally.
+    chain_start=State(
+        turn=1,library=("C1","C2","Natural"),hand=("Chain of Vapor",),
+        battlefield=(Perm("Mystic Remora"),Perm("Island",tapped=True)),
+        remora_age=2,
+    )
+    chain_due=end_turn(chain_start)
+    chain_mana=_trace_action(legal_actions(chain_due),"tap Island: +U")
+    chain_bounces=[
+        s for s in legal_actions(chain_mana)
+        if not has(s,"Mystic Remora")
+        and "Mystic Remora" in s.hand
+        and any("Chain resolution" in msg for msg in s.trace)
+    ]
+    assert chain_bounces
+    chain_bounce=chain_bounces[0]
+    assert chain_bounce.remora_age==0 and not chain_bounce.remora_upkeep_pending
+    assert chain_bounce.hand[-1]=="Natural"
+    print("Chain response bounces/resets Remora   PASS",flush=True)
+
+    # Even when Chain's macro and mana routes hit a deliberately tiny cap, the
+    # direct Remora-bounce resolution remains represented.
+    global ACTION_CAP
+    old_action_cap=ACTION_CAP
+    try:
+        ACTION_CAP=3
+        broad=State(
+            turn=3,library=(),hand=("Chain of Vapor",),
+            battlefield=(Perm("Mystic Remora"),)+tuple(
+                Perm(name) for name in sorted(F_ARTIFACTS)[:8]
+            )+(Perm("Island"),Perm("Ancient Tomb")),
+            blue=1,remora_age=1,remora_upkeep_pending=True,
+        )
+        broad_actions=remora_upkeep_actions(broad)
+        assert len(broad_actions)<=3
+        assert any(_remora_resolution_family(s)=="bounce" for s in broad_actions)
+        assert any(_remora_resolution_family(s)=="decline" for s in broad_actions)
+        assert any(s.remora_upkeep_pending for s in broad_actions)
+        broad_closed=_resolve_remora_upkeep_frontier([broad],beam=3)
+        assert any(_remora_resolution_family(s)=="pay" for s in broad_closed)
+    finally:
+        ACTION_CAP=old_action_cap
+    print("Cap-hit Chain bounce retention         PASS",flush=True)
+
+    # Bauble's delayed upkeep trigger can be ordered before cumulative upkeep,
+    # while the fourth card remains the later normal draw.
+    bauble=State(
+        turn=1,library=("B","R1","R2","N"),hand=(),
+        battlefield=(Perm("Mystic Remora"),),bauble_draws=1,
+    )
+    bauble_due=end_turn(bauble)
+    assert bauble_due.hand==("B","R1","R2") and bauble_due.library==("N",)
+    bauble_decline=_trace_action(
+        legal_actions(bauble_due),"decline; sacrifice Mystic Remora"
+    )
+    assert bauble_decline.hand==("B","R1","R2","N")
+    print("Bauble-before-upkeep / natural-after    PASS",flush=True)
+
+    # No upkeep source means sacrifice is the only legal resolution. Prior
+    # floating mana is cleared, and banked Drain mana waits until main phase.
+    unable=State(
+        turn=2,library=(),hand=(),battlefield=(Perm("Mystic Remora"),),
+        blue=7,colorless=7,drain_bank=3,remora_age=1,
+    )
+    unable_due=end_turn(unable)
+    assert unable_due.blue==0 and unable_due.colorless==0
+    unable_actions=legal_actions(unable_due)
+    assert len(unable_actions)==1
+    forced=unable_actions[0]
+    assert "decline; sacrifice Mystic Remora" in forced.trace[-1]
+    assert not has(forced,"Mystic Remora") and forced.remora_age==0
+    assert forced.colorless==3 and forced.drain_bank==0
+    print("Unable to pay -> sacrifice            PASS",flush=True)
+
+    pending_combo=State(
+        turn=3,library=(),hand=(),
+        battlefield=(
+            Perm("Mystic Remora"),Perm(COMMANDER),
+            Perm("Forensic Gadgeteer"),Perm("Basalt Monolith"),
+        ),
+        urza=True,remora_age=1,remora_upkeep_pending=True,
+    )
+    assert not check_win(pending_combo).won
+    assert check_win(replace(pending_combo,remora_upkeep_pending=False)).won
+    print("Pending upkeep blocks main win check   PASS",flush=True)
+
+    closure_win=State(
+        turn=2,library=(),hand=(),
+        battlefield=(
+            Perm("Mystic Remora"),Perm(COMMANDER),Perm("Chrome Dome"),
+            Perm("Grinding Station"),Perm("Island",tapped=True),
+        ),
+        drain_bank=5,remora_age=0,urza=True,
+    )
+    closure_results=end_turn_frontier(
+        [closure_win],beam=50,resolve_remora_upkeep=True
+    )
+    assert closure_results and any(
+        s.won and s.win_family=="Chrome Dome" for s in closure_results
+    )
+    print("Closure marks completed main wins      PASS",flush=True)
+
+    # A zone change removes the old age counters. Recasting the bounced card
+    # creates a new age-zero Remora whose next upkeep is {1}, not {3}.
+    aged=State(
+        turn=2,library=(),hand=(),
+        battlefield=(Perm("Mystic Remora"),Perm("Island")),
+        remora_age=2,remora_upkeep_pending=True,
+    )
+    bounced=remove_perm(aged,0,to_grave=False)
+    assert bounced.remora_age==0 and not bounced.remora_upkeep_pending
+    bounced=replace(bounced,hand=("Mystic Remora",),blue=1)
+    recast=cast_from_hand(bounced,"Mystic Remora")
+    assert recast is not None and recast.remora_age==0
+    assert not recast.remora_upkeep_pending and has(recast,"Mystic Remora")
+    recast_due=end_turn(recast)
+    assert recast_due.remora_age==0 and recast_due.remora_upkeep_pending
+    assert "then pay {1} or sacrifice" in recast_due.trace[-1]
+    print("Leave/recast age reset                 PASS",flush=True)
+
+    # Age, pending phase, and recoverable graveyard contents all affect future
+    # legality and therefore must not merge in exact, dominance, or Chain keys.
+    identity=State(
+        turn=3,library=("Chain of Vapor",),hand=(),
+        battlefield=(Perm("Mystic Remora"),),remora_age=1,
+    )
+    older=replace(identity,remora_age=2)
+    pending=replace(identity,remora_upkeep_pending=True)
+    grave=replace(identity,graveyard=("Mystic Remora",))
+    for other in (older,pending,grave):
+        assert identity.key()!=other.key()
+        assert dominance_signature(identity)!=dominance_signature(other)
+        assert _chain_cache_key(identity)!=_chain_cache_key(other)
+    assert end_turn_frontier([pending],beam=1)==[]
+    assert all(
+        "end_turn_frontier" in fn.__code__.co_names
+        for fn in (search_hand,profile_single_hand,profile_search_hand)
+    )
+    print("Exact/dominance/cache distinctions     PASS",flush=True)
+    print("\nREMORA SMOKE: ALL PASS",flush=True)
+
+
+def run_draw_trace_smoke():
+    """Focused named-draw and trace-neutrality regressions."""
+    print("\n=== NAMED DRAW TRACE SMOKE ===",flush=True)
+
+    def lines(s):
+        return tuple(line for msg in s.trace for line in msg.splitlines())
+
+    def assert_unchanged_except(before,after,*allowed):
+        """Protect every State field outside an action's documented effects."""
+        allowed=set(allowed)
+        for name in State.__dataclass_fields__:
+            if name not in allowed:
+                assert getattr(after,name)==getattr(before,name),name
+
+    # The movement helper preserves order and touches only hand/library. A
+    # natural draw is folded into the existing turn/action trace entry so the
+    # historical trace count—and therefore deterministic shuffle seed—stays
+    # unchanged.
+    normal=State(
+        turn=2,library=("Normal","Tail"),hand=("Held",),battlefield=(),
+        trace=("--- Turn 2 ---",),blue=3,colorless=4,drain_bank=2,
+    )
+    drawn_state,drawn=draw_from_library(normal,3)
+    assert drawn==("Normal","Tail")
+    assert drawn_state.hand==("Held","Normal","Tail")
+    assert drawn_state.library==() and normal.library==("Normal","Tail")
+    assert_unchanged_except(normal,drawn_state,"hand","library")
+    main=_enter_precombat_main(normal)
+    assert main.hand==("Held","Normal") and main.library==("Tail",)
+    assert "normal draw for turn 2: Normal" in lines(main)
+    assert len(main.trace)==len(normal.trace)
+    detailed=append_trace_detail(normal,"normal draw for turn 2: Normal")
+    assert len(detailed.trace)==len(normal.trace)
+    assert shuffled_library(normal,"named-draw-canary")==shuffled_library(
+        detailed,"named-draw-canary"
+    )
+    tutor_trace=State(
+        turn=2,library=(),hand=(),battlefield=(),
+        trace=("Muddle the Mixture -> Grinding Station",),
+    )
+    tutor_detail=append_trace_detail(
+        tutor_trace,"normal draw for turn 2: Audit Card"
+    )
+    assert _tutor_action_from_trace(tutor_detail)==_tutor_action_from_trace(
+        tutor_trace
+    )
+    assert _action_family_from_state(tutor_detail)==_action_family_from_state(
+        tutor_trace
+    )
+    assert classify_action(tutor_detail.trace[-1])==classify_action(
+        tutor_trace.trace[-1]
+    )
+
+    opening=[f"Opening {i}" for i in range(7)]+["Turn One Draw","Tail"]
+    opening_result=search_hand(
+        opening,7,[],max_turn=0,beam=1,max_actions_per_turn=1,
+        caverns_live=False,
+    )
+    assert "normal draw for turn 1: Turn One Draw" in tuple(
+        line for msg in opening_result[2] for line in msg.splitlines()
+    )
+    assert len(opening_result[2])==1
+    assert all(
+        {"draw_from_library","append_trace_detail"}<=set(fn.__code__.co_names)
+        for fn in (search_hand,profile_single_hand,profile_search_hand)
+    )
+    print("Normal T1/later draws + trace neutrality PASS",flush=True)
+
+    # Preserve the current aggregate assignment exactly: delayed Baubles first,
+    # then Remora, Rhystic, environmental Mastermind, and finally the normal
+    # draw after the pending Remora decision.
+    environment=State(
+        turn=1,
+        library=("B1","B2","R1","R2","H1","H2","F1","N","Tail"),
+        hand=(),
+        battlefield=(
+            Perm("Mystic Remora"),Perm("Rhystic Study"),
+            Perm("Faerie Mastermind"),Perm("Mishra's Bauble"),
+            Perm("Urza's Bauble"),
+        ),
+        trace=("--- Turn 1 ---",),
+    )
+    mishra=_trace_action(
+        draw_sac_actions(environment),
+        "Mishra's Bauble: tap+sacrifice -> delayed next-upkeep draw",
+    )
+    both=_trace_action(
+        draw_sac_actions(mishra),
+        "Urza's Bauble: tap+sacrifice -> delayed next-upkeep draw",
+    )
+    assert pending_bauble_draw_sources(both)==(
+        "Mishra's Bauble","Urza's Bauble"
+    )
+    due=end_turn(both)
+    assert due.hand==("B1","B2","R1","R2","H1","H2","F1")
+    assert due.library==("N","Tail") and due.remora_upkeep_pending
+    due_lines=lines(due)
+    expected_events=(
+        "Mishra's Bauble delayed draw: B1",
+        "Urza's Bauble delayed draw: B2",
+        "Mystic Remora draws 2: R1, R2",
+        "Rhystic Study draws 2: H1, H2",
+        "Faerie Mastermind environmental draw: F1",
+    )
+    positions=[due_lines.index(event) for event in expected_events]
+    assert positions==sorted(positions)
+    assert not any("normal draw" in line for line in due_lines)
+    assert len(due.trace)==len(both.trace)+2
+    declined=_trace_action(
+        legal_actions(due),"decline; sacrifice Mystic Remora"
+    )
+    assert declined.hand==due.hand+("N",) and declined.library==("Tail",)
+    assert "normal draw for turn 2: N" in lines(declined)
+    assert len(declined.trace)==len(due.trace)+1
+
+    reverse=State(
+        turn=1,library=("X","Y"),hand=(),
+        battlefield=(Perm("Urza's Bauble"),Perm("Mishra's Bauble")),
+        trace=("--- Turn 1 ---",),
+    )
+    reverse=_trace_action(draw_sac_actions(reverse),"Urza's Bauble:")
+    reverse=_trace_action(draw_sac_actions(reverse),"Mishra's Bauble:")
+    assert pending_bauble_draw_sources(reverse)==(
+        "Urza's Bauble","Mishra's Bauble"
+    )
+    fallback=State(
+        turn=1,library=("Only",),hand=(),battlefield=(),bauble_draws=1,
+        trace=("--- Turn 1 ---",),
+    )
+    assert pending_bauble_draw_sources(fallback)==(
+        "Mishra's/Urza's Bauble",
+    )
+    partial=State(
+        turn=1,library=("Older","Newer"),hand=(),battlefield=(),
+        bauble_draws=2,
+        trace=(
+            "--- Turn 1 ---",
+            "Urza's Bauble: tap+sacrifice -> delayed next-upkeep draw",
+        ),
+    )
+    assert pending_bauble_draw_sources(partial)==(
+        "Mishra's/Urza's Bauble","Urza's Bauble",
+    )
+    print("Environmental + delayed draw attribution PASS",flush=True)
+
+    uthros=State(
+        turn=3,library=("Grinding Station","Tail"),hand=(),
+        battlefield=(Perm("Uthros Research Craft"),),uthros_counters=3,
+        trace=("cast setup",),
+    )
+    uthros_draw=artifact_cast_triggers(uthros,"Welding Jar")
+    assert uthros_draw.hand==("Grinding Station",)
+    assert uthros_draw.library==("Tail",) and uthros_draw.uthros_counters==4
+    assert_unchanged_except(
+        uthros,uthros_draw,"hand","library","uthros_counters","trace"
+    )
+    assert uthros_draw.trace[-1]==(
+        "Uthros trigger draws: Grinding Station; "
+        "+1 station counter before artifact resolves"
+    )
+
+    ring=State(
+        turn=3,library=("A","B","C","D"),hand=(),
+        battlefield=(Perm("The One Ring"),),ring_counters=2,
+    )
+    ring_draw=ring_actions(ring)[0]
+    assert ring_draw.hand==("A","B","C") and ring_draw.library==("D",)
+    assert ring_draw.battlefield==(Perm("The One Ring",tapped=True),)
+    assert ring_draw.ring_counters==3
+    assert_unchanged_except(
+        ring,ring_draw,"hand","library","battlefield","ring_counters","trace"
+    )
+    assert ring_draw.trace[-1]=="The One Ring draws 3: A, B, C"
+
+    top=State(
+        turn=2,library=("Chrome Dome","Tail"),hand=(),
+        battlefield=(Perm("Sensei's Divining Top"),),
+    )
+    top_draw=_trace_action(top_actions(top),"Sensei's Divining Top -> draw")
+    assert top_draw.hand==("Chrome Dome",)
+    assert top_draw.library==("Sensei's Divining Top","Tail")
+    assert top_draw.battlefield==() and top_draw.graveyard==()
+    assert_unchanged_except(
+        top,top_draw,"hand","library","battlefield","trace"
+    )
+    assert "draw: Chrome Dome; Top goes on top" in top_draw.trace[-1]
+    print("Uthros / Ring / Top named draws         PASS",flush=True)
+
+    clue=State(
+        turn=2,library=("Chrome Dome","Tail"),hand=(),
+        battlefield=(Perm("Clue",mode="clue"),),colorless=2,
+    )
+    clue_draw=clue_draw_actions(clue)[0]
+    assert clue_draw.hand==("Chrome Dome",) and clue_draw.library==("Tail",)
+    assert clue_draw.battlefield==() and clue_draw.graveyard==()
+    assert clue_draw.blue==0 and clue_draw.colorless==0
+    assert_unchanged_except(
+        clue,clue_draw,"hand","library","battlefield","graveyard",
+        "blue","colorless","trace"
+    )
+    assert clue_draw.trace[-1]=="sac Clue -> draw: Chrome Dome"
+
+    probe=State(
+        turn=2,library=("Island","Tail"),hand=("Gitaxian Probe",),
+        battlefield=(),
+    )
+    probe_draw=cast_from_hand(probe,"Gitaxian Probe")
+    assert probe_draw is not None
+    assert probe_draw.hand==("Island",) and probe_draw.library==("Tail",)
+    assert probe_draw.spell_cast_this_turn
+    assert_unchanged_except(
+        probe,probe_draw,"hand","library","spell_cast_this_turn","trace"
+    )
+    assert "Gitaxian Probe targets an opponent -> draw: Island"==probe_draw.trace[-1]
+
+    mastermind=State(
+        turn=3,library=("Mox Opal","Tail"),hand=(),
+        battlefield=(Perm("Faerie Mastermind"),),blue=1,colorless=3,
+    )
+    mastermind_draw=faerie_mastermind_actions(mastermind)[0]
+    assert mastermind_draw.hand==("Mox Opal",)
+    assert mastermind_draw.library==("Tail",)
+    assert mastermind_draw.blue==0 and mastermind_draw.colorless==0
+    assert_unchanged_except(
+        mastermind,mastermind_draw,"hand","library","blue","colorless","trace"
+    )
+    assert mastermind_draw.trace[-1].endswith("we draw: Mox Opal")
+    print("Clue / Probe / Mastermind named draws   PASS",flush=True)
+
+    sea_gate=State(
+        turn=5,library=("SG1","SG2","SG3"),
+        hand=("Sea Gate Restoration","Held"),battlefield=(),blue=7,
+    )
+    sea_gate_draw=cast_from_hand(sea_gate,"Sea Gate Restoration")
+    assert sea_gate_draw is not None
+    assert sea_gate_draw.hand==("Held","SG1","SG2")
+    assert sea_gate_draw.library==("SG3",)
+    assert sea_gate_draw.blue==0 and sea_gate_draw.colorless==0
+    assert sea_gate_draw.spell_cast_this_turn
+    assert_unchanged_except(
+        sea_gate,sea_gate_draw,"hand","library","blue","colorless",
+        "spell_cast_this_turn","trace"
+    )
+    assert sea_gate_draw.trace[-1]=="Sea Gate Restoration draws 2: SG1, SG2"
+
+    coliseum=State(
+        turn=4,library=("C1","C2","C3","Tail"),hand=(),
+        battlefield=(Perm("Cephalid Coliseum"),),blue=1,
+        graveyard=tuple(f"G{i}" for i in range(7)),
+    )
+    coliseum_actions=graveyard_land_actions(coliseum)
+    assert len(coliseum_actions)==1
+    coliseum_draw=coliseum_actions[0]
+    assert coliseum_draw.hand==() and coliseum_draw.library==("Tail",)
+    assert coliseum_draw.battlefield==() and coliseum_draw.blue==0
+    assert coliseum_draw.graveyard==(
+        tuple(f"G{i}" for i in range(7))
+        +("Cephalid Coliseum","C1","C2","C3")
+    )
+    assert_unchanged_except(
+        coliseum,coliseum_draw,"hand","library","battlefield","graveyard",
+        "blue","colorless","trace"
+    )
+    assert "draw 3: C1, C2, C3; discard C1, C2, C3" in coliseum_draw.trace[-1]
+    print("Sea Gate / Coliseum named draws         PASS",flush=True)
+
+    draw_artifacts=(
+        (
+            State(2,("AetherCard","Tail"),(),(Perm("Aether Spellbomb"),),
+                  colorless=1),
+            "Aether Spellbomb:",("AetherCard",),"AetherCard",
+        ),
+        (
+            State(2,("Well1","Well2","Tail"),(),(Perm("Witching Well"),),
+                  blue=1,colorless=3),
+            "Witching Well:",("Well1","Well2"),"Well1, Well2",
+        ),
+        (
+            State(2,("Cam1","Cam2","Tail"),(),
+                  (Perm("Sewer-veillance Cam"),),blue=1,colorless=3),
+            "Cam:",("Cam1","Cam2"),"Cam1, Cam2",
+        ),
+        (
+            State(2,("VexingCard","Tail"),(),(Perm("Vexing Bauble"),),
+                  colorless=1),
+            "Vexing Bauble:",("VexingCard",),"VexingCard",
+        ),
+    )
+    for source,prefix,expected,names_text in draw_artifacts:
+        result=_trace_action(draw_sac_actions(source),prefix)
+        assert result.hand==expected and result.library==("Tail",)
+        sacrificed=source.battlefield[0].name
+        assert result.battlefield==() and result.graveyard==(sacrificed,)
+        assert result.blue==0 and result.colorless==0
+        assert_unchanged_except(
+            source,result,"hand","library","battlefield","graveyard",
+            "blue","colorless","trace"
+        )
+        assert names_text in result.trace[-1]
+
+    key_state=State(
+        turn=3,library=("Underlying","Tail"),hand=(),
+        battlefield=(Perm("Sensei's Divining Top"),Perm("Voltaic Key")),
+        colorless=1,
+    )
+    key_draw=top_key_combo_actions(key_state)[0]
+    assert key_draw.hand==("Underlying","Sensei's Divining Top")
+    assert key_draw.library==("Tail",)
+    assert key_draw.battlefield==(Perm("Voltaic Key",tapped=True),)
+    assert key_draw.blue==0 and key_draw.colorless==0
+    assert_unchanged_except(
+        key_state,key_draw,"hand","library","battlefield","blue",
+        "colorless","trace"
+    )
+    assert key_draw.trace[-1].endswith(
+        "draws: Underlying, Sensei's Divining Top"
+    )
+    print("Other artifact draw paths named        PASS",flush=True)
+
+    print("\nDRAW TRACE SMOKE: ALL PASS",flush=True)
+
+
+def run_bounce_smoke():
+    """Focused target, cost, timing, and destination regressions for bounce."""
+    print("\n=== BOUNCE / REMORA RESPONSE SMOKE ===",flush=True)
+
+    def trace_lines(s):
+        return tuple(line for msg in s.trace for line in msg.splitlines())
+
+    # Chain costs U, is an instant, can return our nonland Remora, and needs
+    # one sacrificed land for each additional copied target.
+    chain=State(
+        turn=2,library=(),hand=("Chain of Vapor",),
+        battlefield=(Perm("Mystic Remora"),Perm("Island",mode="landface")),
+        blue=1,remora_age=2,
+    )
+    chain_one=_trace_action(
+        chain_of_vapor_actions(chain),"bounce Mystic Remora"
+    )
+    assert chain_one.blue==0 and chain_one.colorless==0
+    assert chain_one.graveyard==("Chain of Vapor",)
+    assert chain_one.hand==("Mystic Remora",)
+    assert chain_one.battlefield==(Perm("Island",mode="landface"),)
+    assert chain_one.remora_age==0 and not chain_one.remora_upkeep_pending
+    assert chain_one.spell_cast_this_turn
+
+    copied=replace(
+        chain,battlefield=(
+            Perm("Mystic Remora"),Perm("Rhystic Study"),
+            Perm("Island",mode="landface"),
+        ),
+    )
+    chain_two=next(
+        a for a in chain_of_vapor_actions(copied)
+        if {"Mystic Remora","Rhystic Study"}<=set(a.hand)
+    )
+    assert chain_two.graveyard==("Chain of Vapor","Island")
+    assert not chain_two.battlefield
+
+    token_chain=State(
+        turn=2,library=(),hand=("Chain of Vapor",),
+        battlefield=(Perm("Clue",mode="clue"),),blue=1,
+    )
+    token_result=chain_of_vapor_actions(token_chain)[0]
+    assert token_result.hand==() and token_result.battlefield==()
+    assert token_result.graveyard==("Chain of Vapor",)
+
+    creature_face=State(
+        turn=2,library=(),hand=("Chain of Vapor",),blue=1,
+        battlefield=(Perm("Hydroelectric Specimen",sick=False),),
+    )
+    creature_bounce=chain_of_vapor_actions(creature_face)[0]
+    assert creature_bounce.hand==("Hydroelectric Specimen",)
+    land_face=replace(
+        creature_face,battlefield=(
+            Perm("Hydroelectric Specimen",mode="landface"),
+        ),
+    )
+    assert chain_of_vapor_actions(land_face)==[]
+    print("Chain cost/copies/faces/token destination PASS",flush=True)
+
+    # Otawara channels for 3U, with one generic reduction per controlled
+    # legendary creature. It is not a spell and may target our enchantment.
+    otawara=State(
+        turn=2,library=(),hand=("Otawara, Soaring City",),
+        battlefield=(Perm("Mystic Remora"),),blue=1,colorless=3,
+        remora_age=2,
+    )
+    ota=otawara_channel_actions(otawara)[0]
+    assert ota.hand==("Mystic Remora",) and ota.battlefield==()
+    assert ota.graveyard==("Otawara, Soaring City",)
+    assert ota.blue==0 and ota.colorless==0
+    assert not ota.spell_cast_this_turn and ota.remora_age==0
+    assert "pay {3}{U}" in ota.trace[-1]
+
+    urza_reduction=replace(
+        otawara,battlefield=(
+            Perm("Mystic Remora"),Perm(COMMANDER,sick=False),
+        ),colorless=2,urza=True,commander_in_command_zone=False,
+    )
+    assert otawara_channel_cost(urza_reduction)==(2,1)
+    assert otawara_channel_actions(urza_reduction)
+    assert not otawara_channel_actions(replace(urza_reduction,colorless=1))
+    three_legends=replace(
+        urza_reduction,battlefield=(
+            Perm("Mystic Remora"),Perm(COMMANDER,sick=False),
+            Perm("Hope of Ghirapur",sick=False),
+            Perm("The Reality Chip",sick=False),
+        ),colorless=0,
+    )
+    assert otawara_channel_cost(three_legends)==(0,1)
+    assert otawara_channel_actions(three_legends)
+
+    attached_chip=replace(
+        urza_reduction,battlefield=(
+            Perm("Mystic Remora"),
+            Perm("The Reality Chip",mode="chip_attached"),
+        ),urza=False,commander_in_command_zone=True,
+    )
+    assert otawara_channel_cost(attached_chip)==(3,1)
+
+    medallion=replace(
+        otawara,battlefield=(
+            Perm("Mystic Remora"),Perm("Sapphire Medallion"),
+        ),colorless=2,
+    )
+    assert not otawara_channel_actions(medallion)
+    plain_land=State(
+        turn=2,library=(),hand=("Otawara, Soaring City",),
+        battlefield=(Perm("Island",mode="landface"),),blue=1,colorless=3,
+    )
+    assert otawara_channel_actions(plain_land)==[]
+    special_lands=replace(
+        plain_land,battlefield=(
+            Perm("Urza's Saga",mode="landface"),
+            Perm("Seat of the Synod"),
+        ),
+    )
+    assert {a.hand[-1] for a in otawara_channel_actions(special_lands)}=={
+        "Urza's Saga","Seat of the Synod",
+    }
+    print("Otawara targets/cost/reduction/channel   PASS",flush=True)
+
+    # Spellbomb's U mode is creature-only; Remora is not a legal target. Its
+    # sacrifice is a cost, it has no tap symbol, and bounced tokens disappear.
+    spellbomb=State(
+        turn=2,library=("Drawn",),hand=(),blue=1,colorless=1,
+        battlefield=(
+            Perm("Aether Spellbomb",tapped=True),Perm("Mystic Remora"),
+            Perm("Spellseeker",sick=True),Perm("Construct",mode="construct"),
+        ),
+    )
+    bomb_actions=aether_spellbomb_actions(spellbomb)
+    bomb_bounce=_trace_action(bomb_actions,"bounce Spellseeker")
+    assert bomb_bounce.hand==("Spellseeker",)
+    assert "Aether Spellbomb" in bomb_bounce.graveyard
+    assert has(bomb_bounce,"Mystic Remora")
+    assert not any("bounce Mystic Remora" in a.trace[-1] for a in bomb_actions)
+    token_bounce=_trace_action(bomb_actions,"bounce Construct")
+    assert "Construct" not in token_bounce.hand and not has(token_bounce,"Construct")
+    bomb_draw=_trace_action(bomb_actions,"sacrifice -> draw")
+    assert bomb_draw.hand==("Drawn",)
+    print("Aether creature-only bounce/draw modes    PASS",flush=True)
+
+    # Oboro's printed {1} self-return ability has no tap symbol, so a tapped
+    # Oboro may activate it. It targets/returns only that land itself.
+    oboro=State(
+        turn=2,library=(),hand=(),colorless=1,
+        battlefield=(Perm("Oboro, Palace in the Clouds",tapped=True),),
+    )
+    oboro_return=_trace_action(oboro_minamo_actions(oboro),"Oboro: pay 1")
+    assert oboro_return.colorless==0 and oboro_return.blue==0
+    assert oboro_return.hand==("Oboro, Palace in the Clouds",)
+    assert not oboro_return.battlefield and not oboro_return.graveyard
+    print("Oboro {1} tapped self-return             PASS",flush=True)
+
+    # Knack/Helix costs U to cast. The granted creature must itself be ready to
+    # pay the tap-symbol cost, may target itself, and may return any nonland.
+    knack_base=State(
+        turn=2,library=(),hand=("Banishing Knack",),blue=1,
+        battlefield=(Perm("Spellseeker",sick=False),Perm("Mystic Remora")),
+    )
+    cast_knack=_trace_action(
+        knack_bounce_actions(knack_base),"cast Banishing Knack targeting Spellseeker"
+    )
+    assert cast_knack.blue==0 and cast_knack.hand==()
+    assert cast_knack.graveyard==("Banishing Knack",)
+    remora_knack=_trace_action(
+        knack_bounce_actions(cast_knack),"bounces our Mystic Remora"
+    )
+    assert remora_knack.hand==("Mystic Remora",)
+    assert remora_knack.battlefield==(Perm("Spellseeker",tapped=True,sick=False),)
+
+    self_state=State(
+        turn=2,library=(),hand=(),battlefield=(Perm("Spellseeker",sick=False),),
+        knack_target="Spellseeker",knack_target_mode="",
+    )
+    self_bounce=_trace_action(
+        knack_bounce_actions(self_state),"bounces our Spellseeker"
+    )
+    assert self_bounce.hand==("Spellseeker",) and not self_bounce.battlefield
+    assert self_bounce.knack_target=="" and self_bounce.knack_target_mode==""
+    assert knack_bounce_actions(replace(
+        self_state,battlefield=(Perm("Spellseeker",tapped=True,sick=False),)
+    ))==[]
+    assert knack_bounce_actions(replace(
+        self_state,battlefield=(Perm("Spellseeker",sick=True),)
+    ))==[]
+
+    exact_object=State(
+        turn=2,library=(),hand=(),
+        battlefield=(
+            Perm("Spellseeker",sick=True),
+            Perm("Spellseeker",sick=False,mode="chrome_copy"),
+        ),
+        knack_target="Spellseeker",knack_target_mode="",
+    )
+    assert knack_bounce_actions(exact_object)==[]
+    chrome_bound=replace(exact_object,knack_target_mode="chrome_copy")
+    assert exact_object.key()!=chrome_bound.key()
+    assert dominance_signature(exact_object)!=dominance_signature(chrome_bound)
+    mdfc_knack=State(
+        turn=2,library=(),hand=(),
+        battlefield=(Perm("Hydroelectric Specimen",sick=False),),
+        knack_target="Hydroelectric Specimen",knack_target_mode="",
+    )
+    assert knack_bounce_actions(mdfc_knack)[0].hand==(
+        "Hydroelectric Specimen",
+    )
+    assert knack_bounce_actions(replace(
+        mdfc_knack,battlefield=(
+            Perm("Hydroelectric Specimen",sick=False,mode="landface"),
+        ),
+    ))==[]
+    print("Knack/Helix tap/self/object/face legality PASS",flush=True)
+
+    # The cumulative-upkeep stack window admits channel and a two-step
+    # Knack/Helix line, clears the old obligation after bounce, and still gates
+    # sorcery-speed actions. Recasting creates a fresh age-zero object.
+    upkeep_ota=State(
+        turn=2,library=("Natural","Tail"),
+        hand=("Otawara, Soaring City","Sea Gate Restoration","Island"),
+        battlefield=(
+            Perm("Mystic Remora"),Perm(COMMANDER,sick=False),
+            Perm("Repurposing Bay"),Perm("Sapphire Medallion"),
+        ),
+        blue=1,colorless=2,remora_age=0,remora_upkeep_pending=True,
+        urza=True,commander_in_command_zone=False,
+        trace=(
+            "Mystic Remora cumulative-upkeep trigger pending: on resolution "
+            "add age counter 1; then pay {1} or sacrifice",
+        ),
+    )
+    pending_actions=legal_actions(upkeep_ota)
+    assert not any(
+        line.startswith(("Repurposing Bay","cast Sea Gate Restoration","play land"))
+        for a in pending_actions for line in trace_lines(a)[-2:]
+    )
+    ota_done=next(
+        a for a in pending_actions
+        if any(line.startswith("Otawara channel:") for line in trace_lines(a))
+    )
+    assert not ota_done.remora_upkeep_pending and ota_done.remora_age==0
+    assert "Mystic Remora" in ota_done.hand and "Natural" in ota_done.hand
+    assert ota_done.library==("Tail",)
+    assert remora_upkeep_actions(ota_done)==[]
+    recast=cast_from_hand(replace(ota_done,blue=1),"Mystic Remora")
+    assert recast is not None and has(recast,"Mystic Remora")
+    assert recast.remora_age==0 and not recast.remora_upkeep_pending
+
+    upkeep_knack=State(
+        turn=2,library=("Natural",),hand=("Retraction Helix",),blue=1,
+        battlefield=(Perm("Mystic Remora"),Perm("Spellseeker",sick=False)),
+        remora_age=0,remora_upkeep_pending=True,
+        trace=(
+            "Mystic Remora cumulative-upkeep trigger pending: on resolution "
+            "add age counter 1; then pay {1} or sacrifice",
+        ),
+    )
+    cast_during=next(
+        a for a in remora_upkeep_actions(upkeep_knack)
+        if a.remora_upkeep_pending
+        and a.trace[-1].splitlines()[0].startswith("cast Retraction Helix targeting Spellseeker")
+    )
+    knack_done=next(
+        a for a in remora_upkeep_actions(cast_during)
+        if any("bounces our Mystic Remora" in line for line in trace_lines(a))
+    )
+    assert not knack_done.remora_upkeep_pending and knack_done.remora_age==0
+    assert "Mystic Remora" in knack_done.hand
+
+    sink_pending=State(
+        turn=2,library=(),hand=("Sink into Stupor",),blue=2,colorless=1,
+        battlefield=(Perm("Mystic Remora"),),
+        remora_age=0,remora_upkeep_pending=True,
+    )
+    assert not any(
+        "Sink into Stupor" in line
+        for a in legal_actions(sink_pending) for line in trace_lines(a)
+    )
+    sink_main=cast_from_hand(replace(
+        sink_pending,remora_upkeep_pending=False,remora_age=0,
+    ),"Sink into Stupor")
+    assert sink_main is not None and "Sink into Stupor" in sink_main.graveyard
+    assert has(sink_main,"Mystic Remora")
+    assert sink_main.trace[-1]=="cast Sink into Stupor (opponent target assumed)"
+    print("Upkeep responses/gating/reset/Sink scope   PASS",flush=True)
+    print("\nBOUNCE SMOKE: ALL PASS",flush=True)
+
+
+def run_bay_smoke():
+    """Focused Repurposing Bay and producer-ETB accounting regressions."""
+    print("\n=== REPURPOSING BAY / PRODUCER ETB SMOKE ===",flush=True)
+
+    def bay_success(actions,target):
+        return next(
+            a for a in actions
+            if a.trace[-1].splitlines()[0].endswith(" -> "+target)
+        )
+
+    # Printed baseline: pay {2}, tap Bay, sacrifice another MV2 artifact,
+    # put exactly MV3 Battered onto the battlefield, then shuffle.
+    base=State(
+        turn=3,
+        library=("Battered Golem","Island","Force of Will","Misty Rainforest"),
+        hand=(),
+        battlefield=(Perm("Repurposing Bay"),Perm("Sapphire Medallion")),
+        colorless=2,trace=("setup",),
+    )
+    assert not repurposing_bay_actions(replace(base,colorless=1))
+    actions=repurposing_bay_actions(base)
+    result=bay_success(actions,"Battered Golem")
+    assert result.colorless==0 and result.blue==0
+    assert result.battlefield==(
+        Perm("Repurposing Bay",tapped=True),
+        Perm("Battered Golem",sick=True),
+    )
+    assert result.graveyard==("Sapphire Medallion",)
+    assert "Battered Golem" not in result.library
+    assert result.hand==() and not result.spell_cast_this_turn
+    assert len(result.trace)==len(base.trace)+1
+    assert "pay {2}, tap" in result.trace[-1]
+    assert _tutor_action_from_trace(result)==(
+        "Repurposing Bay","Battered Golem","battlefield",
+    )
+    assert any("finds no card" in a.trace[-1] for a in actions)
+    print("Sapphire MV2 -> Battered MV3 accounting    PASS",flush=True)
+
+    # Ordinary tokens are MV0, while Chrome copy tokens retain copied mana
+    # cost/MV. Both exact +1 searches are represented.
+    clue=State(
+        turn=3,library=("Aether Spellbomb","Chrome Dome","Island"),hand=(),
+        battlefield=(Perm("Repurposing Bay"),Perm("Clue",mode="clue")),
+        colorless=2,
+    )
+    clue_targets={
+        _tutor_action_from_trace(a)[1]
+        for a in repurposing_bay_actions(clue)
+        if _tutor_action_from_trace(a)[0]=="Repurposing Bay"
+    }
+    assert clue_targets=={"Aether Spellbomb"}
+    chrome_copy=State(
+        turn=3,library=("The One Ring","Battered Golem","Island"),hand=(),
+        battlefield=(
+            Perm("Repurposing Bay"),
+            Perm("Battered Golem",mode="chrome_copy",sick=False),
+        ),colorless=2,
+    )
+    assert bay_success(
+        repurposing_bay_actions(chrome_copy),"The One Ring"
+    )
+    print("Token/copy mana-value accounting          PASS",flush=True)
+
+    # Cage blocks a library creature while it remains, but sacrificing Cage as
+    # Bay's cost removes that restriction before the search resolves.
+    cage_stays=State(
+        turn=3,library=("Battered Golem","Island"),hand=(),
+        battlefield=(
+            Perm("Repurposing Bay"),Perm("Sapphire Medallion"),
+            Perm("Grafdigger's Cage"),
+        ),colorless=2,
+    )
+    cage_stays_actions=repurposing_bay_actions(cage_stays)
+    assert not any(
+        a.graveyard==("Sapphire Medallion",)
+        and _tutor_action_from_trace(a)[1]=="Battered Golem"
+        for a in cage_stays_actions
+    )
+    cage_sac=State(
+        turn=3,library=("Chrome Dome","Island"),hand=(),
+        battlefield=(Perm("Repurposing Bay"),Perm("Grafdigger's Cage")),
+        colorless=2,
+    )
+    cage_entry=bay_success(repurposing_bay_actions(cage_sac),"Chrome Dome")
+    assert cage_entry.graveyard==("Grafdigger's Cage",)
+    assert has(cage_entry,"Chrome Dome")
+    print("Cage checked after sacrifice cost         PASS",flush=True)
+
+    # Bay must finish its shuffle before the entered Well's scry trigger
+    # resolves. Reconstruct that exact ordered transition as a canary.
+    well=State(
+        turn=3,
+        library=(
+            "Witching Well","Power Artifact","Sol Ring","Island","Force of Will",
+        ),
+        hand=(),battlefield=(
+            Perm("Repurposing Bay"),Perm("Treasure",mode="treasure"),
+        ),colorless=2,trace=("setup",),
+    )
+    well_result=bay_success(repurposing_bay_actions(well),"Witching Well")
+    expected=pay(well,2,0)
+    expected=update_perm(expected,0,tapped=True)
+    expected=remove_perm(expected,1)
+    lib=list(expected.library); lib.remove("Witching Well")
+    expected=replace(expected,library=tuple(lib))
+    expected=add_perm(expected,"Witching Well")
+    expected=replace(
+        expected,library=shuffled_library(expected,"bay:Witching Well")
+    )
+    expected=artifact_etb_triggers(expected,"Witching Well")
+    assert well_result.library==expected.library
+    assert well_result.trace[-2].startswith("Witching Well: scry 2")
+    assert well_result.trace[-1].splitlines()[0]==(
+        "Repurposing Bay sacs Treasure -> Witching Well"
+    )
+    print("Shuffle-before-ETB-trigger ordering       PASS",flush=True)
+
+    # Putting an artifact directly onto the battlefield is not casting it and
+    # must not fire Uthros/Assistant/Gadgeteer/VFC cast triggers.
+    direct=State(
+        turn=3,library=("Battered Golem","Audit Draw","Island"),hand=(),
+        battlefield=(
+            Perm("Repurposing Bay"),Perm("Sapphire Medallion"),
+            Perm("Uthros Research Craft"),Perm("Artificer's Assistant"),
+            Perm("Forensic Gadgeteer"),Perm("Valley Floodcaller"),
+        ),colorless=1,uthros_counters=3,
+    )
+    direct_result=bay_success(
+        repurposing_bay_actions(direct),"Battered Golem"
+    )
+    assert direct_result.hand==() and direct_result.uthros_counters==3
+    assert direct_result.vfc_pumps==0 and not direct_result.spell_cast_this_turn
+    assert count_bf(direct_result,"Clue")==0
+    print("Direct-to-battlefield is not a cast       PASS",flush=True)
+
+    # Production timing: Bay is reachable in an ordinary main-phase state but
+    # not while Remora upkeep or the Saga-III stack window is pending.
+    assert any(
+        a.trace[-1].splitlines()[0].startswith("Repurposing Bay")
+        for a in legal_actions(base)
+    )
+    upkeep=replace(
+        base,battlefield=(
+            Perm("Repurposing Bay"),Perm("Sapphire Medallion"),
+            Perm("Mystic Remora"),
+        ),remora_age=0,remora_upkeep_pending=True,
+    )
+    assert not any(
+        a.trace[-1].splitlines()[0].startswith("Repurposing Bay")
+        for a in legal_actions(upkeep)
+    )
+    saga=replace(
+        base,battlefield=(
+            Perm("Repurposing Bay"),Perm("Sapphire Medallion"),
+            Perm("Urza's Saga",counters=3,mode="saga3"),
+        ),
+    )
+    assert not any(
+        a.trace[-1].splitlines()[0].startswith("Repurposing Bay")
+        for a in legal_actions(saga)
+    )
+    print("Sorcery-speed production gating           PASS",flush=True)
+
+    # Both producers trigger on their own artifact entry (no "another"). With
+    # Urza, an untapped producer legally taps before and after its trigger;
+    # without Urza every controlled copy receives its own untap trigger.
+    station=State(
+        turn=3,library=(),hand=(),
+        battlefield=(Perm(COMMANDER,sick=False),),
+        urza=True,commander_in_command_zone=False,
+    )
+    station=add_perm(station,"Grinding Station")
+    station=artifact_etb_triggers(station,"Grinding Station")
+    assert station.blue==2
+    assert next(p for p in station.battlefield if p.name=="Grinding Station").tapped
+    golem=State(
+        turn=3,library=(),hand=(),
+        battlefield=(Perm(COMMANDER,sick=False),),
+        urza=True,commander_in_command_zone=False,
+    )
+    golem=add_perm(golem,"Battered Golem",sick=True)
+    golem=artifact_etb_triggers(golem,"Battered Golem")
+    assert golem.blue==2
+    gp=next(p for p in golem.battlefield if p.name=="Battered Golem")
+    assert gp.tapped and gp.sick
+
+    copies=State(
+        turn=3,library=(),hand=(),battlefield=(
+            Perm("Grinding Station",tapped=True),
+            Perm("Grinding Station",tapped=True,mode="chrome_copy"),
+            Perm("Battered Golem",tapped=True,sick=False),
+            Perm("Battered Golem",tapped=True,sick=False,mode="chrome_copy"),
+        ),
+    )
+    untapped=artifact_etb_triggers(copies,"Clue")
+    assert all(not p.tapped for p in untapped.battlefield)
+    multi_urza=replace(copies,urza=True)
+    converted=artifact_etb_triggers(multi_urza,"Clue")
+    assert converted.blue==4 and all(p.tapped for p in converted.battlefield)
+    print("Producer self-entry/multiple-trigger sanity PASS",flush=True)
+    print("\nBAY / PRODUCER SMOKE: ALL PASS",flush=True)
+
+
+def run_mulligan_smoke():
+    """Fast orchestration regressions for Commander London Oracle stages."""
+    global search_hand
+    print("\n=== ORACLE MULLIGAN CORRECTNESS SMOKE ===",flush=True)
+
+    legacy=(("7A",0),("7B",0),("6",1),("5",2),("4",3))
+    assert oracle_mulligan_stages()==legacy
+    assert oracle_mulligan_stages(4)==legacy
+    assert oracle_mulligan_stages(3)==legacy+(("3",4),)
+    print("Shared stage specification             PASS",flush=True)
+
+    synthetic=[f"C{i:02d}" for i in range(99)]
+    _,deals4=oracle_mulligan_deals(20260821,synthetic,4)
+    _,deals3=oracle_mulligan_deals(20260821,synthetic,3)
+    expected_legacy=(
+        ("C63","C70","C30","C50","C64","C15","C12"),
+        ("C43","C06","C63","C26","C72","C29","C30"),
+        ("C37","C93","C54","C86","C69","C14","C45"),
+        ("C38","C83","C93","C95","C42","C50","C63"),
+        ("C59","C36","C35","C74","C46","C39","C27"),
+    )
+    assert tuple(tuple(d[:7]) for _,_,d in deals4)==expected_legacy
+    assert tuple(tuple(d[:7]) for _,_,d in deals3[:5])==expected_legacy
+    assert tuple(deals3[5][2][:7])==(
+        "C43","C93","C17","C63","C21","C57","C70"
+    )
+    print("Legacy stage shuffle sequence          PASS",flush=True)
+
+    seven=list(deals3[-1][2][:7])
+    raw=bottom_candidates(seven,4,cap=math.comb(7,4))
+    admitted=bottom_candidates(seven,4,cap=4)
+    assert math.comb(7,4)==35 and len(raw)==35
+    assert len(admitted)==4 and len({tuple(x) for x in admitted})==4
+    assert all(len(x)==4 for x in admitted)
+    print("Keep-3 bottom combinations             PASS | raw=35 admitted=4",flush=True)
+
+    bottom=admitted[0]
+    hand,library=london_opening_zones(deals3[-1][2],3,bottom)
+    assert len(hand)==3 and len(bottom)==4
+    assert list(library[-4:])==bottom
+    assert Counter(hand)+Counter(bottom)==Counter(seven)
+    assert Counter(hand)+Counter(library)==Counter(deals3[-1][2])
+    print("Fresh seven + bottom four              PASS | legal keep=3",flush=True)
+
+    # Both production paths must depend on the same deal/stage generator.
+    assert "oracle_mulligan_deals" in oracle_game.__code__.co_names
+    assert "oracle_mulligan_deals" in profile_oracle_seed.__code__.co_names
+    assert "london_opening_zones" in search_hand.__code__.co_names
+    assert "london_opening_zones" in profile_search_hand.__code__.co_names
+    print("Production/profiler stage source       PASS | shared",flush=True)
+
+    provenance=report_provenance(
+        "mulligan-smoke",
+        OracleSearchConfig(6,300,100,60,4,3),
+        seed_provenance(20260821,5),
+        synthetic,
+        {"worker_count":1,"parallelism":"sequential"},
+    )
+    assert provenance["source"]["solver_sha256"]
+    assert provenance["source"]["commit_hash"] or provenance["source"]["git_error"]
+    assert provenance["search"]["mulligan_stages"][-1]["keep_size"]==3
+    assert provenance["seeds"]["last"]==20260825
+    assert provenance["environment"]["python_hash_seed"]==(
+        os.environ.get("PYTHONHASHSEED") or None
+    )
+    if not os.environ.get("PYTHONHASHSEED"):
+        assert provenance["warnings"]
+    print("Reproducibility provenance schema      PASS",flush=True)
+
+    real_search_hand=search_hand
+
+    def exercise_stage_tie(wanted_turns):
+        global search_hand
+        calls=[]
+
+        def stub_search_hand(deck_order,keep_n,bottom,max_turn=7,**kwargs):
+            calls.append((keep_n,max_turn,tuple(bottom)))
+            wanted=wanted_turns.get(keep_n)
+            turn=wanted if wanted is not None and wanted<=max_turn else None
+            family=f"keep-{keep_n}" if turn is not None else ""
+            trace=("cast Urza",family) if turn is not None else ()
+            final_hand=tuple(deck_order[:keep_n])
+            return turn,family,trace,1,(1 if turn is not None else 0),(),final_hand,1
+
+        search_hand=stub_search_hand
+        try:
+            return oracle_game(
+                20260821,synthetic,max_turn=4,beam=1,depth=1,
+                min_keep=3,bottom_cap=4,
+            ),calls
+        finally:
+            search_hand=real_search_hand
+
+    strict,calls=exercise_stage_tie({4:4,3:3})
+    assert strict["win_turn"]==3 and strict["family"]=="keep-3"
+    assert strict["mulligan_stage"]==5 and strict["keep_size"]==3
+    assert len(strict["bottom"])==4 and len(strict["kept_hand"])==3
+    assert Counter(strict["opening7"])==Counter(strict["bottom"])+Counter(strict["kept_hand"])
+    assert any(keep_n==3 and horizon==3 for keep_n,horizon,_ in calls)
+    print("Strictly earlier keep-3 selection      PASS",flush=True)
+
+    tied,calls=exercise_stage_tie({4:3,3:3})
+    assert tied["win_turn"]==3 and tied["family"]=="keep-4"
+    assert tied["mulligan_stage"]==4 and tied["keep_size"]==4
+    assert any(keep_n==3 and horizon==2 for keep_n,horizon,_ in calls)
+    assert oracle_stage_selection_key(4,3)<oracle_stage_selection_key(5,3)
+    print("Equal-turn earlier-stage tie-break     PASS",flush=True)
+    print("\nMULLIGAN SMOKE: ALL PASS",flush=True)
+
+
+def run_worker_config_smoke():
+    """Exercise the real production worker across an explicit spawn boundary."""
+    print("\n=== SPAWNED WORKER CONFIGURATION SMOKE ===",flush=True)
+    config=OracleSearchConfig(
+        max_turn=0,beam=17,depth=19,action_cap=23,bottom_cap=2,min_keep=3
+    )
+    job=OracleWorkerJob(seed=12345,deck=[],config=config)
+    ctx=mp.get_context("spawn")
+    pool=ctx.Pool(1,initializer=worker_process_initializer)
+    try:
+        result=pool.apply_async(worker,(job,)).get(timeout=20)
+        pool.close()
+        pool.join()
+    except BaseException:
+        pool.terminate()
+        pool.join()
+        raise
+
+    assert not result.get("_error"),result.get("_error")
+    assert result["_worker_pid"]!=os.getpid()
+    assert result["_worker_search_config"]==search_config_payload(config)
+    assert result["_oracle_search_config"]==search_config_payload(config)
+    assert result["_oracle_mulligan_stage_count"]==6
+    assert result["_worker_effective_caps"]=={
+        "action_cap":23,"bottom_cap":2,
+    }
+    assert result["_worker_python_hash_seed"]==os.environ.get("PYTHONHASHSEED")
+    assert result["_worker_search_config"]["mulligan_stages"][-1]=={
+        "label":"3","keep_size":3,"bottom_count":4,
+    }
+    print(
+        "Spawned worker received turns=0 beam=17 depth=19 "
+        "action_cap=23 bottom_cap=2 min_keep=3",
+        flush=True,
+    )
+    print("WORKER CONFIG SMOKE: ALL PASS",flush=True)
+
+
 def main():
     global _parent_cancel_count
     _parent_cancel_count=0
@@ -4842,6 +7133,12 @@ def main():
     ap.add_argument("--metadata-smoke",action="store_true",help="Audit deck card types, mana values, tutor legality, Saga and X costs")
     ap.add_argument("--tutor-smoke",action="store_true",help="Exercise simple, Spellseeker, Mystical and artifact tutor execution paths")
     ap.add_argument("--combo-smoke",action="store_true",help="Exercise near-complete states for every major win family through normal legal actions")
+    ap.add_argument("--remora-smoke",action="store_true",help="Run Mystic Remora cumulative-upkeep regressions")
+    ap.add_argument("--draw-trace-smoke",action="store_true",help="Run named library-draw trace regressions")
+    ap.add_argument("--bounce-smoke",action="store_true",help="Run bounce legality and Remora-response regressions")
+    ap.add_argument("--bay-smoke",action="store_true",help="Run Repurposing Bay and producer-ETB regressions")
+    ap.add_argument("--mulligan-smoke",action="store_true",help="Run Oracle London mulligan-stage and keep-3 regressions")
+    ap.add_argument("--worker-config-smoke",action="store_true",help="Verify search parameters cross a spawned-worker boundary")
     ap.add_argument("--family-smoke",type=int,default=0,help="Run N deterministic oracle seeds and report naturally occurring win families")
     ap.add_argument("--cap-audit",type=int,default=0,help="Run N deterministic oracle seeds and audit pre-cap legal-action branching")
     ap.add_argument("--tutor-cap-audit",type=int,default=0,help="Run N deterministic oracle seeds and audit tutor-target diversity lost to ACTION_CAP")
@@ -4852,7 +7149,10 @@ def main():
     ap.add_argument("--profile-turns",type=int,default=7,help="Turns to profile (default 7)")
     ap.add_argument("--action-cap",type=int,default=80,help="max successor actions retained per state")
     ap.add_argument("--bottom-cap",type=int,default=8,help="London bottom combinations tested at each hand size")
+    ap.add_argument("--min-keep",type=int,choices=(3,4),default=4,help="lowest Oracle London keep size (default: 4)")
     args=ap.parse_args()
+    # Cache the exact on-disk source/repository identity before any search begins.
+    solver_source_provenance()
     signal.signal(signal.SIGINT,parent_interrupt_handler)
     if hasattr(signal,'SIGBREAK'):
         try:
@@ -4861,6 +7161,7 @@ def main():
             pass
     global ACTION_CAP, BOTTOM_CAP
     ACTION_CAP=args.action_cap; BOTTOM_CAP=args.bottom_cap
+    warn_if_unset_python_hash_seed()
     if args.cancel_test:
         run_cancel_test(args.workers)
         return
@@ -4879,17 +7180,41 @@ def main():
     if args.combo_smoke:
         run_combo_smoke()
         return
+    if args.remora_smoke:
+        run_remora_smoke()
+        return
+    if args.draw_trace_smoke:
+        run_draw_trace_smoke()
+        return
+    if args.bounce_smoke:
+        run_bounce_smoke()
+        return
+    if args.bay_smoke:
+        run_bay_smoke()
+        return
+    if args.mulligan_smoke:
+        run_mulligan_smoke()
+        return
+    if args.worker_config_smoke:
+        run_worker_config_smoke()
+        return
     deck=load_deck(Path(args.deck))
     if args.cap_audit>0:
-        run_cap_audit(deck,args.seed,args.cap_audit,args.turns,args.beam,args.depth,args.search_progress_seconds)
+        run_cap_audit(
+            deck,args.seed,args.cap_audit,args.turns,args.beam,args.depth,
+            args.search_progress_seconds,args.min_keep,args.bottom_cap,
+        )
         return
     if args.tutor_cap_audit>0:
-        run_tutor_cap_audit(deck,args.seed,args.tutor_cap_audit,args.turns,args.beam,args.depth,args.search_progress_seconds)
+        run_tutor_cap_audit(
+            deck,args.seed,args.tutor_cap_audit,args.turns,args.beam,args.depth,
+            args.search_progress_seconds,args.min_keep,args.bottom_cap,
+        )
         return
     if args.family_smoke>0:
         run_family_smoke(
             deck,args.seed,args.family_smoke,args.turns,args.beam,args.depth,
-            args.search_progress_seconds
+            args.search_progress_seconds,args.min_keep,args.bottom_cap,
         )
         return
     if args.smoke_seeds>0:
@@ -4903,6 +7228,8 @@ def main():
             depth=args.depth,
             slow_seconds=args.smoke_slow_seconds,
             progress_seconds=args.search_progress_seconds,
+            min_keep=args.min_keep,
+            bottom_cap=args.bottom_cap,
         )
         return
     if args.chain_stress_test:
@@ -4914,15 +7241,36 @@ def main():
     if args.profile_oracle:
         profile_oracle_seed(
             args.seed,deck,max_turn=args.profile_turns,
-            beam=args.beam,depth=args.depth,bottom_cap=args.bottom_cap
+            beam=args.beam,depth=args.depth,bottom_cap=args.bottom_cap,
+            min_keep=args.min_keep,
         )
         return
     if args.profile_one:
         print(f"Profiling one opening candidate for seed={args.seed}",flush=True)
+        profile_config=OracleSearchConfig(
+            args.profile_turns,args.beam,args.depth,args.action_cap,
+            args.bottom_cap,args.min_keep,
+        )
+        print(
+            "provenance="+json.dumps(
+                report_provenance(
+                    "profile-one",profile_config,seed_provenance(args.seed),deck,
+                    {"worker_count":1,"parallelism":"sequential"},
+                ),
+                sort_keys=True,
+            ),
+            flush=True,
+        )
         profile_seed(args.seed,deck,args.profile_turns,args.beam,args.depth)
         return
     seeds=[args.seed+i for i in range(args.runs)]
-    jobs=[(sd,deck,args.turns,args.beam,args.depth,args.verbose_workers) for sd in seeds]
+    normal_config=OracleSearchConfig(
+        args.turns,args.beam,args.depth,args.action_cap,args.bottom_cap,args.min_keep
+    )
+    jobs=[
+        OracleWorkerJob(sd,deck,normal_config,args.verbose_workers)
+        for sd in seeds
+    ]
     out=Path(args.out); out.mkdir(exist_ok=True)
     error_log_path=out/args.error_log
 
@@ -4998,7 +7346,9 @@ def main():
 
     print(
         f"Starting Urza solver: runs={args.runs}, workers={args.workers}, "
-        f"beam={args.beam}, action_cap={ACTION_CAP}, depth={args.depth}, seed={args.seed}",
+        f"turns={args.turns}, beam={args.beam}, action_cap={ACTION_CAP}, "
+        f"bottom_cap={BOTTOM_CAP}, min_keep={args.min_keep}, "
+        f"depth={args.depth}, seed={args.seed}",
         flush=True
     )
     print(f"Output folder: {out.resolve()}", flush=True)
@@ -5034,7 +7384,7 @@ def main():
                 # long-running result. Each AsyncResult is polled from Python.
                 for job in jobs:
                     ar=pool.apply_async(worker,(job,))
-                    pending[ar]=job[0]
+                    pending[ar]=job.seed
 
                 while pending:
                     made_progress=False
@@ -5114,7 +7464,7 @@ def main():
             heartbeat_thread.join(timeout=2)
         except Exception:
             pass
-        write_partial_checkpoint(out,results,args,"KeyboardInterrupt / Ctrl+C")
+        write_partial_checkpoint(out,results,args,deck,"KeyboardInterrupt / Ctrl+C")
         print(f"[CANCEL] Clean exit after {len(results)}/{args.runs} completed game(s). No workers will be respawned.",flush=True)
         return
 
@@ -5141,7 +7491,25 @@ def main():
     interaction_cards=Counter(c for r in results for c in r["interaction_seen"])
     depth_counts=[r["max_depth_reached"] for r in results]
     depth_ceiling_hits=sum(1 for d in depth_counts if d>=args.depth)
-    summary={"runs":args.runs,"completed":len(results),"errors":error_count,"beam":args.beam,"depth":args.depth,"action_cap":ACTION_CAP,"seed":args.seed,
+    expected_worker_config=search_config_payload(normal_config)
+    worker_config_mismatch_seeds=[
+        r["seed"] for r in results
+        if not r.get("_error") and r.get("_oracle_search_config")!=expected_worker_config
+    ]
+    worker_hash_seeds=sorted({
+        r.get("_worker_python_hash_seed") for r in results
+        if "_worker_python_hash_seed" in r
+    },key=lambda value:"" if value is None else str(value))
+    summary={"runs":args.runs,"completed":len(results),"errors":error_count,
+             "beam":args.beam,"depth":args.depth,"action_cap":ACTION_CAP,
+             "bottom_cap":BOTTOM_CAP,"min_keep":args.min_keep,"seed":args.seed,
+             "provenance":report_provenance(
+                 "normal-run",normal_config,seed_provenance(args.seed,args.runs),deck,
+                 {
+                     "worker_count":args.workers,
+                     "parallelism":"sequential" if args.workers==1 else "multiprocessing",
+                 },
+             ),
              "turns":[{"turn":t,"exact":e,"cumulative":c,"cumulative_pct":p,"ci95_halfwidth_pct":ci}
                       for t,e,c,p,ci in rows],
              "families":dict(fam),"keep_sizes":dict(mull),
@@ -5149,6 +7517,8 @@ def main():
              "interaction_seen_mean":sum(interaction_counts)/len(interaction_counts) if interaction_counts else 0,
              "interaction_seen_distribution":dict(Counter(interaction_counts)),
              "interaction_card_frequency":dict(interaction_cards),
+             "worker_config_mismatch_seeds":worker_config_mismatch_seeds,
+             "worker_python_hash_seeds":worker_hash_seeds,
              "max_depth_reached_distribution":dict(Counter(depth_counts)),
              "depth_ceiling_hits":depth_ceiling_hits,
              "depth_ceiling_hit_pct":(100*depth_ceiling_hits/len(results) if results else 0),"wall_runtime_seconds":time.time()-start_wall}

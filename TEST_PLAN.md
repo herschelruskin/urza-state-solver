@@ -17,6 +17,12 @@ py -3 urza_solver.py --tutor-smoke
 py -3 urza_solver.py --cam-smoke
 py -3 urza_solver.py --commander-smoke
 py -3 urza_solver.py --combo-smoke
+py -3 urza_solver.py --remora-smoke
+py -3 urza_solver.py --bounce-smoke --action-cap 60 --bottom-cap 4
+py -3 urza_solver.py --bay-smoke --action-cap 60 --bottom-cap 4
+py -3 urza_solver.py --draw-trace-smoke
+py -3 urza_solver.py --mulligan-smoke
+py -3 urza_solver.py --worker-config-smoke
 ```
 
 Expected terminal markers:
@@ -27,6 +33,12 @@ TUTOR SMOKE: ALL PASS
 CAM SMOKE: ALL PASS
 COMMANDER SMOKE: ALL PASS
 COMBO SMOKE: ALL PASS
+REMORA SMOKE: ALL PASS
+BOUNCE SMOKE: ALL PASS
+BAY / PRODUCER SMOKE: ALL PASS
+DRAW TRACE SMOKE: ALL PASS
+MULLIGAN SMOKE: ALL PASS
+WORKER CONFIG SMOKE: ALL PASS
 ```
 
 A change is not regression-safe if only its new focused test passes.
@@ -83,7 +95,111 @@ The metadata smoke should continue to verify:
     in a focused state with more than 60 raw actions, and applies the documented
     strict-cap strategic-target fallback when more than 60 routes exist.
 
-## 5. Major combo-path integration suite
+## 5. Mystic Remora cumulative-upkeep coverage
+
+`--remora-smoke` must verify:
+
+-   the first upkeep adds an age counter and costs {1};
+-   the second upkeep adds another age counter and costs {2};
+-   sources untap before the payment decision;
+-   an existing Saga mana ability is usable during upkeep while its next lore
+    counter waits until the precombat main phase;
+-   paying and voluntarily declining are distinct legal branches;
+-   inability to pay sacrifices Remora;
+-   prior floating mana and Mana Drain's main-phase mana cannot pay upkeep;
+-   opponent-fed Remora draws remain independent of the later upkeep choice;
+-   Bauble's delayed trigger can draw before upkeep, while the normal draw waits
+    until after the choice;
+-   a fetchland can find an Island and use it to pay before the normal draw;
+-   Dramatic Reversal can legally untap an upkeep source and goes to graveyard;
+-   Chain of Vapor and Otawara can bounce Remora with the trigger pending and
+    reset its age;
+-   Banishing Knack / Retraction Helix can be cast during the pending trigger,
+    then a ready granted creature can tap to return Remora;
+-   response states retain the existing age counters; the next counter and
+    corresponding payment are applied together only when the cumulative-upkeep
+    trigger resolves;
+-   cap-hit upkeep action sets preserve decline, a payment continuation, and
+    the direct Chain-bounce resolution;
+-   upkeep payment closes before ordinary per-turn depth begins, while the
+    post-horizon diagnostic snapshot does not branch an unsearched upkeep;
+-   pending upkeep prevents main-phase win recognition;
+-   completed upkeep states are win-checked before transition pruning;
+-   leaving and recasting resets the age to zero;
+-   age, pending-upkeep phase, and recoverable graveyard differences remain
+    distinct in exact, dominance, and Chain-cache identities.
+
+### Bounce and Remora-response coverage
+
+`--bounce-smoke` must verify:
+
+-   Chain of Vapor pays {U}, targets our nonland permanents including Mystic
+    Remora, and requires one sacrificed land for each modeled copied target;
+-   Otawara channels for {3}{U}, reduces that generic cost once per controlled
+    legendary creature, targets our artifact/creature/enchantment/planeswalker,
+    and is an ability rather than a spell; an attached Reality Chip is not a
+    creature and gives no reduction;
+-   Aether Spellbomb pays {U} and sacrifices itself to return a creature only,
+    so it cannot target Mystic Remora; its {1} draw mode remains available;
+-   Knack/Helix pays {U}, grants the selected creature its temporary tap
+    ability, enforces summoning sickness and tapped status, and can return that
+    creature itself or another nonland permanent including Remora;
+-   bounced nontoken cards go to hand while bounced tokens cease to exist;
+-   MDFC creature and land faces receive the correct target treatment;
+-   Oboro pays {1} to return only itself and can activate while tapped because
+    its ability has no tap-symbol cost;
+-   the Remora response window permits the modeled instant/channel/activated
+    responses, clears the old obligation after Remora leaves, resets a recast
+    Remora to age zero, and excludes ordinary sorcery-speed actions;
+-   the selected Knack target's permanent mode is represented in exact and
+    dominance keys.
+
+### Repurposing Bay and producer-ETB coverage
+
+`--bay-smoke` must verify:
+
+-   Bay pays {2}, taps, and sacrifices another artifact as activation costs;
+-   Sapphire Medallion (MV 2) can find Battered Golem (MV 3), put it directly
+    onto the battlefield without casting it, and leave the exact post-cost
+    mana/tap/graveyard state;
+-   ordinary tokens have MV 0 while copy tokens retain the copied mana value;
+-   Grafdigger's Cage is checked after activation costs are paid;
+-   a qualified hidden-zone search can fail to find and still shuffles;
+-   Bay shuffles before the found permanent's ETB triggers resolve;
+-   Bay remains sorcery-speed because it is present only in the ordinary
+    main-phase action set;
+-   Grinding Station and Battered Golem trigger on their own artifact entry and
+    every controlled copy receives an artifact-ETB untap trigger; with Urza,
+    the tested pre-trigger/untap/post-trigger taps are rules-legal.
+
+## 6. Named draw-trace coverage
+
+`--draw-trace-smoke` must verify that every true library draw records the
+actual card names without changing the resulting hand or library. Coverage
+includes:
+
+-   turn-one and later normal draws;
+-   Mystic Remora, Rhystic Study, and Faerie Mastermind environmental draws;
+-   Mishra's Bauble and Urza's Bauble delayed draws, including distinct source
+    attribution when more than one trigger is pending;
+-   Uthros Research Craft, The One Ring, Sensei's Divining Top, Clues,
+    Gitaxian Probe, and Faerie Mastermind's activated ability;
+-   Cephalid Coliseum and Sea Gate Restoration;
+-   Aether Spellbomb, Witching Well, Sewer-veillance Cam, Vexing Bauble, and
+    the Top-plus-Key double activation.
+
+The current end-turn card assignment remains delayed Bauble draw(s), then
+Remora, Rhystic Study, and environmental Mastermind draws; the normal draw
+waits until after any pending Remora cumulative-upkeep decision. Each source
+must retain its own named trace line/detail.
+
+Automatic draw details must not increase semantic trace cardinality because
+deterministic shuffle entropy and the established Oracle same-stage tie-break
+depend on trace length. The smoke therefore also checks trace-count and
+shuffle-order neutrality. Searches/tutors to hand, casts from the top, scry,
+mill, and Urza's exile/cast ability are not draws and remain separately traced.
+
+## 7. Major combo-path integration suite
 
 `--combo-smoke` must reach important wins through normal legal actions,
 not merely call `check_win()` on completed boards.
@@ -108,7 +224,7 @@ Expected covered families/paths include:
 -   Battered Golem artifact-ETB mana;
 -   Uthros + Station dedicated actions.
 
-## 6. Problem-card smoke suite
+## 8. Problem-card smoke suite
 
 When performance/action-generation logic changes, run the problem-card
 smoke suite if present. Historically important cases include:
@@ -129,7 +245,7 @@ smoke suite if present. Historically important cases include:
 Chain of Vapor previously dominated runtime and should remain a
 dedicated regression target.
 
-## 7. Deterministic natural-family smoke
+## 9. Deterministic natural-family smoke
 
 Before a large Oracle simulation, run a small deterministic family
 batch, for example:
@@ -154,7 +270,7 @@ Knack/Helix + Cam wins. Do not require that exact distribution from
 unrelated seeds or after legitimate heuristic changes; use it as a
 sanity reference.
 
-## 8. Graph accounting
+## 10. Graph accounting
 
 For performance regressions, compare:
 
@@ -168,11 +284,14 @@ For performance regressions, compare:
 -   maximum frontier;
 -   maximum raw successors;
 -   average branching factor.
+-   Remora-upkeep nodes, edges, exact merges, dominance/beam prunes, layers,
+    maximum frontier/successors, resolution-family results, and upkeep-only
+    average branching factor.
 
 A runtime increase with proportional graph growth is different from a
 hot action generator that becomes slower per node.
 
-## 9. Action-cap audit
+## 11. Action-cap audit
 
 The pre-cap audit command in the diagnostic builds is:
 
@@ -193,7 +312,7 @@ The observed audit that motivated further work evaluated 160,027 states:
 Do not interpret the low percentage of truncated states as proof that
 the cap is harmless. Cap-hit states can be strategically important.
 
-## 10. Tutor-cap diversity audit
+## 12. Tutor-cap diversity audit
 
 On the development build containing the tutor-cap diagnostic, run:
 
@@ -215,7 +334,7 @@ Review:
 The important question is not merely how many tutor branches are
 dropped. It is whether entire strategically distinct targets disappear.
 
-## 11. Performance acceptance
+## 13. Performance acceptance
 
 Do not use a single wall-time threshold as the sole pass/fail criterion.
 Seed complexity varies substantially.
@@ -230,7 +349,7 @@ Flag:
     diagnostic-only change;
 -   loss of previously reachable combo families.
 
-## 12. Before freezing Oracle
+## 14. Before freezing Oracle
 
 Before updating `oracle-stable`:
 
@@ -242,7 +361,7 @@ Before updating `oracle-stable`:
 6.  diagnostic-only changes have not changed deterministic outcomes;
 7.  commit the exact tested code and record the command/config used.
 
-## 13. Before large simulation
+## 15. Before large simulation
 
 Start with a moderate batch before committing to a very large run.
 Preserve:
@@ -259,3 +378,53 @@ Preserve:
 -   machine/runtime information where useful.
 
 Save aggregate results separately from source code.
+
+## 16. Oracle mulligan and worker-configuration coverage
+
+Oracle mulligan stages come from one shared production/profiler stage
+definition. The default remains `--min-keep 4`, which evaluates the original
+seven, the free multiplayer mulligan, and paid London keeps of six, five, and
+four. `--min-keep 3` appends a fresh-seven keep-three stage that bottoms four
+cards. `--bottom-cap 4` still admits at most four candidate bottom combinations
+per stage; it does not change the number of cards that a London mulligan must
+bottom.
+
+`--mulligan-smoke` must verify:
+
+-   fresh seven plus bottom four produces a legal keep-three;
+-   keep-three has 35 raw positional bottom sets but admits exactly four when
+    the bottom cap is four;
+-   keep size and bottom-card reporting are correct;
+-   adding keep-three leaves the existing 7A-through-keep-four shuffled hands
+    unchanged;
+-   a strictly earlier keep-three win may replace an earlier-stage winner, but
+    an equal-turn keep-three may not;
+-   production Oracle and the profiler use the shared stage definition.
+
+`--worker-config-smoke` must use the real spawned-worker path and verify that
+the requested action cap, bottom cap, minimum keep, turn horizon, beam, and
+depth reach the child process instead of reverting to source defaults.
+
+## 17. Reproducible sequential A/B/C validation
+
+Reports record source/commit identity, dirty-tree state, turn horizon, action
+cap, bottom cap, minimum keep and active stages, beam, depth, seed information,
+worker count/execution mode, source/deck hashes, and the inherited
+`PYTHONHASHSEED`. The solver must not try to set
+`PYTHONHASHSEED` after Python starts. If it is unset, reports and console output
+must warn that exact reproduction is not guaranteed.
+
+Before a new 30-seed benchmark, run this pinned five-seed comparison
+sequentially in PowerShell. Each command evaluates the identical seeds
+20260821--20260825 with beam 300, action cap 60, bottom cap 4, and depth 100:
+
+``` powershell
+$env:PYTHONHASHSEED='0'; py -3 urza_solver.py --smoke-seeds 5 --smoke-seed-step 1 --seed 20260821 --turns 7 --min-keep 4 --beam 300 --action-cap 60 --bottom-cap 4 --depth 100 --search-progress-seconds 10
+$env:PYTHONHASHSEED='0'; py -3 urza_solver.py --smoke-seeds 5 --smoke-seed-step 1 --seed 20260821 --turns 6 --min-keep 4 --beam 300 --action-cap 60 --bottom-cap 4 --depth 100 --search-progress-seconds 10
+$env:PYTHONHASHSEED='0'; py -3 urza_solver.py --smoke-seeds 5 --smoke-seed-step 1 --seed 20260821 --turns 6 --min-keep 3 --beam 300 --action-cap 60 --bottom-cap 4 --depth 100 --search-progress-seconds 10
+```
+
+The three cases are respectively A: T7/keep-four floor, B: T6/keep-four
+floor, and C: T6/keep-three floor. `--smoke-seeds` is intentionally sequential.
+Preserve or rename `smoke_seed_report.json` after each case because the next
+case writes the same report path.

@@ -168,6 +168,8 @@ Artifact ETBs can create important immediate mana/action sequences.
 -   Grinding Station's untap behavior from artifact ETBs must be
     represented.
 -   Battered Golem's artifact-ETB untap behavior must be represented.
+-   Both abilities say "an artifact," not "another artifact," so each
+    permanent sees its own entry and every controlled copy triggers.
 -   With Urza present, an artifact can be tapped for U before an untap
     trigger resolves and potentially tapped again afterward.
 -   Uthros/Station has dedicated action handling and must remain covered
@@ -188,25 +190,76 @@ Examples explicitly audited during development:
 
 Respect mana costs, tap costs, sacrifice costs, and timing.
 
-## 10. Faerie Mastermind
+Every true library-to-hand draw is audit-visible by card name. This includes
+normal draws; modeled opponent-fed Remora, Rhystic Study, and Faerie
+Mastermind draws; delayed Mishra's/Urza's Bauble draws; Uthros, Ring, Top,
+Clue, Probe, activated Mastermind, Coliseum, Sea Gate Restoration, and the
+other implemented draw/sacrifice artifacts. Searches to hand, casts from the
+top, scry, mill, and Urza's exile/cast ability are not draws.
+
+The end-turn transition preserves its established card assignment: pending
+Bauble draw(s) consume the next cards first, followed by Remora, Rhystic, and
+environmental Mastermind draws. All are available before a pending Remora
+upkeep choice; the normal draw occurs only after that choice. Multiple Bauble
+triggers retain their individual source names in the audit trace.
+
+Named automatic draws are trace-cardinality neutral. They are rendered as
+details of the existing turn/upkeep entry rather than new semantic actions,
+because deterministic shuffles and Oracle's same-stage tie-break use the
+historical trace length. Draw observability must not change zones, search
+scores, pruning, shuffle order, or selected outcomes.
+
+## 10. Mystic Remora
+
+Mystic Remora retains the separate multiplayer environmental assumption of
+two opponent-fed cards per cycle. Its cumulative upkeep is nevertheless a
+real rules/search decision:
+
+-   a newly entered Remora has zero age counters;
+-   after untap at each following upkeep, put its cumulative-upkeep trigger on
+    the stack; responses occur while the old age-counter total is still real;
+-   when that trigger resolves, add one age counter, then branch between paying
+    generic mana equal to its age counters and sacrificing it;
+-   newly untapped mana sources may pay, but prior floating mana and Mana
+    Drain's precombat-main-phase mana may not;
+-   opponent-cycle and ordered Bauble draws may precede the choice, but the
+    normal draw step follows it;
+-   modeled instant-speed payment enablers and a Chain of Vapor bounce remain
+    available while the trigger is pending;
+-   ordinary main-phase actions and Saga lore advancement wait until the
+    upkeep choice resolves;
+-   leaving the battlefield and later re-entering resets its age.
+-   before the pending trigger resolves, the restricted response window may
+    cast Chain of Vapor or Knack/Helix, channel Otawara, and activate modeled
+    mana or Aether Spellbomb abilities; it does not expose sorcery-speed
+    actions;
+-   if the old Remora leaves during that window, its pending payment/sacrifice
+    instruction has no remaining effect on the new object, and a later recast
+    starts at age zero.
+
+Age and pending-upkeep phase are future-legality state and must be represented
+in exact, dominance, and action-cache identities. Search closes the upkeep
+branch before starting the turn's ordinary action-depth loop.
+
+## 11. Faerie Mastermind
 
 Faerie Mastermind has an activated ability costing **{3}{U} / four mana
 total** to cause the relevant draw behavior. Do not treat that draw as
 free.
 
-## 11. Everflowing Chalice
+## 12. Everflowing Chalice
 
 Everflowing Chalice must respect multikicker / variable mana paid and
 the resulting charge counters/mana production. It should not be treated
 as a fixed-cost/fixed-output rock.
 
-## 12. Prized Statue
+## 13. Prized Statue
 
 Prized Statue must correctly model its ETB and LTB Treasure generation.
 Ensure each event occurs only when the corresponding event actually
 happens.
 
-## 13. Sacrifice lands
+## 14. Sacrifice lands
 
 Sacrifice-based lands such as:
 
@@ -219,13 +272,13 @@ must not provide reusable mana after they have been sacrificed or
 otherwise lost. Preserve the exact cost/zone transition semantics
 implemented for the card.
 
-## 14. Cephalid / Ipnu and specialty lands
+## 15. Cephalid / Ipnu and specialty lands
 
 Cephalid Coliseum / Ipnu Rivulet-style actions and other niche land
 abilities must be modeled as explicit legal actions with their costs and
 conditions, rather than generic free effects.
 
-## 15. Chain of Vapor
+## 16. Chain of Vapor
 
 Chain of Vapor historically caused pathological branching.
 
@@ -245,7 +298,29 @@ Do not let Oracle-only knowledge of a useful future top card become the
 sole reason a human-inaccessible Chain line is considered strategically
 obvious in the future policy fork.
 
-## 16. Tutors and mana value
+Implemented own-permanent bounce rules also include:
+
+-   Chain of Vapor targets any of our nonland permanents, including Mystic
+    Remora; each modeled copy after the first requires sacrificing a land;
+-   Otawara channels for {3}{U}, reduced by {1} per legendary creature we
+    control, and may target our artifact, creature, enchantment, or
+    planeswalker, including Remora;
+-   Aether Spellbomb pays {U} and sacrifices itself to target a creature only;
+-   Banishing Knack and Retraction Helix cost {U}, select a creature, and grant
+    it a tap ability that can return any of our nonland permanents, including
+    itself or Remora, provided that creature can legally pay a tap-symbol cost;
+-   returned cards go to hand and returned tokens cease to exist.
+
+Repurposing Bay is a sorcery-speed artifact activation. It pays {2}, taps Bay,
+and sacrifices another artifact, then searches for an artifact card with mana
+value exactly one greater, puts it directly onto the battlefield, and shuffles.
+The costs are subject to applicable artifact-ability reductions but cannot be
+reduced below one mana. Ordinary tokens have mana value zero; Chrome copy
+tokens retain the copied artifact's mana value. Grafdigger's Cage is evaluated
+after the sacrifice cost, a qualified hidden-zone search may fail to find, and
+the shuffle completes before the found permanent's ETB triggers resolve.
+
+## 17. Tutors and mana value
 
 All 99 deck cards should have known mana-value semantics.
 
@@ -274,7 +349,7 @@ Tutor branching is currently a major performance concern. Do not remove
 distinct tutor targets merely because many payment/sacrifice paths
 exist.
 
-## 17. Other tracked interaction
+## 18. Other tracked interaction
 
 The simulation should be able to record interaction encountered in hand
 or on the battlefield up to the win state, including categories/cards
@@ -289,21 +364,22 @@ such as:
 
 Stop the interaction count at the win state.
 
-## 18. Mulligans and kept hands
+## 19. Mulligans and kept hands
 
 The solver should preserve the actual kept hand and game-state
 plan/trace.
 
 Two modes are conceptually distinct:
 
-1.  **Oracle mulligan evaluation**: may compare candidate 7/6/5/4 keeps
-    using full information.
+1.  **Oracle mulligan evaluation**: by default compares candidate
+    7/6/5/4 keeps using full information. With `--min-keep 3`, it appends
+    a fresh-seven London keep-three stage that bottoms four cards.
 2.  **Sequential London mulligan / policy mode**: evaluates hands in
     realistic sequence and bottoms cards according to the chosen policy.
 
 Do not conflate these modes in reported results.
 
-## 19. Search limits
+## 20. Search limits
 
 Typical development settings have included:
 
@@ -319,7 +395,7 @@ A cap audit found that only a minority of evaluated states hit the
 tutor actions dominated discarded branches. Therefore tutor-target
 retention must be measured before finalizing cap behavior.
 
-## 20. Validated natural win-family diversity
+## 21. Validated natural win-family diversity
 
 A deterministic 10-seed family smoke produced natural wins across:
 
@@ -334,7 +410,7 @@ In that smoke, Knack/Helix + Cam appeared naturally in 2/10 seeds. This
 is a regression/coverage observation, not an estimate of the deck's true
 combo-family probability.
 
-## 21. Future policy fork
+## 22. Future policy fork
 
 The future constrained solver should address the fact that Oracle Mode
 can make impossible human decisions based on exact future deck order,

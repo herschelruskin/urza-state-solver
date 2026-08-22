@@ -34,9 +34,16 @@ The simulator records deterministic seeds so suspicious games can be reproduced.
 
 MULLIGAN MODEL
 --------------
-Primary output remains the user's requested ORACLE ceiling:
+Primary output remains the user's requested ORACLE ceiling. By default,
+`--min-keep 4` evaluates:
   original 7 -> free second 7 -> 6 -> 5 -> 4
-and selects the realized candidate that the state search solves fastest.
+and selects the realized candidate that reaches the earliest win. An equal-turn
+result stays with the earlier mulligan stage.
+
+`--min-keep 3` appends a legal Commander London keep-three stage: take a fresh
+seven and put four cards on the bottom. `--bottom-cap 4` means that at most four
+candidate bottom combinations are searched at each paid-mulligan stage; it does
+not reduce the number of cards that must be bottomed.
 
 This is intentionally an upper-bound / perfect-hindsight mulligan statistic.
 
@@ -79,7 +86,8 @@ IMPORTANT v0.3 RULE / STATE FIXES
 * An Offer You Can't Refuse can counter our own noncreature spell to make two Treasures.
 * Scour for Scrap costs 3U and can use one or both modes.
 * Welding Jar can sacrifice itself for free to establish a graveyard target before Scour.
-* Repurposing Bay uses exact sacrificed-MV+1 tutoring directly to the battlefield.
+* Repurposing Bay pays {2}, taps, sacrifices another artifact, and uses exact
+  sacrificed-MV+1 tutoring directly to the battlefield before shuffling.
 * Urza's Saga tracks I / II / III, Construct activation, and exact printed {0}/{1} chapter-III targets.
 * Tezzeret, Cruel Captain costs 3 generic, gains loyalty from artifact ETBs, and branches between
   0: untap artifact/creature and -3: MV<=1 artifact tutor, once per turn.
@@ -99,7 +107,8 @@ also using the library-tutor mode.
 MULTIPLAYER ASSUMPTIONS REQUESTED BY USER
 -----------------------------------------
 * Battered Golem starts each of our turns untapped, representing likely opponent artifact ETBs.
-* Mystic Remora: +2 opponent-fed cards per cycle.
+* Mystic Remora: +2 opponent-fed cards per cycle, separately from its real
+  cumulative-upkeep pay-or-sacrifice decision.
 * Rhystic Study: +2 cards per future cycle.
 * Faerie Mastermind: +1 card per future cycle.
 * Mana Drain: if UU is available, bank +2 colorless for next turn.
@@ -116,17 +125,82 @@ Strategic priorities order branches rather than defining combo legality:
   > second card-advantage engine
   > generic development
 
+MYSTIC REMORA CUMULATIVE UPKEEP
+-------------------------------
+At each upkeep after Remora entered, its cumulative-upkeep trigger is put on the
+stack after untap. Responses occur before resolution and therefore see the old
+age-counter total. On resolution Remora receives the next counter and branches
+between paying that much generic mana or sacrificing it. Saga lore counters and
+Mana Drain's modeled mana wait until precombat main.
+Leaving and recasting Remora resets its age. The +2 opponent-fed-card assumption
+above remains an independent environmental model. Bauble/upkeep draws may occur
+before the choice, the normal draw occurs afterward, and modeled fetch, mana,
+Dramatic Reversal, Key, Chain of Vapor, Otawara channel, Aether Spellbomb, and
+legal Knack/Helix responses remain available while the trigger is pending.
+Sorcery-speed actions remain gated. Bouncing the old Remora clears that object's
+obligation, and a recast starts at age zero. The upkeep branch closes before
+normal per-turn search depth.
+
+Focused regression:
+    py -3 urza_solver.py --remora-smoke --action-cap 60 --bottom-cap 4
+    py -3 urza_solver.py --bounce-smoke --action-cap 60 --bottom-cap 4
+
+BOUNCE / REPURPOSING BAY FREEZE AUDIT
+-------------------------------------
+The implemented own-permanent bounce modes are:
+* Chain of Vapor: pay U; return a nonland permanent; each modeled copy requires
+  sacrificing a land.
+* Otawara: channel for 3U, reduced by one generic per legendary creature; return
+  an artifact, creature, enchantment, or planeswalker. Channel is not a spell.
+* Aether Spellbomb: pay U and sacrifice it to return a creature only; its pay-1
+  sacrifice-to-draw mode is separate.
+* Banishing Knack / Retraction Helix: pay U to grant a selected creature the
+  temporary tap ability; summoning sickness and tapped status are enforced, and
+  the ability can return itself or another nonland permanent.
+
+Bounced cards return to hand; bounced tokens cease to exist. The focused suite
+also locks MDFC face handling and Remora-upkeep response timing.
+
+Repurposing Bay's focused fixture proves Sapphire Medallion MV2 -> Battered
+Golem MV3, including the {2} payment, Bay tap, Sapphire sacrifice, direct
+battlefield entry, and shuffle-before-ETB ordering. The same suite confirms
+that Grinding Station and Battered Golem see their own artifact entry and that
+every controlled copy receives its trigger.
+
+Focused regression:
+    py -3 urza_solver.py --bay-smoke --action-cap 60 --bottom-cap 4
+
+NAMED DRAW TRACING
+------------------
+Every true library-to-hand draw records the actual card names and source in the
+winning trace. This covers normal draws; Remora/Rhystic/Mastermind environmental
+draws; individual delayed Mishra's/Urza's Bauble draws; Uthros; Ring; Top; Clue;
+Probe; activated Mastermind; Coliseum; Sea Gate Restoration; and the other
+implemented draw/sacrifice artifacts.
+
+The established end-turn card assignment is explicit: pending Bauble draw(s)
+first, then Remora, Rhystic, and environmental Mastermind, with the normal draw
+after any Remora cumulative-upkeep decision. Searches, top-casts, scry, mill,
+and Urza's exile/cast ability remain separately described because they are not
+draws.
+
+Automatic draw names are added within the existing turn/upkeep trace entry, not
+as new semantic action entries. This preserves the historical trace length used
+by deterministic shuffles and Oracle's same-stage tie-break.
+
+Focused regression:
+    py -3 urza_solver.py --draw-trace-smoke
+
 KNOWN REMAINING AUDIT ITEMS
 ---------------------------
-1. Mystic Remora cumulative-upkeep payment is still abstracted.
-2. Chrome Dome pre-terminal copy targets focus on strategically useful artifacts.
-3. Very long multi-land Chain of Vapor copy chains are still underexplored.
-4. Simultaneous Gadget/Uthros/Assistant/VFC trigger ordering is strategically approximated.
-5. Life totals are ignored.
-6. Cephalid Coliseum threshold looting and Ipnu Rivulet Desert mill are not yet proactive actions.
-7. Mana Vault upkeep-pay-4 untap is not a separate upkeep-phase decision.
-8. Legal-information London mulligans are not yet implemented; oracle remains primary.
-9. This is deck-specific, not a complete comprehensive-rules engine.
+1. Chrome Dome pre-terminal copy targets focus on strategically useful artifacts.
+2. Very long multi-land Chain of Vapor copy chains are still underexplored.
+3. Simultaneous Gadget/Uthros/Assistant/VFC trigger ordering is strategically approximated.
+4. Life totals are ignored.
+5. Cephalid Coliseum threshold looting and Ipnu Rivulet Desert mill are not yet proactive actions.
+6. Mana Vault upkeep-pay-4 untap is not a separate upkeep-phase decision.
+7. Legal-information London mulligans are not yet implemented; oracle remains primary.
+8. This is deck-specific, not a complete comprehensive-rules engine.
 
 TRACE AUDIT WORKFLOW
 --------------------
@@ -1066,6 +1140,10 @@ Graph metrics are now accumulated across EVERY oracle mulligan candidate:
 * max_frontier
 * max_raw_successors
 * average_branching_factor
+* upkeep_nodes_expanded / upkeep_edges_generated
+* upkeep_exact_key_merges / upkeep_dominance_pruned / upkeep_beam_pruned
+* upkeep_layers / upkeep_max_frontier / upkeep_max_raw_successors
+* upkeep_average_branching_factor and generated pay/decline/bounce results
 
 These are included in smoke/family JSON reports and live summaries.
 
@@ -1109,3 +1187,54 @@ Reports per cap-hit state:
 
 Output:
     tutor_cap_audit_report.json
+
+
+v0.4.23 ORACLE MULLIGAN FLOOR / PROVENANCE / WORKER CONFIG
+------------------------------------------------------------
+Oracle production runs and the Oracle profiler now use one shared mulligan-stage
+definition. The default remains `--min-keep 4`. Use `--min-keep 3` to append a
+fresh-seven, bottom-four keep-three stage without changing the RNG/shuffles of
+the existing 7A through keep-four stages.
+
+Focused regression commands:
+    py -3 urza_solver.py --mulligan-smoke
+    py -3 urza_solver.py --worker-config-smoke
+
+The worker smoke uses the real spawned-worker path to confirm that search-
+defining settings reach the child process instead of reverting to source
+defaults. This includes turn horizon, beam, action cap, bottom cap, turn depth,
+and minimum keep.
+
+JSON reports now include provenance for:
+* Git commit and dirty-tree state;
+* turn horizon, action cap, bottom cap, minimum keep and active stages;
+* beam and per-turn search depth;
+* base seed, seed count/range, and step;
+* worker count / sequential-versus-multiprocessing execution;
+* source and ordered-deck hashes;
+* the inherited PYTHONHASHSEED value.
+
+PYTHONHASHSEED is fixed when Python starts. The solver reports it but does not
+attempt to change it inside the running process. If it is unset, the console and
+report contain a reproducibility warning. Set it in PowerShell before every
+pinned comparison.
+
+PINNED SEQUENTIAL A/B/C VALIDATION
+----------------------------------
+Before another 30-seed benchmark, use the same five seeds and search settings to
+separate the turn-horizon change from the mulligan-floor change. These smoke
+batches run sequentially by design.
+
+A. T7, minimum keep four:
+    $env:PYTHONHASHSEED='0'; py -3 urza_solver.py --smoke-seeds 5 --smoke-seed-step 1 --seed 20260821 --turns 7 --min-keep 4 --beam 300 --action-cap 60 --bottom-cap 4 --depth 100 --search-progress-seconds 10
+
+B. T6, minimum keep four:
+    $env:PYTHONHASHSEED='0'; py -3 urza_solver.py --smoke-seeds 5 --smoke-seed-step 1 --seed 20260821 --turns 6 --min-keep 4 --beam 300 --action-cap 60 --bottom-cap 4 --depth 100 --search-progress-seconds 10
+
+C. T6, minimum keep three:
+    $env:PYTHONHASHSEED='0'; py -3 urza_solver.py --smoke-seeds 5 --smoke-seed-step 1 --seed 20260821 --turns 6 --min-keep 3 --beam 300 --action-cap 60 --bottom-cap 4 --depth 100 --search-progress-seconds 10
+
+Each command evaluates seeds 20260821 through 20260825 with beam 300,
+ACTION_CAP 60, BOTTOM_CAP 4, and depth 100. Preserve or rename
+smoke_seed_report.json after each case because the next case writes the same
+path.
