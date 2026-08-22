@@ -6,11 +6,11 @@ Only after that commitment may this rules layer inspect the concrete library and
 emit typed observations.  This is the same anti-clairvoyance boundary used by Top,
 scry, and tutors.
 
-The first version intentionally blocks Chrome-Dome end-step copy automation.  That
-is a real optional decision and must later be exposed to the policy rather than
-silently taking the Oracle heuristic.  Ordinary turns, environmental draw engines,
-Urza permission expiry, natural draw, Saga lore advancement, and Mana Drain bank
-release are handled here.
+Chrome-Dome end-step copy automation remains intentionally blocked because it is a
+real optional decision. Ordinary turns, environmental draw engines, Urza permission
+expiry, natural draw, Saga lore advancement, and Mana Drain bank release are handled
+here. Saga III is materialized as a mandatory runtime stack trigger rather than a
+blocking boolean-only window.
 """
 
 from __future__ import annotations
@@ -26,8 +26,12 @@ from decision_observation import (
     apply_observation_batch,
 )
 from information_state_propagation import _top_visible
-from non_oracle_runtime import NonOracleRuntimeState
-from non_oracle_runtime_value_key import RuntimeDecisionWindow, WINDOW_MAIN_EMPTY
+from non_oracle_runtime import NonOracleRuntimeState, STACK_TRIGGER
+from non_oracle_runtime_value_key import (
+    RuntimeDecisionWindow,
+    WINDOW_MAIN_EMPTY,
+    WINDOW_PRIORITY,
+)
 
 
 class UnsupportedTurnBoundary(RuntimeError):
@@ -84,12 +88,8 @@ def can_commit_end_turn(runtime: NonOracleRuntimeState) -> bool:
         return False
     if state.remora_upkeep_pending or state.saga3_pending:
         return False
-    # Chrome Dome activation in the opponent end step is optional and therefore
-    # must become a real policy decision before we support it here.
     if solver.has(state, "Chrome Dome"):
         return False
-    # Existing delayed Chrome copies are sacrificed at our end step and can have
-    # LTB consequences. Route those through the typed sacrifice engine later.
     if any(p.mode in {"chrome_copy", "chrome_copy_preturn"} for p in state.battlefield):
         return False
     return True
@@ -106,10 +106,6 @@ def advance_after_end_turn(runtime: NonOracleRuntimeState) -> NonOracleRuntimeSt
     information = runtime.information
     ending_turn = int(state.turn)
 
-    # Environmental draw assumptions occur during the opponent cycle.  These are
-    # chance observations after the end-turn decision, never action-generation
-    # inputs. No policy decisions are currently modeled between these abstract
-    # opponent events, so refresh continuous top visibility after the batch.
     environment_cards = []
     for source in _environment_draw_plan(state):
         state, information, drawn = _draw_one(
@@ -125,9 +121,6 @@ def advance_after_end_turn(runtime: NonOracleRuntimeState) -> NonOracleRuntimeSt
         source="post-opponent-cycle continuous look",
     )
 
-    # End-of-turn floating resources disappear, then untap/cleanup occurs for the
-    # next turn.  Mana Vault / Monoliths preserve the validated Oracle assumption
-    # of remaining tapped. Temporary Knack/VFC/producer credits expire.
     state = replace(state, blue=0, colorless=0)
     battlefield = []
     for perm in state.battlefield:
@@ -175,9 +168,6 @@ def advance_after_end_turn(runtime: NonOracleRuntimeState) -> NonOracleRuntimeSt
 
     permissions = runtime.permissions.expire_end_of_turn(ending_turn)
 
-    # Remora cumulative upkeep is a mandatory decision before natural draw/main.
-    # Leave the runtime at that public blocked window; its Phase-2 adapter is the
-    # next mandatory-window slice.
     if remora_pending:
         state = solver.add_trace(
             state,
@@ -192,7 +182,6 @@ def advance_after_end_turn(runtime: NonOracleRuntimeState) -> NonOracleRuntimeSt
             pending=None,
         )
 
-    # Natural draw happens before Saga's turn-based lore counter is added.
     state, information, drawn = _draw_one(
         state,
         information,
@@ -204,9 +193,8 @@ def advance_after_end_turn(runtime: NonOracleRuntimeState) -> NonOracleRuntimeSt
             f"Phase2 normal draw for turn {next_turn}: {drawn[0]}",
         )
 
-    # First precombat main: Saga lore advances and Mana Drain bank is released.
     battlefield = []
-    saga3_pending = state.saga3_pending
+    saga3_count = 0
     for perm in state.battlefield:
         next_perm = perm
         if next_perm.name == "Urza's Saga":
@@ -217,12 +205,14 @@ def advance_after_end_turn(runtime: NonOracleRuntimeState) -> NonOracleRuntimeSt
                 mode="saga3" if counters >= 3 else next_perm.mode,
             )
             if counters >= 3:
-                saga3_pending = True
+                saga3_count += 1
         battlefield.append(next_perm)
     state = replace(
         state,
         battlefield=tuple(battlefield),
-        saga3_pending=saga3_pending,
+        # Once a real trigger object exists, the old boolean is no longer the
+        # authority. The trigger remains independently even if Saga later leaves.
+        saga3_pending=False,
         blue=0,
         colorless=state.drain_bank,
         drain_bank=0,
@@ -233,7 +223,7 @@ def advance_after_end_turn(runtime: NonOracleRuntimeState) -> NonOracleRuntimeSt
         source="post-natural-draw continuous look",
     )
 
-    return replace(
+    runtime = replace(
         runtime,
         true_state=solver._ensure_oracle_instance_tags(state),
         information=information,
@@ -241,3 +231,24 @@ def advance_after_end_turn(runtime: NonOracleRuntimeState) -> NonOracleRuntimeSt
         window=RuntimeDecisionWindow(WINDOW_MAIN_EMPTY),
         pending=None,
     )
+
+    if saga3_count:
+        stack = runtime.stack
+        triggers = []
+        for _ in range(saga3_count):
+            trigger, stack = stack.allocate(
+                object_type=STACK_TRIGGER,
+                kind="saga3_search_trigger",
+                source="Urza's Saga",
+                card="Urza's Saga",
+            )
+            triggers.append(trigger)
+        # One singleton Saga is normal. Multiple simultaneous copies are execution
+        # equivalent search triggers; deterministic order is sufficient here.
+        runtime = replace(
+            runtime,
+            stack=stack.push_existing(tuple(triggers)),
+            window=RuntimeDecisionWindow(WINDOW_PRIORITY),
+        )
+
+    return runtime
