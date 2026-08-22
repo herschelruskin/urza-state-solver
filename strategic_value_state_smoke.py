@@ -65,7 +65,6 @@ def test_reporting_history_and_legacy_flags_do_not_fragment_base_value():
     )
     assert key(a) == key(b)
 
-    # Win family is terminal analytics, not scalar win-value identity.
     wa = replace(a, won=True, win_family="Chrome Dome")
     wb = replace(a, won=True, win_family="Top + Reality Chip")
     assert key(wa) == key(wb)
@@ -162,10 +161,26 @@ def test_profiler_measures_collapse_without_changing_states():
     assert a == before_a and b == before_b
     assert summary["observations"] == 2
     assert summary["concrete_unique"] == 2
+    assert summary["concrete_information_unique"] == 2
     assert summary["strategic_unique"] == 1
     assert summary["concrete_to_strategic_collapse_fraction"] == 0.5
+    assert summary["concrete_information_to_strategic_collapse_fraction"] == 0.5
     assert summary["estimated_strategic_cache_hit_fraction"] == 0.5
     assert summary["by_turn"][2]["strategic_unique"] == 1
+
+
+def test_profiler_keeps_same_concrete_state_with_different_information_distinct():
+    state = base_state()
+    profiler = StrategicKeyProfiler()
+    profiler.observe(state, InformationState())
+    profiler.observe(state, InformationState(known_top=("Island",)))
+    summary = profiler.summary()
+
+    assert summary["observations"] == 2
+    assert summary["concrete_unique"] == 1
+    assert summary["concrete_information_unique"] == 2
+    assert summary["strategic_unique"] == 2
+    assert summary["concrete_information_to_strategic_collapse_fraction"] == 0.0
 
 
 def test_projection_is_a_separate_value_object_not_policy_view():
@@ -189,6 +204,7 @@ def main():
         test_objective_memory_is_explicit_and_minimal,
         test_library_belief_uses_multiset_not_order,
         test_profiler_measures_collapse_without_changing_states,
+        test_profiler_keeps_same_concrete_state_with_different_information_distinct,
         test_projection_is_a_separate_value_object_not_policy_view,
     ]
     for test in tests:
