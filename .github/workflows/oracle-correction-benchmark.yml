@@ -1,0 +1,50 @@
+name: Oracle correction microbenchmark
+
+on:
+  pull_request:
+    branches:
+      - development
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: development-baseline
+            ref: development
+          - label: corrected-oracle
+            ref: oracle-ceiling-permissions-trigger-order
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.ref }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Profile deterministic opening candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "BENCH_LABEL=${{ matrix.label }} REF=${{ matrix.ref }}"
+          for seed in 20260821 20260822 20260823; do
+            echo "=== BENCH seed=$seed ==="
+            /usr/bin/time -f "BENCH_TIME seed=$seed wall_s=%e cpu=%P max_rss_kb=%M" \
+              python urza_solver.py \
+                --profile-one \
+                --seed "$seed" \
+                --profile-turns 4 \
+                --beam 300 \
+                --depth 60 \
+                --action-cap 80 \
+                --bottom-cap 4 \
+                --min-keep 4
+          done
