@@ -103,6 +103,18 @@ from non_oracle_chrome_dome_runtime import (
     handles_chrome_pending,
     handles_chrome_stack_top,
 )
+from non_oracle_utility_artifact_runtime import (
+    MAIN_ACTIVATE_KEY,
+    MAIN_ACTIVATE_TOP,
+    MAIN_CAST_UTILITY_ARTIFACT,
+    apply_utility_pending,
+    apply_utility_stack_action,
+    begin_utility_main_action,
+    handles_utility_pending,
+    handles_utility_stack_top,
+    utility_main_intents,
+    utility_pending_request,
+)
 
 MAIN_PLAY_LAND = "main_play_land"
 MAIN_MANA_ACTION = "main_mana_action"
@@ -281,6 +293,7 @@ def main_phase_intents(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ..
     rows = [row.action for row in _land_rows(runtime)]
     rows.extend(row.action for row in _mana_rows(runtime))
     rows.extend(_ordinary_artifact_cast_intents(runtime))
+    rows.extend(utility_main_intents(runtime))
     rows.extend(proactive_nonartifact_intents(runtime))
     rows.extend(simple_tutor_runtime_intents(runtime))
     rows.extend(x_artifact_runtime_intents(runtime))
@@ -299,6 +312,11 @@ def rules_decision_request(
     policy_id: str = "urza-deterministic-base-v1",
     caverns_live=None,
 ) -> DecisionRequest:
+    if handles_utility_pending(runtime):
+        return utility_pending_request(
+            runtime, horizon=horizon, objective=objective,
+            policy_id=policy_id, caverns_live=caverns_live,
+        )
     if handles_simple_tutor_pending(runtime):
         return simple_tutor_pending_request(
             runtime, horizon=horizon, objective=objective,
@@ -367,7 +385,9 @@ def _find_mechanical_successor(runtime: NonOracleRuntimeState, action: ActionInt
 
 def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> NonOracleRuntimeState:
     if runtime.pending is not None or runtime.stack.objects:
-        if handles_simple_tutor_pending(runtime):
+        if handles_utility_pending(runtime):
+            resolved = apply_utility_pending(runtime, action)
+        elif handles_simple_tutor_pending(runtime):
             resolved = apply_simple_tutor_pending(runtime, action)
         elif handles_x_artifact_pending(runtime):
             resolved = apply_x_artifact_pending(runtime, action)
@@ -377,6 +397,8 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
             resolved = apply_remaining_pending(runtime, action)
         elif handles_chrome_pending(runtime):
             resolved = apply_chrome_pending(runtime, action)
+        elif handles_utility_stack_top(runtime):
+            resolved = apply_utility_stack_action(runtime, action)
         elif handles_chrome_stack_top(runtime):
             resolved = apply_chrome_stack_action(runtime, action)
         elif handles_commander_stack_top(runtime):
@@ -437,6 +459,8 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
             mana_spent=int(params["mana_spent"]), from_zone="hand",
         )
 
+    if action.kind in {MAIN_CAST_UTILITY_ARTIFACT, MAIN_ACTIVATE_TOP, MAIN_ACTIVATE_KEY}:
+        return begin_utility_main_action(runtime, action)
     if action.kind == MAIN_CAST_PROACTIVE_NONARTIFACT:
         return begin_proactive_nonartifact_cast(runtime, action)
     if action.kind == MAIN_USE_SIMPLE_TUTOR:

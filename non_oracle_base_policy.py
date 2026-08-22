@@ -65,6 +65,23 @@ CAM_TARGET_PRIORITY = {
     "The Reality Chip": 68.0,
     "Chrome Dome": 64.0,
 }
+KEY_TARGET_PRIORITY = {
+    "Mana Vault": 100.0,
+    "Grim Monolith": 96.0,
+    "Basalt Monolith": 94.0,
+    "Sol Ring": 76.0,
+    "Grinding Station": 72.0,
+    "The One Ring": 58.0,
+    "Sewer-veillance Cam": 50.0,
+    "Sensei's Divining Top": 45.0,
+    "Uthros Research Craft": 40.0,
+    "Everflowing Chalice": 38.0,
+    "Mox Opal": 35.0,
+    "Mox Diamond": 35.0,
+    "Chrome Mox": 35.0,
+    "Voltaic Key": -100.0,
+    "Manifold Key": -100.0,
+}
 
 
 @dataclass(frozen=True)
@@ -147,6 +164,15 @@ class DeterministicBasePolicy:
             score += 0.5 if value == 0.0 else -1.5 * value
         return score
 
+    def _top_reorder_score(self, observation: RuntimePolicyView, action: ActionIntent) -> float:
+        order = tuple(dict(action.parameters).get("order", ()))
+        if not order:
+            return 0.0
+        return sum(
+            self.visible_card_score(str(card), observation) * (4.0 / (index + 1))
+            for index, card in enumerate(order)
+        )
+
     def _chrome_imprint_score(self, observation: RuntimePolicyView, action: ActionIntent) -> float:
         card = str(dict(action.parameters).get("card", ""))
         if not card:
@@ -154,6 +180,12 @@ class DeterministicBasePolicy:
         card_cost = self.visible_card_score(card, observation)
         mana = observation.base.blue + observation.base.colorless
         return (3.0 - card_cost) if mana <= 1 else (-1.0 - card_cost)
+
+    def _mox_diamond_entry_score(self, observation: RuntimePolicyView, action: ActionIntent) -> float:
+        land = str(dict(action.parameters).get("land", ""))
+        if not land:
+            return -100.0
+        return 30.0 - self.visible_card_score(land, observation)
 
     def _tutor_target_score(self, observation: RuntimePolicyView, action: ActionIntent) -> float:
         target = str(dict(action.parameters).get("target", ""))
@@ -232,6 +264,19 @@ class DeterministicBasePolicy:
             return 27.0 + self.visible_card_score(str(params.get("source", "")), observation)
         if action.kind == "main_cast_proactive_nonartifact":
             return 24.0 + self.visible_card_score(str(params.get("card", "")), observation)
+        if action.kind == "main_cast_utility_artifact":
+            card = str(params.get("card", ""))
+            if card == "Mox Diamond":
+                return 26.0
+            if card == "Everflowing Chalice":
+                kicks = int(params.get("kicks", 0))
+                return 23.0 if kicks == 1 else (15.0 if kicks == 0 else 18.0 - 0.5 * kicks)
+            return 18.0
+        if action.kind == "main_activate_key":
+            target = str(params.get("target_name", ""))
+            return 24.0 + KEY_TARGET_PRIORITY.get(target, -100.0) / 10.0
+        if action.kind == "main_activate_top":
+            return 17.0
         if action.kind == "main_cast_artifact":
             return 20.0 + self.visible_card_score(str(params.get("card", "")), observation)
         if action.kind == "main_mana_action":
@@ -249,8 +294,12 @@ class DeterministicBasePolicy:
             return 5.0 if dict(action.parameters).get("choice") == "untap" else 0.0
         if kind in {"runtime_scry_choice", "scry_choose_positions"}:
             return self._scry_score(observation, action)
+        if kind == "top_reorder":
+            return self._top_reorder_score(observation, action)
         if kind == "runtime_chrome_imprint":
             return self._chrome_imprint_score(observation, action)
+        if kind == "runtime_mox_diamond_entry":
+            return self._mox_diamond_entry_score(observation, action)
         if kind == "runtime_cam_target":
             return self._cam_target_score(action)
         if kind == "runtime_cam_effect":

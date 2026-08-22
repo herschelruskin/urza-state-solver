@@ -94,7 +94,7 @@ def _horizon_state_features(state: solver.State):
     if hand & COMBO_SPELL_CARDS:
         families.add("hand_combo_nonartifact_present")
     if hand & SPECIAL_ARTIFACT_CASTS:
-        families.add("hand_special_artifact_unmodeled")
+        families.add("hand_special_artifact_present")
 
     generic_nonartifact = {
         card for card in hand
@@ -114,7 +114,7 @@ def _horizon_state_features(state: solver.State):
         families.add("hand_other_nonartifact_unmodeled")
 
     if "Sensei's Divining Top" in battlefield_names:
-        families.add("battlefield_top_activation_unmodeled")
+        families.add("battlefield_top_activation_modeled_present")
     if "The One Ring" in battlefield_names:
         families.add("battlefield_one_ring_draw_unmodeled")
     if any(p.mode == "clue" for p in state.battlefield):
@@ -126,7 +126,7 @@ def _horizon_state_features(state: solver.State):
     if "The Reality Chip" in battlefield_names and not state.chip_attached:
         families.add("battlefield_chip_reconfigure_unmodeled")
     if any(name in battlefield_names for name in {"Voltaic Key", "Manifold Key"}):
-        families.add("battlefield_key_activation_unmodeled")
+        families.add("battlefield_key_activation_modeled_present")
     if "Uthros Research Craft" in battlefield_names:
         families.add("battlefield_uthros_activation_unmodeled")
     if "Sewer-veillance Cam" in battlefield_names:
