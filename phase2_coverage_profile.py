@@ -3,8 +3,14 @@
 
 Diagnostic only: this intentionally does NOT choose mulligans yet.  Each sample is a
 fresh shuffled seven plus the modeled multiplayer turn-one draw.  The purpose is to
-rank both hard runtime blockers and *silent* missing action families that otherwise
-look like ordinary horizon losses because ending the turn remains legal.
+rank hard runtime blockers and show which strategic card/action families remain
+present in horizon states.
+
+Important: presence at the horizon is NOT automatically an implementation gap.
+Modeled tutors or combo spells can remain in hand because they were uncastable,
+deprioritized by the deterministic base policy, or drawn too late. Battlefield rows
+for explicitly unsupported activated surfaces are still useful implementation
+signals.
 
 Unsupported runtime slices are measurements, not profiler failures: a
 NotImplementedError is converted into a stable blocker category so one missing card
@@ -27,7 +33,7 @@ SIMPLE_TUTOR_CARDS = frozenset({
     "Spellseeker",
 })
 ARTIFACT_TUTOR_CARDS = frozenset({
-    "Reshape", "Transmute Artifact", "Whir of Invention",
+    "Reshape", "Transmute Artifact", "Whir of Invention", "Scour for Scrap",
 })
 NONARTIFACT_ENGINE_CARDS = frozenset({
     "Mystic Remora", "Rhystic Study", "Fortune Teller's Talent",
@@ -45,9 +51,6 @@ def opening_runtime(seed: int, deck):
     random.Random(int(seed)).shuffle(cards)
     hand = tuple(cards[:7])
     library = tuple(cards[7:])
-    # Multiplayer Commander model draws on turn one.  This is a chance event
-    # before the first policy decision, so putting the observed card in hand at
-    # runtime construction is information-faithful.
     if library:
         hand = hand + (library[0],)
         library = library[1:]
@@ -77,30 +80,23 @@ def _unsupported_reason(exc: NotImplementedError) -> str:
     return "unsupported_exception:" + (compact or exc.__class__.__name__.lower())
 
 
-def _stranded_action_families(state: solver.State):
-    """Public opportunities absent from the current Phase-2 main action surface.
-
-    This is intentionally diagnostic rather than a legality oracle.  Hand-family
-    rows answer which missing adapters are repeatedly present at the horizon;
-    battlefield rows flag common activated/engine surfaces that the current main
-    loop cannot use at all.
-    """
+def _horizon_state_features(state: solver.State):
+    """Strategic families still present at T7 after a T6 no-win trajectory."""
     hand = set(state.hand)
     battlefield_names = {p.name for p in state.battlefield}
     families = set()
 
     if hand & SIMPLE_TUTOR_CARDS:
-        families.add("hand_simple_tutor")
+        families.add("hand_simple_tutor_present")
     if hand & ARTIFACT_TUTOR_CARDS:
-        families.add("hand_artifact_tutor")
+        families.add("hand_artifact_tutor_present")
     if hand & NONARTIFACT_ENGINE_CARDS:
-        families.add("hand_nonartifact_engine_spell")
+        families.add("hand_nonartifact_engine_present")
     if hand & COMBO_SPELL_CARDS:
-        families.add("hand_combo_nonartifact_spell")
+        families.add("hand_combo_nonartifact_present")
     if hand & SPECIAL_ARTIFACT_CASTS:
-        families.add("hand_special_artifact_cast")
+        families.add("hand_special_artifact_unmodeled")
 
-    # Other instant/sorcery cards currently have no generic Phase-2 cast route.
     generic_nonartifact = {
         card for card in hand
         if card not in solver.ARTIFACTS
@@ -112,32 +108,31 @@ def _stranded_action_families(state: solver.State):
         and card not in COMBO_SPELL_CARDS
     }
     if generic_nonartifact:
-        families.add("hand_other_nonartifact_spell")
+        families.add("hand_other_nonartifact_unmodeled")
 
-    if "Repurposing Bay" in battlefield_names:
-        families.add("battlefield_bay_activation")
+    # These battlefield surfaces still lack a Phase-2 action adapter. Bay is no
+    # longer listed: its activation/search path is now modeled.
     if "Sensei's Divining Top" in battlefield_names:
-        families.add("battlefield_top_activation")
+        families.add("battlefield_top_activation_unmodeled")
     if "The One Ring" in battlefield_names:
-        families.add("battlefield_one_ring_draw")
+        families.add("battlefield_one_ring_draw_unmodeled")
     if any(p.mode == "clue" for p in state.battlefield):
-        families.add("battlefield_clue_draw")
+        families.add("battlefield_clue_draw_unmodeled")
     if "Grinding Station" in battlefield_names:
-        families.add("battlefield_station_activation")
+        families.add("battlefield_station_activation_unmodeled")
     if state.urza:
-        families.add("battlefield_urza_spin")
+        families.add("battlefield_urza_spin_unmodeled")
     if "The Reality Chip" in battlefield_names and not state.chip_attached:
-        families.add("battlefield_chip_reconfigure")
+        families.add("battlefield_chip_reconfigure_unmodeled")
     if any(name in battlefield_names for name in {"Voltaic Key", "Manifold Key"}):
-        families.add("battlefield_key_activation")
+        families.add("battlefield_key_activation_unmodeled")
     if "Uthros Research Craft" in battlefield_names:
-        families.add("battlefield_uthros_activation")
+        families.add("battlefield_uthros_activation_unmodeled")
 
     return tuple(sorted(families))
 
 
-def _stranded_cards(state: solver.State):
-    """Count exact cards in hand that currently lack a generic main cast route."""
+def _horizon_nonartifact_cards(state: solver.State):
     rows = []
     for card in state.hand:
         if card in solver.ALL_LANDS or card in solver.ARTIFACTS:
@@ -152,8 +147,8 @@ def profile(*, base_seed: int, count: int, horizon: int):
     win_turns = Counter()
     steps = []
     examples = {}
-    horizon_gap_states = Counter()
-    horizon_gap_cards = Counter()
+    horizon_features = Counter()
+    horizon_cards = Counter()
     horizon_urza_cast = 0
 
     for seed in range(int(base_seed), int(base_seed) + int(count)):
@@ -185,9 +180,9 @@ def profile(*, base_seed: int, count: int, horizon: int):
 
         if result.terminal_reason == "horizon":
             state = result.runtime.true_state
-            for family in _stranded_action_families(state):
-                horizon_gap_states[family] += 1
-            horizon_gap_cards.update(_stranded_cards(state))
+            for family in _horizon_state_features(state):
+                horizon_features[family] += 1
+            horizon_cards.update(_horizon_nonartifact_cards(state))
             if state.urza or not state.commander_in_command_zone:
                 horizon_urza_cast += 1
 
@@ -214,12 +209,13 @@ def profile(*, base_seed: int, count: int, horizon: int):
 
     horizon_n = reasons.get("horizon", 0)
     if horizon_n:
-        print(f"silent action gaps among {horizon_n} horizon states:")
-        for family, n in horizon_gap_states.most_common():
-            print(f"  {family:36s} {n:4d}  {100*n/horizon_n:6.2f}%")
-        print(f"  {'urza_cast_or_left_command_zone':36s} {horizon_urza_cast:4d}  {100*horizon_urza_cast/horizon_n:6.2f}%")
-        print("most common stranded nonartifact hand cards:")
-        for card, n in horizon_gap_cards.most_common(20):
+        print(f"horizon-state feature prevalence among {horizon_n} T6 no-win trajectories:")
+        print("  (presence does not by itself mean the family is unimplemented)")
+        for family, n in horizon_features.most_common():
+            print(f"  {family:44s} {n:4d}  {100*n/horizon_n:6.2f}%")
+        print(f"  {'urza_cast_or_left_command_zone':44s} {horizon_urza_cast:4d}  {100*horizon_urza_cast/horizon_n:6.2f}%")
+        print("most common nonartifact hand cards at the horizon:")
+        for card, n in horizon_cards.most_common(20):
             print(f"  {card:36s} {n:4d}")
 
     print("first example by terminal reason:")
