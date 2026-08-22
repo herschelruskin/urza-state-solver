@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 """Focused Phase-1 tests for non-Oracle Sensei's Divining Top staging."""
 
-from dataclasses import replace
-
 import urza_solver as solver
 from solver_architecture import InformationState, canonical_markov_state_key
 from decision_observation import (
@@ -147,6 +145,28 @@ def test_top_reorder_matches_oracle_physical_transition():
     ), "non-Oracle staged Top transition changed physical rules semantics"
 
 
+def test_top_reorder_preserves_previously_known_deeper_card():
+    state = base_state(("Winner", "Blank", "Island", "Known Fourth", "Tail"))
+    prior = InformationState(
+        known_top=("Winner", "Blank", "Island", "Known Fourth")
+    )
+    commit = top_activation_request(state, prior, horizon=6).actions[0]
+    activated = resolve_top_activation(state, commit)
+    info = information_after_top_activation(prior, activated)
+    assert info.known_top == ("Winner", "Blank", "Island", "Known Fourth")
+
+    request = top_reorder_request(activated.true_state, info, horizon=6)
+    target_order = ("Island", "Winner", "Blank")
+    chosen = next(
+        action for action in request.actions
+        if dict(action.parameters)["order"] == target_order
+    )
+    resolved = resolve_top_reorder(activated.true_state, info, chosen)
+    final_info = information_after_top_reorder(info, resolved)
+    assert resolved.true_state.library[:4] == target_order + ("Known Fourth",)
+    assert final_info.known_top == target_order + ("Known Fourth",)
+
+
 def test_duplicate_top_cards_have_deterministic_unique_orders():
     info = InformationState(known_top=("Island", "Island", "Winner"))
     actions = top_reorder_intents(info)
@@ -162,6 +182,7 @@ def main():
         test_top_activation_emits_typed_reveal_then_contingent_decision,
         test_post_observation_top_order_can_depend_on_revealed_cards,
         test_top_reorder_matches_oracle_physical_transition,
+        test_top_reorder_preserves_previously_known_deeper_card,
         test_duplicate_top_cards_have_deterministic_unique_orders,
     ]
     for test in tests:
