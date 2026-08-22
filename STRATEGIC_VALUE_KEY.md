@@ -1,7 +1,7 @@
 # Strategic Value-Key Foundation
 
 This patch implements the first seed-independent identity intended for future
-`V(s)` / `Q(s,a)` memoization.  It is deliberately **instrumentation-only**:
+`V(s)` / `Q(s,a)` memoization. It is deliberately **instrumentation-only**:
 Oracle rules, legal actions, pruning, beam search and winners are unchanged.
 
 ## Why this is separate from existing keys
@@ -14,7 +14,7 @@ The repository now has three intentionally different identities:
 3. **Strategic expected-value identity** — legal-information state whose expected
    future reward can be shared across Monte-Carlo worlds and equivalent histories.
 
-`canonical_markov_state_key()` remains the concrete transition key.  The new
+`canonical_markov_state_key()` remains the concrete transition key. The new
 `canonical_strategic_state_key()` must not replace it in the RNG implementation.
 
 ## LibraryBeliefKey
@@ -29,9 +29,9 @@ Exact hidden order is replaced by:
 This retains the information needed by a legal-information policy without
 allowing the value function to condition on the Oracle's exact unknown order.
 
-`shuffle_epoch` is intentionally omitted from the value key.  Once current hidden-
+`shuffle_epoch` is intentionally omitted from the value key. Once current hidden-
 zone knowledge is the same, the number of previous shuffles is provenance rather
-than a predictor of future value.  `InformationState.after_shuffle()` still clears
+than a predictor of future value. `InformationState.after_shuffle()` still clears
 stale known-top/bottom information; the epoch remains available for replay and
 knowledge-management bookkeeping.
 
@@ -66,7 +66,7 @@ Permanent identity uses `PublicPermanent`, which keeps
 ## Objective-specific memory
 
 Path-dependent objectives should not force all analytics history into every base
-state.  `objective_memory` is an explicit extension point for the minimal
+state. `objective_memory` is an explicit extension point for the minimal
 sufficient statistic required by a selected objective, for example:
 
 ```text
@@ -80,7 +80,7 @@ actually needed to evaluate future reward.
 
 ## StrategicKeyProfiler
 
-`StrategicKeyProfiler` is a decision-neutral measurement helper.  Supplying states
+`StrategicKeyProfiler` is a decision-neutral measurement helper. Supplying states
 and their `InformationState` records:
 
 - total observations;
@@ -88,20 +88,76 @@ and their `InformationState` records:
 - unique strategic value keys;
 - concrete-to-strategic collapse fraction;
 - estimated strategic-cache hit fraction;
-- the same metrics by turn.
+- the same metrics by turn;
+- the same metrics by turn and action depth when callers provide `depth`.
 
-It does **not** prune, merge, replace or score solver states.  The next integration
-step should attach this profiler to search/rollout instrumentation only, measure
-real collapse on fixed seeds, and compare outcomes against the existing Oracle
-regression target before any memoized value is allowed to affect decisions.
+It does **not** prune, merge, replace or score solver states.
+
+## First real-search measurement harness
+
+`strategic_collapse_profile.py` replays the validated Oracle search mechanics in a
+separate diagnostic module. It imports and uses the production implementations of:
+
+- `legal_actions()`;
+- `State.key()` exact-state merging;
+- `dominance_prune()`;
+- `score()`/beam selection;
+- `end_turn_frontier()` and pending-upkeep closure.
+
+The only added behavior is observing generated candidate states before exact-state
+merging. `urza_solver.py` itself is not modified.
+
+For reproducibility, the harness uses `oracle_mulligan_deals()` and profiles the
+exact **7A** opening candidate for each requested seed, including the fixed
+Gemstone Caverns seating result. Mulligan-stage branching is deliberately excluded
+from this first measurement so the result focuses on the in-game state graph.
+
+### Critical interpretation limit
+
+The current Oracle engine still does not propagate a legal `InformationState`.
+Therefore the first measurement calls the strategic projector with an **empty
+`InformationState` at every observation**.
+
+That means the reported collapse is an **upper-bound collapse potential**, not a
+final DP-cache hit rate. It correctly removes hidden exact library order, but it
+also temporarily forgets legally acquired top/bottom/count knowledge from effects
+such as tutors, scry, and top inspection. Once real information-state propagation
+exists, some states currently merged by this diagnostic will correctly separate.
+
+For that reason the JSON output labels itself:
+
+```text
+measurement_kind = strategic-collapse-potential
+decision_neutral = true
+search_scope = Oracle 7A opening candidate only; no mulligan branching
+```
+
+and includes the information-assumption warning verbatim.
+
+## Running the measurement
+
+A useful first fixed-seed run is:
+
+```powershell
+$env:PYTHONHASHSEED='0'
+py -3 strategic_collapse_profile.py --seed 20260821 --count 5 --turns 4 --beam 500 --depth 40 --action-cap 80
+```
+
+The harness writes `strategic_collapse_profile.json` by default and prints per-seed
+plus aggregate collapse/candidate-hit metrics. The JSON includes `by_turn` and
+`by_turn_depth` tables for locating where most duplicate strategic states arise.
+
+Start with this moderate diagnostic configuration before trying production-size
+beam/depth settings; the goal is to characterize state collapse, not benchmark the
+final Oracle throughput.
 
 ## Important scope limits
 
 The current belief representation assumes the fixed known decklist model: the
-remaining card multiset is legally inferable even though order is unknown.  A
+remaining card multiset is legally inferable even though order is unknown. A
 future opponent/deck-uncertainty model would need a richer probability distribution
 rather than this exact remaining-count representation.
 
 Pregame/mulligan-specific information such as whether Gemstone Caverns is live is
-not encoded here.  That belongs in the mulligan/pregame policy context until the
+not encoded here. That belongs in the mulligan/pregame policy context until the
 post-pregame game state fully represents its consequences.
