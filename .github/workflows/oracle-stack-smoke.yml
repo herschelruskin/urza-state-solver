@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - oracle-ceiling-permissions-trigger-order
+  pull_request:
+    branches:
+      - development
   workflow_dispatch:
 
 jobs:
