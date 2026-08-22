@@ -12,6 +12,13 @@ from dataclasses import dataclass, replace
 from typing import Dict, Iterable, Tuple
 
 import urza_solver as solver
+
+# Install card-specific runtime dispatch before the other Phase-2 adapters import
+# symbols from non_oracle_runtime. This keeps Cam target choice in the typed runtime
+# rather than falling back to the Oracle's already-resolved successor branches.
+from non_oracle_cam_runtime import install_cam_runtime_extension
+install_cam_runtime_extension()
+
 from decision_observation import ActionIntent, DECISION_COMMIT, DecisionRequest, PolicyDecisionContext
 from non_oracle_commander_adapter import (
     MAIN_CAST_COMMANDER,
@@ -86,6 +93,15 @@ from non_oracle_turn_engine import (
     advance_after_end_turn,
     can_commit_end_turn,
     resolve_remora_upkeep,
+)
+from non_oracle_chrome_dome_runtime import (
+    apply_chrome_pending,
+    apply_chrome_stack_action,
+    begin_chrome_aware_end_turn,
+    can_begin_chrome_end_turn,
+    chrome_pending_request,
+    handles_chrome_pending,
+    handles_chrome_stack_top,
 )
 
 MAIN_PLAY_LAND = "main_play_land"
@@ -205,7 +221,7 @@ def _ordinary_artifact_cast_intents(runtime: NonOracleRuntimeState) -> Tuple[Act
 
 
 def _end_turn_intent(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ...]:
-    if not can_commit_end_turn(runtime):
+    if not can_commit_end_turn(runtime) and not can_begin_chrome_end_turn(runtime):
         return ()
     return (ActionIntent(
         action_id="main.end_turn", kind=MAIN_END_TURN,
@@ -303,6 +319,11 @@ def rules_decision_request(
             runtime, horizon=horizon, objective=objective,
             policy_id=policy_id, caverns_live=caverns_live,
         )
+    if handles_chrome_pending(runtime):
+        return chrome_pending_request(
+            runtime, horizon=horizon, objective=objective,
+            policy_id=policy_id, caverns_live=caverns_live,
+        )
     if runtime.pending is not None or runtime.stack.objects:
         return runtime_decision_request(
             runtime, horizon=horizon, objective=objective,
@@ -354,6 +375,10 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
             resolved = apply_transmute_pending(runtime, action)
         elif handles_remaining_pending(runtime):
             resolved = apply_remaining_pending(runtime, action)
+        elif handles_chrome_pending(runtime):
+            resolved = apply_chrome_pending(runtime, action)
+        elif handles_chrome_stack_top(runtime):
+            resolved = apply_chrome_stack_action(runtime, action)
         elif handles_commander_stack_top(runtime):
             resolved = apply_commander_stack_action(runtime, action)
         elif handles_proactive_stack_top(runtime):
@@ -425,6 +450,8 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
     if action.kind == MAIN_CAST_COMMANDER:
         return begin_commander_cast(runtime, action)
     if action.kind == MAIN_END_TURN:
+        if can_begin_chrome_end_turn(runtime):
+            return begin_chrome_aware_end_turn(runtime)
         return advance_after_end_turn(runtime)
 
     raise AssertionError(f"unhandled main action kind {action.kind!r}")

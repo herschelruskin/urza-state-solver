@@ -170,7 +170,7 @@ def test_remora_decline_sacrifices_before_natural_draw():
     assert runtime.true_state.hand == ("Env1", "Env2", "Natural")
 
 
-def test_chrome_dome_turn_boundary_is_explicitly_blocked_not_auto_oracled():
+def test_chrome_dome_uses_explicit_specialized_turn_boundary():
     runtime = make_runtime_state(
         solver.State(
             turn=1,
@@ -180,8 +180,14 @@ def test_chrome_dome_turn_boundary_is_explicitly_blocked_not_auto_oracled():
             colorless=5,
         )
     )
+    # The generic turn engine still refuses Chrome; the rules adapter must route
+    # it through the dedicated end-step timing adapter instead of auto-Oracling it.
     assert not can_commit_end_turn(runtime)
-    assert all(a.kind != MAIN_END_TURN for a in rules_decision_request(runtime, horizon=6).actions)
+    request = rules_decision_request(runtime, horizon=6)
+    assert any(a.kind == MAIN_END_TURN for a in request.actions)
+    runtime = apply_main_action(runtime, end_action(runtime))
+    assert runtime.true_state.turn == 2
+    assert runtime.true_state.hand == ("A",)
 
 
 def main():
@@ -194,7 +200,7 @@ def main():
         test_remora_upkeep_request_precedes_natural_draw_and_is_hidden_future_invariant,
         test_remora_policy_floats_mana_pays_then_draws_and_ages,
         test_remora_decline_sacrifices_before_natural_draw,
-        test_chrome_dome_turn_boundary_is_explicitly_blocked_not_auto_oracled,
+        test_chrome_dome_uses_explicit_specialized_turn_boundary,
     )
     for test in tests:
         test()

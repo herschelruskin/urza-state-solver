@@ -23,6 +23,8 @@ jobs:
         run: |
           python -m py_compile \
             non_oracle_runtime.py \
+            non_oracle_cam_runtime.py \
+            non_oracle_chrome_dome_runtime.py \
             non_oracle_runtime_view.py \
             non_oracle_runtime_value_key.py \
             non_oracle_base_policy.py \
@@ -37,6 +39,8 @@ jobs:
             non_oracle_episode.py \
             phase2_coverage_profile.py \
             phase2_runtime_smoke.py \
+            cam_runtime_smoke.py \
+            chrome_dome_runtime_smoke.py \
             base_policy_smoke.py \
             commander_adapter_smoke.py \
             proactive_spell_smoke.py \
@@ -50,6 +54,10 @@ jobs:
             episode_smoke.py
       - name: Phase 2 runtime kernel
         run: python phase2_runtime_smoke.py
+      - name: Sewer-veillance Cam runtime
+        run: python cam_runtime_smoke.py
+      - name: Chrome Dome turn boundary
+        run: python chrome_dome_runtime_smoke.py
       - name: Deterministic base policy
         run: python base_policy_smoke.py
       - name: Typed commander casting

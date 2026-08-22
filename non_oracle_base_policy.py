@@ -41,6 +41,31 @@ CARD_ADVANTAGE = frozenset({
     "Uthros Research Craft",
 })
 
+CHROME_TARGET_PRIORITY = {
+    "Grinding Station": 100.0,
+    "Battered Golem": 96.0,
+    "Mana Vault": 93.0,
+    "Grim Monolith": 91.0,
+    "Basalt Monolith": 89.0,
+    "Forensic Gadgeteer": 86.0,
+    "Sol Ring": 82.0,
+    "Prized Statue": 74.0,
+    "Voltaic Key": 70.0,
+    "Manifold Key": 69.0,
+    "Sewer-veillance Cam": 62.0,
+    "The One Ring": 58.0,
+}
+CAM_TARGET_PRIORITY = {
+    "Battered Golem": 100.0,
+    "Grinding Station": 96.0,
+    "Forensic Gadgeteer": 90.0,
+    "Valley Floodcaller": 82.0,
+    "Artificer's Assistant": 78.0,
+    "Spellseeker": 72.0,
+    "The Reality Chip": 68.0,
+    "Chrome Dome": 64.0,
+}
+
 
 @dataclass(frozen=True)
 class DeterministicBasePolicy:
@@ -82,6 +107,8 @@ class DeterministicBasePolicy:
             "prized_entry_treasure": 5.0,
             "prized_dies_treasure": 5.0,
             "etb_scry_2": 4.5,
+            "etb_cam": 4.25,
+            "ltb_cam": 4.25,
             "vfc_noncreature_cast": 4.0,
             "etb_tezz": 3.0,
             "etb_producer": 2.0,
@@ -150,6 +177,28 @@ class DeterministicBasePolicy:
         steps = tuple(params.get("mana_steps", ()))
         return 15.0 - float(len(steps))
 
+    @staticmethod
+    def _cam_target_score(action: ActionIntent) -> float:
+        signature = tuple(dict(action.parameters).get("target_signature", ()))
+        name = str(signature[0]) if signature else ""
+        tapped = bool(signature[1]) if len(signature) > 1 else False
+        return CAM_TARGET_PRIORITY.get(name, 40.0) + (12.0 if tapped else 0.0)
+
+    @staticmethod
+    def _cam_effect_score(action: ActionIntent) -> float:
+        choice = str(dict(action.parameters).get("choice", "decline"))
+        return {"untap": 20.0, "decline": 2.0, "tap": 0.0}.get(choice, -10.0)
+
+    def _chrome_endstep_score(self, observation: RuntimePolicyView, action: ActionIntent) -> float:
+        params = dict(action.parameters)
+        target = str(params.get("target_name", ""))
+        if not target:
+            return 0.0
+        return 30.0 + CHROME_TARGET_PRIORITY.get(
+            target,
+            20.0 + 4.0 * self.visible_card_score(target, observation),
+        ) / 10.0
+
     def _main_action_score(self, observation: RuntimePolicyView, action: ActionIntent) -> float:
         params = dict(action.parameters)
         if action.kind == "main_cast_commander":
@@ -202,6 +251,12 @@ class DeterministicBasePolicy:
             return self._scry_score(observation, action)
         if kind == "runtime_chrome_imprint":
             return self._chrome_imprint_score(observation, action)
+        if kind == "runtime_cam_target":
+            return self._cam_target_score(action)
+        if kind == "runtime_cam_effect":
+            return self._cam_effect_score(action)
+        if kind == "runtime_chrome_endstep_choice":
+            return self._chrome_endstep_score(observation, action)
         if kind in {"choose_tutor_target", "x_artifact_search_target", "transmute_choose_target", "remaining_search_target"}:
             return self._tutor_target_score(observation, action)
         if kind == "transmute_choose_sacrifice":

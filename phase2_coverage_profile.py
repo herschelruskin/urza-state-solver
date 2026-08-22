@@ -1,20 +1,14 @@
 #!/usr/bin/env python3
 """Profile current Phase-2 episode coverage on real shuffled deck openings.
 
-Diagnostic only: this intentionally does NOT choose mulligans yet.  Each sample is a
-fresh shuffled seven plus the modeled multiplayer turn-one draw.  The purpose is to
-rank hard runtime blockers and show which strategic card/action families remain
-present in horizon states.
+Diagnostic only: this intentionally does NOT choose mulligans yet. Each sample is a
+fresh shuffled seven plus the modeled multiplayer turn-one draw. The purpose is to
+rank hard runtime blockers and expose both terminal failures and silent action gaps.
 
-Important: presence at the horizon is NOT automatically an implementation gap.
-Modeled tutors or combo spells can remain in hand because they were uncastable,
-deprioritized by the deterministic base policy, or drawn too late. Battlefield rows
-for explicitly unsupported activated surfaces are still useful implementation
-signals.
-
-Unsupported runtime slices are measurements, not profiler failures: a
-NotImplementedError is converted into a stable blocker category so one missing card
-adapter cannot hide the blocker distribution for the rest of the sample.
+A horizon feature is not automatically a bug: modeled cards can remain unused
+because they were uncastable, deprioritized, or drawn late. Rows explicitly ending
+in ``_unmodeled`` or ``_partial`` are implementation audit signals and should be
+worked down before Phase 2 is considered breadth-complete.
 """
 
 from __future__ import annotations
@@ -110,8 +104,6 @@ def _horizon_state_features(state: solver.State):
     if generic_nonartifact:
         families.add("hand_other_nonartifact_unmodeled")
 
-    # These battlefield surfaces still lack a Phase-2 action adapter. Bay is no
-    # longer listed: its activation/search path is now modeled.
     if "Sensei's Divining Top" in battlefield_names:
         families.add("battlefield_top_activation_unmodeled")
     if "The One Ring" in battlefield_names:
@@ -128,17 +120,27 @@ def _horizon_state_features(state: solver.State):
         families.add("battlefield_key_activation_unmodeled")
     if "Uthros Research Craft" in battlefield_names:
         families.add("battlefield_uthros_activation_unmodeled")
+    if "Sewer-veillance Cam" in battlefield_names:
+        families.add("battlefield_cam_draw_activation_unmodeled")
+        if (
+            "Reshape" in hand
+            or "Transmute Artifact" in hand
+            or "Repurposing Bay" in battlefield_names
+        ):
+            families.add("cam_ltb_sacrifice_route_partial")
+    if "Chrome Dome" in battlefield_names:
+        # Opponent-before-us end-step copying is now modeled; arbitrary main/priority
+        # Chrome activation remains a separate action-surface slice.
+        families.add("battlefield_chrome_main_activation_partial")
 
     return tuple(sorted(families))
 
 
 def _horizon_nonartifact_cards(state: solver.State):
-    rows = []
-    for card in state.hand:
-        if card in solver.ALL_LANDS or card in solver.ARTIFACTS:
-            continue
-        rows.append(card)
-    return tuple(rows)
+    return tuple(
+        card for card in state.hand
+        if card not in solver.ALL_LANDS and card not in solver.ARTIFACTS
+    )
 
 
 def profile(*, base_seed: int, count: int, horizon: int):
@@ -210,7 +212,7 @@ def profile(*, base_seed: int, count: int, horizon: int):
     horizon_n = reasons.get("horizon", 0)
     if horizon_n:
         print(f"horizon-state feature prevalence among {horizon_n} T6 no-win trajectories:")
-        print("  (presence does not by itself mean the family is unimplemented)")
+        print("  (_unmodeled/_partial rows are implementation audit signals)")
         for family, n in horizon_features.most_common():
             print(f"  {family:44s} {n:4d}  {100*n/horizon_n:6.2f}%")
         print(f"  {'urza_cast_or_left_command_zone':44s} {horizon_urza_cast:4d}  {100*horizon_urza_cast/horizon_n:6.2f}%")
