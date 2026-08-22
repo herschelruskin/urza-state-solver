@@ -110,7 +110,9 @@ Relevant cards include:
 Important rules:
 
 -   Knack/Helix creates a **current-turn** activated bounce ability on
-    the chosen creature.
+    the chosen creature. The grant belongs to that exact battlefield permanent,
+    not merely a `(name, mode)` label, so same-name copies remain distinct when
+    their resulting states are strategically different.
 -   A stale Knack/Helix card in the graveyard must not create a false
     active effect.
 -   The chosen creature must obey tapping/summoning-sickness
@@ -148,6 +150,12 @@ Mana, tap, untap, and colored-mana requirements must remain explicit. A
 recognized partial engine is not automatically a win unless the complete
 modeled win condition is reachable.
 
+**Accepted Oracle state-space prune:** Power Artifact and Reality Chip do not
+attach/reconfigure onto temporary Chrome Dome copy permanents. Those attachment
+lines have no modeled strategic role in this singleton deck and would make the
+existing name-based attachment fields ambiguous. All retained non-copy targets
+remain available.
+
 ## 7. Chrome Dome
 
 Chrome Dome is a validated natural win family.
@@ -171,7 +179,18 @@ Artifact ETBs can create important immediate mana/action sequences.
 -   Both abilities say "an artifact," not "another artifact," so each
     permanent sees its own entry and every controlled copy triggers.
 -   With Urza present, an artifact can be tapped for U before an untap
-    trigger resolves and potentially tapped again afterward.
+    trigger resolves and potentially tapped again afterward. The production
+    search keeps this fast maximum-mana representation but records the final
+    post-trigger Urza tap as refundable until that specific blue mana is spent.
+    This preserves the legal alternative of leaving Station/Golem untapped for
+    a native or Knack/Helix tap without multiplying every artifact ETB into all
+    optional tap configurations.
+-   Grinding Station's native `{T}, sacrifice an artifact` activation may
+    sacrifice Station itself, a tapped artifact, or a token. When milling is
+    strategically live (top access, Cage removal, or an active graveyard
+    resource), every legal artifact sacrifice is enumerated. Purely proactive
+    mill branches outside those states are intentionally suppressed as a
+    throughput/search-space prune.
 -   Uthros/Station has dedicated action handling and must remain covered
     by smoke tests.
 -   Positive-artifact replay loops with Knack/Golem must be reachable
@@ -236,6 +255,10 @@ real rules/search decision:
 -   if the old Remora leaves during that window, its pending payment/sacrifice
     instruction has no remaining effect on the new object, and a later recast
     starts at age zero.
+-   when the upkeep response set hits `ACTION_CAP`, cap protection preserves
+    materially distinct reset routes by source (Chain, Otawara, Banishing
+    Knack, Retraction Helix) rather than collapsing them into one generic
+    bounce result.
 
 Age and pending-upkeep phase are future-legality state and must be represented
 in exact, dominance, and action-cache identities. Search closes the upkeep
@@ -300,16 +323,21 @@ obvious in the future policy fork.
 
 Implemented own-permanent bounce rules also include:
 
--   Chain of Vapor targets any of our nonland permanents, including Mystic
+-   Chain of Vapor can legally target our nonland permanents, including Mystic
     Remora; each modeled copy after the first requires sacrificing a land;
 -   Otawara channels for {3}{U}, reduced by {1} per legendary creature we
-    control, and may target our artifact, creature, enchantment, or
+    control, and can legally target our artifact, creature, enchantment, or
     planeswalker, including Remora;
 -   Aether Spellbomb pays {U} and sacrifices itself to target a creature only;
 -   Banishing Knack and Retraction Helix cost {U}, select a creature, and grant
-    it a tap ability that can return any of our nonland permanents, including
-    itself or Remora, provided that creature can legally pay a tap-symbol cost;
--   returned cards go to hand and returned tokens cease to exist.
+    it a tap ability that can legally return a nonland permanent, including
+    itself or Remora, provided that creature can pay a tap-symbol cost;
+-   **Oracle goldfish prune:** our Urza and Construct tokens are intentionally
+    excluded as bounce destinations for Chain/Otawara/Spellbomb/Knack-Helix.
+    This is not a Magic legality restriction. It removes a costly Urza reset and
+    token-destruction branches with no retained goldfish value. Urza may still
+    carry a Knack/Helix grant to bounce another retained target;
+-   returned retained cards go to hand and returned tokens cease to exist.
 
 Repurposing Bay is a sorcery-speed artifact activation. It pays {2}, taps Bay,
 and sacrifices another artifact, then searches for an artifact card with mana
@@ -319,6 +347,13 @@ reduced below one mana. Ordinary tokens have mana value zero; Chrome copy
 tokens retain the copied artifact's mana value. Grafdigger's Cage is evaluated
 after the sacrifice cost, a qualified hidden-zone search may fail to find, and
 the shuffle completes before the found permanent's ETB triggers resolve.
+
+Urza's Saga chapter III is represented as an independent pending trigger once
+the third lore counter is placed. Legal responses may occur before it resolves.
+In particular, Otawara can return Saga to hand; the pending chapter-III search
+still resolves, and the final-chapter sacrifice applies only if the Saga remains
+on the battlefield after the chapter ability leaves the stack. Chain of Vapor
+and Knack/Helix cannot return Saga because they require a nonland permanent.
 
 ## 17. Tutors and mana value
 

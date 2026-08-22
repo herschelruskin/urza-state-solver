@@ -84,6 +84,9 @@ The metadata smoke should continue to verify:
     artifacts;
 -   Sapphire Medallion generic-X reduction behavior;
 -   Reality Chip / Chrome Dome creature status;
+-   temporary Chrome Dome copy attachment is intentionally pruned for Power
+    Artifact and Reality Chip; retained singleton attachment targets remain
+    name-unambiguous.
 -   Transmute Artifact unpaid-difference graveyard branch.
 -   tutor-cap diagnostics recognize every target-selecting tutor/search source,
     distinguish target destinations, record every tutor-bearing cap hit, and
@@ -120,7 +123,8 @@ The metadata smoke should continue to verify:
     corresponding payment are applied together only when the cumulative-upkeep
     trigger resolves;
 -   cap-hit upkeep action sets preserve decline, a payment continuation, and
-    the direct Chain-bounce resolution;
+    distinct legal reset routes for Chain, Otawara, Banishing Knack, and
+    Retraction Helix when those routes are present;
 -   upkeep payment closes before ordinary per-turn depth begins, while the
     post-horizon diagnostic snapshot does not branch an unsearched upkeep;
 -   pending upkeep prevents main-phase win recognition;
@@ -143,16 +147,27 @@ The metadata smoke should continue to verify:
     so it cannot target Mystic Remora; its {1} draw mode remains available;
 -   Knack/Helix pays {U}, grants the selected creature its temporary tap
     ability, enforces summoning sickness and tapped status, and can return that
-    creature itself or another nonland permanent including Remora;
--   bounced nontoken cards go to hand while bounced tokens cease to exist;
+    creature itself or another retained nonland permanent including Remora;
+-   Oracle goldfish pruning excludes our Urza and Construct tokens as bounce
+    destinations across Chain, Otawara, Aether Spellbomb, and Knack/Helix, while
+    still allowing Urza to carry a Knack/Helix grant used on another target;
+-   bounced retained nontoken cards go to hand while bounced tokens cease to exist;
 -   MDFC creature and land faces receive the correct target treatment;
 -   Oboro pays {1} to return only itself and can activate while tapped because
     its ability has no tap-symbol cost;
 -   the Remora response window permits the modeled instant/channel/activated
     responses, clears the old obligation after Remora leaves, resets a recast
     Remora to age zero, and excludes ordinary sorcery-speed actions;
--   the selected Knack target's permanent mode is represented in exact and
-    dominance keys.
+-   Knack/Helix grants live on the exact creature permanent rather than a
+    global `(name, mode)` target; two same-name permanents can therefore
+    produce materially different legal results and canonical deduplication
+    occurs only after the transition;
+-   Chain's multi-step macro likewise distinguishes same-name permanent
+    instances while applying the action, without putting ephemeral runtime IDs
+    into canonical state hashes;
+-   once Saga III has triggered, Otawara may bounce Urza's Saga and the
+    independent chapter-III search still resolves; Chain/Knack/Helix cannot
+    target Saga because it is a land.
 
 ### Repurposing Bay and producer-ETB coverage
 
@@ -170,7 +185,18 @@ The metadata smoke should continue to verify:
     main-phase action set;
 -   Grinding Station and Battered Golem trigger on their own artifact entry and
     every controlled copy receives an artifact-ETB untap trigger; with Urza,
-    the tested pre-trigger/untap/post-trigger taps are rules-legal.
+    the fast representation takes the legal maximum-mana line and marks the
+    final post-trigger Urza tap as refundable until that blue mana is spent;
+-   a refundable Station/Golem can recover the legal leave-untapped alternative
+    for Station's native mill or a Knack/Helix tap without branching every ETB
+    into all tap configurations; once the represented blue is spent the refund
+    option disappears;
+-   in strategically live mill states, Grinding Station's native activation
+    enumerates every artifact sacrifice, including Station itself, tapped
+    artifacts, and tokens, with correct token graveyard handling. Production
+    search deliberately suppresses otherwise purposeless proactive-mill
+    branches to control state-space growth; this is a documented Oracle search
+    pruning rather than a rules claim.
 
 ## 6. Named draw-trace coverage
 

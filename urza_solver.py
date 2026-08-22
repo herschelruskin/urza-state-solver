@@ -240,6 +240,15 @@ class Perm:
     # the same ability, so canonical state identity uses only knack_granted.
     knack_granted: bool = False
     knack_source: str = field(default="",compare=False,hash=False)
+    # Search compression: old Oracle behavior immediately takes the optional
+    # post-trigger Urza tap for +U and leaves Station/Golem tapped. When True,
+    # that final +U is still present in the floating blue pool and may be
+    # refunded to preserve the producer for a strategically distinct native or
+    # Knack/Helix tap. pay() clears credits once that mana is actually spent.
+    producer_urza_ready: bool = False
+    # Ephemeral object identity for multi-step action macros. Excluded from
+    # equality/hash so canonical state merging is not fragmented by runtime IDs.
+    instance_tag: int = field(default=0,compare=False,hash=False)
 
 @dataclass(frozen=True)
 class State:
@@ -276,9 +285,23 @@ class State:
     win_family: str = ""
     trace: Tuple[str,...] = ()
 
+    @property
+    def knack_target(self):
+        p=next((p for p in self.battlefield if p.knack_granted),None)
+        return p.name if p else ""
+
+    @property
+    def knack_target_mode(self):
+        p=next((p for p in self.battlefield if p.knack_granted),None)
+        return p.mode if p else ""
+
     def key(self):
         # Preserve exact shuffled/top-access states without storing the full tuple twice in the key.
         libp = (self.library[:10], hash(self.library))
+        # producer_urza_ready is a monotone optional-resource annotation: for
+        # otherwise identical physical states, having the refund credit strictly
+        # dominates not having it. Exclude it from the exact key and let score()
+        # retain the credit-bearing representative.
         bf = tuple(sorted((p.name,p.tapped,p.sick,p.counters,p.mode,
                            p.knack_granted) for p in self.battlefield))
         return (self.turn, tuple(sorted(self.hand)), bf, self.blue, self.colorless,
@@ -356,6 +379,10 @@ def has(s,name): return any(p.name==name for p in s.battlefield)
 def count_bf(s,name): return sum(p.name==name for p in s.battlefield)
 
 def update_perm(s:State, idx:int, **kwargs)->State:
+    # Any later tap/untap transition consumes the special ETB refund credit
+    # unless the caller explicitly establishes a fresh one.
+    if "tapped" in kwargs and "producer_urza_ready" not in kwargs:
+        kwargs["producer_urza_ready"]=False
     b=list(s.battlefield); b[idx]=replace(b[idx],**kwargs); return replace(s,battlefield=tuple(b))
 
 def remove_perm(s:State, idx:int, to_grave=True)->State:
@@ -458,12 +485,56 @@ def is_token_perm(p:Perm)->bool:
         "clue","construct","treasure","chrome_copy","chrome_copy_preturn",
     }
 
+def is_pruned_own_bounce_target(p:Perm)->bool:
+    """Goldfish search pruning: never bounce our Urza or Construct token.
+
+    This is intentionally stricter than Magic target legality. In the current
+    singleton goldfish model, returning Urza is a high-cost reset that does not
+    improve any retained winning line, while returning a Construct token simply
+    makes it cease to exist. Excluding both from own-bounce action generation
+    removes strategically dead branches from Chain/Otawara/Spellbomb/Knack.
+    """
+    return p.name==COMMANDER or p.name=="Construct" or p.mode=="construct"
+
 def is_knack_target_perm(s:State,p:Perm)->bool:
-    return bool(
-        s.knack_target
-        and p.name==s.knack_target
-        and p.mode==s.knack_target_mode
+    return bool(p.knack_granted and is_creature_perm(p))
+
+def has_knack_grant(s:State)->bool:
+    return any(is_knack_target_perm(s,p) for p in s.battlefield)
+
+def deferred_producer_blue(s:State)->int:
+    """Count unspent refundable post-trigger Urza taps in the blue pool."""
+    return sum(
+        1 for p in s.battlefield
+        if p.producer_urza_ready and p.tapped
+        and p.name in {"Grinding Station","Battered Golem"}
     )
+
+def _clear_spent_producer_credits(s:State,n:int)->State:
+    if n<=0:
+        return s
+    b=list(s.battlefield)
+    candidates=[
+        i for i,p in enumerate(b)
+        if p.producer_urza_ready and p.tapped
+        and p.name in {"Grinding Station","Battered Golem"}
+    ]
+    # Preserve an already-Knack-granted producer first; among ordinary sources,
+    # Battered Golem has no native strategic tap while Station does.
+    candidates.sort(key=lambda i:(b[i].knack_granted,b[i].name=="Grinding Station"))
+    for i in candidates[:n]:
+        b[i]=replace(b[i],producer_urza_ready=False)
+    return replace(s,battlefield=tuple(b))
+
+def _refund_producer_urza_tap(s:State,idx:int)->Optional[State]:
+    """Undo one still-unspent final Urza tap and restore that producer."""
+    p=s.battlefield[idx]
+    if (p.name not in {"Grinding Station","Battered Golem"}
+            or not p.tapped or not p.producer_urza_ready or s.blue<1):
+        return None
+    ns=replace(s,blue=s.blue-1)
+    return update_perm(ns,idx,tapped=False,producer_urza_ready=False)
+
 
 def is_otawara_target_perm(p:Perm)->bool:
     return bool(
@@ -508,9 +579,9 @@ def vfc_noncreature_cast_trigger(s:State, card:str)->State:
     return s
 
 def cam_untap_best(s:State,label:str)->State:
-    # Prefer restoring the creature carrying Knack/Helix; otherwise turn a tapped
+    # Prefer restoring a creature carrying Knack/Helix; otherwise turn a tapped
     # artifact creature directly into +U through Urza, per the user's speed model.
-    if s.knack_target:
+    if has_knack_grant(s):
         for i,p in enumerate(s.battlefield):
             if is_knack_target_perm(s,p) and p.tapped:
                 return add_trace(update_perm(s,i,tapped=False),f"Cam {label} untaps Knack target {p.name}")
@@ -540,10 +611,22 @@ def can_pay(s:State, generic:int, blue_req:int)->bool:
 
 def pay(s:State,generic:int,blue_req:int)->Optional[State]:
     if not can_pay(s,generic,blue_req): return None
+    start_blue=s.blue
     b=s.blue-blue_req; c=s.colorless
     use_c=min(c,generic); c-=use_c; generic-=use_c
     b-=generic
-    return replace(s,blue=b,colorless=c)
+    ns=replace(s,blue=b,colorless=c)
+
+    # producer_urza_ready is valid only while its specific +U remains unspent.
+    # Spend ordinary floating blue first; only the unavoidable excess consumes
+    # refundable producer credits. Later mana production cannot resurrect them.
+    spent_blue=start_blue-b
+    credits=deferred_producer_blue(s)
+    ordinary_blue=max(0,start_blue-credits)
+    consumed=max(0,spent_blue-ordinary_blue)
+    if consumed:
+        ns=_clear_spent_producer_credits(ns,consumed)
+    return ns
 
 @lru_cache(maxsize=None)
 def base_spell_cost(card:str):
@@ -640,25 +723,27 @@ def artifact_etb_triggers(s:State, entered:str)->State:
     for i,p in enumerate(b):
         if p.name=="Tezzeret, Cruel Captain": b[i]=replace(p,counters=p.counters+1)
     s=replace(s,battlefield=tuple(b))
-    # User-requested producer simplification with exact pre/post-trigger tapping:
-    # if untapped, tap before trigger and after it -> +UU; if tapped -> +U.
+    # Every Station/Golem sees the artifact ETB, including its own. Preserve
+    # the established fast Oracle compression: if it was untapped, tap before
+    # the trigger and again afterward for +UU; if already tapped, untap then
+    # take the final Urza tap for +U. The final +U is marked refundable so a
+    # later strategically relevant Station/Knack action can instead choose to
+    # leave that producer untapped without branching every ETB state.
     if s.urza:
         b=list(s.battlefield); gain=0
         for i,p in enumerate(b):
             if p.name in {"Grinding Station","Battered Golem"}:
                 gain += 1 if p.tapped else 2
-                b[i]=replace(p,tapped=True)
+                b[i]=replace(p,tapped=True,producer_urza_ready=True)
         if gain:
             s=replace(s,battlefield=tuple(b),blue=s.blue+gain)
             s=add_trace(s,f"producer ETB mana from {entered}: +{gain}U")
     else:
-        # Every Station/Golem sees the artifact ETB, including its own. Each
-        # controlled copy therefore gets its own optional untap trigger.
         b=list(s.battlefield)
         changed=False
         for i,p in enumerate(b):
             if p.name in {"Grinding Station","Battered Golem"} and p.tapped:
-                b[i]=replace(p,tapped=False)
+                b[i]=replace(p,tapped=False,producer_urza_ready=False)
                 changed=True
         if changed:
             s=replace(s,battlefield=tuple(b))
@@ -789,7 +874,7 @@ def cast_from_hand(s:State,card:str,outside:bool=False,free:bool=False)->Optiona
         s=vfc_noncreature_cast_trigger(s,card)
         b=[]
         for p in s.battlefield:
-            b.append(p if is_land_perm(p) else replace(p,tapped=False))
+            b.append(p if is_land_perm(p) else replace(p,tapped=False,producer_urza_ready=False))
         return add_trace(
             replace(s,battlefield=tuple(b),graveyard=s.graveyard+(card,)),
             "Dramatic Reversal untaps all nonlands"
@@ -1075,7 +1160,7 @@ def artifact_tutor_actions(s:State)->List[State]:
                     b=list(ns.battlefield)
                     for j,p in enumerate(b):
                         if need and not p.tapped and is_artifact_perm(p):
-                            b[j]=replace(p,tapped=True); need-=1
+                            b[j]=replace(p,tapped=True,producer_urza_ready=False); need-=1
                     ns=replace(ns,battlefield=tuple(b))
 
                 if need==0:
@@ -1094,7 +1179,11 @@ def power_artifact_actions(s:State)->List[State]:
     g,b=spell_cost(s,"Power Artifact")
     if not can_pay(s,g,b): return out
     for p in s.battlefield:
-        if is_artifact_perm(p):
+        # Deliberate Oracle state-space prune: PA attachment to a temporary
+        # Chrome Dome copy is not a modeled strategic line. All singleton
+        # non-copy artifact targets remain available, which also keeps the
+        # name-based pa_target representation unambiguous.
+        if is_artifact_perm(p) and p.mode not in {"chrome_copy","chrome_copy_preturn"}:
             ns=pay(s,g,b); ns=replace(ns,hand=remove_one(ns.hand,"Power Artifact"),spell_cast_this_turn=True)
             ns=vfc_noncreature_cast_trigger(ns,"Power Artifact")
             if has(ns,"Artificer's Assistant"): ns=apply_scry(ns,1,"Artificer's Assistant (Power Artifact)")
@@ -1132,7 +1221,8 @@ def aether_spellbomb_actions(s:State)->List[State]:
             ))
         if can_pay(s,0,1):
             for j,target in enumerate(s.battlefield):
-                if j==i or not is_creature_perm(target):
+                if (j==i or not is_creature_perm(target)
+                        or is_pruned_own_bounce_target(target)):
                     continue
                 ns=pay(s,0,1); ns=remove_perm(ns,i)
                 target_i=j-1 if j>i else j
@@ -1248,7 +1338,7 @@ def otawara_channel_actions(s:State,only_target:str="")->List[State]:
         return []
     out=[]
     for i,p in enumerate(s.battlefield):
-        if not is_otawara_target_perm(p):
+        if not is_otawara_target_perm(p) or is_pruned_own_bounce_target(p):
             continue
         if only_target and p.name!=only_target:
             continue
@@ -1288,19 +1378,49 @@ def producer_native_actions(s:State)->List[State]:
         if p.name=="Giant's Boulder" and not p.tapped and can_pay(s,1,0):
             ns=pay(s,1,0); ns=update_perm(ns,i,tapped=True); ns=replace(ns,blue=ns.blue+1)
             out.append(add_trace(ns,"Giant's Boulder filters 1 -> U"))
-    # Codex self-mill clears a brick from Chip/FTT top.
+    # Codex/Station self-mill matters when current top access can be unbricked,
+    # Cage must be removed, or the graveyard is an active resource. Grinding
+    # Station's cost is T, sacrifice AN artifact: it may sacrifice itself and
+    # the sacrificed artifact need not be untapped. Enumerate every distinct
+    # legal artifact choice only in these strategically live states to avoid
+    # flooding ordinary development nodes with irrelevant mill branches.
+    graveyard_live=(
+        "Scour for Scrap" in s.hand
+        or has(s,"Codex Shredder")
+    )
+    mill_live=(s.chip_attached or s.ftt_level>=2 or has(s,"Grafdigger's Cage")
+               or graveyard_live)
     if s.chip_attached or s.ftt_level>=2:
         for i,p in enumerate(s.battlefield):
             if p.name=="Codex Shredder" and not p.tapped and s.library:
-                ns=update_perm(s,i,tapped=True); ns=replace(ns,graveyard=ns.graveyard+(ns.library[0],),library=ns.library[1:])
+                ns=update_perm(s,i,tapped=True)
+                ns=replace(ns,graveyard=ns.graveyard+(ns.library[0],),library=ns.library[1:])
                 out.append(add_trace(ns,"Codex mills our top card"))
-            if p.name=="Grinding Station" and not p.tapped and s.library:
-                for j,a in enumerate(s.battlefield):
-                    if j!=i and is_artifact_perm(a):
-                        ns=update_perm(s,i,tapped=True); ns=remove_perm(ns,j if j<i else j)
-                        n=min(3,len(ns.library)); ns=replace(ns,graveyard=ns.graveyard+ns.library[:n],library=ns.library[n:])
-                        out.append(add_trace(ns,f"Grinding Station sacs {a.name or a.mode}, self-mill {n}"))
-                        break
+
+    if mill_live:
+        for i,p in enumerate(s.battlefield):
+            if p.name!="Grinding Station" or not s.library:
+                continue
+            base=s
+            if p.tapped:
+                base=_refund_producer_urza_tap(s,i)
+                if base is None:
+                    continue
+            for j,a in enumerate(base.battlefield):
+                if not is_artifact_perm(a):
+                    continue
+                # Pay the tap cost first, then sacrifice the chosen artifact.
+                ns=update_perm(base,i,tapped=True)
+                sac_name=a.name or a.mode
+                ns=remove_perm(ns,j,to_grave=True)
+                n=min(3,len(ns.library))
+                milled=ns.library[:n]
+                ns=replace(ns,graveyard=ns.graveyard+milled,library=ns.library[n:])
+                out.append(add_trace(
+                    ns,
+                    f"Grinding Station sacs {sac_name}, self-mill {n}: "
+                    f"{', '.join(milled)}"
+                ))
     # Jeweled Amulet banks either blue or colorless one turn and releases it later.
     for i,p in enumerate(s.battlefield):
         if p.name=="Jeweled Amulet" and not p.tapped:
@@ -1335,18 +1455,6 @@ def producer_native_actions(s:State)->List[State]:
                     if target in gy:
                         gy.remove(target); ns=replace(ns,graveyard=tuple(gy),hand=ns.hand+(target,)); out.append(add_trace(ns,f"Codex returns {target}"))
 
-    if has(s,"Grafdigger's Cage"):
-        for i,p in enumerate(s.battlefield):
-            if p.name=="Grinding Station" and not p.tapped:
-                cage_idx=next((j for j,q in enumerate(s.battlefield) if q.name=="Grafdigger's Cage"),None)
-                if cage_idx is not None and cage_idx!=i:
-                    ns=update_perm(s,i,tapped=True)
-                    ns=remove_perm(ns,cage_idx,to_grave=True)
-                    m=min(3,len(ns.library))
-                    milled=ns.library[:m]
-                    ns=replace(ns,library=ns.library[m:],graveyard=ns.graveyard+milled)
-                    out.append(add_trace(ns,f"Grinding Station: sac Grafdigger's Cage to unlock library; self-mill {m}"))
-
     return out
 
 def top_key_combo_actions(s:State)->List[State]:
@@ -1371,11 +1479,18 @@ def uthros_station_actions(s:State)->List[State]:
     out=[]
     if not has(s,"Uthros Research Craft"): return out
     for i,p in enumerate(s.battlefield):
-        if not p.tapped and is_creature_perm(p) and p.name!="Uthros Research Craft":
-            power=creature_power(s,p)
-            if power>0:
-                ns=update_perm(s,i,tapped=True); ns=replace(ns,uthros_counters=ns.uthros_counters+power)
-                out.append(add_trace(ns,f"Uthros stations {p.name or p.mode} for {power} counters -> {ns.uthros_counters}"))
+        if not is_creature_perm(p) or p.name=="Uthros Research Craft":
+            continue
+        base=s
+        if p.tapped:
+            base=_refund_producer_urza_tap(s,i)
+            if base is None:
+                continue
+        power=creature_power(base,base.battlefield[i])
+        if power>0:
+            ns=update_perm(base,i,tapped=True)
+            ns=replace(ns,uthros_counters=ns.uthros_counters+power)
+            out.append(add_trace(ns,f"Uthros stations {p.name or p.mode} for {power} counters -> {ns.uthros_counters}"))
     return out
 
 def tezzeret_actions(s:State)->List[State]:
@@ -1396,24 +1511,54 @@ def tezzeret_actions(s:State)->List[State]:
                     out.append(add_trace(ns,f"Tezzeret -3 -> {target}"))
     return out
 
+def _sacrifice_final_saga_if_present(s:State)->State:
+    """Apply the Saga final-chapter state-based sacrifice after III resolves."""
+    for i,p in enumerate(s.battlefield):
+        if p.name=="Urza's Saga" and p.counters>=3:
+            return remove_perm(s,i,to_grave=True)
+    return s
+
 def saga_actions(s:State)->List[State]:
     out=[]
+    # Chapter-II activated ability remains an ordinary sorcery-speed action.
     for i,p in enumerate(s.battlefield):
         if p.name=="Urza's Saga" and p.counters>=2 and not p.tapped and can_pay(s,2,0):
-            ns=pay(s,2,0); ns=update_perm(ns,i,tapped=True); ns=add_perm(ns,"Construct",sick=True,mode="construct"); ns=artifact_etb_triggers(ns,"Construct")
+            ns=pay(s,2,0); ns=update_perm(ns,i,tapped=True)
+            ns=add_perm(ns,"Construct",sick=True,mode="construct")
+            ns=artifact_etb_triggers(ns,"Construct")
             out.append(add_trace(ns,"Saga II ability -> Construct"))
-        if p.name=="Urza's Saga" and p.mode=="saga3":
-            # This is a hidden-zone search for a qualified card, so failing to
-            # find is legal. The instruction still shuffles the library.
-            ns=remove_perm(s,i)
-            ns=replace(ns,library=shuffled_library(ns,"saga:no-target"))
-            out.append(add_trace(
-                ns,"Saga III search finds no card; shuffle; sacrifice Saga"
-            ))
-            for target in sorted(set(s.library)&SAGA_TARGETS):
-                ns=remove_perm(s,i); lib=list(ns.library); lib.remove(target); ns=replace(ns,library=tuple(lib)); ns=add_perm(ns,target,sick=target in CREATURES); ns=artifact_etb_triggers(ns,target); ns=replace(ns,library=shuffled_library(ns,"saga:"+target))
-                out.append(add_trace(check_win(ns),f"Saga III puts {target} onto battlefield"))
+
+    # Once III triggers it exists independently of the Saga permanent. A legal
+    # response (notably Otawara) may remove Saga, but the pending search still
+    # resolves. If Saga remains after III resolves, the final-chapter SBA then
+    # sacrifices it. ETB triggers from the found artifact resolve only after the
+    # search has finished and shuffled.
+    if not s.saga3_pending:
+        return out
+
+    base=replace(s,saga3_pending=False)
+
+    no_find=replace(base,library=shuffled_library(base,"saga:no-target"))
+    no_find=_sacrifice_final_saga_if_present(no_find)
+    out.append(add_trace(
+        no_find,
+        "Saga III search finds no card; shuffle; final chapter resolves"
+    ))
+
+    for target in sorted(set(s.library)&SAGA_TARGETS):
+        ns=base
+        lib=list(ns.library); lib.remove(target)
+        ns=replace(ns,library=tuple(lib))
+        ns=add_perm(ns,target,sick=target in CREATURES)
+        ns=replace(ns,library=shuffled_library(ns,"saga:"+target))
+        ns=_sacrifice_final_saga_if_present(ns)
+        ns=artifact_etb_triggers(ns,target)
+        out.append(add_trace(
+            check_win(ns),
+            f"Saga III puts {target} onto battlefield\nSaga III search resolves; shuffle"
+        ))
     return out
+
 
 def repurposing_bay_actions(s:State)->List[State]:
     out=[]
@@ -1513,6 +1658,10 @@ def offer_actions(s:State)->List[State]:
 
 _CHAIN_RESULT_CACHE = {}
 
+def _with_runtime_instance_tags(s:State)->State:
+    b=tuple(replace(p,instance_tag=i+1) for i,p in enumerate(s.battlefield))
+    return replace(s,battlefield=b)
+
 def _chain_card_plan_value(s:State, name:str)->float:
     v=0.0
     if name=="Sewer-veillance Cam": v+=34
@@ -1548,27 +1697,41 @@ def _chain_land_sac_penalty(name:str)->float:
     if name=="Island": return 5
     return 5
 
-def _chain_apply_plan(base:State, bounce_names:Tuple[str,...], land_names:Tuple[str,...],
+def _chain_apply_plan(base:State, bounce_perms:Tuple[Perm,...], land_names:Tuple[str,...],
                       order_mode:str="canonical")->Optional[State]:
     ns=base
-    order=list(bounce_names)
-    if order_mode=="cam_first" and "Sewer-veillance Cam" in order:
-        order.remove("Sewer-veillance Cam"); order.insert(0,"Sewer-veillance Cam")
-    elif order_mode=="cam_last" and "Sewer-veillance Cam" in order:
-        order.remove("Sewer-veillance Cam"); order.append("Sewer-veillance Cam")
-    elif order_mode=="pa_first" and "Power Artifact" in order:
-        order.remove("Power Artifact"); order.insert(0,"Power Artifact")
-    elif order_mode=="pa_target_first" and ns.pa_target and ns.pa_target in order:
-        order.remove(ns.pa_target); order.insert(0,ns.pa_target)
+    order=list(bounce_perms)
+
+    def move_named(name,where):
+        matches=[i for i,p in enumerate(order) if p.name==name]
+        if not matches:
+            return
+        i=matches[0]
+        item=order.pop(i)
+        if where=="first": order.insert(0,item)
+        else: order.append(item)
+
+    if order_mode=="cam_first":
+        move_named("Sewer-veillance Cam","first")
+    elif order_mode=="cam_last":
+        move_named("Sewer-veillance Cam","last")
+    elif order_mode=="pa_first":
+        move_named("Power Artifact","first")
+    elif order_mode=="pa_target_first" and ns.pa_target:
+        move_named(ns.pa_target,"first")
     else:
-        order=sorted(order)
+        order=sorted(order,key=lambda p:(p.name,p.mode,p.instance_tag))
 
     lands_order=sorted(land_names)
 
-    for copy_no,name in enumerate(order,1):
-        idx=next((i for i,p in enumerate(ns.battlefield) if p.name==name),None)
+    for copy_no,selected in enumerate(order,1):
+        idx=next((
+            i for i,p in enumerate(ns.battlefield)
+            if p.instance_tag==selected.instance_tag
+        ),None)
         if idx is None:
             continue
+        name=ns.battlefield[idx].name or ns.battlefield[idx].mode
         ns=bounce_own_perm(ns,idx)
         ns=add_trace(ns,f"Chain resolution {copy_no}: bounce {name}")
 
@@ -1580,6 +1743,7 @@ def _chain_apply_plan(base:State, bounce_names:Tuple[str,...], land_names:Tuple[
             ns=remove_perm(ns,li,to_grave=True)
             ns=add_trace(ns,f"Chain: sacrifice {lname} to create copy {copy_no+1}")
     return ns
+
 
 def _top_scored_subsets(items, choose_n, value_fn, cap, must_include=()):
     """
@@ -1670,9 +1834,13 @@ def chain_of_vapor_actions(s:State)->List[State]:
                  graveyard=base.graveyard+("Chain of Vapor",),
                  spell_cast_this_turn=True)
     base=vfc_noncreature_cast_trigger(base,"Chain of Vapor")
+    base=_with_runtime_instance_tags(base)
     base_trace_len=len(base.trace)
 
-    nonlands=tuple(p.name for p in base.battlefield if not is_land_perm(p))
+    nonlands=tuple(
+        p for p in base.battlefield
+        if not is_land_perm(p) and not is_pruned_own_bounce_target(p)
+    )
     lands=tuple(p.name for p in base.battlefield if is_land_perm(p))
     max_k=min(len(nonlands),1+len(lands))
     if max_k<=0:
@@ -1682,12 +1850,14 @@ def chain_of_vapor_actions(s:State)->List[State]:
     bounce_cap=max(18,ACTION_CAP//3)
     land_cap=max(8,ACTION_CAP//8)
 
-    special_bounce=(
+    special_bounce_names={
         "Sewer-veillance Cam","Grafdigger's Cage","Power Artifact",
-        base.pa_target if base.pa_target else "__none__",
         "Spellseeker","Prized Statue","The One Ring","Witching Well",
-        "Mystic Remora"
-    )
+        "Mystic Remora",
+    }
+    if base.pa_target:
+        special_bounce_names.add(base.pa_target)
+    special_bounce=tuple(p for p in nonlands if p.name in special_bounce_names)
     special_land=("Crystal Vein","City of Traitors","Saprazzan Skerry","Urza's Saga")
 
     plan_heap=[]
@@ -1696,7 +1866,7 @@ def chain_of_vapor_actions(s:State)->List[State]:
     for k in range(1,max_k+1):
         bsets=_top_scored_subsets(
             nonlands,k,
-            lambda n:_chain_card_plan_value(base,n),
+            lambda p:_chain_card_plan_value(base,p.name),
             bounce_cap,
             must_include=special_bounce
         )
@@ -1710,8 +1880,8 @@ def chain_of_vapor_actions(s:State)->List[State]:
         )
 
         for bset in bsets:
-            bvalue=sum(_chain_card_plan_value(base,n) for n in bset)
-            artifact_bounces=sum(1 for n in bset if n in F_ARTIFACTS)
+            bvalue=sum(_chain_card_plan_value(base,p.name) for p in bset)
+            artifact_bounces=sum(1 for p in bset if is_artifact_perm(p))
             if artifact_bounces>=2 and (
                 has(base,"Grinding Station") or has(base,"Battered Golem")
                 or has(base,"Uthros Research Craft") or has(base,"Artificer's Assistant")
@@ -1739,9 +1909,10 @@ def chain_of_vapor_actions(s:State)->List[State]:
     best={}
     for _,_,bset,lset in plans:
         modes={"canonical"}
-        if "Sewer-veillance Cam" in bset:
+        if any(p.name=="Sewer-veillance Cam" for p in bset):
             modes.update({"cam_first","cam_last"})
-        if "Power Artifact" in bset and base.pa_target and base.pa_target in bset:
+        if (any(p.name=="Power Artifact" for p in bset) and base.pa_target
+                and any(p.name==base.pa_target for p in bset)):
             modes.update({"pa_first","pa_target_first"})
 
         for mode in modes:
@@ -1771,29 +1942,49 @@ def chain_of_vapor_actions(s:State)->List[State]:
 
 def knack_bounce_actions(s:State)->List[State]:
     out=[]
-    # Cast Knack/Helix targeting a creature; the effect lasts for this turn.
+    # Cast Knack/Helix targeting an exact creature object. Multiple grants in
+    # one turn are legal, so the temporary ability lives on Perm rather than a
+    # singleton State name/mode field. Canonical state identity includes the
+    # grant flag but not the spell-source provenance.
     for k in KNUCKS:
-        if k in s.hand and can_pay(s,*spell_cost(s,k)):
-            for p in s.battlefield:
-                if is_creature_perm(p):
-                    ns=pay(s,*spell_cost(s,k)); ns=replace(
-                        ns,hand=remove_one(ns.hand,k),
-                        graveyard=ns.graveyard+(k,),knack_target=p.name,
-                        knack_target_mode=p.mode,spell_cast_this_turn=True,
-                    )
-                    ns=vfc_noncreature_cast_trigger(ns,k)
-                    out.append(add_trace(check_win(ns),f"cast {k} targeting {p.name or p.mode}"))
-    if s.knack_target:
-        ti=next((
-            i for i,p in enumerate(s.battlefield)
-            if is_knack_target_perm(s,p) and not p.tapped and not p.sick
-        ),None)
-        if ti is not None:
-            for j,p in enumerate(s.battlefield):
-                if is_land_perm(p): continue
-                ns=update_perm(s,ti,tapped=True); name=p.name
-                ns=bounce_own_perm(ns,j)
-                out.append(add_trace(ns,f"Knack/Helix target bounces our {name}"))
+        if k not in s.hand or not can_pay(s,*spell_cost(s,k)):
+            continue
+        for ti,p in enumerate(s.battlefield):
+            if not is_creature_perm(p):
+                continue
+            ns=pay(s,*spell_cost(s,k))
+            ns=replace(
+                ns,hand=remove_one(ns.hand,k),
+                graveyard=ns.graveyard+(k,),spell_cast_this_turn=True,
+            )
+            ns=update_perm(ns,ti,knack_granted=True,knack_source=k)
+            ns=vfc_noncreature_cast_trigger(ns,k)
+            out.append(add_trace(
+                check_win(ns),f"cast {k} targeting {p.name or p.mode}"
+            ))
+
+    # Each ready granted creature may activate independently and return any
+    # nonland permanent, including itself. The tap-symbol cost clears any
+    # deferred Urza-mana shortcut on that exact producer.
+    for ti,tapper in enumerate(s.battlefield):
+        if not is_knack_target_perm(s,tapper) or tapper.sick:
+            continue
+        base=s
+        if tapper.tapped:
+            base=_refund_producer_urza_tap(s,ti)
+            if base is None:
+                continue
+        for j,p in enumerate(base.battlefield):
+            if is_land_perm(p) or is_pruned_own_bounce_target(p):
+                continue
+            ns=update_perm(base,ti,tapped=True)
+            target_name=p.name or p.mode
+            ns=bounce_own_perm(ns,j)
+            out.append(add_trace(
+                ns,
+                f"Knack/Helix target {tapper.name or tapper.mode} "
+                f"bounces our {target_name}"
+            ))
     return out
 
 
@@ -1920,7 +2111,12 @@ def special_actions(s:State)->List[State]:
         if s.pa_target=="The Reality Chip": g=max(0,g-2)
         if can_pay(s,g,b):
             for p in s.battlefield:
-                if is_creature_perm(p) and p.name!="The Reality Chip":
+                # Deliberate state-space prune: reconfiguring Reality Chip onto
+                # a temporary Chrome Dome copy is not a modeled strategic line.
+                # This keeps the singleton name-based chip_target representation
+                # exact for all retained attachment choices.
+                if (is_creature_perm(p) and p.name!="The Reality Chip"
+                        and p.mode not in {"chrome_copy","chrome_copy_preturn"}):
                     ns=replace(pay(s,g,b),chip_attached=True,chip_target=p.name)
                     for ci,cp in enumerate(ns.battlefield):
                         if cp.name=="The Reality Chip":
@@ -2047,10 +2243,10 @@ def check_win(s:State)->State:
         if "Forensic Gadgeteer" in names and not cage_in_play(s) and names & {"Grinding Station","Battered Golem"}:
             return replace(s,won=True,win_family="Top + Gadgeteer + producer")
 
-    if "Sewer-veillance Cam" in names and s.knack_target:
+    if "Sewer-veillance Cam" in names and has_knack_grant(s):
         target_live=any(
             is_knack_target_perm(s,p)
-            and is_creature_perm(p) and not p.sick and not p.tapped
+            and not p.sick and not p.tapped
             for p in s.battlefield
         )
         if target_live:
@@ -2071,13 +2267,14 @@ def dominance_signature(s:State):
     critical engine flags are identical. Within that group, a state with >= blue,
     >= colorless, and >= hand size dominates one with fewer resources.
     """
-    bf=tuple(sorted((p.name,p.tapped,p.sick,p.counters,p.mode) for p in s.battlefield))
+    bf=tuple(sorted((p.name,p.tapped,p.sick,p.counters,p.mode,p.knack_granted)
+                    for p in s.battlefield))
     return (
         s.turn,bf,tuple(sorted(s.hand)),s.library[:5],
         tuple(sorted(s.graveyard)),s.land_played,s.drain_bank,
         s.remora_age,s.remora_upkeep_pending,
         s.urza,s.ftt_level,s.uthros_counters,
-        s.chip_attached,s.chip_target,s.knack_target,s.knack_target_mode,
+        s.chip_attached,s.chip_target,
         s.pa_target,
         s.spell_cast_this_turn,s.commander_in_command_zone,s.commander_casts_from_zone,
         s.won,s.win_family
@@ -2092,12 +2289,18 @@ def dominance_prune(states):
             best[sig]=s
             continue
         # Same core state: preserve the version with the stronger immediately
-        # spendable resource vector. Score breaks incomparable ties.
-        if (s.blue>=old.blue and s.colorless>=old.colorless and len(s.hand)>=len(old.hand)):
+        # spendable resource vector. If resource vectors are exactly tied, use
+        # score so monotone optional-resource annotations (for example a
+        # refundable producer Urza tap) keep the richer representative.
+        s_dom=(s.blue>=old.blue and s.colorless>=old.colorless and len(s.hand)>=len(old.hand))
+        old_dom=(old.blue>=s.blue and old.colorless>=s.colorless and len(old.hand)>=len(s.hand))
+        if s_dom and not old_dom:
             best[sig]=s
-        elif not (old.blue>=s.blue and old.colorless>=s.colorless and len(old.hand)>=len(s.hand)):
+        elif s_dom and old_dom:
             if score(s)>score(old):
                 best[sig]=s
+        elif not old_dom and score(s)>score(old):
+            best[sig]=s
     return list(best.values())
 
 
@@ -2184,6 +2387,7 @@ def score(s:State)->float:
     if s.urza: sc+=90
     sc += artifact_count(s)*6
     sc += (s.blue+s.colorless)*4
+    sc += deferred_producer_blue(s)*0.25  # tie-break toward strictly richer equivalent state
     sc += len(s.hand)*5
     # combo proximity
     if "Chrome Dome" in names and names&{"Grinding Station","Battered Golem"}: sc+=80
@@ -2637,6 +2841,8 @@ def _record_tutor_cap_state(raw_actions,kept_actions,state,context="normal"):
             "battlefield":[{
                 "name":p.name,"tapped":p.tapped,"sick":p.sick,
                 "counters":p.counters,"mode":p.mode,
+                "knack_granted":p.knack_granted,
+                "producer_urza_ready":p.producer_urza_ready,
             } for p in state.battlefield],
             "graveyard":list(state.graveyard),
             "exile":list(state.exile),
@@ -2649,8 +2855,10 @@ def _record_tutor_cap_state(raw_actions,kept_actions,state,context="normal"):
             "chip_attached":state.chip_attached,
             "chip_target":state.chip_target,
             "spell_cast_this_turn":state.spell_cast_this_turn,
-            "knack_target":state.knack_target,
-            "knack_target_mode":state.knack_target_mode,
+            "knack_grants":[
+                {"name":p.name,"mode":p.mode,"source":p.knack_source}
+                for p in state.battlefield if p.knack_granted
+            ],
             "pa_target":state.pa_target,
             "library_size":len(state.library),
             "library_top":list(state.library[:10]),
@@ -2707,17 +2915,20 @@ def _enter_precombat_main(s:State)->State:
     # phase, after cumulative upkeep. In particular, a Saga that did not
     # already have a lore counter cannot be used to pay Remora first.
     b=[]
+    saga3_pending=s.saga3_pending
     for p in s.battlefield:
         q=p
         if q.name=="Urza's Saga":
             nc=q.counters+1
             q=replace(q,counters=nc,mode="saga3" if nc>=3 else q.mode)
+            if nc>=3:
+                saga3_pending=True
         b.append(q)
 
     # Mana Drain's modeled mana is added in our precombat main phase. Any mana
     # floated while resolving cumulative upkeep has emptied before this point.
     return replace(
-        s,battlefield=tuple(b),
+        s,battlefield=tuple(b),saga3_pending=saga3_pending,
         blue=0,colorless=s.drain_bank,drain_bank=0
     )
 
@@ -2831,7 +3042,9 @@ def _remora_upkeep_bounce_actions(s:State)->List[State]:
             "cast Retraction Helix targeting "
         ):
             out.append(ns)
-        elif action=="Knack/Helix target bounces our Mystic Remora":
+        elif action.startswith("Knack/Helix target ") and action.endswith(
+            "bounces our Mystic Remora"
+        ):
             out.append(_finish_absent_remora_upkeep(ns))
 
     # Both Spellbomb modes are instant-speed activated abilities. Its creature
@@ -2840,6 +3053,26 @@ def _remora_upkeep_bounce_actions(s:State)->List[State]:
     out.extend(aether_spellbomb_actions(s))
     return out
 
+
+
+def _remora_response_source(s:State)->str:
+    """Identify the strategically distinct bounce route since upkeep began."""
+    for entry in reversed(s.trace):
+        lines=entry.splitlines()
+        for line in reversed(lines):
+            if line.startswith("Mystic Remora cumulative-upkeep trigger pending:"):
+                return ""
+            if line.startswith("--- Turn "):
+                return ""
+            if "Chain of Vapor during upkeep:" in line or line.startswith("Chain resolution "):
+                return "Chain of Vapor"
+            if line.startswith("Otawara channel:"):
+                return "Otawara, Soaring City"
+            if line.startswith("cast Banishing Knack targeting "):
+                return "Banishing Knack"
+            if line.startswith("cast Retraction Helix targeting "):
+                return "Retraction Helix"
+    return ""
 
 def remora_upkeep_actions(s:State)->List[State]:
     """Resolve one pending Mystic Remora cumulative-upkeep decision."""
@@ -2886,10 +3119,13 @@ def remora_upkeep_actions(s:State)->List[State]:
 
     out=[refresh_observability(x) for x in out]
     kept=_select_actions_with_tutor_diversity(out)
-    # Preserve each terminal resolution family through a per-state cap. This
-    # guarantees the direct Chain bounce as well as pay and sacrifice choices.
+    # Preserve terminal pay/decline plus at least one terminal representative
+    # for each materially different bounce source. Knack/Helix casts remain
+    # pending for one closure step, so protect one pending continuation per
+    # spell source too. This prevents ACTION_CAP from turning four legal reset
+    # routes into one generic "bounce" result.
     required=[]
-    for family in ("pay","decline","bounce"):
+    for family in ("pay","decline"):
         family_actions=[
             x for x in out
             if not x.remora_upkeep_pending
@@ -2897,9 +3133,31 @@ def remora_upkeep_actions(s:State)->List[State]:
         ]
         if family_actions:
             required.append(max(family_actions,key=score))
+
+    terminal_bounces=[
+        x for x in out
+        if not x.remora_upkeep_pending and _remora_resolution_family(x)=="bounce"
+    ]
+    by_source={}
+    for x in terminal_bounces:
+        src=_remora_response_source(x) or "generic bounce"
+        if src not in by_source or score(x)>score(by_source[src]):
+            by_source[src]=x
+    required.extend(by_source[src] for src in sorted(by_source))
+
     pending_continuations=[x for x in out if x.remora_upkeep_pending]
-    if pending_continuations:
-        required.append(max(pending_continuations,key=score))
+    pending_by_source={}
+    generic_pending=[]
+    for x in pending_continuations:
+        src=_remora_response_source(x)
+        if src in KNUCKS:
+            if src not in pending_by_source or score(x)>score(pending_by_source[src]):
+                pending_by_source[src]=x
+        else:
+            generic_pending.append(x)
+    required.extend(pending_by_source[src] for src in sorted(pending_by_source))
+    if generic_pending:
+        required.append(max(generic_pending,key=score))
     for required_action in required:
         if required_action in kept:
             continue
@@ -2923,9 +3181,13 @@ def legal_actions(s:State)->List[State]:
     if s.remora_upkeep_pending:
         return remora_upkeep_actions(s)
 
-    # Saga III response/tutor window.
-    if any(p.name=="Urza's Saga" and p.mode=="saga3" for p in s.battlefield):
-        out=intrinsic_mana_actions(s)+tap_artifact_for_urza_actions(s)+saga_actions(s)+oboro_minamo_actions(s)
+    # Saga III response/tutor window. The trigger remains pending even if a
+    # response removes Saga. Keep the window narrow: mana, fetches, Otawara,
+    # and resolving III. Chain/Knack cannot target Saga because it is a land.
+    if s.saga3_pending:
+        out=(intrinsic_mana_actions(s)+tap_artifact_for_urza_actions(s)
+             +fetch_actions(s)+saga_actions(s)+oboro_minamo_actions(s)
+             +otawara_channel_actions(s,only_target="Urza's Saga"))
         for ki,k in enumerate(s.battlefield):
             if k.name in {"Voltaic Key","Manifold Key"} and not k.tapped and can_pay(s,1,0):
                 for ti,x in enumerate(s.battlefield):
@@ -3104,8 +3366,10 @@ def end_turn(s:State,schedule_remora_upkeep:bool=True)->State:
     s=add_preturn_chrome_copy_if_possible(s)
     b=[]
     for p in s.battlefield:
-        if p.name in {"Mana Vault","Grim Monolith","Basalt Monolith"}: q=replace(p,sick=False)
-        else: q=replace(p,tapped=False,sick=False)
+        if p.name in {"Mana Vault","Grim Monolith","Basalt Monolith"}:
+            q=replace(p,sick=False,knack_granted=False,knack_source="",producer_urza_ready=False)
+        else:
+            q=replace(p,tapped=False,sick=False,knack_granted=False,knack_source="",producer_urza_ready=False)
         if q.name=="Battered Golem": q=replace(q,tapped=False)  # multiplayer assumption
         if q.name=="Tezzeret, Cruel Captain": q=replace(q,mode="tez_ready")
         b.append(q)
@@ -3114,8 +3378,7 @@ def end_turn(s:State,schedule_remora_upkeep:bool=True)->State:
                blue=0,colorless=0,bauble_draws=0,land_played=False,
                remora_age=(s.remora_age if has(s,"Mystic Remora") else 0),
                remora_upkeep_pending=remora_pending,
-               spell_cast_this_turn=False,knack_target="",knack_target_mode="",
-               vfc_pumps=0)
+               spell_cast_this_turn=False,vfc_pumps=0)
     ns=add_trace(ns,f"--- Turn {ns.turn} ---")
     for event in draw_events:
         ns=append_trace_detail(ns,event)
@@ -3136,8 +3399,7 @@ def can_end_turn_state(s:State)->bool:
     """Mandatory upkeep and Saga-III windows cannot be skipped at a depth cap."""
     return (
         not s.remora_upkeep_pending
-        and not any(p.name=="Urza's Saga" and p.mode=="saga3"
-                    for p in s.battlefield)
+        and not s.saga3_pending
     )
 
 
@@ -3918,6 +4180,13 @@ def oracle_game(seed:int,deck:List[str],max_turn:int,beam:int,depth:int,
     """
     if bottom_cap is None:
         bottom_cap=BOTTOM_CAP
+
+    # Chain macro results are useful within one concrete Oracle game, but the
+    # hidden library is different for every root seed. Carrying thousands of
+    # cached result states across games provides little reuse and can create
+    # severe batch-memory/tail-latency growth. Keep the cache game-local.
+    _CHAIN_RESULT_CACHE.clear()
+
     caverns_live,deals=oracle_mulligan_deals(seed,deck,min_keep)
     effective_config=OracleSearchConfig(
         max_turn,beam,depth,ACTION_CAP,bottom_cap,min_keep
@@ -4696,10 +4965,9 @@ def run_cam_smoke():
         battlefield=(
             Perm(COMMANDER,sick=False),
             Perm("Sewer-veillance Cam"),
-            Perm("Battered Golem",sick=False,tapped=False),
+            Perm("Battered Golem",sick=False,tapped=False,knack_granted=True,knack_source="Banishing Knack"),
         ),
         urza=True,commander_in_command_zone=False,
-        knack_target="Battered Golem",
         graveyard=("Banishing Knack",)
     )
     w=check_win(s)
@@ -4707,7 +4975,9 @@ def run_cam_smoke():
     print("Cam + active current-turn Knack target wins: PASS",flush=True)
 
     # Old Knack in graveyard from a previous turn is NOT enough.
-    stale=replace(s,knack_target="")
+    stale=replace(s,battlefield=tuple(
+        replace(p,knack_granted=False,knack_source="") for p in s.battlefield
+    ))
     assert not check_win(stale).won
     print("stale graveyard Knack does not false-positive: PASS",flush=True)
 
@@ -4715,13 +4985,13 @@ def run_cam_smoke():
     sick=replace(s,battlefield=(
         Perm(COMMANDER,sick=False),
         Perm("Sewer-veillance Cam"),
-        Perm("Battered Golem",sick=True,tapped=False),
+        Perm("Battered Golem",sick=True,tapped=False,knack_granted=True),
     ))
     assert not check_win(sick).won
     tapped=replace(s,battlefield=(
         Perm(COMMANDER,sick=False),
         Perm("Sewer-veillance Cam"),
-        Perm("Battered Golem",sick=False,tapped=True),
+        Perm("Battered Golem",sick=False,tapped=True,knack_granted=True),
     ))
     assert not check_win(tapped).won
     print("summoning sickness / tapped target enforced: PASS",flush=True)
@@ -4743,10 +5013,9 @@ def run_cam_smoke():
         battlefield=(
             Perm(COMMANDER,sick=False),
             Perm("Sewer-veillance Cam"),
-            Perm("Battered Golem",sick=False,tapped=True),
+            Perm("Battered Golem",sick=False,tapped=True,knack_granted=True),
         ),
-        blue=4,urza=True,commander_in_command_zone=False,
-        knack_target="Battered Golem"
+        blue=4,urza=True,commander_in_command_zone=False
     )
     acts=draw_sac_actions(s)
     cams=[x for x in acts if not has(x,"Sewer-veillance Cam")]
@@ -4876,6 +5145,28 @@ def run_metadata_smoke(deck_path:Path):
     assert not is_creature_perm(Perm("The Reality Chip",mode="chip_attached"))
     assert is_creature_perm(Perm("Chrome Dome"))
     print("Reality Chip / Chrome Dome creature status: PASS",flush=True)
+
+    # Accepted state-space prune: temporary Chrome Dome copies are not retained
+    # as PA enchantment or Reality Chip reconfigure targets. In this singleton
+    # deck those attachment lines have no modeled strategic role, and pruning
+    # them keeps the name-based attachment fields unambiguous.
+    chip_copy=State(
+        turn=3,library=(),hand=(),blue=3,
+        battlefield=(
+            Perm("The Reality Chip"),
+            Perm("Battered Golem",mode="chrome_copy",sick=False),
+        ),
+    )
+    assert not any(
+        x.trace and x.trace[-1].startswith("reconfigure Reality Chip")
+        for x in special_actions(chip_copy)
+    )
+    pa_copy=State(
+        turn=3,library=(),hand=("Power Artifact",),blue=2,
+        battlefield=(Perm("Basalt Monolith",mode="chrome_copy"),),
+    )
+    assert not power_artifact_actions(pa_copy)
+    print("PA/Chip temporary-copy attachment prune: PASS",flush=True)
 
     # Transmute Artifact can deliberately decline a positive MV difference.
     st=State(
@@ -5008,7 +5299,8 @@ def run_tutor_smoke():
     ))
     generated_search_actions += saga_actions(State(
         turn=4,library=("Sol Ring","Island"),hand=(),
-        battlefield=(Perm("Urza's Saga",mode="saga3"),)
+        battlefield=(Perm("Urza's Saga",counters=3,mode="saga3"),),
+        saga3_pending=True,
     ))
     generated_search_actions += repurposing_bay_actions(State(
         turn=4,library=("Battered Golem","Island"),hand=(),
@@ -5420,8 +5712,8 @@ def run_combo_smoke():
     assert any(x.knack_target for x in acts)
     print("Knack + Golem + positive artifact       PASS | Knack engine setup reachable",flush=True)
 
-    # 14. Station ETB conversion. By solver convention, artifact ETB untap is
-    # immediately converted into mana rather than leaving Station untapped.
+    # 14. Station ETB conversion. The fast Oracle state takes the post-trigger
+    # Urza tap immediately and records it as refundable for native-use branches.
     s=State(
         turn=4,library=(),hand=("Tormod's Crypt",),
         battlefield=(Perm(COMMANDER,sick=False),Perm("Grinding Station",tapped=True)),
@@ -5430,8 +5722,8 @@ def run_combo_smoke():
     acts=legal_actions(s)
     casts=[x for x in acts if has(x,"Tormod's Crypt")]
     assert casts
-    assert any(x.blue>s.blue for x in casts), "Station ETB was not converted into mana"
-    print("Grinding Station artifact-ETB mana     PASS | immediate mana conversion reachable",flush=True)
+    assert any(x.blue>s.blue and deferred_producer_blue(x)>0 for x in casts), "Station ETB mana/refund credit missing"
+    print("Grinding Station artifact-ETB mana     PASS | fast mana + native refund reachable",flush=True)
 
     # 15. Golem ETB conversion.
     s=State(
@@ -5442,8 +5734,8 @@ def run_combo_smoke():
     acts=legal_actions(s)
     casts=[x for x in acts if has(x,"Tormod's Crypt")]
     assert casts
-    assert any(x.blue>s.blue for x in casts), "Golem ETB was not converted into mana"
-    print("Battered Golem artifact-ETB mana       PASS | immediate mana conversion reachable",flush=True)
+    assert any(x.blue>s.blue and deferred_producer_blue(x)>0 for x in casts), "Golem ETB mana/refund credit missing"
+    print("Battered Golem artifact-ETB mana       PASS | fast mana + native refund reachable",flush=True)
 
     # 16. Uthros + Station dedicated branch generation.
     s=State(
@@ -5926,6 +6218,7 @@ def run_remora_smoke():
             replace(p,counters=3,mode="saga3") if p.name=="Urza's Saga" else p
             for p in saga_paid.battlefield
         ),
+        saga3_pending=True,
     )
     assert not can_end_turn_state(forced_saga3)
     no_find_source=replace(
@@ -5934,7 +6227,7 @@ def run_remora_smoke():
     )
     no_find=_trace_action(
         saga_actions(no_find_source),
-        "Saga III search finds no card; shuffle; sacrifice Saga",
+        "Saga III search finds no card; shuffle; final chapter resolves",
     )
     assert not has(no_find,"Urza's Saga") and can_end_turn_state(no_find)
     assert Counter(no_find.library)==Counter(no_find_source.library)
@@ -6588,14 +6881,17 @@ def run_bounce_smoke():
     }
     print("Otawara targets/cost/reduction/channel   PASS",flush=True)
 
-    # Spellbomb's U mode is creature-only; Remora is not a legal target. Its
-    # sacrifice is a cost, it has no tap symbol, and bounced tokens disappear.
+    # Spellbomb's U mode is creature-only; Remora is not a legal target. The
+    # Oracle goldfish also intentionally prunes bouncing our Urza/Construct.
+    # Its sacrifice is a cost and it has no tap symbol.
     spellbomb=State(
         turn=2,library=("Drawn",),hand=(),blue=1,colorless=1,
         battlefield=(
             Perm("Aether Spellbomb",tapped=True),Perm("Mystic Remora"),
             Perm("Spellseeker",sick=True),Perm("Construct",mode="construct"),
+            Perm(COMMANDER,sick=False),
         ),
+        urza=True,commander_in_command_zone=False,
     )
     bomb_actions=aether_spellbomb_actions(spellbomb)
     bomb_bounce=_trace_action(bomb_actions,"bounce Spellseeker")
@@ -6603,11 +6899,55 @@ def run_bounce_smoke():
     assert "Aether Spellbomb" in bomb_bounce.graveyard
     assert has(bomb_bounce,"Mystic Remora")
     assert not any("bounce Mystic Remora" in a.trace[-1] for a in bomb_actions)
-    token_bounce=_trace_action(bomb_actions,"bounce Construct")
-    assert "Construct" not in token_bounce.hand and not has(token_bounce,"Construct")
+    assert not any("bounce Construct" in a.trace[-1] for a in bomb_actions)
+    assert not any(f"bounce {COMMANDER}" in a.trace[-1] for a in bomb_actions)
     bomb_draw=_trace_action(bomb_actions,"sacrifice -> draw")
     assert bomb_draw.hand==("Drawn",)
     print("Aether creature-only bounce/draw modes    PASS",flush=True)
+
+    # Goldfish-pruned bounce targets: returning Urza or a Construct is legal
+    # Magic, but intentionally omitted from every own-bounce generator because
+    # it adds no retained goldfish value and materially increases branching.
+    prune_board=(
+        Perm(COMMANDER,sick=False),Perm("Construct",mode="construct"),
+        Perm("Mystic Remora"),
+    )
+    chain_prune=State(
+        turn=2,library=(),hand=("Chain of Vapor",),blue=1,
+        battlefield=prune_board,urza=True,commander_in_command_zone=False,
+    )
+    chain_prune_actions=chain_of_vapor_actions(chain_prune)
+    assert chain_prune_actions
+    assert all(COMMANDER not in a.hand and "Construct" not in a.hand
+               for a in chain_prune_actions)
+    assert all("bounce Urza, Lord High Artificer" not in "\n".join(a.trace)
+               and "bounce Construct" not in "\n".join(a.trace)
+               for a in chain_prune_actions)
+
+    ota_prune=replace(
+        chain_prune,hand=("Otawara, Soaring City",),blue=1,colorless=2,
+    )
+    ota_prune_actions=otawara_channel_actions(ota_prune)
+    assert ota_prune_actions
+    assert all(COMMANDER not in a.hand and "Construct" not in a.hand
+               for a in ota_prune_actions)
+
+    knack_prune=State(
+        turn=2,library=(),hand=(),
+        battlefield=(
+            Perm("Spellseeker",sick=False,knack_granted=True),
+            Perm(COMMANDER,sick=False),Perm("Construct",mode="construct"),
+            Perm("Mystic Remora"),
+        ),
+        urza=True,commander_in_command_zone=False,
+    )
+    knack_prune_actions=knack_bounce_actions(knack_prune)
+    assert knack_prune_actions
+    assert all(COMMANDER not in a.hand and "Construct" not in a.hand
+               for a in knack_prune_actions)
+    assert any("bounces our Mystic Remora" in a.trace[-1]
+               for a in knack_prune_actions)
+    print("Urza/Construct own-bounce pruning          PASS",flush=True)
 
     # Oboro's printed {1} self-return ability has no tap symbol, so a tapped
     # Oboro may activate it. It targets/returns only that land itself.
@@ -6636,11 +6976,13 @@ def run_bounce_smoke():
         knack_bounce_actions(cast_knack),"bounces our Mystic Remora"
     )
     assert remora_knack.hand==("Mystic Remora",)
-    assert remora_knack.battlefield==(Perm("Spellseeker",tapped=True,sick=False),)
+    assert remora_knack.battlefield==(
+        Perm("Spellseeker",tapped=True,sick=False,knack_granted=True),
+    )
 
     self_state=State(
-        turn=2,library=(),hand=(),battlefield=(Perm("Spellseeker",sick=False),),
-        knack_target="Spellseeker",knack_target_mode="",
+        turn=2,library=(),hand=(),
+        battlefield=(Perm("Spellseeker",sick=False,knack_granted=True),),
     )
     self_bounce=_trace_action(
         knack_bounce_actions(self_state),"bounces our Spellseeker"
@@ -6657,29 +6999,79 @@ def run_bounce_smoke():
     exact_object=State(
         turn=2,library=(),hand=(),
         battlefield=(
-            Perm("Spellseeker",sick=True),
+            Perm("Spellseeker",sick=True,knack_granted=True),
             Perm("Spellseeker",sick=False,mode="chrome_copy"),
         ),
-        knack_target="Spellseeker",knack_target_mode="",
     )
     assert knack_bounce_actions(exact_object)==[]
-    chrome_bound=replace(exact_object,knack_target_mode="chrome_copy")
+    chrome_bound=replace(
+        exact_object,
+        battlefield=(
+            Perm("Spellseeker",sick=True),
+            Perm("Spellseeker",sick=False,mode="chrome_copy",knack_granted=True),
+        ),
+    )
     assert exact_object.key()!=chrome_bound.key()
     assert dominance_signature(exact_object)!=dominance_signature(chrome_bound)
     mdfc_knack=State(
         turn=2,library=(),hand=(),
-        battlefield=(Perm("Hydroelectric Specimen",sick=False),),
-        knack_target="Hydroelectric Specimen",knack_target_mode="",
+        battlefield=(Perm("Hydroelectric Specimen",sick=False,knack_granted=True),),
     )
     assert knack_bounce_actions(mdfc_knack)[0].hand==(
         "Hydroelectric Specimen",
     )
     assert knack_bounce_actions(replace(
         mdfc_knack,battlefield=(
-            Perm("Hydroelectric Specimen",sick=False,mode="landface"),
+            Perm("Hydroelectric Specimen",sick=False,mode="landface",knack_granted=True),
         ),
     ))==[]
     print("Knack/Helix tap/self/object/face legality PASS",flush=True)
+
+    # Chain plans distinguish same-name permanents when their actual object
+    # state differs, while canonical result-state merging still removes truly
+    # equivalent choices.
+    same_name_chain=State(
+        turn=2,library=(),hand=("Chain of Vapor",),blue=1,
+        battlefield=(Perm("Spellskite"),Perm("Spellskite",tapped=True)),
+    )
+    same_name_results=chain_of_vapor_actions(same_name_chain)
+    remaining_tap_states={
+        tuple(p.tapped for p in a.battlefield if p.name=="Spellskite")
+        for a in same_name_results
+    }
+    assert (True,) in remaining_tap_states and (False,) in remaining_tap_states
+    print("Chain same-name instance distinction      PASS",flush=True)
+
+    # Saga III is an independent pending trigger. Otawara may return Saga after
+    # III triggers; the search still resolves, Saga remains in hand, and the
+    # found artifact enters after the shuffle. Chain/Knack cannot target Saga
+    # because their return target must be a nonland permanent.
+    saga_pending=State(
+        turn=4,library=("Sol Ring","Island"),
+        hand=("Otawara, Soaring City",),blue=1,colorless=2,
+        battlefield=(
+            Perm("Urza's Saga",counters=3,mode="saga3"),
+            Perm(COMMANDER,sick=False),
+        ),
+        urza=True,commander_in_command_zone=False,saga3_pending=True,
+    )
+    saga_bounced=next(
+        a for a in legal_actions(saga_pending)
+        if a.trace[-1].startswith("Otawara channel:")
+    )
+    assert saga_bounced.saga3_pending and "Urza's Saga" in saga_bounced.hand
+    saga_resolved=next(
+        a for a in saga_actions(saga_bounced) if has(a,"Sol Ring")
+    )
+    assert not saga_resolved.saga3_pending
+    assert "Urza's Saga" in saga_resolved.hand and has(saga_resolved,"Sol Ring")
+    assert "Island" in saga_resolved.library
+    chain_vs_saga=State(
+        turn=4,library=(),hand=("Chain of Vapor",),blue=1,
+        battlefield=(Perm("Urza's Saga",counters=3,mode="saga3"),),
+    )
+    assert chain_of_vapor_actions(chain_vs_saga)==[]
+    print("Saga III pending-trigger/Otawara response  PASS",flush=True)
 
     # The cumulative-upkeep stack window admits channel and a two-step
     # Knack/Helix line, clears the old obligation after bounce, and still gates
@@ -6752,6 +7144,42 @@ def run_bounce_smoke():
     assert has(sink_main,"Mystic Remora")
     assert sink_main.trace[-1]=="cast Sink into Stupor (opponent target assumed)"
     print("Upkeep responses/gating/reset/Sink scope   PASS",flush=True)
+
+    # Under a real cap hit, preserve materially different Remora reset routes:
+    # terminal Chain/Otawara plus pending Knack and Helix continuations.
+    global ACTION_CAP
+    old_cap=ACTION_CAP
+    try:
+        ACTION_CAP=8
+        broad=State(
+            turn=3,library=(),
+            hand=(
+                "Chain of Vapor","Otawara, Soaring City",
+                "Banishing Knack","Retraction Helix",
+            ),
+            battlefield=(
+                Perm("Mystic Remora"),Perm(COMMANDER,sick=False),
+                Perm("Spellseeker",sick=False),Perm("Sol Ring"),
+                Perm("Mana Vault"),Perm("Island"),Perm("Ancient Tomb"),
+            ),
+            blue=5,colorless=5,remora_age=1,remora_upkeep_pending=True,
+            urza=True,commander_in_command_zone=False,
+            trace=(
+                "Mystic Remora cumulative-upkeep trigger pending: on resolution "
+                "add age counter 2; then pay {2} or sacrifice",
+            ),
+        )
+        kept=remora_upkeep_actions(broad)
+        sources={_remora_response_source(a) for a in kept}
+        assert {
+            "Chain of Vapor","Otawara, Soaring City",
+            "Banishing Knack","Retraction Helix",
+        } <= sources
+        assert any(_remora_resolution_family(a)=="pay" for a in kept)
+        assert any(_remora_resolution_family(a)=="decline" for a in kept)
+    finally:
+        ACTION_CAP=old_cap
+    print("Remora cap preserves bounce-source diversity PASS",flush=True)
     print("\nBOUNCE SMOKE: ALL PASS",flush=True)
 
 
@@ -6910,7 +7338,7 @@ def run_bay_smoke():
         base,battlefield=(
             Perm("Repurposing Bay"),Perm("Sapphire Medallion"),
             Perm("Urza's Saga",counters=3,mode="saga3"),
-        ),
+        ),saga3_pending=True,
     )
     assert not any(
         a.trace[-1].splitlines()[0].startswith("Repurposing Bay")
@@ -6928,8 +7356,8 @@ def run_bay_smoke():
     )
     station=add_perm(station,"Grinding Station")
     station=artifact_etb_triggers(station,"Grinding Station")
-    assert station.blue==2
-    assert next(p for p in station.battlefield if p.name=="Grinding Station").tapped
+    sp=next(p for p in station.battlefield if p.name=="Grinding Station")
+    assert station.blue==2 and sp.tapped and sp.producer_urza_ready
     golem=State(
         turn=3,library=(),hand=(),
         battlefield=(Perm(COMMANDER,sick=False),),
@@ -6937,9 +7365,8 @@ def run_bay_smoke():
     )
     golem=add_perm(golem,"Battered Golem",sick=True)
     golem=artifact_etb_triggers(golem,"Battered Golem")
-    assert golem.blue==2
     gp=next(p for p in golem.battlefield if p.name=="Battered Golem")
-    assert gp.tapped and gp.sick
+    assert golem.blue==2 and gp.tapped and gp.sick and gp.producer_urza_ready
 
     copies=State(
         turn=3,library=(),hand=(),battlefield=(
@@ -6953,8 +7380,50 @@ def run_bay_smoke():
     assert all(not p.tapped for p in untapped.battlefield)
     multi_urza=replace(copies,urza=True)
     converted=artifact_etb_triggers(multi_urza,"Clue")
-    assert converted.blue==4 and all(p.tapped for p in converted.battlefield)
-    print("Producer self-entry/multiple-trigger sanity PASS",flush=True)
+    assert converted.blue==4 and deferred_producer_blue(converted)==4
+    assert all(p.tapped for p in converted.battlefield)
+
+    # Native Station mill enumerates every legal artifact sacrifice in a live
+    # state, including Station itself and an already-tapped artifact. Tokens
+    # cease to exist rather than being placed in the graveyard.
+    mill_state=State(
+        turn=4,library=("Island","Sol Ring","Mana Vault","Tail"),hand=(),
+        battlefield=(
+            Perm("Grinding Station"),
+            Perm("Welding Jar",tapped=True),
+            Perm("Clue",mode="clue"),
+        ),
+        chip_attached=True,
+    )
+    mills=producer_native_actions(mill_state)
+    self_mill=next(a for a in mills if a.trace[-1].startswith("Grinding Station sacs Grinding Station"))
+    jar_mill=next(a for a in mills if a.trace[-1].startswith("Grinding Station sacs Welding Jar"))
+    clue_mill=next(a for a in mills if a.trace[-1].startswith("Grinding Station sacs Clue"))
+    assert not has(self_mill,"Grinding Station") and "Grinding Station" in self_mill.graveyard
+    assert has(jar_mill,"Grinding Station") and "Welding Jar" in jar_mill.graveyard
+    assert "Clue" not in clue_mill.graveyard
+
+    # The deferred post-trigger Urza tap remains optional: the free pre-trigger
+    # U can cast Knack while Golem stays untapped to use the granted ability.
+    knack_ready=State(
+        turn=4,library=(),hand=("Banishing Knack",),
+        battlefield=(Perm(COMMANDER,sick=False),Perm("Battered Golem",sick=False)),
+        urza=True,commander_in_command_zone=False,
+    )
+    knack_ready=artifact_etb_triggers(knack_ready,"Clue")
+    assert knack_ready.blue==2 and deferred_producer_blue(knack_ready)==1
+    granted=next(
+        a for a in knack_bounce_actions(knack_ready)
+        if a.trace[-1].startswith("cast Banishing Knack targeting Battered Golem")
+    )
+    granted_golem=next(p for p in granted.battlefield if p.name=="Battered Golem")
+    assert granted_golem.tapped and granted_golem.knack_granted and granted_golem.producer_urza_ready
+    assert granted.blue==1
+    assert any(
+        a.trace[-1].startswith("Knack/Helix target Battered Golem bounces our ")
+        for a in knack_bounce_actions(granted)
+    )
+    print("Producer self-entry/native-choice sanity PASS",flush=True)
     print("\nBAY / PRODUCER SMOKE: ALL PASS",flush=True)
 
 

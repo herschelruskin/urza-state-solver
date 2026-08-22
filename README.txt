@@ -60,16 +60,16 @@ IMPORTANT v0.3 RULE / STATE FIXES
 * Artificer's Assistant scry occurs only on qualifying historic casts.
 * Uthros Station activation from creature power; 3+ artifact casts draw before resolution.
 * Valley Floodcaller corrected to 2U; Bird/Otter untaps and temporary pumps tracked.
-* Knack/Helix tracks the actual target creature and can proactively bounce our permanents.
+* Knack/Helix grants live on the exact target permanent and can proactively bounce our permanents; same-name copies are distinguished during the action.
 * Cam terminal loop requires the actual Knack/Helix target to be usable.
 * Golem/VFC replay loops use replay economics rather than only a hard-coded 0-drop list.
 * Chain of Vapor can proactively bounce our permanents and sacrifice a land for a copy.
-* Reality Chip requires a creature to reconfigure onto; target leaving turns top access off.
+* Reality Chip requires a creature to reconfigure onto; target leaving turns top access off. Temporary Chrome Dome-copy reconfigure targets are intentionally pruned.
 * FTT can level for development; L3 generic reduction works on outside-hand casts.
 * MDFCs branch between front spell and back land when played from hand/top.
 * Chrome Mox may imprint blue spell-front MDFCs; Mox Diamond may not discard them as lands.
 * Codex Shredder self-mill top reset and graveyard recursion.
-* Grinding Station self-mill top reset.
+* Grinding Station native mill can sacrifice Station itself, tapped artifacts, or tokens in strategically live mill states; irrelevant proactive-mill branching is deliberately pruned for throughput.
 * Fetchlands fetch an Island and shuffle; they no longer incorrectly tap for U.
 * Urza spin actually reshuffles before exiling/casting the hit.
 * City of Traitors can tap for CC in response to its own sacrifice trigger after another land is played.
@@ -80,7 +80,7 @@ IMPORTANT v0.3 RULE / STATE FIXES
 * Jeweled Amulet stores typed mana and releases it later.
 * Moonsnare Prototype can tap itself plus another artifact/creature for C.
 * Native Grim/Basalt untaps are available with Gadget/Power Artifact reductions.
-* Power Artifact tracks the actual enchanted artifact.
+* Power Artifact tracks the retained singleton enchanted-artifact target; temporary Chrome Dome-copy attachment is intentionally pruned.
 * PA+Monolith and Basalt+Gadget check legal bootstrap mana if the rock is already tapped.
 * Chrome Dome creates actual useful artifact copies while building toward a self-sustaining loop.
 * An Offer You Can't Refuse can counter our own noncreature spell to make two Treasures.
@@ -88,7 +88,7 @@ IMPORTANT v0.3 RULE / STATE FIXES
 * Welding Jar can sacrifice itself for free to establish a graveyard target before Scour.
 * Repurposing Bay pays {2}, taps, sacrifices another artifact, and uses exact
   sacrificed-MV+1 tutoring directly to the battlefield before shuffling.
-* Urza's Saga tracks I / II / III, Construct activation, and exact printed {0}/{1} chapter-III targets.
+* Urza's Saga tracks I / II / III, Construct activation, and exact printed {0}/{1} chapter-III targets; III becomes an independent pending trigger so Otawara can bounce Saga without countering the search.
 * Tezzeret, Cruel Captain costs 3 generic, gains loyalty from artifact ETBs, and branches between
   0: untap artifact/creature and -3: MV<=1 artifact tutor, once per turn.
 * Spellseeker's tutor tree is much broader than only the combo chain.
@@ -158,14 +158,38 @@ The implemented own-permanent bounce modes are:
   temporary tap ability; summoning sickness and tapped status are enforced, and
   the ability can return itself or another nonland permanent.
 
-Bounced cards return to hand; bounced tokens cease to exist. The focused suite
-also locks MDFC face handling and Remora-upkeep response timing.
+Goldfish search deliberately excludes **our Urza and Construct tokens** as
+bounce destinations for Chain, Otawara, Aether Spellbomb, and Knack/Helix. This
+is a search-space prune, not a target-legality claim: returning Urza is an
+expensive reset with no retained goldfish line, while a returned Construct token
+simply ceases to exist. Urza remains a legal Knack/Helix *grant carrier* when
+that ability is used to bounce some other retained target.
+
+Bounced retained cards return to hand; bounced tokens cease to exist. Knack/Helix grants
+are stored on the exact creature permanent, and Chain's multi-step macro uses
+ephemeral per-action instance tags so same-name copies are not collapsed before
+the transition. Those runtime tags are excluded from canonical state identity.
+The focused suite also locks MDFC face handling and Remora-upkeep response timing.
+At Remora cap hits, distinct Chain/Otawara/Knack/Helix reset sources receive
+separate retention protection.
+
+Urza's Saga III becomes an independent pending trigger after the third lore
+counter. Otawara may return Saga while III is pending; III still resolves and
+searches, and the final-chapter sacrifice happens only if Saga remains. Chain
+and Knack/Helix cannot target Saga because it is a land.
 
 Repurposing Bay's focused fixture proves Sapphire Medallion MV2 -> Battered
 Golem MV3, including the {2} payment, Bay tap, Sapphire sacrifice, direct
 battlefield entry, and shuffle-before-ETB ordering. The same suite confirms
 that Grinding Station and Battered Golem see their own artifact entry and that
-every controlled copy receives its trigger.
+every controlled copy receives its trigger. With Urza, the solver preserves the
+fast maximum-mana ETB compression while marking the final post-trigger +U as
+refundable until spent; Station/Golem can therefore recover the legal
+leave-untapped alternative for native/Knack use without doubling every ETB
+branch. In strategically live mill states, Station enumerates every artifact
+sacrifice including itself, tapped artifacts, and tokens. Purely proactive mill
+branches outside those states are intentionally suppressed as an Oracle search
+prune to protect throughput.
 
 Focused regression:
     py -3 urza_solver.py --bay-smoke --action-cap 60 --bottom-cap 4
@@ -995,8 +1019,8 @@ Consequences in older builds:
 Also fixed:
 * old Knack/Helix merely sitting in the graveyard no longer causes a later
   false-positive Cam win;
-* Cam+Knack terminal requires the current turn's `knack_target` to still exist,
-  be a creature, be non-sick, and be untapped;
+* Cam+Knack terminal requires a current-turn Knack/Helix-granted permanent to
+  still exist, be a creature, be non-sick, and be untapped;
 * Cam's 3U sacrifice path no longer resolves its LTB untap twice.
 
 Run:
@@ -1046,7 +1070,10 @@ TUTORS
 * artifact tutors now shuffle after searching.
 
 URZA'S SAGA
-Saga III uses PRINTED mana cost {0}/{1}, not generic MV<=1.
+Saga III uses PRINTED mana cost {0}/{1}, not generic MV<=1. Once III triggers,
+the search is pending independently of Saga. Otawara can return Saga in that
+window and the search still resolves; if Saga remains, the final chapter is
+sacrificed only after III leaves the stack.
 Correct examples:
   YES: Aether Spellbomb, Sol Ring, Mana Vault, Jeweled Amulet.
   NO: Witching Well {U}, Cam {U}, Moonsnare {U}, Seat (no mana cost).
