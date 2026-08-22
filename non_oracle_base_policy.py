@@ -131,15 +131,24 @@ class DeterministicBasePolicy:
         mana = observation.base.blue + observation.base.colorless
         return (3.0 - card_cost) if mana <= 1 else (-1.0 - card_cost)
 
+    def _tutor_target_score(self, observation: RuntimePolicyView, action: ActionIntent) -> float:
+        target = str(dict(action.parameters).get("target", ""))
+        if not target:
+            return -100.0
+        # The target identity is legitimate only after the search observation.
+        # Static visible-card value supplies a deterministic rollout continuation;
+        # DP/MC will later replace this coarse target judgment.
+        return 20.0 + self.visible_card_score(target, observation)
+
     def _main_action_score(self, observation: RuntimePolicyView, action: ActionIntent) -> float:
         params = dict(action.parameters)
         if action.kind == "main_cast_commander":
             return 35.0
         if action.kind == "main_play_land":
             return 30.0 + self.visible_card_score(str(params.get("card", "")), observation)
+        if action.kind == "main_use_simple_tutor":
+            return 27.0 + self.visible_card_score(str(params.get("source", "")), observation)
         if action.kind == "main_cast_proactive_nonartifact":
-            # Combo/engine cards become useful before generic artifact development,
-            # but the visible card score keeps CA engines below direct combo pieces.
             return 24.0 + self.visible_card_score(str(params.get("card", "")), observation)
         if action.kind == "main_cast_artifact":
             return 20.0 + self.visible_card_score(str(params.get("card", "")), observation)
@@ -167,6 +176,8 @@ class DeterministicBasePolicy:
             return self._scry_score(observation, action)
         if kind == "runtime_chrome_imprint":
             return self._chrome_imprint_score(observation, action)
+        if kind == "choose_tutor_target":
+            return self._tutor_target_score(observation, action)
         if kind == "pass_priority":
             return 0.0
         if kind.startswith("main_"):
