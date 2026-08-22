@@ -18,9 +18,9 @@ jobs:
         with:
           python-version: '3.13'
       - name: Apply artifact ETB stack patch in workspace
-        run: python apply_oracle_etb_stack_fix.py
+        run: python apply_oracle_etb_stack_fix_v2.py
       - name: Compile
-        run: python -m py_compile urza_solver.py solver_architecture.py state_field_audit.py strategic_value_state.py apply_oracle_etb_stack_fix.py oracle_etb_stack_smoke.py
+        run: python -m py_compile urza_solver.py solver_architecture.py state_field_audit.py strategic_value_state.py apply_oracle_etb_stack_fix.py apply_oracle_etb_stack_fix_v2.py oracle_etb_stack_smoke.py
       - name: Focused Oracle ceiling smokes
         run: |
           python oracle_etb_stack_smoke.py
