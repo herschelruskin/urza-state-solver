@@ -233,12 +233,44 @@ def _permission_is_current(permission: UrzaPlayPermission, turn: int) -> bool:
     return permission.created_turn <= int(turn) <= permission.expires_turn
 
 
-def _normal_timing_allows_spell(card: str, timing_window: str) -> bool:
+def _is_creature_spell(card: str) -> bool:
+    return card == solver.COMMANDER or card in solver.CREATURES
+
+
+def _normal_timing_allows_spell(state, card: str, timing_window: str) -> bool:
     if timing_window == TIMING_MAIN_EMPTY:
         return True
-    if timing_window == TIMING_PRIORITY:
-        return card in solver.INSTANTS
-    raise ValueError(f"unknown timing window {timing_window!r}")
+    if timing_window != TIMING_PRIORITY:
+        raise ValueError(f"unknown timing window {timing_window!r}")
+
+    if card in solver.INSTANTS:
+        return True
+    if card == "Valley Floodcaller":
+        return True  # printed flash
+
+    # Valley Floodcaller lets noncreature spells be cast as though they had flash,
+    # including cards cast from exile through Urza's permission.
+    if solver.has(state, "Valley Floodcaller") and not _is_creature_spell(card):
+        return True
+    return False
+
+
+def _action_parameters(
+    permission: UrzaPlayPermission,
+    use_kind: str,
+) -> Tuple[Tuple[str, object], ...]:
+    rows = [
+        ("permission_id", permission.permission_id),
+        ("card", permission.card),
+        ("use", use_kind),
+        ("without_paying_mana_cost", True),
+    ]
+    # If a spell has X in its mana cost, casting it without paying its mana cost
+    # forces X=0.  Additional costs (for example multikicker) remain a later
+    # cast-time choice in the shared resolver.
+    if permission.card in {"Reshape", "Whir of Invention"}:
+        rows.append(("x_value", 0))
+    return tuple(rows)
 
 
 def urza_permission_intents(
@@ -250,8 +282,8 @@ def urza_permission_intents(
     """Generate currently legal uses of all still-live Urza permissions.
 
     No explicit "decline" action exists: not using a permission now is represented
-    by choosing some other ordinary policy action / passing priority.  This is what
-    allows sequencing additional actions and spins before the card is used.
+    by choosing some other ordinary policy action / passing priority.  MDFCs may
+    offer both a land-face play and a spell-face cast when each is currently legal.
     """
     if timing_window not in VALID_TIMING_WINDOWS:
         raise ValueError(f"invalid timing window {timing_window!r}")
@@ -265,35 +297,47 @@ def urza_permission_intents(
         if exile_counts[permission.card] <= 0:
             continue
         card = permission.card
-        if card in solver.ALL_LANDS:
-            if timing_window != TIMING_MAIN_EMPTY or state.land_played:
-                continue
-            kind = "play_land"
-            label = f"Play Urza-exiled {card}"
-        else:
-            if not _normal_timing_allows_spell(card, timing_window):
-                continue
-            kind = "cast_spell"
-            label = f"Cast Urza-exiled {card} without paying its mana cost"
 
-        rows.append(
-            ActionIntent(
-                action_id=f"urza.permission.{permission.permission_id}.{kind}",
-                kind="use_urza_permission",
-                parameters=(
-                    ("permission_id", permission.permission_id),
-                    ("card", card),
-                    ("use", kind),
-                    ("without_paying_mana_cost", True),
-                ),
-                # Multiple identical cards with same expiry are strategically
-                # equivalent uses even though their permission IDs are distinct.
-                equivalence_key=("urza_permission", kind, card, permission.expires_turn),
-                label=label,
-                decision_stage=DECISION_COMMIT,
-                source=URZA,
+        # Land face.  True lands have only this route; MDFCs may also offer their
+        # spell-face route below.
+        if card in solver.ALL_LANDS and timing_window == TIMING_MAIN_EMPTY and not state.land_played:
+            rows.append(
+                ActionIntent(
+                    action_id=f"urza.permission.{permission.permission_id}.play_land",
+                    kind="use_urza_permission",
+                    parameters=_action_parameters(permission, "play_land"),
+                    equivalence_key=(
+                        "urza_permission",
+                        "play_land",
+                        card,
+                        permission.expires_turn,
+                    ),
+                    label=f"Play Urza-exiled {card} as land",
+                    decision_stage=DECISION_COMMIT,
+                    source=URZA,
+                )
             )
-        )
+
+        # Spell face.  True land cards have no spell face; MDFCs do.
+        if card not in solver.TRUE_LAND_CARDS and _normal_timing_allows_spell(
+            state, card, timing_window
+        ):
+            rows.append(
+                ActionIntent(
+                    action_id=f"urza.permission.{permission.permission_id}.cast_spell",
+                    kind="use_urza_permission",
+                    parameters=_action_parameters(permission, "cast_spell"),
+                    equivalence_key=(
+                        "urza_permission",
+                        "cast_spell",
+                        card,
+                        permission.expires_turn,
+                    ),
+                    label=f"Cast Urza-exiled {card} without paying its mana cost",
+                    decision_stage=DECISION_COMMIT,
+                    source=URZA,
+                )
+            )
     return tuple(rows)
 
 
