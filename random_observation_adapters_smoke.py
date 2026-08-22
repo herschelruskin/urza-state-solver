@@ -81,6 +81,7 @@ def test_coliseum_discard_choices_can_depend_on_observed_draws():
         turn=3,
         library=("Tail",),
         hand=("Keep", "Draw1", "Draw2", "Draw3"),
+        battlefield=(),
         graveyard=seven_card_graveyard() + (COLISEUM,),
     )
     req = coliseum_discard_request(state, InformationState(), horizon=6)
