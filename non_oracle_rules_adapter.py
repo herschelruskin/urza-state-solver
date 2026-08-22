@@ -6,10 +6,10 @@ Oracle action generator contains already-resolved hidden-information branches an
 search pruning whose candidate set can depend on the concrete hidden future.
 
 The adapter admits only audited safe families: land plays, public mana abilities,
-Urza artifact taps, ordinary artifact casts through the typed stack, command-zone
-Urza casting through the typed commander stack, and end-turn commitment followed
-by typed chance observations. Hidden-information families are added through their
-Phase-1 staged adapters, never by importing Oracle successors.
+Urza artifact taps, ordinary artifact casts, command-zone Urza, a focused proactive
+nonartifact cast layer, and end-turn commitment followed by typed chance
+observations. Hidden-information families are added through their Phase-1 staged
+adapters, never by importing Oracle successors.
 """
 
 from __future__ import annotations
@@ -25,6 +25,13 @@ from non_oracle_commander_adapter import (
     begin_commander_cast,
     commander_cast_intents,
     handles_commander_stack_top,
+)
+from non_oracle_proactive_spell_adapter import (
+    MAIN_CAST_PROACTIVE_NONARTIFACT,
+    apply_proactive_stack_action,
+    begin_proactive_nonartifact_cast,
+    handles_proactive_stack_top,
+    proactive_nonartifact_intents,
 )
 from non_oracle_runtime import (
     NonOracleRuntimeState,
@@ -188,6 +195,7 @@ def main_phase_intents(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ..
     rows = [row.action for row in _land_rows(runtime)]
     rows.extend(row.action for row in _mana_rows(runtime))
     rows.extend(_ordinary_artifact_cast_intents(runtime))
+    rows.extend(proactive_nonartifact_intents(runtime))
     rows.extend(commander_cast_intents(runtime))
     rows.extend(_end_turn_intent(runtime))
     return tuple(sorted(rows, key=lambda action: action.action_id))
@@ -236,6 +244,8 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
     if runtime.pending is not None or runtime.stack.objects:
         if handles_commander_stack_top(runtime):
             resolved = apply_commander_stack_action(runtime, action)
+        elif handles_proactive_stack_top(runtime):
+            resolved = apply_proactive_stack_action(runtime, action)
         else:
             resolved = apply_runtime_action(runtime, action)
         return _normalize_empty_stack_main_window(resolved)
@@ -264,6 +274,9 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
             replace(runtime, true_state=paid), card,
             mana_spent=int(params["mana_spent"]), from_zone="hand",
         )
+
+    if action.kind == MAIN_CAST_PROACTIVE_NONARTIFACT:
+        return begin_proactive_nonartifact_cast(runtime, action)
 
     if action.kind == MAIN_CAST_COMMANDER:
         return begin_commander_cast(runtime, action)
