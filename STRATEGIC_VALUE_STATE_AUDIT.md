@@ -1,71 +1,63 @@
 # Strategic / Value-State Audit
 
-This document classifies every current `State` and `Perm` field before the solver
-gets a seed-independent `V(s)` / `Q(s,a)` cache key.
+This audit classifies every current `State` and `Perm` field before the solver gets
+a seed-independent `V(s)` / `Q(s,a)` cache key. It does **not** change Oracle
+rules, pruning, search behavior, or the existing concrete Markov key.
 
-The audit is intentionally conservative.  No Oracle rule, search behavior, or
-canonical key changes are made in this branch.  The purpose is to establish which
-facts are true future state, which are hidden-information/chance state, and which
-are trajectory analytics that should not fragment the base value function.
+The executable source of truth is `state_field_audit.py`; the smoke suite fails if
+a future `State` or `Perm` field is added without classification.
 
-The executable source of truth is `state_field_audit.py`; `state_field_audit_smoke.py`
-fails if a future `State` or `Perm` field is added without being classified.
+## Three identities, not one universal hash
 
-## Three different identities
+### Replay / diagnostic identity
 
-The simulator should not force one universal hash to serve three different jobs.
+Conservative identity used for replay/debugging. It may contain exact hidden
+library order, `rng_root_seed`, trace text, interaction history, win family, Urza
+cast turn, and other provenance.
 
-### 1. Replay / diagnostic identity
+### Concrete Markov transition identity
 
-Use a conservative full-state identity for replay, debugging and trajectory
-verification.  It may include exact hidden library order, `rng_root_seed`, trace,
-interaction history, win family, Urza cast turn and other provenance.
+Identity for one deterministic sampled world. It needs exact hidden order,
+`rng_root_seed`, and every fact required to reproduce the next concrete transition.
+Reporting-only history must not affect it.
 
-### 2. Concrete Markov transition identity
+### Strategic expected-value identity
 
-This is the deterministic sampled-world identity used by the current keyed RNG.
-It needs exact hidden library order and the root random tape, plus every current
-fact that can change future rules/legality.  Reporting text/history should not
-change a transition.
+Identity for future `V(s)` / `Q(s,a)` under a non-clairvoyant policy. It must merge
+states with the same expected future reward and legal observation even if they
+came from different seeds, hidden permutations, or reporting histories.
 
-### 3. Strategic expected-value identity
+This third identity is **not** merely concrete state minus a few fields.
 
-This is the future `V(s)` / `Q(s,a)` identity for non-Oracle DP/Monte Carlo.  It
-must merge states that have the same expected future reward under the selected
-objective and legal-information policy, even if they were reached through a
-different seed or reporting history.
+## Library treatment
 
-Crucially, strategic value is **not** obtained by merely deleting a few fields
-from concrete true state.
+For Oracle/replay, exact `library` order remains true hidden state.
 
-## The library is a projection, not an exclusion
-
-For Oracle/replay, exact `library` order is real true state and must remain exact.
-For a non-clairvoyant policy value function, unknown order cannot be part of the
-policy's state identity because doing so would create strategy fusion: two hidden
-worlds that look identical to the player would receive separate values/policies.
-
-The non-Oracle value state should therefore replace exact unknown order with a
-belief/information representation containing, at minimum:
+For non-Oracle value, exact unknown order must be replaced by a belief/information
+projection. At minimum the future key needs:
 
 - remaining library composition/counts;
-- legally known top cards and their order;
+- legally known top cards in order;
 - legally known bottom cards/constraints when relevant;
-- shuffle/information reset state;
-- any other observation-derived hidden-zone constraint required by the rules.
+- any additional hidden-zone constraint required by the policy/rules adapter.
 
-The existing `InformationState` is the starting contract for this projection.
-A later implementation should build a dedicated `LibraryBeliefKey` or equivalent
-rather than hashing the true hidden tuple.
+The existing `InformationState` is the starting contract. A future
+`LibraryBeliefKey` should combine remaining composition with `known_top` /
+`known_bottom` knowledge without exposing the sampled hidden permutation.
 
-## Base scalar objective: `P(win by horizon)`
+`shuffle_epoch` should not automatically enter value identity merely because a
+shuffle occurred in the past. If two information states have the same remaining
+composition and the same present knowledge constraints, the epoch number itself
+is history unless a future policy/RNG contract explicitly requires it.
 
-For the first value function, the default objective is the probability of winning
-by the configured horizon (main production horizon T6).  The base key should:
+## Base objective: `P(win by horizon)`
 
-### Retain current future-legality/resources
+The first strategic value function is scalar probability of winning by the chosen
+horizon (production target T6).
 
-Retain:
+### Retain
+
+The base key retains current future-legality/resource state:
 
 - `turn`;
 - hand multiset;
@@ -75,63 +67,81 @@ Retain:
 - `land_played`;
 - `drain_bank`;
 - `bauble_draws`;
-- `remora_age` and `remora_upkeep_pending`;
+- `remora_age`, `remora_upkeep_pending`;
 - `saga3_pending`;
 - `ring_counters`;
 - `ftt_level`;
 - `uthros_counters`;
 - `urza`;
-- `construct` (conservatively retained until proven redundant);
-- `top_access` (conservatively retained until proven redundant);
-- Reality Chip attachment state/target;
+- Reality Chip attachment state and target;
 - `spell_cast_this_turn`;
 - Power Artifact target;
 - `vfc_pumps`;
 - commander zone/tax state;
-- terminal `won` status, unless terminal states are guaranteed to short-circuit
-  before value-key construction.
+- terminal `won` status.
 
-`spell_cast_this_turn` is a useful example of **history that belongs in Markov
-state**: it summarizes past events because FTT level 2 makes that fact affect what
-can legally happen next.  Historical does not automatically mean removable.
+`spell_cast_this_turn` is a useful example of history that **must** remain Markov
+state: FTT level 2 makes it affect future legal top access.
 
-### Replace exact unknown library order
+### Replace
 
-`library` becomes belief/information state for non-Oracle expected value.  Exact
-order remains in Oracle/concrete transition identity.
+`library` is replaced by the non-clairvoyant library-belief/information projection.
 
-### Exclude from the base scalar value key
+### Exclude from base `V_win_by_horizon`
 
-- `rng_root_seed`: needed for deterministic sampled worlds/replay, but keeping it
-  in `V(s)` would prevent the cache from merging identical strategic states across
-  Monte-Carlo seeds;
-- `trace`: debugging/replay text only.
+- `rng_root_seed`: concrete random tape, not expected-value identity;
+- `trace`: replay text;
+- `construct`: legacy compatibility flag;
+- `top_access`: legacy/unused compatibility flag.
 
-### Preserve but treat as objective-specific memory/analytics
+The last two decisions were made only after reviewing the static usage report.
+
+#### `construct`
+
+The field is written when Urza is cast, but current legality/rules code does not
+read `State.construct`. The actual Construct token exists in `battlefield` and its
+`mode="construct"` representation is what artifact/creature/tutor/sacrifice logic
+uses. Therefore `State.construct` must not split base value states. We keep the
+field for compatibility until a separate cleanup patch proves it can be deleted
+without breaking external/reporting contracts.
+
+#### `top_access`
+
+The usage report showed no runtime writes and no rule/legality reads beyond state
+/key machinery. Actual top access is determined by Reality Chip and Fortune
+Teller's Talent state. Therefore this field must not split base value states. It
+also remains in `State`/`PolicyView` temporarily for compatibility rather than
+being deleted during the audit.
+
+### Objective-specific memory / analytics
+
+Preserve but do not place in the base scalar value key:
 
 - `urza_cast_turn`;
 - `interaction_seen`;
 - `win_family`.
 
-For ordinary `P(win by T6)`, these do not change future legality and should not
-fragment the base `V(s)` cache.  They remain valuable episode outputs.
+For path-dependent objectives, add only the **minimal sufficient objective memory**
+rather than reintroducing full history. Examples:
 
-If an objective's *future reward* depends on one of these historical facts, do not
-blindly put the entire history tuple back into the base game key.  Augment value
-state with the **minimal sufficient objective memory** instead.  Examples:
+- `P(interaction seen by T3)`: seen/not-seen or required type/count summary;
+- protected-win objectives: current protection availability is mostly derivable
+  from current hand/battlefield/mana, while historical seen-but-spent interaction
+  remains episode analytics;
+- first-Urza-turn distribution: objective accumulator/outcome statistic;
+- win-family distribution: terminal reward/category rather than live-state family
+  history.
 
-- `P(interaction seen by T3)`: a boolean/count/class summary needed until T3;
-- `P(win with >=1 protection layer)`: current protection availability may be
-  derived from game state; historical seen-but-spent cards generally belong only
-  to episode analytics;
-- distribution of first Urza cast turn: record the first-turn statistic as an
-  objective accumulator/outcome field;
-- win-family distribution: use terminal family as the reward/category rather than
-  separating all live states by a future-irrelevant family string.
+This is why the separate interaction analytics foundation remains valuable without
+forcing `interaction_seen` into every `V(s)` cache key.
 
-This preserves the interaction analytics work without sacrificing DP merge rate.
+## Terminal state
 
-## Permanent-state audit
+`won` remains part of strategic identity because it changes terminal semantics and
+legal continuation. `win_family` does not: scalar win probability only needs to
+know that the state is terminal-winning, not which combo label produced it.
+
+## Permanent identity
 
 Strategic permanent identity retains:
 
@@ -143,83 +153,69 @@ Strategic permanent identity retains:
 - `knack_granted`;
 - `producer_urza_ready`.
 
-The last field is especially important.  It is an engine compression resource,
-not ordinary printed Magic state, but it represents a still-refundable producer
-`+U` and therefore changes which future native/Knack tap action remains available.
-A value key must not merge credit-bearing and credit-less states merely because
-old Oracle `State.key()` handles this resource through dominance scoring.
+`producer_urza_ready` is particularly important. It is an engine compression
+resource representing a still-refundable producer `+U`; it changes which native or
+Knack/Helix action remains available. The strategic key must distinguish it even
+though legacy Oracle `State.key()` handles the credit through dominance behavior.
 
-Strategic permanent identity excludes:
+Permanent strategic identity excludes:
 
-- `knack_source`: provenance only; Knack and Helix grant the same modeled ability;
-- `instance_tag`: ephemeral identity used while executing multi-step macros.
+- `knack_source`: provenance only;
+- `instance_tag`: ephemeral macro object identity.
 
-## Policy observation audit
+## Policy observation
 
-The executable audit verifies that all fields classified as directly player- or
-engine-visible match `PolicyView`, and that all strategic permanent attributes
-match `PublicPermanent`.
+Exact unknown library order and `rng_root_seed` are never policy-visible.
+`InformationState` carries legal hidden-zone knowledge instead.
 
-Exact `library` is deliberately absent from `PolicyView`.  Legal knowledge about
-hidden zones enters through `InformationState` (`known_top`, `known_bottom`,
-`known_library_counts`, etc.).  `rng_root_seed`, trace, analytics history and
-terminal reporting fields are not policy observations.
+The audit currently leaves `construct` and `top_access` in `PolicyView` for
+backward compatibility even though they are excluded from base value identity.
+Before production policy learning/DP uses `PolicyView.key()` as policy identity, we
+should remove or normalize those redundant fields there as a separate architecture
+cleanup. That cleanup is not required to change Oracle behavior.
 
-`producer_urza_ready` is classified as `engine_derived`: it is not literal card
-text, but the policy/rules adapter must know the strategic option represented by
-that compression state.
+`producer_urza_ready` remains engine-derived policy state because it represents a
+real strategic option created by the Oracle compression.
 
-## Static usage evidence
+## Static usage report conclusion
 
-`state_field_audit.py` also parses `urza_solver.py` with Python's AST and reports
-attribute and keyword mentions for every audited field.  This is an evidence aid,
-not a proof of semantic necessity: generic `getattr()` adapters and dataclass
-iteration can evade a simple static count.
+The reviewed report contained 33 `State` fields and 9 `Perm` fields, with no
+completely unmentioned fields. The low-usage signals prompted focused source
+tracing rather than automatic deletion.
 
-A field with zero static mentions is therefore flagged for manual review rather
-than automatically deleted.  This is particularly important for conservative
-fields such as `construct` or `top_access`: we should only collapse them after a
-focused equivalence proof/test demonstrates no future behavioral distinction.
+Conclusions:
 
-## What this audit deliberately does not do
+- `top_access`: no rules read / no runtime write -> exclude from base value key;
+- `construct`: writes but no rules read; battlefield token is authoritative ->
+  exclude from base value key;
+- `urza_cast_turn`: analytics only -> objective-specific;
+- `interaction_seen`: analytics/reward history -> objective-specific;
+- `rng_root_seed`: concrete stochastic coordinate -> exclude from expected value;
+- all other low-frequency legality/resource fields remain retained unless a later
+  equivalence proof says otherwise.
 
-This branch does **not**:
+## What this branch deliberately does not do
+
+This audit branch does **not**:
 
 - change `State.key()`;
 - change `canonical_true_state_key()`;
 - change `canonical_markov_state_key()`;
-- add an actual `canonical_strategic_state_key()` yet;
-- change Oracle pruning, beam behavior or rules;
+- add `canonical_strategic_state_key()`;
+- change Oracle action generation or pruning;
 - wire V/Q memoization into production search.
 
-Those changes come only after this classification passes locally and we review the
-static usage report.
+## Next patch
 
-## Next implementation after audit validation
+After this audit passes, implement a seed-independent strategic projection with a
+library belief key. Then instrument current search/rollouts **without changing
+search decisions** to measure:
 
-Once the audit smoke and usage report are reviewed, the next patch should add an
-explicit strategic value projection, probably along these lines:
-
-```text
-StrategicValueState
-    objective_id / objective-memory schema
-    turn + public/current rules state
-    hand / graveyard / exile multisets
-    canonical future-relevant battlefield
-    LibraryBeliefKey
-        remaining composition
-        known top/bottom constraints
-        shuffle/information state
-```
-
-The key should be seed-independent and policy-information-safe.  We should then
-instrument current search/rollouts to measure:
-
-- raw states generated;
+- raw generated states;
 - concrete Markov unique states;
 - strategic-value unique states;
-- merge/collapse ratio;
-- estimated `V`/`Q` cache hit rate by turn/depth.
+- collapse/merge ratio;
+- estimated V/Q cache hit rate by turn/depth.
 
-Only after measuring those ratios should the solver begin using strategic memoized
-values to alter production search decisions.
+Only after those measurements should memoized values begin influencing production
+policy/search behavior.
