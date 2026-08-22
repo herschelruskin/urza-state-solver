@@ -29,7 +29,7 @@ COMBO_CORE = frozenset({
 TUTOR_CORE = frozenset({
     "Mystical Tutor","Merchant Scroll","Spellseeker","Dizzy Spell",
     "Muddle the Mixture","Reshape","Transmute Artifact","Whir of Invention",
-    "Repurposing Bay","Urza's Saga",
+    "Repurposing Bay","Urza's Saga","Scour for Scrap",
 })
 FAST_MANA = frozenset({
     "Mana Crypt","Sol Ring","Mana Vault","Mox Opal","Mox Amber","Chrome Mox",
@@ -47,7 +47,6 @@ class DeterministicBasePolicy:
     policy_id: str = BASE_POLICY_VERSION
 
     def visible_card_score(self, card: str, observation: RuntimePolicyView) -> float:
-        """Coarse value using only visible card identity + visible resources."""
         score = 0.0
         if card in COMBO_CORE:
             score += 5.0
@@ -140,8 +139,6 @@ class DeterministicBasePolicy:
     def _transmute_sacrifice_score(self, observation: RuntimePolicyView, action: ActionIntent) -> float:
         signature = tuple(dict(action.parameters).get("signature", ()))
         name = str(signature[0]) if signature else ""
-        # Sacrifice the least valuable visible resource; Statue receives a small
-        # bonus because its public death trigger replaces itself with a Treasure.
         score = -self.visible_card_score(name, observation)
         if name == "Prized Statue":
             score += 4.0
@@ -163,6 +160,21 @@ class DeterministicBasePolicy:
             return 30.0 + self.visible_card_score(str(params.get("card", "")), observation)
         if action.kind == "main_use_transmute_artifact":
             return 33.0
+        if action.kind == "main_activate_repurposing_bay":
+            target_mv = int(params.get("target_mv", 0))
+            mv_value = 4.0 - abs(target_mv - 2.5)
+            sacrificed = str(params.get("sacrifice_name", ""))
+            sacrifice_penalty = 0.5 * self.visible_card_score(sacrificed, observation)
+            if sacrificed == "Prized Statue":
+                sacrifice_penalty -= 2.0
+            return 30.0 + mv_value - sacrifice_penalty
+        if action.kind == "main_cast_scour_for_scrap":
+            mode = str(params.get("mode", ""))
+            grave = str(params.get("graveyard_target", ""))
+            mode_bonus = {"both": 5.0, "library": 3.0, "graveyard": 1.0}.get(mode, 0.0)
+            return 29.0 + mode_bonus + 0.25 * self.visible_card_score(grave, observation)
+        if action.kind == "main_activate_tezzeret_minus3":
+            return 28.0
         if action.kind == "main_use_x_artifact_tutor":
             x = int(params.get("x", 0))
             x_score = 4.5 - 1.5 * abs(x - 3)
@@ -199,7 +211,12 @@ class DeterministicBasePolicy:
             return self._scry_score(observation, action)
         if kind == "runtime_chrome_imprint":
             return self._chrome_imprint_score(observation, action)
-        if kind in {"choose_tutor_target", "x_artifact_search_target", "transmute_choose_target"}:
+        if kind in {
+            "choose_tutor_target",
+            "x_artifact_search_target",
+            "transmute_choose_target",
+            "remaining_search_target",
+        }:
             return self._tutor_target_score(observation, action)
         if kind == "transmute_choose_sacrifice":
             return self._transmute_sacrifice_score(observation, action)
