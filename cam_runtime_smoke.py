@@ -3,11 +3,7 @@
 
 import urza_solver as solver
 import non_oracle_rules_adapter as rules
-from non_oracle_cam_runtime import (
-    DECISION_CAM_EFFECT,
-    DECISION_CAM_TARGET,
-    queue_cam_ltb,
-)
+from non_oracle_cam_runtime import DECISION_CAM_EFFECT, DECISION_CAM_TARGET, queue_cam_ltb
 from non_oracle_runtime import ACTION_PASS_PRIORITY, make_runtime_state, record_artifact_entry
 
 
@@ -72,7 +68,7 @@ def test_cam_resolution_exposes_may_tap_or_untap_then_applies_choice():
             library=(),
             hand=(),
             battlefield=(
-                solver.Perm("Battered Golem", tapped=True, sick=False),
+                solver.Perm("Spellseeker", tapped=True, sick=False),
                 solver.Perm("Sewer-veillance Cam"),
             ),
         )
@@ -89,8 +85,8 @@ def test_cam_resolution_exposes_may_tap_or_untap_then_applies_choice():
     assert choices == {"decline", "untap"}
     untap = next(a for a in request.actions if dict(a.parameters)["choice"] == "untap")
     runtime = rules.apply_main_action(runtime, untap)
-    golem = next(p for p in runtime.true_state.battlefield if p.name == "Battered Golem")
-    assert not golem.tapped
+    spellseeker = next(p for p in runtime.true_state.battlefield if p.name == "Spellseeker")
+    assert not spellseeker.tapped
 
 
 def test_cam_ltb_uses_same_target_before_order_boundary():
