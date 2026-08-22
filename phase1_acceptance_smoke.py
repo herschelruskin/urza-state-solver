@@ -14,6 +14,7 @@ import continuous_top_visibility_smoke
 import decision_observation_smoke
 import information_state_propagation_smoke
 import non_oracle_runtime_value_key_smoke
+import non_oracle_runtime_view_smoke
 import opening_information_state_smoke
 import random_observation_adapters_smoke
 import remaining_search_adapters_smoke
@@ -47,6 +48,7 @@ def main():
         ("opening_information", opening_information_state_smoke.main),
         ("strategic_value_state", strategic_value_state_smoke.main),
         ("runtime_value_key", non_oracle_runtime_value_key_smoke.main),
+        ("runtime_policy_view", non_oracle_runtime_view_smoke.main),
         ("state_field_audit", state_field_audit_smoke.main),
         ("architecture", architecture_smoke.main),
     )
