@@ -293,6 +293,49 @@ class DeterministicBasePolicy:
         choice = str(dict(action.parameters).get("choice", ""))
         return 34.0 if choice == "attach" else 2.0
 
+    def _mill_action_score(
+        self,
+        observation: RuntimePolicyView,
+        action: ActionIntent,
+        *,
+        priority: bool,
+    ) -> float:
+        """Value self-mill using only the legally known library prefix/public board."""
+        params = dict(action.parameters)
+        known = tuple(observation.base.known_top)
+        if known:
+            top_value = self.visible_card_score(str(known[0]), observation)
+            next_value = (
+                self.visible_card_score(str(known[1]), observation)
+                if len(known) > 1 else top_value
+            )
+            # Strongly reward a deterministic unbrick when the next known card is
+            # better, while protecting a known combo/tutor/fast-mana top.
+            score = 18.0 + 3.0 * (next_value - top_value) - 1.5 * top_value
+        else:
+            # Unknown self-mill is only mildly useful; graveyard/cage context below
+            # may make it worth taking without pretending to know what gets milled.
+            score = 5.0
+
+        if bool(params.get("graveyard_live", False)):
+            score += 5.0
+        if bool(params.get("cage_live", False)):
+            score += 2.0
+
+        sacrificed = str(params.get("sacrifice_name", ""))
+        if sacrificed:
+            score -= 1.5 * self.visible_card_score(sacrificed, observation)
+            if sacrificed == "Prized Statue":
+                score += 6.0
+            if sacrificed in {"Clue", "Treasure"}:
+                score += 3.0
+            if sacrificed == "Grinding Station":
+                score -= 5.0
+
+        if priority:
+            score -= 1.0
+        return score
+
     def _main_action_score(self, observation: RuntimePolicyView, action: ActionIntent) -> float:
         params = dict(action.parameters)
         if action.kind == "main_cast_commander":
@@ -314,6 +357,8 @@ class DeterministicBasePolicy:
             return self._chip_reconfigure_score(action)
         if action.kind == "main_activate_uthros_station":
             return self._uthros_station_score(action)
+        if action.kind in {"main_activate_station_mill", "main_activate_codex_mill"}:
+            return self._mill_action_score(observation, action, priority=False)
         if action.kind == "main_use_transmute_artifact":
             return 33.0
         if action.kind == "main_activate_repurposing_bay":
@@ -391,6 +436,8 @@ class DeterministicBasePolicy:
             return self._transmute_payment_score(action)
         if kind in {"priority_activate_top_draw", "priority_activate_key"}:
             return self._priority_top_key_score(action)
+        if kind in {"priority_activate_station_mill", "priority_activate_codex_mill"}:
+            return self._mill_action_score(observation, action, priority=True)
         if kind == "upkeep_pay_remora":
             return 50.0
         if kind == "upkeep_decline_remora":

@@ -127,7 +127,9 @@ def _horizon_state_features(state: solver.State):
     if any(p.mode == "clue" for p in state.battlefield):
         families.add("battlefield_clue_draw_modeled_present")
     if "Grinding Station" in battlefield_names:
-        families.add("battlefield_station_activation_unmodeled")
+        families.add("battlefield_station_activation_modeled_present")
+    if "Codex Shredder" in battlefield_names:
+        families.add("battlefield_codex_mill_modeled_present")
     if state.urza:
         families.add("battlefield_urza_spin_main_modeled_present")
     if "The Reality Chip" in battlefield_names:
