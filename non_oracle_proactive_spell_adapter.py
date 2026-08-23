@@ -35,6 +35,7 @@ from non_oracle_runtime import (
     _perm_public_signature,
 )
 from non_oracle_runtime_value_key import WINDOW_PRIORITY
+from non_oracle_turn_engine import _refresh_continuous_top
 from trigger_order_adapter import post_cast_observations
 
 MAIN_CAST_PROACTIVE_NONARTIFACT = "main_cast_proactive_nonartifact"
@@ -240,9 +241,17 @@ def _resolve_engine_permanent(runtime: NonOracleRuntimeState, obj) -> NonOracleR
     if card == "Fortune Teller's Talent":
         state = replace(state, ftt_level=1)
     state = solver.check_win(solver.add_trace(state, f"Phase2 resolve {card}"))
+    info = runtime.information
+    if card == "Fortune Teller's Talent":
+        info = _refresh_continuous_top(
+            state,
+            info,
+            source="Fortune Teller's Talent enters: continuous top look",
+        )
     return replace(
         runtime,
         true_state=solver._ensure_oracle_instance_tags(state),
+        information=info,
         window=RuntimeDecisionWindow(WINDOW_PRIORITY),
     )
 

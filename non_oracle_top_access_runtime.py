@@ -11,6 +11,10 @@ Fortune Teller's Talent permission:
 * preserve Mox Diamond's as-it-enters land-discard decision;
 * preserve Everflowing Chalice's committed multikicker count.
 
+Fortune Teller's Talent class-level actions are delegated through the same main-phase
+extension point because they are the public resource commitments that make FTT top
+access reachable.  The leveling rules themselves live in ``non_oracle_ftt_runtime``.
+
 The rules layer validates that the advertised known card is still the physical top.
 Casting removes it from the library before post-cast observations are applied, so a
 continuous Chip/FTT look can expose the new top before simultaneous cast triggers are
@@ -34,6 +38,11 @@ from decision_observation import (
     MoveKnownCardObservation,
     ObservationBatch,
     apply_observation_batch,
+)
+from non_oracle_ftt_runtime import (
+    MAIN_LEVEL_FTT,
+    apply_ftt_level_action,
+    ftt_level_main_intents,
 )
 from non_oracle_turn_engine import _refresh_continuous_top
 from non_oracle_utility_artifact_runtime import (
@@ -126,22 +135,24 @@ def _artifact_intent(
 
 
 def top_access_main_intents(runtime: core.NonOracleRuntimeState) -> Tuple[ActionIntent, ...]:
+    # FTT leveling is intentionally collected here so the central Phase-2 rules
+    # adapter keeps one compact extension point for the whole top-access engine.
+    rows = list(ftt_level_main_intents(runtime))
     state = runtime.true_state
     source = _access_source(state)
     card = _known_top(runtime)
     if not source or not card:
-        return ()
+        return tuple(sorted(rows, key=lambda action: action.action_id))
 
-    rows = []
     if card in solver.ALL_LANDS and not state.land_played:
         rows.append(_land_intent(card, source))
 
     # In this batch MDFCs receive only their land face. Their nonartifact spell
     # face belongs to the following generic top-spell timing slice.
     if card not in solver.ARTIFACTS or card in solver.ALL_LANDS:
-        return tuple(rows)
+        return tuple(sorted(rows, key=lambda action: action.action_id))
     if solver.cage_blocks_library_cast(state, card):
-        return tuple(rows)
+        return tuple(sorted(rows, key=lambda action: action.action_id))
 
     if card == CHALICE:
         max_k = min(8, max(0, (int(state.blue) + int(state.colorless)) // 2))
@@ -178,6 +189,8 @@ def top_access_main_intents(runtime: core.NonOracleRuntimeState) -> Tuple[Action
 
 
 def is_top_access_action(action: ActionIntent) -> bool:
+    if action.kind == MAIN_LEVEL_FTT:
+        return True
     return bool(
         action.kind in {MAIN_PLAY_LAND, MAIN_CAST_ARTIFACT}
         and dict(action.parameters).get("from_zone") == TOP_ZONE
@@ -357,6 +370,8 @@ def begin_top_access_main_action(
     legal = {candidate.canonical_key() for candidate in top_access_main_intents(runtime)}
     if action.canonical_key() not in legal:
         raise ValueError("top-access action is no longer legal")
+    if action.kind == MAIN_LEVEL_FTT:
+        return apply_ftt_level_action(runtime, action)
     params = dict(action.parameters)
     card = str(params["card"])
     source = str(params.get("top_access_source", "top access"))
