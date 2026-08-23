@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Focused Phase-2 smokes for Chrome Dome main and end-step timing."""
+"""Focused Phase-2 smokes for Chrome Dome main, priority, and end-step timing."""
 
 import urza_solver as solver
 import non_oracle_rules_adapter as rules
@@ -8,6 +8,7 @@ from non_oracle_chrome_dome_runtime import (
     DECISION_CHROME_ENDSTEP,
     MAIN_ACTIVATE_CHROME,
 )
+from non_oracle_chrome_priority_runtime import PRIORITY_ACTIVATE_CHROME
 from non_oracle_runtime import ACTION_PASS_PRIORITY, make_runtime_state
 
 
@@ -43,6 +44,21 @@ def _main_runtime(*, library=("Natural", "Tail"), colorless=5, extra=(), pa_targ
     )
 
 
+def _priority_runtime(*, library=("Natural", "Tail"), colorless=6):
+    return make_runtime_state(
+        solver.State(
+            turn=2,
+            library=tuple(library),
+            hand=("Sol Ring",),
+            battlefield=(
+                solver.Perm("Chrome Dome"),
+                solver.Perm("Mana Vault"),
+            ),
+            colorless=int(colorless),
+        )
+    )
+
+
 def _request(runtime):
     return rules.rules_decision_request(runtime, horizon=6)
 
@@ -63,6 +79,23 @@ def _pass(runtime):
     return next(
         action for action in _request(runtime).actions
         if action.action_id == ACTION_PASS_PRIORITY
+    )
+
+
+def _put_sol_ring_on_stack(runtime):
+    cast = next(
+        action for action in _request(runtime).actions
+        if action.kind == "main_cast_artifact"
+        and dict(action.parameters).get("card") == "Sol Ring"
+    )
+    return rules.apply_main_action(runtime, cast)
+
+
+def _priority_chrome(runtime, target="Mana Vault"):
+    return next(
+        action for action in _request(runtime).actions
+        if action.kind == PRIORITY_ACTIVATE_CHROME
+        and dict(action.parameters).get("target_name") == target
     )
 
 
@@ -148,6 +181,47 @@ def test_main_chrome_copy_dies_at_own_end_step():
     assert not any(p.mode == "chrome_copy" for p in runtime.true_state.battlefield)
 
 
+def test_priority_chrome_action_set_is_hidden_future_invariant():
+    left = _put_sol_ring_on_stack(_priority_runtime(library=("SECRET_A", "TAIL")))
+    right = _put_sol_ring_on_stack(_priority_runtime(library=("SECRET_B", "TAIL")))
+    la = tuple(
+        action.strategic_key() for action in _request(left).actions
+        if action.kind == PRIORITY_ACTIVATE_CHROME
+    )
+    ra = tuple(
+        action.strategic_key() for action in _request(right).actions
+        if action.kind == PRIORITY_ACTIVATE_CHROME
+    )
+    assert la == ra and la
+    assert "SECRET_A" not in repr(la) and "SECRET_B" not in repr(la)
+
+
+def test_priority_chrome_pays_and_sits_above_older_spell():
+    runtime = _put_sol_ring_on_stack(_priority_runtime(colorless=6))
+    assert runtime.true_state.colorless == 5
+    assert runtime.stack.top() is not None and runtime.stack.top().card == "Sol Ring"
+    action = _priority_chrome(runtime)
+    assert dict(action.parameters)["activation_cost"] == 5
+    runtime = rules.apply_main_action(runtime, action)
+    assert runtime.true_state.colorless == 0
+    assert runtime.stack.top() is not None and runtime.stack.top().kind == ACT_CHROME_COPY
+    assert runtime.stack.objects[-1].card == "Sol Ring"
+    assert not any(p.mode == "chrome_copy" for p in runtime.true_state.battlefield)
+
+    runtime = rules.apply_main_action(runtime, _pass(runtime))
+    assert any(
+        p.name == "Mana Vault" and p.mode == "chrome_copy"
+        for p in runtime.true_state.battlefield
+    )
+    assert runtime.stack.objects and runtime.stack.objects[-1].card == "Sol Ring"
+
+
+def test_priority_chrome_is_not_offered_without_full_public_cost():
+    runtime = _put_sol_ring_on_stack(_priority_runtime(colorless=5))
+    assert runtime.true_state.colorless == 4
+    assert not any(action.kind == PRIORITY_ACTIVATE_CHROME for action in _request(runtime).actions)
+
+
 def test_end_turn_commit_remains_hidden_future_invariant_with_chrome():
     left = _runtime(("SECRET_A", "SECRET_B"))
     right = _runtime(("SECRET_B", "SECRET_A"))
@@ -224,6 +298,9 @@ def main():
         test_main_chrome_cost_uses_gadgeteer_and_power_artifact_reductions,
         test_main_chrome_copy_uses_typed_artifact_entry_triggers,
         test_main_chrome_copy_dies_at_own_end_step,
+        test_priority_chrome_action_set_is_hidden_future_invariant,
+        test_priority_chrome_pays_and_sits_above_older_spell,
+        test_priority_chrome_is_not_offered_without_full_public_cost,
         test_end_turn_commit_remains_hidden_future_invariant_with_chrome,
         test_chrome_choice_occurs_after_opponent_cycle_observations,
         test_chrome_copy_survives_into_next_turn_then_dies_at_our_end_step,

@@ -25,6 +25,7 @@ jobs:
             non_oracle_runtime.py \
             non_oracle_cam_runtime.py \
             non_oracle_chrome_dome_runtime.py \
+            non_oracle_chrome_priority_runtime.py \
             non_oracle_utility_artifact_runtime.py \
             non_oracle_top_draw_runtime.py \
             non_oracle_urza_runtime.py \
@@ -71,7 +72,7 @@ jobs:
         run: python phase2_runtime_smoke.py
       - name: Sewer-veillance Cam runtime
         run: python cam_runtime_smoke.py
-      - name: Chrome Dome turn boundary
+      - name: Chrome Dome main, priority, and turn boundary
         run: python chrome_dome_runtime_smoke.py
       - name: Utility artifact runtime
         run: python utility_artifact_runtime_smoke.py

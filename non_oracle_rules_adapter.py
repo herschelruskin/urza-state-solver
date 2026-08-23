@@ -103,6 +103,10 @@ from non_oracle_chrome_dome_runtime import (
     handles_chrome_pending,
     handles_chrome_stack_top,
 )
+from non_oracle_chrome_priority_runtime import (
+    PRIORITY_ACTIVATE_CHROME,
+    apply_chrome_priority_action,
+)
 from non_oracle_utility_artifact_runtime import (
     MAIN_ACTIVATE_KEY,
     MAIN_ACTIVATE_TOP,
@@ -457,6 +461,8 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
             return apply_top_priority_action(runtime, action)
         if action.kind in {PRIORITY_ACTIVATE_STATION_MILL, PRIORITY_ACTIVATE_CODEX_MILL}:
             return apply_mill_priority_action(runtime, action)
+        if action.kind == PRIORITY_ACTIVATE_CHROME:
+            return apply_chrome_priority_action(runtime, action)
         if handles_utility_pending(runtime):
             resolved = apply_utility_pending(runtime, action)
         elif handles_simple_tutor_pending(runtime):

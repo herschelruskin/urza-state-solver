@@ -9,19 +9,23 @@ priority windows:
       -> intervening trigger/priority sequencing resolves normally
       -> Station mills the top three cards on resolution
 
-The sacrificed artifact may be tapped and may be Grinding Station itself.  Physical
+The sacrificed artifact may be tapped and may be Grinding Station itself. Physical
 removal reuses the Phase-2 artifact-cost helper that avoids Oracle trigger shortcuts.
 Cam target selection is staged by the typed Cam runtime; Prized Statue creates its
 normal death trigger above the pending mill ability.
 
 The Oracle's producer fast-line may leave Station tapped with a still-unspent
-``producer_urza_ready`` +U credit.  Such a state also represents the legal branch
+``producer_urza_ready`` +U credit. Such a state also represents the legal branch
 where the final Urza tap was not taken, so this adapter refunds that exact credit
 before paying Station's tap cost instead of incorrectly suppressing the activation.
 
 Codex Shredder's tap-to-mill-one ability is included as the compact companion surface.
 Both abilities update InformationState only when the milled cards become public, then
 refresh continuous Chip/FTT top visibility.
+
+This module also owns the combined priority request aggregator. It collects Top/Key,
+self-mill, and Chrome Dome priority actions into one policy-safe request while each
+card-specific adapter remains responsible for applying its own action.
 """
 
 from __future__ import annotations
@@ -42,6 +46,7 @@ from decision_observation import (
     apply_observation_batch,
 )
 from non_oracle_cam_runtime import queue_cam_ltb
+from non_oracle_chrome_priority_runtime import chrome_priority_actions
 from non_oracle_runtime_value_key import RuntimeDecisionWindow, WINDOW_PRIORITY
 from non_oracle_turn_engine import _refresh_continuous_top
 from non_oracle_x_artifact_tutor_runtime import _remove_artifact_for_reshape_cost
@@ -206,6 +211,7 @@ def mill_priority_actions(runtime: core.NonOracleRuntimeState) -> Tuple[ActionIn
 def extended_priority_actions(runtime: core.NonOracleRuntimeState) -> Tuple[ActionIntent, ...]:
     rows = list(top_priority_actions(runtime))
     rows.extend(mill_priority_actions(runtime))
+    rows.extend(chrome_priority_actions(runtime))
     return tuple(sorted(rows, key=lambda action: action.action_id))
 
 
@@ -236,7 +242,7 @@ def extended_priority_request(
             horizon=horizon,
             objective=objective,
             policy_id=policy_id,
-            decision_id="runtime.priority.with_top_key_mill",
+            decision_id="runtime.priority.with_top_key_mill_chrome",
             decision_stage=DECISION_MECHANICAL,
         ),
     )
