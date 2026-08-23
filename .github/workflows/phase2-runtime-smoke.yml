@@ -29,6 +29,7 @@ jobs:
             non_oracle_utility_artifact_runtime.py \
             non_oracle_top_draw_runtime.py \
             non_oracle_urza_runtime.py \
+            non_oracle_urza_search_permission_runtime.py \
             non_oracle_engine_activation_runtime.py \
             non_oracle_mill_runtime.py \
             non_oracle_top_access_runtime.py \
@@ -53,6 +54,7 @@ jobs:
             utility_artifact_runtime_smoke.py \
             top_draw_runtime_smoke.py \
             urza_runtime_smoke.py \
+            urza_search_permission_runtime_smoke.py \
             engine_activation_runtime_smoke.py \
             mill_runtime_smoke.py \
             top_access_runtime_smoke.py \
@@ -80,6 +82,8 @@ jobs:
         run: python top_draw_runtime_smoke.py
       - name: Urza spin and permission runtime
         run: python urza_runtime_smoke.py
+      - name: Urza tutor/search permissions
+        run: python urza_search_permission_runtime_smoke.py
       - name: Chip and Uthros engine activations
         run: python engine_activation_runtime_smoke.py
       - name: Grinding Station and Codex mill runtime

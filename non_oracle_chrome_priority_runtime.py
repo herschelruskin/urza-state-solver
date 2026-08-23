@@ -27,6 +27,12 @@ import non_oracle_runtime as core
 from decision_observation import ActionIntent, DECISION_MECHANICAL
 from non_oracle_chrome_dome_runtime import ACT_CHROME_COPY, CHROME, _artifact_groups
 from non_oracle_runtime_value_key import RuntimeDecisionWindow, WINDOW_PRIORITY
+from non_oracle_urza_search_permission_runtime import install_urza_search_permission_extension
+
+# Install before the central rules adapter imports Urza symbols. The extension
+# augments the existing typed Urza main/priority entry points rather than creating
+# a parallel dispatcher.
+install_urza_search_permission_extension()
 
 PRIORITY_ACTIVATE_CHROME = "priority_activate_chrome_dome"
 
