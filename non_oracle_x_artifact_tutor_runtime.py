@@ -428,3 +428,12 @@ def apply_x_artifact_pending(runtime: NonOracleRuntimeState, action: ActionInten
     if target:
         return record_artifact_entry(runtime, (target,), source=f"resolve {source} -> {target}")
     return runtime
+
+
+def apply_x_artifact_stack_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> NonOracleRuntimeState:
+    if action.action_id != ACTION_PASS_PRIORITY or action.kind != "pass_priority":
+        raise ValueError("X-artifact tutor spell resolves only after passing priority")
+    obj, remaining = runtime.stack.pop_top()
+    if obj is None or obj.kind not in {SPELL_RESHAPE, SPELL_WHIR}:
+        raise ValueError("top stack object is not an X-artifact tutor spell")
+    return _search_pending(replace(runtime, stack=remaining), obj)
