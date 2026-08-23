@@ -13,11 +13,17 @@ the searched permanent may have entered by then and is part of the legal target 
 Only after the target is committed do we order Cam's trigger with any waiting ETB
 triggers from the searched artifact.
 
+Grafdigger's Cage does not stop Transmute from finding an artifact creature. It
+only stops that creature card from moving from the library to the battlefield. A
+higher-MV target may therefore still be found and sent to the graveyard by declining
+the difference; paying the difference into Cage leaves the card in the library.
+
 Sequence:
     cast/pay UU -> real cast-trigger stack -> resolve Transmute
       -> choose sacrifice -> search observation -> choose target
       -> optional difference-payment decision (mana abilities legal here)
-      -> target enters or goes to graveyard -> shuffle -> spell finishes
+      -> target enters, remains in library under Cage, or goes to graveyard
+      -> shuffle -> spell finishes
       -> choose any Cam LTB target on the final battlefield
       -> queue/order all waiting death/LTB/artifact-entry triggers
 """
@@ -403,12 +409,26 @@ def _apply_target(runtime: NonOracleRuntimeState, action: ActionIntent) -> NonOr
     if target not in tuple(data["legal_targets"]) or target not in runtime.true_state.library:
         raise ValueError("chosen Transmute target is absent or was not revealed")
 
+    cage_blocked = solver.cage_blocks_library_battlefield_entry(runtime.true_state, target)
     library = list(runtime.true_state.library)
     library.remove(target)
     state = replace(runtime.true_state, library=tuple(library))
     difference = max(0, solver.mana_value(target) - int(data["sacrificed_mv"]))
     runtime = replace(runtime, true_state=state)
     if difference <= 0:
+        if cage_blocked:
+            # The searched creature never changes zones; restore it before the
+            # mandatory shuffle. This branch is physically equivalent to finding
+            # no card except for the revealed search choice.
+            state = replace(state, library=state.library + (target,))
+            runtime = replace(runtime, true_state=state)
+            return _finish_transmute(
+                runtime,
+                target="",
+                prized_died=prized_died,
+                cam_died=cam_died,
+                shuffle_salt=f"transmute-cage:{sacrificed_name}:{target}",
+            )
         return _finish_transmute(
             runtime,
             target=target,
@@ -430,6 +450,7 @@ def _apply_target(runtime: NonOracleRuntimeState, action: ActionIntent) -> NonOr
             spec=spec,
             kind=RUNTIME_TRANSMUTE_PAYMENT,
             payload=(
+                ("cage_blocked", cage_blocked),
                 ("cam_died", cam_died),
                 ("difference", int(difference)),
                 ("prized_died", prized_died),
@@ -453,6 +474,7 @@ def _apply_payment(runtime: NonOracleRuntimeState, action: ActionIntent) -> NonO
     target = str(data["target"])
     prized_died = bool(data["prized_died"])
     cam_died = bool(data["cam_died"])
+    cage_blocked = bool(data.get("cage_blocked", False))
     sacrificed_name = str(data["sacrificed_name"])
     choice = str(dict(action.parameters).get("choice", ""))
 
@@ -474,6 +496,18 @@ def _apply_payment(runtime: NonOracleRuntimeState, action: ActionIntent) -> NonO
     paid_state = options.get(action.canonical_key())
     if paid_state is None:
         raise ValueError("Transmute payment plan is no longer legal")
+    if cage_blocked:
+        # Payment was legal, but Cage replaces the attempted battlefield move
+        # with no move at all. The card is still in the library when it shuffles.
+        paid_state = replace(paid_state, library=paid_state.library + (target,))
+        runtime = replace(runtime, true_state=paid_state)
+        return _finish_transmute(
+            runtime,
+            target="",
+            prized_died=prized_died,
+            cam_died=cam_died,
+            shuffle_salt=f"transmute-paid-cage:{sacrificed_name}:{target}",
+        )
     runtime = replace(runtime, true_state=paid_state)
     return _finish_transmute(
         runtime,
