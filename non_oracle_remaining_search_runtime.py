@@ -390,7 +390,11 @@ def apply_remaining_stack_action(runtime: NonOracleRuntimeState, action: ActionI
         return _open_search(
             runtime,
             source=SAGA,
-            legal_targets=(card for card in runtime.true_state.library if card in solver.SAGA_TARGETS),
+            legal_targets=(
+                card for card in runtime.true_state.library
+                if card in solver.SAGA_TARGETS
+                and not solver.cage_blocks_library_battlefield_entry(runtime.true_state, card)
+            ),
             pending_kind=RUNTIME_SAGA_TARGET,
             payload=(),
             contingent_on=obj.object_id,
