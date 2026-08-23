@@ -3,6 +3,7 @@
 
 import urza_solver as solver
 from non_oracle_base_policy import DeterministicBasePolicy
+from non_oracle_cam_runtime import DECISION_CAM_TARGET
 from non_oracle_rules_adapter import apply_main_action, rules_decision_request
 from non_oracle_runtime import ACTION_PASS_PRIORITY, make_runtime_state
 from non_oracle_transmute_runtime import MAIN_USE_TRANSMUTE_ARTIFACT
@@ -102,9 +103,6 @@ def test_prized_death_waits_until_transmute_finishes_then_orders_with_target_etb
     runtime = apply_main_action(runtime, transmute_action(runtime))
     runtime = apply_main_action(runtime, pass_action(runtime))
     runtime = apply_main_action(runtime, choose_sacrifice(runtime, "Prized Statue"))
-
-    # Statue has died, but Transmute is still resolving: no Treasure and no death
-    # trigger may be put on the stack yet.
     assert not any(p.mode == "treasure" for p in runtime.true_state.battlefield)
     assert not runtime.stack.objects
     assert runtime.pending is not None
@@ -112,14 +110,58 @@ def test_prized_death_waits_until_transmute_finishes_then_orders_with_target_etb
     runtime = apply_main_action(runtime, choose_target(runtime, "Witching Well"))
     assert any(p.name == "Witching Well" for p in runtime.true_state.battlefield)
     assert "Transmute Artifact" in runtime.true_state.graveyard
-
-    # Witching Well ETB and Prized Statue dies trigger both waited until the spell
-    # finished, then became simultaneous controlled stack-order choices.
     request = rules_decision_request(runtime, horizon=6)
     assert request.actions and all(a.kind == "runtime_stack_order" for a in request.actions)
     labels = "\n".join(a.label for a in request.actions)
     assert "etb_scry_2" in labels
     assert "prized_dies_treasure" in labels
+
+
+def test_cam_ltb_waits_for_transmute_to_finish_before_target_choice():
+    runtime = make_runtime_state(solver.State(
+        turn=3,
+        library=("Witching Well", "Island"),
+        hand=("Transmute Artifact",),
+        battlefield=(
+            solver.Perm("Sewer-veillance Cam"),
+            solver.Perm("Faerie Mastermind"),
+        ),
+        blue=2,
+        rng_root_seed=78,
+    ))
+    runtime = apply_main_action(runtime, transmute_action(runtime))
+    runtime = apply_main_action(runtime, pass_action(runtime))
+    runtime = apply_main_action(runtime, choose_sacrifice(runtime, "Sewer-veillance Cam"))
+
+    # Cam triggered during resolution, so it must NOT choose a target or go on
+    # the stack while Transmute is still searching/resolving.
+    assert runtime.pending is not None
+    assert runtime.pending.kind == "runtime_transmute_target"
+    assert all(a.kind == "transmute_choose_target" for a in rules_decision_request(runtime, horizon=6).actions)
+
+    runtime = apply_main_action(runtime, choose_target(runtime, "Witching Well"))
+    assert "Transmute Artifact" in runtime.true_state.graveyard
+    assert any(p.name == "Witching Well" for p in runtime.true_state.battlefield)
+    assert runtime.pending is not None and runtime.pending.kind == DECISION_CAM_TARGET
+    request = rules_decision_request(runtime, horizon=6)
+    assert request.actions and all(a.kind == DECISION_CAM_TARGET for a in request.actions)
+    assert any(
+        tuple(dict(a.parameters)["target_signature"])[0] == "Faerie Mastermind"
+        for a in request.actions
+    )
+
+    target = next(
+        a for a in request.actions
+        if tuple(dict(a.parameters)["target_signature"])[0] == "Faerie Mastermind"
+    )
+    runtime = apply_main_action(runtime, target)
+    # The searched Witching Well ETB and the now-targeted Cam LTB are simultaneous
+    # waiting triggers after Transmute finishes, so they are ordered now.
+    request = rules_decision_request(runtime, horizon=6)
+    assert request.actions and all(a.kind == "runtime_stack_order" for a in request.actions)
+    labels = "\n".join(a.label for a in request.actions)
+    assert "etb_scry_2" in labels
+    assert "ltb_cam" in labels
 
 
 def test_difference_payment_can_activate_mana_ability_during_resolution():
@@ -172,6 +214,7 @@ def main():
         test_cast_is_hidden_future_invariant_and_target_not_visible_early,
         test_sacrifice_occurs_during_resolution_before_search_observation,
         test_prized_death_waits_until_transmute_finishes_then_orders_with_target_etb,
+        test_cam_ltb_waits_for_transmute_to_finish_before_target_choice,
         test_difference_payment_can_activate_mana_ability_during_resolution,
         test_base_policy_prefers_real_target_and_prized_sacrifice,
     )

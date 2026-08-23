@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Phase-2 runtime bridge for Bay, Saga III, Scour, and Tezzeret -3.
 
-All four effects already have information-faithful Phase-1 search adapters.  This
+All four effects already have information-faithful Phase-1 search adapters. This
 module connects them to the typed Phase-2 stack so their pre-search commitments,
 priority windows, observations, and triggered abilities occur at the correct time.
 
 Timing highlights:
-- Repurposing Bay pays/taps/sacrifices as activation costs. A Prized Statue death
-  trigger therefore goes above the Bay ability and resolves before Bay searches.
+- Repurposing Bay pays/taps/sacrifices as activation costs. Prized Statue or Cam
+  triggers therefore go above the Bay ability and resolve before Bay searches; a
+  Cam target is committed after the activation is complete and before priority.
 - Saga III is a mandatory triggered ability. The turn engine creates its stack
   object; resolving it exposes the search, with no fake "use Saga?" decision.
 - Scour commits modes and its graveyard target when cast. Its library target is not
@@ -33,6 +34,7 @@ from decision_observation import (
     ShuffleObservation,
     apply_observation_batch,
 )
+from non_oracle_cam_runtime import queue_cam_ltb
 from non_oracle_runtime import (
     ACTION_PASS_PRIORITY,
     STACK_SPELL,
@@ -83,8 +85,6 @@ def _wrap_bay_intents(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ...
         params = dict(candidate.parameters)
         sacrifice = tuple(params["sacrifice"])
         sacrifice_name = str(sacrifice[0]) if sacrifice else ""
-        if sacrifice_name == "Sewer-veillance Cam":
-            continue
         rows.append(ActionIntent(
             action_id=f"main.bay.{candidate.action_id}",
             kind=MAIN_ACTIVATE_BAY,
@@ -191,20 +191,24 @@ def begin_bay_activation(runtime: NonOracleRuntimeState, action: ActionIntent) -
     if not solver.is_artifact_perm(state.battlefield[sac_index]):
         raise ValueError("Bay sacrifice is no longer an artifact")
     state, sacrificed = _remove_artifact_for_reshape_cost(state, sac_index)
-    if sacrificed.name == "Sewer-veillance Cam":
-        raise NotImplementedError("Phase-2 Cam LTB target selection is not connected")
     state = solver.add_trace(
         state,
         f"Phase2 activate Repurposing Bay; sacrifice {sacrificed.name or sacrificed.mode}; target MV {int(params['target_mv'])}",
     )
     runtime = replace(runtime, true_state=solver._ensure_oracle_instance_tags(state))
-    ability, runtime = _allocate_ability(
+    _, runtime = _allocate_ability(
         runtime,
         kind=ABILITY_BAY,
         source=BAY,
         payload=(("target_mv", int(params["target_mv"])),),
         public_payload=(("target_mv", int(params["target_mv"])),),
     )
+    if sacrificed.name == "Sewer-veillance Cam":
+        return queue_cam_ltb(
+            runtime,
+            count=1,
+            source="Repurposing Bay activation-cost Cam LTB",
+        )
     if sacrificed.name == "Prized Statue":
         death, allocated = runtime.stack.allocate(
             object_type=STACK_TRIGGER,
@@ -497,7 +501,8 @@ def _apply_bay_target(runtime, target):
     if target:
         if target not in state.library:
             raise ValueError("Bay target is no longer in library")
-        library = list(state.library); library.remove(target)
+        library = list(state.library)
+        library.remove(target)
         state = replace(state, library=tuple(library))
         state = solver.add_perm(state, target, sick=target in solver.CREATURES)
     salt = "bay:" + target if target else "bay:no-target:staged"
@@ -518,7 +523,8 @@ def _apply_saga_target(runtime, target):
     if target:
         if target not in state.library:
             raise ValueError("Saga target is no longer in library")
-        library = list(state.library); library.remove(target)
+        library = list(state.library)
+        library.remove(target)
         state = replace(state, library=tuple(library))
         state = solver.add_perm(state, target, sick=target in solver.CREATURES)
     salt = "saga:" + target if target else "saga:no-target"
@@ -569,7 +575,8 @@ def _apply_scour_target(runtime, target):
     )
     state = replace(state, library=solver.shuffled_library(state, salt))
     if mode == "both" and gy_target and gy_target in state.graveyard:
-        gy = list(state.graveyard); gy.remove(gy_target)
+        gy = list(state.graveyard)
+        gy.remove(gy_target)
         state = replace(state, graveyard=tuple(gy), hand=state.hand + (gy_target,))
     state = replace(state, graveyard=state.graveyard + (SCOUR,))
     state = solver.check_win(solver.add_trace(

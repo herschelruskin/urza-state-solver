@@ -3,7 +3,9 @@
 
 import urza_solver as solver
 from non_oracle_base_policy import DeterministicBasePolicy
+from non_oracle_cam_runtime import DECISION_CAM_TARGET
 from non_oracle_remaining_search_runtime import (
+    ABILITY_BAY,
     MAIN_ACTIVATE_BAY,
     MAIN_ACTIVATE_TEZZ_MINUS3,
     MAIN_CAST_SCOUR,
@@ -77,6 +79,45 @@ def test_bay_prized_death_trigger_resolves_before_bay_search():
     assert "Basalt Monolith" in targets
     runtime = apply_main_action(runtime, target_action(runtime, "Basalt Monolith"))
     assert any(p.name == "Basalt Monolith" for p in runtime.true_state.battlefield)
+
+
+def test_bay_cam_cost_stages_ltb_target_above_bay_before_search():
+    runtime = make_runtime_state(solver.State(
+        turn=3,
+        library=("Basalt Monolith", "Island"),
+        hand=(),
+        battlefield=(
+            solver.Perm("Repurposing Bay"),
+            solver.Perm("Sewer-veillance Cam"),
+            solver.Perm("Faerie Mastermind"),
+        ),
+        colorless=3,
+        rng_root_seed=14,
+    ))
+    action = next(
+        a for a in rules_decision_request(runtime, horizon=6).actions
+        if a.kind == MAIN_ACTIVATE_BAY
+        and dict(a.parameters).get("sacrifice_name") == "Sewer-veillance Cam"
+    )
+    runtime = apply_main_action(runtime, action)
+    assert not any(p.name == "Sewer-veillance Cam" for p in runtime.true_state.battlefield)
+    assert runtime.stack.objects and runtime.stack.objects[-1].kind == ABILITY_BAY
+    assert runtime.pending is not None and runtime.pending.kind == DECISION_CAM_TARGET
+    request = rules_decision_request(runtime, horizon=6)
+    assert request.actions and all(a.kind == DECISION_CAM_TARGET for a in request.actions)
+    assert "Basalt Monolith" not in repr(request.actions)
+
+    target = next(
+        a for a in request.actions
+        if tuple(dict(a.parameters)["target_signature"])[0] == "Faerie Mastermind"
+    )
+    runtime = apply_main_action(runtime, target)
+    assert runtime.pending is None
+    assert runtime.stack.top().kind == "ltb_cam"
+    assert runtime.stack.objects[-1].kind == ABILITY_BAY
+    # Bay's hidden library search still cannot happen until the Cam trigger has
+    # resolved and the underlying Bay ability later reaches the top.
+    assert "Basalt Monolith" not in repr(rules_decision_request(runtime, horizon=6).actions)
 
 
 def test_saga_three_is_mandatory_stack_search_then_final_sacrifice():
@@ -182,6 +223,7 @@ def main():
     tests = (
         test_bay_commit_is_hidden_future_invariant_and_does_not_expose_target,
         test_bay_prized_death_trigger_resolves_before_bay_search,
+        test_bay_cam_cost_stages_ltb_target_above_bay_before_search,
         test_saga_three_is_mandatory_stack_search_then_final_sacrifice,
         test_scour_commits_mode_and_grave_target_before_library_search,
         test_tezzeret_minus3_pays_loyalty_before_search_observation,

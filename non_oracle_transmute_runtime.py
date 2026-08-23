@@ -2,18 +2,24 @@
 """Typed Phase-2 runtime bridge for Transmute Artifact.
 
 Transmute differs from Reshape: the artifact is sacrificed during resolution, not
-as a casting cost.  Therefore any leaves/dies trigger caused by that sacrifice
-waits until the whole Transmute spell has finished resolving.  If the searched
-artifact also creates ETB triggers during that resolution, all of those waiting
-controlled triggers are put on the stack together afterward and may be ordered by
-the policy.
+as a casting cost. Therefore any leaves/dies trigger caused by that sacrifice waits
+until the whole Transmute spell has finished resolving. If the searched artifact
+also creates ETB triggers during that resolution, all of those waiting controlled
+triggers are put on the stack together afterward and may be ordered by the policy.
+
+For Sewer-veillance Cam, the LTB trigger is remembered during resolution but its
+target is not chosen until Transmute has completely finished. That is important:
+the searched permanent may have entered by then and is part of the legal target set.
+Only after the target is committed do we order Cam's trigger with any waiting ETB
+triggers from the searched artifact.
 
 Sequence:
     cast/pay UU -> real cast-trigger stack -> resolve Transmute
       -> choose sacrifice -> search observation -> choose target
       -> optional difference-payment decision (mana abilities legal here)
       -> target enters or goes to graveyard -> shuffle -> spell finishes
-      -> queue all waiting Statue-death / artifact-entry triggers
+      -> choose any Cam LTB target on the final battlefield
+      -> queue/order all waiting death/LTB/artifact-entry triggers
 """
 
 from __future__ import annotations
@@ -34,6 +40,7 @@ from decision_observation import (
     ShuffleObservation,
     apply_observation_batch,
 )
+from non_oracle_cam_runtime import queue_cam_ltb
 from non_oracle_runtime import (
     ACTION_PASS_PRIORITY,
     STACK_SPELL,
@@ -264,6 +271,7 @@ def _queue_waiting_after_resolution(
     *,
     entered_target: str,
     prized_died: bool,
+    cam_died: bool,
 ) -> NonOracleRuntimeState:
     objects = []
     stack = runtime.stack
@@ -280,6 +288,13 @@ def _queue_waiting_after_resolution(
         )
         objects.append(death)
     runtime = replace(runtime, stack=stack)
+    if cam_died:
+        return queue_cam_ltb(
+            runtime,
+            extra_objects=tuple(objects),
+            count=1,
+            source="Transmute resolution Cam LTB",
+        )
     return _queue_simultaneous_objects(runtime, tuple(objects), source="resolve Transmute Artifact")
 
 
@@ -288,6 +303,7 @@ def _finish_transmute(
     *,
     target: str,
     prized_died: bool,
+    cam_died: bool,
     target_to_graveyard: bool = False,
     shuffle_salt: str,
 ) -> NonOracleRuntimeState:
@@ -317,6 +333,7 @@ def _finish_transmute(
         runtime,
         entered_target=entered,
         prized_died=prized_died,
+        cam_died=cam_died,
     )
 
 
@@ -332,8 +349,6 @@ def _apply_sacrifice(runtime: NonOracleRuntimeState, action: ActionIntent) -> No
     ordinal = int(params["ordinal"])
     index = _resolve_selector(runtime.true_state, signature, ordinal)
     perm = runtime.true_state.battlefield[index]
-    if perm.name == "Sewer-veillance Cam":
-        raise NotImplementedError("Phase-2 Cam LTB target selection is not connected")
     mv = _artifact_mv_for_sacrifice(perm)
     state, sacrificed = _remove_artifact_for_reshape_cost(runtime.true_state, index)
     state = solver.add_trace(state, f"Phase2 Transmute sacrifices {sacrificed.name or sacrificed.mode}")
@@ -354,6 +369,7 @@ def _apply_sacrifice(runtime: NonOracleRuntimeState, action: ActionIntent) -> No
             spec=spec,
             kind=RUNTIME_TRANSMUTE_TARGET,
             payload=(
+                ("cam_died", sacrificed.name == "Sewer-veillance Cam"),
                 ("legal_targets", tuple(search.legal_cards)),
                 ("prized_died", sacrificed.name == "Prized Statue"),
                 ("sacrificed_mv", int(mv)),
@@ -374,12 +390,14 @@ def _apply_target(runtime: NonOracleRuntimeState, action: ActionIntent) -> NonOr
     data = dict(runtime.pending.payload)
     target = str(dict(action.parameters).get("target", ""))
     prized_died = bool(data["prized_died"])
+    cam_died = bool(data["cam_died"])
     sacrificed_name = str(data["sacrificed_name"])
     if not target:
         return _finish_transmute(
             runtime,
             target="",
             prized_died=prized_died,
+            cam_died=cam_died,
             shuffle_salt=f"transmute:no-target:{sacrificed_name}",
         )
     if target not in tuple(data["legal_targets"]) or target not in runtime.true_state.library:
@@ -395,6 +413,7 @@ def _apply_target(runtime: NonOracleRuntimeState, action: ActionIntent) -> NonOr
             runtime,
             target=target,
             prized_died=prized_died,
+            cam_died=cam_died,
             shuffle_salt=f"transmute-paid:{sacrificed_name}:{target}",
         )
 
@@ -411,6 +430,7 @@ def _apply_target(runtime: NonOracleRuntimeState, action: ActionIntent) -> NonOr
             spec=spec,
             kind=RUNTIME_TRANSMUTE_PAYMENT,
             payload=(
+                ("cam_died", cam_died),
                 ("difference", int(difference)),
                 ("prized_died", prized_died),
                 ("sacrificed_name", sacrificed_name),
@@ -432,6 +452,7 @@ def _apply_payment(runtime: NonOracleRuntimeState, action: ActionIntent) -> NonO
     difference = int(data["difference"])
     target = str(data["target"])
     prized_died = bool(data["prized_died"])
+    cam_died = bool(data["cam_died"])
     sacrificed_name = str(data["sacrificed_name"])
     choice = str(dict(action.parameters).get("choice", ""))
 
@@ -440,6 +461,7 @@ def _apply_payment(runtime: NonOracleRuntimeState, action: ActionIntent) -> NonO
             runtime,
             target=target,
             prized_died=prized_died,
+            cam_died=cam_died,
             target_to_graveyard=True,
             shuffle_salt=f"transmute:{sacrificed_name}:{target}",
         )
@@ -457,6 +479,7 @@ def _apply_payment(runtime: NonOracleRuntimeState, action: ActionIntent) -> NonO
         runtime,
         target=target,
         prized_died=prized_died,
+        cam_died=cam_died,
         shuffle_salt=f"transmute-paid:{sacrificed_name}:{target}",
     )
 
