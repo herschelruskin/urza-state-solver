@@ -143,6 +143,25 @@ def test_saga_three_is_mandatory_stack_search_then_final_sacrifice():
     assert "Urza's Saga" in runtime.true_state.graveyard
 
 
+def test_saga_three_respects_grafdiggers_cage():
+    runtime = make_runtime_state(solver.State(
+        turn=1,
+        library=("Natural", "Hope of Ghirapur", "Sol Ring", "Island"),
+        hand=(),
+        battlefield=(
+            solver.Perm("Urza's Saga", counters=2),
+            solver.Perm("Grafdigger's Cage"),
+        ),
+        rng_root_seed=22,
+    ))
+    runtime = apply_main_action(runtime, action_of_kind(runtime, MAIN_END_TURN))
+    runtime = apply_main_action(runtime, pass_action(runtime))
+    request = rules_decision_request(runtime, horizon=6)
+    targets = {dict(a.parameters).get("target") for a in request.actions}
+    assert "Sol Ring" in targets
+    assert "Hope of Ghirapur" not in targets
+
+
 def test_scour_commits_mode_and_grave_target_before_library_search():
     def runtime(library):
         return make_runtime_state(solver.State(
@@ -225,6 +244,7 @@ def main():
         test_bay_prized_death_trigger_resolves_before_bay_search,
         test_bay_cam_cost_stages_ltb_target_above_bay_before_search,
         test_saga_three_is_mandatory_stack_search_then_final_sacrifice,
+        test_saga_three_respects_grafdiggers_cage,
         test_scour_commits_mode_and_grave_target_before_library_search,
         test_tezzeret_minus3_pays_loyalty_before_search_observation,
         test_base_policy_prefers_observed_remaining_search_target_over_fail,
