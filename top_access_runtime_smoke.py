@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Focused Phase-2 smokes for known-top access and FTT leveling."""
+"""Focused Phase-2 smokes for known-top access, timing, and FTT leveling."""
 
 import urza_solver as solver
 import non_oracle_rules_adapter as rules
@@ -56,6 +56,16 @@ def _chip_runtime(*, library, hand=(), battlefield=(), blue=0, colorless=0, info
         ),
         info,
     )
+
+
+def _put_tormod_on_stack(runtime):
+    cast = next(
+        action for action in _request(runtime).actions
+        if action.kind == "main_cast_artifact"
+        and dict(action.parameters).get("card") == "Tormod's Crypt"
+        and dict(action.parameters).get("from_zone") != TOP_ZONE
+    )
+    return rules.apply_main_action(runtime, cast)
 
 
 def test_known_top_action_set_is_hidden_future_invariant():
@@ -137,7 +147,6 @@ def test_cage_blocks_top_artifact_cast_but_not_top_land_play():
         information=("Sol Ring",),
     )
     assert not _top_actions(artifact)
-
     land = _chip_runtime(
         library=("Island", "TAIL"),
         battlefield=(solver.Perm("Grafdigger's Cage"),),
@@ -152,10 +161,7 @@ def test_top_chalice_commits_multikicker_then_resolves_with_exact_counters():
         colorless=2,
         information=("Everflowing Chalice",),
     )
-    action = next(
-        a for a in _top_actions(runtime)
-        if dict(a.parameters).get("kicks") == 1
-    )
+    action = next(a for a in _top_actions(runtime) if dict(a.parameters).get("kicks") == 1)
     runtime = rules.apply_main_action(runtime, action)
     assert runtime.true_state.colorless == 0
     assert runtime.true_state.library == ("TAIL",)
@@ -178,13 +184,118 @@ def test_top_mox_diamond_preserves_entry_replacement_decision():
     runtime = rules.apply_main_action(runtime, _pass(runtime))
     assert runtime.pending is not None
     assert runtime.pending.kind == "runtime_mox_diamond_entry"
-    discard = next(
-        a for a in _request(runtime).actions
-        if dict(a.parameters).get("land") == "Island"
-    )
+    discard = next(a for a in _request(runtime).actions if dict(a.parameters).get("land") == "Island")
     runtime = rules.apply_main_action(runtime, discard)
     assert solver.has(runtime.true_state, "Mox Diamond")
     assert "Island" in runtime.true_state.graveyard
+
+
+def test_top_proactive_spell_uses_ftt_level_three_outside_reduction():
+    runtime = make_runtime_state(
+        solver.State(
+            turn=2,
+            library=("Rhystic Study", "TAIL"),
+            hand=(),
+            battlefield=(solver.Perm("Fortune Teller's Talent"),),
+            ftt_level=3,
+            spell_cast_this_turn=True,
+            blue=1,
+        ),
+        InformationState(known_top=("Rhystic Study",)),
+    )
+    action = next(a for a in _top_actions(runtime) if dict(a.parameters).get("card") == "Rhystic Study")
+    assert action.kind == "main_cast_proactive_nonartifact"
+    assert dict(action.parameters)["generic_cost"] == 0
+    assert dict(action.parameters)["blue_required"] == 1
+    runtime = rules.apply_main_action(runtime, action)
+    assert runtime.true_state.library == ("TAIL",)
+    assert runtime.information.known_top[0] == "TAIL"
+    runtime = rules.apply_main_action(runtime, _pass(runtime))
+    assert solver.has(runtime.true_state, "Rhystic Study")
+
+
+def test_top_power_artifact_commits_public_target_and_resolves_attachment():
+    runtime = _chip_runtime(
+        library=("Power Artifact", "TAIL"),
+        battlefield=(solver.Perm("Basalt Monolith"),),
+        blue=2,
+        information=("Power Artifact",),
+    )
+    action = next(
+        a for a in _top_actions(runtime)
+        if dict(a.parameters).get("card") == "Power Artifact"
+        and tuple(dict(a.parameters).get("target_signature", ()))[0] == "Basalt Monolith"
+    )
+    runtime = rules.apply_main_action(runtime, action)
+    assert runtime.true_state.library == ("TAIL",)
+    assert runtime.stack.top().card == "Power Artifact"
+    runtime = rules.apply_main_action(runtime, _pass(runtime))
+    assert runtime.true_state.pa_target == "Basalt Monolith"
+    assert solver.has(runtime.true_state, "Power Artifact")
+
+
+def test_top_probe_draws_only_on_resolution_and_refreshes_next_top():
+    runtime = _chip_runtime(
+        library=("Gitaxian Probe", "DRAWN", "AFTER"),
+        information=("Gitaxian Probe",),
+    )
+    action = next(a for a in _top_actions(runtime) if dict(a.parameters).get("card") == "Gitaxian Probe")
+    runtime = rules.apply_main_action(runtime, action)
+    assert runtime.true_state.hand == ()
+    assert runtime.true_state.library == ("DRAWN", "AFTER")
+    assert runtime.information.known_top[0] == "DRAWN"
+    runtime = rules.apply_main_action(runtime, _pass(runtime))
+    assert "DRAWN" in runtime.true_state.hand
+    assert runtime.true_state.library == ("AFTER",)
+    assert runtime.information.known_top[0] == "AFTER"
+
+
+def test_priority_top_instant_is_offered_and_resolves_above_older_spell():
+    runtime = _chip_runtime(
+        library=("Dramatic Reversal", "TAIL"),
+        hand=("Tormod's Crypt",),
+        blue=1,
+        colorless=1,
+        information=("Dramatic Reversal",),
+    )
+    runtime = _put_tormod_on_stack(runtime)
+    action = next(a for a in _top_actions(runtime) if dict(a.parameters).get("card") == "Dramatic Reversal")
+    assert dict(action.parameters)["priority"] is True
+    runtime = rules.apply_main_action(runtime, action)
+    assert runtime.stack.top().card == "Dramatic Reversal"
+    assert runtime.stack.objects[-1].card == "Tormod's Crypt"
+    runtime = rules.apply_main_action(runtime, _pass(runtime))
+    assert "Dramatic Reversal" in runtime.true_state.graveyard
+    assert runtime.stack.objects[-1].card == "Tormod's Crypt"
+
+
+def test_priority_top_sorcery_and_artifact_require_floodcaller_flash():
+    blocked_probe = _chip_runtime(
+        library=("Gitaxian Probe", "TAIL"),
+        hand=("Tormod's Crypt",),
+        information=("Gitaxian Probe",),
+    )
+    blocked_probe = _put_tormod_on_stack(blocked_probe)
+    assert not any(dict(a.parameters).get("card") == "Gitaxian Probe" for a in _top_actions(blocked_probe))
+
+    flash_probe = _chip_runtime(
+        library=("Gitaxian Probe", "TAIL"),
+        hand=("Tormod's Crypt",),
+        battlefield=(solver.Perm("Valley Floodcaller"),),
+        information=("Gitaxian Probe",),
+    )
+    flash_probe = _put_tormod_on_stack(flash_probe)
+    assert any(dict(a.parameters).get("card") == "Gitaxian Probe" for a in _top_actions(flash_probe))
+
+    flash_artifact = _chip_runtime(
+        library=("Sol Ring", "TAIL"),
+        hand=("Tormod's Crypt",),
+        battlefield=(solver.Perm("Valley Floodcaller"),),
+        colorless=1,
+        information=("Sol Ring",),
+    )
+    flash_artifact = _put_tormod_on_stack(flash_artifact)
+    assert any(dict(a.parameters).get("card") == "Sol Ring" for a in _top_actions(flash_artifact))
 
 
 def test_ftt_level_two_requires_a_spell_cast_this_turn_for_top_access():
@@ -274,10 +385,7 @@ def test_ftt_level_two_to_three_unlocks_outside_cost_reduction():
     runtime = rules.apply_main_action(runtime, action)
     assert runtime.true_state.ftt_level == 3
     assert runtime.true_state.colorless == 1 and runtime.true_state.blue == 0
-    top = [
-        a for a in _top_actions(runtime)
-        if dict(a.parameters).get("card") == "Basalt Monolith"
-    ]
+    top = [a for a in _top_actions(runtime) if dict(a.parameters).get("card") == "Basalt Monolith"]
     assert top
     assert dict(top[0].parameters)["generic_cost"] == 1
 
@@ -345,6 +453,11 @@ def main():
         test_cage_blocks_top_artifact_cast_but_not_top_land_play,
         test_top_chalice_commits_multikicker_then_resolves_with_exact_counters,
         test_top_mox_diamond_preserves_entry_replacement_decision,
+        test_top_proactive_spell_uses_ftt_level_three_outside_reduction,
+        test_top_power_artifact_commits_public_target_and_resolves_attachment,
+        test_top_probe_draws_only_on_resolution_and_refreshes_next_top,
+        test_priority_top_instant_is_offered_and_resolves_above_older_spell,
+        test_priority_top_sorcery_and_artifact_require_floodcaller_flash,
         test_ftt_level_two_requires_a_spell_cast_this_turn_for_top_access,
         test_ftt_resolution_immediately_refreshes_continuous_top_look,
         test_ftt_level_one_to_two_pays_cost_and_enables_live_top_access,

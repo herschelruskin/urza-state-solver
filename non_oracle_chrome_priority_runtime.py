@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
-"""Priority-time Chrome Dome activation for Phase 2.
+"""Priority-time Chrome Dome activation and priority extension bridge for Phase 2.
 
-Chrome Dome's ordinary copy ability is not sorcery-speed.  The main-phase bridge
+Chrome Dome's ordinary copy ability is not sorcery-speed. The main-phase bridge
 models the same ability when the stack is empty; this module exposes it while we
 hold priority over an existing stack object without conflating that timing with the
 opponent-end-step turn-boundary shortcut.
 
-The policy sees only public target signatures and the public activation cost.  Exact
-permanent tags remain rules-side.  Paying the cost and choosing the target happen
+The policy sees only public target signatures and the public activation cost. Exact
+permanent tags remain rules-side. Paying the cost and choosing the target happen
 before the activated ability is pushed above the older stack; the existing Chrome
 stack resolver creates the temporary copy only when that ability resolves.
+
+The legacy combined-priority aggregator imports ``chrome_priority_actions`` from this
+module, so this function also appends information-safe Reality Chip/FTT top-cast
+priority intents. Applying those actions remains owned by the top-access adapter;
+Chrome application validates only the Chrome-only subset.
 """
 
 from __future__ import annotations
@@ -26,7 +31,7 @@ from non_oracle_runtime_value_key import RuntimeDecisionWindow, WINDOW_PRIORITY
 PRIORITY_ACTIVATE_CHROME = "priority_activate_chrome_dome"
 
 
-def chrome_priority_actions(runtime: core.NonOracleRuntimeState) -> Tuple[ActionIntent, ...]:
+def _chrome_only_priority_actions(runtime: core.NonOracleRuntimeState) -> Tuple[ActionIntent, ...]:
     if (
         runtime.pending is not None
         or not runtime.stack.objects
@@ -59,11 +64,20 @@ def chrome_priority_actions(runtime: core.NonOracleRuntimeState) -> Tuple[Action
     return tuple(rows)
 
 
+def chrome_priority_actions(runtime: core.NonOracleRuntimeState) -> Tuple[ActionIntent, ...]:
+    rows = list(_chrome_only_priority_actions(runtime))
+    # Local import avoids a module cycle: top-access itself depends only on the
+    # core Chrome Dome resolver, not this priority bridge.
+    from non_oracle_top_access_runtime import top_access_priority_intents
+    rows.extend(top_access_priority_intents(runtime))
+    return tuple(sorted(rows, key=lambda action: action.action_id))
+
+
 def apply_chrome_priority_action(
     runtime: core.NonOracleRuntimeState,
     action: ActionIntent,
 ) -> core.NonOracleRuntimeState:
-    legal = {candidate.canonical_key() for candidate in chrome_priority_actions(runtime)}
+    legal = {candidate.canonical_key() for candidate in _chrome_only_priority_actions(runtime)}
     if action.canonical_key() not in legal:
         raise ValueError("Chrome Dome priority activation is no longer legal")
     params = dict(action.parameters)

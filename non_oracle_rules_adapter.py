@@ -168,7 +168,9 @@ from non_oracle_mill_runtime import (
 )
 from non_oracle_top_access_runtime import (
     begin_top_access_main_action,
+    begin_top_access_priority_action,
     is_top_access_action,
+    is_top_access_priority_action,
     top_access_main_intents,
 )
 
@@ -463,6 +465,8 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
             return apply_mill_priority_action(runtime, action)
         if action.kind == PRIORITY_ACTIVATE_CHROME:
             return apply_chrome_priority_action(runtime, action)
+        if is_top_access_priority_action(action):
+            return begin_top_access_priority_action(runtime, action)
         if handles_utility_pending(runtime):
             resolved = apply_utility_pending(runtime, action)
         elif handles_simple_tutor_pending(runtime):
