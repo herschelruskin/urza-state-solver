@@ -1,0 +1,140 @@
+name: Phase 2 runtime smoke
+
+on:
+  push:
+    branches:
+      - phase2-non-oracle-runtime
+  pull_request:
+    branches:
+      - development
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile Phase 2 runtime
+        run: |
+          python -m py_compile \
+            non_oracle_runtime.py \
+            non_oracle_cam_runtime.py \
+            non_oracle_chrome_dome_runtime.py \
+            non_oracle_chrome_priority_runtime.py \
+            non_oracle_utility_artifact_runtime.py \
+            non_oracle_top_draw_runtime.py \
+            non_oracle_urza_runtime.py \
+            non_oracle_urza_search_permission_runtime.py \
+            non_oracle_urza_x_permission_runtime.py \
+            non_oracle_urza_policy_extension.py \
+            non_oracle_engine_activation_runtime.py \
+            non_oracle_mill_runtime.py \
+            non_oracle_top_access_runtime.py \
+            non_oracle_draw_engine_runtime.py \
+            non_oracle_runtime_view.py \
+            non_oracle_runtime_value_key.py \
+            non_oracle_base_policy.py \
+            non_oracle_commander_adapter.py \
+            non_oracle_proactive_spell_adapter.py \
+            non_oracle_simple_tutor_runtime.py \
+            non_oracle_x_artifact_tutor_runtime.py \
+            non_oracle_transmute_runtime.py \
+            non_oracle_remaining_search_runtime.py \
+            non_oracle_rules_adapter.py \
+            non_oracle_turn_engine.py \
+            non_oracle_episode.py \
+            phase2_coverage_profile.py \
+            phase2_policy_audit.py \
+            phase2_urza_policy_audit.py \
+            phase2_runtime_smoke.py \
+            cam_runtime_smoke.py \
+            chrome_dome_runtime_smoke.py \
+            utility_artifact_runtime_smoke.py \
+            top_draw_runtime_smoke.py \
+            urza_runtime_smoke.py \
+            urza_search_permission_runtime_smoke.py \
+            urza_x_permission_runtime_smoke.py \
+            urza_policy_extension_smoke.py \
+            engine_activation_runtime_smoke.py \
+            mill_runtime_smoke.py \
+            top_access_runtime_smoke.py \
+            draw_engine_runtime_smoke.py \
+            base_policy_smoke.py \
+            commander_adapter_smoke.py \
+            proactive_spell_smoke.py \
+            simple_tutor_runtime_smoke.py \
+            x_artifact_tutor_runtime_smoke.py \
+            transmute_runtime_smoke.py \
+            remaining_search_runtime_smoke.py \
+            runtime_pending_value_key_smoke.py \
+            rules_adapter_smoke.py \
+            turn_engine_smoke.py \
+            episode_smoke.py
+      - name: Phase 2 runtime kernel
+        run: python phase2_runtime_smoke.py
+      - name: Sewer-veillance Cam runtime
+        run: python cam_runtime_smoke.py
+      - name: Chrome Dome main, priority, and turn boundary
+        run: python chrome_dome_runtime_smoke.py
+      - name: Utility artifact runtime
+        run: python utility_artifact_runtime_smoke.py
+      - name: Top draw and priority Key runtime
+        run: python top_draw_runtime_smoke.py
+      - name: Urza spin and permission runtime
+        run: python urza_runtime_smoke.py
+      - name: Urza tutor/search permissions
+        run: python urza_search_permission_runtime_smoke.py
+      - name: Urza X=0 permissions
+        run: python urza_x_permission_runtime_smoke.py
+      - name: Urza permission policy
+        run: python urza_policy_extension_smoke.py
+      - name: Chip and Uthros engine activations
+        run: python engine_activation_runtime_smoke.py
+      - name: Grinding Station and Codex mill runtime
+        run: python mill_runtime_smoke.py
+      - name: Known-top land and artifact access
+        run: python top_access_runtime_smoke.py
+      - name: Draw and cantrip runtime
+        run: python draw_engine_runtime_smoke.py
+      - name: Deterministic base policy
+        run: python base_policy_smoke.py
+      - name: Typed commander casting
+        run: python commander_adapter_smoke.py
+      - name: Proactive nonartifact casting
+        run: python proactive_spell_smoke.py
+      - name: Staged simple tutors
+        run: python simple_tutor_runtime_smoke.py
+      - name: Staged Reshape and Whir
+        run: python x_artifact_tutor_runtime_smoke.py
+      - name: Staged Transmute Artifact
+        run: python transmute_runtime_smoke.py
+      - name: Remaining staged artifact searches
+        run: python remaining_search_runtime_smoke.py
+      - name: Pending runtime V key identity
+        run: python runtime_pending_value_key_smoke.py
+      - name: Main-phase rules adapter
+        run: python rules_adapter_smoke.py
+      - name: Typed turn engine
+        run: python turn_engine_smoke.py
+      - name: Multi-turn deterministic episode
+        run: python episode_smoke.py
+      - name: 250-seed real-deck blocker sweep
+        run: python phase2_coverage_profile.py --seed 20260821 --count 250 --horizon 6 --fail-on-blocker
+      - name: 250-seed tutor policy audit
+        run: python phase2_policy_audit.py --seed 20260821 --count 250 --horizon 6
+      - name: 250-seed Urza permission policy audit
+        run: python phase2_urza_policy_audit.py --seed 20260821 --count 250 --horizon 6
+      - name: Phase 1 regression gate
+        run: python phase1_acceptance_smoke.py
+      - name: Architecture regressions
+        run: |
+          python architecture_smoke.py
+          python state_field_audit_smoke.py
+          python strategic_value_state_smoke.py
+      - name: Diff check
+        run: git diff --check

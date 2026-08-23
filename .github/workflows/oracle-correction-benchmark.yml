@@ -1,9 +1,6 @@
 name: Oracle correction microbenchmark
 
 on:
-  pull_request:
-    branches:
-      - development
   workflow_dispatch:
 
 permissions:
