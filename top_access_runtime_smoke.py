@@ -232,7 +232,7 @@ def test_ftt_level_one_to_two_pays_cost_and_enables_live_top_access():
     runtime = make_runtime_state(
         solver.State(
             turn=2,
-            library=("Sol Ring", "TAIL"),
+            library=("Tormod's Crypt", "TAIL"),
             hand=(),
             battlefield=(solver.Perm("Fortune Teller's Talent"),),
             ftt_level=1,
@@ -240,7 +240,7 @@ def test_ftt_level_one_to_two_pays_cost_and_enables_live_top_access():
             colorless=3,
             blue=1,
         ),
-        InformationState(known_top=("Sol Ring",)),
+        InformationState(known_top=("Tormod's Crypt",)),
     )
     action = _ftt_level_action(runtime)
     assert dict(action.parameters)["to_level"] == 2
@@ -250,7 +250,7 @@ def test_ftt_level_one_to_two_pays_cost_and_enables_live_top_access():
     assert not runtime.stack.objects and runtime.pending is None
     assert any(
         dict(a.parameters).get("from_zone") == TOP_ZONE
-        and dict(a.parameters).get("card") == "Sol Ring"
+        and dict(a.parameters).get("card") == "Tormod's Crypt"
         for a in _request(runtime).actions
     )
 
