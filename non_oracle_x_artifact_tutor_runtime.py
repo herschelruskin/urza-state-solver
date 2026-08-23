@@ -3,16 +3,16 @@
 
 The Phase-1 X-artifact adapter established the anti-clairvoyance boundary: X,
 payment, and (for Reshape) the sacrifice are committed before the library is
-searched.  This bridge preserves that boundary while placing the actual spell and
+searched. This bridge preserves that boundary while placing the actual spell and
 all cast-time triggers on the Phase-2 stack.
 
 Important timing:
-- Reshape sacrifices as an additional casting cost.  A Prized Statue death trigger
-  is therefore waiting when casting finishes and is ordered with the other
-  controlled cast-time triggers above Reshape.
+- Reshape sacrifices as an additional casting cost. Prized Statue and Cam triggers
+  therefore wait until casting finishes; Cam chooses its target before those
+  simultaneous controlled triggers are ordered above Reshape.
 - Whir commits X and its exact improvise/payment plan before any search target is
   visible.
-- Search targets become policy-visible only when the spell resolves.  The selected
+- Search targets become policy-visible only when the spell resolves. The selected
   artifact enters during resolution, the library is shuffled, the spell finishes,
   and only then are artifact-entry triggers put on the runtime stack.
 """
@@ -35,6 +35,7 @@ from decision_observation import (
     ShuffleObservation,
     apply_observation_batch,
 )
+from non_oracle_cam_runtime import queue_cam_ltb
 from non_oracle_runtime import (
     ACTION_PASS_PRIORITY,
     STACK_SPELL,
@@ -84,11 +85,6 @@ def x_artifact_runtime_intents(runtime: NonOracleRuntimeState) -> Tuple[ActionIn
             if source == RESHAPE:
                 sacrifice = tuple(params.get("sacrifice", ()))
                 sacrifice_name = str(sacrifice[0]) if sacrifice else ""
-                # Cam has a targeted leaves-the-battlefield trigger whose Phase-2
-                # target adapter is not connected yet.  Omit this one sacrifice
-                # choice rather than silently resolving the Oracle shortcut.
-                if sacrifice_name == "Sewer-veillance Cam":
-                    continue
             rows.append(
                 ActionIntent(
                     action_id=f"main.x_artifact.{candidate.action_id}",
@@ -127,13 +123,7 @@ def _find_underlying(runtime: NonOracleRuntimeState, action: ActionIntent):
 
 
 def _remove_artifact_for_reshape_cost(state, index: int):
-    """Remove one artifact without resolving triggered abilities atomically.
-
-    ``solver.remove_perm`` intentionally retains legacy Oracle trigger compression
-    for Prized Statue/Cam.  Phase 2 must separate the physical zone change from
-    triggered abilities, so this helper mirrors the relevant state-based cleanup
-    while returning the removed permanent for later trigger creation.
-    """
+    """Remove one artifact without resolving triggered abilities atomically."""
     battlefield = list(state.battlefield)
     perm = battlefield.pop(index)
     graveyard = state.graveyard
@@ -184,7 +174,15 @@ def _allocate_spell(runtime, *, kind: str, source: str, x: int, mana_spent: int)
     return spell, replace(runtime, stack=stack.push_existing((spell,)))
 
 
-def _finish_cast_triggers(runtime, *, source: str, spell, mana_spent: int, prized_died: bool):
+def _finish_cast_triggers(
+    runtime,
+    *,
+    source: str,
+    spell,
+    mana_spent: int,
+    prized_died: bool,
+    cam_died: bool = False,
+):
     info = apply_observation_batch(
         runtime.information,
         post_cast_observations(runtime.true_state, source, cast_from_library_top=False),
@@ -203,9 +201,17 @@ def _finish_cast_triggers(runtime, *, source: str, spell, mana_spent: int, prize
         )
         extra.append(death)
     runtime = replace(runtime, stack=allocated)
+    simultaneous = tuple(triggers) + tuple(extra)
+    if cam_died:
+        return queue_cam_ltb(
+            runtime,
+            extra_objects=simultaneous,
+            count=1,
+            source="Reshape additional-cost Cam LTB",
+        )
     return _queue_simultaneous_objects(
         runtime,
-        tuple(triggers) + tuple(extra),
+        simultaneous,
         source=f"cast {source}",
     )
 
@@ -219,6 +225,7 @@ def begin_x_artifact_tutor(runtime: NonOracleRuntimeState, action: ActionIntent)
     state = runtime.true_state
     x = int(params["x"])
     prized_died = False
+    cam_died = False
 
     if source == RESHAPE:
         generic = int(params["generic_paid"])
@@ -235,9 +242,8 @@ def begin_x_artifact_tutor(runtime: NonOracleRuntimeState, action: ActionIntent)
         if not solver.is_artifact_perm(paid.battlefield[index]):
             raise ValueError("Reshape sacrifice is no longer an artifact")
         paid, sacrificed = _remove_artifact_for_reshape_cost(paid, index)
-        if sacrificed.name == "Sewer-veillance Cam":
-            raise NotImplementedError("Phase-2 Cam LTB target selection is not connected")
         prized_died = sacrificed.name == "Prized Statue"
+        cam_died = sacrificed.name == "Sewer-veillance Cam"
         mana_spent = int(generic + 2)
         paid = solver.add_trace(
             paid,
@@ -253,6 +259,7 @@ def begin_x_artifact_tutor(runtime: NonOracleRuntimeState, action: ActionIntent)
             spell=spell,
             mana_spent=mana_spent,
             prized_died=prized_died,
+            cam_died=cam_died,
         )
 
     if source == WHIR:
@@ -286,6 +293,7 @@ def begin_x_artifact_tutor(runtime: NonOracleRuntimeState, action: ActionIntent)
             spell=spell,
             mana_spent=mana_spent,
             prized_died=False,
+            cam_died=False,
         )
 
     raise AssertionError("unhandled X-artifact tutor source")

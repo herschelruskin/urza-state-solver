@@ -3,6 +3,7 @@
 
 import urza_solver as solver
 from non_oracle_base_policy import DeterministicBasePolicy
+from non_oracle_cam_runtime import DECISION_CAM_TARGET
 from non_oracle_rules_adapter import apply_main_action, rules_decision_request
 from non_oracle_runtime import ACTION_PASS_PRIORITY, make_runtime_state
 from non_oracle_x_artifact_tutor_runtime import MAIN_USE_X_ARTIFACT_TUTOR
@@ -100,6 +101,43 @@ def test_reshape_cast_and_statue_death_trigger_are_orderable_with_other_cast_tri
     assert runtime.stack.top().kind == "x_artifact_reshape_spell"
 
 
+def test_reshape_cam_additional_cost_stages_target_before_trigger_order():
+    runtime = make_runtime_state(solver.State(
+        turn=3,
+        library=("Sol Ring", "Island"),
+        hand=("Reshape",),
+        battlefield=(
+            solver.Perm("Sewer-veillance Cam"),
+            solver.Perm("Valley Floodcaller"),
+            solver.Perm("Faerie Mastermind"),
+        ),
+        blue=2,
+        colorless=2,
+    ))
+    action = next(
+        a for a in x_actions(runtime, "Reshape")
+        if dict(a.parameters).get("sacrifice_name") == "Sewer-veillance Cam"
+    )
+    runtime = apply_main_action(runtime, action)
+    assert not any(p.name == "Sewer-veillance Cam" for p in runtime.true_state.battlefield)
+    assert runtime.stack.objects and runtime.stack.objects[-1].kind == "x_artifact_reshape_spell"
+    assert runtime.pending is not None and runtime.pending.kind == DECISION_CAM_TARGET
+    request = rules_decision_request(runtime, horizon=6)
+    assert request.actions and all(a.kind == DECISION_CAM_TARGET for a in request.actions)
+    target = next(
+        a for a in request.actions
+        if tuple(dict(a.parameters)["target_signature"])[0] == "Faerie Mastermind"
+    )
+    runtime = apply_main_action(runtime, target)
+    # Floodcaller cast trigger and the now-targeted Cam LTB must be ordered only
+    # after the Cam target has been committed.
+    request = rules_decision_request(runtime, horizon=6)
+    assert request.actions and all(a.kind == "runtime_stack_order" for a in request.actions)
+    labels = "\n".join(a.label for a in request.actions)
+    assert "vfc_noncreature_cast" in labels
+    assert "ltb_cam" in labels
+
+
 def test_reshape_search_targets_appear_only_when_spell_resolves():
     runtime = make_runtime_state(solver.State(
         turn=3,
@@ -155,7 +193,7 @@ def test_whir_commits_x_and_improvise_before_search():
     targets = {dict(a.parameters).get("target") for a in request.actions}
     assert "Grim Monolith" in targets
     assert "Sensei's Divining Top" in targets
-    assert "Basalt Monolith" not in targets  # committed X=2 cannot grow after search
+    assert "Basalt Monolith" not in targets
 
 
 def test_base_policy_chooses_revealed_artifact_not_fail_to_find():
@@ -179,6 +217,7 @@ def main():
         test_cast_commit_actions_are_hidden_future_invariant,
         test_reshape_prized_statue_dies_trigger_is_above_spell,
         test_reshape_cast_and_statue_death_trigger_are_orderable_with_other_cast_trigger,
+        test_reshape_cam_additional_cost_stages_target_before_trigger_order,
         test_reshape_search_targets_appear_only_when_spell_resolves,
         test_whir_commits_x_and_improvise_before_search,
         test_base_policy_chooses_revealed_artifact_not_fail_to_find,
