@@ -162,6 +162,11 @@ from non_oracle_mill_runtime import (
     handles_mill_stack_top,
     mill_main_intents,
 )
+from non_oracle_top_access_runtime import (
+    begin_top_access_main_action,
+    is_top_access_action,
+    top_access_main_intents,
+)
 
 MAIN_PLAY_LAND = "main_play_land"
 MAIN_MANA_ACTION = "main_mana_action"
@@ -352,6 +357,7 @@ def main_phase_intents(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ..
     rows.extend(urza_main_intents(runtime))
     rows.extend(engine_activation_main_intents(runtime))
     rows.extend(mill_main_intents(runtime))
+    rows.extend(top_access_main_intents(runtime))
     rows.extend(_end_turn_intent(runtime))
     return tuple(sorted(rows, key=lambda action: action.action_id))
 
@@ -514,6 +520,9 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
     legal = {candidate.canonical_key(): candidate for candidate in main_phase_intents(runtime)}
     if action.canonical_key() not in legal:
         raise ValueError("action is not legal in the current main-phase request")
+
+    if is_top_access_action(action):
+        return begin_top_access_main_action(runtime, action)
 
     if action.kind in {MAIN_PLAY_LAND, MAIN_MANA_ACTION}:
         next_state = _find_mechanical_successor(runtime, action)

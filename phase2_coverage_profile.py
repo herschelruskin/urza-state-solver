@@ -133,10 +133,12 @@ def _horizon_state_features(state: solver.State):
     if state.urza:
         families.add("battlefield_urza_spin_main_modeled_present")
     if "The Reality Chip" in battlefield_names:
-        # Reconfigure itself is modeled, including attach/move/unattach.  Playing
-        # and casting from the top while attached remains the next information-
-        # sensitive Chip slice, so this is still a deliberate partial signal.
-        families.add("battlefield_chip_reconfigure_modeled_top_play_partial")
+        families.add("battlefield_chip_reconfigure_modeled_present")
+    if state.chip_attached or (state.ftt_level >= 2 and state.spell_cast_this_turn):
+        # Main-phase land play and artifact casting from the legally known top are
+        # modeled. Nonartifact spell faces and priority-time top casting remain an
+        # explicit follow-up timing slice.
+        families.add("top_access_land_artifact_main_modeled_nonartifact_priority_partial")
     if key_live:
         families.add("battlefield_key_activation_modeled_present")
     if top_live and key_live:
