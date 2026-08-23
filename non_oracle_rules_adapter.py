@@ -142,6 +142,7 @@ from non_oracle_urza_runtime import (
     MAIN_USE_URZA_PERMISSION,
     apply_urza_stack_action,
     begin_urza_main_action,
+    begin_urza_priority_action,
     handles_urza_stack_top,
     urza_main_intents,
 )
@@ -465,6 +466,8 @@ def apply_main_action(runtime: NonOracleRuntimeState, action: ActionIntent) -> N
             return apply_mill_priority_action(runtime, action)
         if action.kind == PRIORITY_ACTIVATE_CHROME:
             return apply_chrome_priority_action(runtime, action)
+        if action.kind in {MAIN_ACTIVATE_URZA_SPIN, MAIN_USE_URZA_PERMISSION}:
+            return begin_urza_priority_action(runtime, action)
         if is_top_access_priority_action(action):
             return begin_top_access_priority_action(runtime, action)
         if handles_utility_pending(runtime):

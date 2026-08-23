@@ -12,9 +12,9 @@ before the activated ability is pushed above the older stack; the existing Chrom
 stack resolver creates the temporary copy only when that ability resolves.
 
 The legacy combined-priority aggregator imports ``chrome_priority_actions`` from this
-module, so this function also appends information-safe Reality Chip/FTT top-cast
-priority intents. Applying those actions remains owned by the top-access adapter;
-Chrome application validates only the Chrome-only subset.
+module, so the aggregation function also appends the other typed priority extensions
+that do not own the central request: Reality Chip/FTT top casts and Urza spin/exile
+permissions. Each extension still validates/applies its own action family.
 """
 
 from __future__ import annotations
@@ -66,10 +66,11 @@ def _chrome_only_priority_actions(runtime: core.NonOracleRuntimeState) -> Tuple[
 
 def chrome_priority_actions(runtime: core.NonOracleRuntimeState) -> Tuple[ActionIntent, ...]:
     rows = list(_chrome_only_priority_actions(runtime))
-    # Local import avoids a module cycle: top-access itself depends only on the
-    # core Chrome Dome resolver, not this priority bridge.
+    # Local imports avoid module cycles; each adapter owns validation/application.
     from non_oracle_top_access_runtime import top_access_priority_intents
+    from non_oracle_urza_runtime import urza_priority_intents
     rows.extend(top_access_priority_intents(runtime))
+    rows.extend(urza_priority_intents(runtime))
     return tuple(sorted(rows, key=lambda action: action.action_id))
 
 
