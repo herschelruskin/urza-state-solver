@@ -190,6 +190,62 @@ def test_difference_payment_can_activate_mana_ability_during_resolution():
     assert "Transmute Artifact" in runtime.true_state.graveyard
 
 
+def test_cage_blocks_equal_mv_transmute_entry_but_card_stays_in_library():
+    runtime = make_runtime_state(solver.State(
+        turn=3,
+        library=("Hope of Ghirapur", "Island"),
+        hand=("Transmute Artifact",),
+        battlefield=(solver.Perm("Grafdigger's Cage"), solver.Perm("Sol Ring")),
+        blue=2,
+        rng_root_seed=79,
+    ))
+    runtime = apply_main_action(runtime, transmute_action(runtime))
+    runtime = apply_main_action(runtime, pass_action(runtime))
+    runtime = apply_main_action(runtime, choose_sacrifice(runtime, "Sol Ring"))
+    runtime = apply_main_action(runtime, choose_target(runtime, "Hope of Ghirapur"))
+    assert not any(p.name == "Hope of Ghirapur" for p in runtime.true_state.battlefield)
+    assert "Hope of Ghirapur" not in runtime.true_state.graveyard
+    assert "Hope of Ghirapur" in runtime.true_state.library
+    assert "Transmute Artifact" in runtime.true_state.graveyard
+
+
+def _cage_higher_mv_payment_runtime():
+    runtime = make_runtime_state(solver.State(
+        turn=3,
+        library=("The Reality Chip", "Island"),
+        hand=("Transmute Artifact",),
+        battlefield=(solver.Perm("Grafdigger's Cage"), solver.Perm("Tormod's Crypt")),
+        blue=2,
+        colorless=2,
+        rng_root_seed=80,
+    ))
+    runtime = apply_main_action(runtime, transmute_action(runtime))
+    runtime = apply_main_action(runtime, pass_action(runtime))
+    runtime = apply_main_action(runtime, choose_sacrifice(runtime, "Tormod's Crypt"))
+    return apply_main_action(runtime, choose_target(runtime, "The Reality Chip"))
+
+
+def test_cage_transmute_preserves_decline_to_graveyard_and_blocks_paid_entry():
+    decline_runtime = _cage_higher_mv_payment_runtime()
+    request = rules_decision_request(decline_runtime, horizon=6)
+    choices = {dict(a.parameters).get("choice") for a in request.actions}
+    assert {"decline", "pay"}.issubset(choices)
+    decline = next(a for a in request.actions if dict(a.parameters).get("choice") == "decline")
+    declined = apply_main_action(decline_runtime, decline)
+    assert "The Reality Chip" in declined.true_state.graveyard
+    assert "The Reality Chip" not in declined.true_state.library
+    assert not any(p.name == "The Reality Chip" for p in declined.true_state.battlefield)
+
+    pay_runtime = _cage_higher_mv_payment_runtime()
+    request = rules_decision_request(pay_runtime, horizon=6)
+    pay = next(a for a in request.actions if dict(a.parameters).get("choice") == "pay")
+    paid = apply_main_action(pay_runtime, pay)
+    assert "The Reality Chip" in paid.true_state.library
+    assert "The Reality Chip" not in paid.true_state.graveyard
+    assert not any(p.name == "The Reality Chip" for p in paid.true_state.battlefield)
+    assert paid.true_state.colorless == 0
+
+
 def test_base_policy_prefers_real_target_and_prized_sacrifice():
     runtime = make_runtime_state(solver.State(
         turn=3,
@@ -216,6 +272,8 @@ def main():
         test_prized_death_waits_until_transmute_finishes_then_orders_with_target_etb,
         test_cam_ltb_waits_for_transmute_to_finish_before_target_choice,
         test_difference_payment_can_activate_mana_ability_during_resolution,
+        test_cage_blocks_equal_mv_transmute_entry_but_card_stays_in_library,
+        test_cage_transmute_preserves_decline_to_graveyard_and_blocks_paid_entry,
         test_base_policy_prefers_real_target_and_prized_sacrifice,
     )
     for test in tests:
