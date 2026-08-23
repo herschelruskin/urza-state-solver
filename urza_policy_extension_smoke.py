@@ -42,6 +42,7 @@ def test_free_tutor_permission_beats_another_blind_urza_spin_in_main():
         solver.State(
             turn=2,
             library=runtime.true_state.library,
+            hand=(),
             battlefield=runtime.true_state.battlefield,
             exile=runtime.true_state.exile,
             urza=True,
@@ -98,7 +99,7 @@ def test_priority_spin_is_deferred_until_current_stack_clears():
     ]
     assert len(spins) == 1
     choice = policy.choose_request(request)
-    assert choice.action_id == "runtime.pass_priority"
+    assert choice.kind == "pass_priority"
 
 
 def test_x0_reshape_is_real_but_lower_priority_than_free_mystical_tutor():
