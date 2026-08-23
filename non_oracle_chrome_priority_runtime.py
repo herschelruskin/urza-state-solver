@@ -36,6 +36,11 @@ install_urza_search_permission_extension()
 from non_oracle_urza_x_permission_runtime import install_urza_x_permission_extension
 install_urza_x_permission_extension()
 
+# Policy is a separate layer: this only changes how the deterministic baseline
+# ranks already-legal public Urza actions. It does not affect rules generation.
+from non_oracle_urza_policy_extension import install_urza_policy_extension
+install_urza_policy_extension()
+
 PRIORITY_ACTIVATE_CHROME = "priority_activate_chrome_dome"
 
 
