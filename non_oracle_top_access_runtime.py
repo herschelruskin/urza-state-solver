@@ -11,9 +11,10 @@ Fortune Teller's Talent permission:
 * preserve Mox Diamond's as-it-enters land-discard decision;
 * preserve Everflowing Chalice's committed multikicker count.
 
-Fortune Teller's Talent class-level actions are delegated through the same main-phase
-extension point because they are the public resource commitments that make FTT top
-access reachable.  The leveling rules themselves live in ``non_oracle_ftt_runtime``.
+Fortune Teller's Talent class-level actions and Chrome Dome's ordinary main-phase
+copy activation are delegated through the same compact main-phase extension point.
+Their rules live in their dedicated runtime modules; this module only aggregates the
+public action surface and dispatches committed actions.
 
 The rules layer validates that the advertised known card is still the physical top.
 Casting removes it from the library before post-cast observations are applied, so a
@@ -38,6 +39,11 @@ from decision_observation import (
     MoveKnownCardObservation,
     ObservationBatch,
     apply_observation_batch,
+)
+from non_oracle_chrome_dome_runtime import (
+    MAIN_ACTIVATE_CHROME,
+    begin_chrome_main_activation,
+    chrome_main_intents,
 )
 from non_oracle_ftt_runtime import (
     MAIN_LEVEL_FTT,
@@ -135,9 +141,10 @@ def _artifact_intent(
 
 
 def top_access_main_intents(runtime: core.NonOracleRuntimeState) -> Tuple[ActionIntent, ...]:
-    # FTT leveling is intentionally collected here so the central Phase-2 rules
-    # adapter keeps one compact extension point for the whole top-access engine.
+    # FTT leveling and Chrome's main copy ability are intentionally collected here
+    # so the central Phase-2 rules adapter keeps one compact extension point.
     rows = list(ftt_level_main_intents(runtime))
+    rows.extend(chrome_main_intents(runtime))
     state = runtime.true_state
     source = _access_source(state)
     card = _known_top(runtime)
@@ -189,7 +196,7 @@ def top_access_main_intents(runtime: core.NonOracleRuntimeState) -> Tuple[Action
 
 
 def is_top_access_action(action: ActionIntent) -> bool:
-    if action.kind == MAIN_LEVEL_FTT:
+    if action.kind in {MAIN_LEVEL_FTT, MAIN_ACTIVATE_CHROME}:
         return True
     return bool(
         action.kind in {MAIN_PLAY_LAND, MAIN_CAST_ARTIFACT}
@@ -369,9 +376,11 @@ def begin_top_access_main_action(
 ) -> core.NonOracleRuntimeState:
     legal = {candidate.canonical_key() for candidate in top_access_main_intents(runtime)}
     if action.canonical_key() not in legal:
-        raise ValueError("top-access action is no longer legal")
+        raise ValueError("top-access/engine action is no longer legal")
     if action.kind == MAIN_LEVEL_FTT:
         return apply_ftt_level_action(runtime, action)
+    if action.kind == MAIN_ACTIVATE_CHROME:
+        return begin_chrome_main_activation(runtime, action)
     params = dict(action.parameters)
     card = str(params["card"])
     source = str(params.get("top_access_source", "top access"))

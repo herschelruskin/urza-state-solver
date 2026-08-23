@@ -135,9 +135,6 @@ def _horizon_state_features(state: solver.State):
     if "The Reality Chip" in battlefield_names:
         families.add("battlefield_chip_reconfigure_modeled_present")
     if state.chip_attached or (state.ftt_level >= 2 and state.spell_cast_this_turn):
-        # Main-phase land play and artifact casting from the legally known top are
-        # modeled. Nonartifact spell faces and priority-time top casting remain an
-        # explicit follow-up timing slice.
         families.add("top_access_land_artifact_main_modeled_nonartifact_priority_partial")
     if key_live:
         families.add("battlefield_key_activation_modeled_present")
@@ -154,7 +151,10 @@ def _horizon_state_features(state: solver.State):
         ):
             families.add("cam_tutor_sacrifice_ltb_partial")
     if "Chrome Dome" in battlefield_names:
-        families.add("battlefield_chrome_main_activation_partial")
+        # Ordinary main-phase copy activation and opponent-end-step activation are
+        # modeled. Chrome can also legally activate while we have priority over a
+        # live stack; that priority surface remains the explicit next Chrome slice.
+        families.add("battlefield_chrome_main_modeled_priority_partial")
 
     return tuple(sorted(families))
 

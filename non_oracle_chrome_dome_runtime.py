@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
-"""Chrome Dome turn-boundary adapter for the Phase-2 non-Oracle runtime.
+"""Chrome Dome runtime bridge for the Phase-2 non-Oracle engine.
 
-Chrome Dome creates a genuine decision after the opponent cycle has been observed:
-activate in the end step immediately before our turn, or decline, and if activating
-choose a public artifact target.  A token created there survives through our next
-turn because that end step has already begun; its delayed sacrifice happens at the
-beginning of our following end step.
+Two distinct timing surfaces are modeled here:
 
-This adapter also makes those delayed sacrifices explicit before advancing the turn.
-Prized Statue and Sewer-veillance Cam copy LTB triggers resolve before the opponent
-cycle, and a small typed continuation object keeps the turn transition replayable.
+1. The ordinary activated copy ability in our main phase.  The activation cost and
+   public artifact target are committed before the ability goes on the stack.  The
+   temporary copy is created only when that ability resolves and is then fed through
+   the normal typed artifact-entry trigger machinery.
+2. The opponent-end-step turn-boundary line.  That decision occurs only after the
+   modeled opponent cycle has been observed; a copy created there survives through
+   our following turn and is sacrificed at the beginning of our next end step.
+
+The two timings intentionally share public target grouping and copy resolution but do
+not share the turn-boundary shortcut.  Main-phase copies use ``chrome_copy`` and die
+at our imminent end step; opponent-end-step copies use ``chrome_copy_preturn`` and
+survive until the following one.
 """
 
 from __future__ import annotations
@@ -42,6 +47,8 @@ from non_oracle_turn_engine import (
 )
 
 CHROME = "Chrome Dome"
+MAIN_ACTIVATE_CHROME = "main_activate_chrome_dome"
+ACT_CHROME_COPY = "activated_chrome_dome_copy"
 DECISION_CHROME_ENDSTEP = "runtime_chrome_endstep_choice"
 BOUNDARY_AFTER_OWN_ENDSTEP = "chrome_boundary_after_own_endstep"
 BOUNDARY_FINISH_NEXT_TURN = "chrome_boundary_finish_next_turn"
@@ -58,6 +65,132 @@ def _artifact_groups(state: solver.State) -> Dict[Tuple[object, ...], Tuple[obje
         signature: tuple(sorted(perms, key=lambda p: int(p.instance_tag)))
         for signature, perms in groups.items()
     }
+
+
+def chrome_main_intents(runtime: core.NonOracleRuntimeState) -> Tuple[ActionIntent, ...]:
+    """Public main-phase Chrome Dome copy commitments.
+
+    Mana must already be floating, matching the rest of the Phase-2 runtime: mana
+    abilities are separate mechanical actions.  The target set depends only on the
+    public battlefield and is collapsed by public permanent signature.
+    """
+    if runtime.pending is not None or runtime.stack.objects:
+        return ()
+    state = runtime.true_state
+    if not solver.has(state, CHROME):
+        return ()
+    cost = int(solver.chrome_activation_cost(state))
+    if not solver.can_pay(state, cost, 0):
+        return ()
+    groups = _artifact_groups(state)
+    rows = []
+    for index, signature in enumerate(sorted(groups, key=repr)):
+        name = str(signature[0]) if signature else "artifact"
+        rows.append(ActionIntent(
+            action_id=f"main.chrome.copy.{index:03d}",
+            kind=MAIN_ACTIVATE_CHROME,
+            parameters=(
+                ("activation_cost", cost),
+                ("target_name", name),
+                ("target_signature", signature),
+            ),
+            equivalence_key=(MAIN_ACTIVATE_CHROME, cost, signature),
+            label=f"Chrome Dome: pay {{{cost}}} to copy {name}",
+            decision_stage=DECISION_COMMIT,
+            source=CHROME,
+        ))
+    return tuple(rows)
+
+
+def begin_chrome_main_activation(
+    runtime: core.NonOracleRuntimeState,
+    action: ActionIntent,
+) -> core.NonOracleRuntimeState:
+    legal = {candidate.canonical_key() for candidate in chrome_main_intents(runtime)}
+    if action.canonical_key() not in legal:
+        raise ValueError("Chrome Dome main activation is no longer legal")
+    params = dict(action.parameters)
+    cost = int(params["activation_cost"])
+    signature = tuple(params["target_signature"])
+    groups = _artifact_groups(runtime.true_state)
+    candidates = groups.get(signature, ())
+    if not candidates:
+        raise ValueError("Chrome Dome target is no longer a legal public artifact")
+    target = candidates[0]
+    paid = solver.pay(runtime.true_state, cost, 0)
+    if paid is None:
+        raise ValueError("Chrome Dome activation cost can no longer be paid")
+    paid = solver.add_trace(
+        paid,
+        f"Phase2 Chrome Dome activation: pay {{{cost}}}, target {target.name or target.mode}",
+    )
+    exact = (
+        ("activation_cost", cost),
+        ("target_tag", int(target.instance_tag)),
+    )
+    public = (
+        ("activation_cost", cost),
+        ("target_name", target.name or target.mode),
+        ("target_state", signature),
+    )
+    obj, stack = runtime.stack.allocate(
+        object_type=core.STACK_TRIGGER,
+        kind=ACT_CHROME_COPY,
+        source=CHROME,
+        card=CHROME,
+        payload=exact,
+        public_payload=public,
+        strategic_payload=public,
+    )
+    return replace(
+        runtime,
+        true_state=paid,
+        stack=stack.push_existing((obj,)),
+        window=RuntimeDecisionWindow(WINDOW_PRIORITY),
+    )
+
+
+def _resolve_main_chrome_copy(
+    runtime: core.NonOracleRuntimeState,
+    obj,
+) -> core.NonOracleRuntimeState:
+    params = dict(obj.payload)
+    target_tag = int(params.get("target_tag", 0))
+    idx = core._perm_index_for_tag(runtime.true_state, target_tag)
+    if idx is None:
+        state = solver.add_trace(
+            runtime.true_state,
+            "Phase2 Chrome Dome copy ability resolves with target absent",
+        )
+        return replace(runtime, true_state=state, window=RuntimeDecisionWindow(WINDOW_PRIORITY))
+    target = runtime.true_state.battlefield[idx]
+    if target.name == CHROME or not solver.is_artifact_perm(target):
+        state = solver.add_trace(
+            runtime.true_state,
+            "Phase2 Chrome Dome copy ability resolves with illegal target",
+        )
+        return replace(runtime, true_state=state, window=RuntimeDecisionWindow(WINDOW_PRIORITY))
+
+    target_name = target.name or target.mode
+    state = solver.add_perm(
+        runtime.true_state,
+        target.name,
+        sick=False,
+        mode="chrome_copy",
+    )
+    state = solver.check_win(
+        solver.add_trace(state, f"Phase2 Chrome Dome copies {target_name} until own end step")
+    )
+    runtime = replace(
+        runtime,
+        true_state=solver._ensure_oracle_instance_tags(state),
+        window=RuntimeDecisionWindow(WINDOW_PRIORITY),
+    )
+    return core.record_artifact_entry(
+        runtime,
+        (target.name,),
+        source=f"Chrome Dome main copy {target_name}",
+    )
 
 
 def can_begin_chrome_end_turn(runtime: core.NonOracleRuntimeState) -> bool:
@@ -288,7 +421,11 @@ def handles_chrome_stack_top(runtime: core.NonOracleRuntimeState) -> bool:
     if runtime.pending is not None:
         return False
     top = runtime.stack.top()
-    return bool(top and top.kind in {BOUNDARY_AFTER_OWN_ENDSTEP, BOUNDARY_FINISH_NEXT_TURN})
+    return bool(top and top.kind in {
+        ACT_CHROME_COPY,
+        BOUNDARY_AFTER_OWN_ENDSTEP,
+        BOUNDARY_FINISH_NEXT_TURN,
+    })
 
 
 def chrome_pending_request(
@@ -371,11 +508,17 @@ def apply_chrome_pending(runtime: core.NonOracleRuntimeState, action: ActionInte
 
 def apply_chrome_stack_action(runtime: core.NonOracleRuntimeState, action: ActionIntent) -> core.NonOracleRuntimeState:
     if action.action_id != core.ACTION_PASS_PRIORITY or action.kind != "pass_priority":
-        raise ValueError("Chrome turn-boundary continuation resolves only after passing priority")
+        raise ValueError("Chrome ability/turn-boundary continuation resolves only after passing priority")
     obj, remaining = runtime.stack.pop_top()
-    if obj is None or obj.kind not in {BOUNDARY_AFTER_OWN_ENDSTEP, BOUNDARY_FINISH_NEXT_TURN}:
-        raise ValueError("top object is not a Chrome turn-boundary continuation")
+    if obj is None or obj.kind not in {
+        ACT_CHROME_COPY,
+        BOUNDARY_AFTER_OWN_ENDSTEP,
+        BOUNDARY_FINISH_NEXT_TURN,
+    }:
+        raise ValueError("top object is not handled by Chrome Dome runtime")
     runtime = replace(runtime, stack=remaining)
+    if obj.kind == ACT_CHROME_COPY:
+        return _resolve_main_chrome_copy(runtime, obj)
     ending_turn = int(dict(obj.payload)["ending_turn"])
     if obj.kind == BOUNDARY_AFTER_OWN_ENDSTEP:
         return _after_own_endstep(runtime, ending_turn)
