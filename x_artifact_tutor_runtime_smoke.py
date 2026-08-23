@@ -169,6 +169,47 @@ def test_reshape_search_targets_appear_only_when_spell_resolves():
     assert runtime.information.known_top == ()
 
 
+def test_cage_filters_creature_targets_from_reshape_and_whir():
+    reshape = make_runtime_state(solver.State(
+        turn=3,
+        library=("Hope of Ghirapur", "Sol Ring", "Island"),
+        hand=("Reshape",),
+        battlefield=(solver.Perm("Grafdigger's Cage"), solver.Perm("Tormod's Crypt")),
+        blue=2,
+        colorless=1,
+    ))
+    action = next(
+        a for a in x_actions(reshape, "Reshape", 1)
+        if dict(a.parameters).get("sacrifice_name") == "Tormod's Crypt"
+    )
+    reshape = apply_main_action(reshape, action)
+    reshape = apply_main_action(reshape, pass_action(reshape))
+    targets = {
+        dict(a.parameters).get("target")
+        for a in rules_decision_request(reshape, horizon=6).actions
+    }
+    assert "Sol Ring" in targets
+    assert "Hope of Ghirapur" not in targets
+
+    whir = make_runtime_state(solver.State(
+        turn=3,
+        library=("Hope of Ghirapur", "Sol Ring", "Island"),
+        hand=("Whir of Invention",),
+        battlefield=(solver.Perm("Grafdigger's Cage", tapped=True),),
+        blue=3,
+        colorless=1,
+    ))
+    action = x_actions(whir, "Whir of Invention", 1)[0]
+    whir = apply_main_action(whir, action)
+    whir = apply_main_action(whir, pass_action(whir))
+    targets = {
+        dict(a.parameters).get("target")
+        for a in rules_decision_request(whir, horizon=6).actions
+    }
+    assert "Sol Ring" in targets
+    assert "Hope of Ghirapur" not in targets
+
+
 def test_whir_commits_x_and_improvise_before_search():
     runtime = make_runtime_state(solver.State(
         turn=3,
@@ -219,6 +260,7 @@ def main():
         test_reshape_cast_and_statue_death_trigger_are_orderable_with_other_cast_trigger,
         test_reshape_cam_additional_cost_stages_target_before_trigger_order,
         test_reshape_search_targets_appear_only_when_spell_resolves,
+        test_cage_filters_creature_targets_from_reshape_and_whir,
         test_whir_commits_x_and_improvise_before_search,
         test_base_policy_chooses_revealed_artifact_not_fail_to_find,
     )
