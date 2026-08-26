@@ -194,6 +194,9 @@ class DistributionBellmanEvaluator(Generic[TState, TAction]):
         self.policy_id = str(policy_id)
         self.store = store or MemoizationStore()
         self._active_v: set[Tuple[Any, ...]] = set()
+        # Keep only strategic action identity.  A cached concrete ActionIntent may
+        # carry runtime execution IDs that are invalid in an equivalent state.
+        self._best_action_keys: dict[Tuple[Any, ...], Tuple[Any, ...]] = {}
 
     def _v_cache_key(self, state: TState) -> Tuple[Any, ...]:
         return self.store.value_key(
@@ -225,21 +228,23 @@ class DistributionBellmanEvaluator(Generic[TState, TAction]):
         if not isclose(total, 1.0, rel_tol=0.0, abs_tol=1e-10):
             raise ValueError(f"successor probabilities sum to {total!r}, not 1")
         value = WinDistributionValue.mixture(
-            ((row.probability, self.v(row.state).value) for row in successors),
+            ((row.probability, self.value(row.state)) for row in successors),
             horizon=self.horizon,
         )
         self.store.set_q(key, value)
         return value
 
-    def v(self, state: TState) -> BellmanResult[TAction]:
+    def value(self, state: TState) -> WinDistributionValue:
+        """Return V(state) without requiring a concrete best action object."""
+
         terminal = self.model.terminal_outcome(state, horizon=self.horizon)
         if terminal is not None:
-            return BellmanResult(WinDistributionValue.from_outcome(terminal), None)
+            return WinDistributionValue.from_outcome(terminal)
 
         key = self._v_cache_key(state)
         cached = self.store.get_v(key)
         if cached is not None:
-            return BellmanResult(cached, None)
+            return cached
         if key in self._active_v:
             raise RuntimeError("cycle detected in exact Bellman evaluator; transition model must collapse or bound cycles")
 
@@ -252,12 +257,45 @@ class DistributionBellmanEvaluator(Generic[TState, TAction]):
             ranked = []
             for action in actions:
                 value = self.q(state, action)
-                ranked.append((value.comparison_key(), repr(self.model.action_key(action)), action, value))
-            _, _, best_action, best_value = max(ranked, key=lambda row: (row[0], row[1]))
+                action_key = self.model.action_key(action)
+                ranked.append((value.comparison_key(), repr(action_key), action_key, value))
+            _, _, best_action_key, best_value = max(ranked, key=lambda row: (row[0], row[1]))
             self.store.set_v(key, best_value)
-            return BellmanResult(best_value, best_action)
+            self._best_action_keys[key] = best_action_key
+            return best_value
         finally:
             self._active_v.remove(key)
+
+    def _resolve_best_action(self, state: TState, value: WinDistributionValue) -> Optional[TAction]:
+        actions = tuple(self.model.actions(state))
+        if not actions:
+            return None
+        key = self._v_cache_key(state)
+        best_action_key = self._best_action_keys.get(key)
+        if best_action_key is not None:
+            matches = [action for action in actions if self.model.action_key(action) == best_action_key]
+            if matches:
+                return min(matches, key=lambda action: repr(self.model.action_key(action)))
+
+        # A shared/pre-populated V store may not carry this evaluator's local best
+        # action key.  Recover it from Q using current-state legal action objects;
+        # cached Q values make this cheap and avoid reusing stale execution IDs.
+        ranked = []
+        for action in actions:
+            action_value = self.q(state, action)
+            ranked.append((action_value.comparison_key(), repr(self.model.action_key(action)), action, action_value))
+        _, _, best_action, recovered_value = max(ranked, key=lambda row: (row[0], row[1]))
+        if recovered_value.comparison_key() != value.comparison_key():
+            raise AssertionError("cached V disagrees with current legal Q values")
+        self._best_action_keys[key] = self.model.action_key(best_action)
+        return best_action
+
+    def v(self, state: TState) -> BellmanResult[TAction]:
+        terminal = self.model.terminal_outcome(state, horizon=self.horizon)
+        if terminal is not None:
+            return BellmanResult(WinDistributionValue.from_outcome(terminal), None)
+        value = self.value(state)
+        return BellmanResult(value, self._resolve_best_action(state, value))
 
     def rank_actions(self, state: TState) -> Tuple[Tuple[TAction, WinDistributionValue], ...]:
         rows = [(action, self.q(state, action)) for action in self.model.actions(state)]
