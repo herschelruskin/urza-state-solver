@@ -170,14 +170,11 @@ class SelectiveTutorQController:
         if not tutor_actions:
             return ()
 
-        # First selective-Q slice:
-        #   * if v6 wants a tutor, compare that commitment with all other tutors,
-        #     holding/end-turn, and the strongest ordinary v6-scored alternative;
-        #   * if v6 wants to end the turn while a tutor is castable, compare hold
-        #     versus firing the tutor now. This directly addresses the reproduced
-        #     stranded-tutor trajectories without Q-controlling every main action.
-        if base.kind not in MAIN_TUTOR_KINDS and base.kind!="main_end_turn":
-            return ()
+        # Tutor-opportunity slice:
+        # whenever a tutor is legally castable, compare all tutor commitments
+        # against v6's preferred action and holding/end-turn. This lets Q rescue
+        # tutors that v6 would otherwise strand behind mana/development actions,
+        # while still avoiding global Q control over states with no tutor option.
 
         rows={
             action.strategic_key():action for action in tutor_actions
@@ -188,6 +185,10 @@ class SelectiveTutorQController:
             if action.kind=="main_end_turn":
                 rows.setdefault(action.strategic_key(),action)
 
+        # The actual v6 choice is already in rows as the principal non-tutor
+        # comparator whenever v6 did not choose a tutor. If v6 *did* choose a
+        # tutor, also add its best ordinary alternative so Q can decide to
+        # continue development rather than force a tutor merely because v6 did.
         if base.kind in MAIN_TUTOR_KINDS:
             ordinary=[
                 action for action in fresh_actions
