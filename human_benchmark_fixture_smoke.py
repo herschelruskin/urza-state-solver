@@ -37,17 +37,25 @@ def main() -> None:
         "3": 5,
         "4": 4,
         "5": 3,
+        "6": 2,
     }
+    assert mull["mulligan_semantics"]["solver_keep_floor"] == 2
     assert mull["rating_semantics"]["comparability"] == "within keep_size only"
     assert mull["quality"]["primary_benchmark_usable_count"] == 35
     assert mull["quality"]["primary_excluded_hand_ids"] == [10]
     assert mull["quality"]["current_repo_runnable_count"] == 35
     assert mull["quality"]["normalized_card_slot_hand_ids"] == [24, 34]
+    assert mull["quality"]["historical_two_card_goldfishes"] == 5
     assert mull["descriptive"]["decision_counts"] == {"Keep": 27, "Mulligan": 9}
     assert mull["descriptive"]["by_keep_size"]["7"] == {
         "n": 22,
         "keeps": 13,
         "mulligans": 9,
+    }
+    assert mull["descriptive"]["by_keep_size"]["2"] == {
+        "n": 0,
+        "keeps": 0,
+        "mulligans": 0,
     }
     assert mull["descriptive"]["seven_card_stage"]["initial_m0"]["keep_rate"] == 0.5
     assert mull["descriptive"]["seven_card_stage"]["free_second_m1"]["keep_rate"] == 2 / 3
@@ -109,6 +117,10 @@ def main() -> None:
     assert gold["simulator_terminal_horizon"] == 6
     assert gold["blank_winning_turn_semantics"] == ">T7 / never"
     assert gold["mystic_rhystic_goldfish_rule"] == "2 additional draws per full turn cycle while active"
+    assert gold["mulligan_semantics"]["stages"]["6"] == 2
+    assert gold["mulligan_semantics"]["historical_two_card_keeps"] == 5
+    assert gold["mulligan_semantics"]["solver_keep_floor"] == 2
+    assert gold["mull_distribution"]["6"] == 5
     assert gold["outcomes"]["win_turn_counts"] == {
         "3": 79,
         "4": 129,
@@ -124,6 +136,7 @@ def main() -> None:
 
     print("PASS annotated-hand benchmark summary semantics")
     print(f"PASS exact annotated hands rows={len(hands)} usable={usable} repo_runnable={runnable}")
+    print("PASS historical mulligan_count=6 -> keep 2 semantics")
     print("PASS 250-run historical outcome baseline semantics")
     print("HUMAN BENCHMARK FIXTURE SMOKE: ALL PASS")
 
