@@ -15,7 +15,7 @@ from typing import Optional, Tuple
 import urza_solver as solver
 from decision_observation import ActionIntent
 from non_oracle_base_policy import DeterministicBasePolicy
-from non_oracle_rules_adapter import apply_main_action, rules_decision_request
+from non_oracle_rules_adapter_v2 import apply_main_action, rules_decision_request
 from non_oracle_runtime import NonOracleRuntimeState
 
 EPISODE_RUNNER_VERSION = "urza-non-oracle-episode-v1"
