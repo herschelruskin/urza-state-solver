@@ -3059,13 +3059,368 @@ def special_actions(s:State)->List[State]:
 def active_creatures(s:State)->set:
     return {p.name for p in s.battlefield if p.name in F_CREATURES|{COMMANDER} and not p.sick}
 
+
+# Repeatable artifact-loop economics.
+#
+# Important distinction:
+# * only a few rocks are intrinsically mana-positive without Urza;
+# * with Urza, every repeatable artifact can be tapped for +U, so zero-drops
+#   become positive and ordinary one-drops become neutral;
+# * visible producers can further improve the steady-state replay margin.
+#
+# Mox Diamond is never considered repeatable: every recast would require a fresh
+# land discard, so its printed mana value of zero is misleading for loop logic.
+REPLAY_NEVER_REPEAT=frozenset({"Mox Diamond"})
+
+# Human-audited base classes with Urza in play and no additional producer
+# rebates. Sewer-veillance Cam is positive only when its ETB can untap a
+# different artifact creature that Urza can convert to another +U.
+URZA_REPLAY_POSITIVE_BASE=frozenset({
+    "Sol Ring","Mana Vault","Grim Monolith",
+    "Welding Jar","Tormod's Crypt","Jeweled Amulet","Mox Opal","Chrome Mox",
+    "Mishra's Bauble","Urza's Bauble","Lotus Petal","Everflowing Chalice",
+})
+URZA_REPLAY_NEUTRAL_BASE=frozenset({
+    "Aether Spellbomb","Basalt Monolith","Grafdigger's Cage","Giant's Boulder",
+    "Grinding Station","Manifold Key","Moonsnare Prototype","Pithing Needle",
+    "Prized Statue","Sensei's Divining Top","Witching Well","Vexing Bauble",
+    "Voltaic Key","Hope of Ghirapur","Codex Shredder","Fugitive Droid",
+})
+NATIVE_REPLAY_POSITIVE_BASE=frozenset({
+    "Sol Ring","Mana Vault","Grim Monolith","Mox Opal",
+})
+NATIVE_REPLAY_NEUTRAL_BASE=frozenset(
+    (ZERO_ARTIFACTS-{"Mox Diamond"})|{"Basalt Monolith"}
+)
+
+
+def _replay_card_present(s:State,card:str)->bool:
+    return card in s.hand or any(p.name==card for p in s.battlefield)
+
+
+def _replay_post_entry_artifact_count(s:State,card:str)->int:
+    """Artifact count after the candidate has been replayed onto the battlefield."""
+    already_present=any(p.name==card for p in s.battlefield)
+    return artifact_count(s)+(0 if already_present else 1)
+
+
+def _native_repeatable_mana_yield(s:State,card:str)->int:
+    """Mana one replayed artifact can repeatedly make without using Urza."""
+    if card=="Sol Ring":
+        return 2
+    if card in {"Mana Vault","Grim Monolith","Basalt Monolith"}:
+        return 3
+    if card=="Mox Opal" and _replay_post_entry_artifact_count(s,card)>=3:
+        return 1
+    # Lotus Petal and other sacrificial/one-shot objects are deliberately zero:
+    # sacrificing the object destroys the bounce/replay recurrence.
+    return 0
+
+
+def _cam_extra_urza_untap_available(s:State,source:Perm,card:str)->bool:
+    """Cam is +1 above neutral only with a distinct artifact creature to untap."""
+    if card!="Sewer-veillance Cam" or not s.urza:
+        return False
+    for p in s.battlefield:
+        if p.instance_tag==source.instance_tag:
+            continue
+        if p.name==card:
+            continue
+        if is_artifact_perm(p) and is_creature_perm(p):
+            return True
+    return False
+
+
+def _steady_replay_producer_bonus(s:State,source:Perm,card:str)->int:
+    """Steady-state +U supplied by additional visible producers.
+
+    Station/Golem each contribute one reusable Urza tap from the replay ETB.
+    Gadgeteer contributes one Clue per artifact cast; the Clue is another +U.
+    Each Gadgeteer Clue also creates another ETB for each Station/Golem.
+    """
+    if not s.urza:
+        return 0
+
+    station_golem=0
+    gadgeteer=0
+    for p in s.battlefield:
+        if p.instance_tag==source.instance_tag:
+            continue
+        if p.name==card:
+            continue
+        if p.name in {"Grinding Station","Battered Golem"}:
+            station_golem += 1
+        elif p.name=="Forensic Gadgeteer":
+            gadgeteer += 1
+
+    return station_golem + gadgeteer + station_golem*gadgeteer
+
+
+def replay_mana_margin(s:State,source:Perm,card:str)->Optional[int]:
+    """Steady-state mana gained per legal Knack/Helix bounce/recast cycle.
+
+    Positive means unbounded mana. Zero is mana-neutral and can be promoted by
+    another visible producer. Negative cards require enough producer rebates to
+    move classes. This is repeatability logic, not a generic card-value score.
+    """
+    if card in REPLAY_NEVER_REPEAT or card not in ARTIFACTS:
+        return None
+    if not _replay_card_present(s,card):
+        return None
+
+    generic,blue_req=spell_cost(s,card,outside=False)
+    cast_cost=generic+blue_req
+    native=_native_repeatable_mana_yield(s,card)
+    urza_yield=1 if s.urza else 0
+    produced=max(native,urza_yield)
+
+    if s.urza:
+        # A replayed Station/Golem can be tapped once before its own untap
+        # trigger resolves and once after. The ordinary Urza tap is already the
+        # base +1; this is the extra self-entry +1.
+        if card in {"Grinding Station","Battered Golem"}:
+            produced += 1
+
+        # Prized Statue creates a Treasure on ETB, yielding the second mana that
+        # makes the {2} replay neutral under Urza.
+        if card=="Prized Statue":
+            produced += 1
+
+        # Cam is neutral by itself under Urza. A distinct artifact creature can
+        # be tapped, untapped by Cam ETB, and tapped again for one extra +U.
+        if _cam_extra_urza_untap_available(s,source,card):
+            produced += 1
+
+        produced += _steady_replay_producer_bonus(s,source,card)
+
+    return produced-cast_cost
+
+
+def _replay_refreshes_knack_source(source:Perm,card:str)->bool:
+    if source.name=="Battered Golem":
+        return card in ARTIFACTS
+    if source.name=="Valley Floodcaller":
+        return card in ARTIFACTS and card not in CREATURES
+    return False
+
+
+def _candidate_replay_cards(s:State,source:Perm)->Tuple[str,...]:
+    rows=set()
+    for card in s.hand:
+        if card in ARTIFACTS and card not in REPLAY_NEVER_REPEAT:
+            rows.add(card)
+    for p in s.battlefield:
+        if p.instance_tag==source.instance_tag:
+            continue
+        if p.name in ARTIFACTS and p.name not in REPLAY_NEVER_REPEAT:
+            rows.add(p.name)
+    return tuple(sorted(rows))
+
+
+def _immediate_replay_mana_capacity(
+    s:State,source:Perm,card:str,*,on_battlefield:bool
+)->Tuple[int,int]:
+    """Return (blue-capable mana, total mana) available for the first replay.
+
+    This is a capacity calculation, not a policy action. It counts only currently
+    usable public mana sources. If the replay card starts on the battlefield it
+    must first be bounced, so both that permanent and the Knack source are
+    unavailable to pay for the recast. If the card starts in hand, a Battered
+    Golem source may tap through Urza before the cast because that cast untaps it.
+    """
+    blue_capable=s.blue
+    total=s.blue+s.colorless
+    metal=artifact_count(s)>=3
+
+    for p in s.battlefield:
+        if p.tapped:
+            continue
+        if on_battlefield and (
+            p.instance_tag==source.instance_tag or p.name==card
+        ):
+            continue
+
+        n=p.name
+        native_total=0
+        native_blue=0
+        if n in {
+            "Island","Cephalid Coliseum","Ipnu Rivulet",
+            "Minamo, School at Water's Edge","Oboro, Palace in the Clouds",
+            "Otawara, Soaring City","Seat of the Synod",
+        }:
+            native_total=native_blue=1
+        elif n in MDFC_BLUE_LANDS and p.mode=="landface":
+            native_total=native_blue=1
+        elif n=="Urza's Saga" and p.counters>=1:
+            native_total=1
+        elif n in {"Ancient Tomb","City of Traitors"}:
+            native_total=2
+        elif n=="Crystal Vein":
+            native_total=2
+        elif n=="Saprazzan Skerry" and p.counters>0:
+            native_total=native_blue=2
+        elif n=="Gemstone Caverns":
+            native_total=1
+            native_blue=1 if p.mode=="luck" else 0
+        elif n=="Sol Ring":
+            native_total=2
+        elif n in {"Mana Vault","Grim Monolith","Basalt Monolith"}:
+            native_total=3
+        elif n=="Mox Opal" and metal:
+            native_total=native_blue=1
+        elif n in {"Chrome Mox","Mox Diamond"} and p.mode in {"imprinted","diamond"}:
+            native_total=native_blue=1
+        elif n=="Everflowing Chalice" and p.counters>0:
+            native_total=p.counters
+        elif n=="Lotus Petal" or p.mode=="treasure":
+            native_total=native_blue=1
+
+        if s.urza and is_artifact_perm(p):
+            # Urza can make U from any untapped artifact. Pick the better native
+            # total output, but if equal prefer the blue-capable Urza use.
+            if native_total<=1:
+                total += 1
+                blue_capable += 1
+            else:
+                total += native_total
+                blue_capable += native_blue
+        else:
+            total += native_total
+            blue_capable += native_blue
+
+    return blue_capable,total
+
+
+def can_bootstrap_replay_cast(
+    s:State,source:Perm,card:str,*,in_hand:bool,on_battlefield:bool
+)->bool:
+    generic,blue_req=spell_cost(s,card,outside=False)
+    if can_pay(s,generic,blue_req):
+        return True
+    blue_capable,total=_immediate_replay_mana_capacity(
+        s,source,card,on_battlefield=(on_battlefield and not in_hand)
+    )
+    return blue_capable>=blue_req and total>=generic+blue_req
+
+
 def zero_or_positive_replay_artifacts(s:State)->set:
-    # Conservative profitable replay set; exact iterative economics are searched elsewhere.
-    return set(bf_names(s)) & (ZERO_ARTIFACTS|{"Sol Ring","Mana Vault"})
+    """Compatibility helper for existing diagnostics."""
+    dummy=Perm("Valley Floodcaller",instance_tag=-1)
+    rows=set()
+    for card in set(s.hand)|set(bf_names(s)):
+        margin=replay_mana_margin(s,dummy,card)
+        if margin is not None and margin>=0:
+            rows.add(card)
+    return rows
+
+
+def knack_replay_loop_family(s:State)->str:
+    """Recognize deterministic positive Knack/Helix replay loops.
+
+    The source must be a live Battered Golem or Valley Floodcaller carrying the
+    grant. The replay artifact must refresh that source every cycle. Base
+    positive artifacts win directly; neutral/negative artifacts win only when
+    visible Urza/producer economics promote the steady-state margin above zero.
+    """
+    if not s.urza:
+        return ""
+
+    for source in s.battlefield:
+        if not is_knack_target_perm(s,source) or source.sick:
+            continue
+        if source.name not in {"Battered Golem","Valley Floodcaller"}:
+            continue
+
+        for card in _candidate_replay_cards(s,source):
+            if not _replay_refreshes_knack_source(source,card):
+                continue
+
+            in_hand=card in s.hand
+            on_battlefield=any(
+                p.name==card and p.instance_tag!=source.instance_tag
+                for p in s.battlefield
+            )
+            if source.tapped and not in_hand:
+                continue
+            if not in_hand and not on_battlefield:
+                continue
+
+            # Steady-state positivity is not enough: the first replay
+            # must be payable from the current visible resources. Include mana
+            # that can be produced immediately before the first cast, but reserve
+            # the Knack source when it must tap to bounce an artifact already on
+            # the battlefield.
+            if not can_bootstrap_replay_cast(
+                s,source,card,in_hand=in_hand,on_battlefield=on_battlefield
+            ):
+                continue
+
+            margin=replay_mana_margin(s,source,card)
+            if margin is None or margin<=0:
+                continue
+            return (
+                "Knack/Helix + Battered Golem"
+                if source.name=="Battered Golem"
+                else "Knack/Helix + Valley Floodcaller"
+            )
+    return ""
+
+
+CHROME_DOME_THREE_MANA_COPY_TARGETS=frozenset({
+    "Mana Vault","Grim Monolith","Basalt Monolith",
+})
+
+def chrome_dome_positive_copy_target(s:State)->str:
+    """Return a visible Chrome Dome copy target that yields positive mana.
+
+    Chrome Dome costs {5} to activate. Power Artifact enchanting Chrome Dome
+    reduces that by {2}; Forensic Gadgeteer reduces it by another {1}; the
+    resulting activation costs {2}. A fresh token copy of Mana Vault, Grim
+    Monolith, or Basalt Monolith enters untapped and taps for {3}, so each
+    iteration nets +1 mana and can be repeated arbitrarily.
+
+    The first activation must still be bootstrap-payable from the current
+    visible state. The original 3-mana rock may itself provide that bootstrap
+    when untapped. Power Artifact must actually enchant Chrome Dome; merely
+    having the Aura somewhere on the battlefield is not sufficient.
+    """
+    names=bf_name_set(s)
+    if (
+        "Chrome Dome" not in names
+        or "Forensic Gadgeteer" not in names
+        or "Power Artifact" not in names
+        or s.pa_target!="Chrome Dome"
+    ):
+        return ""
+
+    # Both reductions have a floor of one mana, but from {5} they combine
+    # cleanly to {2}.
+    activation=5
+    activation=max(1,activation-1)  # Forensic Gadgeteer
+    activation=max(1,activation-2)  # Power Artifact on Chrome Dome
+    if activation>=3:
+        return ""
+
+    target=next(
+        (name for name in ("Mana Vault","Grim Monolith","Basalt Monolith")
+         if name in names),
+        "",
+    )
+    if not target:
+        return ""
+
+    # A copied target does not copy tapped status and therefore enters untapped.
+    # The existing target can bootstrap the first activation if it is untapped;
+    # immediately_available_generic_mana() counts that native {3} correctly.
+    if immediately_available_generic_mana(s)<activation:
+        return ""
+    return target
 
 
 def infinite_colorless_online(s:State)->bool:
     names=bf_name_set(s)
+    if chrome_dome_positive_copy_target(s):
+        return True
     if "Forensic Gadgeteer" in names and "Basalt Monolith" in names:
         return True
     if "Power Artifact" in names and ("Grim Monolith" in names or "Basalt Monolith" in names):
@@ -3108,6 +3463,84 @@ def can_cast_urza_now_with_infinite_colorless(s:State)->bool:
     # Infinite colorless pays the generic 2; we still need two actual blue.
     return immediately_available_blue_sources(s) >= 2
 
+
+def immediately_available_generic_mana(s:State)->int:
+    """Maximum currently spendable mana without changing zones/searching.
+
+    Used only for deterministic combo bootstrap checks. For an untapped artifact,
+    count the better of its native tap ability and Urza's +U conversion, never
+    both. This deliberately does not assume a future land drop or tutor.
+    """
+    total=s.blue+s.colorless
+    metal=artifact_count(s)>=3
+    for p in s.battlefield:
+        if p.tapped:
+            continue
+        n=p.name
+        native=0
+        if n in {
+            "Island","Cephalid Coliseum","Ipnu Rivulet",
+            "Minamo, School at Water's Edge","Oboro, Palace in the Clouds",
+            "Otawara, Soaring City","Seat of the Synod",
+        }:
+            native=1
+        elif n in MDFC_BLUE_LANDS and p.mode=="landface":
+            native=1
+        elif n=="Urza's Saga" and p.counters>=1:
+            native=1
+        elif n in {"Ancient Tomb","City of Traitors"}:
+            native=2
+        elif n=="Crystal Vein":
+            native=2
+        elif n=="Saprazzan Skerry" and p.counters>0:
+            native=2
+        elif n=="Gemstone Caverns":
+            native=1
+        elif n=="Sol Ring":
+            native=2
+        elif n in {"Mana Vault","Grim Monolith","Basalt Monolith"}:
+            native=3
+        elif n=="Mox Opal" and metal:
+            native=1
+        elif n in {"Chrome Mox","Mox Diamond"} and p.mode in {"imprinted","diamond"}:
+            native=1
+        elif n=="Everflowing Chalice" and p.counters>0:
+            native=p.counters
+        elif n=="Lotus Petal" or p.mode=="treasure":
+            native=1
+
+        urza_mana=1 if s.urza and is_artifact_perm(p) else 0
+        total += max(native,urza_mana)
+    return total
+
+
+def monolith_untap_cost(s:State,name:str)->int:
+    if name=="Grim Monolith":
+        cost=4
+    elif name=="Basalt Monolith":
+        cost=3
+    else:
+        raise ValueError(f"unsupported monolith {name!r}")
+    if has(s,"Forensic Gadgeteer"):
+        cost-=1
+    if s.pa_target==name:
+        cost-=2
+    return max(1,cost)
+
+
+def monolith_positive_loop_online(s:State,name:str)->bool:
+    """Whether the currently visible Monolith can bootstrap its positive loop."""
+    perm=next((p for p in s.battlefield if p.name==name),None)
+    if perm is None:
+        return False
+    # If it is untapped, its own first mana activation bootstraps the loop.
+    if not perm.tapped:
+        return True
+    # If already tapped, the first reduced untap must be payable from other
+    # currently available resources/floating mana.
+    return immediately_available_generic_mana(s)>=monolith_untap_cost(s,name)
+
+
 def check_win(s:State)->State:
     # A pending cumulative-upkeep trigger must be resolved before the solver
     # can use main-phase terminal recognizers. Upkeep-specific instant actions
@@ -3119,15 +3552,41 @@ def check_win(s:State)->State:
     if not s.urza:
         return s
 
-    if "Power Artifact" in names and "Grim Monolith" in names:
+    if (
+        "Power Artifact" in names
+        and "Grim Monolith" in names
+        and s.pa_target=="Grim Monolith"
+        and monolith_positive_loop_online(s,"Grim Monolith")
+    ):
         return replace(s,won=True,win_family="Power Artifact + Grim")
-    if "Power Artifact" in names and "Basalt Monolith" in names:
+    if (
+        "Power Artifact" in names
+        and "Basalt Monolith" in names
+        and s.pa_target=="Basalt Monolith"
+        and monolith_positive_loop_online(s,"Basalt Monolith")
+    ):
         return replace(s,won=True,win_family="Power Artifact + Basalt")
-    if "Forensic Gadgeteer" in names and "Basalt Monolith" in names:
+    if (
+        "Forensic Gadgeteer" in names
+        and "Basalt Monolith" in names
+        and monolith_positive_loop_online(s,"Basalt Monolith")
+    ):
         return replace(s,won=True,win_family="Basalt + Gadgeteer")
 
+    knack_loop=knack_replay_loop_family(s)
+    if knack_loop:
+        return replace(s,won=True,win_family=knack_loop)
+
     if "Sensei's Divining Top" in names:
-        if s.chip_attached and not cage_in_play(s) and names & PRODUCERS:
+        chip_active=(
+            s.chip_attached
+            and bool(s.chip_target)
+            and any(
+                p.name=="The Reality Chip" and p.mode=="chip_attached"
+                for p in s.battlefield
+            )
+        )
+        if chip_active and not cage_in_play(s) and names & PRODUCERS:
             return replace(s,won=True,win_family="Top + Reality Chip")
         if s.ftt_level>=3 and s.spell_cast_this_turn and not cage_in_play(s):
             return replace(s,won=True,win_family="Top + FTT L3")
@@ -3145,8 +3604,17 @@ def check_win(s:State)->State:
         if target_live:
             return replace(s,won=True,win_family="Knack/Helix + Cam")
 
+    chrome_mana_target=chrome_dome_positive_copy_target(s)
+    if chrome_mana_target:
+        return replace(
+            s,won=True,
+            win_family=f"Chrome Dome + PA + Gadgeteer + {chrome_mana_target}",
+        )
+
     if "Chrome Dome" in names and names & {"Grinding Station","Battered Golem"}:
-        reduction=(1 if "Forensic Gadgeteer" in names else 0)+(2 if "Power Artifact" in names else 0)
+        reduction=(1 if "Forensic Gadgeteer" in names else 0)+(
+            2 if ("Power Artifact" in names and s.pa_target=="Chrome Dome") else 0
+        )
         activation=max(1,5-reduction)
         if s.blue+s.colorless >= activation:
             return replace(s,won=True,win_family="Chrome Dome")
@@ -5647,6 +6115,54 @@ def run_commander_smoke():
     assert not check_win(combo).won
     print("pre-Urza infinite shortcut removed: PASS",flush=True)
 
+    # Chrome Dome + PA-on-Dome + Gadgeteer makes the Dome ability cost {2}.
+    # Copying an untapped Mana Vault pays the first activation and every fresh
+    # copy taps for {3}, yielding +1 per iteration. This is genuine infinite
+    # colorless before Urza, and a terminal family once Urza is online.
+    chrome_pre=State(
+        turn=3,library=(),hand=(),
+        battlefield=(
+            Perm("Chrome Dome",sick=False),
+            Perm("Forensic Gadgeteer",sick=False),
+            Perm("Power Artifact"),
+            Perm("Mana Vault"),
+        ),
+        pa_target="Chrome Dome",
+        blue=2,
+        commander_in_command_zone=True,
+    )
+    assert chrome_dome_positive_copy_target(chrome_pre)=="Mana Vault"
+    assert infinite_colorless_online(chrome_pre)
+    cast=cast_urza_from_command_zone_actions(chrome_pre)
+    assert cast and cast[0].urza
+    chrome_live=replace(
+        chrome_pre,
+        urza=True,commander_in_command_zone=False,blue=0,
+        battlefield=chrome_pre.battlefield+(Perm(COMMANDER,sick=False),),
+    )
+    won=check_win(chrome_live)
+    assert won.won
+    assert won.win_family=="Chrome Dome + PA + Gadgeteer + Mana Vault"
+
+    wrong_pa=replace(chrome_pre,pa_target="Mana Vault")
+    assert not chrome_dome_positive_copy_target(wrong_pa)
+    no_gadget=replace(
+        chrome_pre,
+        battlefield=tuple(
+            p for p in chrome_pre.battlefield if p.name!="Forensic Gadgeteer"
+        ),
+    )
+    assert not chrome_dome_positive_copy_target(no_gadget)
+    tapped_vault=replace(
+        chrome_pre,blue=0,
+        battlefield=tuple(
+            replace(p,tapped=True) if p.name=="Mana Vault" else p
+            for p in chrome_pre.battlefield
+        ),
+    )
+    assert not chrome_dome_positive_copy_target(tapped_vault)
+    print("Chrome Dome + PA + Gadgeteer + Vault    PASS | +1 mana per copy",flush=True)
+
     # FTT3+Top no longer scans hidden library for imaginary future blue.
     ftt=State(
         turn=3,library=("Island","Island","Lotus Petal"),hand=(),
@@ -6516,6 +7032,22 @@ def run_combo_smoke():
     _combo_smoke_case("Top + Reality Chip + producer",s,{"Top + Reality Chip"},4,
                       ("cast Sensei's Divining Top",))
 
+    # Attachment metadata must agree with the actual reconfigured Chip object.
+    # A stale boolean flag is not sufficient to claim top-cast access.
+    stale_chip=State(
+        turn=4,library=("Island",),hand=(),
+        battlefield=(
+            Perm(COMMANDER,sick=False),
+            Perm("The Reality Chip"),
+            Perm("Grinding Station"),
+            Perm("Sensei's Divining Top"),
+        ),
+        urza=True,commander_in_command_zone=False,
+        chip_attached=True,chip_target=COMMANDER
+    )
+    assert not check_win(stale_chip).won
+    print("Top + Chip requires active reconfigure     PASS | stale flag rejected",flush=True)
+
     # 5. FTT L3: require a spell first, then Top.
     # We start with no Top in play so the terminal cannot already be true.
     s=State(
@@ -6623,6 +7155,132 @@ def run_combo_smoke():
     acts=legal_actions(s)
     assert any(x.knack_target for x in acts)
     print("Knack + Golem + positive artifact       PASS | Knack engine setup reachable",flush=True)
+
+    # 13a. Once Knack/Helix is live on Golem, a zero-mana replay artifact is
+    # terminal: bounce/recast untaps Golem and Urza converts each cycle to +U.
+    s=State(
+        turn=5,library=("Island",),hand=(),
+        battlefield=(
+            Perm(COMMANDER,sick=False),
+            Perm("Battered Golem",sick=False,knack_granted=True),
+            Perm("Lotus Petal"),
+        ),
+        urza=True,commander_in_command_zone=False
+    )
+    w=check_win(s)
+    assert w.won and w.win_family=="Knack/Helix + Battered Golem"
+    print("Knack + Golem replay loop              PASS | terminal win recognized",flush=True)
+
+    # 13b. Valley Floodcaller supplies the same recurrence from the cast trigger.
+    s=State(
+        turn=5,library=("Island",),hand=(),
+        battlefield=(
+            Perm(COMMANDER,sick=False),
+            Perm("Valley Floodcaller",sick=False,knack_granted=True),
+            Perm("Everflowing Chalice"),
+        ),
+        urza=True,commander_in_command_zone=False
+    )
+    w=check_win(s)
+    assert w.won and w.win_family=="Knack/Helix + Valley Floodcaller"
+    print("Knack + Floodcaller replay loop         PASS | terminal win recognized",flush=True)
+
+    # Mox Diamond alone must not create a false infinite replay claim.
+    s=State(
+        turn=5,library=("Island",),hand=(),
+        battlefield=(
+            Perm(COMMANDER,sick=False),
+            Perm("Battered Golem",sick=False,knack_granted=True),
+            Perm("Mox Diamond"),
+        ),
+        urza=True,commander_in_command_zone=False
+    )
+    assert not check_win(s).won
+    print("Knack replay excludes Mox Diamond       PASS | no false infinite",flush=True)
+
+    # Replay mana classes are state-dependent. Without Urza, only native mana
+    # counts: Sol/Vault/Grim are positive; zero-drops and Basalt are neutral;
+    # Mox Opal is positive only with metalcraft. The three "producers" create
+    # no mana rebate at all until Urza is actually on the battlefield.
+    dummy=Perm("Valley Floodcaller",sick=False,knack_granted=True,instance_tag=99)
+    native=State(
+        turn=4,library=(),
+        hand=("Sol Ring","Mana Vault","Grim Monolith","Welding Jar","Basalt Monolith"),
+        battlefield=(),
+        urza=False,
+    )
+    assert replay_mana_margin(native,dummy,"Sol Ring")>0
+    assert replay_mana_margin(native,dummy,"Mana Vault")>0
+    assert replay_mana_margin(native,dummy,"Grim Monolith")>0
+    assert replay_mana_margin(native,dummy,"Welding Jar")==0
+    assert replay_mana_margin(native,dummy,"Basalt Monolith")==0
+
+    opal_no_metal=State(
+        turn=4,library=(),hand=("Mox Opal",),battlefield=(),urza=False,
+    )
+    assert replay_mana_margin(opal_no_metal,dummy,"Mox Opal")==0
+    opal_metal=replace(
+        opal_no_metal,
+        battlefield=(Perm("Welding Jar"),Perm("Tormod's Crypt")),
+    )
+    assert replay_mana_margin(opal_metal,dummy,"Mox Opal")>0
+
+    producer_no_urza=State(
+        turn=4,library=(),hand=("Aether Spellbomb",),
+        battlefield=(
+            Perm("Grinding Station"),
+            Perm("Battered Golem",sick=False),
+            Perm("Forensic Gadgeteer",sick=False),
+        ),
+        urza=False,
+    )
+    assert _steady_replay_producer_bonus(
+        producer_no_urza,dummy,"Aether Spellbomb"
+    )==0
+    print("Replay native/Urza producer boundary    PASS | producers require Urza",flush=True)
+
+    # A positive steady-state artifact in hand still needs bootstrap mana for
+    # the first cast. Once the mana is floated, the same visible state becomes
+    # a deterministic loop.
+    bootstrap=State(
+        turn=5,library=(),hand=("Grim Monolith",),
+        battlefield=(
+            Perm(COMMANDER,sick=False),
+            Perm("Battered Golem",sick=False,knack_granted=True),
+        ),
+        urza=True,commander_in_command_zone=False,
+        blue=0,colorless=0,
+    )
+    assert not check_win(bootstrap).won
+    bootstrap=replace(bootstrap,colorless=2)
+    w=check_win(bootstrap)
+    assert w.won and w.win_family=="Knack/Helix + Battered Golem"
+    print("Knack replay bootstrap affordability    PASS | first cast must be payable",flush=True)
+
+    # A neutral artifact becomes positive only with a separate Urza producer.
+    neutral=State(
+        turn=5,library=(),hand=("Aether Spellbomb",),
+        battlefield=(
+            Perm(COMMANDER,sick=False),
+            Perm("Battered Golem",sick=False,knack_granted=True),
+        ),
+        urza=True,commander_in_command_zone=False,
+        blue=1,
+    )
+    assert replay_mana_margin(
+        neutral,neutral.battlefield[1],"Aether Spellbomb"
+    )==0
+    assert not check_win(neutral).won
+    promoted=replace(
+        neutral,
+        battlefield=neutral.battlefield+(Perm("Grinding Station"),),
+    )
+    assert replay_mana_margin(
+        promoted,promoted.battlefield[1],"Aether Spellbomb"
+    )>0
+    w=check_win(promoted)
+    assert w.won and w.win_family=="Knack/Helix + Battered Golem"
+    print("Neutral replay + Urza producer          PASS | dynamic class promotion",flush=True)
 
     # 14. Station ETB conversion. The fast Oracle state takes the post-trigger
     # Urza tap immediately and records it as refundable for native-use branches.

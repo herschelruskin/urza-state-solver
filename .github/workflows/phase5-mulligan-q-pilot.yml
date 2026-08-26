@@ -1,0 +1,52 @@
+name: Phase 5 mulligan tutor-Q pilot
+
+on:
+  push:
+    branches:
+      - phase5-runtime-line-parity
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  keep6-pilot:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile pilot
+        run: |
+          python -m py_compile phase5_monte_carlo.py phase5_selective_tutor_q.py phase5_mulligan.py phase5_mulligan_tutor_q_pilot.py
+      - name: Keep-six tutor-Q comparison
+        run: python phase5_mulligan_tutor_q_pilot.py
+      - name: Preserve pilot
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase5-mulligan-tutor-q-pilot
+          path: phase5_mulligan_tutor_q_pilot.json
+
+  adaptive-bottom-confirm:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile adaptive confirmation
+        run: |
+          python -m py_compile phase5_monte_carlo.py phase5_selective_tutor_q.py phase5_mulligan.py phase5_mulligan_bottom_confirm.py
+      - name: Confirm shortlisted keep-six bottoms
+        run: python phase5_mulligan_bottom_confirm.py
+      - name: Preserve adaptive confirmation
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase5-mulligan-bottom-confirm
+          path: phase5_mulligan_bottom_confirm.json

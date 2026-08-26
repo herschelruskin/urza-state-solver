@@ -1,10 +1,24 @@
 #!/usr/bin/env python3
 """Deterministic information-constrained Phase-2 episode runner.
 
-This is the first executable bridge from rules/policy infrastructure toward the
+This is the executable bridge from rules/policy infrastructure toward the
 project's real outputs: per-hand trajectories and eventually P(win by T1..T6).
-It deliberately uses the deterministic base policy only; DP/Monte Carlo will later
-replace/improve decisions without changing the episode mechanics.
+It deliberately keeps policy choice separate from rules execution; DP/Monte Carlo
+can later replace/improve decisions without changing episode mechanics.
+
+Phase 5 adds exact-world recurrent-state discipline.  The strategic V/Q key is not
+suitable by itself for trajectory cycle detection because it intentionally forgets
+hidden library order/RNG.  ``episode_cycle_key`` therefore combines:
+
+* the concrete Markov true-state key (including hidden order and root RNG seed), and
+* the semantic non-Oracle runtime value key (information, permissions, stack,
+  window, pending decision; excluding execution/provenance IDs).
+
+When an episode returns to that same concrete sampled world + semantic decision
+state, a strategic action already attempted there is suppressed and the policy is
+asked to choose among the remaining legal actions.  This prevents deterministic
+zero-progress recurrences such as Knack/Golem/Mox bounce-recast loops without
+altering V/Q identity or exposing hidden state to the policy.
 """
 
 from __future__ import annotations
@@ -15,10 +29,12 @@ from typing import Optional, Tuple
 import urza_solver as solver
 from decision_observation import ActionIntent
 from non_oracle_base_policy import DeterministicBasePolicy
-from non_oracle_rules_adapter import apply_main_action, rules_decision_request
+from non_oracle_rules_adapter_v2 import apply_main_action, rules_decision_request
 from non_oracle_runtime import NonOracleRuntimeState
+from solver_architecture import canonical_markov_state_key, stable_key
 
-EPISODE_RUNNER_VERSION = "urza-non-oracle-episode-v1"
+EPISODE_RUNNER_VERSION = "urza-non-oracle-episode-v2-cycle-aware"
+EPISODE_CYCLE_KEY_VERSION = "urza-episode-cycle-v1"
 
 
 @dataclass(frozen=True)
@@ -55,6 +71,24 @@ def _checked_runtime(runtime: NonOracleRuntimeState) -> NonOracleRuntimeState:
     return runtime if checked is runtime.true_state else replace(runtime, true_state=checked)
 
 
+def episode_cycle_key(runtime: NonOracleRuntimeState) -> Tuple[object, ...]:
+    """Exact sampled-world + semantic runtime identity for trajectory cycles.
+
+    This is deliberately stricter than ``runtime.value_key()``: the concrete
+    Markov key preserves hidden library order and the root game-randomness tape.
+    Conversely, semantic runtime identity deliberately ignores stack sequence IDs
+    and other execution provenance so a real physical recurrence is detectable.
+    The key is consumed only by the episode controller and is never policy-visible.
+    """
+    return stable_key(
+        (
+            canonical_markov_state_key(runtime.true_state),
+            runtime.value_key(),
+        ),
+        version=EPISODE_CYCLE_KEY_VERSION,
+    )
+
+
 def _blocked_reason(runtime: NonOracleRuntimeState, horizon: int) -> str:
     state = runtime.true_state
     if state.won:
@@ -81,12 +115,20 @@ def run_deterministic_episode(
     policy: DeterministicBasePolicy | None = None,
     max_steps: int = 512,
 ) -> NonOracleEpisodeResult:
-    """Execute one base-policy trajectory until win, horizon, or explicit blocker."""
+    """Execute one policy trajectory until win, horizon, blocker, or exhausted cycle.
+
+    For each exact recurrent episode state, each strategic action-equivalence class
+    is attempted at most once.  The policy still ranks the available alternatives;
+    the runner only removes an action after observing that the same concrete state
+    has already taken that strategic action.  Thus cycle discipline is a controller
+    invariant rather than a hand-written card heuristic.
+    """
     if horizon < 1:
         raise ValueError("episode horizon must be >= 1")
     policy = policy or DeterministicBasePolicy()
     runtime = _checked_runtime(runtime)
     steps = []
+    attempted_by_cycle_state = {}
 
     for sequence in range(max_steps):
         state = runtime.true_state
@@ -114,7 +156,28 @@ def run_deterministic_episode(
                 _blocked_reason(runtime, horizon),
             )
 
-        action = policy.choose_request(request)
+        cycle_key = episode_cycle_key(runtime)
+        attempted = attempted_by_cycle_state.setdefault(cycle_key, set())
+        fresh_actions = tuple(
+            action for action in request.actions
+            if action.strategic_key() not in attempted
+        )
+        if not fresh_actions:
+            return NonOracleEpisodeResult(
+                runtime,
+                tuple(steps),
+                horizon,
+                None,
+                "",
+                "strategic_cycle_exhausted",
+            )
+
+        action = policy.choose(
+            request.observation,
+            fresh_actions,
+            request.context,
+        )
+        attempted.add(action.strategic_key())
         before_turn = int(state.turn)
         before_window = runtime.window.kind
         observation_key = request.observation.key()

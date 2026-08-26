@@ -13,6 +13,9 @@ from phase4_hidden_world import materialize_hidden_world
 from phase5_mulligan import _opening_world, opening_runtime
 from phase5_rollout_policy import DeterministicRolloutPolicyV2, PHASE5_ROLLOUT_POLICY_VERSION
 from phase5_rollout_policy_v3 import DeterministicRolloutPolicyV3, PHASE5_ROLLOUT_POLICY_V3
+from phase5_rollout_policy_v4 import DeterministicRolloutPolicyV4, PHASE5_ROLLOUT_POLICY_V4
+from phase5_rollout_policy_v5 import DeterministicRolloutPolicyV5, PHASE5_ROLLOUT_POLICY_V5
+from phase5_rollout_policy_v6 import DeterministicRolloutPolicyV6, PHASE5_ROLLOUT_POLICY_V6
 
 SELECTED = (12, 13, 19, 20, 21, 24, 25, 27, 29, 33)
 
@@ -74,6 +77,9 @@ def main():
         "base_v1": DeterministicBasePolicy(),
         "rollout_v2": DeterministicRolloutPolicyV2(policy_id=PHASE5_ROLLOUT_POLICY_VERSION),
         "rollout_v3": DeterministicRolloutPolicyV3(policy_id=PHASE5_ROLLOUT_POLICY_V3),
+        "rollout_v4_line_parity": DeterministicRolloutPolicyV4(policy_id=PHASE5_ROLLOUT_POLICY_V4),
+        "rollout_v5_commitment_aware": DeterministicRolloutPolicyV5(policy_id=PHASE5_ROLLOUT_POLICY_V5),
+        "rollout_v6_visible_synergy": DeterministicRolloutPolicyV6(policy_id=PHASE5_ROLLOUT_POLICY_V6),
     }
     results = {}
     for name, policy in policies.items():
