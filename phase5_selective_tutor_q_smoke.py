@@ -163,10 +163,42 @@ def test_transmute_payment_not_q_controlled():
     print("Transmute payment remains invariant outside tutor-Q: PASS")
 
 
+def test_end_turn_with_live_tutor_is_q_evaluated():
+    runtime,request=runtime_and_request()
+
+    class EndPolicy:
+        policy_id="stub-end-policy"
+        def choose(self,observation,actions,context):
+            return next(a for a in actions if a.kind=="main_end_turn")
+        def action_score(self,observation,action,context):
+            return 0.0
+
+    controller=SelectiveTutorQController(
+        continuation_policy=EndPolicy(),
+        screen_rollouts=1,
+        confirm_rollouts=1,
+    )
+    controller.screen=FakeEvaluator({
+        "main_use_simple_tutor":0.75,
+        "main_end_turn":0.0,
+    })
+    controller.confirm=FakeEvaluator({
+        "main_use_simple_tutor":0.75,
+        "main_end_turn":0.0,
+    })
+    chosen,meta=controller.choose(runtime,request,request.actions)
+    assert chosen.kind=="main_use_simple_tutor",chosen
+    assert meta is not None
+    assert meta[0].kind=="main_end_turn"
+    assert meta[1].kind=="main_use_simple_tutor"
+    print("end-turn with castable tutor is eligible for Q rescue: PASS")
+
+
 def main():
     test_strict_improvement_overrides()
     test_equal_value_keeps_v6()
     test_transmute_payment_not_q_controlled()
+    test_end_turn_with_live_tutor_is_q_evaluated()
     print("PHASE5 SELECTIVE TUTOR-Q SMOKE: ALL PASS")
 
 
