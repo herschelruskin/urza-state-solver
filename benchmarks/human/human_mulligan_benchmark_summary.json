@@ -1,7 +1,12 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "name": "Urza human mulligan and bottoming benchmark summary",
   "n_rows": 36,
+  "deck_snapshot": {
+    "baseline": "Codex Shredder deck",
+    "historical_consistency": "All 250 historical goldfishes and annotated hands are treated as the same deck snapshot except a tentative late Fugitive Droid-for-Codex Shredder trial in hands 24 and 34.",
+    "normalization": "Hands 24 and 34 are evaluated as Codex Shredder for benchmark comparability; their recorded Fugitive Droid card is retained as provenance."
+  },
   "mulligan_semantics": {
     "description": "Mulligan count is the number of fresh hands seen/redealt.",
     "stages": {"0": 7, "1": 7, "2": 6, "3": 5, "4": 4, "5": 3},
@@ -17,14 +22,14 @@
     "primary": "decision",
     "secondary": "actual London bottoms when exact state is reconstructable",
     "qualitative": "justification",
-    "exploratory_only": ["would_keep_at", "would_bottom", "rating_within_size"]
+    "exploratory_only": ["counterfactual_keep_at_m2", "would_keep_at", "would_bottom", "rating_within_size"]
   },
   "quality": {
-    "primary_benchmark_usable_count": 33,
-    "primary_excluded_hand_ids": [10, 30, 36],
-    "current_repo_runnable_count": 31,
-    "deck_snapshot_drift_hand_ids": [24, 34],
-    "deck_snapshot_drift_cards": ["Fugitive Droid"]
+    "primary_benchmark_usable_count": 35,
+    "primary_excluded_hand_ids": [10],
+    "current_repo_runnable_count": 35,
+    "normalized_card_slot_hand_ids": [24, 34],
+    "unrecoverable_hand_ids": [10]
   },
   "descriptive": {
     "decision_counts": {"Keep": 27, "Mulligan": 9},
@@ -48,11 +53,17 @@
     }
   },
   "source_notes": {
-    "row_10": "Internal mismatch: listed seven does not contain recorded bottoms; justification references Spellseeker.",
-    "row_30": "Only six cards reconstruct from the listed seven-card-stage hand.",
-    "row_36": "Only six cards are listed for a seven-card-stage hand.",
-    "row_15_counterfactual": "Would Keep at=2 but two Would Bottom cards are listed; review before using this optional label.",
-    "optional_backfill_priority": [22, 23, 32, 35]
+    "row_10": "Unrecoverable internal mismatch: listed seven does not contain recorded bottoms and justification references Spellseeker. Permanently exclude from exact-state regression unless original source is rediscovered.",
+    "row_30": "Recovered missing seventh card: Swan Song.",
+    "row_36": "Recovered missing seventh card: Uthros Research Craft.",
+    "rows_24_34": "Recorded Fugitive Droid was a tentative late replacement for Codex Shredder. Benchmark-normalize these two hands to Codex Shredder while preserving the recorded card as provenance.",
+    "row_15_counterfactual": "Would Keep at=2 but two Would Bottom cards remain listed in the original sheet; optional label remains unresolved."
+  },
+  "counterfactual_keep_at_six": {
+    "22": {"decision": "Keep", "bottom": ["Vexing Bauble"]},
+    "23": {"decision": "Uncertain", "lean": "Mulligan", "bottom_if_keep": ["Saprazzan Skerry"]},
+    "32": {"decision": "Uncertain", "lean": "Mulligan", "bottom_if_keep": ["Mana Drain"]},
+    "35": {"decision": "Mulligan"}
   },
   "policy_themes_for_diagnostics_only": [
     "Fast Urza is not sufficient when post-Urza mana collapses.",
