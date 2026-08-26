@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "name": "Urza human mulligan and bottoming benchmark summary",
+  "n_rows": 36,
+  "mulligan_semantics": {
+    "description": "Mulligan count is the number of fresh hands seen/redealt.",
+    "stages": {"0": 7, "1": 7, "2": 6, "3": 5, "4": 4, "5": 3},
+    "free_multiplayer_mulligan_stage": 1,
+    "experimental_keep_floor": 3
+  },
+  "rating_semantics": {
+    "scale": "0-10",
+    "comparability": "within keep_size only",
+    "warning": "Do not compare equal numeric ratings across different keep sizes."
+  },
+  "label_priority": {
+    "primary": "decision",
+    "secondary": "actual London bottoms when exact state is reconstructable",
+    "qualitative": "justification",
+    "exploratory_only": ["would_keep_at", "would_bottom", "rating_within_size"]
+  },
+  "quality": {
+    "primary_benchmark_usable_count": 33,
+    "primary_excluded_hand_ids": [10, 30, 36],
+    "current_repo_runnable_count": 31,
+    "deck_snapshot_drift_hand_ids": [24, 34],
+    "deck_snapshot_drift_cards": ["Fugitive Droid"]
+  },
+  "descriptive": {
+    "decision_counts": {"Keep": 27, "Mulligan": 9},
+    "keep_size_counts": {"7": 22, "6": 8, "5": 3, "4": 2, "3": 1},
+    "by_keep_size": {
+      "7": {"n": 22, "keeps": 13, "mulligans": 9},
+      "6": {"n": 8, "keeps": 8, "mulligans": 0},
+      "5": {"n": 3, "keeps": 3, "mulligans": 0},
+      "4": {"n": 2, "keeps": 2, "mulligans": 0},
+      "3": {"n": 1, "keeps": 1, "mulligans": 0}
+    },
+    "seven_card_stage": {
+      "initial_m0": {"n": 10, "keeps": 5, "mulligans": 5, "keep_rate": 0.5},
+      "free_second_m1": {"n": 12, "keeps": 8, "mulligans": 4, "keep_rate": 0.6666666666666666}
+    },
+    "seven_card_rating": {
+      "keep_mean": 6.915384615384616,
+      "keep_median": 6.7,
+      "mulligan_mean": 5.222222222222222,
+      "mulligan_median": 5.0
+    }
+  },
+  "source_notes": {
+    "row_10": "Internal mismatch: listed seven does not contain recorded bottoms; justification references Spellseeker.",
+    "row_30": "Only six cards reconstruct from the listed seven-card-stage hand.",
+    "row_36": "Only six cards are listed for a seven-card-stage hand.",
+    "row_15_counterfactual": "Would Keep at=2 but two Would Bottom cards are listed; review before using this optional label.",
+    "optional_backfill_priority": [22, 23, 32, 35]
+  },
+  "policy_themes_for_diagnostics_only": [
+    "Fast Urza is not sufficient when post-Urza mana collapses.",
+    "Mana plus interaction without a value or win plan can still be a mulligan.",
+    "Colored and persistent mana quality matters separately from nominal mana quantity.",
+    "Interaction does not rescue every otherwise weak hand.",
+    "Plausible T4 conversion matters for several seven-card decisions.",
+    "Keep threshold changes with mulligan stage and retained-card count."
+  ]
+}
