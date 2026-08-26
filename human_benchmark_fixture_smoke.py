@@ -104,6 +104,7 @@ def main() -> None:
         assert hand["card_slot_normalization"]["benchmark_card"] == "Codex Shredder"
 
     assert gold["source_rows"] == 250
+    assert gold["deck_snapshot"]["baseline"] == "Codex Shredder deck"
     assert gold["historical_tracking_horizon"] == 7
     assert gold["simulator_terminal_horizon"] == 6
     assert gold["blank_winning_turn_semantics"] == ">T7 / never"
