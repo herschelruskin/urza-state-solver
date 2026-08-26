@@ -1,0 +1,40 @@
+name: Phase 5 line parity smoke
+
+on:
+  push:
+    branches:
+      - phase5-runtime-line-parity
+  pull_request:
+    branches:
+      - phase5-mulligan-dp
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile parity overlay
+        run: |
+          python -m py_compile non_oracle_public_parity_runtime.py non_oracle_rules_adapter_v2.py phase5_line_parity_smoke.py
+      - name: Oracle/non-Oracle line parity
+        run: python phase5_line_parity_smoke.py
+      - name: Phase 5 mulligan regression
+        run: python phase5_mulligan_smoke.py
+      - name: Phase 4 Monte Carlo regression
+        run: python phase4_monte_carlo_smoke.py
+      - name: Human benchmark integrity
+        run: python human_benchmark_fixture_smoke.py
+      - name: Architecture gates
+        run: |
+          python strategic_value_state_smoke.py
+          python non_oracle_runtime_value_key_smoke.py
+          python phase2_runtime_smoke.py
+          python phase1_acceptance_smoke.py
+      - name: Diff check
+        run: git diff --check
