@@ -26,6 +26,11 @@ jobs:
         run: python phase5_line_parity_smoke.py
       - name: Held-out human-kept trajectory diagnostic
         run: python phase5_policy_diagnostic.py
+      - name: Preserve held-out diagnostic
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase5-line-parity-diagnostic
+          path: phase5_policy_diagnostic.json
       - name: Phase 5 mulligan regression
         run: python phase5_mulligan_smoke.py
       - name: Phase 4 Monte Carlo regression
