@@ -39,6 +39,20 @@ HORIZON = 6
 MAX_STEPS = 512
 ROLLOUTS = 4
 
+# Fixed v6 trajectory coordinates selected from the static tutor audit.  These are
+# the actual suspicious tutor states plus hand 27's successful Transmute line as a
+# positive control. Keeping the trajectory frozen makes comparisons reproducible
+# without spending rollouts at every later main phase merely because a tutor remains
+# stranded in hand.
+AUDIT_SEQUENCES = {
+    19: frozenset({17, 19}),
+    20: frozenset({59, 62, 149}),
+    21: frozenset({34, 37, 87, 89}),
+    24: frozenset({6, 8}),
+    25: frozenset({30, 33, 53, 55}),
+    27: frozenset({43, 46, 47}),
+}
+
 MAIN_TUTOR_KINDS = frozenset({
     "main_use_simple_tutor",
     "main_use_transmute_artifact",
@@ -104,7 +118,7 @@ def _candidate_subset(policy, request, fresh_actions):
     return tuple(by_key[key] for key in sorted(by_key, key=repr)), "tutor_vs_v6_choice"
 
 
-def run_hand(root, *, policy, evaluator):
+def run_hand(root, *, hand_id, policy, evaluator):
     runtime = _checked_runtime(root)
     attempted_by_cycle_state = {}
     steps = []
@@ -146,7 +160,11 @@ def run_hand(root, *, policy, evaluator):
         chosen = policy.choose(request.observation, fresh, request.context)
         candidates, audit_kind = _candidate_subset(policy, request, fresh)
 
-        if candidates and len(fresh) == len(request.actions):
+        if (
+            sequence in AUDIT_SEQUENCES.get(int(hand_id), frozenset())
+            and candidates
+            and len(fresh) == len(request.actions)
+        ):
             q = evaluator.evaluate(runtime, candidate_actions=candidates)
             static_est = next(
                 estimate for estimate in q.estimates
@@ -240,7 +258,12 @@ def main():
         )
         sampled = materialize_hidden_world(root, world)
         validate_information_against_state(sampled.information, sampled.true_state)
-        result, q_audit = run_hand(sampled, policy=policy, evaluator=evaluator)
+        result, q_audit = run_hand(
+            sampled,
+            hand_id=hand_id,
+            policy=policy,
+            evaluator=evaluator,
+        )
         rows.append({
             "hand_id": hand_id,
             "win_turn": result.win_turn,
