@@ -1,0 +1,26 @@
+name: Phase 5 training pilot
+
+on:
+  push:
+    branches:
+      - phase5-mulligan-dp
+  workflow_dispatch:
+
+jobs:
+  pilot:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile training pilot
+        run: python -m py_compile phase5_mulligan.py phase5_training_pilot.py
+      - name: Run tiny backward-DP training pilot
+        run: python phase5_training_pilot.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5-training-pilot
+          path: phase5_training_pilot.json
