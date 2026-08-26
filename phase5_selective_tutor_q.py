@@ -37,6 +37,7 @@ from phase5_monte_carlo import (
     Phase5ActionEstimate,
     Phase5DecisionEvaluation,
     Phase5MonteCarloDecisionEvaluator,
+    Phase5DecisionCache,
 )
 from phase5_rollout_policy_v6 import (
     DeterministicRolloutPolicyV6,
@@ -132,6 +133,7 @@ class SelectiveTutorQController:
         confirm_rollouts:int=4,
         shortlist_size:int=4,
         max_episode_steps:int=512,
+        decision_cache:Phase5DecisionCache|None=None,
     ):
         self.policy=continuation_policy or DeterministicRolloutPolicyV6(
             policy_id=PHASE5_ROLLOUT_POLICY_V6
@@ -145,6 +147,7 @@ class SelectiveTutorQController:
             continuation_policy=self.policy,
             max_episode_steps=int(max_episode_steps),
             strict_terminal_reasons=True,
+            cache=decision_cache,
         )
         self.confirm=Phase5MonteCarloDecisionEvaluator(
             rollout_count=int(confirm_rollouts),
@@ -153,6 +156,7 @@ class SelectiveTutorQController:
             continuation_policy=self.policy,
             max_episode_steps=int(max_episode_steps),
             strict_terminal_reasons=True,
+            cache=decision_cache,
         )
 
     def _candidate_actions(self,request,fresh_actions,base):
@@ -278,6 +282,8 @@ def make_selective_tutor_q_episode_runner(
     diagnostics/cycle bookkeeping never leak between sampled games. The supplied
     leaf policy is still the continuation policy passed by the mulligan evaluator.
     """
+    shared_cache=Phase5DecisionCache()
+
     def runner(runtime,*,horizon,policy,max_steps):
         controller=SelectiveTutorQController(
             continuation_policy=policy,
@@ -287,6 +293,7 @@ def make_selective_tutor_q_episode_runner(
             confirm_rollouts=confirm_rollouts,
             shortlist_size=shortlist_size,
             max_episode_steps=max_steps,
+            decision_cache=shared_cache,
         )
         return run_selective_tutor_q_episode(
             runtime,
