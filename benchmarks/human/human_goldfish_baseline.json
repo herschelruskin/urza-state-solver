@@ -9,6 +9,14 @@
   "simulator_terminal_horizon": 6,
   "blank_winning_turn_semantics": ">T7 / never",
   "mystic_rhystic_goldfish_rule": "2 additional draws per full turn cycle while active",
+  "mulligan_semantics": {
+    "description": "Mulligan count is the number of fresh hands seen/redealt.",
+    "stages": {"0": 7, "1": 7, "2": 6, "3": 5, "4": 4, "5": 3, "6": 2},
+    "free_multiplayer_mulligan_stage": 1,
+    "historical_two_card_keeps": 5,
+    "solver_keep_floor": 2,
+    "note": "Pilot confirms mulligan_count=6 represents a two-card keep. Two-card keeps are legitimate but undesirable last-resort outcomes."
+  },
   "protocol_boundary": {
     "source_row": 151,
     "run_id": 150,
