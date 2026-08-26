@@ -3279,8 +3279,61 @@ def knack_replay_loop_family(s:State)->str:
     return ""
 
 
+CHROME_DOME_THREE_MANA_COPY_TARGETS=frozenset({
+    "Mana Vault","Grim Monolith","Basalt Monolith",
+})
+
+def chrome_dome_positive_copy_target(s:State)->str:
+    """Return a visible Chrome Dome copy target that yields positive mana.
+
+    Chrome Dome costs {5} to activate. Power Artifact enchanting Chrome Dome
+    reduces that by {2}; Forensic Gadgeteer reduces it by another {1}; the
+    resulting activation costs {2}. A fresh token copy of Mana Vault, Grim
+    Monolith, or Basalt Monolith enters untapped and taps for {3}, so each
+    iteration nets +1 mana and can be repeated arbitrarily.
+
+    The first activation must still be bootstrap-payable from the current
+    visible state. The original 3-mana rock may itself provide that bootstrap
+    when untapped. Power Artifact must actually enchant Chrome Dome; merely
+    having the Aura somewhere on the battlefield is not sufficient.
+    """
+    names=bf_name_set(s)
+    if (
+        "Chrome Dome" not in names
+        or "Forensic Gadgeteer" not in names
+        or "Power Artifact" not in names
+        or s.pa_target!="Chrome Dome"
+    ):
+        return ""
+
+    # Both reductions have a floor of one mana, but from {5} they combine
+    # cleanly to {2}.
+    activation=5
+    activation=max(1,activation-1)  # Forensic Gadgeteer
+    activation=max(1,activation-2)  # Power Artifact on Chrome Dome
+    if activation>=3:
+        return ""
+
+    target=next(
+        (name for name in ("Mana Vault","Grim Monolith","Basalt Monolith")
+         if name in names),
+        "",
+    )
+    if not target:
+        return ""
+
+    # A copied target does not copy tapped status and therefore enters untapped.
+    # The existing target can bootstrap the first activation if it is untapped;
+    # immediately_available_generic_mana() counts that native {3} correctly.
+    if immediately_available_generic_mana(s)<activation:
+        return ""
+    return target
+
+
 def infinite_colorless_online(s:State)->bool:
     names=bf_name_set(s)
+    if chrome_dome_positive_copy_target(s):
+        return True
     if "Forensic Gadgeteer" in names and "Basalt Monolith" in names:
         return True
     if "Power Artifact" in names and ("Grim Monolith" in names or "Basalt Monolith" in names):
@@ -3464,8 +3517,17 @@ def check_win(s:State)->State:
         if target_live:
             return replace(s,won=True,win_family="Knack/Helix + Cam")
 
+    chrome_mana_target=chrome_dome_positive_copy_target(s)
+    if chrome_mana_target:
+        return replace(
+            s,won=True,
+            win_family=f"Chrome Dome + PA + Gadgeteer + {chrome_mana_target}",
+        )
+
     if "Chrome Dome" in names and names & {"Grinding Station","Battered Golem"}:
-        reduction=(1 if "Forensic Gadgeteer" in names else 0)+(2 if "Power Artifact" in names else 0)
+        reduction=(1 if "Forensic Gadgeteer" in names else 0)+(
+            2 if ("Power Artifact" in names and s.pa_target=="Chrome Dome") else 0
+        )
         activation=max(1,5-reduction)
         if s.blue+s.colorless >= activation:
             return replace(s,won=True,win_family="Chrome Dome")
@@ -5965,6 +6027,54 @@ def run_commander_smoke():
     )
     assert not check_win(combo).won
     print("pre-Urza infinite shortcut removed: PASS",flush=True)
+
+    # Chrome Dome + PA-on-Dome + Gadgeteer makes the Dome ability cost {2}.
+    # Copying an untapped Mana Vault pays the first activation and every fresh
+    # copy taps for {3}, yielding +1 per iteration. This is genuine infinite
+    # colorless before Urza, and a terminal family once Urza is online.
+    chrome_pre=State(
+        turn=3,library=(),hand=(),
+        battlefield=(
+            Perm("Chrome Dome",sick=False),
+            Perm("Forensic Gadgeteer",sick=False),
+            Perm("Power Artifact"),
+            Perm("Mana Vault"),
+        ),
+        pa_target="Chrome Dome",
+        blue=2,
+        commander_in_command_zone=True,
+    )
+    assert chrome_dome_positive_copy_target(chrome_pre)=="Mana Vault"
+    assert infinite_colorless_online(chrome_pre)
+    cast=cast_urza_from_command_zone_actions(chrome_pre)
+    assert cast and cast[0].urza
+    chrome_live=replace(
+        chrome_pre,
+        urza=True,commander_in_command_zone=False,blue=0,
+        battlefield=chrome_pre.battlefield+(Perm(COMMANDER,sick=False),),
+    )
+    won=check_win(chrome_live)
+    assert won.won
+    assert won.win_family=="Chrome Dome + PA + Gadgeteer + Mana Vault"
+
+    wrong_pa=replace(chrome_pre,pa_target="Mana Vault")
+    assert not chrome_dome_positive_copy_target(wrong_pa)
+    no_gadget=replace(
+        chrome_pre,
+        battlefield=tuple(
+            p for p in chrome_pre.battlefield if p.name!="Forensic Gadgeteer"
+        ),
+    )
+    assert not chrome_dome_positive_copy_target(no_gadget)
+    tapped_vault=replace(
+        chrome_pre,blue=0,
+        battlefield=tuple(
+            replace(p,tapped=True) if p.name=="Mana Vault" else p
+            for p in chrome_pre.battlefield
+        ),
+    )
+    assert not chrome_dome_positive_copy_target(tapped_vault)
+    print("Chrome Dome + PA + Gadgeteer + Vault    PASS | +1 mana per copy",flush=True)
 
     # FTT3+Top no longer scans hidden library for imaginary future blue.
     ftt=State(
