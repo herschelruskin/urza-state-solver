@@ -55,6 +55,7 @@ def test_shared_terminal_recognition():
             "Power Artifact + Grim",
             solver.State(
                 turn=3, library=(), hand=(), urza=True, commander_in_command_zone=False,
+                pa_target="Grim Monolith",
                 battlefield=(
                     solver.Perm(solver.COMMANDER, sick=False),
                     solver.Perm("Grim Monolith"),
@@ -66,6 +67,7 @@ def test_shared_terminal_recognition():
             "Power Artifact + Basalt",
             solver.State(
                 turn=3, library=(), hand=(), urza=True, commander_in_command_zone=False,
+                pa_target="Basalt Monolith",
                 battlefield=(
                     solver.Perm(solver.COMMANDER, sick=False),
                     solver.Perm("Basalt Monolith"),
