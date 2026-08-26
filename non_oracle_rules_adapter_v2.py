@@ -1,20 +1,34 @@
 #!/usr/bin/env python3
 """Phase-5 overlay for reproduced public-action parity gaps.
 
-Phase 2 remains frozen. This adapter delegates all established decisions and
-transitions to ``non_oracle_rules_adapter`` and merges only mechanically evidenced
-public surfaces that the Oracle can use but the frozen adapter did not expose:
+Phase 2 remains frozen. This adapter delegates established decisions/transitions to
+``non_oracle_rules_adapter`` and connects only mechanically evidenced public
+surfaces that the Oracle can use but the production Phase-2 import path omitted:
 
 * fetchland activation;
-* Banishing Knack / Retraction Helix granted-bounce activation.
+* Banishing Knack / Retraction Helix granted-bounce activation;
+* Urza exile-permission casts for already-implemented search/tutor spells;
+* Urza exile-permission Reshape/Whir X=0 casts.
 
-FTT leveling, Chrome Dome, Top/Key, tutors, and other already-connected surfaces
+The Urza extensions must be installed BEFORE importing the frozen rules adapter,
+because that module imports function objects from ``non_oracle_urza_runtime`` by
+name.  Search installs first; the X-spell extension deliberately layers on top.
+FTT leveling, Chrome Dome, Top/Key, ordinary tutors, and other connected surfaces
 remain owned by the frozen adapter and its existing submodules.
 """
 
 from __future__ import annotations
 
 from decision_observation import DecisionRequest
+from non_oracle_urza_search_permission_runtime import install_urza_search_permission_extension
+
+install_urza_search_permission_extension()
+
+from non_oracle_urza_x_permission_runtime import install_urza_x_permission_extension
+
+install_urza_x_permission_extension()
+
+# Import only after the extension chain is installed; see module docstring.
 import non_oracle_rules_adapter as base
 from non_oracle_public_parity_runtime import (
     PUBLIC_PARITY_KINDS,
