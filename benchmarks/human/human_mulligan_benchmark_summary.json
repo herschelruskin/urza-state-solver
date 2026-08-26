@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "name": "Urza human mulligan and bottoming benchmark summary",
   "n_rows": 36,
   "deck_snapshot": {
@@ -9,9 +9,10 @@
   },
   "mulligan_semantics": {
     "description": "Mulligan count is the number of fresh hands seen/redealt.",
-    "stages": {"0": 7, "1": 7, "2": 6, "3": 5, "4": 4, "5": 3},
+    "stages": {"0": 7, "1": 7, "2": 6, "3": 5, "4": 4, "5": 3, "6": 2},
     "free_multiplayer_mulligan_stage": 1,
-    "experimental_keep_floor": 3
+    "solver_keep_floor": 2,
+    "floor_semantics": "A two-card keep is legal and historically observed but is a last-resort state. The current solver stops mulliganing at stage 6 / keep 2 rather than searching one-card or zero-card keeps."
   },
   "rating_semantics": {
     "scale": "0-10",
@@ -29,17 +30,20 @@
     "primary_excluded_hand_ids": [10],
     "current_repo_runnable_count": 35,
     "normalized_card_slot_hand_ids": [24, 34],
-    "unrecoverable_hand_ids": [10]
+    "unrecoverable_hand_ids": [10],
+    "annotated_two_card_hands": 0,
+    "historical_two_card_goldfishes": 5
   },
   "descriptive": {
     "decision_counts": {"Keep": 27, "Mulligan": 9},
-    "keep_size_counts": {"7": 22, "6": 8, "5": 3, "4": 2, "3": 1},
+    "keep_size_counts": {"7": 22, "6": 8, "5": 3, "4": 2, "3": 1, "2": 0},
     "by_keep_size": {
       "7": {"n": 22, "keeps": 13, "mulligans": 9},
       "6": {"n": 8, "keeps": 8, "mulligans": 0},
       "5": {"n": 3, "keeps": 3, "mulligans": 0},
       "4": {"n": 2, "keeps": 2, "mulligans": 0},
-      "3": {"n": 1, "keeps": 1, "mulligans": 0}
+      "3": {"n": 1, "keeps": 1, "mulligans": 0},
+      "2": {"n": 0, "keeps": 0, "mulligans": 0}
     },
     "seven_card_stage": {
       "initial_m0": {"n": 10, "keeps": 5, "mulligans": 5, "keep_rate": 0.5},
@@ -57,7 +61,8 @@
     "row_30": "Recovered missing seventh card: Swan Song.",
     "row_36": "Recovered missing seventh card: Uthros Research Craft.",
     "rows_24_34": "Recorded Fugitive Droid was a tentative late replacement for Codex Shredder. Benchmark-normalize these two hands to Codex Shredder while preserving the recorded card as provenance.",
-    "row_15_counterfactual": "Would Keep at=2 but two Would Bottom cards remain listed in the original sheet; optional label remains unresolved."
+    "row_15_counterfactual": "Would Keep at=2 but two Would Bottom cards remain listed in the original sheet; optional label remains unresolved.",
+    "two_card_floor": "Pilot confirms historical mulligan_count=6 rows represent two-card keeps. Two-card keeps are possible but undesirable; retain as legitimate last-resort outcomes."
   },
   "counterfactual_keep_at_six": {
     "22": {"decision": "Keep", "bottom": ["Vexing Bauble"]},
