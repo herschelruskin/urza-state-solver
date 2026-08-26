@@ -1,0 +1,370 @@
+#!/usr/bin/env python3
+"""Adaptive Monte-Carlo London mulligan evaluation with selective tutor-Q leaves.
+
+The Phase-5 exact London recursion is retained:
+
+    V_6 = E[K_6(h)]
+    V_s = E[max(K_s(h), V_{s+1})]
+
+What changes is how the expensive keep value K_s(h) is estimated.  Every legal
+bottom multiset is screened with common hidden worlds; only a bounded shortlist is
+confirmed on a disjoint set of hidden worlds using a larger selective-tutor-Q
+budget.  This is an explicitly approximate *racing* layer, not a claim that bottom
+selection is exact under finite Monte Carlo.
+
+Human mulligan labels are not inputs to this module.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Sequence, Tuple
+
+from non_oracle_base_policy import DeterministicBasePolicy
+from phase3_value_engine import WinDistributionValue
+from phase5_monte_carlo import Phase5DecisionCache
+from phase5_mulligan import (
+    MULLIGAN_FLOOR_STAGE,
+    OpeningKeepEvaluation,
+    OpeningKeepEvaluator,
+    _mix_values,
+    _sample_fresh_seven,
+    keep_size_for_stage,
+    unique_bottom_subsets,
+    value_at_least,
+)
+from phase5_rollout_policy_v6 import (
+    DeterministicRolloutPolicyV6,
+    PHASE5_ROLLOUT_POLICY_V6,
+)
+from phase5_selective_tutor_q import make_selective_tutor_q_episode_runner
+
+PHASE5_ADAPTIVE_MULLIGAN_VERSION="urza-adaptive-mulligan-q-v1"
+
+
+@dataclass(frozen=True)
+class AdaptiveOpeningKeepEvaluation:
+    stage:int
+    seven:Tuple[str,...]
+    screen:OpeningKeepEvaluation|None
+    confirmation:OpeningKeepEvaluation
+    shortlisted_bottoms:Tuple[Tuple[str,...],...]
+    legal_bottom_count:int
+    screen_rollouts_per_bottom:int
+    confirm_rollouts_per_bottom:int
+    screen_sample_start:int
+    confirm_sample_start:int
+
+    @property
+    def best(self):
+        return self.confirmation.best
+
+    @property
+    def confirmed_bottom_count(self)->int:
+        return len(self.shortlisted_bottoms)
+
+
+@dataclass(frozen=True)
+class AdaptiveHandDecision:
+    stage:int
+    sample_id:int
+    seven:Tuple[str,...]
+    decision:str
+    best_bottom:Tuple[str,...]
+    keep_value_key:Tuple[float,...]
+    continuation_value_key:Tuple[float,...]|None
+    legal_bottom_count:int
+    confirmed_bottom_count:int
+
+
+@dataclass(frozen=True)
+class AdaptiveMulliganStageEstimate:
+    stage:int
+    keep_size:int
+    value:WinDistributionValue
+    sampled_hands:int
+    kept_count:int
+    mulligan_count:int
+    legal_bottoms_screened:int
+    bottoms_confirmed:int
+
+    @property
+    def keep_rate(self)->float:
+        return self.kept_count/self.sampled_hands if self.sampled_hands else 0.0
+
+
+@dataclass(frozen=True)
+class AdaptiveMulliganStageModel:
+    stages:Tuple[AdaptiveMulliganStageEstimate,...]
+    hand_decisions:Tuple[AdaptiveHandDecision,...]
+    hand_samples_per_stage:int
+    screen_rollouts_per_bottom:int
+    confirm_rollouts_per_bottom:int
+    shortlist_size:int
+    mc_root_seed:int
+    horizon:int
+    q_cache_hits:int
+    q_cache_misses:int
+    version:str=PHASE5_ADAPTIVE_MULLIGAN_VERSION
+
+    def stage_estimate(self,stage:int)->AdaptiveMulliganStageEstimate:
+        for row in self.stages:
+            if row.stage==int(stage):
+                return row
+        raise KeyError(stage)
+
+
+class AdaptiveOpeningKeepEvaluator:
+    """Two-pass bottom racing with disjoint common-world sample windows."""
+
+    def __init__(
+        self,
+        deck:Sequence[str],
+        *,
+        screen_rollouts:int=1,
+        confirm_rollouts:int=4,
+        shortlist_size:int=4,
+        mc_root_seed:int=20260826,
+        horizon:int=6,
+        continuation_policy:DeterministicBasePolicy|None=None,
+        screen_q_rollouts:int=1,
+        confirm_q_rollouts:int=2,
+        q_shortlist_size:int=3,
+        max_episode_steps:int=512,
+        strict_terminal_reasons:bool=True,
+        decision_cache:Phase5DecisionCache|None=None,
+    ):
+        if screen_rollouts<1 or confirm_rollouts<1:
+            raise ValueError("screen/confirm rollout counts must be >= 1")
+        if shortlist_size<1:
+            raise ValueError("shortlist_size must be >= 1")
+        self.deck=tuple(str(card) for card in deck)
+        self.screen_rollouts=int(screen_rollouts)
+        self.confirm_rollouts=int(confirm_rollouts)
+        self.shortlist_size=int(shortlist_size)
+        self.mc_root_seed=int(mc_root_seed)
+        self.horizon=int(horizon)
+        self.policy=continuation_policy or DeterministicRolloutPolicyV6(
+            policy_id=PHASE5_ROLLOUT_POLICY_V6
+        )
+        self.cache=decision_cache or Phase5DecisionCache()
+
+        screen_runner=make_selective_tutor_q_episode_runner(
+            mc_root_seed=self.mc_root_seed,
+            screen_rollouts=1,
+            confirm_rollouts=int(screen_q_rollouts),
+            shortlist_size=int(q_shortlist_size),
+            decision_cache=self.cache,
+        )
+        confirm_runner=make_selective_tutor_q_episode_runner(
+            mc_root_seed=self.mc_root_seed,
+            screen_rollouts=1,
+            confirm_rollouts=int(confirm_q_rollouts),
+            shortlist_size=int(q_shortlist_size),
+            decision_cache=self.cache,
+        )
+        self.screen_evaluator=OpeningKeepEvaluator(
+            self.deck,
+            rollout_count=self.screen_rollouts,
+            mc_root_seed=self.mc_root_seed,
+            horizon=self.horizon,
+            continuation_policy=self.policy,
+            max_episode_steps=max_episode_steps,
+            strict_terminal_reasons=strict_terminal_reasons,
+            episode_runner=screen_runner,
+        )
+        self.confirm_evaluator=OpeningKeepEvaluator(
+            self.deck,
+            rollout_count=self.confirm_rollouts,
+            mc_root_seed=self.mc_root_seed,
+            horizon=self.horizon,
+            continuation_policy=self.policy,
+            max_episode_steps=max_episode_steps,
+            strict_terminal_reasons=strict_terminal_reasons,
+            episode_runner=confirm_runner,
+        )
+
+    def evaluate(self,seven:Sequence[str],*,stage:int)->AdaptiveOpeningKeepEvaluation:
+        seven=tuple(str(card) for card in seven)
+        legal=unique_bottom_subsets(seven,stage)
+
+        # Stages 0/1 have no bottom choice. Do not waste a screening pass.
+        if len(legal)==1:
+            confirm=self.confirm_evaluator.evaluate(
+                seven,
+                stage=stage,
+                candidate_bottoms=legal,
+                sample_start=0,
+            )
+            return AdaptiveOpeningKeepEvaluation(
+                stage=int(stage),
+                seven=seven,
+                screen=None,
+                confirmation=confirm,
+                shortlisted_bottoms=legal,
+                legal_bottom_count=1,
+                screen_rollouts_per_bottom=0,
+                confirm_rollouts_per_bottom=self.confirm_rollouts,
+                screen_sample_start=0,
+                confirm_sample_start=0,
+            )
+
+        screen=self.screen_evaluator.evaluate(
+            seven,
+            stage=stage,
+            sample_start=0,
+        )
+        shortlist=tuple(
+            estimate.bottom
+            for estimate in screen.estimates[:min(self.shortlist_size,len(screen.estimates))]
+        )
+        confirm=self.confirm_evaluator.evaluate(
+            seven,
+            stage=stage,
+            candidate_bottoms=shortlist,
+            sample_start=self.screen_rollouts,
+        )
+        return AdaptiveOpeningKeepEvaluation(
+            stage=int(stage),
+            seven=seven,
+            screen=screen,
+            confirmation=confirm,
+            shortlisted_bottoms=tuple(sorted(shortlist)),
+            legal_bottom_count=len(legal),
+            screen_rollouts_per_bottom=self.screen_rollouts,
+            confirm_rollouts_per_bottom=self.confirm_rollouts,
+            screen_sample_start=0,
+            confirm_sample_start=self.screen_rollouts,
+        )
+
+
+class AdaptiveMulliganStageTrainer:
+    """Backward London DP using adaptive keep-value estimates."""
+
+    def __init__(
+        self,
+        deck:Sequence[str],
+        *,
+        hand_samples_per_stage:int=4,
+        highest_stage:int=0,
+        screen_rollouts_per_bottom:int=1,
+        confirm_rollouts_per_bottom:int=3,
+        shortlist_size:int=4,
+        mc_root_seed:int=20260826,
+        horizon:int=6,
+        continuation_policy:DeterministicBasePolicy|None=None,
+        screen_q_rollouts:int=1,
+        confirm_q_rollouts:int=2,
+        q_shortlist_size:int=3,
+        max_episode_steps:int=512,
+        strict_terminal_reasons:bool=True,
+    ):
+        if hand_samples_per_stage<1:
+            raise ValueError("hand_samples_per_stage must be >= 1")
+        if highest_stage<0 or highest_stage>MULLIGAN_FLOOR_STAGE:
+            raise ValueError("highest_stage must be between 0 and the mulligan floor")
+        self.deck=tuple(str(card) for card in deck)
+        self.hand_samples_per_stage=int(hand_samples_per_stage)
+        self.highest_stage=int(highest_stage)
+        self.screen_rollouts_per_bottom=int(screen_rollouts_per_bottom)
+        self.confirm_rollouts_per_bottom=int(confirm_rollouts_per_bottom)
+        self.shortlist_size=int(shortlist_size)
+        self.mc_root_seed=int(mc_root_seed)
+        self.horizon=int(horizon)
+        self.policy=continuation_policy or DeterministicRolloutPolicyV6(
+            policy_id=PHASE5_ROLLOUT_POLICY_V6
+        )
+        self.cache=Phase5DecisionCache()
+        self.evaluator=AdaptiveOpeningKeepEvaluator(
+            self.deck,
+            screen_rollouts=self.screen_rollouts_per_bottom,
+            confirm_rollouts=self.confirm_rollouts_per_bottom,
+            shortlist_size=self.shortlist_size,
+            mc_root_seed=self.mc_root_seed,
+            horizon=self.horizon,
+            continuation_policy=self.policy,
+            screen_q_rollouts=screen_q_rollouts,
+            confirm_q_rollouts=confirm_q_rollouts,
+            q_shortlist_size=q_shortlist_size,
+            max_episode_steps=max_episode_steps,
+            strict_terminal_reasons=strict_terminal_reasons,
+            decision_cache=self.cache,
+        )
+
+    def train(self)->AdaptiveMulliganStageModel:
+        fitted={}
+        decisions=[]
+        for stage in range(MULLIGAN_FLOOR_STAGE,self.highest_stage-1,-1):
+            chosen_values=[]
+            kept=mulled=0
+            screened=confirmed=0
+            continuation=fitted.get(stage+1)
+
+            for sample_id in range(self.hand_samples_per_stage):
+                seven=_sample_fresh_seven(
+                    self.deck,
+                    root_seed=self.mc_root_seed,
+                    stage=stage,
+                    sample_id=sample_id,
+                )
+                evaluation=self.evaluator.evaluate(seven,stage=stage)
+                keep=evaluation.best.value
+                screened += evaluation.legal_bottom_count
+                confirmed += evaluation.confirmed_bottom_count
+
+                continuation_value=(
+                    None if continuation is None else continuation.value
+                )
+                if (
+                    continuation_value is None
+                    or value_at_least(keep,continuation_value)
+                ):
+                    choice=keep
+                    decision="Keep"
+                    kept += 1
+                else:
+                    choice=continuation_value
+                    decision="Mulligan"
+                    mulled += 1
+                chosen_values.append(choice)
+                decisions.append(AdaptiveHandDecision(
+                    stage=stage,
+                    sample_id=sample_id,
+                    seven=seven,
+                    decision=decision,
+                    best_bottom=evaluation.best.bottom,
+                    keep_value_key=keep.comparison_key(),
+                    continuation_value_key=(
+                        None if continuation_value is None
+                        else continuation_value.comparison_key()
+                    ),
+                    legal_bottom_count=evaluation.legal_bottom_count,
+                    confirmed_bottom_count=evaluation.confirmed_bottom_count,
+                ))
+
+            fitted[stage]=AdaptiveMulliganStageEstimate(
+                stage=stage,
+                keep_size=keep_size_for_stage(stage),
+                value=_mix_values(chosen_values),
+                sampled_hands=self.hand_samples_per_stage,
+                kept_count=kept,
+                mulligan_count=mulled,
+                legal_bottoms_screened=screened,
+                bottoms_confirmed=confirmed,
+            )
+
+        return AdaptiveMulliganStageModel(
+            stages=tuple(
+                fitted[stage]
+                for stage in range(self.highest_stage,MULLIGAN_FLOOR_STAGE+1)
+            ),
+            hand_decisions=tuple(decisions),
+            hand_samples_per_stage=self.hand_samples_per_stage,
+            screen_rollouts_per_bottom=self.screen_rollouts_per_bottom,
+            confirm_rollouts_per_bottom=self.confirm_rollouts_per_bottom,
+            shortlist_size=self.shortlist_size,
+            mc_root_seed=self.mc_root_seed,
+            horizon=self.horizon,
+            q_cache_hits=self.cache.stats.hits,
+            q_cache_misses=self.cache.stats.misses,
+        )
