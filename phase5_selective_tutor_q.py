@@ -264,6 +264,38 @@ class SelectiveTutorQController:
         )
 
 
+def make_selective_tutor_q_episode_runner(
+    *,
+    mc_root_seed:int=20260826,
+    screen_rollouts:int=1,
+    confirm_rollouts:int=2,
+    shortlist_size:int=3,
+):
+    """Return an OpeningKeepEvaluator-compatible episode runner.
+
+    A fresh controller is created for every outer rollout trajectory so controller
+    diagnostics/cycle bookkeeping never leak between sampled games. The supplied
+    leaf policy is still the continuation policy passed by the mulligan evaluator.
+    """
+    def runner(runtime,*,horizon,policy,max_steps):
+        controller=SelectiveTutorQController(
+            continuation_policy=policy,
+            horizon=horizon,
+            mc_root_seed=mc_root_seed,
+            screen_rollouts=screen_rollouts,
+            confirm_rollouts=confirm_rollouts,
+            shortlist_size=shortlist_size,
+            max_episode_steps=max_steps,
+        )
+        return run_selective_tutor_q_episode(
+            runtime,
+            controller=controller,
+            horizon=horizon,
+            max_steps=max_steps,
+        ).episode
+    return runner
+
+
 def run_selective_tutor_q_episode(
     runtime:NonOracleRuntimeState,
     *,
