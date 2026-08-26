@@ -3259,6 +3259,15 @@ def knack_replay_loop_family(s:State)->str:
             if not in_hand and not on_battlefield:
                 continue
 
+            # Steady-state positivity is not enough: the first replay
+            # must be payable in the current state. Ordinary mana actions may
+            # float resources first; check_win() will be called again after
+            # those actions. This prevents "Grim in hand, zero mana" from being
+            # declared a win merely because Grim is positive once looping.
+            generic,blue_req=spell_cost(s,card,outside=False)
+            if not can_pay(s,generic,blue_req):
+                continue
+
             margin=replay_mana_margin(s,source,card)
             if margin is None or margin<=0:
                 continue
@@ -6899,6 +6908,90 @@ def run_combo_smoke():
     )
     assert not check_win(s).won
     print("Knack replay excludes Mox Diamond       PASS | no false infinite",flush=True)
+
+    # Replay mana classes are state-dependent. Without Urza, only native mana
+    # counts: Sol/Vault/Grim are positive; zero-drops and Basalt are neutral;
+    # Mox Opal is positive only with metalcraft. The three "producers" create
+    # no mana rebate at all until Urza is actually on the battlefield.
+    dummy=Perm("Valley Floodcaller",sick=False,knack_granted=True,instance_tag=99)
+    native=State(
+        turn=4,library=(),
+        hand=("Sol Ring","Mana Vault","Grim Monolith","Welding Jar","Basalt Monolith"),
+        battlefield=(),
+        urza=False,
+    )
+    assert replay_mana_margin(native,dummy,"Sol Ring")>0
+    assert replay_mana_margin(native,dummy,"Mana Vault")>0
+    assert replay_mana_margin(native,dummy,"Grim Monolith")>0
+    assert replay_mana_margin(native,dummy,"Welding Jar")==0
+    assert replay_mana_margin(native,dummy,"Basalt Monolith")==0
+
+    opal_no_metal=State(
+        turn=4,library=(),hand=("Mox Opal",),battlefield=(),urza=False,
+    )
+    assert replay_mana_margin(opal_no_metal,dummy,"Mox Opal")==0
+    opal_metal=replace(
+        opal_no_metal,
+        battlefield=(Perm("Welding Jar"),Perm("Tormod's Crypt")),
+    )
+    assert replay_mana_margin(opal_metal,dummy,"Mox Opal")>0
+
+    producer_no_urza=State(
+        turn=4,library=(),hand=("Aether Spellbomb",),
+        battlefield=(
+            Perm("Grinding Station"),
+            Perm("Battered Golem",sick=False),
+            Perm("Forensic Gadgeteer",sick=False),
+        ),
+        urza=False,
+    )
+    assert _steady_replay_producer_bonus(
+        producer_no_urza,dummy,"Aether Spellbomb"
+    )==0
+    print("Replay native/Urza producer boundary    PASS | producers require Urza",flush=True)
+
+    # A positive steady-state artifact in hand still needs bootstrap mana for
+    # the first cast. Once the mana is floated, the same visible state becomes
+    # a deterministic loop.
+    bootstrap=State(
+        turn=5,library=(),hand=("Grim Monolith",),
+        battlefield=(
+            Perm(COMMANDER,sick=False),
+            Perm("Battered Golem",sick=False,knack_granted=True),
+        ),
+        urza=True,commander_in_command_zone=False,
+        blue=0,colorless=0,
+    )
+    assert not check_win(bootstrap).won
+    bootstrap=replace(bootstrap,colorless=2)
+    w=check_win(bootstrap)
+    assert w.won and w.win_family=="Knack/Helix + Battered Golem"
+    print("Knack replay bootstrap affordability    PASS | first cast must be payable",flush=True)
+
+    # A neutral artifact becomes positive only with a separate Urza producer.
+    neutral=State(
+        turn=5,library=(),hand=("Aether Spellbomb",),
+        battlefield=(
+            Perm(COMMANDER,sick=False),
+            Perm("Battered Golem",sick=False,knack_granted=True),
+        ),
+        urza=True,commander_in_command_zone=False,
+        blue=1,
+    )
+    assert replay_mana_margin(
+        neutral,neutral.battlefield[1],"Aether Spellbomb"
+    )==0
+    assert not check_win(neutral).won
+    promoted=replace(
+        neutral,
+        battlefield=neutral.battlefield+(Perm("Grinding Station"),),
+    )
+    assert replay_mana_margin(
+        promoted,promoted.battlefield[1],"Aether Spellbomb"
+    )>0
+    w=check_win(promoted)
+    assert w.won and w.win_family=="Knack/Helix + Battered Golem"
+    print("Neutral replay + Urza producer          PASS | dynamic class promotion",flush=True)
 
     # 14. Station ETB conversion. The fast Oracle state takes the post-trigger
     # Urza tap immediately and records it as refundable for native-use branches.
