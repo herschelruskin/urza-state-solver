@@ -78,7 +78,11 @@ def test_chain_declines_suicidal_copy_without_producer():
         turn=3,
         library=(),
         hand=("Chain of Vapor",),
-        battlefield=(solver.Perm("Island"), solver.Perm("Sol Ring")),
+        battlefield=(
+            solver.Perm("Island"),
+            solver.Perm("Sol Ring"),
+            solver.Perm("Witching Well"),
+        ),
         blue=1,
     ))
     runtime = apply_main_action(runtime, _action(runtime, kind=MAIN_CAST_CHAIN, label_contains="Sol Ring"))
@@ -87,6 +91,7 @@ def test_chain_declines_suicidal_copy_without_producer():
     assert chosen.kind == CHAIN_COPY_DECLINE
     runtime = apply_main_action(runtime, chosen)
     assert any(p.name == "Island" for p in runtime.true_state.battlefield)
+    assert any(p.name == "Witching Well" for p in runtime.true_state.battlefield)
     print("V5 Chain optional-copy discipline: PASS")
 
 
