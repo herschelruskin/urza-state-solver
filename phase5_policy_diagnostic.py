@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare baseline and Phase-5 rollout policies on held-out human-kept hands."""
+"""Compare deterministic rollout policies on held-out human-kept hands."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from non_oracle_episode import run_deterministic_episode
 from phase4_hidden_world import materialize_hidden_world
 from phase5_mulligan import _opening_world, opening_runtime
 from phase5_rollout_policy import DeterministicRolloutPolicyV2, PHASE5_ROLLOUT_POLICY_VERSION
+from phase5_rollout_policy_v3 import DeterministicRolloutPolicyV3, PHASE5_ROLLOUT_POLICY_V3
 
 SELECTED = (12, 13, 19, 20, 21, 24, 25, 27, 29, 33)
 
@@ -37,15 +38,10 @@ def run_policy(policy, deck, by_id):
         seven = tuple(row["drawn_seven"])
         bottom = tuple(row["cards_bottomed"])
         root = opening_runtime(deck, seven, bottom)
-        world = _opening_world(
-            deck=deck, seven=seven, bottom=bottom,
-            mc_root_seed=20260826, sample_id=0,
-        )
+        world = _opening_world(deck=deck, seven=seven, bottom=bottom, mc_root_seed=20260826, sample_id=0)
         sampled = materialize_hidden_world(root, world)
         validate_information_against_state(sampled.information, sampled.true_state)
-        result = run_deterministic_episode(
-            sampled, horizon=6, max_steps=512, policy=policy,
-        )
+        result = run_deterministic_episode(sampled, horizon=6, max_steps=512, policy=policy)
         rows.append({
             "hand_id": hand_id,
             "human_decision": row["decision"],
@@ -77,6 +73,7 @@ def main():
     policies = {
         "base_v1": DeterministicBasePolicy(),
         "rollout_v2": DeterministicRolloutPolicyV2(policy_id=PHASE5_ROLLOUT_POLICY_VERSION),
+        "rollout_v3": DeterministicRolloutPolicyV3(policy_id=PHASE5_ROLLOUT_POLICY_V3),
     }
     results = {}
     for name, policy in policies.items():
