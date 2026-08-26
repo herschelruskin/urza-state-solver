@@ -1,0 +1,43 @@
+name: Phase 3 value engine smoke
+
+on:
+  push:
+    branches:
+      - phase3-value-engine-human-baselines
+  pull_request:
+    branches:
+      - phase2-non-oracle-runtime
+      - development
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile Phase 3 value layer
+        run: |
+          python -m py_compile \
+            phase3_value_engine.py \
+            phase3_value_engine_smoke.py \
+            human_benchmark_fixture_smoke.py
+      - name: Exact distribution-valued Bellman smoke
+        run: python phase3_value_engine_smoke.py
+      - name: Human benchmark fixture smoke
+        run: python human_benchmark_fixture_smoke.py
+      - name: Existing strategic value-key regression
+        run: |
+          python strategic_value_state_smoke.py
+          python non_oracle_runtime_value_key_smoke.py
+          python runtime_pending_value_key_smoke.py
+      - name: Phase 2 runtime regression gate
+        run: python phase2_runtime_smoke.py
+      - name: Phase 1 regression gate
+        run: python phase1_acceptance_smoke.py
+      - name: Diff check
+        run: git diff --check
