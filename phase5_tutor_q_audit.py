@@ -37,7 +37,7 @@ from phase5_rollout_policy_v6 import (
 SELECTED = (19, 20, 21, 24, 25, 27)
 HORIZON = 6
 MAX_STEPS = 512
-ROLLOUTS = 2
+ROLLOUTS = 1
 
 # Fixed v6 trajectory coordinates selected from the static tutor audit.  These are
 # the actual suspicious tutor states plus hand 27's successful Transmute line as a
