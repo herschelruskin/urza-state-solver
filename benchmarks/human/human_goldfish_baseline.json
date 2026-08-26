@@ -1,6 +1,10 @@
 {
   "dataset": "Urza historical human goldfish baseline",
   "source_rows": 250,
+  "deck_snapshot": {
+    "baseline": "Codex Shredder deck",
+    "historical_consistency": "Pilot reports the 250 historical goldfishes were performed on the same deck snapshot. The only known late experimental card change appears in annotated hands 24 and 34, where Fugitive Droid tentatively replaced Codex Shredder; benchmark evaluation normalizes those hands back to Codex Shredder."
+  },
   "historical_tracking_horizon": 7,
   "simulator_terminal_horizon": 6,
   "blank_winning_turn_semantics": ">T7 / never",
