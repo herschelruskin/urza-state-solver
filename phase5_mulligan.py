@@ -24,7 +24,7 @@ import hashlib
 import itertools
 import json
 import random
-from typing import Iterable, Sequence, Tuple
+from typing import Callable, Iterable, Sequence, Tuple
 
 import urza_solver as solver
 from information_state_propagation import validate_information_against_state
@@ -180,7 +180,8 @@ class OpeningKeepEvaluation:
 class OpeningKeepEvaluator:
     def __init__(self, deck: Sequence[str], *, rollout_count: int = 32, mc_root_seed: int = 0,
                  horizon: int = 6, continuation_policy: DeterministicBasePolicy | None = None,
-                 max_episode_steps: int = 512, strict_terminal_reasons: bool = True) -> None:
+                 max_episode_steps: int = 512, strict_terminal_reasons: bool = True,
+                 episode_runner: Callable | None = None) -> None:
         if rollout_count < 1:
             raise ValueError("rollout_count must be >= 1")
         self.deck = tuple(str(card) for card in deck)
@@ -190,6 +191,7 @@ class OpeningKeepEvaluator:
         self.continuation_policy = continuation_policy or DeterministicBasePolicy()
         self.max_episode_steps = int(max_episode_steps)
         self.strict_terminal_reasons = bool(strict_terminal_reasons)
+        self.episode_runner = episode_runner or run_deterministic_episode
 
     def evaluate(self, seven: Sequence[str], *, stage: int) -> OpeningKeepEvaluation:
         seven = tuple(str(card) for card in seven)
@@ -207,7 +209,7 @@ class OpeningKeepEvaluator:
                 )
                 sampled = materialize_hidden_world(root, world)
                 validate_information_against_state(sampled.information, sampled.true_state)
-                result = run_deterministic_episode(
+                result = self.episode_runner(
                     sampled, horizon=self.horizon, policy=self.continuation_policy,
                     max_steps=self.max_episode_steps,
                 )
@@ -316,7 +318,8 @@ class MulliganStageTrainer:
     def __init__(self, deck: Sequence[str], *, hand_samples_per_stage: int = 16,
                  rollout_count_per_bottom: int = 16, mc_root_seed: int = 0,
                  horizon: int = 6, continuation_policy: DeterministicBasePolicy | None = None,
-                 strict_terminal_reasons: bool = True) -> None:
+                 strict_terminal_reasons: bool = True,
+                 episode_runner: Callable | None = None) -> None:
         if hand_samples_per_stage < 1:
             raise ValueError("hand_samples_per_stage must be >= 1")
         self.deck = tuple(str(card) for card in deck)
@@ -326,6 +329,7 @@ class MulliganStageTrainer:
         self.horizon = int(horizon)
         self.continuation_policy = continuation_policy or DeterministicBasePolicy()
         self.strict_terminal_reasons = bool(strict_terminal_reasons)
+        self.episode_runner = episode_runner or run_deterministic_episode
 
     def train(self) -> MulliganStageModel:
         fitted: dict[int, MulliganStageEstimate] = {}
@@ -335,6 +339,7 @@ class MulliganStageTrainer:
                 mc_root_seed=self.mc_root_seed, horizon=self.horizon,
                 continuation_policy=self.continuation_policy,
                 strict_terminal_reasons=self.strict_terminal_reasons,
+                episode_runner=self.episode_runner,
             )
             chosen_values = []
             kept = mulled = 0
