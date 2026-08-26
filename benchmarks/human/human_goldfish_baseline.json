@@ -1,0 +1,49 @@
+{
+  "dataset": "Urza historical human goldfish baseline",
+  "source_rows": 250,
+  "historical_tracking_horizon": 7,
+  "simulator_terminal_horizon": 6,
+  "blank_winning_turn_semantics": ">T7 / never",
+  "mystic_rhystic_goldfish_rule": "2 additional draws per full turn cycle while active",
+  "protocol_boundary": {
+    "source_row": 151,
+    "run_id": 150,
+    "phase_before": "Baseline protocol",
+    "phase_from_boundary": "Mystic/Rhystic 2-draw remull protocol",
+    "caution": "Methodology/protocol boundary; not a randomized causal mulligan-policy intervention."
+  },
+  "outcomes": {
+    "win_turn_counts": {"3": 79, "4": 129, "5": 27, "6": 9, "7": 5},
+    "never_gt_t7_count": 1,
+    "mean_win_turn_winners": 3.923694779116466,
+    "median_win_turn_winners": 4
+  },
+  "cumulative": {
+    "win_by_t3": {"count": 79, "rate": 0.316, "wilson95": [0.26152437100054704, 0.3760446832137765]},
+    "win_by_t4": {"count": 208, "rate": 0.832, "wilson95": [0.7807100422284562, 0.8732414469065685]},
+    "win_by_t5": {"count": 235, "rate": 0.94, "wilson95": [0.9033771072831172, 0.9633055891608915]},
+    "win_by_t6": {"count": 244, "rate": 0.976, "wilson95": [0.9486378761864735, 0.9889552226938632]},
+    "win_by_t7": {"count": 249, "rate": 0.996, "wilson95": [0.9776942144345839, 0.9992935524659348]},
+    "loss_at_t6_horizon": {"count": 6, "rate": 0.024}
+  },
+  "mull_distribution": {"0": 90, "1": 78, "2": 43, "3": 29, "5": 5, "6": 5},
+  "urza_cast_distribution": {"1": 1, "2": 89, "3": 144, "4": 9, "7": 1},
+  "urza_cast_missing": 6,
+  "interaction": {
+    "numeric_n": 190,
+    "numeric_mean": 1.6289473684210527,
+    "numeric_median": 1.0,
+    "blank_n": 59,
+    "nonnumeric_values": ["mb"]
+  },
+  "data_quality": {
+    "missing_value_engine": 182,
+    "missing_win_con": 1,
+    "source_wincon_formula_anomaly": {
+      "source_row": 171,
+      "run_id": 170,
+      "resolved_canonical": "Cam",
+      "basis": "source formula explicit fallback cam"
+    }
+  }
+}
