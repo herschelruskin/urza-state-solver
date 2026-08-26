@@ -3323,6 +3323,84 @@ def can_cast_urza_now_with_infinite_colorless(s:State)->bool:
     # Infinite colorless pays the generic 2; we still need two actual blue.
     return immediately_available_blue_sources(s) >= 2
 
+
+def immediately_available_generic_mana(s:State)->int:
+    """Maximum currently spendable mana without changing zones/searching.
+
+    Used only for deterministic combo bootstrap checks. For an untapped artifact,
+    count the better of its native tap ability and Urza's +U conversion, never
+    both. This deliberately does not assume a future land drop or tutor.
+    """
+    total=s.blue+s.colorless
+    metal=artifact_count(s)>=3
+    for p in s.battlefield:
+        if p.tapped:
+            continue
+        n=p.name
+        native=0
+        if n in {
+            "Island","Cephalid Coliseum","Ipnu Rivulet",
+            "Minamo, School at Water's Edge","Oboro, Palace in the Clouds",
+            "Otawara, Soaring City","Seat of the Synod",
+        }:
+            native=1
+        elif n in MDFC_BLUE_LANDS and p.mode=="landface":
+            native=1
+        elif n=="Urza's Saga" and p.counters>=1:
+            native=1
+        elif n in {"Ancient Tomb","City of Traitors"}:
+            native=2
+        elif n=="Crystal Vein":
+            native=2
+        elif n=="Saprazzan Skerry" and p.counters>0:
+            native=2
+        elif n=="Gemstone Caverns":
+            native=1
+        elif n=="Sol Ring":
+            native=2
+        elif n in {"Mana Vault","Grim Monolith","Basalt Monolith"}:
+            native=3
+        elif n=="Mox Opal" and metal:
+            native=1
+        elif n in {"Chrome Mox","Mox Diamond"} and p.mode in {"imprinted","diamond"}:
+            native=1
+        elif n=="Everflowing Chalice" and p.counters>0:
+            native=p.counters
+        elif n=="Lotus Petal" or p.mode=="treasure":
+            native=1
+
+        urza_mana=1 if s.urza and is_artifact_perm(p) else 0
+        total += max(native,urza_mana)
+    return total
+
+
+def monolith_untap_cost(s:State,name:str)->int:
+    if name=="Grim Monolith":
+        cost=4
+    elif name=="Basalt Monolith":
+        cost=3
+    else:
+        raise ValueError(f"unsupported monolith {name!r}")
+    if has(s,"Forensic Gadgeteer"):
+        cost-=1
+    if s.pa_target==name:
+        cost-=2
+    return max(1,cost)
+
+
+def monolith_positive_loop_online(s:State,name:str)->bool:
+    """Whether the currently visible Monolith can bootstrap its positive loop."""
+    perm=next((p for p in s.battlefield if p.name==name),None)
+    if perm is None:
+        return False
+    # If it is untapped, its own first mana activation bootstraps the loop.
+    if not perm.tapped:
+        return True
+    # If already tapped, the first reduced untap must be payable from other
+    # currently available resources/floating mana.
+    return immediately_available_generic_mana(s)>=monolith_untap_cost(s,name)
+
+
 def check_win(s:State)->State:
     # A pending cumulative-upkeep trigger must be resolved before the solver
     # can use main-phase terminal recognizers. Upkeep-specific instant actions
@@ -3334,11 +3412,25 @@ def check_win(s:State)->State:
     if not s.urza:
         return s
 
-    if "Power Artifact" in names and "Grim Monolith" in names:
+    if (
+        "Power Artifact" in names
+        and "Grim Monolith" in names
+        and s.pa_target=="Grim Monolith"
+        and monolith_positive_loop_online(s,"Grim Monolith")
+    ):
         return replace(s,won=True,win_family="Power Artifact + Grim")
-    if "Power Artifact" in names and "Basalt Monolith" in names:
+    if (
+        "Power Artifact" in names
+        and "Basalt Monolith" in names
+        and s.pa_target=="Basalt Monolith"
+        and monolith_positive_loop_online(s,"Basalt Monolith")
+    ):
         return replace(s,won=True,win_family="Power Artifact + Basalt")
-    if "Forensic Gadgeteer" in names and "Basalt Monolith" in names:
+    if (
+        "Forensic Gadgeteer" in names
+        and "Basalt Monolith" in names
+        and monolith_positive_loop_online(s,"Basalt Monolith")
+    ):
         return replace(s,won=True,win_family="Basalt + Gadgeteer")
 
     knack_loop=knack_replay_loop_family(s)
