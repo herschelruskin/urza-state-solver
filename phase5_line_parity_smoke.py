@@ -1,0 +1,198 @@
+#!/usr/bin/env python3
+"""Focused Oracle/non-Oracle line-recognition and public-action parity smoke."""
+
+from __future__ import annotations
+
+from dataclasses import replace
+
+import urza_solver as solver
+from non_oracle_episode import run_deterministic_episode
+from non_oracle_rules_adapter_v2 import apply_main_action, rules_decision_request
+from non_oracle_runtime import make_runtime_state
+from non_oracle_public_parity_runtime import (
+    MAIN_ACTIVATE_FETCH,
+    MAIN_ACTIVATE_KNACK_BOUNCE,
+)
+from solver_architecture import InformationState, canonical_markov_state_key
+
+
+def _action(runtime, *, kind=None, label_contains=None):
+    request = rules_decision_request(runtime, horizon=6, policy_id="line-parity-smoke")
+    rows = list(request.actions)
+    if kind is not None:
+        rows = [row for row in rows if row.kind == kind]
+    if label_contains is not None:
+        rows = [row for row in rows if label_contains in row.label]
+    if not rows:
+        raise AssertionError(f"no matching action kind={kind!r} label={label_contains!r}")
+    return sorted(rows, key=lambda row: row.action_id)[0]
+
+
+def _resolve_until_main(runtime, max_steps=32):
+    for _ in range(max_steps):
+        if runtime.pending is None and not runtime.stack.objects:
+            return runtime
+        request = rules_decision_request(runtime, horizon=6, policy_id="line-parity-smoke")
+        actions = list(request.actions)
+        untap = [a for a in actions if "untap" in a.label.lower() and "decline" not in a.label.lower()]
+        passes = [a for a in actions if a.kind == "pass_priority"]
+        chosen = untap[0] if untap else (passes[0] if passes else actions[0])
+        runtime = apply_main_action(runtime, chosen)
+    raise AssertionError("runtime did not return to an empty-stack main window")
+
+
+def test_shared_terminal_recognition():
+    cases = (
+        (
+            "Power Artifact + Grim",
+            solver.State(
+                turn=3, library=(), hand=(), urza=True, commander_in_command_zone=False,
+                battlefield=(
+                    solver.Perm(solver.COMMANDER, sick=False),
+                    solver.Perm("Grim Monolith"),
+                    solver.Perm("Power Artifact"),
+                ),
+            ),
+        ),
+        (
+            "Power Artifact + Basalt",
+            solver.State(
+                turn=3, library=(), hand=(), urza=True, commander_in_command_zone=False,
+                battlefield=(
+                    solver.Perm(solver.COMMANDER, sick=False),
+                    solver.Perm("Basalt Monolith"),
+                    solver.Perm("Power Artifact"),
+                ),
+            ),
+        ),
+        (
+            "Basalt + Gadgeteer",
+            solver.State(
+                turn=3, library=(), hand=(), urza=True, commander_in_command_zone=False,
+                battlefield=(
+                    solver.Perm(solver.COMMANDER, sick=False),
+                    solver.Perm("Basalt Monolith"),
+                    solver.Perm("Forensic Gadgeteer", sick=False),
+                ),
+            ),
+        ),
+        (
+            "Top + Reality Chip",
+            solver.State(
+                turn=3, library=("Island",), hand=(), urza=True,
+                commander_in_command_zone=False, chip_attached=True,
+                battlefield=(
+                    solver.Perm(solver.COMMANDER, sick=False),
+                    solver.Perm("Sensei's Divining Top"),
+                    solver.Perm("The Reality Chip", mode="chip_attached"),
+                    solver.Perm("Grinding Station"),
+                ),
+            ),
+        ),
+        (
+            "Top + Gadgeteer + producer",
+            solver.State(
+                turn=3, library=("Island",), hand=(), urza=True,
+                commander_in_command_zone=False,
+                battlefield=(
+                    solver.Perm(solver.COMMANDER, sick=False),
+                    solver.Perm("Sensei's Divining Top"),
+                    solver.Perm("Forensic Gadgeteer", sick=False),
+                    solver.Perm("Grinding Station"),
+                ),
+            ),
+        ),
+        (
+            "Knack/Helix + Cam",
+            solver.State(
+                turn=3, library=(), hand=(), urza=True, commander_in_command_zone=False,
+                battlefield=(
+                    solver.Perm(solver.COMMANDER, sick=False),
+                    solver.Perm("Sewer-veillance Cam"),
+                    solver.Perm("Battered Golem", sick=False, knack_granted=True),
+                ),
+            ),
+        ),
+    )
+    for family, state in cases:
+        oracle = solver.check_win(state)
+        assert oracle.won and oracle.win_family == family, family
+        result = run_deterministic_episode(make_runtime_state(state), horizon=6)
+        assert result.win_turn == state.turn and result.win_family == family, family
+    print("shared terminal recognizer parity: PASS")
+
+
+def test_fetch_parity_and_information_reset():
+    state = solver.State(
+        turn=2,
+        library=("Mystic Remora", "Island", "Sol Ring"),
+        hand=(),
+        battlefield=(solver.Perm("Polluted Delta"),),
+        rng_root_seed=20260826,
+    )
+    info = InformationState(
+        known_top=("Mystic Remora",),
+        known_bottom=("Sol Ring",),
+    )
+    runtime = make_runtime_state(state, info)
+    action = _action(runtime, kind=MAIN_ACTIVATE_FETCH)
+    after = apply_main_action(runtime, action)
+
+    oracle_rows = solver.fetch_actions(runtime.true_state)
+    assert len(oracle_rows) == 1
+    oracle = oracle_rows[0]
+    assert canonical_markov_state_key(after.true_state) == canonical_markov_state_key(oracle)
+    assert any(p.name == "Island" for p in after.true_state.battlefield)
+    assert not any(p.name == "Polluted Delta" for p in after.true_state.battlefield)
+    assert after.information.known_top == ()
+    assert after.information.known_bottom == ()
+    print("fetch activation + shuffle information parity: PASS")
+
+
+def test_knack_bounce_recast_loop_surface():
+    state = solver.State(
+        turn=3,
+        library=("Island",),
+        hand=(),
+        battlefield=(
+            solver.Perm("Battered Golem", sick=False, knack_granted=True),
+            solver.Perm("Sol Ring"),
+        ),
+        colorless=2,
+        rng_root_seed=20260826,
+    )
+    runtime = make_runtime_state(state)
+    bounce = _action(runtime, kind=MAIN_ACTIVATE_KNACK_BOUNCE, label_contains="bounce Sol Ring")
+    after_bounce = apply_main_action(runtime, bounce)
+
+    oracle_rows = [
+        row for row in solver.knack_bounce_actions(runtime.true_state)
+        if row.trace and "bounces our Sol Ring" in row.trace[-1]
+    ]
+    assert oracle_rows
+    assert canonical_markov_state_key(after_bounce.true_state) == canonical_markov_state_key(oracle_rows[0])
+    assert "Sol Ring" in after_bounce.true_state.hand
+    golem = next(p for p in after_bounce.true_state.battlefield if p.name == "Battered Golem")
+    assert golem.tapped and golem.knack_granted
+
+    cast = _action(after_bounce, kind="main_cast_artifact", label_contains="Sol Ring")
+    runtime = apply_main_action(after_bounce, cast)
+    runtime = _resolve_until_main(runtime)
+    assert any(p.name == "Sol Ring" for p in runtime.true_state.battlefield)
+    golem = next(p for p in runtime.true_state.battlefield if p.name == "Battered Golem")
+    assert not golem.tapped and golem.knack_granted
+    assert any(a.kind == MAIN_ACTIVATE_KNACK_BOUNCE for a in rules_decision_request(
+        runtime, horizon=6, policy_id="line-parity-smoke"
+    ).actions)
+    print("Knack/Helix bounce -> recast -> producer untap loop surface: PASS")
+
+
+def main():
+    test_shared_terminal_recognition()
+    test_fetch_parity_and_information_reset()
+    test_knack_bounce_recast_loop_surface()
+    print("PHASE5 LINE PARITY SMOKE: ALL PASS")
+
+
+if __name__ == "__main__":
+    main()
