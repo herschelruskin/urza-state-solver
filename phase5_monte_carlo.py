@@ -208,8 +208,24 @@ class Phase5MonteCarloDecisionEvaluator:
                 reason = str(result.terminal_reason)
                 reasons[key][reason] += 1
                 if self.strict_terminal_reasons and reason not in MODELED_TERMINALS:
+                    tail = tuple(
+                        (step.turn_before, step.action_kind, step.action_label)
+                        for step in result.steps[-12:]
+                    )
+                    public_board = tuple(
+                        (perm.name, bool(perm.tapped), int(perm.counters), perm.mode)
+                        for perm in result.runtime.true_state.battlefield
+                    )
                     raise Phase5MonteCarloError(
-                        f"rollout for {sampled_all[key].action_id!r} terminated with {reason!r}"
+                        "rollout hard blocker: "
+                        f"sample={sample_index}; "
+                        f"root_action={sampled_all[key].label!r}; "
+                        f"action_id={sampled_all[key].action_id!r}; "
+                        f"reason={reason!r}; "
+                        f"turn={result.runtime.true_state.turn}; "
+                        f"hand={tuple(result.runtime.true_state.hand)!r}; "
+                        f"battlefield={public_board!r}; "
+                        f"tail={tail!r}"
                     )
                 outcomes[key].append(_episode_outcome(result, horizon=self.horizon))
 
