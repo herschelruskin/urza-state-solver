@@ -8,7 +8,7 @@ from non_oracle_chain_offer_runtime import (
     PRIORITY_CAST_OFFER_SELF,
 )
 from non_oracle_rules_adapter_v2 import apply_main_action, rules_decision_request
-from non_oracle_runtime import ACTION_PASS_PRIORITY, make_runtime_state
+from non_oracle_runtime import make_runtime_state
 from solver_architecture import canonical_markov_state_key
 
 
@@ -67,7 +67,7 @@ def test_offer_self_counter_two_treasures_matches_oracle():
         library=(),
         hand=("Dramatic Reversal", "An Offer You Can't Refuse"),
         battlefield=(),
-        blue=2,
+        blue=3,
         rng_root_seed=20260826,
     )
     runtime = make_runtime_state(state)
