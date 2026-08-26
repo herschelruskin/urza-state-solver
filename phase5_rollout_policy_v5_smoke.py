@@ -54,6 +54,37 @@ def test_transmute_target_avoids_unpayable_bin():
     print("V5 Transmute target commitment feasibility: PASS")
 
 
+def test_transmute_pays_difference_when_payment_is_available():
+    runtime = make_runtime_state(solver.State(
+        turn=2,
+        library=("The One Ring", "Island"),
+        hand=("Transmute Artifact",),
+        battlefield=(solver.Perm("Sapphire Medallion"),),
+        blue=4,
+    ))
+    runtime = apply_main_action(runtime, _action(runtime, kind="main_use_transmute_artifact"))
+    runtime = apply_main_action(runtime, _action(runtime, kind="pass_priority"))
+    runtime = apply_main_action(
+        runtime,
+        _action(runtime, kind="transmute_choose_sacrifice", label_contains="Sapphire Medallion"),
+    )
+    runtime = apply_main_action(
+        runtime,
+        _action(runtime, kind="transmute_choose_target", label_contains="The One Ring"),
+    )
+    request = _request(runtime)
+    rows = [a for a in request.actions if a.kind == "transmute_pay_difference"]
+    assert any(a.label.startswith("Pay ") for a in rows)
+    assert any("Decline" in a.label for a in rows)
+    chosen = POLICY.choose(request.observation, request.actions, request.context)
+    assert chosen.kind == "transmute_pay_difference"
+    assert chosen.label.startswith("Pay "), chosen.label
+    runtime = apply_main_action(runtime, chosen)
+    assert any(p.name == "The One Ring" for p in runtime.true_state.battlefield)
+    assert "The One Ring" not in runtime.true_state.graveyard
+    print("V5 Transmute payable difference is never voluntarily binned: PASS")
+
+
 def test_transmute_sacrifice_prefers_real_mv_over_construct():
     runtime = make_runtime_state(solver.State(
         turn=2,
@@ -114,6 +145,7 @@ def test_colorless_mana_enables_visible_artifact():
 
 def main():
     test_transmute_target_avoids_unpayable_bin()
+    test_transmute_pays_difference_when_payment_is_available()
     test_transmute_sacrifice_prefers_real_mv_over_construct()
     test_chain_declines_suicidal_copy_without_producer()
     test_colorless_mana_enables_visible_artifact()
