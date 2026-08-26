@@ -30,6 +30,7 @@ def main():
         turn=1,
         library=("Transmute Artifact","Sea Gate Restoration","Island"),
         hand=("Mystical Tutor",),
+        battlefield=(),
         blue=1,
         rng_root_seed=11,
     )
@@ -37,6 +38,7 @@ def main():
         turn=1,
         library=("Island","Sea Gate Restoration","Transmute Artifact"),
         hand=("Mystical Tutor",),
+        battlefield=(),
         blue=1,
         rng_root_seed=999,
     )
