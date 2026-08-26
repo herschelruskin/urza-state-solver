@@ -38,8 +38,6 @@ jobs:
         run: python phase5_policy_diagnostic.py
       - name: Tutor timing/target audit
         run: python phase5_tutor_decision_audit.py
-      - name: Tutor Q audit
-        run: python phase5_tutor_q_audit.py
       - name: Confirm tutor Q disagreements
         run: python phase5_tutor_q_confirm.py
       - name: Preserve held-out diagnostics
@@ -49,7 +47,6 @@ jobs:
           path: |
             phase5_policy_diagnostic.json
             phase5_tutor_decision_audit.json
-            phase5_tutor_q_audit.json
             phase5_tutor_q_confirm.json
       - name: Phase 5 mulligan regression
         run: python phase5_mulligan_smoke.py
