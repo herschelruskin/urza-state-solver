@@ -30,6 +30,14 @@ from strategic_value_state import LibraryBeliefKey
 
 PHASE5_MC_VERSION = "urza-phase5-decision-monte-carlo-v1"
 
+# A deterministic continuation policy can exhaust every strategic action from an
+# exact recurrent sampled state. That is a legitimate leaf-policy failure/no-win
+# outcome, not evidence that Magic mechanics are missing. Unsupported runtime
+# windows, no-legal-action blockers, and step limits remain hard errors in strict
+# mode so Q estimates cannot silently absorb missing rules coverage.
+MODELED_NO_WIN_TERMINALS = frozenset({"horizon", "strategic_cycle_exhausted"})
+MODELED_TERMINALS = MODELED_NO_WIN_TERMINALS | {"win"}
+
 
 class Phase5MonteCarloError(RuntimeError):
     pass
@@ -199,7 +207,7 @@ class Phase5MonteCarloDecisionEvaluator:
                 )
                 reason = str(result.terminal_reason)
                 reasons[key][reason] += 1
-                if self.strict_terminal_reasons and reason not in {"win", "horizon"}:
+                if self.strict_terminal_reasons and reason not in MODELED_TERMINALS:
                     raise Phase5MonteCarloError(
                         f"rollout for {sampled_all[key].action_id!r} terminated with {reason!r}"
                     )
