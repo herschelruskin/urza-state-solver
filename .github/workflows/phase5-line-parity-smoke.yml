@@ -21,9 +21,11 @@ jobs:
           python-version: '3.13'
       - name: Compile parity overlay
         run: |
-          python -m py_compile non_oracle_public_parity_runtime.py non_oracle_rules_adapter_v2.py phase5_line_parity_smoke.py
+          python -m py_compile non_oracle_public_parity_runtime.py non_oracle_rules_adapter_v2.py phase5_line_parity_smoke.py phase5_rollout_policy_v4.py phase5_policy_diagnostic.py
       - name: Oracle/non-Oracle line parity
         run: python phase5_line_parity_smoke.py
+      - name: Held-out human-kept trajectory diagnostic
+        run: python phase5_policy_diagnostic.py
       - name: Phase 5 mulligan regression
         run: python phase5_mulligan_smoke.py
       - name: Phase 4 Monte Carlo regression
