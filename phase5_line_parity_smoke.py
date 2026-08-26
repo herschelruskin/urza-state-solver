@@ -3,10 +3,9 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
-
 import urza_solver as solver
 from non_oracle_episode import run_deterministic_episode
+from non_oracle_ftt_runtime import MAIN_LEVEL_FTT
 from non_oracle_rules_adapter_v2 import apply_main_action, rules_decision_request
 from non_oracle_runtime import make_runtime_state
 from non_oracle_public_parity_runtime import (
@@ -90,6 +89,31 @@ def test_shared_terminal_recognition():
             ),
         ),
         (
+            "Top + FTT L3",
+            solver.State(
+                turn=3, library=("Island",), hand=(), urza=True,
+                commander_in_command_zone=False, ftt_level=3, spell_cast_this_turn=True,
+                battlefield=(
+                    solver.Perm(solver.COMMANDER, sick=False),
+                    solver.Perm("Sensei's Divining Top"),
+                    solver.Perm("Fortune Teller's Talent"),
+                ),
+            ),
+        ),
+        (
+            "Top + FTT L2 + producer",
+            solver.State(
+                turn=3, library=("Island",), hand=(), urza=True,
+                commander_in_command_zone=False, ftt_level=2, spell_cast_this_turn=True,
+                battlefield=(
+                    solver.Perm(solver.COMMANDER, sick=False),
+                    solver.Perm("Sensei's Divining Top"),
+                    solver.Perm("Fortune Teller's Talent"),
+                    solver.Perm("Grinding Station"),
+                ),
+            ),
+        ),
+        (
             "Top + Gadgeteer + producer",
             solver.State(
                 turn=3, library=("Island",), hand=(), urza=True,
@@ -113,13 +137,25 @@ def test_shared_terminal_recognition():
                 ),
             ),
         ),
+        (
+            "Chrome Dome",
+            solver.State(
+                turn=3, library=(), hand=(), urza=True, commander_in_command_zone=False,
+                colorless=5,
+                battlefield=(
+                    solver.Perm(solver.COMMANDER, sick=False),
+                    solver.Perm("Chrome Dome"),
+                    solver.Perm("Grinding Station"),
+                ),
+            ),
+        ),
     )
     for family, state in cases:
         oracle = solver.check_win(state)
         assert oracle.won and oracle.win_family == family, family
         result = run_deterministic_episode(make_runtime_state(state), horizon=6)
         assert result.win_turn == state.turn and result.win_family == family, family
-    print("shared terminal recognizer parity: PASS")
+    print("shared terminal recognizer parity (all families): PASS")
 
 
 def test_fetch_parity_and_information_reset():
@@ -147,6 +183,27 @@ def test_fetch_parity_and_information_reset():
     assert after.information.known_top == ()
     assert after.information.known_bottom == ()
     print("fetch activation + shuffle information parity: PASS")
+
+
+def test_ftt_level_surface():
+    state = solver.State(
+        turn=3,
+        library=("Sensei's Divining Top", "Island"),
+        hand=(),
+        battlefield=(solver.Perm("Fortune Teller's Talent"),),
+        ftt_level=1,
+        blue=2,
+        colorless=5,
+    )
+    runtime = make_runtime_state(state)
+    first = _action(runtime, kind=MAIN_LEVEL_FTT, label_contains="level 1 -> 2")
+    runtime = apply_main_action(runtime, first)
+    assert runtime.true_state.ftt_level == 2
+    second = _action(runtime, kind=MAIN_LEVEL_FTT, label_contains="level 2 -> 3")
+    runtime = apply_main_action(runtime, second)
+    assert runtime.true_state.ftt_level == 3
+    assert runtime.information.known_top == ("Sensei's Divining Top",)
+    print("Fortune Teller's Talent level 1 -> 2 -> 3 action surface: PASS")
 
 
 def test_knack_bounce_recast_loop_surface():
@@ -190,6 +247,7 @@ def test_knack_bounce_recast_loop_surface():
 def main():
     test_shared_terminal_recognition()
     test_fetch_parity_and_information_reset()
+    test_ftt_level_surface()
     test_knack_bounce_recast_loop_surface()
     print("PHASE5 LINE PARITY SMOKE: ALL PASS")
 
