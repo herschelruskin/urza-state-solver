@@ -170,6 +170,48 @@ def test_shared_terminal_recognition():
     print("shared terminal recognizer parity (all families): PASS")
 
 
+def test_monolith_terminal_requires_attachment_and_bootstrap():
+    urza = solver.Perm(solver.COMMANDER, sick=False)
+
+    # Correctly attached + untapped starts itself.
+    grim = solver.State(
+        turn=4, library=(), hand=(), urza=True, commander_in_command_zone=False,
+        pa_target="Grim Monolith",
+        battlefield=(urza, solver.Perm("Power Artifact"), solver.Perm("Grim Monolith")),
+    )
+    assert solver.check_win(grim).win_family == "Power Artifact + Grim"
+
+    # A tapped Grim needs the first reduced {2} untap to be payable.
+    tapped_grim = solver.replace(
+        grim,
+        battlefield=(urza, solver.Perm("Power Artifact"), solver.Perm("Grim Monolith", tapped=True)),
+    )
+    assert not solver.check_win(tapped_grim).won
+    assert solver.check_win(solver.replace(tapped_grim, colorless=2)).won
+
+    # Power Artifact on the wrong permanent is not the Monolith combo.
+    wrong_target = solver.replace(grim, pa_target="Giant's Boulder")
+    assert not solver.check_win(wrong_target).won
+
+    # Basalt + PA needs {1} to bootstrap if already tapped.
+    basalt_pa = solver.State(
+        turn=4, library=(), hand=(), urza=True, commander_in_command_zone=False,
+        pa_target="Basalt Monolith",
+        battlefield=(urza, solver.Perm("Power Artifact"), solver.Perm("Basalt Monolith", tapped=True)),
+    )
+    assert not solver.check_win(basalt_pa).won
+    assert solver.check_win(solver.replace(basalt_pa, colorless=1)).win_family == "Power Artifact + Basalt"
+
+    # Gadgeteer reduces Basalt's first untap from {3} to {2}.
+    basalt_gadget = solver.State(
+        turn=4, library=(), hand=(), urza=True, commander_in_command_zone=False,
+        battlefield=(urza, solver.Perm("Forensic Gadgeteer", sick=False), solver.Perm("Basalt Monolith", tapped=True)),
+    )
+    assert not solver.check_win(basalt_gadget).won
+    assert solver.check_win(solver.replace(basalt_gadget, colorless=2)).win_family == "Basalt + Gadgeteer"
+    print("Monolith terminal attachment/bootstrap discipline: PASS")
+
+
 def test_fetch_parity_and_information_reset():
     state = solver.State(
         turn=2,
@@ -309,6 +351,7 @@ def test_urza_permission_extension_production_path():
 
 def main():
     test_shared_terminal_recognition()
+    test_monolith_terminal_requires_attachment_and_bootstrap()
     test_fetch_parity_and_information_reset()
     test_ftt_level_surface()
     test_knack_bounce_recast_loop_surface()
