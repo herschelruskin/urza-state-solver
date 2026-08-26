@@ -12,10 +12,13 @@ surfaces that the Oracle can use but the production Phase-2 import path omitted:
 * Chain of Vapor self-bounce/copy decisions;
 * An Offer You Can't Refuse self-counter -> two-Treasure lines.
 
-It also adds policy-safe derived metadata at Transmute Artifact's already-public
-post-search target decision so a policy can distinguish payable targets from choices
-that necessarily send the searched card to the graveyard. The annotations are
-stripped before execution; Phase 2 remains the rules authority.
+It also adds policy-safe legality/commitment normalization at two already-public
+pending decisions:
+- Transmute Artifact target choices are annotated with their deterministic public
+  difference-payment consequence and stripped before Phase-2 execution;
+- a Chrome Mox imprint trigger whose exact source has left the battlefield retains
+  only its legal no-imprint branch, matching the Oracle instead of offering a card
+  exile that cannot attach to any Chrome Mox.
 
 The Urza extensions must be installed BEFORE importing the frozen rules adapter,
 because that module imports function objects from ``non_oracle_urza_runtime`` by
@@ -51,6 +54,10 @@ from non_oracle_public_parity_runtime import (
     apply_public_parity_action,
     public_parity_main_intents,
     public_parity_priority_actions,
+)
+from phase5_chrome_trigger_adapter import (
+    handles_chrome_imprint_request,
+    normalize_chrome_imprint_request,
 )
 from phase5_transmute_commitment_adapter import (
     annotate_transmute_target_request,
@@ -116,6 +123,8 @@ def rules_decision_request(
     if runtime.pending is not None:
         if handles_transmute_target_request(runtime):
             return annotate_transmute_target_request(runtime, request)
+        if handles_chrome_imprint_request(runtime):
+            return normalize_chrome_imprint_request(runtime, request)
         return request
     if runtime.stack.objects:
         return _merge_request(request, _phase5_priority_actions(runtime))
