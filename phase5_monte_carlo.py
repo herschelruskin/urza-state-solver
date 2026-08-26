@@ -23,6 +23,7 @@ from decision_observation import ActionIntent
 from non_oracle_base_policy import DeterministicBasePolicy
 from non_oracle_episode import NonOracleEpisodeResult, run_deterministic_episode
 from non_oracle_rules_adapter_v2 import apply_main_action, rules_decision_request
+from non_oracle_runtime_value_key import canonical_runtime_object_value_key
 from phase3_value_engine import PHASE3_OBJECTIVE_ID, WinDistributionValue
 from phase4_hidden_world import HiddenWorldSampler, materialize_hidden_world
 from solver_architecture import EpisodeOutcome
@@ -125,6 +126,54 @@ def _value(outcomes: Sequence[EpisodeOutcome], *, horizon: int) -> WinDistributi
     )
 
 
+
+@dataclass
+class Phase5DecisionCacheStats:
+    hits: int = 0
+    misses: int = 0
+
+
+@dataclass(frozen=True)
+class _CachedPhase5ActionEstimate:
+    strategic_action_key: Tuple[object, ...]
+    value: WinDistributionValue
+    rollouts: int
+    terminal_reason_counts: Tuple[Tuple[str, int], ...]
+    win_probability_wilson95: Tuple[float, float]
+
+
+@dataclass(frozen=True)
+class _CachedPhase5Decision:
+    best_strategic_action_key: Tuple[object, ...]
+    estimates: Tuple[_CachedPhase5ActionEstimate, ...]
+
+
+class Phase5DecisionCache:
+    """Expected-value cache keyed only by strategic runtime/action identity.
+
+    Cached rows never retain execution-specific ActionIntent objects.  On a hit,
+    the evaluator recovers the current legal action object by strategic_key(),
+    mirroring the Phase-3 action-cache discipline.
+    """
+
+    def __init__(self):
+        self._rows = {}
+        self.stats = Phase5DecisionCacheStats()
+
+    def get(self, key):
+        if key not in self._rows:
+            self.stats.misses += 1
+            return None
+        self.stats.hits += 1
+        return self._rows[key]
+
+    def set(self, key, value):
+        self._rows[key] = value
+
+    def __len__(self):
+        return len(self._rows)
+
+
 class Phase5MonteCarloDecisionEvaluator:
     """Common-random-number Q estimate for the current visible decision."""
 
@@ -138,6 +187,7 @@ class Phase5MonteCarloDecisionEvaluator:
         continuation_policy: DeterministicBasePolicy,
         max_episode_steps: int = 512,
         strict_terminal_reasons: bool = True,
+        cache: Phase5DecisionCache | None = None,
     ):
         if rollout_count < 1:
             raise ValueError("rollout_count must be >= 1")
@@ -149,6 +199,7 @@ class Phase5MonteCarloDecisionEvaluator:
         self.max_episode_steps = int(max_episode_steps)
         self.strict_terminal_reasons = bool(strict_terminal_reasons)
         self.sampler = HiddenWorldSampler(self.mc_root_seed)
+        self.cache = cache
 
     def _request(self, runtime):
         return rules_decision_request(
@@ -161,6 +212,51 @@ class Phase5MonteCarloDecisionEvaluator:
     @staticmethod
     def _map(actions):
         return {action.strategic_key(): action for action in _representatives(actions)}
+
+
+    def _cache_key(self, runtime, candidate_keys):
+        return (
+            PHASE5_MC_VERSION,
+            "strategic-decision-cache-v1",
+            canonical_runtime_object_value_key(runtime),
+            tuple(sorted(candidate_keys, key=repr)),
+            self.rollout_count,
+            self.mc_root_seed,
+            self.horizon,
+            self.objective,
+            self.continuation_policy.policy_id,
+            self.max_episode_steps,
+            self.strict_terminal_reasons,
+        )
+
+    def _restore_cached(self, cached, root_map):
+        estimates=[]
+        for row in cached.estimates:
+            action=root_map.get(row.strategic_action_key)
+            if action is None:
+                raise Phase5MonteCarloError(
+                    "cached strategic action is not legal in current equivalent runtime"
+                )
+            estimates.append(Phase5ActionEstimate(
+                action=action,
+                value=row.value,
+                rollouts=row.rollouts,
+                terminal_reason_counts=row.terminal_reason_counts,
+                win_probability_wilson95=row.win_probability_wilson95,
+            ))
+        best=root_map.get(cached.best_strategic_action_key)
+        if best is None:
+            raise Phase5MonteCarloError(
+                "cached best strategic action is not legal in current equivalent runtime"
+            )
+        return Phase5DecisionEvaluation(
+            best_action=best,
+            estimates=tuple(estimates),
+            rollout_count_per_action=self.rollout_count,
+            mc_root_seed=self.mc_root_seed,
+            horizon=self.horizon,
+            continuation_policy_id=self.continuation_policy.policy_id,
+        )
 
     def evaluate(self, runtime, *, candidate_actions=None) -> Phase5DecisionEvaluation:
         root_request = self._request(runtime)
@@ -180,6 +276,14 @@ class Phase5MonteCarloDecisionEvaluator:
         root_keys = frozenset(action.strategic_key() for action in all_root)
         candidate_keys = frozenset(action.strategic_key() for action in root_actions)
         root_map = {action.strategic_key(): action for action in root_actions}
+
+        cache_key=None
+        if self.cache is not None:
+            cache_key=self._cache_key(runtime,candidate_keys)
+            cached=self.cache.get(cache_key)
+            if cached is not None:
+                return self._restore_cached(cached,root_map)
+
         belief = LibraryBeliefKey.from_state(runtime.true_state, runtime.information)
 
         outcomes = {key: [] for key in candidate_keys}
@@ -259,7 +363,7 @@ class Phase5MonteCarloDecisionEvaluator:
                 reverse=True,
             )
         )
-        return Phase5DecisionEvaluation(
+        evaluation=Phase5DecisionEvaluation(
             best_action=ranked[0].action,
             estimates=ranked,
             rollout_count_per_action=self.rollout_count,
@@ -267,3 +371,18 @@ class Phase5MonteCarloDecisionEvaluator:
             horizon=self.horizon,
             continuation_policy_id=self.continuation_policy.policy_id,
         )
+        if self.cache is not None and cache_key is not None:
+            self.cache.set(cache_key,_CachedPhase5Decision(
+                best_strategic_action_key=evaluation.best_action.strategic_key(),
+                estimates=tuple(
+                    _CachedPhase5ActionEstimate(
+                        strategic_action_key=estimate.action.strategic_key(),
+                        value=estimate.value,
+                        rollouts=estimate.rollouts,
+                        terminal_reason_counts=estimate.terminal_reason_counts,
+                        win_probability_wilson95=estimate.win_probability_wilson95,
+                    )
+                    for estimate in evaluation.estimates
+                ),
+            ))
+        return evaluation
