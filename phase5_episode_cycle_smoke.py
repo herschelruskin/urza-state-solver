@@ -29,11 +29,11 @@ def test_cycle_key_keeps_hidden_world_but_ignores_trace_and_stack_ids():
     print("episode cycle key exact-world/provenance boundary: PASS")
 
 
-def test_knack_zero_cost_loop_tries_alternative_action():
-    # Reproduce the recurrent shape from held-out hand 20 without depending on its
-    # entire opening sequence.  V5 strongly prefers bouncing/recasting Mox Opal.
-    # Once that exact state/action pair has been tried, the episode runner must not
-    # choose it forever; it should eventually take another legal continuation.
+def test_knack_zero_cost_loop_is_terminal_before_cycle_suppression():
+    # This recurrent shape used to exercise the controller's cycle suppression.
+    # It is in fact a deterministic Urza win: Knack/Helix on Battered Golem plus
+    # a replayable zero-mana artifact generates unbounded blue through Urza.
+    # Terminal recognition must therefore fire before any bounce/recast thrash.
     state = solver.State(
         turn=5,
         library=("Island", "Sol Ring", "Power Artifact"),
@@ -60,23 +60,16 @@ def test_knack_zero_cost_loop_tries_alternative_action():
         max_steps=160,
         policy=DeterministicRolloutPolicyV5(),
     )
-    bounce_steps = [step for step in result.steps if step.action_kind in {
-        "main_activate_knack_bounce", "priority_activate_knack_bounce"
-    }]
-    # The old runner hit max_steps while repeating bounce/recast.  A finite number
-    # of bounces is fine; reaching the cap through that recurrence is not.
-    assert result.terminal_reason != "step_limit"
-    assert len(bounce_steps) < 20
-    assert any(step.action_kind not in {
-        "main_activate_knack_bounce", "priority_activate_knack_bounce",
-        "main_cast_artifact", "runtime_producer_untap", "pass_priority",
-    } for step in result.steps)
-    print("exact recurrent Knack/Mox loop suppression: PASS")
+    assert result.terminal_reason == "win"
+    assert result.win_turn == 5
+    assert result.win_family == "Knack/Helix + Battered Golem"
+    assert not result.steps
+    print("Knack/Golem replay terminal recognition: PASS")
 
 
 def main():
     test_cycle_key_keeps_hidden_world_but_ignores_trace_and_stack_ids()
-    test_knack_zero_cost_loop_tries_alternative_action()
+    test_knack_zero_cost_loop_is_terminal_before_cycle_suppression()
     print("PHASE5 EPISODE CYCLE SMOKE: ALL PASS")
 
 
