@@ -275,6 +275,7 @@ def make_selective_tutor_q_episode_runner(
     screen_rollouts:int=1,
     confirm_rollouts:int=2,
     shortlist_size:int=3,
+    decision_cache:Phase5DecisionCache|None=None,
 ):
     """Return an OpeningKeepEvaluator-compatible episode runner.
 
@@ -282,7 +283,7 @@ def make_selective_tutor_q_episode_runner(
     diagnostics/cycle bookkeeping never leak between sampled games. The supplied
     leaf policy is still the continuation policy passed by the mulligan evaluator.
     """
-    shared_cache=Phase5DecisionCache()
+    shared_cache=decision_cache or Phase5DecisionCache()
 
     def runner(runtime,*,horizon,policy,max_steps):
         controller=SelectiveTutorQController(
@@ -301,6 +302,7 @@ def make_selective_tutor_q_episode_runner(
             horizon=horizon,
             max_steps=max_steps,
         ).episode
+    runner.decision_cache=shared_cache
     return runner
 
 
