@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Static integrity checks for the versioned human calibration fixtures.
 
-This smoke validates fixture semantics only.  It deliberately does not require a
+This smoke validates fixture semantics only. It deliberately does not require a
 solver policy to agree with human choices or exactly reproduce historical rates.
 """
 
@@ -39,10 +39,10 @@ def main() -> None:
         "5": 3,
     }
     assert mull["rating_semantics"]["comparability"] == "within keep_size only"
-    assert mull["quality"]["primary_benchmark_usable_count"] == 33
-    assert mull["quality"]["primary_excluded_hand_ids"] == [10, 30, 36]
-    assert mull["quality"]["current_repo_runnable_count"] == 31
-    assert mull["quality"]["deck_snapshot_drift_hand_ids"] == [24, 34]
+    assert mull["quality"]["primary_benchmark_usable_count"] == 35
+    assert mull["quality"]["primary_excluded_hand_ids"] == [10]
+    assert mull["quality"]["current_repo_runnable_count"] == 35
+    assert mull["quality"]["normalized_card_slot_hand_ids"] == [24, 34]
     assert mull["descriptive"]["decision_counts"] == {"Keep": 27, "Mulligan": 9}
     assert mull["descriptive"]["by_keep_size"]["7"] == {
         "n": 22,
@@ -51,14 +51,25 @@ def main() -> None:
     }
     assert mull["descriptive"]["seven_card_stage"]["initial_m0"]["keep_rate"] == 0.5
     assert mull["descriptive"]["seven_card_stage"]["free_second_m1"]["keep_rate"] == 2 / 3
+    assert mull["counterfactual_keep_at_six"]["22"] == {
+        "decision": "Keep",
+        "bottom": ["Vexing Bauble"],
+    }
+    assert mull["counterfactual_keep_at_six"]["23"]["decision"] == "Uncertain"
+    assert mull["counterfactual_keep_at_six"]["23"]["lean"] == "Mulligan"
+    assert mull["counterfactual_keep_at_six"]["32"]["decision"] == "Uncertain"
+    assert mull["counterfactual_keep_at_six"]["32"]["lean"] == "Mulligan"
+    assert mull["counterfactual_keep_at_six"]["35"]["decision"] == "Mulligan"
 
+    assert exact["schema_version"] == 2
+    assert exact["deck_snapshot"]["baseline"] == "Codex Shredder deck"
     hands = exact["hands"]
     assert len(hands) == 36
     assert [hand["hand_id"] for hand in hands] == list(range(1, 37))
+    by_id = {hand["hand_id"]: hand for hand in hands}
     usable = 0
     runnable = 0
     excluded = []
-    drift = []
     for hand in hands:
         stage = int(hand["mulligan_count"])
         keep_size = expected_keep_size(stage)
@@ -69,6 +80,8 @@ def main() -> None:
             assert len(hand["drawn_seven"]) == 7
             if hand["decision"] == "Keep":
                 assert len(hand["cards_bottomed"]) == 7 - keep_size
+                assert hand["kept_hand"] is not None
+                assert len(hand["kept_hand"]) == keep_size
                 for card in hand["cards_bottomed"]:
                     assert card in hand["drawn_seven"]
         else:
@@ -77,13 +90,18 @@ def main() -> None:
             runnable += 1
             assert hand["primary_benchmark_usable"]
             assert not hand["cards_not_in_repo_decklist"]
-        if hand["cards_not_in_repo_decklist"]:
-            drift.append(hand["hand_id"])
 
-    assert usable == 33
-    assert runnable == 31
-    assert excluded == [10, 30, 36]
-    assert drift == [24, 34]
+    assert usable == 35
+    assert runnable == 35
+    assert excluded == [10]
+    assert by_id[30]["drawn_seven"][-1] == "Swan Song"
+    assert by_id[36]["drawn_seven"][-1] == "Uthros Research Craft"
+    for hand_id in (24, 34):
+        hand = by_id[hand_id]
+        assert "Codex Shredder" in hand["drawn_seven"]
+        assert "Fugitive Droid" not in hand["drawn_seven"]
+        assert "Fugitive Droid" in hand["recorded_drawn_seven"]
+        assert hand["card_slot_normalization"]["benchmark_card"] == "Codex Shredder"
 
     assert gold["source_rows"] == 250
     assert gold["historical_tracking_horizon"] == 7
