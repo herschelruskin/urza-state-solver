@@ -32,7 +32,7 @@ from non_oracle_base_policy import DeterministicBasePolicy
 from non_oracle_episode import run_deterministic_episode
 from non_oracle_runtime import make_runtime_state
 from phase3_value_engine import WinDistributionValue
-from phase4_hidden_world import HiddenWorldSample, materialize_hidden_world
+from phase4_hidden_world import SampledHiddenWorld, materialize_hidden_world
 from phase4_monte_carlo import _episode_outcome, _value_from_outcomes, _wilson_interval
 from solver_architecture import InformationState
 
@@ -58,11 +58,18 @@ def bottom_count_for_stage(stage: int) -> int:
     return 7 - keep_size_for_stage(stage)
 
 
+def value_at_least(left: WinDistributionValue, right: WinDistributionValue) -> bool:
+    if left.horizon != right.horizon:
+        raise ValueError("cannot compare mulligan values with different horizons")
+    return left.comparison_key() >= right.comparison_key()
+
+
 def _counter_tuple(cards: Iterable[str]) -> Tuple[Tuple[str, int], ...]:
     return tuple(sorted(Counter(str(card) for card in cards).items()))
 
 
 def unique_bottom_subsets(seven: Sequence[str], stage: int) -> Tuple[Tuple[str, ...], ...]:
+    """All distinct card-multiset bottoms; suffix ordering is canonicalized."""
     cards = tuple(str(card) for card in seven)
     if len(cards) != 7:
         raise ValueError("mulligan evaluation requires a fresh seven-card hand")
@@ -116,7 +123,7 @@ def opening_runtime(deck: Sequence[str], seven: Sequence[str], bottom: Sequence[
     return make_runtime_state(state, information)
 
 
-def _opening_world(*, deck: Sequence[str], seven: Sequence[str], bottom: Sequence[str], mc_root_seed: int, sample_id: int) -> HiddenWorldSample:
+def _opening_world(*, deck: Sequence[str], seven: Sequence[str], bottom: Sequence[str], mc_root_seed: int, sample_id: int) -> SampledHiddenWorld:
     """Sample one common unknown prefix for every bottom choice of this seven."""
     unknown = list(_deck_without_seven(deck, seven))
     coordinate = (
@@ -129,6 +136,7 @@ def _opening_world(*, deck: Sequence[str], seven: Sequence[str], bottom: Sequenc
     seed_material = json.dumps(
         [int(mc_root_seed), coordinate], sort_keys=True, separators=(",", ":"), default=repr
     ).encode("utf-8")
+    digest = hashlib.sha256(seed_material).hexdigest()
     seed = int.from_bytes(hashlib.sha256(seed_material).digest()[:8], "big")
     rng = random.Random(seed)
     rng.shuffle(unknown)
@@ -137,7 +145,12 @@ def _opening_world(*, deck: Sequence[str], seven: Sequence[str], bottom: Sequenc
         [int(mc_root_seed), "opening-rollout-game", int(sample_id)], separators=(",", ":")
     ).encode("utf-8")
     rollout_game_seed = int.from_bytes(hashlib.sha256(game_seed_material).digest()[:8], "big")
-    return HiddenWorldSample(sample_id=int(sample_id), library=tuple(unknown) + bottom, rollout_game_seed=rollout_game_seed)
+    return SampledHiddenWorld(
+        sample_id=str(sample_id),
+        library=tuple(unknown) + bottom,
+        rng_root_seed=rollout_game_seed,
+        belief_digest=digest,
+    )
 
 
 @dataclass(frozen=True)
@@ -193,6 +206,7 @@ class OpeningKeepEvaluator:
                     mc_root_seed=self.mc_root_seed, sample_id=sample_id,
                 )
                 sampled = materialize_hidden_world(root, world)
+                validate_information_against_state(sampled.information, sampled.true_state)
                 result = run_deterministic_episode(
                     sampled, horizon=self.horizon, policy=self.continuation_policy,
                     max_steps=self.max_episode_steps,
@@ -230,23 +244,9 @@ def _mix_values(values: Sequence[WinDistributionValue]) -> WinDistributionValue:
     if not values:
         raise ValueError("cannot average zero values")
     horizon = values[0].horizon
-    exact = [0.0] * horizon
-    no_win = 0.0
-    families: Counter[str] = Counter()
-    for value in values:
-        if value.horizon != horizon:
-            raise ValueError("cannot mix values with different horizons")
-        for i, mass in enumerate(value.exact_win):
-            exact[i] += float(mass)
-        no_win += float(value.no_win)
-        for family, mass in value.win_families:
-            families[str(family)] += float(mass)
-    n = float(len(values))
-    return WinDistributionValue(
-        horizon=horizon,
-        exact_win=tuple(mass / n for mass in exact),
-        no_win=no_win / n,
-        win_families=tuple((family, mass / n) for family, mass in sorted(families.items())),
+    weight = 1.0 / len(values)
+    return WinDistributionValue.mixture(
+        tuple((weight, value) for value in values), horizon=horizon
     )
 
 
@@ -308,7 +308,7 @@ class MulliganStageModel:
             return MulliganDecision(int(stage), keep_size_for_stage(stage), "Keep", keep_eval.best, None, True)
         mulligan_value = self.continuation_value(stage)
         assert mulligan_value is not None
-        decision = "Keep" if keep_eval.best.value >= mulligan_value else "Mulligan"
+        decision = "Keep" if value_at_least(keep_eval.best.value, mulligan_value) else "Mulligan"
         return MulliganDecision(int(stage), keep_size_for_stage(stage), decision, keep_eval.best, mulligan_value, False)
 
 
@@ -342,7 +342,7 @@ class MulliganStageTrainer:
             for sample_id in range(self.hand_samples_per_stage):
                 seven = _sample_fresh_seven(self.deck, root_seed=self.mc_root_seed, stage=stage, sample_id=sample_id)
                 keep = evaluator.evaluate(seven, stage=stage).best.value
-                if continuation is None or keep >= continuation.value:
+                if continuation is None or value_at_least(keep, continuation.value):
                     chosen_values.append(keep); kept += 1
                 else:
                     chosen_values.append(continuation.value); mulled += 1
