@@ -3059,57 +3059,212 @@ def special_actions(s:State)->List[State]:
 def active_creatures(s:State)->set:
     return {p.name for p in s.battlefield if p.name in F_CREATURES|{COMMANDER} and not p.sick}
 
-# Zero-mana nonland artifacts that can be bounced and replayed indefinitely.
-# Mox Diamond is deliberately excluded: replaying it repeatedly requires a fresh
-# land discard each time, so it is not an infinite Knack/Helix loop piece.
-KNUCK_REPLAY_ZERO_ARTIFACTS=frozenset(ZERO_ARTIFACTS-{"Mox Diamond"})
+
+# Repeatable artifact-loop economics.
+#
+# Important distinction:
+# * only a few rocks are intrinsically mana-positive without Urza;
+# * with Urza, every repeatable artifact can be tapped for +U, so zero-drops
+#   become positive and ordinary one-drops become neutral;
+# * visible producers can further improve the steady-state replay margin.
+#
+# Mox Diamond is never considered repeatable: every recast would require a fresh
+# land discard, so its printed mana value of zero is misleading for loop logic.
+REPLAY_NEVER_REPEAT=frozenset({"Mox Diamond"})
+
+# Human-audited base classes with Urza in play and no additional producer
+# rebates. Sewer-veillance Cam is positive only when its ETB can untap a
+# different artifact creature that Urza can convert to another +U.
+URZA_REPLAY_POSITIVE_BASE=frozenset({
+    "Sol Ring","Mana Vault","Grim Monolith",
+    "Welding Jar","Tormod's Crypt","Jeweled Amulet","Mox Opal","Chrome Mox",
+    "Mishra's Bauble","Urza's Bauble","Lotus Petal","Everflowing Chalice",
+})
+URZA_REPLAY_NEUTRAL_BASE=frozenset({
+    "Aether Spellbomb","Basalt Monolith","Grafdigger's Cage","Giant's Boulder",
+    "Grinding Station","Manifold Key","Moonsnare Prototype","Pithing Needle",
+    "Prized Statue","Sensei's Divining Top","Witching Well","Vexing Bauble",
+    "Voltaic Key","Hope of Ghirapur","Codex Shredder","Fugitive Droid",
+})
+NATIVE_REPLAY_POSITIVE_BASE=frozenset({
+    "Sol Ring","Mana Vault","Grim Monolith","Mox Opal",
+})
+NATIVE_REPLAY_NEUTRAL_BASE=frozenset(
+    (ZERO_ARTIFACTS-{"Mox Diamond"})|{"Basalt Monolith"}
+)
+
+
+def _replay_card_present(s:State,card:str)->bool:
+    return card in s.hand or any(p.name==card for p in s.battlefield)
+
+
+def _replay_post_entry_artifact_count(s:State,card:str)->int:
+    """Artifact count after the candidate has been replayed onto the battlefield."""
+    already_present=any(p.name==card for p in s.battlefield)
+    return artifact_count(s)+(0 if already_present else 1)
+
+
+def _native_repeatable_mana_yield(s:State,card:str)->int:
+    """Mana one replayed artifact can repeatedly make without using Urza."""
+    if card=="Sol Ring":
+        return 2
+    if card in {"Mana Vault","Grim Monolith","Basalt Monolith"}:
+        return 3
+    if card=="Mox Opal" and _replay_post_entry_artifact_count(s,card)>=3:
+        return 1
+    # Lotus Petal and other sacrificial/one-shot objects are deliberately zero:
+    # sacrificing the object destroys the bounce/replay recurrence.
+    return 0
+
+
+def _cam_extra_urza_untap_available(s:State,source:Perm,card:str)->bool:
+    """Cam is +1 above neutral only with a distinct artifact creature to untap."""
+    if card!="Sewer-veillance Cam" or not s.urza:
+        return False
+    for p in s.battlefield:
+        if p.instance_tag==source.instance_tag:
+            continue
+        if p.name==card:
+            continue
+        if is_artifact_perm(p) and is_creature_perm(p):
+            return True
+    return False
+
+
+def _steady_replay_producer_bonus(s:State,source:Perm,card:str)->int:
+    """Steady-state +U supplied by additional visible producers.
+
+    Station/Golem each contribute one reusable Urza tap from the replay ETB.
+    Gadgeteer contributes one Clue per artifact cast; the Clue is another +U.
+    Each Gadgeteer Clue also creates another ETB for each Station/Golem.
+    """
+    if not s.urza:
+        return 0
+
+    station_golem=0
+    gadgeteer=0
+    for p in s.battlefield:
+        if p.instance_tag==source.instance_tag:
+            continue
+        if p.name==card:
+            continue
+        if p.name in {"Grinding Station","Battered Golem"}:
+            station_golem += 1
+        elif p.name=="Forensic Gadgeteer":
+            gadgeteer += 1
+
+    return station_golem + gadgeteer + station_golem*gadgeteer
+
+
+def replay_mana_margin(s:State,source:Perm,card:str)->Optional[int]:
+    """Steady-state mana gained per legal Knack/Helix bounce/recast cycle.
+
+    Positive means unbounded mana. Zero is mana-neutral and can be promoted by
+    another visible producer. Negative cards require enough producer rebates to
+    move classes. This is repeatability logic, not a generic card-value score.
+    """
+    if card in REPLAY_NEVER_REPEAT or card not in ARTIFACTS:
+        return None
+    if not _replay_card_present(s,card):
+        return None
+
+    generic,blue_req=spell_cost(s,card,outside=False)
+    cast_cost=generic+blue_req
+    native=_native_repeatable_mana_yield(s,card)
+    urza_yield=1 if s.urza else 0
+    produced=max(native,urza_yield)
+
+    if s.urza:
+        # A replayed Station/Golem can be tapped once before its own untap
+        # trigger resolves and once after. The ordinary Urza tap is already the
+        # base +1; this is the extra self-entry +1.
+        if card in {"Grinding Station","Battered Golem"}:
+            produced += 1
+
+        # Prized Statue creates a Treasure on ETB, yielding the second mana that
+        # makes the {2} replay neutral under Urza.
+        if card=="Prized Statue":
+            produced += 1
+
+        # Cam is neutral by itself under Urza. A distinct artifact creature can
+        # be tapped, untapped by Cam ETB, and tapped again for one extra +U.
+        if _cam_extra_urza_untap_available(s,source,card):
+            produced += 1
+
+        produced += _steady_replay_producer_bonus(s,source,card)
+
+    return produced-cast_cost
+
+
+def _replay_refreshes_knack_source(source:Perm,card:str)->bool:
+    if source.name=="Battered Golem":
+        return card in ARTIFACTS
+    if source.name=="Valley Floodcaller":
+        return card in ARTIFACTS and card not in CREATURES
+    return False
+
+
+def _candidate_replay_cards(s:State,source:Perm)->Tuple[str,...]:
+    rows=set()
+    for card in s.hand:
+        if card in ARTIFACTS and card not in REPLAY_NEVER_REPEAT:
+            rows.add(card)
+    for p in s.battlefield:
+        if p.instance_tag==source.instance_tag:
+            continue
+        if p.name in ARTIFACTS and p.name not in REPLAY_NEVER_REPEAT:
+            rows.add(p.name)
+    return tuple(sorted(rows))
+
 
 def zero_or_positive_replay_artifacts(s:State)->set:
-    # Conservative profitable replay set; exact iterative economics are searched elsewhere.
-    return set(bf_names(s)) & (ZERO_ARTIFACTS|{"Sol Ring","Mana Vault"})
+    """Compatibility helper for existing diagnostics."""
+    dummy=Perm("Valley Floodcaller",instance_tag=-1)
+    rows=set()
+    for card in set(s.hand)|set(bf_names(s)):
+        margin=replay_mana_margin(s,dummy,card)
+        if margin is not None and margin>=0:
+            rows.add(card)
+    return rows
+
 
 def knack_replay_loop_family(s:State)->str:
-    """Recognize deterministic Urza + Knack/Helix replay loops.
+    """Recognize deterministic positive Knack/Helix replay loops.
 
-    Battered Golem untaps when the replayed artifact enters. Valley Floodcaller
-    untaps when the replayed noncreature artifact is cast. With Urza in play, a
-    zero-mana replay artifact can be tapped for +U before the Knack/Helix bounce,
-    producing unbounded blue mana and therefore a terminal Urza line.
-
-    Sol Ring / Mana Vault are also profitable replay pieces when already untapped
-    on the battlefield: tap them natively, bounce, recast, and repeat.
-
-    A zero-cost replay card still in hand can start the engine even when the
-    Knack creature is currently tapped, because the first cast supplies the
-    Golem/Floodcaller untap trigger.
+    The source must be a live Battered Golem or Valley Floodcaller carrying the
+    grant. The replay artifact must refresh that source every cycle. Base
+    positive artifacts win directly; neutral/negative artifacts win only when
+    visible Urza/producer economics promote the steady-state margin above zero.
     """
     if not s.urza:
         return ""
-    zero_in_hand=any(card in KNUCK_REPLAY_ZERO_ARTIFACTS for card in s.hand)
-    zero_on_battlefield=any(
-        p.name in KNUCK_REPLAY_ZERO_ARTIFACTS and is_artifact_perm(p)
-        for p in s.battlefield
-    )
-    profitable_native_on_battlefield=any(
-        p.name in {"Sol Ring","Mana Vault"} and not p.tapped
-        for p in s.battlefield
-    )
 
-    for p in s.battlefield:
-        if not is_knack_target_perm(s,p) or p.sick:
+    for source in s.battlefield:
+        if not is_knack_target_perm(s,source) or source.sick:
             continue
-        if p.name not in {"Battered Golem","Valley Floodcaller"}:
+        if source.name not in {"Battered Golem","Valley Floodcaller"}:
             continue
-        if zero_in_hand:
-            return (
-                "Knack/Helix + Battered Golem"
-                if p.name=="Battered Golem"
-                else "Knack/Helix + Valley Floodcaller"
+
+        for card in _candidate_replay_cards(s,source):
+            if not _replay_refreshes_knack_source(source,card):
+                continue
+
+            in_hand=card in s.hand
+            on_battlefield=any(
+                p.name==card and p.instance_tag!=source.instance_tag
+                for p in s.battlefield
             )
-        if not p.tapped and (zero_on_battlefield or profitable_native_on_battlefield):
+            if source.tapped and not in_hand:
+                continue
+            if not in_hand and not on_battlefield:
+                continue
+
+            margin=replay_mana_margin(s,source,card)
+            if margin is None or margin<=0:
+                continue
             return (
                 "Knack/Helix + Battered Golem"
-                if p.name=="Battered Golem"
+                if source.name=="Battered Golem"
                 else "Knack/Helix + Valley Floodcaller"
             )
     return ""
