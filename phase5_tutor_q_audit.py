@@ -95,6 +95,12 @@ def _candidate_subset(policy, request, fresh_actions):
     chosen = policy.choose(request.observation, fresh_actions, request.context)
     by_key = {action.strategic_key(): action for action in tutor_actions}
     by_key.setdefault(chosen.strategic_key(), chosen)
+    # If the tutor is currently castable, explicitly compare firing it now with
+    # holding it for a later turn.  This is essential for cases like Mystical
+    # Tutor finding a UU spell when the visible mana development cannot support it.
+    for action in fresh_actions:
+        if action.kind == "main_end_turn":
+            by_key.setdefault(action.strategic_key(), action)
     return tuple(by_key[key] for key in sorted(by_key, key=repr)), "tutor_vs_v6_choice"
 
 
