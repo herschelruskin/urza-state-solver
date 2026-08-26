@@ -89,6 +89,7 @@ def test_shared_terminal_recognition():
             solver.State(
                 turn=3, library=("Island",), hand=(), urza=True,
                 commander_in_command_zone=False, chip_attached=True,
+                chip_target=solver.COMMANDER,
                 battlefield=(
                     solver.Perm(solver.COMMANDER, sick=False),
                     solver.Perm("Sensei's Divining Top"),
