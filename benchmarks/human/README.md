@@ -7,8 +7,8 @@ They are **benchmarks/calibration data**, not Magic rules and not hardcoded poli
 
 Files:
 
-- `human_mulligan_benchmark.json` — canonical machine-readable fixture.
-- `human_mulligan_hands_clean.csv` — flat inspection/analysis form when needed outside CI.
+- `human_mulligan_exact_hands.json` — compact machine-readable exact visible-state fixture.
+- `human_mulligan_benchmark_summary.json` — benchmark semantics, QC, and aggregate annotations.
 
 Semantics:
 
@@ -21,21 +21,31 @@ Semantics:
 - `Decision` is the primary human label.
 - Recorded London bottoms are a secondary label when the row is reconstructable.
 - Hand ratings are conditional on keep size. Do **not** compare a numeric rating across different keep sizes.
-- `Would Keep at` / `Would Bottom` are exploratory only because completion/semantics were inconsistent.
+- Counterfactual `keep this same seven as a six?` annotations are exploratory. `Uncertain` must remain uncertainty rather than being coerced into a binary label.
 - Free-text justifications are qualitative policy evidence, not permission to hardcode the prose as rules.
 
-QC:
+QC and recovered source information:
 
 - 36 annotated rows total.
-- 33 exact visible states are usable as human decision fixtures.
-- Hands 10, 30, and 36 are excluded from exact-state regression until corrected.
-- Hands 24 and 34 contain `Fugitive Droid`. They are valid historical annotations, but that card is absent from the current `decklist.txt`; runners should report/skip deck-snapshot drift instead of silently changing the fixture.
+- 35 exact visible states are usable and runnable against the normalized current benchmark deck snapshot.
+- Hand 10 is unrecoverable and remains excluded from exact-state regression.
+- Hand 30's missing seventh card was recovered as `Swan Song`.
+- Hand 36's missing seventh card was recovered as `Uthros Research Craft`.
+- Hands 24 and 34 were recorded during a tentative late `Fugitive Droid` trial replacing `Codex Shredder`. For common-snapshot evaluation they are normalized back to `Codex Shredder`, while the recorded Fugitive Droid seven remains stored as provenance.
+
+Counterfactual keep-at-six notes:
+
+- Hand 22: keep as six, bottom `Vexing Bauble`.
+- Hand 23: uncertain, leaning mulligan; if kept as six, provisional bottom `Saprazzan Skerry`.
+- Hand 32: uncertain, leaning mulligan; if kept as six, provisional bottom `Mana Drain`.
+- Hand 35: still mulligan as six.
 
 Recommended evaluation:
 
 - keep/mull agreement by mulligan stage / keep size;
 - bottom-choice agreement or value regret on reconstructable keeps;
 - disagreement reports with estimated `V(keep)` vs `V(mull)`;
+- explicit reporting of borderline / low-value-gap hands;
 - explanation diagnostics against the human justifications.
 
 Do not require exact human agreement as a rules-engine regression gate. A Monte Carlo policy may legitimately outperform or disagree with a human label.
@@ -46,6 +56,10 @@ Files:
 
 - `human_goldfish_baseline.json` — aggregate calibration targets.
 - the cleaned row-level CSV remains an analysis artifact and need not be loaded by production code.
+
+Deck snapshot:
+
+- The 250 historical goldfishes are treated as the same `Codex Shredder` deck snapshot used for benchmark normalization. The only known deck deviation in the annotated-hand material is the tentative Fugitive Droid trial in hands 24 and 34.
 
 Core endpoint semantics:
 
