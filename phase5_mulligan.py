@@ -34,6 +34,7 @@ from non_oracle_runtime import make_runtime_state
 from phase3_value_engine import WinDistributionValue
 from phase4_hidden_world import SampledHiddenWorld, materialize_hidden_world
 from phase4_monte_carlo import _episode_outcome, _value_from_outcomes, _wilson_interval
+from phase5_monte_carlo import MODELED_TERMINALS
 from solver_architecture import InformationState
 
 PHASE5_MULLIGAN_VERSION = "urza-mulligan-dp-v1"
@@ -215,8 +216,10 @@ class OpeningKeepEvaluator:
                 )
                 reason = str(result.terminal_reason)
                 reasons_by_bottom[bottom][reason] += 1
-                if self.strict_terminal_reasons and reason not in {"win", "horizon"}:
-                    raise MulliganEvaluationError(f"opening rollout terminated with unmodeled reason {reason!r}")
+                if self.strict_terminal_reasons and reason not in MODELED_TERMINALS:
+                    raise MulliganEvaluationError(
+                        f"opening rollout terminated with unmodeled reason {reason!r}"
+                    )
                 outcomes_by_bottom[bottom].append(_episode_outcome(result, horizon=self.horizon))
 
         estimates = []
