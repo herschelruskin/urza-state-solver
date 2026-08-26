@@ -6,16 +6,16 @@ transitions to ``non_oracle_rules_adapter`` and merges only mechanically evidenc
 public surfaces that the Oracle can use but the frozen adapter did not expose:
 
 * fetchland activation;
-* Banishing Knack / Retraction Helix granted-bounce activation;
-* Fortune Teller's Talent class-level actions (implementation already existed,
-  but was orphaned from the action surface).
+* Banishing Knack / Retraction Helix granted-bounce activation.
+
+FTT leveling, Chrome Dome, Top/Key, tutors, and other already-connected surfaces
+remain owned by the frozen adapter and its existing submodules.
 """
 
 from __future__ import annotations
 
 from decision_observation import DecisionRequest
 import non_oracle_rules_adapter as base
-from non_oracle_ftt_runtime import MAIN_LEVEL_FTT, apply_ftt_level_action, ftt_level_main_intents
 from non_oracle_public_parity_runtime import (
     PUBLIC_PARITY_KINDS,
     apply_public_parity_action,
@@ -35,15 +35,9 @@ def _merge_request(request: DecisionRequest, extra_actions) -> DecisionRequest:
     )
 
 
-def _phase5_main_actions(runtime):
-    rows = list(public_parity_main_intents(runtime))
-    rows.extend(ftt_level_main_intents(runtime))
-    return tuple(sorted(rows, key=lambda action: action.action_id))
-
-
 def main_phase_intents(runtime):
     rows = list(base.main_phase_intents(runtime))
-    rows.extend(_phase5_main_actions(runtime))
+    rows.extend(public_parity_main_intents(runtime))
     by_key = {action.canonical_key(): action for action in rows}
     return tuple(sorted(by_key.values(), key=lambda action: action.action_id))
 
@@ -69,12 +63,10 @@ def rules_decision_request(
         return _merge_request(request, public_parity_priority_actions(runtime))
     if runtime.true_state.remora_upkeep_pending:
         return request
-    return _merge_request(request, _phase5_main_actions(runtime))
+    return _merge_request(request, public_parity_main_intents(runtime))
 
 
 def apply_main_action(runtime, action):
     if action.kind in PUBLIC_PARITY_KINDS:
         return apply_public_parity_action(runtime, action)
-    if action.kind == MAIN_LEVEL_FTT:
-        return apply_ftt_level_action(runtime, action)
     return base.apply_main_action(runtime, action)
