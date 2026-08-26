@@ -4,7 +4,8 @@
 This is intentionally *not* a new heuristic tutor table.  The frozen rollout-v6
 policy remains the cheap continuation policy.  A rules-side controller invokes
 belief-safe Monte Carlo only when v6 is about to commit to a tutor/search action or
-when a tutor/search commitment is already asking for its target/sacrifice/X choice.
+when a tutor/search commitment is already asking for its target/sacrifice/X choice,
+or when v6 would end the turn despite a currently castable tutor.
 
 The controller:
 1. screens all strategically distinct legal candidates with common hidden worlds;
@@ -163,20 +164,48 @@ class SelectiveTutorQController:
         if kinds & PENDING_TUTOR_Q_KINDS:
             return _representatives(fresh_actions)
 
-        if base.kind not in MAIN_TUTOR_KINDS:
+        tutor_actions=tuple(
+            action for action in fresh_actions if action.kind in MAIN_TUTOR_KINDS
+        )
+        if not tutor_actions:
+            return ()
+
+        # First selective-Q slice:
+        #   * if v6 wants a tutor, compare that commitment with all other tutors,
+        #     holding/end-turn, and the strongest ordinary v6-scored alternative;
+        #   * if v6 wants to end the turn while a tutor is castable, compare hold
+        #     versus firing the tutor now. This directly addresses the reproduced
+        #     stranded-tutor trajectories without Q-controlling every main action.
+        if base.kind not in MAIN_TUTOR_KINDS and base.kind!="main_end_turn":
             return ()
 
         rows={
-            action.strategic_key():action
-            for action in fresh_actions if action.kind in MAIN_TUTOR_KINDS
+            action.strategic_key():action for action in tutor_actions
         }
         rows.setdefault(base.strategic_key(),base)
 
-        # At an initial tutor commitment, compare firing the tutor with holding
-        # for the next turn.  This captured the reproduced H19/H24 timing errors.
         for action in fresh_actions:
             if action.kind=="main_end_turn":
                 rows.setdefault(action.strategic_key(),action)
+
+        if base.kind in MAIN_TUTOR_KINDS:
+            ordinary=[
+                action for action in fresh_actions
+                if action.kind not in MAIN_TUTOR_KINDS
+                and action.kind!="main_end_turn"
+            ]
+            if ordinary:
+                best_other=max(
+                    ordinary,
+                    key=lambda action:(
+                        self.policy.action_score(
+                            request.observation,action,request.context
+                        ),
+                        repr(action.strategic_key()),
+                    ),
+                )
+                rows.setdefault(best_other.strategic_key(),best_other)
+
         return tuple(rows[key] for key in sorted(rows,key=repr))
 
     def choose(self,runtime,request,fresh_actions):
