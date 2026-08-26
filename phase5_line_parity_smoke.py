@@ -12,18 +12,27 @@ from non_oracle_public_parity_runtime import (
     MAIN_ACTIVATE_FETCH,
     MAIN_ACTIVATE_KNACK_BOUNCE,
 )
+from non_oracle_urza_runtime import MAIN_USE_URZA_PERMISSION
+from non_oracle_urza_search_permission_runtime import USE_CAST_SIMPLE_TUTOR
+from non_oracle_urza_x_permission_runtime import USE_CAST_RESHAPE, USE_CAST_WHIR
 from solver_architecture import InformationState, canonical_markov_state_key
+from urza_permission_adapter import UrzaPermissionState
 
 
-def _action(runtime, *, kind=None, label_contains=None):
+def _action(runtime, *, kind=None, label_contains=None, parameter=None):
     request = rules_decision_request(runtime, horizon=6, policy_id="line-parity-smoke")
     rows = list(request.actions)
     if kind is not None:
         rows = [row for row in rows if row.kind == kind]
     if label_contains is not None:
         rows = [row for row in rows if label_contains in row.label]
+    if parameter is not None:
+        key, value = parameter
+        rows = [row for row in rows if dict(row.parameters).get(key) == value]
     if not rows:
-        raise AssertionError(f"no matching action kind={kind!r} label={label_contains!r}")
+        raise AssertionError(
+            f"no matching action kind={kind!r} label={label_contains!r} parameter={parameter!r}"
+        )
     return sorted(rows, key=lambda row: row.action_id)[0]
 
 
@@ -244,11 +253,63 @@ def test_knack_bounce_recast_loop_surface():
     print("Knack/Helix bounce -> recast -> producer untap loop surface: PASS")
 
 
+def _permission_runtime(card, *, library, battlefield=()):
+    permissions = UrzaPermissionState().grant(card, 2)
+    return make_runtime_state(
+        solver.State(
+            turn=2,
+            library=tuple(library),
+            hand=(),
+            battlefield=tuple(battlefield),
+            exile=(card,),
+        ),
+        permissions=permissions,
+    )
+
+
+def test_urza_permission_extension_production_path():
+    mystical = _permission_runtime(
+        "Mystical Tutor",
+        library=("Dramatic Reversal", "Island", "Sol Ring"),
+    )
+    mystical_action = _action(
+        mystical,
+        kind=MAIN_USE_URZA_PERMISSION,
+        parameter=("use", USE_CAST_SIMPLE_TUTOR),
+    )
+    assert dict(mystical_action.parameters).get("card") == "Mystical Tutor"
+
+    reshape = _permission_runtime(
+        "Reshape",
+        library=("Tormod's Crypt", "Island"),
+        battlefield=(solver.Perm("Sol Ring"),),
+    )
+    reshape_action = _action(
+        reshape,
+        kind=MAIN_USE_URZA_PERMISSION,
+        parameter=("use", USE_CAST_RESHAPE),
+    )
+    assert dict(reshape_action.parameters).get("x") == 0
+
+    whir = _permission_runtime(
+        "Whir of Invention",
+        library=("Tormod's Crypt", "Island"),
+    )
+    whir_action = _action(
+        whir,
+        kind=MAIN_USE_URZA_PERMISSION,
+        parameter=("use", USE_CAST_WHIR),
+    )
+    assert dict(whir_action.parameters).get("x") == 0
+    print("Urza search + X-spell permission production-path installation: PASS")
+
+
 def main():
     test_shared_terminal_recognition()
     test_fetch_parity_and_information_reset()
     test_ftt_level_surface()
     test_knack_bounce_recast_loop_surface()
+    test_urza_permission_extension_production_path()
     print("PHASE5 LINE PARITY SMOKE: ALL PASS")
 
 
