@@ -3217,6 +3217,92 @@ def _candidate_replay_cards(s:State,source:Perm)->Tuple[str,...]:
     return tuple(sorted(rows))
 
 
+def _immediate_replay_mana_capacity(
+    s:State,source:Perm,card:str,*,on_battlefield:bool
+)->Tuple[int,int]:
+    """Return (blue-capable mana, total mana) available for the first replay.
+
+    This is a capacity calculation, not a policy action. It counts only currently
+    usable public mana sources. If the replay card starts on the battlefield it
+    must first be bounced, so both that permanent and the Knack source are
+    unavailable to pay for the recast. If the card starts in hand, a Battered
+    Golem source may tap through Urza before the cast because that cast untaps it.
+    """
+    blue_capable=s.blue
+    total=s.blue+s.colorless
+    metal=artifact_count(s)>=3
+
+    for p in s.battlefield:
+        if p.tapped:
+            continue
+        if on_battlefield and (
+            p.instance_tag==source.instance_tag or p.name==card
+        ):
+            continue
+
+        n=p.name
+        native_total=0
+        native_blue=0
+        if n in {
+            "Island","Cephalid Coliseum","Ipnu Rivulet",
+            "Minamo, School at Water's Edge","Oboro, Palace in the Clouds",
+            "Otawara, Soaring City","Seat of the Synod",
+        }:
+            native_total=native_blue=1
+        elif n in MDFC_BLUE_LANDS and p.mode=="landface":
+            native_total=native_blue=1
+        elif n=="Urza's Saga" and p.counters>=1:
+            native_total=1
+        elif n in {"Ancient Tomb","City of Traitors"}:
+            native_total=2
+        elif n=="Crystal Vein":
+            native_total=2
+        elif n=="Saprazzan Skerry" and p.counters>0:
+            native_total=native_blue=2
+        elif n=="Gemstone Caverns":
+            native_total=1
+            native_blue=1 if p.mode=="luck" else 0
+        elif n=="Sol Ring":
+            native_total=2
+        elif n in {"Mana Vault","Grim Monolith","Basalt Monolith"}:
+            native_total=3
+        elif n=="Mox Opal" and metal:
+            native_total=native_blue=1
+        elif n in {"Chrome Mox","Mox Diamond"} and p.mode in {"imprinted","diamond"}:
+            native_total=native_blue=1
+        elif n=="Everflowing Chalice" and p.counters>0:
+            native_total=p.counters
+        elif n=="Lotus Petal" or p.mode=="treasure":
+            native_total=native_blue=1
+
+        if s.urza and is_artifact_perm(p):
+            # Urza can make U from any untapped artifact. Pick the better native
+            # total output, but if equal prefer the blue-capable Urza use.
+            if native_total<=1:
+                total += 1
+                blue_capable += 1
+            else:
+                total += native_total
+                blue_capable += native_blue
+        else:
+            total += native_total
+            blue_capable += native_blue
+
+    return blue_capable,total
+
+
+def can_bootstrap_replay_cast(
+    s:State,source:Perm,card:str,*,in_hand:bool,on_battlefield:bool
+)->bool:
+    generic,blue_req=spell_cost(s,card,outside=False)
+    if can_pay(s,generic,blue_req):
+        return True
+    blue_capable,total=_immediate_replay_mana_capacity(
+        s,source,card,on_battlefield=(on_battlefield and not in_hand)
+    )
+    return blue_capable>=blue_req and total>=generic+blue_req
+
+
 def zero_or_positive_replay_artifacts(s:State)->set:
     """Compatibility helper for existing diagnostics."""
     dummy=Perm("Valley Floodcaller",instance_tag=-1)
@@ -3260,12 +3346,13 @@ def knack_replay_loop_family(s:State)->str:
                 continue
 
             # Steady-state positivity is not enough: the first replay
-            # must be payable in the current state. Ordinary mana actions may
-            # float resources first; check_win() will be called again after
-            # those actions. This prevents "Grim in hand, zero mana" from being
-            # declared a win merely because Grim is positive once looping.
-            generic,blue_req=spell_cost(s,card,outside=False)
-            if not can_pay(s,generic,blue_req):
+            # must be payable from the current visible resources. Include mana
+            # that can be produced immediately before the first cast, but reserve
+            # the Knack source when it must tap to bounce an artifact already on
+            # the battlefield.
+            if not can_bootstrap_replay_cast(
+                s,source,card,in_hand=in_hand,on_battlefield=on_battlefield
+            ):
                 continue
 
             margin=replay_mana_margin(s,source,card)
