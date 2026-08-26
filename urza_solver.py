@@ -3182,7 +3182,15 @@ def check_win(s:State)->State:
         return replace(s,won=True,win_family=knack_loop)
 
     if "Sensei's Divining Top" in names:
-        if s.chip_attached and not cage_in_play(s) and names & PRODUCERS:
+        chip_active=(
+            s.chip_attached
+            and bool(s.chip_target)
+            and any(
+                p.name=="The Reality Chip" and p.mode=="chip_attached"
+                for p in s.battlefield
+            )
+        )
+        if chip_active and not cage_in_play(s) and names & PRODUCERS:
             return replace(s,won=True,win_family="Top + Reality Chip")
         if s.ftt_level>=3 and s.spell_cast_this_turn and not cage_in_play(s):
             return replace(s,won=True,win_family="Top + FTT L3")
@@ -6570,6 +6578,22 @@ def run_combo_smoke():
     )
     _combo_smoke_case("Top + Reality Chip + producer",s,{"Top + Reality Chip"},4,
                       ("cast Sensei's Divining Top",))
+
+    # Attachment metadata must agree with the actual reconfigured Chip object.
+    # A stale boolean flag is not sufficient to claim top-cast access.
+    stale_chip=State(
+        turn=4,library=("Island",),hand=(),
+        battlefield=(
+            Perm(COMMANDER,sick=False),
+            Perm("The Reality Chip"),
+            Perm("Grinding Station"),
+            Perm("Sensei's Divining Top"),
+        ),
+        urza=True,commander_in_command_zone=False,
+        chip_attached=True,chip_target=COMMANDER
+    )
+    assert not check_win(stale_chip).won
+    print("Top + Chip requires active reconfigure     PASS | stale flag rejected",flush=True)
 
     # 5. FTT L3: require a spell first, then Top.
     # We start with no Top in play so the terminal cannot already be true.
