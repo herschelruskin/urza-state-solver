@@ -3059,9 +3059,60 @@ def special_actions(s:State)->List[State]:
 def active_creatures(s:State)->set:
     return {p.name for p in s.battlefield if p.name in F_CREATURES|{COMMANDER} and not p.sick}
 
+# Zero-mana nonland artifacts that can be bounced and replayed indefinitely.
+# Mox Diamond is deliberately excluded: replaying it repeatedly requires a fresh
+# land discard each time, so it is not an infinite Knack/Helix loop piece.
+KNUCK_REPLAY_ZERO_ARTIFACTS=frozenset(ZERO_ARTIFACTS-{"Mox Diamond"})
+
 def zero_or_positive_replay_artifacts(s:State)->set:
     # Conservative profitable replay set; exact iterative economics are searched elsewhere.
     return set(bf_names(s)) & (ZERO_ARTIFACTS|{"Sol Ring","Mana Vault"})
+
+def knack_replay_loop_family(s:State)->str:
+    """Recognize deterministic Urza + Knack/Helix replay loops.
+
+    Battered Golem untaps when the replayed artifact enters. Valley Floodcaller
+    untaps when the replayed noncreature artifact is cast. With Urza in play, a
+    zero-mana replay artifact can be tapped for +U before the Knack/Helix bounce,
+    producing unbounded blue mana and therefore a terminal Urza line.
+
+    Sol Ring / Mana Vault are also profitable replay pieces when already untapped
+    on the battlefield: tap them natively, bounce, recast, and repeat.
+
+    A zero-cost replay card still in hand can start the engine even when the
+    Knack creature is currently tapped, because the first cast supplies the
+    Golem/Floodcaller untap trigger.
+    """
+    if not s.urza:
+        return ""
+    zero_in_hand=any(card in KNUCK_REPLAY_ZERO_ARTIFACTS for card in s.hand)
+    zero_on_battlefield=any(
+        p.name in KNUCK_REPLAY_ZERO_ARTIFACTS and is_artifact_perm(p)
+        for p in s.battlefield
+    )
+    profitable_native_on_battlefield=any(
+        p.name in {"Sol Ring","Mana Vault"} and not p.tapped
+        for p in s.battlefield
+    )
+
+    for p in s.battlefield:
+        if not is_knack_target_perm(s,p) or p.sick:
+            continue
+        if p.name not in {"Battered Golem","Valley Floodcaller"}:
+            continue
+        if zero_in_hand:
+            return (
+                "Knack/Helix + Battered Golem"
+                if p.name=="Battered Golem"
+                else "Knack/Helix + Valley Floodcaller"
+            )
+        if not p.tapped and (zero_on_battlefield or profitable_native_on_battlefield):
+            return (
+                "Knack/Helix + Battered Golem"
+                if p.name=="Battered Golem"
+                else "Knack/Helix + Valley Floodcaller"
+            )
+    return ""
 
 
 def infinite_colorless_online(s:State)->bool:
@@ -3125,6 +3176,10 @@ def check_win(s:State)->State:
         return replace(s,won=True,win_family="Power Artifact + Basalt")
     if "Forensic Gadgeteer" in names and "Basalt Monolith" in names:
         return replace(s,won=True,win_family="Basalt + Gadgeteer")
+
+    knack_loop=knack_replay_loop_family(s)
+    if knack_loop:
+        return replace(s,won=True,win_family=knack_loop)
 
     if "Sensei's Divining Top" in names:
         if s.chip_attached and not cage_in_play(s) and names & PRODUCERS:
@@ -6623,6 +6678,48 @@ def run_combo_smoke():
     acts=legal_actions(s)
     assert any(x.knack_target for x in acts)
     print("Knack + Golem + positive artifact       PASS | Knack engine setup reachable",flush=True)
+
+    # 13a. Once Knack/Helix is live on Golem, a zero-mana replay artifact is
+    # terminal: bounce/recast untaps Golem and Urza converts each cycle to +U.
+    s=State(
+        turn=5,library=("Island",),hand=(),
+        battlefield=(
+            Perm(COMMANDER,sick=False),
+            Perm("Battered Golem",sick=False,knack_granted=True),
+            Perm("Lotus Petal"),
+        ),
+        urza=True,commander_in_command_zone=False
+    )
+    w=check_win(s)
+    assert w.won and w.win_family=="Knack/Helix + Battered Golem"
+    print("Knack + Golem replay loop              PASS | terminal win recognized",flush=True)
+
+    # 13b. Valley Floodcaller supplies the same recurrence from the cast trigger.
+    s=State(
+        turn=5,library=("Island",),hand=(),
+        battlefield=(
+            Perm(COMMANDER,sick=False),
+            Perm("Valley Floodcaller",sick=False,knack_granted=True),
+            Perm("Everflowing Chalice"),
+        ),
+        urza=True,commander_in_command_zone=False
+    )
+    w=check_win(s)
+    assert w.won and w.win_family=="Knack/Helix + Valley Floodcaller"
+    print("Knack + Floodcaller replay loop         PASS | terminal win recognized",flush=True)
+
+    # Mox Diamond alone must not create a false infinite replay claim.
+    s=State(
+        turn=5,library=("Island",),hand=(),
+        battlefield=(
+            Perm(COMMANDER,sick=False),
+            Perm("Battered Golem",sick=False,knack_granted=True),
+            Perm("Mox Diamond"),
+        ),
+        urza=True,commander_in_command_zone=False
+    )
+    assert not check_win(s).won
+    print("Knack replay excludes Mox Diamond       PASS | no false infinite",flush=True)
 
     # 14. Station ETB conversion. The fast Oracle state takes the post-trigger
     # Urza tap immediately and records it as refundable for native-use branches.
