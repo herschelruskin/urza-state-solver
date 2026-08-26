@@ -86,6 +86,7 @@ def test_producer_promotions():
         ),
         urza=True,
         commander_in_command_zone=False,
+        blue=1,
     )
     assert solver.replay_mana_margin(state,vfc,"Aether Spellbomb")>0
     won=solver.check_win(state)
@@ -107,6 +108,7 @@ def test_producer_promotions():
         ),
         urza=True,
         commander_in_command_zone=False,
+        blue=1,
     )
     assert solver.replay_mana_margin(state,golem,"Sensei's Divining Top")>0
     won=solver.check_win(state)
