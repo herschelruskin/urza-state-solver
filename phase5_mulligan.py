@@ -194,14 +194,41 @@ class OpeningKeepEvaluator:
         self.strict_terminal_reasons = bool(strict_terminal_reasons)
         self.episode_runner = episode_runner or run_deterministic_episode
 
-    def evaluate(self, seven: Sequence[str], *, stage: int) -> OpeningKeepEvaluation:
+    def evaluate(
+        self,
+        seven: Sequence[str],
+        *,
+        stage: int,
+        candidate_bottoms: Sequence[Sequence[str]] | None = None,
+        sample_start: int = 0,
+    ) -> OpeningKeepEvaluation:
         seven = tuple(str(card) for card in seven)
         keep_size = keep_size_for_stage(stage)
-        bottoms = unique_bottom_subsets(seven, stage)
+        legal_bottoms = unique_bottom_subsets(seven, stage)
+        if candidate_bottoms is None:
+            bottoms = legal_bottoms
+        else:
+            legal = set(legal_bottoms)
+            normalized = {
+                tuple(sorted(str(card) for card in bottom))
+                for bottom in candidate_bottoms
+            }
+            invalid = sorted(normalized - legal)
+            if invalid:
+                raise ValueError(
+                    f"candidate bottoms are not legal for stage {stage}: {invalid!r}"
+                )
+            if not normalized:
+                raise ValueError("candidate_bottoms must not be empty")
+            bottoms = tuple(sorted(normalized))
+        if int(sample_start) < 0:
+            raise ValueError("sample_start must be >= 0")
         outcomes_by_bottom = {bottom: [] for bottom in bottoms}
         reasons_by_bottom = {bottom: Counter() for bottom in bottoms}
 
-        for sample_id in range(self.rollout_count):
+        for sample_id in range(
+            int(sample_start), int(sample_start) + self.rollout_count
+        ):
             for bottom in bottoms:
                 root = opening_runtime(self.deck, seven, bottom)
                 world = _opening_world(
