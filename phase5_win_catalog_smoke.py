@@ -74,7 +74,20 @@ def test_chrome_dome():
             colorless=5,
             battlefield=(U,solver.Perm("Chrome Dome"),solver.Perm(producer,sick=False)),
         ),"Chrome Dome")
-    print("catalog: Chrome Dome + Station/Golem PASS")
+    # Obscure positive-copy line: PA on Dome + Gadgeteer reduces {5} to {2};
+    # Mana Vault copies enter untapped and tap for {3}, so each loop nets +1.
+    won(solver.State(
+        turn=4,library=(),hand=(),urza=True,commander_in_command_zone=False,
+        pa_target="Chrome Dome",
+        battlefield=(
+            U,
+            solver.Perm("Chrome Dome",sick=False),
+            solver.Perm("Forensic Gadgeteer",sick=False),
+            solver.Perm("Power Artifact"),
+            solver.Perm("Mana Vault"),
+        ),
+    ),"Chrome Dome + PA + Gadgeteer + Mana Vault")
+    print("catalog: Chrome Dome Station/Golem + PA/Gadgeteer/Vault PASS")
 
 
 def test_gadgeteer():
@@ -106,7 +119,7 @@ def test_knack_helix():
     # VFC + neutral replay + a separate producer.
     won(solver.State(
         turn=4,library=("Island",),hand=("Aether Spellbomb",),urza=True,
-        commander_in_command_zone=False,
+        commander_in_command_zone=False,blue=1,
         battlefield=(U,vfc,solver.Perm("Grinding Station",instance_tag=2)),
     ),"Knack/Helix + Valley Floodcaller")
 
@@ -120,7 +133,7 @@ def test_knack_helix():
     # Golem + neutral replay + a distinct producer.
     won(solver.State(
         turn=4,library=("Island",),hand=("Sensei's Divining Top",),urza=True,
-        commander_in_command_zone=False,
+        commander_in_command_zone=False,blue=1,
         battlefield=(U,golem,solver.Perm("Forensic Gadgeteer",sick=False,instance_tag=12)),
     ),"Knack/Helix + Battered Golem")
 
