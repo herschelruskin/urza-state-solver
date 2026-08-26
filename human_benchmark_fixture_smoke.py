@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Static integrity checks for the versioned human calibration summaries.
+"""Static integrity checks for the versioned human calibration fixtures.
 
 This smoke validates fixture semantics only.  It deliberately does not require a
 solver policy to agree with human choices or exactly reproduce historical rates.
@@ -13,12 +13,20 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 FIXTURE_DIR = ROOT / "benchmarks" / "human"
-MULLIGAN = FIXTURE_DIR / "human_mulligan_benchmark_summary.json"
+MULLIGAN_SUMMARY = FIXTURE_DIR / "human_mulligan_benchmark_summary.json"
+MULLIGAN_EXACT = FIXTURE_DIR / "human_mulligan_exact_hands.json"
 GOLDFISH = FIXTURE_DIR / "human_goldfish_baseline.json"
 
 
+def expected_keep_size(mulligan_count: int) -> int:
+    if mulligan_count in (0, 1):
+        return 7
+    return 8 - mulligan_count
+
+
 def main() -> None:
-    mull = json.loads(MULLIGAN.read_text(encoding="utf-8"))
+    mull = json.loads(MULLIGAN_SUMMARY.read_text(encoding="utf-8"))
+    exact = json.loads(MULLIGAN_EXACT.read_text(encoding="utf-8"))
     gold = json.loads(GOLDFISH.read_text(encoding="utf-8"))
 
     assert mull["n_rows"] == 36
@@ -44,6 +52,39 @@ def main() -> None:
     assert mull["descriptive"]["seven_card_stage"]["initial_m0"]["keep_rate"] == 0.5
     assert mull["descriptive"]["seven_card_stage"]["free_second_m1"]["keep_rate"] == 2 / 3
 
+    hands = exact["hands"]
+    assert len(hands) == 36
+    assert [hand["hand_id"] for hand in hands] == list(range(1, 37))
+    usable = 0
+    runnable = 0
+    excluded = []
+    drift = []
+    for hand in hands:
+        stage = int(hand["mulligan_count"])
+        keep_size = expected_keep_size(stage)
+        assert hand["keep_size"] == keep_size
+        assert hand["decision"] in {"Keep", "Mulligan"}
+        if hand["primary_benchmark_usable"]:
+            usable += 1
+            assert len(hand["drawn_seven"]) == 7
+            if hand["decision"] == "Keep":
+                assert len(hand["cards_bottomed"]) == 7 - keep_size
+                for card in hand["cards_bottomed"]:
+                    assert card in hand["drawn_seven"]
+        else:
+            excluded.append(hand["hand_id"])
+        if hand["current_repo_runnable"]:
+            runnable += 1
+            assert hand["primary_benchmark_usable"]
+            assert not hand["cards_not_in_repo_decklist"]
+        if hand["cards_not_in_repo_decklist"]:
+            drift.append(hand["hand_id"])
+
+    assert usable == 33
+    assert runnable == 31
+    assert excluded == [10, 30, 36]
+    assert drift == [24, 34]
+
     assert gold["source_rows"] == 250
     assert gold["historical_tracking_horizon"] == 7
     assert gold["simulator_terminal_horizon"] == 6
@@ -62,7 +103,8 @@ def main() -> None:
     assert gold["cumulative"]["win_by_t6"]["count"] == 244
     assert gold["cumulative"]["loss_at_t6_horizon"]["count"] == 6
 
-    print("PASS annotated-hand benchmark semantics")
+    print("PASS annotated-hand benchmark summary semantics")
+    print(f"PASS exact annotated hands rows={len(hands)} usable={usable} repo_runnable={runnable}")
     print("PASS 250-run historical outcome baseline semantics")
     print("HUMAN BENCHMARK FIXTURE SMOKE: ALL PASS")
 
