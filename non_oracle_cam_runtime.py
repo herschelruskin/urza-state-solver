@@ -315,6 +315,7 @@ def _apply_effect(runtime, action):
             state,
             f"Phase2 Cam {obj.kind}: {choice} {target.name or target.mode}",
         )
+    state = solver.check_win(state)
     return replace(
         runtime,
         true_state=state,
