@@ -20,20 +20,26 @@ pending decisions:
   only its legal no-imprint branch, matching the Oracle instead of offering a card
   exile that cannot attach to any Chrome Mox.
 
-The Urza extensions must be installed BEFORE importing the frozen rules adapter,
-because that module imports function objects from ``non_oracle_urza_runtime`` by
-name. Search installs first; the X-spell extension deliberately layers on top.
+Import order is part of the runtime contract. Cam's dispatch patch must be installed
+first because Urza search-permission extensions import Transmute/Bay/search modules,
+and those modules bind artifact-entry helpers by name. After Cam is installed, Urza
+search permissions install, then the X-spell permission layer, and only then may the
+frozen rules adapter import its function objects.
 """
 
 from __future__ import annotations
 
 from decision_observation import DecisionRequest
-from non_oracle_urza_search_permission_runtime import install_urza_search_permission_extension
 
+# Install Cam before ANY extension that imports search-resolution modules. This is
+# deliberately idempotent; the frozen rules adapter will call the installer again.
+from non_oracle_cam_runtime import install_cam_runtime_extension
+install_cam_runtime_extension()
+
+from non_oracle_urza_search_permission_runtime import install_urza_search_permission_extension
 install_urza_search_permission_extension()
 
 from non_oracle_urza_x_permission_runtime import install_urza_x_permission_extension
-
 install_urza_x_permission_extension()
 
 # Import only after the extension chain is installed; see module docstring.
