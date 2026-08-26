@@ -195,15 +195,21 @@ class SelectiveTutorQController:
                 and action.kind!="main_end_turn"
             ]
             if ordinary:
-                best_other=max(
-                    ordinary,
-                    key=lambda action:(
-                        self.policy.action_score(
-                            request.observation,action,request.context
+                score_fn=getattr(self.policy,"action_score",None)
+                if callable(score_fn):
+                    best_other=max(
+                        ordinary,
+                        key=lambda action:(
+                            score_fn(
+                                request.observation,action,request.context
+                            ),
+                            repr(action.strategic_key()),
                         ),
-                        repr(action.strategic_key()),
-                    ),
-                )
+                    )
+                else:
+                    best_other=max(
+                        ordinary,key=lambda action:repr(action.strategic_key())
+                    )
                 rows.setdefault(best_other.strategic_key(),best_other)
 
         return tuple(rows[key] for key in sorted(rows,key=repr))
