@@ -31,30 +31,21 @@ def main() -> None:
 
     assert mull["n_rows"] == 36
     assert mull["mulligan_semantics"]["stages"] == {
-        "0": 7,
-        "1": 7,
-        "2": 6,
-        "3": 5,
-        "4": 4,
-        "5": 3,
+        "0": 7, "1": 7, "2": 6, "3": 5, "4": 4, "5": 3, "6": 2,
     }
+    assert mull["mulligan_semantics"]["solver_keep_floor"] == 2
     assert mull["rating_semantics"]["comparability"] == "within keep_size only"
     assert mull["quality"]["primary_benchmark_usable_count"] == 35
     assert mull["quality"]["primary_excluded_hand_ids"] == [10]
     assert mull["quality"]["current_repo_runnable_count"] == 35
     assert mull["quality"]["normalized_card_slot_hand_ids"] == [24, 34]
+    assert mull["quality"]["historical_two_card_goldfishes"] == 5
     assert mull["descriptive"]["decision_counts"] == {"Keep": 27, "Mulligan": 9}
-    assert mull["descriptive"]["by_keep_size"]["7"] == {
-        "n": 22,
-        "keeps": 13,
-        "mulligans": 9,
-    }
+    assert mull["descriptive"]["by_keep_size"]["7"] == {"n": 22, "keeps": 13, "mulligans": 9}
+    assert mull["descriptive"]["by_keep_size"]["2"] == {"n": 0, "keeps": 0, "mulligans": 0}
     assert mull["descriptive"]["seven_card_stage"]["initial_m0"]["keep_rate"] == 0.5
     assert mull["descriptive"]["seven_card_stage"]["free_second_m1"]["keep_rate"] == 2 / 3
-    assert mull["counterfactual_keep_at_six"]["22"] == {
-        "decision": "Keep",
-        "bottom": ["Vexing Bauble"],
-    }
+    assert mull["counterfactual_keep_at_six"]["22"] == {"decision": "Keep", "bottom": ["Vexing Bauble"]}
     assert mull["counterfactual_keep_at_six"]["23"]["decision"] == "Uncertain"
     assert mull["counterfactual_keep_at_six"]["23"]["lean"] == "Mulligan"
     assert mull["counterfactual_keep_at_six"]["32"]["decision"] == "Uncertain"
@@ -67,8 +58,7 @@ def main() -> None:
     assert len(hands) == 36
     assert [hand["hand_id"] for hand in hands] == list(range(1, 37))
     by_id = {hand["hand_id"]: hand for hand in hands}
-    usable = 0
-    runnable = 0
+    usable = runnable = 0
     excluded = []
     for hand in hands:
         stage = int(hand["mulligan_count"])
@@ -109,13 +99,11 @@ def main() -> None:
     assert gold["simulator_terminal_horizon"] == 6
     assert gold["blank_winning_turn_semantics"] == ">T7 / never"
     assert gold["mystic_rhystic_goldfish_rule"] == "2 additional draws per full turn cycle while active"
-    assert gold["outcomes"]["win_turn_counts"] == {
-        "3": 79,
-        "4": 129,
-        "5": 27,
-        "6": 9,
-        "7": 5,
-    }
+    assert gold["mulligan_semantics"]["stages"]["6"] == 2
+    assert gold["mulligan_semantics"]["historical_two_card_keeps"] == 5
+    assert gold["mulligan_semantics"]["solver_keep_floor"] == 2
+    assert gold["mull_distribution"]["6"] == 5
+    assert gold["outcomes"]["win_turn_counts"] == {"3": 79, "4": 129, "5": 27, "6": 9, "7": 5}
     assert gold["outcomes"]["never_gt_t7_count"] == 1
     assert gold["cumulative"]["win_by_t3"]["count"] == 79
     assert gold["cumulative"]["win_by_t4"]["count"] == 208
@@ -124,6 +112,7 @@ def main() -> None:
 
     print("PASS annotated-hand benchmark summary semantics")
     print(f"PASS exact annotated hands rows={len(hands)} usable={usable} repo_runnable={runnable}")
+    print("PASS historical mulligan_count=6 -> keep 2 semantics")
     print("PASS 250-run historical outcome baseline semantics")
     print("HUMAN BENCHMARK FIXTURE SMOKE: ALL PASS")
 
