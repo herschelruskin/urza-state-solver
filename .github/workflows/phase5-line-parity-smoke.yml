@@ -21,7 +21,7 @@ jobs:
           python-version: '3.13'
       - name: Compile parity overlay
         run: |
-          python -m py_compile non_oracle_public_parity_runtime.py non_oracle_chain_offer_runtime.py phase5_transmute_commitment_adapter.py phase5_chrome_trigger_adapter.py non_oracle_rules_adapter_v2.py non_oracle_episode.py phase5_line_parity_smoke.py phase5_chain_offer_smoke.py phase5_chrome_trigger_smoke.py phase5_cam_search_entry_smoke.py phase5_rollout_policy_v4.py phase5_rollout_policy_v5.py phase5_rollout_policy_v5_smoke.py phase5_rollout_policy_v6.py phase5_rollout_policy_v6_smoke.py phase5_episode_cycle_smoke.py phase5_policy_diagnostic.py
+          python -m py_compile non_oracle_public_parity_runtime.py non_oracle_chain_offer_runtime.py phase5_transmute_commitment_adapter.py phase5_chrome_trigger_adapter.py non_oracle_rules_adapter_v2.py non_oracle_episode.py phase5_line_parity_smoke.py phase5_chain_offer_smoke.py phase5_chrome_trigger_smoke.py phase5_cam_search_entry_smoke.py phase5_rollout_policy_v4.py phase5_rollout_policy_v5.py phase5_rollout_policy_v5_smoke.py phase5_rollout_policy_v6.py phase5_rollout_policy_v6_smoke.py phase5_episode_cycle_smoke.py phase5_policy_diagnostic.py phase5_tutor_decision_audit.py
       - name: Oracle/non-Oracle line parity
         run: |
           python phase5_line_parity_smoke.py
@@ -36,11 +36,15 @@ jobs:
         run: python phase5_episode_cycle_smoke.py
       - name: Held-out human-kept trajectory diagnostic
         run: python phase5_policy_diagnostic.py
-      - name: Preserve held-out diagnostic
+      - name: Tutor timing/target audit
+        run: python phase5_tutor_decision_audit.py
+      - name: Preserve held-out diagnostics
         uses: actions/upload-artifact@v4
         with:
           name: phase5-line-parity-diagnostic
-          path: phase5_policy_diagnostic.json
+          path: |
+            phase5_policy_diagnostic.json
+            phase5_tutor_decision_audit.json
       - name: Phase 5 mulligan regression
         run: python phase5_mulligan_smoke.py
       - name: Phase 4 Monte Carlo regression
