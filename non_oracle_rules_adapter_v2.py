@@ -12,6 +12,11 @@ surfaces that the Oracle can use but the production Phase-2 import path omitted:
 * Chain of Vapor self-bounce/copy decisions;
 * An Offer You Can't Refuse self-counter -> two-Treasure lines.
 
+It also adds policy-safe derived metadata at Transmute Artifact's already-public
+post-search target decision so a policy can distinguish payable targets from choices
+that necessarily send the searched card to the graveyard. The annotations are
+stripped before execution; Phase 2 remains the rules authority.
+
 The Urza extensions must be installed BEFORE importing the frozen rules adapter,
 because that module imports function objects from ``non_oracle_urza_runtime`` by
 name. Search installs first; the X-spell extension deliberately layers on top.
@@ -46,6 +51,11 @@ from non_oracle_public_parity_runtime import (
     apply_public_parity_action,
     public_parity_main_intents,
     public_parity_priority_actions,
+)
+from phase5_transmute_commitment_adapter import (
+    annotate_transmute_target_request,
+    handles_transmute_target_request,
+    strip_transmute_target_annotations,
 )
 
 
@@ -104,6 +114,8 @@ def rules_decision_request(
         caverns_live=caverns_live,
     )
     if runtime.pending is not None:
+        if handles_transmute_target_request(runtime):
+            return annotate_transmute_target_request(runtime, request)
         return request
     if runtime.stack.objects:
         return _merge_request(request, _phase5_priority_actions(runtime))
@@ -123,4 +135,4 @@ def apply_main_action(runtime, action):
         return apply_public_parity_action(runtime, action)
     if handles_chain_offer_stack_top(runtime):
         return apply_chain_offer_stack_action(runtime, action)
-    return base.apply_main_action(runtime, action)
+    return base.apply_main_action(runtime, strip_transmute_target_annotations(action))
