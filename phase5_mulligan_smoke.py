@@ -4,6 +4,7 @@
 from pathlib import Path
 
 from phase3_value_engine import WinDistributionValue
+from non_oracle_episode import run_deterministic_episode
 from phase5_mulligan import (
     MULLIGAN_KEEP_FLOOR,
     MULLIGAN_FLOOR_STAGE,
@@ -120,6 +121,30 @@ def test_real_opening_evaluator_runs_one_common_world():
     assert all(len(estimate.bottom) == 1 for estimate in result.estimates)
 
 
+def test_opening_evaluator_accepts_pluggable_episode_runner():
+    deck = load_deck()
+    seven = ("Island", "Sol Ring", "Mana Vault", "Welding Jar", "Swan Song", "The One Ring", "Mox Opal")
+    calls={"n":0}
+
+    def runner(runtime, **kwargs):
+        calls["n"] += 1
+        return run_deterministic_episode(runtime, **kwargs)
+
+    evaluator = OpeningKeepEvaluator(
+        deck,
+        rollout_count=1,
+        mc_root_seed=23,
+        horizon=1,
+        strict_terminal_reasons=False,
+        max_episode_steps=128,
+        episode_runner=runner,
+    )
+    result=evaluator.evaluate(seven,stage=2)
+    assert len(result.estimates)==7
+    assert calls["n"]==7
+    print("pluggable opening continuation runner: PASS")
+
+
 def main():
     tests = (
         test_stage_and_bottom_counts,
@@ -128,6 +153,7 @@ def main():
         test_value_comparison_uses_phase3_semantics,
         test_floor_forces_keep_and_nonfloor_compares_continuation,
         test_real_opening_evaluator_runs_one_common_world,
+        test_opening_evaluator_accepts_pluggable_episode_runner,
     )
     for test in tests:
         test()
