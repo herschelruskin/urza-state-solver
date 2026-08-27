@@ -1,0 +1,31 @@
+name: Phase 5H adaptive confidence paired-4 evaluation
+
+on:
+  push:
+    branches:
+      - phase5-adaptive-confidence-q-eval
+  workflow_dispatch:
+
+jobs:
+  paired4:
+    strategy:
+      fail-fast: false
+      matrix:
+        hand_id: [12, 13, 19, 20, 21, 24, 25, 27, 29, 33]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile paired-4 evaluation
+        run: python -m py_compile phase5_q_targeted_paired4.py
+      - name: Run paired-4 hand
+        run: python phase5_q_targeted_paired4.py --hand-id ${{ matrix.hand_id }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5-q-targeted-paired4-hand${{ matrix.hand_id }}
+          path: phase5_q_targeted_paired4_hand${{ matrix.hand_id }}.json
