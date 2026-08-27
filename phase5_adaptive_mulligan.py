@@ -161,7 +161,7 @@ class AdaptiveOpeningKeepEvaluator:
         self.policy=continuation_policy or DeterministicRolloutPolicyV6(
             policy_id=PHASE5_ROLLOUT_POLICY_V6
         )
-        self.cache=decision_cache or Phase5DecisionCache()
+        self.cache=decision_cache if decision_cache is not None else Phase5DecisionCache()
         self.opening_environment=opening_environment or OpeningEnvironment()
 
         screen_runner=make_selective_tutor_q_episode_runner(
