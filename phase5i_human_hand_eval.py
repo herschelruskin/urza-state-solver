@@ -21,7 +21,7 @@ import json
 from pathlib import Path
 
 from phase3_value_engine import WinDistributionValue
-from phase5_mulligan import OpeningEnvironment
+from phase5_mulligan import OpeningEnvironment, keep_size_for_stage
 from phase5i_mulligan import Phase5IOpeningKeepEvaluator
 
 
@@ -170,7 +170,7 @@ def evaluate_context(deck,row,label,environment,weight):
         "seat":environment.seat,
         "caverns_live":environment.caverns_live,
         "stage":stage,
-        "keep_size":7-stage if stage>=2 else 7,
+        "keep_size":keep_size_for_stage(stage),
         "solver":{
             "best":estimate_json(best),
             "legal_bottom_count":solved.legal_bottom_count,
