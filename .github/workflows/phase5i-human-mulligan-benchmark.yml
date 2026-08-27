@@ -1,0 +1,102 @@
+name: Phase 5I held-out human mulligan benchmark
+
+on:
+  push:
+    branches:
+      - phase5i-production-q-mulligan
+    paths:
+      - .github/workflows/phase5i-human-mulligan-benchmark.yml
+  workflow_dispatch:
+
+concurrency:
+  group: phase5i-human-benchmark-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  train-stage-model:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile training harness
+        run: |
+          python -m py_compile phase5i_stage_model_train.py
+          python -m py_compile phase5_adaptive_mulligan.py
+      - name: Train unlabeled backward-DP stage model
+        run: |
+          python phase5i_stage_model_train.py \
+            --hand-samples-per-stage 3 \
+            --screen-rollouts-per-bottom 1 \
+            --confirm-rollouts-per-bottom 2 \
+            --shortlist-size 4 \
+            --mc-root-seed 2026082901 \
+            --q-mc-root-seed 2026082902
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-stage-model
+          path: phase5i_stage_model.json
+
+  evaluate-human-hands:
+    needs: train-stage-model
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        hand_id: [1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36]
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/download-artifact@v4
+        with:
+          name: phase5i-stage-model
+      - name: Compile human evaluator
+        run: python -m py_compile phase5i_human_mulligan_eval.py
+      - name: Evaluate exact held-out hand
+        run: |
+          python phase5i_human_mulligan_eval.py \
+            --hand-id ${{ matrix.hand_id }} \
+            --stage-model phase5i_stage_model.json \
+            --screen-rollouts-per-bottom 1 \
+            --confirm-rollouts-per-bottom 2 \
+            --shortlist-size 4 \
+            --mc-root-seed 2026083001 \
+            --q-mc-root-seed 2026083002
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-human-hand-${{ matrix.hand_id }}
+          path: phase5i_human_hand_*.json
+
+  aggregate:
+    needs: evaluate-human-hands
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: phase5i-human-hand-*
+          path: human-results
+          merge-multiple: true
+      - name: Aggregate completed held-out hands
+        run: |
+          python -m py_compile phase5i_human_mulligan_aggregate.py
+          python phase5i_human_mulligan_aggregate.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-human-mulligan-aggregate
+          path: phase5i_human_mulligan_aggregate.json
