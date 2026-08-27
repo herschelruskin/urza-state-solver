@@ -12,6 +12,7 @@ from phase5_rollout_policy_v6 import DeterministicRolloutPolicyV6
 from phase5_selective_tutor_q import (
     CONTINGENT_DEPTH_AFTER_ACTION_KIND,
     contingent_depth_after_action,
+    is_contingent_descendant_decision,
     make_bounded_contingent_tutor_runner,
 )
 
@@ -80,6 +81,44 @@ def simple_tutor_runtime():
         if a.kind=="main_use_simple_tutor" and a.source=="Muddle the Mixture"
     )
     return runtime,tutor
+
+
+def test_simple_tutor_pending_surface_matches_lineage():
+    runtime,tutor=simple_tutor_runtime()
+    runtime=apply_main_action(runtime,tutor)
+
+    # Resolve only the committed Muddle ability. Do not let the leaf policy take
+    # unrelated priority actions while we inspect the post-commit request.
+    for _ in range(8):
+        if runtime.pending is not None:
+            break
+        request=rules_decision_request(
+            runtime,horizon=2,policy_id=FailTutorTargetPolicy.policy_id
+        )
+        passes=[a for a in request.actions if a.kind=="pass_priority"]
+        assert passes,[(a.kind,a.label) for a in request.actions]
+        runtime=apply_main_action(runtime,passes[0])
+    assert runtime.pending is not None
+    assert runtime.pending.spec.source=="Muddle the Mixture"
+    request=rules_decision_request(
+        runtime,horizon=2,policy_id=FailTutorTargetPolicy.policy_id
+    )
+    targets={
+        str(dict(a.parameters).get("target",""))
+        for a in request.actions
+        if a.kind=="choose_tutor_target"
+    }
+    assert "Power Artifact" in targets,targets
+    assert "The Reality Chip" in targets,targets
+    assert is_contingent_descendant_decision(
+        runtime,
+        request.actions,
+        lineage_source="Muddle the Mixture",
+        remaining=1,
+    )
+    print(
+        "Muddle pending search preserves source lineage and exposes PA + Chip: PASS"
+    )
 
 
 def test_post_commit_observation_is_revalued():
@@ -211,6 +250,7 @@ def test_transmute_follows_sacrifice_then_observed_target():
 
 def main():
     test_depth_map_is_strictly_bounded()
+    test_simple_tutor_pending_surface_matches_lineage()
     test_post_commit_observation_is_revalued()
     test_runner_receives_committed_source_lineage()
     test_transmute_follows_sacrifice_then_observed_target()
