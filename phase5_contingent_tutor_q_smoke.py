@@ -17,7 +17,7 @@ from phase5_selective_tutor_q import (
 
 
 class FailTutorTargetPolicy:
-    """v6 everywhere except deliberately fail a simple tutor target."""
+    """v6 everywhere except deliberately choose a nonwinning simple target."""
 
     policy_id="test-v6-fail-simple-target"
 
@@ -27,12 +27,12 @@ class FailTutorTargetPolicy:
     def choose(self,observation,actions,context):
         targets=[a for a in actions if a.kind=="choose_tutor_target"]
         if targets:
-            fail=[
+            bad=[
                 a for a in targets
-                if not str(dict(a.parameters).get("target",""))
+                if str(dict(a.parameters).get("target",""))=="The Reality Chip"
             ]
-            if fail:
-                return sorted(fail,key=lambda a:a.action_id)[0]
+            if bad:
+                return sorted(bad,key=lambda a:a.action_id)[0]
         return self.base.choose(observation,actions,context)
 
     def action_score(self,observation,action,context):
@@ -62,8 +62,8 @@ def simple_tutor_runtime():
         turn=1,
         library=(
             "Power Artifact",
+            "The Reality Chip",
             "Island",
-            "Sensei's Divining Top",
             "Mana Vault",
         ),
         hand=("Muddle the Mixture",),
@@ -87,7 +87,7 @@ def test_post_commit_observation_can_be_q_improved():
     policy=FailTutorTargetPolicy()
 
     # Plain one-step Q commits the tutor then lets the deliberately bad leaf
-    # fail-to-find at the later observed target decision.
+    # choose Reality Chip instead of the terminal Power Artifact target.
     plain=Phase5MonteCarloDecisionEvaluator(
         rollout_count=1,
         mc_root_seed=2026082703,
@@ -145,7 +145,7 @@ def test_runner_receives_committed_source_lineage():
         policy=policy,
         max_steps=128,
     )
-    # The test leaf intentionally fails every simple target. A win therefore
+    # The test leaf intentionally chooses the nonwinning Chip target. A win therefore
     # proves the bounded runner reached the Muddle post-search decision and
     # improved it rather than merely delegating the whole line to the leaf.
     assert result.won_by_horizon,result
