@@ -403,6 +403,7 @@ class SelectiveTutorQController:
             cache=decision_cache,
             continuation_runner=continuation_runner,
             continuation_id=continuation_id,
+            sample_namespace="screen",
         )
         self.confirm=Phase5MonteCarloDecisionEvaluator(
             rollout_count=int(confirm_rollouts),
@@ -414,6 +415,7 @@ class SelectiveTutorQController:
             cache=decision_cache,
             continuation_runner=continuation_runner,
             continuation_id=continuation_id,
+            sample_namespace="confirm",
         )
 
     def _candidate_actions(self,request,fresh_actions,base):
