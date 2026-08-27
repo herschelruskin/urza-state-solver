@@ -110,6 +110,50 @@ def is_contingent_descendant_decision(
     )
 
 
+def committed_lineage_on_stack(
+    runtime:NonOracleRuntimeState,
+    *,
+    lineage_source:str,
+)->bool:
+    """Whether the committed tutor/search object is still unresolved on stack."""
+    source=str(lineage_source)
+    if not source:
+        return False
+    return any(
+        str(obj.source)==source or str(obj.card)==source
+        for obj in runtime.stack.objects
+    )
+
+
+def commitment_corridor_pass_action(
+    runtime:NonOracleRuntimeState,
+    fresh_actions,
+    *,
+    lineage_source:str,
+    remaining:int,
+):
+    """Resolve the committed tutor cleanly until its bounded child decision.
+
+    Q(root tutor) is supposed to value the tutor plus its immediate dependent
+    choice, not let the cheap rollout policy take unrelated mana/development
+    actions while that tutor is waiting on the stack.  Cast-trigger ordering and
+    post-observation/mechanical decisions still go through the frozen policy; at
+    an ordinary priority window, however, passing priority is the canonical
+    commitment-preserving transition.
+    """
+    if int(remaining)<=0 or runtime.pending is not None:
+        return None
+    if not committed_lineage_on_stack(runtime,lineage_source=lineage_source):
+        return None
+    passes=tuple(
+        action for action in fresh_actions
+        if str(action.kind)=="pass_priority"
+    )
+    if not passes:
+        return None
+    return min(passes,key=lambda action:repr(action.strategic_key()))
+
+
 @dataclass(frozen=True)
 class TutorQDecision:
     sequence: int
@@ -266,8 +310,18 @@ def make_bounded_contingent_tutor_runner(
                 action,_=nested.choose(runtime,request,fresh)
                 remaining-=1
             else:
-                action=policy.choose(
-                    request.observation,fresh,request.context
+                corridor=commitment_corridor_pass_action(
+                    runtime,
+                    fresh,
+                    lineage_source=lineage_source,
+                    remaining=remaining,
+                )
+                action=(
+                    corridor
+                    if corridor is not None
+                    else policy.choose(
+                        request.observation,fresh,request.context
+                    )
                 )
 
             attempted.add(action.strategic_key())
