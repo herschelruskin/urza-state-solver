@@ -1,0 +1,88 @@
+name: Phase 5I human pipeline canary
+
+on:
+  push:
+    branches:
+      - phase5i-human-pipeline-canary
+  workflow_dispatch:
+
+concurrency:
+  group: phase5i-human-canary-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Train one-sample stage canary
+        run: |
+          python phase5i_stage_model_train.py \
+            --hand-samples-per-stage 1 \
+            --screen-rollouts-per-bottom 1 \
+            --confirm-rollouts-per-bottom 1 \
+            --shortlist-size 3 \
+            --mc-root-seed 2026083901
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-canary-stage-model
+          path: phase5i_stage_model.json
+
+  hands:
+    needs: train
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        hand_id: [3,1,5,11,14,9]
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/download-artifact@v4
+        with:
+          name: phase5i-canary-stage-model
+      - name: Evaluate stage representative
+        run: |
+          python phase5i_human_mulligan_eval.py \
+            --hand-id ${{ matrix.hand_id }} \
+            --stage-model phase5i_stage_model.json \
+            --screen-rollouts-per-bottom 1 \
+            --confirm-rollouts-per-bottom 1 \
+            --shortlist-size 3 \
+            --mc-root-seed 2026084001
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-canary-hand-${{ matrix.hand_id }}
+          path: phase5i_human_hand_*.json
+
+  aggregate:
+    needs: hands
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: phase5i-canary-hand-*
+          path: human-results
+          merge-multiple: true
+      - run: python phase5i_human_mulligan_aggregate.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-canary-aggregate
+          path: phase5i_human_mulligan_aggregate.json
