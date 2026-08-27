@@ -74,8 +74,8 @@ def main():
             "mulligan_count":stage.mulligan_count,
             "legal_bottoms_screened":stage.legal_bottoms_screened,
             "bottoms_confirmed":stage.bottoms_confirmed,
-            "chosen_terminal_reason_counts":[
-                list(x) for x in stage.chosen_terminal_reason_counts
+            "evaluated_keep_terminal_reason_counts":[
+                list(x) for x in stage.evaluated_keep_terminal_reason_counts
             ],
         },
         "decision":{
