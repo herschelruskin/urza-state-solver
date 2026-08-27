@@ -36,6 +36,8 @@ jobs:
         run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_power_artifact_target_leaf_converts()"
       - name: Observed target Q ranking
         run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_observed_target_q_prefers_power_artifact()"
+      - name: Outer sampled contingent conversion
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_outer_sampled_world_contingent_runner_converts()"
       - name: Transmute two-step chain
         run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_transmute_follows_sacrifice_then_observed_target()"
       - name: Contingent post-commit evaluation
