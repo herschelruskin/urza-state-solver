@@ -17,7 +17,7 @@ from phase5_mulligan import _opening_world, opening_runtime
 from phase5_rollout_policy_v6 import DeterministicRolloutPolicyV6, PHASE5_ROLLOUT_POLICY_V6
 from phase5_selective_tutor_q import SelectiveTutorQController, run_selective_tutor_q_episode
 
-TARGETED=(12,13,19,20,21,24,25,27,29,33)
+TARGETED=(1,30)
 OUTER_WORLD_COUNT=4
 OUTER_SEED=2026082801
 Q_SEED=2026082802
