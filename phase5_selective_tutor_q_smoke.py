@@ -178,6 +178,7 @@ def test_end_turn_with_live_tutor_is_q_evaluated():
         continuation_policy=EndPolicy(),
         screen_rollouts=1,
         confirm_rollouts=1,
+        confidence_gate=False,
     )
     controller.screen=FakeEvaluator({
         "main_use_simple_tutor":0.75,
