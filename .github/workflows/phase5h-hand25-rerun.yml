@@ -1,0 +1,27 @@
+name: Phase 5H hand 25 paired-4 rerun
+
+on:
+  push:
+    branches:
+      - phase5h-hand25-rerun
+  workflow_dispatch:
+
+jobs:
+  paired4:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile paired-4 evaluation
+        run: python -m py_compile phase5_q_targeted_paired4.py
+      - name: Run hand 25
+        run: python phase5_q_targeted_paired4.py --hand-id 25
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5h-hand25-paired4
+          path: phase5_q_targeted_paired4_hand25.json
