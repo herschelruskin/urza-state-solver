@@ -149,7 +149,7 @@ def run_q(sampled,leaf,*,contingent,cache):
 
 def profile_config(profile,fixture):
     if profile=="targeted":
-        return TARGETED_IDS,4
+        return TARGETED_IDS,1
     kept=tuple(
         int(row["hand_id"]) for row in fixture["hands"]
         if row.get("decision")=="Keep"
