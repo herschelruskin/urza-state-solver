@@ -188,6 +188,8 @@ class Phase5MonteCarloDecisionEvaluator:
         max_episode_steps: int = 512,
         strict_terminal_reasons: bool = True,
         cache: Phase5DecisionCache | None = None,
+        continuation_runner=None,
+        continuation_id: str | None = None,
     ):
         if rollout_count < 1:
             raise ValueError("rollout_count must be >= 1")
@@ -200,6 +202,12 @@ class Phase5MonteCarloDecisionEvaluator:
         self.strict_terminal_reasons = bool(strict_terminal_reasons)
         self.sampler = HiddenWorldSampler(self.mc_root_seed)
         self.cache = cache
+        self.continuation_runner = continuation_runner
+        self.continuation_id = str(
+            continuation_id
+            if continuation_id is not None
+            else "deterministic-episode:" + self.continuation_policy.policy_id
+        )
 
     def _request(self, runtime):
         return rules_decision_request(
@@ -225,6 +233,7 @@ class Phase5MonteCarloDecisionEvaluator:
             self.horizon,
             self.objective,
             self.continuation_policy.policy_id,
+            self.continuation_id,
             self.max_episode_steps,
             self.strict_terminal_reasons,
         )
@@ -307,13 +316,23 @@ class Phase5MonteCarloDecisionEvaluator:
                 )
 
             for key in sorted(candidate_keys, key=repr):
-                after = apply_main_action(sampled_runtime, sampled_all[key])
-                result = run_deterministic_episode(
-                    after,
-                    horizon=self.horizon,
-                    policy=self.continuation_policy,
-                    max_steps=self.max_episode_steps,
-                )
+                action = sampled_all[key]
+                after = apply_main_action(sampled_runtime, action)
+                if self.continuation_runner is None:
+                    result = run_deterministic_episode(
+                        after,
+                        horizon=self.horizon,
+                        policy=self.continuation_policy,
+                        max_steps=self.max_episode_steps,
+                    )
+                else:
+                    result = self.continuation_runner(
+                        after,
+                        root_action=action,
+                        horizon=self.horizon,
+                        policy=self.continuation_policy,
+                        max_steps=self.max_episode_steps,
+                    )
                 reason = str(result.terminal_reason)
                 reasons[key][reason] += 1
                 if self.strict_terminal_reasons and reason not in MODELED_TERMINALS:
