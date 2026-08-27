@@ -200,6 +200,25 @@ def test_bottom_racer_uses_identical_frozen_phase5h_gameplay_policy():
     print("bottom screen/confirm share the frozen Phase 5H gameplay policy: PASS")
 
 
+def test_mulligan_rejects_nonproduction_q_seed():
+    deck=tuple(f"C{i}" for i in range(99))
+    try:
+        AdaptiveOpeningKeepEvaluator(
+            deck,
+            screen_rollouts=1,
+            confirm_rollouts=1,
+            shortlist_size=2,
+            mc_root_seed=77,
+            q_mc_root_seed=123,
+            horizon=6,
+        )
+    except ValueError as exc:
+        assert "freezes the gameplay-policy Q root seed" in str(exc),str(exc)
+    else:
+        raise AssertionError("nonproduction Q seed must be rejected")
+    print("mulligan valuation rejects nonproduction Q root seeds: PASS")
+
+
 def test_forced_keep2_stage_is_terminal_mulligan_floor():
     deck=tuple(f"C{i}" for i in range(99))
     trainer=AdaptiveMulliganStageTrainer(
@@ -228,6 +247,7 @@ def main():
     test_bottom_multiset_count_and_keep2_floor()
     test_screening_never_splits_exact_value_tie()
     test_bottom_racer_uses_identical_frozen_phase5h_gameplay_policy()
+    test_mulligan_rejects_nonproduction_q_seed()
     test_forced_keep2_stage_is_terminal_mulligan_floor()
     print("PHASE5 ADAPTIVE MULLIGAN SMOKE: ALL PASS")
 
