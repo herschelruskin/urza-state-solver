@@ -12,6 +12,7 @@ from phase5_adaptive_mulligan import (
     AdaptiveOpeningKeepEvaluation,
     AdaptiveOpeningKeepEvaluator,
 )
+from phase5_selective_tutor_q import PHASE5H_PRODUCTION_TUTOR_Q_CONFIG
 from phase5_mulligan import (
     OpeningKeepEstimate,
     OpeningKeepEvaluation,
@@ -173,6 +174,31 @@ class FakeAdaptiveEvaluator:
         )
 
 
+def test_bottom_racer_uses_identical_frozen_phase5h_gameplay_policy():
+    deck=tuple(f"C{i}" for i in range(99))
+    evaluator=AdaptiveOpeningKeepEvaluator(
+        deck,
+        screen_rollouts=1,
+        confirm_rollouts=2,
+        shortlist_size=2,
+        mc_root_seed=77,
+        q_mc_root_seed=88,
+        horizon=6,
+    )
+    screen_config=evaluator.screen_evaluator.episode_runner.q_policy_config
+    confirm_config=evaluator.confirm_evaluator.episode_runner.q_policy_config
+    assert screen_config==PHASE5H_PRODUCTION_TUTOR_Q_CONFIG
+    assert confirm_config==PHASE5H_PRODUCTION_TUTOR_Q_CONFIG
+    assert screen_config==confirm_config
+    assert screen_config.confidence_gate
+    assert screen_config.contingent
+    assert screen_config.screen_rollouts==1
+    assert screen_config.confirm_rollouts==2
+    assert screen_config.validation_rollouts==2
+    assert screen_config.max_validation_rollouts==8
+    print("bottom screen/confirm share the frozen Phase 5H gameplay policy: PASS")
+
+
 def test_forced_keep2_stage_is_terminal_mulligan_floor():
     deck=tuple(f"C{i}" for i in range(99))
     trainer=AdaptiveMulliganStageTrainer(
@@ -200,6 +226,7 @@ def main():
     test_opening_world_common_random_numbers_and_seed_namespace()
     test_bottom_multiset_count_and_keep2_floor()
     test_screening_never_splits_exact_value_tie()
+    test_bottom_racer_uses_identical_frozen_phase5h_gameplay_policy()
     test_forced_keep2_stage_is_terminal_mulligan_floor()
     print("PHASE5 ADAPTIVE MULLIGAN SMOKE: ALL PASS")
 
