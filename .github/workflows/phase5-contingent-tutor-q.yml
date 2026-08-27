@@ -32,14 +32,26 @@ jobs:
         run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_simple_tutor_pending_surface_matches_lineage()"
       - name: Contingent source traversal
         run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_runner_receives_committed_source_lineage()"
+      - name: PA target leaf conversion
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_power_artifact_target_leaf_converts()"
+      - name: Observed target Q ranking
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_observed_target_q_prefers_power_artifact()"
+      - name: Outer sampled contingent conversion
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_outer_sampled_world_contingent_runner_converts()"
       - name: Transmute two-step chain
         run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_transmute_follows_sacrifice_then_observed_target()"
       - name: Contingent post-commit evaluation
         run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_post_commit_evaluation_completes()"
-      - name: Contingent nested cache activity
-        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_post_commit_nested_cache_activity()"
       - name: Contingent value sanity
         run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_post_commit_value_comparison_is_sane()"
+      - name: Contingent is not worse
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; p,c,_=s._post_commit_evaluations(); assert c.estimates[0].value.win_probability >= p.estimates[0].value.win_probability"
+      - name: Plain synthetic value is zero
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; p,_,_=s._post_commit_evaluations(); assert p.estimates[0].value.win_probability == 0.0"
+      - name: Contingent value improvement
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_post_commit_contingent_strictly_improves_bad_leaf()"
+      - name: Contingent nested cache activity
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_post_commit_nested_cache_activity()"
       - name: Parent tutor-Q and cache regressions
         run: |
           python phase5_selective_tutor_q_smoke.py
