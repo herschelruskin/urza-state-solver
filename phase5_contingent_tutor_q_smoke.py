@@ -181,6 +181,17 @@ def test_post_commit_value_comparison_is_sane():
     )
 
 
+def test_post_commit_contingent_strictly_improves_bad_leaf():
+    plain,contingent,_=_post_commit_evaluations()
+    p_plain=plain.estimates[0].value.win_probability
+    p_contingent=contingent.estimates[0].value.win_probability
+    assert p_contingent>p_plain,(p_plain,p_contingent)
+    print(
+        "bounded contingent Q improves deliberately bad target continuation "
+        f"(plain={p_plain:.3f}, contingent={p_contingent:.3f}): PASS"
+    )
+
+
 def test_post_commit_observation_is_revalued():
     test_post_commit_evaluation_completes()
     test_post_commit_nested_cache_activity()
