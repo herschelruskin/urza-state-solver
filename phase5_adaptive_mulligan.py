@@ -170,7 +170,6 @@ class AdaptiveOpeningKeepEvaluator:
             confirm_rollouts=int(screen_q_rollouts),
             shortlist_size=int(q_shortlist_size),
             decision_cache=self.cache,
-            opening_environment=self.opening_environment,
         )
         confirm_runner=make_selective_tutor_q_episode_runner(
             mc_root_seed=self.q_mc_root_seed,
@@ -321,6 +320,7 @@ class AdaptiveMulliganStageTrainer:
             max_episode_steps=max_episode_steps,
             strict_terminal_reasons=strict_terminal_reasons,
             decision_cache=self.cache,
+            opening_environment=self.opening_environment,
         )
 
     def train(self)->AdaptiveMulliganStageModel:
