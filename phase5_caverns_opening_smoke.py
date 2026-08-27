@@ -72,7 +72,7 @@ def test_physical_zone_resolution_and_value_identity():
     assert state.exile==("Swan Song",)
     assert len(state.battlefield)==1
     assert state.battlefield[0].name=="Gemstone Caverns"
-    assert state.battlefield[0].mode=="luck"
+    assert state.battlefield[0].mode=="luck"\n    assert state.battlefield[0].counters==1
     assert state.trace[-1]=="pregame Caverns exiles Swan Song"
 
     declined=opening_runtime(
