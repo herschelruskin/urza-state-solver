@@ -53,7 +53,6 @@ def main():
     p.add_argument("--confirm-rollouts-per-bottom",type=int,default=2)
     p.add_argument("--shortlist-size",type=int,default=4)
     p.add_argument("--mc-root-seed",type=int,default=2026082901)
-    p.add_argument("--q-mc-root-seed",type=int,default=2026082902)
     p.add_argument("--output",default="phase5i_stage_model.json")
     args=p.parse_args()
 
@@ -67,7 +66,6 @@ def main():
         confirm_rollouts_per_bottom=args.confirm_rollouts_per_bottom,
         shortlist_size=args.shortlist_size,
         mc_root_seed=args.mc_root_seed,
-        q_mc_root_seed=args.q_mc_root_seed,
         horizon=6,
         max_episode_steps=512,
         strict_terminal_reasons=True,
@@ -86,6 +84,7 @@ def main():
         },
         "phase5h_q_version":PHASE5_SELECTIVE_TUTOR_Q_VERSION,
         "phase5h_q_config":{
+            "mc_root_seed":PHASE5H_PRODUCTION_TUTOR_Q_CONFIG.mc_root_seed,
             "screen_rollouts":PHASE5H_PRODUCTION_TUTOR_Q_CONFIG.screen_rollouts,
             "confirm_rollouts":PHASE5H_PRODUCTION_TUTOR_Q_CONFIG.confirm_rollouts,
             "shortlist_size":PHASE5H_PRODUCTION_TUTOR_Q_CONFIG.shortlist_size,
