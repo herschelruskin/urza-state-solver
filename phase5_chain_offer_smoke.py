@@ -9,6 +9,7 @@ from non_oracle_chain_offer_runtime import (
 )
 from non_oracle_rules_adapter_v2 import apply_main_action, rules_decision_request
 from non_oracle_runtime import make_runtime_state
+from non_oracle_top_draw_runtime import PRIORITY_ACTIVATE_TOP_DRAW
 from solver_architecture import canonical_markov_state_key
 
 
@@ -61,15 +62,15 @@ def test_chain_bounce_copy_matches_oracle_public_state():
     print("Chain cast -> bounce -> land-sac copy -> second bounce parity: PASS")
 
 
-def test_chain_stack_allows_priority_mana_before_resolution():
+def test_chain_stack_allows_other_priority_action_before_resolution():
     state = solver.State(
         turn=3,
-        library=(),
+        library=("Island",),
         hand=("Chain of Vapor",),
         battlefield=(
             solver.Perm("Island"),
             solver.Perm("Sol Ring"),
-            solver.Perm("Witching Well"),
+            solver.Perm("Sensei's Divining Top"),
         ),
         blue=1,
         rng_root_seed=20260826,
@@ -78,16 +79,15 @@ def test_chain_stack_allows_priority_mana_before_resolution():
     cast = _action(runtime, kind=MAIN_CAST_CHAIN, label_contains="Sol Ring")
     runtime = apply_main_action(runtime, cast)
     assert runtime.stack.objects
+    chain_id = runtime.stack.top().object_id
+    stack_count = len(runtime.stack.objects)
 
-    mana = _action(runtime, kind="main_mana_action")
-    top_before = runtime.stack.top().object_id
-    runtime = apply_main_action(runtime, mana)
-    assert runtime.stack.objects
-    assert runtime.stack.top().object_id == top_before
-
-    runtime = apply_main_action(runtime, _pass(runtime))
-    assert "Sol Ring" in runtime.true_state.hand
-    print("Chain stack permits legal priority mana action before pass/resolution: PASS")
+    top_draw = _action(runtime, kind=PRIORITY_ACTIVATE_TOP_DRAW)
+    runtime = apply_main_action(runtime, top_draw)
+    assert len(runtime.stack.objects) == stack_count + 1
+    assert any(obj.object_id == chain_id for obj in runtime.stack.objects)
+    assert runtime.stack.top().object_id != chain_id
+    print("Chain stack permits typed priority activation before pass/resolution: PASS")
 
 
 def test_offer_self_counter_two_treasures_matches_oracle():
@@ -120,7 +120,7 @@ def test_offer_self_counter_two_treasures_matches_oracle():
 
 def main():
     test_chain_bounce_copy_matches_oracle_public_state()
-    test_chain_stack_allows_priority_mana_before_resolution()
+    test_chain_stack_allows_other_priority_action_before_resolution()
     test_offer_self_counter_two_treasures_matches_oracle()
     print("PHASE5 CHAIN/OFFER PARITY SMOKE: ALL PASS")
 
