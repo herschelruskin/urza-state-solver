@@ -170,7 +170,7 @@ def make_bounded_contingent_tutor_runner(
     strictly decreases: Transmute sacrifice -> target -> zero.  Payment remains
     outside PENDING_TUTOR_Q_KINDS and is therefore handled by the frozen policy.
     """
-    shared_cache=decision_cache or Phase5DecisionCache()
+    shared_cache=decision_cache if decision_cache is not None else Phase5DecisionCache()
     continuation_id=_continuation_id(
         screen_rollouts=screen_rollouts,
         confirm_rollouts=confirm_rollouts,
@@ -475,7 +475,7 @@ def make_selective_tutor_q_episode_runner(
     diagnostics/cycle bookkeeping never leak between sampled games. The supplied
     leaf policy is still the continuation policy passed by the mulligan evaluator.
     """
-    shared_cache=decision_cache or Phase5DecisionCache()
+    shared_cache=decision_cache if decision_cache is not None else Phase5DecisionCache()
 
     def runner(runtime,*,horizon,policy,max_steps):
         controller=SelectiveTutorQController(
