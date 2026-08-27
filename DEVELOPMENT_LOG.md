@@ -5,11 +5,10 @@ Update it whenever a phase changes the model materially.
 
 ## Current target
 
-**Phase 5H — adaptive confidence-gated selective Q**
+**Phase 5I — London mulligan valuation under the frozen Phase 5H player**
 
-Goal: preserve the clear gain from selective Q while preventing noisy Monte Carlo
-overrides and allowing bounded contingent lookahead only when paired evidence
-supports it.
+Goal: evaluate keep/mull and London-bottom decisions using the validated gameplay
+policy without training or tuning against the human labels.
 
 ## Architecture status
 
@@ -19,13 +18,15 @@ supports it.
 | Observation boundary | mature | True state and player observation are separated. |
 | Hidden-world MC | mature | Common random worlds; explicit reproducible seeds. |
 | Value model | mature | T1..T6 distribution-valued V/Q objective. |
-| London mulligan DP | implemented | Sequential keep/mull + bottoming, floor at keep 2. |
+| London mulligan DP | **Phase 5I integration active** | Sequential keep/mull + bottoming, floor at keep 2, now valued by frozen 5H player. |
 | Opening context | implemented | Commander seat context + Gemstone Caverns pregame decision. |
 | Library knowledge | implemented | Exact remaining multiset is logically deduced; order remains hidden. |
 | Selective tutor Q | implemented | Tutor/search states only; deterministic v6 remains leaf policy. |
 | Bounded contingent Q | implemented | Dependent post-commit choices only; Transmute sacrifice -> target bounded chain. |
 | MC confirmation | implemented | Screen and confirmation use disjoint hidden-world namespaces. |
 | Confidence-gated Q | **validated / frozen** | Phase 5H passes paired held-out validation. |
+| Frozen production player | **implemented** | Named Phase-5H configuration used by downstream evaluators. |
+| Human mulligan validation | **running** | 35 exact usable hands; human labels held out from scoring. |
 
 ## Branch / PR stack
 
@@ -40,7 +41,8 @@ supports it.
 9. Phase 5E bounded contingent two-step tutor-Q — PR #18
 10. Phase 5F deduced library membership — PR #19
 11. Phase 5G independent MC confirmation — PR #20
-12. Phase 5H adaptive confidence-gated selective Q — **current branch**
+12. Phase 5H adaptive confidence-gated selective Q — PR #21 / frozen gameplay architecture
+13. Phase 5I frozen-Q London mulligan — branch `phase5i-mulligan-frozen-q` (**current**)
 
 ## Locked design principles
 
@@ -53,30 +55,8 @@ supports it.
 - Do not expand Q depth merely because more search is possible.
 - T6 is inclusive search horizon; T7 is not expanded as a win.
 - Protection and speed are separate eventual outputs; a fast naked win may still be valid.
-
-## Latest evaluation checkpoint
-
-Corrected tutor-rich held-out benchmark: **10 hands x 4 paired worlds = 40 worlds**.
-
-| Policy | T6 wins | Rate |
-|---|---:|---:|
-| rollout-v6 | 5 / 40 | 12.5% |
-| one-step selective Q | 11 / 40 | 27.5% |
-| bounded contingent Q | 10 / 40 | 25.0% |
-
-Interpretation:
-
-- selective Q is materially better than v6 on tutor-rich states;
-- unconditional contingent depth is not yet a net improvement at the tiny MC budget;
-- real contingent gains exist (notably hand 24 Reshape sacrifice -> target);
-- noisy overrides also exist, so confidence/adaptive sampling is the next bottleneck.
-
-Notable controls:
-
-- hand 12 false Saga Top -> Vexing Bauble override disappeared after independent confirmation;
-- hand 1: v6 1/4, one-step 2/4, two-step 2/4 — Q gain, no depth gain;
-- hand 24: v6 0/4, one-step 0/4, two-step 1/4 — genuine candidate depth gain;
-- hand 30 earlier apparent Q gain did not survive confirmation.
+- Human mulligan labels are evaluation data, not policy inputs.
+- Commander seat must be conditioned before optimization; do not average Caverns-live and Caverns-dead states before choosing a bottom/keep line.
 
 ## Phase 5H validation — COMPLETE
 
@@ -104,7 +84,7 @@ Interpretation:
 - no observed paired held-out world regressed relative to v6;
 - no observed paired held-out world regressed from one-step to contingent Q;
 - the prior hand-24 Reshape gain was rejected as insufficiently supported;
-- new robust contingent-only gains appear on hands 21 and 29;
+- robust contingent-only gains appear on hands 21 and 29;
 - hand 20 improved strongly from v6 1/4 to 5H Q 4/4;
 - hand 25 rerun after the Chain/Offer stack fix completed cleanly at 2/4 for all
   policies, with Q still better on distributional timing in one paired world.
@@ -114,27 +94,151 @@ An Offer You Can't Refuse stack objects now resolve only on an actual priority p
 rather than intercepting every legal priority action above them. Production CI is
 green including a typed priority-activation regression.
 
-**Decision:** freeze the gameplay-policy architecture at Phase 5H. Do not add deeper
+**Decision:** gameplay-policy architecture is frozen at Phase 5H. Do not add deeper
 Q before end-to-end mulligan and deck-level validation demonstrates a need.
 
-## Current target
+## Frozen Phase 5H production player
 
-**Phase 5I — integrate frozen Phase 5H gameplay policy into London mulligan valuation**
+`phase5_production_policy.py` defines the exact downstream player instead of relying
+on constructor defaults:
 
-Goals:
+- tutor-Q screen rollouts: 1;
+- independent confirmation rollouts: 2;
+- shortlist size: 3;
+- bounded contingent lookahead: enabled;
+- paired confidence gate: enabled;
+- adaptive validation: 2 -> 4 -> 8 cumulative worlds;
+- one-sided paired sign threshold: alpha = 0.25;
+- deterministic rollout-v6 remains the leaf/fallback policy.
 
-1. make the production Q configuration explicit rather than relying on incidental defaults;
-2. use confidence-gated contingent Q for opening-hand / bottom valuation;
-3. preserve independent outer-world bottom comparisons;
-4. re-run all 35 exact usable human benchmark hands;
-5. measure keep/mull agreement, bottom agreement/rank, and value regret;
-6. inspect disagreements before any policy training/tuning against human labels.
+Production identity: `urza-phase5h-production-policy-v1`.
+
+## Phase 5I implementation checkpoint
+
+### Production London evaluator
+
+`phase5i_mulligan.py` adds a new production path and leaves the historical
+`phase5_adaptive_mulligan.py` experiment unchanged for provenance.
+
+Properties:
+
+- bottom screening and confirmation both use the exact same frozen 5H player;
+- screen/confirmation outer hidden-world windows are disjoint;
+- exact finite-sample screen ties survive the shortlist cutoff;
+- shared strategic Q cache is reused across equivalent opening evaluations;
+- London keep-two floor remains stage 6;
+- backward stage DP compares K_s(hand) against independently estimated V_{s+1}.
+
+Phase 5I integration regression suite passed before benchmark launch, including
+Phase-5H Q, parent mulligan, Caverns/seat, Chain/Offer, information-state, strategic
+state, human fixture, and Phase-1 acceptance checks. The full benchmark toolchain
+is also included in production compile CI.
+
+### Human hand benchmark — active
+
+Evaluation branch: `phase5i-human-hand-eval`
+Workflow run: **33122937057**
+
+Scope: all 35 reconstructable exact human hands (hand 10 remains permanently
+excluded because the stored seven/bottom annotation cannot be reconciled).
+
+Per-hand budgets:
+
+- outer bottom screen: 1 world;
+- outer bottom confirmation: 3 fresh worlds;
+- bottom shortlist: 4 plus all exact screen ties;
+- frozen internal Phase-5H Q budgets as listed above;
+- horizon: T6 inclusive.
+
+The solver selects its own bottom before the human bottom is used. If the recorded
+human bottom was pruned, it is evaluated afterwards on the identical confirmation
+outer worlds only for diagnostic rank/regret; it cannot change the solver choice.
+
+Because the human source does not record Commander seat:
+
+- hands containing Gemstone Caverns are valued separately as seat 1 / Caverns dead
+  (25% ex ante) and representative seat 2 / Caverns live (75% ex ante for seats 2-4);
+- non-Gemstone current hands share the same K_s under current mechanics;
+- keep-vs-mull can STILL differ by seat even for a non-Gemstone current hand because
+  the continuation V_{s+1} can draw Gemstone. Final decision scoring therefore keeps
+  separate dead/live continuation thresholds.
+
+Early sanity-check outputs (not final probabilities; confirm n=3 is deliberately
+coarse):
+
+- hand 1: K_s T6 estimate 0/3, human Keep, stage 1;
+- hand 2: 0/3, human Mulligan, stage 1;
+- hand 3: 0/3, human Mulligan, stage 0;
+- hand 4: 0/3, human Mulligan, stage 1;
+- hand 7: 0/3, human Keep, stage 0;
+- hand 22: 1/3, human Mulligan, stage 0;
+- hand 30: 2/3, human Keep, stage 1;
+- hand 34: solver bottoms Mana Drain, human-bottom diagnostic rank 3, best K_s 1/3;
+  human decision Keep, stage 2.
+
+Do not interpret 0/3, 1/3, 2/3 as precise deck probabilities. These per-hand values
+are primarily paired action-ranking evidence at this budget.
+
+A display-only keep-size bug in the first human evaluation branch used `7-stage`
+in one context metadata field. It does not affect simulation or action selection;
+the base Phase-5I script now uses `keep_size_for_stage`, and aggregation uses the
+authoritative fixture keep size.
+
+### Independent continuation thresholds — active
+
+Evaluation branch: `phase5i-stage-model-eval`
+Workflow run: **33123014572**
+
+Four independent jobs are being fit:
+
+- Caverns-dead / seat 1, replicate 0;
+- Caverns-dead / seat 1, replicate 1;
+- Caverns-live / representative seat 2, replicate 0;
+- Caverns-live / representative seat 2, replicate 1.
+
+Each replicate currently uses:
+
+- 2 fresh sampled sevens per London stage;
+- bottom screen 1 outer world;
+- bottom confirmation 2 fresh outer worlds;
+- shortlist 4;
+- frozen Phase-5H player;
+- no human labels.
+
+This is intentionally a pilot threshold estimate. Replicate disagreement will be
+checked before keep/mull agreement is treated as meaningful. If stage decisions are
+unstable, increase independent stage sampling rather than tuning toward human labels.
+
+### Aggregation
+
+`phase5i_benchmark_aggregate.py` is implemented. Once both evaluation families are
+complete it will report:
+
+- overall 25/75 seat-weighted keep/mull agreement;
+- dead/live seat-conditioned decisions;
+- per-stage agreement;
+- replicate-level threshold decision stability;
+- bottom exact-match rate;
+- human-bottom diagnostic rank;
+- bottom value regret;
+- per-hand disagreement rows.
+
+## Phase 5I acceptance criteria
+
+1. Production 5H policy/config remains frozen throughout validation.
+2. Human labels never enter value estimates or continuation thresholds.
+3. All 35 exact usable human hands evaluate without runtime blockers.
+4. Independent continuation replications are inspected for stability.
+5. Bottom disagreements are inspected by value regret/rank, not exact-match alone.
+6. Keep/mull disagreements are classified before any human-supervised policy change.
+7. If the model remains substantially below human gameplay after mulligan integration,
+   proceed to broad end-to-end trajectory gap analysis rather than blindly adding Q depth.
 
 ## Roadmap after Phase 5I
 
-1. Re-run the 35 exact human mulligan benchmark hands.
-2. Inspect disagreement classes without training on the labels.
-3. Run the first full end-to-end 250 / 1,000+ deck simulations.
-4. Compare win-turn distribution to the historical 250-goldfish baseline.
-5. Add protection / interaction probability.
-6. Add paired card-swap evaluator.
+1. Finalize 35-hand human benchmark summary and inspect disagreement classes.
+2. Run the first full end-to-end 250 / 1,000+ deck simulations.
+3. Compare win-turn distribution to the historical 250-goldfish baseline.
+4. Diagnose residual policy/rules coverage gaps from trajectory failures.
+5. Add protection / interaction probability to winning trajectories.
+6. Add paired card-swap evaluator using common random worlds.
