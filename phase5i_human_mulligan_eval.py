@@ -70,7 +70,6 @@ def main():
     p.add_argument("--confirm-rollouts-per-bottom",type=int,default=2)
     p.add_argument("--shortlist-size",type=int,default=4)
     p.add_argument("--mc-root-seed",type=int,default=2026083001)
-    p.add_argument("--q-mc-root-seed",type=int,default=2026083002)
     args=p.parse_args()
 
     fixture=json.loads(
@@ -98,7 +97,6 @@ def main():
         confirm_rollouts=args.confirm_rollouts_per_bottom,
         shortlist_size=args.shortlist_size,
         mc_root_seed=args.mc_root_seed,
-        q_mc_root_seed=args.q_mc_root_seed,
         horizon=6,
         continuation_policy=DeterministicRolloutPolicyV6(
             policy_id=PHASE5_ROLLOUT_POLICY_V6
