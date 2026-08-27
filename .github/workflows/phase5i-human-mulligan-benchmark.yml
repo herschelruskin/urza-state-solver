@@ -34,8 +34,7 @@ jobs:
             --screen-rollouts-per-bottom 1 \
             --confirm-rollouts-per-bottom 2 \
             --shortlist-size 4 \
-            --mc-root-seed 2026082901 \
-            --q-mc-root-seed 2026082902
+            --mc-root-seed 2026082901
       - uses: actions/upload-artifact@v4
         with:
           name: phase5i-stage-model
@@ -70,8 +69,7 @@ jobs:
             --screen-rollouts-per-bottom 1 \
             --confirm-rollouts-per-bottom 2 \
             --shortlist-size 4 \
-            --mc-root-seed 2026083001 \
-            --q-mc-root-seed 2026083002
+            --mc-root-seed 2026083001
       - uses: actions/upload-artifact@v4
         with:
           name: phase5i-human-hand-${{ matrix.hand_id }}
