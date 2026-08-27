@@ -1,0 +1,27 @@
+name: Phase 5 hand 12 Q confirm canary
+
+on:
+  push:
+    branches:
+      - phase5-q-hand12-confirm-canary
+  workflow_dispatch:
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile hand 12 canary
+        run: python -m py_compile phase5_q_hand12_confirm_canary.py
+      - name: Run hand 12 canary
+        run: python phase5_q_hand12_confirm_canary.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5-q-hand12-confirm-canary
+          path: phase5_q_hand12_confirm_canary.json
