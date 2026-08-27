@@ -1,0 +1,117 @@
+name: Phase 5I benchmark aggregate
+
+# Intentionally manual-only on the production branch.  Once the two fixed source
+# evaluations are complete, the final aggregation branch enables push to execute
+# this exact workflow without changing source run IDs or benchmark budgets.
+on:
+  workflow_dispatch:
+
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONHASHSEED: '0'
+      HUMAN_RUN_ID: '33122937057'
+      HAND12_RUN_ID: '33123674159'
+      STAGE_RUN_ID: '33123595522'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Download completed main human-hand artifacts
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.HUMAN_RUN_ID }}
+          pattern: phase5i-human-hand-*
+          path: human
+          merge-multiple: true
+
+      - name: Replace missing hand 12 from identical-seed isolated rerun
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.HAND12_RUN_ID }}
+          name: phase5i-human-hand-12
+          path: human
+
+      - name: Download factorized continuation samples
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.STAGE_RUN_ID }}
+          pattern: phase5i-stage-sample-*
+          path: stage_samples
+          merge-multiple: true
+
+      - name: Verify fixed benchmark inputs
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          human=sorted(Path('human').glob('phase5i_human_hand_*.json'))
+          ids=[]
+          for path in human:
+              ids.append(int(json.loads(path.read_text())['hand_id']))
+          expected=[i for i in range(1,37) if i!=10]
+          assert sorted(ids)==expected,(len(ids),sorted(ids),expected)
+
+          stage=sorted(Path('stage_samples').glob('phase5i_stage_sample_*.json'))
+          keys=set()
+          for path in stage:
+              row=json.loads(path.read_text())
+              keys.add((row['context'],int(row['stage']),int(row['sample_id'])))
+          expected_stage={
+              (context,s,n)
+              for context in ('dead','live')
+              for s in range(7)
+              for n in range(4)
+          }
+          assert keys==expected_stage,(len(keys),len(expected_stage),sorted(expected_stage-keys)[:10])
+          print(f'Verified {len(human)} human hands and {len(stage)} factorized K_s samples')
+          PY
+
+      - name: Reduce factorized London continuation models
+        run: |
+          mkdir -p stage_models
+          python phase5i_stage_sample_reduce.py \
+            --input-dir stage_samples --context dead \
+            --output stage_models/phase5i_stage_model_dead_factorized.json
+          python phase5i_stage_sample_reduce.py \
+            --input-dir stage_samples --context live \
+            --output stage_models/phase5i_stage_model_live_factorized.json
+
+      - name: Aggregate held-out human benchmark
+        run: |
+          python phase5i_benchmark_aggregate.py \
+            --human-dir human \
+            --stage-dir stage_models \
+            --output phase5i_human_benchmark_summary.json
+
+      - name: Sanity-check summary
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          row=json.loads(Path('phase5i_human_benchmark_summary.json').read_text())
+          assert row['human_hand_count']==35,row['human_hand_count']
+          assert row['bottom']['applicable_hand_count']>=1,row['bottom']
+          print(json.dumps({
+              'decision':row['decision'],
+              'bottom':row['bottom'],
+          },indent=2,sort_keys=True))
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-final-benchmark
+          path: |
+            phase5i_human_benchmark_summary.json
+            stage_models/*.json
