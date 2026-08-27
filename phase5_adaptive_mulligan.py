@@ -153,10 +153,15 @@ class AdaptiveOpeningKeepEvaluator:
         self.confirm_rollouts=int(confirm_rollouts)
         self.shortlist_size=int(shortlist_size)
         self.mc_root_seed=int(mc_root_seed)
-        self.q_mc_root_seed=int(
-            q_mc_root_seed if q_mc_root_seed is not None
-            else self.mc_root_seed + 1_000_003
-        )
+        self.q_mc_root_seed=int(PHASE5H_PRODUCTION_TUTOR_Q_CONFIG.mc_root_seed)
+        if (
+            q_mc_root_seed is not None
+            and int(q_mc_root_seed)!=self.q_mc_root_seed
+        ):
+            raise ValueError(
+                "Phase 5I freezes the gameplay-policy Q root seed; "
+                f"expected {self.q_mc_root_seed}, got {int(q_mc_root_seed)}"
+            )
         self.horizon=int(horizon)
         self.policy=continuation_policy or DeterministicRolloutPolicyV6(
             policy_id=PHASE5_ROLLOUT_POLICY_V6
@@ -170,11 +175,9 @@ class AdaptiveOpeningKeepEvaluator:
         # use a weaker tutor policy and discard the bottom that production Q would
         # actually prefer.
         screen_runner=make_phase5h_production_tutor_q_episode_runner(
-            mc_root_seed=self.q_mc_root_seed,
             decision_cache=self.cache,
         )
         confirm_runner=make_phase5h_production_tutor_q_episode_runner(
-            mc_root_seed=self.q_mc_root_seed,
             decision_cache=self.cache,
         )
         assert screen_runner.q_policy_config==PHASE5H_PRODUCTION_TUTOR_Q_CONFIG
@@ -293,10 +296,15 @@ class AdaptiveMulliganStageTrainer:
         self.confirm_rollouts_per_bottom=int(confirm_rollouts_per_bottom)
         self.shortlist_size=int(shortlist_size)
         self.mc_root_seed=int(mc_root_seed)
-        self.q_mc_root_seed=int(
-            q_mc_root_seed if q_mc_root_seed is not None
-            else self.mc_root_seed + 1_000_003
-        )
+        self.q_mc_root_seed=int(PHASE5H_PRODUCTION_TUTOR_Q_CONFIG.mc_root_seed)
+        if (
+            q_mc_root_seed is not None
+            and int(q_mc_root_seed)!=self.q_mc_root_seed
+        ):
+            raise ValueError(
+                "Phase 5I freezes the gameplay-policy Q root seed; "
+                f"expected {self.q_mc_root_seed}, got {int(q_mc_root_seed)}"
+            )
         self.horizon=int(horizon)
         self.policy=continuation_policy or DeterministicRolloutPolicyV6(
             policy_id=PHASE5_ROLLOUT_POLICY_V6
