@@ -1,0 +1,59 @@
+name: Phase 5H adaptive confidence Q
+
+on:
+  push:
+    branches:
+      - phase5-adaptive-confidence-q
+  pull_request:
+    branches:
+      - phase5-q-independent-confirmation
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile Phase 5H slice
+        run: |
+          python -m py_compile phase5_monte_carlo.py
+          python -m py_compile phase5_selective_tutor_q.py
+          python -m py_compile phase5_adaptive_confidence_q_smoke.py
+      - name: Adaptive confidence Q regression
+        run: python phase5_adaptive_confidence_q_smoke.py
+      - name: Parent selective Q regression
+        run: python phase5_selective_tutor_q_smoke.py
+      - name: Bounded contingent Q regression
+        run: python phase5_contingent_tutor_q_smoke.py
+      - name: Chain and Offer priority regression
+        run: python phase5_chain_offer_smoke.py
+      - name: Monte Carlo cache and confirmation regressions
+        run: |
+          python phase5_monte_carlo_cache_smoke.py
+          python phase5_q_independent_confirmation_smoke.py
+      - name: Information and strategic regressions
+        run: |
+          python phase5_deduced_library_knowledge_smoke.py
+          python information_state_propagation_smoke.py
+          python strategic_value_state_smoke.py
+          python non_oracle_runtime_value_key_smoke.py
+      - name: Human benchmark and Phase-1 acceptance
+        run: |
+          python human_benchmark_fixture_smoke.py
+          python phase1_acceptance_smoke.py
+      - name: Development log present
+        run: |
+          test -s DEVELOPMENT_LOG.md
+          grep -q "Phase 5H" DEVELOPMENT_LOG.md
+      - name: Diff check
+        run: git diff --check

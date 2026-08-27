@@ -29,7 +29,7 @@ from phase4_hidden_world import HiddenWorldSampler, materialize_hidden_world
 from solver_architecture import EpisodeOutcome
 from strategic_value_state import LibraryBeliefKey
 
-PHASE5_MC_VERSION = "urza-phase5-decision-monte-carlo-v1"
+PHASE5_MC_VERSION = "urza-phase5-decision-monte-carlo-v2-paired-outcomes"
 
 # A deterministic continuation policy can exhaust every strategic action from an
 # exact recurrent sampled state or consume its finite step budget while cycling
@@ -56,6 +56,7 @@ class Phase5ActionEstimate:
     rollouts: int
     terminal_reason_counts: Tuple[Tuple[str, int], ...]
     win_probability_wilson95: Tuple[float, float]
+    outcomes: Tuple[EpisodeOutcome, ...] = ()
 
     @property
     def win_probability(self) -> float:
@@ -140,6 +141,7 @@ class _CachedPhase5ActionEstimate:
     rollouts: int
     terminal_reason_counts: Tuple[Tuple[str, int], ...]
     win_probability_wilson95: Tuple[float, float]
+    outcomes: Tuple[EpisodeOutcome, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -255,6 +257,7 @@ class Phase5MonteCarloDecisionEvaluator:
                 rollouts=row.rollouts,
                 terminal_reason_counts=row.terminal_reason_counts,
                 win_probability_wilson95=row.win_probability_wilson95,
+                outcomes=row.outcomes,
             ))
         best=root_map.get(cached.best_strategic_action_key)
         if best is None:
@@ -376,6 +379,7 @@ class Phase5MonteCarloDecisionEvaluator:
                     rollouts=len(rows),
                     terminal_reason_counts=tuple(sorted(reasons[key].items())),
                     win_probability_wilson95=_wilson(wins, len(rows)),
+                    outcomes=rows,
                 )
             )
 
@@ -407,6 +411,7 @@ class Phase5MonteCarloDecisionEvaluator:
                         rollouts=estimate.rollouts,
                         terminal_reason_counts=estimate.terminal_reason_counts,
                         win_probability_wilson95=estimate.win_probability_wilson95,
+                        outcomes=estimate.outcomes,
                     )
                     for estimate in evaluation.estimates
                 ),

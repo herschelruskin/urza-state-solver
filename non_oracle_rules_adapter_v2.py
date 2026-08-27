@@ -148,6 +148,9 @@ def apply_main_action(runtime, action):
         return begin_chain_offer_action(runtime, action)
     if action.kind in PUBLIC_PARITY_KINDS:
         return apply_public_parity_action(runtime, action)
-    if handles_chain_offer_stack_top(runtime):
+    # A Chain/Offer object resolves only when the player actually passes
+    # priority. Other legal priority actions (mana abilities, typed activations,
+    # etc.) must remain available while that object sits on the stack.
+    if handles_chain_offer_stack_top(runtime) and action.kind == "pass_priority":
         return apply_chain_offer_stack_action(runtime, action)
     return base.apply_main_action(runtime, strip_transmute_target_annotations(action))
