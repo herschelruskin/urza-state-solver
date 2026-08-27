@@ -61,6 +61,35 @@ def test_chain_bounce_copy_matches_oracle_public_state():
     print("Chain cast -> bounce -> land-sac copy -> second bounce parity: PASS")
 
 
+def test_chain_stack_allows_priority_mana_before_resolution():
+    state = solver.State(
+        turn=3,
+        library=(),
+        hand=("Chain of Vapor",),
+        battlefield=(
+            solver.Perm("Island"),
+            solver.Perm("Sol Ring"),
+            solver.Perm("Witching Well"),
+        ),
+        blue=1,
+        rng_root_seed=20260826,
+    )
+    runtime = make_runtime_state(state)
+    cast = _action(runtime, kind=MAIN_CAST_CHAIN, label_contains="Sol Ring")
+    runtime = apply_main_action(runtime, cast)
+    assert runtime.stack.objects
+
+    mana = _action(runtime, kind="main_mana_action")
+    top_before = runtime.stack.top().object_id
+    runtime = apply_main_action(runtime, mana)
+    assert runtime.stack.objects
+    assert runtime.stack.top().object_id == top_before
+
+    runtime = apply_main_action(runtime, _pass(runtime))
+    assert "Sol Ring" in runtime.true_state.hand
+    print("Chain stack permits legal priority mana action before pass/resolution: PASS")
+
+
 def test_offer_self_counter_two_treasures_matches_oracle():
     state = solver.State(
         turn=2,
@@ -91,6 +120,7 @@ def test_offer_self_counter_two_treasures_matches_oracle():
 
 def main():
     test_chain_bounce_copy_matches_oracle_public_state()
+    test_chain_stack_allows_priority_mana_before_resolution()
     test_offer_self_counter_two_treasures_matches_oracle()
     print("PHASE5 CHAIN/OFFER PARITY SMOKE: ALL PASS")
 
