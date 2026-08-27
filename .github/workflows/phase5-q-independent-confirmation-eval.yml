@@ -1,0 +1,27 @@
+name: Phase 5 Q confirmation changed-hand eval
+
+on:
+  push:
+    branches:
+      - phase5-q-independent-confirmation-eval
+  workflow_dispatch:
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile changed-hand evaluation
+        run: python -m py_compile phase5_q_independent_confirmation_eval.py
+      - name: Run changed-hand paired evaluation
+        run: python phase5_q_independent_confirmation_eval.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5-q-independent-confirmation-eval
+          path: phase5_q_independent_confirmation_eval.json
