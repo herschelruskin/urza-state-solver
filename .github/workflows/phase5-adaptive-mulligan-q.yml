@@ -1,0 +1,77 @@
+name: Phase 5 adaptive mulligan-Q
+
+on:
+  push:
+    branches:
+      - phase5-adaptive-mulligan-q
+  pull_request:
+    branches:
+      - phase5-runtime-line-parity
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  structural:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile adaptive stack
+        run: |
+          python -m py_compile phase5_mulligan.py phase5_monte_carlo.py phase5_selective_tutor_q.py phase5_adaptive_mulligan.py phase5_adaptive_mulligan_smoke.py phase5_tutor_q_expected_value_pilot.py phase5_adaptive_keep2_pilot.py
+      - name: Adaptive mulligan structural regression
+        run: python phase5_adaptive_mulligan_smoke.py
+      - name: Parent tutor-Q/cache regressions
+        run: |
+          python phase5_selective_tutor_q_smoke.py
+          python phase5_monte_carlo_cache_smoke.py
+          python phase5_mulligan_smoke.py
+      - name: Benchmark and architecture regressions
+        run: |
+          python human_benchmark_fixture_smoke.py
+          python strategic_value_state_smoke.py
+          python non_oracle_runtime_value_key_smoke.py
+          python phase1_acceptance_smoke.py
+      - name: Diff check
+        run: git diff --check
+
+  paired-policy-pilot:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Paired multi-world tutor-Q comparison
+        run: python phase5_tutor_q_expected_value_pilot.py
+      - name: Preserve paired policy pilot
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase5-tutor-q-expected-value-pilot
+          path: phase5_tutor_q_expected_value_pilot.json
+
+  keep2-pilot:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Forced keep-two adaptive stage
+        run: python phase5_adaptive_keep2_pilot.py
+      - name: Preserve keep-two pilot
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase5-adaptive-keep2-pilot
+          path: phase5_adaptive_keep2_pilot.json
