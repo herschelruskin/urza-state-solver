@@ -36,10 +36,12 @@ jobs:
         run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_transmute_follows_sacrifice_then_observed_target()"
       - name: Contingent post-commit evaluation
         run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_post_commit_evaluation_completes()"
-      - name: Contingent nested cache activity
-        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_post_commit_nested_cache_activity()"
       - name: Contingent value sanity
         run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_post_commit_value_comparison_is_sane()"
+      - name: Contingent value improvement
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_post_commit_contingent_strictly_improves_bad_leaf()"
+      - name: Contingent nested cache activity
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_post_commit_nested_cache_activity()"
       - name: Parent tutor-Q and cache regressions
         run: |
           python phase5_selective_tutor_q_smoke.py
