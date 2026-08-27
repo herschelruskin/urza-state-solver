@@ -160,10 +160,60 @@ def test_runner_receives_committed_source_lineage():
     )
 
 
+def test_transmute_follows_sacrifice_then_observed_target():
+    state=solver.State(
+        turn=1,
+        library=(
+            "Sensei's Divining Top",
+            "Codex Shredder",
+            "Island",
+        ),
+        hand=("Transmute Artifact",),
+        battlefield=(
+            solver.Perm("Sol Ring"),
+            solver.Perm("Mana Vault"),
+        ),
+        blue=2,
+        urza=False,
+    )
+    runtime=make_runtime_state(state)
+    request=rules_decision_request(
+        runtime,horizon=2,policy_id=DeterministicRolloutPolicyV6().policy_id
+    )
+    transmute=next(
+        a for a in request.actions if a.kind=="main_use_transmute_artifact"
+    )
+    after=apply_main_action(runtime,transmute)
+    cache=Phase5DecisionCache()
+    runner=make_bounded_contingent_tutor_runner(
+        mc_root_seed=2026082705,
+        screen_rollouts=1,
+        confirm_rollouts=1,
+        shortlist_size=8,
+        decision_cache=cache,
+    )
+    result=runner(
+        after,
+        root_action=transmute,
+        horizon=2,
+        policy=DeterministicRolloutPolicyV6(),
+        max_steps=128,
+    )
+    kinds=[step.action_kind for step in result.steps]
+    assert "transmute_choose_sacrifice" in kinds,kinds
+    assert "transmute_choose_target" in kinds,kinds
+    assert cache.stats.misses>=2,cache.stats
+    print(
+        "Transmute contingent Q traverses sacrifice then observed target "
+        f"(cache_misses={cache.stats.misses}): PASS"
+    )
+
+
 def main():
     test_depth_map_is_strictly_bounded()
     test_post_commit_observation_is_revalued()
     test_runner_receives_committed_source_lineage()
+    test_transmute_follows_sacrifice_then_observed_target()
     print("PHASE5 CONTINGENT TUTOR-Q SMOKE: ALL PASS")
 
 
