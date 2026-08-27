@@ -233,7 +233,15 @@ class SelectiveTutorQController:
         }
 
         ordered=sorted(screen.estimates,key=_value_rank,reverse=True)
-        shortlist=list(ordered[:self.shortlist_size])
+        cutoff_index=min(self.shortlist_size,len(ordered))-1
+        cutoff_value=ordered[cutoff_index].value.comparison_key()
+        # A tiny screening budget frequently produces exact value ties. Never
+        # let strategic-key ordering decide which tied tutor survives into the
+        # confirmation set; preserve every action tied at the cutoff.
+        shortlist=[
+            row for row in ordered
+            if row.value.comparison_key()>=cutoff_value
+        ]
         base_est=screen_by_key[base.strategic_key()]
         if all(
             row.action.strategic_key()!=base.strategic_key()
