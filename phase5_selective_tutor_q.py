@@ -20,7 +20,9 @@ strategic invariant to pay whenever the selected target is legally payable.
 
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass
+from math import comb
 from typing import Tuple
 
 from decision_observation import ActionIntent
@@ -38,14 +40,16 @@ from phase5_monte_carlo import (
     Phase5DecisionEvaluation,
     Phase5MonteCarloDecisionEvaluator,
     Phase5DecisionCache,
+    _value,
+    _wilson,
 )
 from phase5_rollout_policy_v6 import (
     DeterministicRolloutPolicyV6,
     PHASE5_ROLLOUT_POLICY_V6,
 )
 
-PHASE5_SELECTIVE_TUTOR_Q_VERSION="urza-phase5-selective-tutor-q-v3-independent-confirm"
-PHASE5_CONTINGENT_TUTOR_Q_VERSION="urza-phase5-contingent-tutor-q-v1"
+PHASE5_SELECTIVE_TUTOR_Q_VERSION="urza-phase5-selective-tutor-q-v4-confidence-gated"
+PHASE5_CONTINGENT_TUTOR_Q_VERSION="urza-phase5-contingent-tutor-q-v2-confidence-gated"
 
 MAIN_TUTOR_KINDS=frozenset({
     "main_use_simple_tutor",
@@ -208,12 +212,109 @@ def _value_rank(estimate:Phase5ActionEstimate):
     )
 
 
-def _continuation_id(*,screen_rollouts,confirm_rollouts,shortlist_size):
+@dataclass(frozen=True)
+class PairedQEvidence:
+    better: int
+    worse: int
+    ties: int
+    sign_p_one_sided: float
+
+    @property
+    def informative(self) -> int:
+        return int(self.better + self.worse)
+
+
+def _outcome_rank(outcome):
+    if not outcome.won:
+        return (0, 0)
+    return (1, -int(outcome.win_turn))
+
+
+def _one_sided_sign_p(*,better:int,worse:int)->float:
+    n=int(better)+int(worse)
+    if n<=0:
+        return 1.0
+    wins=int(better)
+    return sum(comb(n,k) for k in range(wins,n+1)) / float(2**n)
+
+
+def paired_q_evidence(
+    candidate:Phase5ActionEstimate,
+    base:Phase5ActionEstimate,
+)->PairedQEvidence:
+    """Paired evidence on identical hidden worlds.
+
+    A candidate is better on a world if it wins where base loses or wins on an
+    earlier turn. Same-turn wins and joint losses are ties. Hidden-world order is
+    aligned because every Phase5 evaluator uses common random numbers across
+    candidate actions.
+    """
+    if len(candidate.outcomes)!=len(base.outcomes):
+        raise ValueError("paired Q estimates must use the same number of worlds")
+    if not candidate.outcomes:
+        raise ValueError("paired Q evidence requires retained rollout outcomes")
+    better=worse=ties=0
+    for cand_out,base_out in zip(candidate.outcomes,base.outcomes):
+        cand_rank=_outcome_rank(cand_out)
+        base_rank=_outcome_rank(base_out)
+        if cand_rank>base_rank:
+            better+=1
+        elif cand_rank<base_rank:
+            worse+=1
+        else:
+            ties+=1
+    return PairedQEvidence(
+        better=better,
+        worse=worse,
+        ties=ties,
+        sign_p_one_sided=_one_sided_sign_p(better=better,worse=worse),
+    )
+
+
+def _aggregate_action_estimates(
+    action:ActionIntent,
+    estimates,
+    *,
+    horizon:int,
+)->Phase5ActionEstimate:
+    outcomes=tuple(
+        outcome
+        for estimate in estimates
+        for outcome in estimate.outcomes
+    )
+    if not outcomes:
+        raise ValueError("adaptive Q validation requires retained paired outcomes")
+    reasons=Counter(outcome.terminal_reason for outcome in outcomes)
+    wins=sum(outcome.won for outcome in outcomes)
+    return Phase5ActionEstimate(
+        action=action,
+        value=_value(outcomes,horizon=int(horizon)),
+        rollouts=len(outcomes),
+        terminal_reason_counts=tuple(sorted(reasons.items())),
+        win_probability_wilson95=_wilson(wins,len(outcomes)),
+        outcomes=outcomes,
+    )
+
+
+def _continuation_id(
+    *,
+    screen_rollouts,
+    confirm_rollouts,
+    shortlist_size,
+    confidence_gate,
+    validation_rollouts,
+    max_validation_rollouts,
+    confidence_alpha,
+):
     return (
         f"{PHASE5_CONTINGENT_TUTOR_Q_VERSION}:"
         f"screen={int(screen_rollouts)}:"
         f"confirm={int(confirm_rollouts)}:"
-        f"shortlist={int(shortlist_size)}"
+        f"shortlist={int(shortlist_size)}:"
+        f"gate={int(bool(confidence_gate))}:"
+        f"validate={int(validation_rollouts)}:"
+        f"validate_max={int(max_validation_rollouts)}:"
+        f"alpha={float(confidence_alpha):.6g}"
     )
 
 
@@ -224,6 +325,10 @@ def make_bounded_contingent_tutor_runner(
     confirm_rollouts:int,
     shortlist_size:int,
     decision_cache:Phase5DecisionCache|None,
+    confidence_gate:bool=True,
+    validation_rollouts:int=2,
+    max_validation_rollouts:int=8,
+    confidence_alpha:float=0.25,
 ):
     """Return a Phase5MC continuation that Q-controls only this tutor's descendants.
 
@@ -243,6 +348,10 @@ def make_bounded_contingent_tutor_runner(
         screen_rollouts=screen_rollouts,
         confirm_rollouts=confirm_rollouts,
         shortlist_size=shortlist_size,
+        confidence_gate=confidence_gate,
+        validation_rollouts=validation_rollouts,
+        max_validation_rollouts=max_validation_rollouts,
+        confidence_alpha=confidence_alpha,
     )
 
     def runner(runtime,*,root_action,horizon,policy,max_steps):
@@ -306,6 +415,10 @@ def make_bounded_contingent_tutor_runner(
                     max_episode_steps=max_steps,
                     decision_cache=shared_cache,
                     contingent=True,
+                    confidence_gate=confidence_gate,
+                    validation_rollouts=validation_rollouts,
+                    max_validation_rollouts=max_validation_rollouts,
+                    confidence_alpha=confidence_alpha,
                 )
                 action,_=nested.choose(runtime,request,fresh)
                 remaining-=1
