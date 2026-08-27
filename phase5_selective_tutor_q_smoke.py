@@ -194,11 +194,54 @@ def test_end_turn_with_live_tutor_is_q_evaluated():
     print("end-turn with castable tutor is eligible for Q rescue: PASS")
 
 
+def test_screen_shortlist_preserves_exact_value_ties():
+    runtime,request=runtime_and_request()
+    base=next(a for a in request.actions if a.label=="Use Mystical Tutor")
+    targets=tuple(
+        type(base)(
+            action_id=f"test.target.{i}",
+            kind="choose_tutor_target",
+            parameters=(("target",name),),
+            equivalence_key=("tutor_target","Mystical Tutor",name),
+            label=f"Mystical Tutor -> {name}",
+            decision_stage=base.decision_stage,
+            source="Mystical Tutor",
+        )
+        for i,name in enumerate(("Sea Gate Restoration","Transmute Artifact","Reshape"))
+    )
+
+    class TargetPolicy:
+        policy_id="stub-target-policy"
+        def choose(self,observation,actions,context):
+            return actions[0]
+
+    controller=SelectiveTutorQController(
+        continuation_policy=TargetPolicy(),
+        screen_rollouts=1,
+        confirm_rollouts=1,
+        shortlist_size=1,
+    )
+    controller.screen=FakeEvaluator({"choose_tutor_target":0.0})
+    controller.confirm=FakeEvaluator({"choose_tutor_target":0.0})
+    fake_request=type(request)(
+        observation=request.observation,
+        actions=targets,
+        context=request.context,
+    )
+    chosen,meta=controller.choose(runtime,fake_request,targets)
+    assert chosen.strategic_key()==targets[0].strategic_key()
+    assert meta is not None
+    assert meta[2]==3
+    assert meta[3]==3,meta
+    print("exact screen ties all survive tutor-Q confirmation: PASS")
+
+
 def main():
     test_strict_improvement_overrides()
     test_equal_value_keeps_v6()
     test_transmute_payment_not_q_controlled()
     test_end_turn_with_live_tutor_is_q_evaluated()
+    test_screen_shortlist_preserves_exact_value_ties()
     print("PHASE5 SELECTIVE TUTOR-Q SMOKE: ALL PASS")
 
 
