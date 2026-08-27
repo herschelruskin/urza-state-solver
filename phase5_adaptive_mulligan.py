@@ -41,9 +41,12 @@ from phase5_rollout_policy_v6 import (
     DeterministicRolloutPolicyV6,
     PHASE5_ROLLOUT_POLICY_V6,
 )
-from phase5_selective_tutor_q import make_selective_tutor_q_episode_runner
+from phase5_selective_tutor_q import (
+    PHASE5H_PRODUCTION_TUTOR_Q_CONFIG,
+    make_phase5h_production_tutor_q_episode_runner,
+)
 
-PHASE5_ADAPTIVE_MULLIGAN_VERSION="urza-adaptive-mulligan-q-v1"
+PHASE5_ADAPTIVE_MULLIGAN_VERSION="urza-adaptive-mulligan-q-v2-phase5h-production"
 
 
 @dataclass(frozen=True)
@@ -136,9 +139,6 @@ class AdaptiveOpeningKeepEvaluator:
         q_mc_root_seed:int|None=None,
         horizon:int=6,
         continuation_policy:DeterministicBasePolicy|None=None,
-        screen_q_rollouts:int=1,
-        confirm_q_rollouts:int=2,
-        q_shortlist_size:int=3,
         max_episode_steps:int=512,
         strict_terminal_reasons:bool=True,
         decision_cache:Phase5DecisionCache|None=None,
@@ -164,20 +164,21 @@ class AdaptiveOpeningKeepEvaluator:
         self.cache=decision_cache if decision_cache is not None else Phase5DecisionCache()
         self.opening_environment=opening_environment or OpeningEnvironment()
 
-        screen_runner=make_selective_tutor_q_episode_runner(
+        # Outer bottom screening and confirmation may use different numbers of
+        # hidden worlds, but they must value bottoms under the SAME gameplay
+        # policy.  Phase 5H is frozen here so a cheap bottom screen cannot silently
+        # use a weaker tutor policy and discard the bottom that production Q would
+        # actually prefer.
+        screen_runner=make_phase5h_production_tutor_q_episode_runner(
             mc_root_seed=self.q_mc_root_seed,
-            screen_rollouts=1,
-            confirm_rollouts=int(screen_q_rollouts),
-            shortlist_size=int(q_shortlist_size),
             decision_cache=self.cache,
         )
-        confirm_runner=make_selective_tutor_q_episode_runner(
+        confirm_runner=make_phase5h_production_tutor_q_episode_runner(
             mc_root_seed=self.q_mc_root_seed,
-            screen_rollouts=1,
-            confirm_rollouts=int(confirm_q_rollouts),
-            shortlist_size=int(q_shortlist_size),
             decision_cache=self.cache,
         )
+        assert screen_runner.q_policy_config==PHASE5H_PRODUCTION_TUTOR_Q_CONFIG
+        assert confirm_runner.q_policy_config==PHASE5H_PRODUCTION_TUTOR_Q_CONFIG
         self.screen_evaluator=OpeningKeepEvaluator(
             self.deck,
             rollout_count=self.screen_rollouts,
@@ -277,9 +278,6 @@ class AdaptiveMulliganStageTrainer:
         q_mc_root_seed:int|None=None,
         horizon:int=6,
         continuation_policy:DeterministicBasePolicy|None=None,
-        screen_q_rollouts:int=1,
-        confirm_q_rollouts:int=2,
-        q_shortlist_size:int=3,
         max_episode_steps:int=512,
         strict_terminal_reasons:bool=True,
         opening_environment:OpeningEnvironment|None=None,
@@ -314,9 +312,6 @@ class AdaptiveMulliganStageTrainer:
             q_mc_root_seed=self.q_mc_root_seed,
             horizon=self.horizon,
             continuation_policy=self.policy,
-            screen_q_rollouts=screen_q_rollouts,
-            confirm_q_rollouts=confirm_q_rollouts,
-            q_shortlist_size=q_shortlist_size,
             max_episode_steps=max_episode_steps,
             strict_terminal_reasons=strict_terminal_reasons,
             decision_cache=self.cache,
