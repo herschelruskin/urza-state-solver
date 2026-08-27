@@ -1,0 +1,50 @@
+name: Phase 5 Q independent confirmation
+
+on:
+  push:
+    branches:
+      - phase5-q-independent-confirmation
+  pull_request:
+    branches:
+      - phase5-deduced-library-knowledge
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile Q confirmation slice
+        run: |
+          python -m py_compile phase5_monte_carlo.py
+          python -m py_compile phase5_selective_tutor_q.py
+          python -m py_compile phase5_q_independent_confirmation_smoke.py
+      - name: Independent confirmation regression
+        run: python phase5_q_independent_confirmation_smoke.py
+      - name: Q cache regression
+        run: python phase5_monte_carlo_cache_smoke.py
+      - name: Bounded contingent Q regressions
+        run: |
+          python phase5_contingent_tutor_q_smoke.py
+          python phase5_selective_tutor_q_smoke.py
+      - name: Information and strategic regressions
+        run: |
+          python phase5_deduced_library_knowledge_smoke.py
+          python information_state_propagation_smoke.py
+          python strategic_value_state_smoke.py
+          python non_oracle_runtime_value_key_smoke.py
+      - name: Benchmark and acceptance regressions
+        run: |
+          python human_benchmark_fixture_smoke.py
+          python phase1_acceptance_smoke.py
+      - name: Diff check
+        run: git diff --check
