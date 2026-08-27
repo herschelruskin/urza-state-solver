@@ -5,11 +5,12 @@ Update it whenever a phase changes the model materially.
 
 ## Current target
 
-**Phase 5H — adaptive confidence-gated selective Q**
+**Phase 5I — production Phase-5H Q inside London mulligan valuation**
 
-Goal: preserve the clear gain from selective Q while preventing noisy Monte Carlo
-overrides and allowing bounded contingent lookahead only when paired evidence
-supports it.
+Goal: value keep/mull and London-bottom choices under the exact frozen Phase-5H
+gameplay policy, learn continuation thresholds only from fresh random deck hands,
+then compare all 35 exact human benchmark sevens without using their labels for
+solver selection.
 
 ## Architecture status
 
@@ -26,6 +27,7 @@ supports it.
 | Bounded contingent Q | implemented | Dependent post-commit choices only; Transmute sacrifice -> target bounded chain. |
 | MC confirmation | implemented | Screen and confirmation use disjoint hidden-world namespaces. |
 | Confidence-gated Q | **validated / frozen** | Phase 5H passes paired held-out validation. |
+| Mulligan + frozen Q integration | **in progress** | Phase 5I uses one identical production gameplay policy in bottom screen and confirmation. |
 
 ## Branch / PR stack
 
@@ -40,7 +42,8 @@ supports it.
 9. Phase 5E bounded contingent two-step tutor-Q — PR #18
 10. Phase 5F deduced library membership — PR #19
 11. Phase 5G independent MC confirmation — PR #20
-12. Phase 5H adaptive confidence-gated selective Q — **current branch**
+12. Phase 5H adaptive confidence-gated selective Q — PR #21
+13. Phase 5I production-Q London mulligan integration — **current branch**
 
 ## Locked design principles
 
@@ -56,27 +59,9 @@ supports it.
 
 ## Latest evaluation checkpoint
 
-Corrected tutor-rich held-out benchmark: **10 hands x 4 paired worlds = 40 worlds**.
-
-| Policy | T6 wins | Rate |
-|---|---:|---:|
-| rollout-v6 | 5 / 40 | 12.5% |
-| one-step selective Q | 11 / 40 | 27.5% |
-| bounded contingent Q | 10 / 40 | 25.0% |
-
-Interpretation:
-
-- selective Q is materially better than v6 on tutor-rich states;
-- unconditional contingent depth is not yet a net improvement at the tiny MC budget;
-- real contingent gains exist (notably hand 24 Reshape sacrifice -> target);
-- noisy overrides also exist, so confidence/adaptive sampling is the next bottleneck.
-
-Notable controls:
-
-- hand 12 false Saga Top -> Vexing Bauble override disappeared after independent confirmation;
-- hand 1: v6 1/4, one-step 2/4, two-step 2/4 — Q gain, no depth gain;
-- hand 24: v6 0/4, one-step 0/4, two-step 1/4 — genuine candidate depth gain;
-- hand 30 earlier apparent Q gain did not survive confirmation.
+The authoritative gameplay-policy checkpoint is the completed Phase-5H validation
+below. The earlier independent-confirmation 40-world result is retained in PR #20
+history but is no longer the production policy benchmark.
 
 ## Phase 5H validation — COMPLETE
 
@@ -117,18 +102,18 @@ green including a typed priority-activation regression.
 **Decision:** freeze the gameplay-policy architecture at Phase 5H. Do not add deeper
 Q before end-to-end mulligan and deck-level validation demonstrates a need.
 
-## Current target
+## Phase 5I acceptance target
 
-**Phase 5I — integrate frozen Phase 5H gameplay policy into London mulligan valuation**
-
-Goals:
-
-1. make the production Q configuration explicit rather than relying on incidental defaults;
-2. use confidence-gated contingent Q for opening-hand / bottom valuation;
-3. preserve independent outer-world bottom comparisons;
-4. re-run all 35 exact usable human benchmark hands;
-5. measure keep/mull agreement, bottom agreement/rank, and value regret;
-6. inspect disagreements before any policy training/tuning against human labels.
+1. Production tutor-Q configuration is explicit and immutable.
+2. Bottom screening and confirmation use the same Phase-5H gameplay policy.
+3. Only the outer hidden-world budget differs between bottom screen/confirmation.
+4. Stage continuation values are trained from fresh random sevens with no human labels.
+5. All 35 usable exact human sevens are evaluated at their recorded London stage.
+6. Human labels are comparison-only and never alter solver choice or shortlist.
+7. Report keep/mull agreement, stage-specific disagreement, human-bottom exact match,
+   human-bottom shortlist rate, and value deltas.
+8. Inspect disagreement classes before changing strategy or training on labels.
+9. Existing Phase-5H, information-safety, and London-mulligan regressions remain green.
 
 ## Roadmap after Phase 5I
 
