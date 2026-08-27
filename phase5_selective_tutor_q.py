@@ -56,6 +56,7 @@ PHASE5_CONTINGENT_TUTOR_Q_VERSION="urza-phase5-contingent-tutor-q-v2-confidence-
 class TutorQPolicyConfig:
     """Immutable execution budget for one selective tutor-Q policy."""
 
+    mc_root_seed:int=2026082802
     screen_rollouts:int=1
     confirm_rollouts:int=2
     shortlist_size:int=3
@@ -859,7 +860,7 @@ def make_selective_tutor_q_episode_runner(
 
 def make_phase5h_production_tutor_q_episode_runner(
     *,
-    mc_root_seed:int=20260826,
+    mc_root_seed:int|None=None,
     decision_cache:Phase5DecisionCache|None=None,
 ):
     """Return the frozen Phase-5H gameplay policy used by downstream valuation.
@@ -869,8 +870,13 @@ def make_phase5h_production_tutor_q_episode_runner(
     centralizes the validated 5H action-policy budget.
     """
     config=PHASE5H_PRODUCTION_TUTOR_Q_CONFIG
+    effective_seed=(
+        int(config.mc_root_seed)
+        if mc_root_seed is None
+        else int(mc_root_seed)
+    )
     runner=make_selective_tutor_q_episode_runner(
-        mc_root_seed=int(mc_root_seed),
+        mc_root_seed=effective_seed,
         screen_rollouts=config.screen_rollouts,
         confirm_rollouts=config.confirm_rollouts,
         shortlist_size=config.shortlist_size,
