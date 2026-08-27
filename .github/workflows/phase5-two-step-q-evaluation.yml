@@ -3,7 +3,7 @@ name: Phase 5 two-step Q evaluation
 on:
   push:
     branches:
-      - phase5-two-step-q-evaluation
+      - phase5-two-step-q-evaluation-quick
   workflow_dispatch:
 
 concurrency:
@@ -11,25 +11,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  targeted:
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    env:
-      PYTHONHASHSEED: '0'
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-      - name: Compile evaluation harness
-        run: python -m py_compile phase5_two_step_q_eval.py
-      - name: Run targeted paired evaluation
-        run: python phase5_two_step_q_eval.py --profile targeted
-      - uses: actions/upload-artifact@v4
-        with:
-          name: phase5-two-step-q-targeted
-          path: phase5_two_step_q_eval_targeted.json
-
   broad:
     runs-on: ubuntu-latest
     timeout-minutes: 60
