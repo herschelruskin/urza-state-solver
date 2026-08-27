@@ -70,7 +70,14 @@ def _counter_tuple(cards: Iterable[str]) -> Tuple[Tuple[str, int], ...]:
 
 
 def unique_bottom_subsets(seven: Sequence[str], stage: int) -> Tuple[Tuple[str, ...], ...]:
-    """All distinct card-multiset bottoms; suffix ordering is canonicalized."""
+    """All distinct bottom card multisets under the current ordering equivalence.
+
+    London bottom order is player-chosen in physical Magic, but the current T1-T6
+    model has no nonterminal path that strategically consumes the ordered suffix
+    before a shuffle/terminal conversion.  We therefore keep one canonical sorted
+    representative per multiset.  Revisit this equivalence if future mechanics make
+    bottom-order access value-relevant before terminal resolution.
+    """
     cards = tuple(str(card) for card in seven)
     if len(cards) != 7:
         raise ValueError("mulligan evaluation requires a fresh seven-card hand")
@@ -143,7 +150,14 @@ def _opening_world(*, deck: Sequence[str], seven: Sequence[str], bottom: Sequenc
     rng.shuffle(unknown)
     bottom = tuple(sorted(str(card) for card in bottom))
     game_seed_material = json.dumps(
-        [int(mc_root_seed), "opening-rollout-game", int(sample_id)], separators=(",", ":")
+        [
+            int(mc_root_seed),
+            PHASE5_MULLIGAN_VERSION,
+            "opening-rollout-game",
+            tuple(sorted(str(card) for card in seven)),
+            int(sample_id),
+        ],
+        separators=(",", ":"),
     ).encode("utf-8")
     rollout_game_seed = int.from_bytes(hashlib.sha256(game_seed_material).digest()[:8], "big")
     return SampledHiddenWorld(

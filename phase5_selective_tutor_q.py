@@ -233,7 +233,15 @@ class SelectiveTutorQController:
         }
 
         ordered=sorted(screen.estimates,key=_value_rank,reverse=True)
-        shortlist=list(ordered[:self.shortlist_size])
+        cutoff_index=min(self.shortlist_size,len(ordered))-1
+        cutoff_value=ordered[cutoff_index].value.comparison_key()
+        # A tiny screening budget frequently produces exact value ties. Never
+        # let strategic-key ordering decide which tied tutor survives into the
+        # confirmation set; preserve every action tied at the cutoff.
+        shortlist=[
+            row for row in ordered
+            if row.value.comparison_key()>=cutoff_value
+        ]
         base_est=screen_by_key[base.strategic_key()]
         if all(
             row.action.strategic_key()!=base.strategic_key()
@@ -275,6 +283,7 @@ def make_selective_tutor_q_episode_runner(
     screen_rollouts:int=1,
     confirm_rollouts:int=2,
     shortlist_size:int=3,
+    decision_cache:Phase5DecisionCache|None=None,
 ):
     """Return an OpeningKeepEvaluator-compatible episode runner.
 
@@ -282,7 +291,7 @@ def make_selective_tutor_q_episode_runner(
     diagnostics/cycle bookkeeping never leak between sampled games. The supplied
     leaf policy is still the continuation policy passed by the mulligan evaluator.
     """
-    shared_cache=Phase5DecisionCache()
+    shared_cache=decision_cache or Phase5DecisionCache()
 
     def runner(runtime,*,horizon,policy,max_steps):
         controller=SelectiveTutorQController(
@@ -301,6 +310,7 @@ def make_selective_tutor_q_episode_runner(
             horizon=horizon,
             max_steps=max_steps,
         ).episode
+    runner.decision_cache=shared_cache
     return runner
 
 
