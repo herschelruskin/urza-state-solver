@@ -89,7 +89,7 @@ class AdaptiveMulliganStageEstimate:
     mulligan_count:int
     legal_bottoms_screened:int
     bottoms_confirmed:int
-    chosen_terminal_reason_counts:Tuple[Tuple[str,int],...]
+    evaluated_keep_terminal_reason_counts:Tuple[Tuple[str,int],...]
 
     @property
     def keep_rate(self)->float:
@@ -374,7 +374,7 @@ class AdaptiveMulliganStageTrainer:
                 mulligan_count=mulled,
                 legal_bottoms_screened=screened,
                 bottoms_confirmed=confirmed,
-                chosen_terminal_reason_counts=tuple(sorted(reason_counts.items())),
+                evaluated_keep_terminal_reason_counts=tuple(sorted(reason_counts.items())),
             )
 
         return AdaptiveMulliganStageModel(
