@@ -150,12 +150,22 @@ def run_q(sampled,leaf,*,contingent,cache):
 def profile_config(profile,fixture):
     if profile=="targeted":
         return TARGETED_IDS,4
-    kept=tuple(
-        int(row["hand_id"]) for row in fixture["hands"]
-        if row.get("decision")=="Keep"
-    )
+    kept=[]
+    for row in fixture["hands"]:
+        if row.get("decision")!="Keep":
+            continue
+        seven=list(row["drawn_seven"])
+        legal=True
+        for card in row.get("cards_bottomed",()):
+            if card not in seven:
+                legal=False
+                break
+            seven.remove(card)
+        if legal:
+            kept.append(int(row["hand_id"]))
+    kept=tuple(kept)
     if profile=="broad":
-        return kept,2
+        return kept,1
     raise ValueError(profile)
 
 
