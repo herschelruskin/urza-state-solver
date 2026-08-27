@@ -23,11 +23,18 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: Compile opening environment slice
-        run: |
-          python -m py_compile phase5_mulligan.py phase5_adaptive_mulligan.py phase5_caverns_opening_smoke.py phase5_commander_seat_mixture_smoke.py
+      - name: Compile mulligan core
+        run: python -m py_compile phase5_mulligan.py
+      - name: Compile adaptive mulligan
+        run: python -m py_compile phase5_adaptive_mulligan.py
+      - name: Compile Caverns smoke
+        run: python -m py_compile phase5_caverns_opening_smoke.py
+      - name: Compile seat-mixture smoke
+        run: python -m py_compile phase5_commander_seat_mixture_smoke.py
       - name: Seat and Gemstone Caverns regression
-        run: python phase5_caverns_opening_smoke.py\n          python phase5_commander_seat_mixture_smoke.py
+        run: |
+          python phase5_caverns_opening_smoke.py
+          python phase5_commander_seat_mixture_smoke.py
       - name: Parent adaptive and London regressions
         run: |
           python phase5_adaptive_mulligan_smoke.py
