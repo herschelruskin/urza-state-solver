@@ -86,6 +86,30 @@ def contingent_depth_after_action(action:ActionIntent)->int:
     return int(CONTINGENT_DEPTH_AFTER_ACTION_KIND.get(str(action.kind),0))
 
 
+def is_contingent_descendant_decision(
+    runtime:NonOracleRuntimeState,
+    fresh_actions,
+    *,
+    lineage_source:str,
+    remaining:int,
+)->bool:
+    """True only for the bounded post-commit decision owned by this tutor line."""
+
+    pending_source=(
+        str(runtime.pending.spec.source)
+        if runtime.pending is not None else ""
+    )
+    return bool(
+        int(remaining)>0
+        and str(lineage_source)
+        and pending_source==str(lineage_source)
+        and any(
+            str(action.kind) in PENDING_TUTOR_Q_KINDS
+            for action in fresh_actions
+        )
+    )
+
+
 @dataclass(frozen=True)
 class TutorQDecision:
     sequence: int
@@ -221,15 +245,11 @@ def make_bounded_contingent_tutor_runner(
                     runtime,tuple(steps),horizon,None,"","strategic_cycle_exhausted"
                 )
 
-            pending_source=(
-                str(runtime.pending.spec.source)
-                if runtime.pending is not None else ""
-            )
-            has_contingent_choice=bool(
-                remaining>0
-                and lineage_source
-                and pending_source==lineage_source
-                and any(action.kind in PENDING_TUTOR_Q_KINDS for action in fresh)
+            has_contingent_choice=is_contingent_descendant_decision(
+                runtime,
+                fresh,
+                lineage_source=lineage_source,
+                remaining=remaining,
             )
             if has_contingent_choice:
                 nested=SelectiveTutorQController(
