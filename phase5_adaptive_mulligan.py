@@ -27,7 +27,9 @@ from phase3_value_engine import WinDistributionValue
 from phase5_monte_carlo import Phase5DecisionCache
 from phase5_mulligan import (
     MULLIGAN_FLOOR_STAGE,
+    OpeningEnvironment,
     OpeningKeepEvaluation,
+    OpeningPregameChoice,
     OpeningKeepEvaluator,
     _mix_values,
     _sample_fresh_seven,
@@ -73,6 +75,7 @@ class AdaptiveHandDecision:
     seven:Tuple[str,...]
     decision:str
     best_bottom:Tuple[str,...]
+    best_pregame_choice:OpeningPregameChoice
     keep_value_key:Tuple[float,...]
     continuation_value_key:Tuple[float,...]|None
     legal_bottom_count:int
@@ -109,6 +112,7 @@ class AdaptiveMulliganStageModel:
     horizon:int
     q_cache_hits:int
     q_cache_misses:int
+    opening_environment:OpeningEnvironment=OpeningEnvironment()
     version:str=PHASE5_ADAPTIVE_MULLIGAN_VERSION
 
     def stage_estimate(self,stage:int)->AdaptiveMulliganStageEstimate:
@@ -138,6 +142,7 @@ class AdaptiveOpeningKeepEvaluator:
         max_episode_steps:int=512,
         strict_terminal_reasons:bool=True,
         decision_cache:Phase5DecisionCache|None=None,
+        opening_environment:OpeningEnvironment|None=None,
     ):
         if screen_rollouts<1 or confirm_rollouts<1:
             raise ValueError("screen/confirm rollout counts must be >= 1")
@@ -157,6 +162,7 @@ class AdaptiveOpeningKeepEvaluator:
             policy_id=PHASE5_ROLLOUT_POLICY_V6
         )
         self.cache=decision_cache or Phase5DecisionCache()
+        self.opening_environment=opening_environment or OpeningEnvironment()
 
         screen_runner=make_selective_tutor_q_episode_runner(
             mc_root_seed=self.q_mc_root_seed,
@@ -164,6 +170,7 @@ class AdaptiveOpeningKeepEvaluator:
             confirm_rollouts=int(screen_q_rollouts),
             shortlist_size=int(q_shortlist_size),
             decision_cache=self.cache,
+            opening_environment=self.opening_environment,
         )
         confirm_runner=make_selective_tutor_q_episode_runner(
             mc_root_seed=self.q_mc_root_seed,
@@ -181,6 +188,7 @@ class AdaptiveOpeningKeepEvaluator:
             max_episode_steps=max_episode_steps,
             strict_terminal_reasons=strict_terminal_reasons,
             episode_runner=screen_runner,
+            opening_environment=self.opening_environment,
         )
         self.confirm_evaluator=OpeningKeepEvaluator(
             self.deck,
@@ -191,6 +199,7 @@ class AdaptiveOpeningKeepEvaluator:
             max_episode_steps=max_episode_steps,
             strict_terminal_reasons=strict_terminal_reasons,
             episode_runner=confirm_runner,
+            opening_environment=self.opening_environment,
         )
 
     def evaluate(self,seven:Sequence[str],*,stage:int)->AdaptiveOpeningKeepEvaluation:
@@ -274,6 +283,7 @@ class AdaptiveMulliganStageTrainer:
         q_shortlist_size:int=3,
         max_episode_steps:int=512,
         strict_terminal_reasons:bool=True,
+        opening_environment:OpeningEnvironment|None=None,
     ):
         if hand_samples_per_stage<1:
             raise ValueError("hand_samples_per_stage must be >= 1")
@@ -295,6 +305,7 @@ class AdaptiveMulliganStageTrainer:
             policy_id=PHASE5_ROLLOUT_POLICY_V6
         )
         self.cache=Phase5DecisionCache()
+        self.opening_environment=opening_environment or OpeningEnvironment()
         self.evaluator=AdaptiveOpeningKeepEvaluator(
             self.deck,
             screen_rollouts=self.screen_rollouts_per_bottom,
@@ -356,6 +367,7 @@ class AdaptiveMulliganStageTrainer:
                     seven=seven,
                     decision=decision,
                     best_bottom=evaluation.best.bottom,
+                    best_pregame_choice=evaluation.best.pregame_choice,
                     keep_value_key=keep.comparison_key(),
                     continuation_value_key=(
                         None if continuation_value is None
@@ -392,4 +404,5 @@ class AdaptiveMulliganStageTrainer:
             horizon=self.horizon,
             q_cache_hits=self.cache.stats.hits,
             q_cache_misses=self.cache.stats.misses,
+            opening_environment=self.opening_environment,
         )
