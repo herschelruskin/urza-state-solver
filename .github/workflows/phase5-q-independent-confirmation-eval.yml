@@ -6,6 +6,10 @@ on:
       - phase5-q-independent-confirmation-eval
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   eval:
     runs-on: ubuntu-latest
