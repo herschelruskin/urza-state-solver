@@ -1,0 +1,36 @@
+name: Phase 5I continuation-stage replications
+
+on:
+  push:
+    branches:
+      - phase5i-stage-model-eval
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  model:
+    strategy:
+      fail-fast: false
+      matrix:
+        context: [dead, live]
+        replicate: [0, 1]
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile stage evaluator
+        run: python -m py_compile phase5i_stage_model_eval.py
+      - name: Fit independent continuation model
+        run: python phase5i_stage_model_eval.py --context ${{ matrix.context }} --replicate ${{ matrix.replicate }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-stage-${{ matrix.context }}-rep${{ matrix.replicate }}
+          path: phase5i_stage_model_*.json
