@@ -26,8 +26,16 @@ jobs:
       - name: Compile contingent Q slice
         run: |
           python -m py_compile phase5_monte_carlo.py phase5_selective_tutor_q.py phase5_contingent_tutor_q_smoke.py
-      - name: Bounded contingent tutor-Q regression
-        run: python phase5_contingent_tutor_q_smoke.py
+      - name: Contingent depth map
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_depth_map_is_strictly_bounded()"
+      - name: Contingent lineage surface
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_simple_tutor_pending_surface_matches_lineage()"
+      - name: Contingent post-commit revaluation
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_post_commit_observation_is_revalued()"
+      - name: Contingent source traversal
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_runner_receives_committed_source_lineage()"
+      - name: Transmute two-step chain
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_transmute_follows_sacrifice_then_observed_target()"
       - name: Parent tutor-Q and cache regressions
         run: |
           python phase5_selective_tutor_q_smoke.py
