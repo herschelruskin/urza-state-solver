@@ -3,12 +3,12 @@
 
 Inputs are intentionally separated:
 - phase5i_human_hand_*.json: held-out exact human sevens scored by the solver;
-- phase5i_stage_model_{dead,live}_rep*.json: continuation values fit only from
-  fresh random deck sevens, never from the human labels.
+- factorized or replicated continuation-stage models fit only from fresh random
+  deck sevens, never from the human labels.
 
 For a human hand observed at London stage s, the model decision compares its
-seat-conditioned K_s(hand) with independently estimated V_{s+1}.  Stage 6 remains
-the forced keep-two floor.  Because human Commander seat is unknown, decision
+seat-conditioned K_s(hand) with independently estimated V_{s+1}. Stage 6 remains
+the forced keep-two floor. Because human Commander seat is unknown, decision
 agreement is reported separately for seat 1 (25%) and Caverns-live seats 2-4
 (75%) before an ex-ante agreement probability is formed.
 """
@@ -62,7 +62,44 @@ def mean_values(values):
     )
 
 
+def _factorized_stage_model(directory,context):
+    path=Path(directory)/f"phase5i_stage_model_{context}_factorized.json"
+    if not path.exists():
+        return None
+    payload=json.loads(path.read_text(encoding="utf-8"))
+    values={
+        int(stage["stage"]):value_from_json(stage["value"])
+        for stage in payload["stages"]
+    }
+    replicate_values=defaultdict(list)
+    for replicate in payload.get("stability_replicates",()):
+        for stage in replicate["stages"]:
+            replicate_values[int(stage["stage"])].append(
+                value_from_json(stage["value"])
+            )
+    return {
+        "source":"factorized",
+        "replicate_count":len(payload.get("stability_replicates",())),
+        "values":values,
+        "replicate_values":{
+            stage:tuple(replicate_values.get(stage,()))
+            for stage in values
+        },
+        "sample_count_per_stage":payload.get("sample_count_per_stage",{}),
+    }
+
+
 def load_stage_models(directory):
+    # Prefer the factorized model: it has more independent K_s samples and its
+    # stability replicates are derived from disjoint sample-ID groups. The older
+    # serial replicates remain supported as a fallback/provenance path.
+    factorized={
+        context:_factorized_stage_model(directory,context)
+        for context in ("dead","live")
+    }
+    if all(factorized.values()):
+        return factorized
+
     grouped=defaultdict(list)
     for path in sorted(Path(directory).glob("phase5i_stage_model_*_rep*.json")):
         payload=json.loads(path.read_text(encoding="utf-8"))
@@ -78,6 +115,7 @@ def load_stage_models(directory):
             for stage in model["stages"]:
                 by_stage[int(stage["stage"])].append(value_from_json(stage["value"]))
         result[context]={
+            "source":"serial-replicates",
             "replicate_count":len(models),
             "values":{
                 stage:mean_values(values)
@@ -87,6 +125,7 @@ def load_stage_models(directory):
                 stage:tuple(values)
                 for stage,values in by_stage.items()
             },
+            "sample_count_per_stage":{},
         }
     return result
 
@@ -152,6 +191,8 @@ def main():
     bottom_rank_weight=0.0
     bottom_regret_weight=0.0
     decision_counts=Counter()
+    replicate_unstable_context_decisions=0
+    replicate_context_decisions=0
 
     for hand in hands:
         stage=int(hand["human"]["mulligan_count"])
@@ -170,19 +211,29 @@ def main():
             correct=(decision==human_decision)
             agreement_weighted+=weight*float(correct)
             by_stage[stage]["agreement_weight"]+=weight*float(correct)
+            replicate_decisions=[
+                model_decision(keep,rep_value)
+                for rep_value in (
+                    () if continuation is None
+                    else stage_models[context]["replicate_values"].get(stage+1,())
+                )
+            ]
+            if replicate_decisions:
+                replicate_context_decisions+=1
+                replicate_unstable_context_decisions+=int(
+                    len(set(replicate_decisions))>1
+                )
             context_rows[context]={
                 "weight":weight,
                 "solver_decision":decision,
                 "matches_human":correct,
                 "keep_value":value_json(keep),
                 "continuation_value":None if continuation is None else value_json(continuation),
-                "replicate_decisions":[
-                    model_decision(keep,rep_value)
-                    for rep_value in (
-                        () if continuation is None
-                        else stage_models[context]["replicate_values"][stage+1]
-                    )
-                ],
+                "replicate_decisions":replicate_decisions,
+                "replicate_stable":(
+                    None if not replicate_decisions
+                    else len(set(replicate_decisions))==1
+                ),
             }
             decision_counts[(context,decision)]+=1
 
@@ -248,7 +299,9 @@ def main():
         "human_hand_count":len(hands),
         "stage_model":{
             context:{
+                "source":row["source"],
                 "replicate_count":row["replicate_count"],
+                "sample_count_per_stage":row.get("sample_count_per_stage",{}),
                 "mean_values":{
                     str(stage):value_json(value)
                     for stage,value in sorted(row["values"].items())
@@ -261,6 +314,12 @@ def main():
             "weighted_correct_equivalent_hands":agreement_weighted,
             "seat_consensus_count":seat_consensus,
             "seat_consensus_correct":seat_consensus_correct,
+            "replicate_context_decisions":replicate_context_decisions,
+            "replicate_unstable_context_decisions":replicate_unstable_context_decisions,
+            "replicate_instability_rate":(
+                replicate_unstable_context_decisions/replicate_context_decisions
+                if replicate_context_decisions else None
+            ),
             "by_stage":{
                 str(stage):{
                     "n":row["n"],
