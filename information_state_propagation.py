@@ -7,6 +7,8 @@ not change ``urza_solver.State`` or any rules/search behavior.  Instead it carri
 is entitled to retain.
 
 Current modeled knowledge events:
+- exact remaining-library multiset deduced from the known decklist plus all modeled
+  player-visible own zones; this never includes hidden order;
 - scry: cards looked at, retained top order, and cards put on bottom;
 - Sensei's Divining Top reorder and draw ability;
 - Mystical Tutor shuffle-then-known-top placement;
@@ -73,6 +75,22 @@ def new_trace_lines(before, after) -> Tuple[str, ...]:
     while common < limit and old[common] == new[common]:
         common += 1
     return new[common:]
+
+
+def deduced_library_counts(state) -> Tuple[Tuple[str, int], ...]:
+    """Exact remaining-library multiset available by ordinary player deduction.
+
+    The simulator models only the player's own deck/zones.  The starting decklist
+    is fixed and every modeled movement between hand, battlefield, graveyard,
+    exile, command zone, and library is known to that player.  Therefore *which*
+    cards remain in the library is fully deducible even when their order is not.
+
+    Reading the concrete library here is an implementation shortcut for that
+    subtraction.  Only the Counter/multiset is retained; no positional information
+    is copied into InformationState.
+    """
+    counts = Counter(str(card) for card in getattr(state, "library", ()))
+    return tuple(sorted((card, int(count)) for card, count in counts.items() if count))
 
 
 def _top_visible(state) -> bool:
@@ -249,7 +267,8 @@ def validate_information_against_state(info: InformationState, state) -> None:
 
 
 def initial_information(state) -> InformationState:
-    info = _reveal_continuous_top(InformationState(), state)
+    info = InformationState(known_library_counts=deduced_library_counts(state))
+    info = _reveal_continuous_top(info, state)
     validate_information_against_state(info, state)
     return info
 
@@ -324,17 +343,13 @@ def propagate_information(before, after, prior: InformationState) -> Information
         seen = _parse_card_sequence(match.group(2), n, universe)
         info = _apply_scry_event(info, seen, after)
 
-    # Clamp stale explicit count facts after publicly observed cards leave the
-    # library. No current Oracle action creates these facts, but this preserves a
-    # safe invariant for future count-observation effects.
-    remaining = Counter(str(c) for c in getattr(after, "library", ()))
-    if info.known_library_counts:
-        info = replace(
-            info,
-            known_library_counts=tuple(
-                sorted((card, min(int(count), remaining.get(card, 0))) for card, count in info.known_library_counts)
-            ),
-        )
+    # Library membership is deductively known from the fixed decklist and all
+    # modeled player-visible own zones.  Refresh the exact multiset after every
+    # transition.  This intentionally learns nothing about unknown ordering.
+    info = replace(
+        info,
+        known_library_counts=deduced_library_counts(after),
+    )
 
     # Chip/FTT look permissions reveal the current top continuously after all
     # other action effects, even when their separate play-from-top condition is
