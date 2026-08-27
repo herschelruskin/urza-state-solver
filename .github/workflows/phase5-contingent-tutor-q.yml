@@ -38,6 +38,10 @@ jobs:
         run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_post_commit_evaluation_completes()"
       - name: Contingent value sanity
         run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_post_commit_value_comparison_is_sane()"
+      - name: Contingent is not worse
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; p,c,_=s._post_commit_evaluations(); assert c.estimates[0].value.win_probability >= p.estimates[0].value.win_probability"
+      - name: Plain synthetic value is zero
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; p,_,_=s._post_commit_evaluations(); assert p.estimates[0].value.win_probability == 0.0"
       - name: Contingent value improvement
         run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_post_commit_contingent_strictly_improves_bad_leaf()"
       - name: Contingent nested cache activity
