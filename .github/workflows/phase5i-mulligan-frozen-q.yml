@@ -28,9 +28,14 @@ jobs:
           python -m py_compile phase5i_mulligan_smoke.py
           python -m py_compile phase5i_human_hand_eval.py
           python -m py_compile phase5i_stage_model_eval.py
+          python -m py_compile phase5i_stage_sample_eval.py
+          python -m py_compile phase5i_stage_sample_reduce.py
+          python -m py_compile phase5i_stage_factorization_smoke.py
           python -m py_compile phase5i_benchmark_aggregate.py
       - name: Phase 5I integration smoke
         run: python phase5i_mulligan_smoke.py
+      - name: Factorized London DP regression
+        run: python phase5i_stage_factorization_smoke.py
       - name: Frozen Phase 5H policy regressions
         run: |
           python phase5_adaptive_confidence_q_smoke.py
