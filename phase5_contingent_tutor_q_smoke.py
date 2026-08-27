@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import urza_solver as solver
 
+from non_oracle_episode import run_deterministic_episode
 from non_oracle_rules_adapter_v2 import apply_main_action, rules_decision_request
 from non_oracle_runtime import make_runtime_state
 from phase5_monte_carlo import Phase5DecisionCache, Phase5MonteCarloDecisionEvaluator
@@ -81,6 +82,73 @@ def simple_tutor_runtime():
         if a.kind=="main_use_simple_tutor" and a.source=="Muddle the Mixture"
     )
     return runtime,tutor
+
+
+def pending_simple_tutor_runtime():
+    runtime,tutor=simple_tutor_runtime()
+    runtime=apply_main_action(runtime,tutor)
+    for _ in range(8):
+        if runtime.pending is not None:
+            break
+        request=rules_decision_request(
+            runtime,horizon=2,policy_id=FailTutorTargetPolicy.policy_id
+        )
+        passes=[a for a in request.actions if a.kind=="pass_priority"]
+        assert passes,[(a.kind,a.label) for a in request.actions]
+        runtime=apply_main_action(runtime,passes[0])
+    assert runtime.pending is not None
+    return runtime,tutor
+
+
+def test_power_artifact_target_leaf_converts():
+    runtime,_=pending_simple_tutor_runtime()
+    policy=FailTutorTargetPolicy()
+    request=rules_decision_request(
+        runtime,horizon=2,policy_id=policy.policy_id
+    )
+    pa=next(
+        a for a in request.actions
+        if a.kind=="choose_tutor_target"
+        and str(dict(a.parameters).get("target",""))=="Power Artifact"
+    )
+    after=apply_main_action(runtime,pa)
+    result=run_deterministic_episode(
+        after,horizon=2,policy=policy,max_steps=128
+    )
+    assert result.won_by_horizon,(result.terminal_reason,result.win_turn,result.win_family)
+    assert result.win_family=="Power Artifact + Grim",result.win_family
+    print("Power Artifact target converts under frozen rollout: PASS")
+
+
+def test_observed_target_q_prefers_power_artifact():
+    runtime,_=pending_simple_tutor_runtime()
+    policy=FailTutorTargetPolicy()
+    request=rules_decision_request(
+        runtime,horizon=2,policy_id=policy.policy_id
+    )
+    targets=tuple(a for a in request.actions if a.kind=="choose_tutor_target")
+    evaluation=Phase5MonteCarloDecisionEvaluator(
+        rollout_count=1,
+        mc_root_seed=2026082711,
+        horizon=2,
+        continuation_policy=policy,
+        max_episode_steps=128,
+        strict_terminal_reasons=True,
+    ).evaluate(runtime,candidate_actions=targets)
+    best_target=str(dict(evaluation.best_action.parameters).get("target",""))
+    assert best_target=="Power Artifact",best_target
+    pa=next(
+        row for row in evaluation.estimates
+        if str(dict(row.action.parameters).get("target",""))=="Power Artifact"
+    )
+    grid=next(
+        row for row in evaluation.estimates
+        if str(dict(row.action.parameters).get("target",""))=="Defense Grid"
+    )
+    assert pa.value.win_probability>grid.value.win_probability,(
+        pa.value.comparison_key(),grid.value.comparison_key()
+    )
+    print("observed target Q ranks Power Artifact above Defense Grid: PASS")
 
 
 def test_simple_tutor_pending_surface_matches_lineage():
