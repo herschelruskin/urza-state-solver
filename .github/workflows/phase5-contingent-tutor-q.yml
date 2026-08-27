@@ -1,0 +1,45 @@
+name: Phase 5 contingent tutor-Q
+
+on:
+  push:
+    branches:
+      - phase5-contingent-tutor-q
+  pull_request:
+    branches:
+      - phase5-opening-environment-caverns
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile contingent Q slice
+        run: |
+          python -m py_compile phase5_monte_carlo.py phase5_selective_tutor_q.py phase5_contingent_tutor_q_smoke.py
+      - name: Bounded contingent tutor-Q regression
+        run: python phase5_contingent_tutor_q_smoke.py
+      - name: Parent tutor-Q and cache regressions
+        run: |
+          python phase5_selective_tutor_q_smoke.py
+          python phase5_monte_carlo_cache_smoke.py
+          python phase5_caverns_opening_smoke.py
+          python phase5_adaptive_mulligan_smoke.py
+          python phase5_mulligan_smoke.py
+      - name: Architecture and benchmark regressions
+        run: |
+          python strategic_value_state_smoke.py
+          python non_oracle_runtime_value_key_smoke.py
+          python human_benchmark_fixture_smoke.py
+          python phase1_acceptance_smoke.py
+      - name: Diff check
+        run: git diff --check
