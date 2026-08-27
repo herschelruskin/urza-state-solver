@@ -7,8 +7,6 @@ not change ``urza_solver.State`` or any rules/search behavior.  Instead it carri
 is entitled to retain.
 
 Current modeled knowledge events:
-- exact remaining-library multiset deduced from the known decklist plus all modeled
-  player-visible own zones; this never includes hidden order;
 - scry: cards looked at, retained top order, and cards put on bottom;
 - Sensei's Divining Top reorder and draw ability;
 - Mystical Tutor shuffle-then-known-top placement;
@@ -19,7 +17,9 @@ Current modeled knowledge events:
   permission is currently active.
 
 The concrete State is used only to validate/infer the consequences of an event the
-player observed.  Exact unknown order is never copied wholesale into InformationState.
+player observed. Exact unknown order is never copied wholesale into InformationState.
+Order-free remaining-library membership is instead derived fresh when PolicyView is
+constructed; it is logical knowledge, not persistent observation memory.
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ import re
 from typing import Iterable, Sequence, Tuple
 
 import urza_solver as solver
-from solver_architecture import InformationState
+from solver_architecture import InformationState, deduced_library_counts
 
 
 class InformationPropagationError(RuntimeError):
@@ -75,22 +75,6 @@ def new_trace_lines(before, after) -> Tuple[str, ...]:
     while common < limit and old[common] == new[common]:
         common += 1
     return new[common:]
-
-
-def deduced_library_counts(state) -> Tuple[Tuple[str, int], ...]:
-    """Exact remaining-library multiset available by ordinary player deduction.
-
-    The simulator models only the player's own deck/zones.  The starting decklist
-    is fixed and every modeled movement between hand, battlefield, graveyard,
-    exile, command zone, and library is known to that player.  Therefore *which*
-    cards remain in the library is fully deducible even when their order is not.
-
-    Reading the concrete library here is an implementation shortcut for that
-    subtraction.  Only the Counter/multiset is retained; no positional information
-    is copied into InformationState.
-    """
-    counts = Counter(str(card) for card in getattr(state, "library", ()))
-    return tuple(sorted((card, int(count)) for card, count in counts.items() if count))
 
 
 def _top_visible(state) -> bool:
@@ -267,8 +251,7 @@ def validate_information_against_state(info: InformationState, state) -> None:
 
 
 def initial_information(state) -> InformationState:
-    info = InformationState(known_library_counts=deduced_library_counts(state))
-    info = _reveal_continuous_top(info, state)
+    info = _reveal_continuous_top(InformationState(), state)
     validate_information_against_state(info, state)
     return info
 
@@ -342,14 +325,6 @@ def propagate_information(before, after, prior: InformationState) -> Information
         n = int(match.group(1))
         seen = _parse_card_sequence(match.group(2), n, universe)
         info = _apply_scry_event(info, seen, after)
-
-    # Library membership is deductively known from the fixed decklist and all
-    # modeled player-visible own zones.  Refresh the exact multiset after every
-    # transition.  This intentionally learns nothing about unknown ordering.
-    info = replace(
-        info,
-        known_library_counts=deduced_library_counts(after),
-    )
 
     # Chip/FTT look permissions reveal the current top continuously after all
     # other action effects, even when their separate play-from-top condition is
