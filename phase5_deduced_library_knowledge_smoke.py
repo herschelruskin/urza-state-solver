@@ -107,7 +107,7 @@ def test_search_removes_known_target_from_remaining_multiset():
         library=("Power Artifact","Defense Grid","Island"),
         hand=("Muddle the Mixture",),
         battlefield=(),
-        blue=2,
+        blue=3,
     )
     prior=initial_information(before)
     after=next(
