@@ -3,6 +3,7 @@
 
 import urza_solver as solver
 
+from non_oracle_episode import run_deterministic_episode
 from non_oracle_runtime import make_runtime_state
 from non_oracle_rules_adapter_v2 import rules_decision_request
 from phase5_monte_carlo import (
@@ -65,8 +66,31 @@ def main():
     assert cache.stats.misses==2
     assert len(cache)==2
 
+    # Continuation policy semantics are part of Q identity. A bounded contingent
+    # evaluator must never hit a plain-v6 row merely because state/actions match.
+    def equivalent_runner(runtime,*,root_action,horizon,policy,max_steps):
+        return run_deterministic_episode(
+            runtime,horizon=horizon,policy=policy,max_steps=max_steps
+        )
+
+    contingent_namespace=Phase5MonteCarloDecisionEvaluator(
+        rollout_count=1,
+        mc_root_seed=20260826,
+        horizon=2,
+        continuation_policy=policy,
+        max_episode_steps=128,
+        strict_terminal_reasons=True,
+        cache=cache,
+        continuation_runner=equivalent_runner,
+        continuation_id="test-contingent-continuation-v1",
+    )
+    contingent_namespace.evaluate(b,candidate_actions=tutor)
+    assert cache.stats.misses==3
+    assert len(cache)==3
+
     print("strategic Q cache ignores hidden order/RNG provenance: PASS")
     print("candidate strategic-action set namespaces cache entries: PASS")
+    print("continuation semantics namespace strategic Q cache entries: PASS")
     print("PHASE5 MONTE CARLO CACHE SMOKE: ALL PASS")
 
 
