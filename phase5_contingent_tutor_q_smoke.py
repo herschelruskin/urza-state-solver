@@ -121,12 +121,10 @@ def test_simple_tutor_pending_surface_matches_lineage():
     )
 
 
-def test_post_commit_observation_is_revalued():
+def _post_commit_evaluations():
     runtime,tutor=simple_tutor_runtime()
     policy=FailTutorTargetPolicy()
 
-    # Plain one-step Q commits the tutor then lets the deliberately bad leaf
-    # choose Reality Chip instead of the terminal Power Artifact target.
     plain=Phase5MonteCarloDecisionEvaluator(
         rollout_count=1,
         mc_root_seed=2026082703,
@@ -155,18 +153,38 @@ def test_post_commit_observation_is_revalued():
         continuation_runner=runner,
         continuation_id=runner.continuation_id,
     ).evaluate(runtime,candidate_actions=(tutor,))
+    return plain,contingent,cache
 
+
+def test_post_commit_evaluation_completes():
+    plain,contingent,cache=_post_commit_evaluations()
+    assert len(plain.estimates)==1
+    assert len(contingent.estimates)==1
+    print("post-commit contingent root evaluation completes: PASS")
+
+
+def test_post_commit_nested_cache_activity():
+    _,_,cache=_post_commit_evaluations()
+    assert cache.stats.misses>1,cache.stats
+    print(f"post-commit evaluation records nested Q cache activity ({cache.stats}): PASS")
+
+
+def test_post_commit_value_comparison_is_sane():
+    plain,contingent,_=_post_commit_evaluations()
     p_plain=plain.estimates[0].value.win_probability
     p_contingent=contingent.estimates[0].value.win_probability
-    assert p_contingent>=0.0 and p_plain>=0.0
-    # One outer Q row plus at least one nested post-commit target evaluation.
-    assert cache.stats.misses>1,cache.stats
+    assert 0.0<=p_plain<=1.0
+    assert 0.0<=p_contingent<=1.0
     print(
-        "post-commit simple-tutor observation is independently Q-valued "
-        f"(plain={p_plain:.3f}, contingent={p_contingent:.3f}, "
-        f"cache_misses={cache.stats.misses}): PASS"
+        "post-commit simple-tutor values are well-formed "
+        f"(plain={p_plain:.3f}, contingent={p_contingent:.3f}): PASS"
     )
 
+
+def test_post_commit_observation_is_revalued():
+    test_post_commit_evaluation_completes()
+    test_post_commit_nested_cache_activity()
+    test_post_commit_value_comparison_is_sane()
 
 def test_runner_receives_committed_source_lineage():
     runtime,tutor=simple_tutor_runtime()
