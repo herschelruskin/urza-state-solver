@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Adaptive Monte-Carlo London mulligan evaluation with selective tutor-Q leaves.
 
-The Phase-5 exact London recursion is retained:
+The Phase-5 London recursion is retained exactly given the estimated keep values:
 
     V_6 = E[K_6(h)]
     V_s = E[max(K_s(h), V_{s+1})]
@@ -10,13 +10,15 @@ What changes is how the expensive keep value K_s(h) is estimated.  Every legal
 bottom multiset is screened with common hidden worlds; only a bounded shortlist is
 confirmed on a disjoint set of hidden worlds using a larger selective-tutor-Q
 budget.  This is an explicitly approximate *racing* layer, not a claim that bottom
-selection is exact under finite Monte Carlo.
+selection is exact under finite Monte Carlo. Exact-value ties at the screening
+cutoff are never split by deterministic card-name ordering.
 
 Human mulligan labels are not inputs to this module.
 """
 
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass
 from typing import Sequence, Tuple
 
@@ -87,6 +89,7 @@ class AdaptiveMulliganStageEstimate:
     mulligan_count:int
     legal_bottoms_screened:int
     bottoms_confirmed:int
+    chosen_terminal_reason_counts:Tuple[Tuple[str,int],...]
 
     @property
     def keep_rate(self)->float:
@@ -214,9 +217,15 @@ class AdaptiveOpeningKeepEvaluator:
             stage=stage,
             sample_start=0,
         )
+        cutoff_index=min(self.shortlist_size,len(screen.estimates))-1
+        cutoff_key=screen.estimates[cutoff_index].value.comparison_key()
+        # Never prune through an exact finite-sample value tie. With tiny screens,
+        # especially all-zero weak hands, deterministic bottom-name ordering must
+        # not masquerade as evidence that one tied bottom is better than another.
         shortlist=tuple(
             estimate.bottom
-            for estimate in screen.estimates[:min(self.shortlist_size,len(screen.estimates))]
+            for estimate in screen.estimates
+            if estimate.value.comparison_key()>=cutoff_key
         )
         confirm=self.confirm_evaluator.evaluate(
             seven,
@@ -246,7 +255,7 @@ class AdaptiveMulliganStageTrainer:
         deck:Sequence[str],
         *,
         hand_samples_per_stage:int=4,
-        highest_stage:int=0,
+        earliest_stage:int=0,
         screen_rollouts_per_bottom:int=1,
         confirm_rollouts_per_bottom:int=3,
         shortlist_size:int=4,
@@ -261,11 +270,11 @@ class AdaptiveMulliganStageTrainer:
     ):
         if hand_samples_per_stage<1:
             raise ValueError("hand_samples_per_stage must be >= 1")
-        if highest_stage<0 or highest_stage>MULLIGAN_FLOOR_STAGE:
-            raise ValueError("highest_stage must be between 0 and the mulligan floor")
+        if earliest_stage<0 or earliest_stage>MULLIGAN_FLOOR_STAGE:
+            raise ValueError("earliest_stage must be between 0 and the mulligan floor")
         self.deck=tuple(str(card) for card in deck)
         self.hand_samples_per_stage=int(hand_samples_per_stage)
-        self.highest_stage=int(highest_stage)
+        self.earliest_stage=int(earliest_stage)
         self.screen_rollouts_per_bottom=int(screen_rollouts_per_bottom)
         self.confirm_rollouts_per_bottom=int(confirm_rollouts_per_bottom)
         self.shortlist_size=int(shortlist_size)
@@ -294,10 +303,11 @@ class AdaptiveMulliganStageTrainer:
     def train(self)->AdaptiveMulliganStageModel:
         fitted={}
         decisions=[]
-        for stage in range(MULLIGAN_FLOOR_STAGE,self.highest_stage-1,-1):
+        for stage in range(MULLIGAN_FLOOR_STAGE,self.earliest_stage-1,-1):
             chosen_values=[]
             kept=mulled=0
             screened=confirmed=0
+            reason_counts=Counter()
             continuation=fitted.get(stage+1)
 
             for sample_id in range(self.hand_samples_per_stage):
@@ -311,6 +321,7 @@ class AdaptiveMulliganStageTrainer:
                 keep=evaluation.best.value
                 screened += evaluation.legal_bottom_count
                 confirmed += evaluation.confirmed_bottom_count
+                reason_counts.update(dict(evaluation.best.terminal_reason_counts))
 
                 continuation_value=(
                     None if continuation is None else continuation.value
@@ -351,12 +362,13 @@ class AdaptiveMulliganStageTrainer:
                 mulligan_count=mulled,
                 legal_bottoms_screened=screened,
                 bottoms_confirmed=confirmed,
+                chosen_terminal_reason_counts=tuple(sorted(reason_counts.items())),
             )
 
         return AdaptiveMulliganStageModel(
             stages=tuple(
                 fitted[stage]
-                for stage in range(self.highest_stage,MULLIGAN_FLOOR_STAGE+1)
+                for stage in range(self.earliest_stage,MULLIGAN_FLOOR_STAGE+1)
             ),
             hand_decisions=tuple(decisions),
             hand_samples_per_stage=self.hand_samples_per_stage,
