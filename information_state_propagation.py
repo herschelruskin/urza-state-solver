@@ -17,7 +17,9 @@ Current modeled knowledge events:
   permission is currently active.
 
 The concrete State is used only to validate/infer the consequences of an event the
-player observed.  Exact unknown order is never copied wholesale into InformationState.
+player observed. Exact unknown order is never copied wholesale into InformationState.
+Order-free remaining-library membership is instead derived fresh when PolicyView is
+constructed; it is logical knowledge, not persistent observation memory.
 """
 
 from __future__ import annotations
@@ -29,7 +31,7 @@ import re
 from typing import Iterable, Sequence, Tuple
 
 import urza_solver as solver
-from solver_architecture import InformationState
+from solver_architecture import InformationState, deduced_library_counts
 
 
 class InformationPropagationError(RuntimeError):
@@ -323,18 +325,6 @@ def propagate_information(before, after, prior: InformationState) -> Information
         n = int(match.group(1))
         seen = _parse_card_sequence(match.group(2), n, universe)
         info = _apply_scry_event(info, seen, after)
-
-    # Clamp stale explicit count facts after publicly observed cards leave the
-    # library. No current Oracle action creates these facts, but this preserves a
-    # safe invariant for future count-observation effects.
-    remaining = Counter(str(c) for c in getattr(after, "library", ()))
-    if info.known_library_counts:
-        info = replace(
-            info,
-            known_library_counts=tuple(
-                sorted((card, min(int(count), remaining.get(card, 0))) for card, count in info.known_library_counts)
-            ),
-        )
 
     # Chip/FTT look permissions reveal the current top continuously after all
     # other action effects, even when their separate play-from-top condition is

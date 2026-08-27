@@ -37,7 +37,9 @@ def spec(count=2):
 
 def test_scry_commit_hidden_future_invariance():
     a = base_state(("Grinding Station", "Blank", "Tail A", "Tail B"))
-    b = base_state(("Island", "Tail B", "Blank", "Grinding Station"))
+    # Same remaining-card multiset, different unknown order. Membership is
+    # logically deducible; only positional order must remain hidden.
+    b = base_state(("Tail B", "Grinding Station", "Blank", "Tail A"))
     info = InformationState()
 
     req_a = scry_commit_request(a, info, spec(), horizon=6, policy_id="test")
