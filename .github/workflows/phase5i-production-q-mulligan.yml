@@ -1,0 +1,54 @@
+name: Phase 5I production Q mulligan integration
+
+on:
+  push:
+    branches:
+      - phase5i-production-q-mulligan
+  pull_request:
+    branches:
+      - phase5-adaptive-confidence-q
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile Phase 5I slice
+        run: |
+          python -m py_compile phase5_selective_tutor_q.py
+          python -m py_compile phase5_adaptive_mulligan.py
+          python -m py_compile phase5_adaptive_mulligan_smoke.py
+      - name: Frozen Phase 5H gameplay policy regression
+        run: python phase5_adaptive_confidence_q_smoke.py
+      - name: Adaptive mulligan integration regression
+        run: python phase5_adaptive_mulligan_smoke.py
+      - name: London mulligan base regression
+        run: python phase5_mulligan_smoke.py
+      - name: Information and runtime regressions
+        run: |
+          python phase5_chain_offer_smoke.py
+          python phase5_deduced_library_knowledge_smoke.py
+          python information_state_propagation_smoke.py
+          python strategic_value_state_smoke.py
+          python non_oracle_runtime_value_key_smoke.py
+      - name: Human fixture and Phase-1 acceptance
+        run: |
+          python human_benchmark_fixture_smoke.py
+          python phase1_acceptance_smoke.py
+      - name: Development checkpoint
+        run: |
+          test -s DEVELOPMENT_LOG.md
+          grep -q "Phase 5I" DEVELOPMENT_LOG.md
+      - name: Diff check
+        run: git diff --check
