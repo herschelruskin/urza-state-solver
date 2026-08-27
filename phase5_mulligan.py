@@ -37,7 +37,8 @@ from phase4_monte_carlo import _episode_outcome, _value_from_outcomes, _wilson_i
 from phase5_monte_carlo import MODELED_TERMINALS
 from solver_architecture import InformationState
 
-PHASE5_MULLIGAN_VERSION = "urza-mulligan-dp-v1"
+PHASE5_MULLIGAN_VERSION = "urza-mulligan-dp-v2-opening-environment"
+OPENING_ENVIRONMENT_VERSION = "urza-opening-environment-v1"
 MULLIGAN_KEEP_SIZES = {0: 7, 1: 7, 2: 6, 3: 5, 4: 4, 5: 3, 6: 2}
 FREE_MULLIGAN_STAGE = 1
 MULLIGAN_FLOOR_STAGE = 6
@@ -46,6 +47,58 @@ MULLIGAN_KEEP_FLOOR = 2
 
 class MulliganEvaluationError(RuntimeError):
     pass
+
+
+@dataclass(frozen=True)
+class OpeningEnvironment:
+    """Game-level pregame context fixed across every mulligan stage.
+
+    Commander seats are 1-based. Seat 1 is playing first, so Gemstone Caverns'
+    opening-hand replacement effect is unavailable there; seats 2..N may use it.
+    The environment is consumed before the normal turn-1 episode begins.
+    """
+
+    seat: int = 1
+    player_count: int = 4
+
+    def __post_init__(self) -> None:
+        if int(self.player_count) < 2:
+            raise ValueError("opening environment requires at least two players")
+        if int(self.seat) < 1 or int(self.seat) > int(self.player_count):
+            raise ValueError("seat must be between 1 and player_count")
+
+    @property
+    def caverns_live(self) -> bool:
+        return int(self.seat) != 1
+
+    def key(self) -> Tuple[object, ...]:
+        return (
+            OPENING_ENVIRONMENT_VERSION,
+            int(self.player_count),
+            int(self.seat),
+            bool(self.caverns_live),
+        )
+
+
+@dataclass(frozen=True)
+class OpeningPregameChoice:
+    """Resolved player choice for Gemstone Caverns before turn 1."""
+
+    use_caverns: bool = False
+    exile_card: str = ""
+
+    def __post_init__(self) -> None:
+        if bool(self.use_caverns) != bool(self.exile_card):
+            raise ValueError(
+                "using Gemstone Caverns requires exactly one exiled card; "
+                "declining Caverns must not name an exile"
+            )
+
+    def key(self) -> Tuple[object, ...]:
+        return ("gemstone-caverns-pregame-v1", bool(self.use_caverns), str(self.exile_card))
+
+
+NO_PREGAME_CHOICE = OpeningPregameChoice()
 
 
 def keep_size_for_stage(stage: int) -> int:
@@ -113,18 +166,71 @@ def _deck_without_seven(deck: Sequence[str], seven: Sequence[str]) -> Tuple[str,
     return tuple(remaining)
 
 
-def opening_runtime(deck: Sequence[str], seven: Sequence[str], bottom: Sequence[str], *, rollout_game_seed: int = 0):
+def unique_pregame_choices(
+    kept_hand: Sequence[str],
+    opening_environment: OpeningEnvironment,
+) -> Tuple[OpeningPregameChoice, ...]:
+    """Return every strategically distinct legal Gemstone Caverns pregame choice."""
+
+    hand = tuple(str(card) for card in kept_hand)
+    rows = [NO_PREGAME_CHOICE]
+    if opening_environment.caverns_live and "Gemstone Caverns" in hand:
+        for card in sorted(set(card for card in hand if card != "Gemstone Caverns")):
+            rows.append(OpeningPregameChoice(True, card))
+    return tuple(rows)
+
+
+def _apply_opening_pregame(
+    keep: Sequence[str],
+    opening_environment: OpeningEnvironment,
+    pregame_choice: OpeningPregameChoice,
+) -> Tuple[Tuple[str, ...], Tuple[solver.Perm, ...], Tuple[str, ...], Tuple[str, ...]]:
+    """Resolve the selected pregame choice into physical zones before turn 1."""
+
+    keep = tuple(str(card) for card in keep)
+    legal = unique_pregame_choices(keep, opening_environment)
+    if pregame_choice not in legal:
+        raise MulliganEvaluationError(
+            f"illegal Gemstone Caverns pregame choice {pregame_choice!r} "
+            f"for seat {opening_environment.seat}"
+        )
+    if not pregame_choice.use_caverns:
+        return keep, (), (), ()
+
+    hand = list(keep)
+    hand.remove("Gemstone Caverns")
+    hand.remove(pregame_choice.exile_card)
+    battlefield = (solver.Perm("Gemstone Caverns", counters=1, mode="luck"),)
+    exile = (pregame_choice.exile_card,)
+    trace = (f"pregame Caverns exiles {pregame_choice.exile_card}",)
+    return tuple(hand), battlefield, exile, trace
+
+
+def opening_runtime(
+    deck: Sequence[str],
+    seven: Sequence[str],
+    bottom: Sequence[str],
+    *,
+    opening_environment: OpeningEnvironment | None = None,
+    pregame_choice: OpeningPregameChoice = NO_PREGAME_CHOICE,
+    rollout_game_seed: int = 0,
+):
     seven = tuple(str(card) for card in seven)
     bottom = tuple(sorted(str(card) for card in bottom))
     keep = _remove_multiset(seven, bottom)
+    environment = opening_environment or OpeningEnvironment()
+    hand, battlefield, exile, pregame_trace = _apply_opening_pregame(
+        keep, environment, pregame_choice
+    )
     unknown = tuple(sorted(_deck_without_seven(deck, seven)))
     state = solver.State(
         turn=1,
         library=unknown + bottom,
-        hand=keep,
-        battlefield=(),
+        hand=hand,
+        battlefield=battlefield,
+        exile=exile,
         rng_root_seed=int(rollout_game_seed),
-        trace=("--- Turn 1 ---",),
+        trace=("--- Turn 1 ---",) + pregame_trace,
     )
     information = InformationState(known_bottom=bottom)
     validate_information_against_state(information, state)
@@ -178,6 +284,7 @@ class OpeningKeepEstimate:
     rollouts: int
     win_probability_wilson95: Tuple[float, float]
     terminal_reason_counts: Tuple[Tuple[str, int], ...]
+    pregame_choice: OpeningPregameChoice = NO_PREGAME_CHOICE
 
 
 @dataclass(frozen=True)
@@ -189,6 +296,8 @@ class OpeningKeepEvaluation:
     rollout_count_per_bottom: int
     mc_root_seed: int
     horizon: int
+    opening_environment: OpeningEnvironment = OpeningEnvironment()
+    pregame_variants_evaluated: int = 0
     version: str = PHASE5_MULLIGAN_VERSION
 
 
@@ -196,7 +305,8 @@ class OpeningKeepEvaluator:
     def __init__(self, deck: Sequence[str], *, rollout_count: int = 32, mc_root_seed: int = 0,
                  horizon: int = 6, continuation_policy: DeterministicBasePolicy | None = None,
                  max_episode_steps: int = 512, strict_terminal_reasons: bool = True,
-                 episode_runner: Callable | None = None) -> None:
+                 episode_runner: Callable | None = None,
+                 opening_environment: OpeningEnvironment | None = None) -> None:
         if rollout_count < 1:
             raise ValueError("rollout_count must be >= 1")
         self.deck = tuple(str(card) for card in deck)
@@ -207,6 +317,7 @@ class OpeningKeepEvaluator:
         self.max_episode_steps = int(max_episode_steps)
         self.strict_terminal_reasons = bool(strict_terminal_reasons)
         self.episode_runner = episode_runner or run_deterministic_episode
+        self.opening_environment = opening_environment or OpeningEnvironment()
 
     def evaluate(
         self,
@@ -237,42 +348,77 @@ class OpeningKeepEvaluator:
             bottoms = tuple(sorted(normalized))
         if int(sample_start) < 0:
             raise ValueError("sample_start must be >= 0")
-        outcomes_by_bottom = {bottom: [] for bottom in bottoms}
-        reasons_by_bottom = {bottom: Counter() for bottom in bottoms}
+        variants_by_bottom = {
+            bottom: unique_pregame_choices(
+                _remove_multiset(seven, bottom), self.opening_environment
+            )
+            for bottom in bottoms
+        }
+        outcomes_by_variant = {
+            (bottom, choice): []
+            for bottom, choices in variants_by_bottom.items()
+            for choice in choices
+        }
+        reasons_by_variant = {
+            key: Counter() for key in outcomes_by_variant
+        }
 
         for sample_id in range(
             int(sample_start), int(sample_start) + self.rollout_count
         ):
             for bottom in bottoms:
-                root = opening_runtime(self.deck, seven, bottom)
                 world = _opening_world(
                     deck=self.deck, seven=seven, bottom=bottom,
                     mc_root_seed=self.mc_root_seed, sample_id=sample_id,
                 )
-                sampled = materialize_hidden_world(root, world)
-                validate_information_against_state(sampled.information, sampled.true_state)
-                result = self.episode_runner(
-                    sampled, horizon=self.horizon, policy=self.continuation_policy,
-                    max_steps=self.max_episode_steps,
-                )
-                reason = str(result.terminal_reason)
-                reasons_by_bottom[bottom][reason] += 1
-                if self.strict_terminal_reasons and reason not in MODELED_TERMINALS:
-                    raise MulliganEvaluationError(
-                        f"opening rollout terminated with unmodeled reason {reason!r}"
+                for choice in variants_by_bottom[bottom]:
+                    root = opening_runtime(
+                        self.deck,
+                        seven,
+                        bottom,
+                        opening_environment=self.opening_environment,
+                        pregame_choice=choice,
                     )
-                outcomes_by_bottom[bottom].append(_episode_outcome(result, horizon=self.horizon))
+                    sampled = materialize_hidden_world(root, world)
+                    validate_information_against_state(sampled.information, sampled.true_state)
+                    result = self.episode_runner(
+                        sampled, horizon=self.horizon, policy=self.continuation_policy,
+                        max_steps=self.max_episode_steps,
+                    )
+                    reason = str(result.terminal_reason)
+                    reasons_by_variant[(bottom, choice)][reason] += 1
+                    if self.strict_terminal_reasons and reason not in MODELED_TERMINALS:
+                        raise MulliganEvaluationError(
+                            f"opening rollout terminated with unmodeled reason {reason!r}"
+                        )
+                    outcomes_by_variant[(bottom, choice)].append(
+                        _episode_outcome(result, horizon=self.horizon)
+                    )
 
         estimates = []
         for bottom in bottoms:
-            outcomes = tuple(outcomes_by_bottom[bottom])
-            value = _value_from_outcomes(outcomes, horizon=self.horizon)
-            wins = sum(outcome.won for outcome in outcomes)
-            estimates.append(OpeningKeepEstimate(
-                stage=int(stage), keep_size=keep_size, bottom=bottom,
-                kept_hand=_remove_multiset(seven, bottom), value=value,
-                rollouts=len(outcomes), win_probability_wilson95=_wilson_interval(wins, len(outcomes)),
-                terminal_reason_counts=tuple(sorted(reasons_by_bottom[bottom].items())),
+            choice_estimates = []
+            kept_hand = _remove_multiset(seven, bottom)
+            for choice in variants_by_bottom[bottom]:
+                outcomes = tuple(outcomes_by_variant[(bottom, choice)])
+                value = _value_from_outcomes(outcomes, horizon=self.horizon)
+                wins = sum(outcome.won for outcome in outcomes)
+                choice_estimates.append(OpeningKeepEstimate(
+                    stage=int(stage), keep_size=keep_size, bottom=bottom,
+                    kept_hand=kept_hand, value=value,
+                    rollouts=len(outcomes),
+                    win_probability_wilson95=_wilson_interval(wins, len(outcomes)),
+                    terminal_reason_counts=tuple(
+                        sorted(reasons_by_variant[(bottom, choice)].items())
+                    ),
+                    pregame_choice=choice,
+                ))
+            estimates.append(max(
+                choice_estimates,
+                key=lambda estimate: (
+                    estimate.value.comparison_key(),
+                    repr(estimate.pregame_choice.key()),
+                ),
             ))
         ranked = tuple(sorted(
             estimates,
@@ -283,6 +429,8 @@ class OpeningKeepEvaluator:
             stage=int(stage), seven=seven, best=ranked[0], estimates=ranked,
             rollout_count_per_bottom=self.rollout_count,
             mc_root_seed=self.mc_root_seed, horizon=self.horizon,
+            opening_environment=self.opening_environment,
+            pregame_variants_evaluated=sum(len(x) for x in variants_by_bottom.values()),
         )
 
 
@@ -336,6 +484,7 @@ class MulliganStageModel:
     rollout_count_per_bottom: int
     mc_root_seed: int
     horizon: int
+    opening_environment: OpeningEnvironment = OpeningEnvironment()
     version: str = PHASE5_MULLIGAN_VERSION
 
     def stage_estimate(self, stage: int) -> MulliganStageEstimate:
@@ -363,7 +512,8 @@ class MulliganStageTrainer:
                  rollout_count_per_bottom: int = 16, mc_root_seed: int = 0,
                  horizon: int = 6, continuation_policy: DeterministicBasePolicy | None = None,
                  strict_terminal_reasons: bool = True,
-                 episode_runner: Callable | None = None) -> None:
+                 episode_runner: Callable | None = None,
+                 opening_environment: OpeningEnvironment | None = None) -> None:
         if hand_samples_per_stage < 1:
             raise ValueError("hand_samples_per_stage must be >= 1")
         self.deck = tuple(str(card) for card in deck)
@@ -374,6 +524,7 @@ class MulliganStageTrainer:
         self.continuation_policy = continuation_policy or DeterministicBasePolicy()
         self.strict_terminal_reasons = bool(strict_terminal_reasons)
         self.episode_runner = episode_runner or run_deterministic_episode
+        self.opening_environment = opening_environment or OpeningEnvironment()
 
     def train(self) -> MulliganStageModel:
         fitted: dict[int, MulliganStageEstimate] = {}
@@ -384,6 +535,7 @@ class MulliganStageTrainer:
                 continuation_policy=self.continuation_policy,
                 strict_terminal_reasons=self.strict_terminal_reasons,
                 episode_runner=self.episode_runner,
+                opening_environment=self.opening_environment,
             )
             chosen_values = []
             kept = mulled = 0
@@ -405,4 +557,166 @@ class MulliganStageTrainer:
             rollout_count_per_bottom=self.rollout_count_per_bottom,
             mc_root_seed=self.mc_root_seed,
             horizon=self.horizon,
+            opening_environment=self.opening_environment,
+        )
+
+
+COMMANDER_SEAT_MIXTURE_VERSION = "urza-commander-seat-mixture-v1"
+
+
+def commander_opening_environments(player_count: int = 4) -> Tuple[OpeningEnvironment, ...]:
+    """Return every seat context known before mulligans in a Commander game."""
+    count = int(player_count)
+    if count < 2:
+        raise ValueError("Commander opening environment requires at least two players")
+    return tuple(OpeningEnvironment(seat=seat, player_count=count) for seat in range(1, count + 1))
+
+
+def mix_commander_seat_values(
+    seat_values: Sequence[Tuple[int, WinDistributionValue]],
+    *,
+    player_count: int = 4,
+) -> WinDistributionValue:
+    """Uniform ex-ante mixture of already seat-conditioned policy values.
+
+    The seat is known before opening hands and mulligans. Therefore callers must
+    optimize/fit inside each seat first and only mix the resulting values here.
+    Mixing environments before the keep/mulligan decision would hide information
+    the player actually has and can produce a different policy.
+    """
+    count = int(player_count)
+    if count < 2:
+        raise ValueError("Commander seat mixture requires at least two players")
+    rows = tuple((int(seat), value) for seat, value in seat_values)
+    expected = tuple(range(1, count + 1))
+    seats = tuple(sorted(seat for seat, _ in rows))
+    if seats != expected:
+        raise ValueError(
+            f"seat-conditioned mixture requires exactly seats {expected!r}; got {seats!r}"
+        )
+    horizons = {value.horizon for _, value in rows}
+    if len(horizons) != 1:
+        raise ValueError("cannot mix seat-conditioned values with different horizons")
+    horizon = next(iter(horizons))
+    weight = 1.0 / count
+    by_seat = dict(rows)
+    return WinDistributionValue.mixture(
+        tuple((weight, by_seat[seat]) for seat in expected),
+        horizon=horizon,
+    )
+
+
+@dataclass(frozen=True)
+class CommanderSeatStageEstimate:
+    """A stage value after seat-conditioned decisions, mixed only for reporting."""
+
+    stage: int
+    keep_size: int
+    value: WinDistributionValue
+    seat_values: Tuple[Tuple[int, WinDistributionValue], ...]
+    seat_keep_rates: Tuple[Tuple[int, float], ...]
+
+    @property
+    def keep_rate(self) -> float:
+        return sum(rate for _, rate in self.seat_keep_rates) / len(self.seat_keep_rates)
+
+
+@dataclass(frozen=True)
+class CommanderSeatMulliganModel:
+    """Seat-conditioned London models plus an ex-ante uniform summary."""
+
+    seat_models: Tuple[Tuple[int, MulliganStageModel], ...]
+    stages: Tuple[CommanderSeatStageEstimate, ...]
+    player_count: int = 4
+    version: str = COMMANDER_SEAT_MIXTURE_VERSION
+
+    def seat_model(self, seat: int) -> MulliganStageModel:
+        for model_seat, model in self.seat_models:
+            if model_seat == int(seat):
+                return model
+        raise KeyError(seat)
+
+    def stage_estimate(self, stage: int) -> CommanderSeatStageEstimate:
+        for estimate in self.stages:
+            if estimate.stage == int(stage):
+                return estimate
+        raise KeyError(stage)
+
+
+class CommanderSeatMulliganTrainer:
+    """Fit one London policy per known seat, then mix only the resulting outcomes.
+
+    Common root seeds deliberately give every seat the same sampled fresh sevens and
+    hidden-world coordinates. This keeps seat/Caverns comparisons paired while
+    preserving the real information structure: seat is known before keep/bottom and
+    Gemstone Caverns decisions are made.
+    """
+
+    def __init__(
+        self,
+        deck: Sequence[str],
+        *,
+        player_count: int = 4,
+        hand_samples_per_stage: int = 16,
+        rollout_count_per_bottom: int = 16,
+        mc_root_seed: int = 0,
+        horizon: int = 6,
+        continuation_policy: DeterministicBasePolicy | None = None,
+        strict_terminal_reasons: bool = True,
+        episode_runner: Callable | None = None,
+    ) -> None:
+        self.deck = tuple(str(card) for card in deck)
+        self.player_count = int(player_count)
+        if self.player_count < 2:
+            raise ValueError("Commander seat trainer requires at least two players")
+        if int(hand_samples_per_stage) < 1:
+            raise ValueError("hand_samples_per_stage must be >= 1")
+        if int(rollout_count_per_bottom) < 1:
+            raise ValueError("rollout_count_per_bottom must be >= 1")
+        self.hand_samples_per_stage = int(hand_samples_per_stage)
+        self.rollout_count_per_bottom = int(rollout_count_per_bottom)
+        self.mc_root_seed = int(mc_root_seed)
+        self.horizon = int(horizon)
+        self.continuation_policy = continuation_policy or DeterministicBasePolicy()
+        self.strict_terminal_reasons = bool(strict_terminal_reasons)
+        self.episode_runner = episode_runner or run_deterministic_episode
+
+    def train(self) -> CommanderSeatMulliganModel:
+        seat_models = []
+        for environment in commander_opening_environments(self.player_count):
+            model = MulliganStageTrainer(
+                self.deck,
+                hand_samples_per_stage=self.hand_samples_per_stage,
+                rollout_count_per_bottom=self.rollout_count_per_bottom,
+                mc_root_seed=self.mc_root_seed,
+                horizon=self.horizon,
+                continuation_policy=self.continuation_policy,
+                strict_terminal_reasons=self.strict_terminal_reasons,
+                episode_runner=self.episode_runner,
+                opening_environment=environment,
+            ).train()
+            seat_models.append((environment.seat, model))
+
+        seat_models_tuple = tuple(seat_models)
+        stages = []
+        for stage in range(MULLIGAN_FLOOR_STAGE + 1):
+            per_seat = tuple(
+                (seat, model.stage_estimate(stage))
+                for seat, model in seat_models_tuple
+            )
+            stages.append(CommanderSeatStageEstimate(
+                stage=stage,
+                keep_size=keep_size_for_stage(stage),
+                value=mix_commander_seat_values(
+                    tuple((seat, estimate.value) for seat, estimate in per_seat),
+                    player_count=self.player_count,
+                ),
+                seat_values=tuple((seat, estimate.value) for seat, estimate in per_seat),
+                seat_keep_rates=tuple((seat, estimate.keep_rate) for seat, estimate in per_seat),
+            ))
+
+        return CommanderSeatMulliganModel(
+            seat_models=seat_models_tuple,
+            stages=tuple(stages),
+            player_count=self.player_count,
         )
