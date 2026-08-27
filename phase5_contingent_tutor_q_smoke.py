@@ -30,7 +30,7 @@ class FailTutorTargetPolicy:
         if targets:
             bad=[
                 a for a in targets
-                if str(dict(a.parameters).get("target",""))=="The Reality Chip"
+                if str(dict(a.parameters).get("target",""))=="Defense Grid"
             ]
             if bad:
                 return sorted(bad,key=lambda a:a.action_id)[0]
@@ -63,7 +63,7 @@ def simple_tutor_runtime():
         turn=1,
         library=(
             "Power Artifact",
-            "The Reality Chip",
+            "Defense Grid",
             "Island",
             "Mana Vault",
         ),
@@ -109,7 +109,7 @@ def test_simple_tutor_pending_surface_matches_lineage():
         if a.kind=="choose_tutor_target"
     }
     assert "Power Artifact" in targets,targets
-    assert "The Reality Chip" in targets,targets
+    assert "Defense Grid" in targets,targets
     assert is_contingent_descendant_decision(
         runtime,
         request.actions,
