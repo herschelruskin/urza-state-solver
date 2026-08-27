@@ -9,15 +9,14 @@ from collections import Counter
 
 import urza_solver as solver
 from information_state_propagation import (
-    deduced_library_counts,
     initial_information,
     propagate_information,
 )
-from solver_architecture import make_policy_view
+from solver_architecture import deduced_library_counts, make_policy_view
 
 
-def count_map(info):
-    return dict(info.known_library_counts)
+def count_map(state, info):
+    return dict(make_policy_view(state, info).known_library_counts)
 
 
 def test_initial_membership_known_but_order_hidden():
@@ -39,8 +38,10 @@ def test_initial_membership_known_but_order_hidden():
     assert ib.known_top==()
     assert ia.known_bottom==()
     assert ib.known_bottom==()
-    assert ia.known_library_counts==ib.known_library_counts
-    assert count_map(ia)=={
+    assert ia.known_library_counts==()
+    assert ib.known_library_counts==()
+    assert count_map(a,ia)==count_map(b,ib)
+    assert count_map(a,ia)=={
         "Island":2,
         "Power Artifact":1,
         "Sol Ring":1,
@@ -77,7 +78,7 @@ def test_draw_updates_exact_remaining_multiset():
     after,drawn=solver.draw_from_library(before,1)
     assert drawn==("Island",)
     info=propagate_information(before,after,prior)
-    assert count_map(info)=={"Island":1,"Power Artifact":1}
+    assert count_map(after,info)=={"Island":1,"Power Artifact":1}
     assert info.known_top==()
     print("observed draw decrements deduced library membership: PASS")
 
@@ -95,8 +96,8 @@ def test_card_moving_into_library_is_added_to_deduced_multiset():
         if row.trace and row.trace[-1].startswith("Sensei's Divining Top -> draw:")
     )
     info=propagate_information(before,after,prior)
-    assert count_map(info)==dict(Counter(after.library))
-    assert count_map(info)["Sensei's Divining Top"]==1
+    assert count_map(after,info)==dict(Counter(after.library))
+    assert count_map(after,info)["Sensei's Divining Top"]==1
     assert info.known_top[0]=="Sensei's Divining Top"
     print("known card moved into library is added to membership deduction: PASS")
 
@@ -115,8 +116,8 @@ def test_search_removes_known_target_from_remaining_multiset():
         if "Power Artifact" in row.hand
     )
     info=propagate_information(before,after,prior)
-    assert "Power Artifact" not in count_map(info)
-    assert count_map(info)==dict(Counter(after.library))
+    assert "Power Artifact" not in count_map(after,info)
+    assert count_map(after,info)==dict(Counter(after.library))
     assert info.known_top==()
     assert info.known_bottom==()
     print("known tutor result leaving library updates exact membership: PASS")
@@ -142,7 +143,7 @@ def test_shuffle_erases_order_knowledge_but_keeps_exact_membership():
     info=propagate_information(before,after,prior)
     assert info.known_top==()
     assert info.known_bottom==()
-    assert count_map(info)==dict(Counter(after.library))
+    assert count_map(after,info)==dict(Counter(after.library))
     print("shuffle destroys position knowledge, not membership deduction: PASS")
 
 
