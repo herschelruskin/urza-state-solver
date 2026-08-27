@@ -51,6 +51,23 @@ from phase5_rollout_policy_v6 import (
 PHASE5_SELECTIVE_TUTOR_Q_VERSION="urza-phase5-selective-tutor-q-v4-confidence-gated"
 PHASE5_CONTINGENT_TUTOR_Q_VERSION="urza-phase5-contingent-tutor-q-v2-confidence-gated"
 
+
+@dataclass(frozen=True)
+class TutorQPolicyConfig:
+    """Immutable execution budget for one selective tutor-Q policy."""
+
+    screen_rollouts:int=1
+    confirm_rollouts:int=2
+    shortlist_size:int=3
+    contingent:bool=True
+    confidence_gate:bool=True
+    validation_rollouts:int=2
+    max_validation_rollouts:int=8
+    confidence_alpha:float=0.25
+
+
+PHASE5H_PRODUCTION_TUTOR_Q_CONFIG=TutorQPolicyConfig()
+
 MAIN_TUTOR_KINDS=frozenset({
     "main_use_simple_tutor",
     "main_use_transmute_artifact",
@@ -837,6 +854,35 @@ def make_selective_tutor_q_episode_runner(
             max_steps=max_steps,
         ).episode
     runner.decision_cache=shared_cache
+    return runner
+
+
+def make_phase5h_production_tutor_q_episode_runner(
+    *,
+    mc_root_seed:int=20260826,
+    decision_cache:Phase5DecisionCache|None=None,
+):
+    """Return the frozen Phase-5H gameplay policy used by downstream valuation.
+
+    Downstream layers may vary their *outer* Monte Carlo budget, but they should
+    not silently change the gameplay policy being valued.  This factory therefore
+    centralizes the validated 5H action-policy budget.
+    """
+    config=PHASE5H_PRODUCTION_TUTOR_Q_CONFIG
+    runner=make_selective_tutor_q_episode_runner(
+        mc_root_seed=int(mc_root_seed),
+        screen_rollouts=config.screen_rollouts,
+        confirm_rollouts=config.confirm_rollouts,
+        shortlist_size=config.shortlist_size,
+        decision_cache=decision_cache,
+        contingent=config.contingent,
+        confidence_gate=config.confidence_gate,
+        validation_rollouts=config.validation_rollouts,
+        max_validation_rollouts=config.max_validation_rollouts,
+        confidence_alpha=config.confidence_alpha,
+    )
+    runner.q_policy_config=config
+    runner.q_policy_version=PHASE5_SELECTIVE_TUTOR_Q_VERSION
     return runner
 
 
