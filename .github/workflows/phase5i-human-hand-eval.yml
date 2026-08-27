@@ -1,0 +1,35 @@
+name: Phase 5I human hand valuations
+
+on:
+  push:
+    branches:
+      - phase5i-human-hand-eval
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hand:
+    strategy:
+      fail-fast: false
+      matrix:
+        hand_id: [1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36]
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile evaluator
+        run: python -m py_compile phase5i_human_hand_eval.py
+      - name: Evaluate human hand
+        run: python phase5i_human_hand_eval.py --hand-id ${{ matrix.hand_id }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-human-hand-${{ matrix.hand_id }}
+          path: phase5i_human_hand_*.json
