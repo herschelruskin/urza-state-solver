@@ -1,0 +1,69 @@
+name: Phase 5 contingent tutor-Q
+
+on:
+  push:
+    branches:
+      - phase5-bounded-two-step-q
+  pull_request:
+    branches:
+      - phase5-opening-environment-caverns
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile contingent Q slice
+        run: |
+          python -m py_compile phase5_monte_carlo.py phase5_selective_tutor_q.py phase5_contingent_tutor_q_smoke.py
+      - name: Contingent depth map
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_depth_map_is_strictly_bounded()"
+      - name: Contingent lineage surface
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_simple_tutor_pending_surface_matches_lineage()"
+      - name: Contingent source traversal
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_runner_receives_committed_source_lineage()"
+      - name: PA target leaf conversion
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_power_artifact_target_leaf_converts()"
+      - name: Observed target Q ranking
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_observed_target_q_prefers_power_artifact()"
+      - name: Outer sampled contingent conversion
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_outer_sampled_world_contingent_runner_converts()"
+      - name: Transmute two-step chain
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_transmute_follows_sacrifice_then_observed_target()"
+      - name: Contingent post-commit evaluation
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_post_commit_evaluation_completes()"
+      - name: Contingent value sanity
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_post_commit_value_comparison_is_sane()"
+      - name: Contingent is not worse
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; p,c,_=s._post_commit_evaluations(); assert c.estimates[0].value.win_probability >= p.estimates[0].value.win_probability"
+      - name: Plain synthetic value is zero
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; p,_,_=s._post_commit_evaluations(); assert p.estimates[0].value.win_probability == 0.0"
+      - name: Contingent value improvement
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_post_commit_contingent_strictly_improves_bad_leaf()"
+      - name: Contingent nested cache activity
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_post_commit_nested_cache_activity()"
+      - name: Parent tutor-Q and cache regressions
+        run: |
+          python phase5_selective_tutor_q_smoke.py
+          python phase5_monte_carlo_cache_smoke.py
+          python phase5_caverns_opening_smoke.py
+          python phase5_adaptive_mulligan_smoke.py
+          python phase5_mulligan_smoke.py
+      - name: Architecture and benchmark regressions
+        run: |
+          python strategic_value_state_smoke.py
+          python non_oracle_runtime_value_key_smoke.py
+          python human_benchmark_fixture_smoke.py
+          python phase1_acceptance_smoke.py
+      - name: Diff check
+        run: git diff --check

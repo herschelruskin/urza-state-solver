@@ -44,7 +44,8 @@ from phase5_rollout_policy_v6 import (
     PHASE5_ROLLOUT_POLICY_V6,
 )
 
-PHASE5_SELECTIVE_TUTOR_Q_VERSION="urza-phase5-selective-tutor-q-v1"
+PHASE5_SELECTIVE_TUTOR_Q_VERSION="urza-phase5-selective-tutor-q-v2-contingent"
+PHASE5_CONTINGENT_TUTOR_Q_VERSION="urza-phase5-contingent-tutor-q-v1"
 
 MAIN_TUTOR_KINDS=frozenset({
     "main_use_simple_tutor",
@@ -66,6 +67,91 @@ PENDING_TUTOR_Q_KINDS=frozenset({
 # Payment is a legal mechanical branch but not currently a learned strategic
 # question: if the committed Transmute target is payable, v5/v6 must pay it.
 TRANSMMUTE_PAYMENT_KIND="transmute_pay_difference"
+
+# Number of post-commit tutor/search decisions whose *executed policy* must be
+# reflected while valuing this root action.  Most tutors expose one target after
+# commitment. Transmute exposes sacrifice, then a newly observed target choice.
+CONTINGENT_DEPTH_AFTER_ACTION_KIND={
+    "main_use_simple_tutor":1,
+    "main_use_transmute_artifact":2,
+    "main_use_x_artifact_tutor":1,
+    "main_activate_repurposing_bay":1,
+    "main_cast_scour_for_scrap":1,
+    "main_activate_tezzeret_minus3":1,
+    "transmute_choose_sacrifice":1,
+}
+
+
+def contingent_depth_after_action(action:ActionIntent)->int:
+    return int(CONTINGENT_DEPTH_AFTER_ACTION_KIND.get(str(action.kind),0))
+
+
+def is_contingent_descendant_decision(
+    runtime:NonOracleRuntimeState,
+    fresh_actions,
+    *,
+    lineage_source:str,
+    remaining:int,
+)->bool:
+    """True only for the bounded post-commit decision owned by this tutor line."""
+
+    pending_source=(
+        str(runtime.pending.spec.source)
+        if runtime.pending is not None else ""
+    )
+    return bool(
+        int(remaining)>0
+        and str(lineage_source)
+        and pending_source==str(lineage_source)
+        and any(
+            str(action.kind) in PENDING_TUTOR_Q_KINDS
+            for action in fresh_actions
+        )
+    )
+
+
+def committed_lineage_on_stack(
+    runtime:NonOracleRuntimeState,
+    *,
+    lineage_source:str,
+)->bool:
+    """Whether the committed tutor/search object is still unresolved on stack."""
+    source=str(lineage_source)
+    if not source:
+        return False
+    return any(
+        str(obj.source)==source or str(obj.card)==source
+        for obj in runtime.stack.objects
+    )
+
+
+def commitment_corridor_pass_action(
+    runtime:NonOracleRuntimeState,
+    fresh_actions,
+    *,
+    lineage_source:str,
+    remaining:int,
+):
+    """Resolve the committed tutor cleanly until its bounded child decision.
+
+    Q(root tutor) is supposed to value the tutor plus its immediate dependent
+    choice, not let the cheap rollout policy take unrelated mana/development
+    actions while that tutor is waiting on the stack.  Cast-trigger ordering and
+    post-observation/mechanical decisions still go through the frozen policy; at
+    an ordinary priority window, however, passing priority is the canonical
+    commitment-preserving transition.
+    """
+    if int(remaining)<=0 or runtime.pending is not None:
+        return None
+    if not committed_lineage_on_stack(runtime,lineage_source=lineage_source):
+        return None
+    passes=tuple(
+        action for action in fresh_actions
+        if str(action.kind)=="pass_priority"
+    )
+    if not passes:
+        return None
+    return min(passes,key=lambda action:repr(action.strategic_key()))
 
 
 @dataclass(frozen=True)
@@ -122,6 +208,156 @@ def _value_rank(estimate:Phase5ActionEstimate):
     )
 
 
+def _continuation_id(*,screen_rollouts,confirm_rollouts,shortlist_size):
+    return (
+        f"{PHASE5_CONTINGENT_TUTOR_Q_VERSION}:"
+        f"screen={int(screen_rollouts)}:"
+        f"confirm={int(confirm_rollouts)}:"
+        f"shortlist={int(shortlist_size)}"
+    )
+
+
+def make_bounded_contingent_tutor_runner(
+    *,
+    mc_root_seed:int,
+    screen_rollouts:int,
+    confirm_rollouts:int,
+    shortlist_size:int,
+    decision_cache:Phase5DecisionCache|None,
+):
+    """Return a Phase5MC continuation that Q-controls only this tutor's descendants.
+
+    The root action has already been applied in one sampled hidden world.  We
+    advance using the frozen policy through stack/mechanical decisions until a
+    post-commit tutor/search decision for the same source appears.  That decision
+    is Q-evaluated from its *new* legal observation.  Transmute is allowed two
+    descendant decisions (sacrifice then target); other tutor commitments get one.
+    After the bounded descendant budget is consumed, continuation is plain v6.
+
+    Nested Q values use the same helper recursively, but the action-kind depth map
+    strictly decreases: Transmute sacrifice -> target -> zero.  Payment remains
+    outside PENDING_TUTOR_Q_KINDS and is therefore handled by the frozen policy.
+    """
+    shared_cache=decision_cache if decision_cache is not None else Phase5DecisionCache()
+    continuation_id=_continuation_id(
+        screen_rollouts=screen_rollouts,
+        confirm_rollouts=confirm_rollouts,
+        shortlist_size=shortlist_size,
+    )
+
+    def runner(runtime,*,root_action,horizon,policy,max_steps):
+        remaining=contingent_depth_after_action(root_action)
+        if remaining<=0:
+            from non_oracle_episode import run_deterministic_episode
+            return run_deterministic_episode(
+                runtime,horizon=horizon,policy=policy,max_steps=max_steps
+            )
+
+        lineage_source=str(getattr(root_action,"source",""))
+        runtime=_checked_runtime(runtime)
+        steps=[]
+        attempted_by_cycle_state={}
+
+        for sequence in range(max_steps):
+            state=runtime.true_state
+            if state.won:
+                return NonOracleEpisodeResult(
+                    runtime,tuple(steps),horizon,int(state.turn),state.win_family,"win"
+                )
+            if state.turn>horizon:
+                return NonOracleEpisodeResult(
+                    runtime,tuple(steps),horizon,None,"","horizon"
+                )
+
+            request=rules_decision_request(
+                runtime,horizon=horizon,policy_id=policy.policy_id
+            )
+            if not request.actions:
+                return NonOracleEpisodeResult(
+                    runtime,tuple(steps),horizon,None,"",
+                    _blocked_reason(runtime,horizon),
+                )
+
+            cycle_key=episode_cycle_key(runtime)
+            attempted=attempted_by_cycle_state.setdefault(cycle_key,set())
+            fresh=tuple(
+                action for action in request.actions
+                if action.strategic_key() not in attempted
+            )
+            if not fresh:
+                return NonOracleEpisodeResult(
+                    runtime,tuple(steps),horizon,None,"","strategic_cycle_exhausted"
+                )
+
+            has_contingent_choice=is_contingent_descendant_decision(
+                runtime,
+                fresh,
+                lineage_source=lineage_source,
+                remaining=remaining,
+            )
+            if has_contingent_choice:
+                nested=SelectiveTutorQController(
+                    continuation_policy=policy,
+                    horizon=horizon,
+                    mc_root_seed=mc_root_seed,
+                    screen_rollouts=screen_rollouts,
+                    confirm_rollouts=confirm_rollouts,
+                    shortlist_size=shortlist_size,
+                    max_episode_steps=max_steps,
+                    decision_cache=shared_cache,
+                    contingent=True,
+                )
+                action,_=nested.choose(runtime,request,fresh)
+                remaining-=1
+            else:
+                corridor=commitment_corridor_pass_action(
+                    runtime,
+                    fresh,
+                    lineage_source=lineage_source,
+                    remaining=remaining,
+                )
+                action=(
+                    corridor
+                    if corridor is not None
+                    else policy.choose(
+                        request.observation,fresh,request.context
+                    )
+                )
+
+            attempted.add(action.strategic_key())
+            before_turn=int(state.turn)
+            before_window=runtime.window.kind
+            observation_key=request.observation.key()
+            runtime=_checked_runtime(apply_main_action(runtime,action))
+            after=runtime.true_state
+            steps.append(EpisodeStep(
+                sequence=sequence,
+                turn_before=before_turn,
+                window_kind=before_window,
+                observation_key=observation_key,
+                action_id=action.action_id,
+                action_kind=action.kind,
+                action_label=action.label,
+                action_strategic_key=action.strategic_key(),
+                turn_after=int(after.turn),
+                won_after=bool(after.won),
+                win_family_after=str(after.win_family),
+            ))
+
+        return NonOracleEpisodeResult(
+            runtime,
+            tuple(steps),
+            horizon,
+            int(runtime.true_state.turn) if runtime.true_state.won else None,
+            runtime.true_state.win_family if runtime.true_state.won else "",
+            "step_limit",
+        )
+
+    runner.continuation_id=continuation_id
+    runner.decision_cache=shared_cache
+    return runner
+
+
 class SelectiveTutorQController:
     def __init__(
         self,
@@ -134,12 +370,29 @@ class SelectiveTutorQController:
         shortlist_size:int=4,
         max_episode_steps:int=512,
         decision_cache:Phase5DecisionCache|None=None,
+        contingent:bool=True,
     ):
         self.policy=continuation_policy or DeterministicRolloutPolicyV6(
             policy_id=PHASE5_ROLLOUT_POLICY_V6
         )
         self.horizon=int(horizon)
         self.shortlist_size=max(1,int(shortlist_size))
+        self.contingent=bool(contingent)
+        continuation_runner=(
+            make_bounded_contingent_tutor_runner(
+                mc_root_seed=int(mc_root_seed),
+                screen_rollouts=int(screen_rollouts),
+                confirm_rollouts=int(confirm_rollouts),
+                shortlist_size=self.shortlist_size,
+                decision_cache=decision_cache,
+            )
+            if self.contingent else None
+        )
+        continuation_id=(
+            continuation_runner.continuation_id
+            if continuation_runner is not None
+            else "plain-v6"
+        )
         self.screen=Phase5MonteCarloDecisionEvaluator(
             rollout_count=int(screen_rollouts),
             mc_root_seed=int(mc_root_seed),
@@ -148,6 +401,8 @@ class SelectiveTutorQController:
             max_episode_steps=int(max_episode_steps),
             strict_terminal_reasons=True,
             cache=decision_cache,
+            continuation_runner=continuation_runner,
+            continuation_id=continuation_id,
         )
         self.confirm=Phase5MonteCarloDecisionEvaluator(
             rollout_count=int(confirm_rollouts),
@@ -157,6 +412,8 @@ class SelectiveTutorQController:
             max_episode_steps=int(max_episode_steps),
             strict_terminal_reasons=True,
             cache=decision_cache,
+            continuation_runner=continuation_runner,
+            continuation_id=continuation_id,
         )
 
     def _candidate_actions(self,request,fresh_actions,base):
@@ -284,6 +541,7 @@ def make_selective_tutor_q_episode_runner(
     confirm_rollouts:int=2,
     shortlist_size:int=3,
     decision_cache:Phase5DecisionCache|None=None,
+    contingent:bool=True,
 ):
     """Return an OpeningKeepEvaluator-compatible episode runner.
 
@@ -291,7 +549,7 @@ def make_selective_tutor_q_episode_runner(
     diagnostics/cycle bookkeeping never leak between sampled games. The supplied
     leaf policy is still the continuation policy passed by the mulligan evaluator.
     """
-    shared_cache=decision_cache or Phase5DecisionCache()
+    shared_cache=decision_cache if decision_cache is not None else Phase5DecisionCache()
 
     def runner(runtime,*,horizon,policy,max_steps):
         controller=SelectiveTutorQController(
@@ -303,6 +561,7 @@ def make_selective_tutor_q_episode_runner(
             shortlist_size=shortlist_size,
             max_episode_steps=max_steps,
             decision_cache=shared_cache,
+            contingent=contingent,
         )
         return run_selective_tutor_q_episode(
             runtime,
