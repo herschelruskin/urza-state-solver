@@ -5,9 +5,12 @@ from __future__ import annotations
 
 import urza_solver as solver
 
+from non_oracle_episode import run_deterministic_episode
 from non_oracle_rules_adapter_v2 import apply_main_action, rules_decision_request
 from non_oracle_runtime import make_runtime_state
+from phase4_hidden_world import HiddenWorldSampler, materialize_hidden_world
 from phase5_monte_carlo import Phase5DecisionCache, Phase5MonteCarloDecisionEvaluator
+from strategic_value_state import LibraryBeliefKey
 from phase5_rollout_policy_v6 import DeterministicRolloutPolicyV6
 from phase5_selective_tutor_q import (
     CONTINGENT_DEPTH_AFTER_ACTION_KIND,
@@ -30,7 +33,7 @@ class FailTutorTargetPolicy:
         if targets:
             bad=[
                 a for a in targets
-                if str(dict(a.parameters).get("target",""))=="The Reality Chip"
+                if str(dict(a.parameters).get("target",""))=="Defense Grid"
             ]
             if bad:
                 return sorted(bad,key=lambda a:a.action_id)[0]
@@ -63,7 +66,7 @@ def simple_tutor_runtime():
         turn=1,
         library=(
             "Power Artifact",
-            "The Reality Chip",
+            "Defense Grid",
             "Island",
             "Mana Vault",
         ),
@@ -82,6 +85,110 @@ def simple_tutor_runtime():
     )
     return runtime,tutor
 
+
+def pending_simple_tutor_runtime():
+    runtime,tutor=simple_tutor_runtime()
+    runtime=apply_main_action(runtime,tutor)
+    for _ in range(8):
+        if runtime.pending is not None:
+            break
+        request=rules_decision_request(
+            runtime,horizon=2,policy_id=FailTutorTargetPolicy.policy_id
+        )
+        passes=[a for a in request.actions if a.kind=="pass_priority"]
+        assert passes,[(a.kind,a.label) for a in request.actions]
+        runtime=apply_main_action(runtime,passes[0])
+    assert runtime.pending is not None
+    return runtime,tutor
+
+
+def test_power_artifact_target_leaf_converts():
+    runtime,_=pending_simple_tutor_runtime()
+    policy=FailTutorTargetPolicy()
+    request=rules_decision_request(
+        runtime,horizon=2,policy_id=policy.policy_id
+    )
+    pa=next(
+        a for a in request.actions
+        if a.kind=="choose_tutor_target"
+        and str(dict(a.parameters).get("target",""))=="Power Artifact"
+    )
+    after=apply_main_action(runtime,pa)
+    result=run_deterministic_episode(
+        after,horizon=2,policy=policy,max_steps=128
+    )
+    assert result.won_by_horizon,(result.terminal_reason,result.win_turn,result.win_family)
+    assert result.win_family=="Power Artifact + Grim",result.win_family
+    print("Power Artifact target converts under frozen rollout: PASS")
+
+
+def test_observed_target_q_prefers_power_artifact():
+    runtime,_=pending_simple_tutor_runtime()
+    policy=FailTutorTargetPolicy()
+    request=rules_decision_request(
+        runtime,horizon=2,policy_id=policy.policy_id
+    )
+    targets=tuple(a for a in request.actions if a.kind=="choose_tutor_target")
+    evaluation=Phase5MonteCarloDecisionEvaluator(
+        rollout_count=1,
+        mc_root_seed=2026082711,
+        horizon=2,
+        continuation_policy=policy,
+        max_episode_steps=128,
+        strict_terminal_reasons=True,
+    ).evaluate(runtime,candidate_actions=targets)
+    best_target=str(dict(evaluation.best_action.parameters).get("target",""))
+    assert best_target=="Power Artifact",best_target
+    pa=next(
+        row for row in evaluation.estimates
+        if str(dict(row.action.parameters).get("target",""))=="Power Artifact"
+    )
+    grid=next(
+        row for row in evaluation.estimates
+        if str(dict(row.action.parameters).get("target",""))=="Defense Grid"
+    )
+    assert pa.value.win_probability>grid.value.win_probability,(
+        pa.value.comparison_key(),grid.value.comparison_key()
+    )
+    print("observed target Q ranks Power Artifact above Defense Grid: PASS")
+
+
+
+def test_outer_sampled_world_contingent_runner_converts():
+    runtime,tutor=simple_tutor_runtime()
+    policy=FailTutorTargetPolicy()
+    belief=LibraryBeliefKey.from_state(runtime.true_state,runtime.information)
+    world=HiddenWorldSampler(2026082703).sample(
+        belief,sample_id=("phase5-q",0)
+    )
+    sampled=materialize_hidden_world(runtime,world)
+    request=rules_decision_request(
+        sampled,horizon=2,policy_id=policy.policy_id
+    )
+    sampled_tutor=next(
+        a for a in request.actions
+        if a.strategic_key()==tutor.strategic_key()
+    )
+    after=apply_main_action(sampled,sampled_tutor)
+    cache=Phase5DecisionCache()
+    runner=make_bounded_contingent_tutor_runner(
+        mc_root_seed=2026082703,
+        screen_rollouts=1,
+        confirm_rollouts=1,
+        shortlist_size=8,
+        decision_cache=cache,
+    )
+    result=runner(
+        after,
+        root_action=sampled_tutor,
+        horizon=2,
+        policy=policy,
+        max_steps=128,
+    )
+    assert result.won_by_horizon,(result.terminal_reason,result.win_turn,result.win_family)
+    assert result.win_family=="Power Artifact + Grim",result.win_family
+    assert cache.stats.misses>0,cache.stats
+    print("outer sampled world propagates into winning contingent PA choice: PASS")
 
 def test_simple_tutor_pending_surface_matches_lineage():
     runtime,tutor=simple_tutor_runtime()
@@ -109,7 +216,7 @@ def test_simple_tutor_pending_surface_matches_lineage():
         if a.kind=="choose_tutor_target"
     }
     assert "Power Artifact" in targets,targets
-    assert "The Reality Chip" in targets,targets
+    assert "Defense Grid" in targets,targets
     assert is_contingent_descendant_decision(
         runtime,
         request.actions,
@@ -177,6 +284,17 @@ def test_post_commit_value_comparison_is_sane():
     assert 0.0<=p_contingent<=1.0
     print(
         "post-commit simple-tutor values are well-formed "
+        f"(plain={p_plain:.3f}, contingent={p_contingent:.3f}): PASS"
+    )
+
+
+def test_post_commit_contingent_strictly_improves_bad_leaf():
+    plain,contingent,_=_post_commit_evaluations()
+    p_plain=plain.estimates[0].value.win_probability
+    p_contingent=contingent.estimates[0].value.win_probability
+    assert p_contingent>p_plain,(p_plain,p_contingent)
+    print(
+        "bounded contingent Q improves deliberately bad target continuation "
         f"(plain={p_plain:.3f}, contingent={p_contingent:.3f}): PASS"
     )
 
