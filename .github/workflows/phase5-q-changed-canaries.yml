@@ -1,0 +1,31 @@
+name: Phase 5 changed-hand Q canaries
+
+on:
+  push:
+    branches:
+      - phase5-q-changed-canaries
+  workflow_dispatch:
+
+jobs:
+  canary:
+    strategy:
+      fail-fast: false
+      matrix:
+        hand_id: [1, 20, 21, 30, 33]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile canary
+        run: python -m py_compile phase5_q_changed_canary.py
+      - name: Run hand canary
+        run: python phase5_q_changed_canary.py --hand-id ${{ matrix.hand_id }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5-q-changed-canary-hand${{ matrix.hand_id }}
+          path: phase5_q_changed_canary_hand${{ matrix.hand_id }}.json
