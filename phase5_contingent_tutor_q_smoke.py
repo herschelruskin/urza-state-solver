@@ -177,6 +177,7 @@ def test_outer_sampled_world_contingent_runner_converts():
         confirm_rollouts=1,
         shortlist_size=8,
         decision_cache=cache,
+        confidence_gate=False,
     )
     result=runner(
         after,
@@ -248,6 +249,7 @@ def _post_commit_evaluations():
         confirm_rollouts=1,
         shortlist_size=8,
         decision_cache=cache,
+        confidence_gate=False,
     )
     contingent=Phase5MonteCarloDecisionEvaluator(
         rollout_count=1,
@@ -315,6 +317,7 @@ def test_runner_receives_committed_source_lineage():
         confirm_rollouts=1,
         shortlist_size=8,
         decision_cache=cache,
+        confidence_gate=False,
     )
     result=runner(
         after,
@@ -366,6 +369,7 @@ def test_transmute_follows_sacrifice_then_observed_target():
         confirm_rollouts=1,
         shortlist_size=8,
         decision_cache=cache,
+        confidence_gate=False,
     )
     result=runner(
         after,
