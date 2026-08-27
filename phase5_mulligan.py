@@ -200,7 +200,7 @@ def _apply_opening_pregame(
     hand = list(keep)
     hand.remove("Gemstone Caverns")
     hand.remove(pregame_choice.exile_card)
-    battlefield = (solver.Perm("Gemstone Caverns", mode="luck"),)
+    battlefield = (solver.Perm("Gemstone Caverns", counters=1, mode="luck"),)
     exile = (pregame_choice.exile_card,)
     trace = (f"pregame Caverns exiles {pregame_choice.exile_card}",)
     return tuple(hand), battlefield, exile, trace
