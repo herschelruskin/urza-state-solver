@@ -170,6 +170,14 @@ class TutorQDecision:
     confirm_candidate_count: int
     v6_value_key: Tuple[float, ...]
     chosen_value_key: Tuple[float, ...]
+    proposed_action: str = ""
+    proposed_value_key: Tuple[float, ...] = ()
+    validation_rollouts: int = 0
+    paired_better: int = 0
+    paired_worse: int = 0
+    paired_ties: int = 0
+    paired_sign_p: float = 1.0
+    gate_reason: str = ""
 
 
 @dataclass(frozen=True)
@@ -479,11 +487,15 @@ class SelectiveTutorQController:
         horizon:int=6,
         mc_root_seed:int=20260826,
         screen_rollouts:int=1,
-        confirm_rollouts:int=4,
-        shortlist_size:int=4,
+        confirm_rollouts:int=2,
+        shortlist_size:int=3,
         max_episode_steps:int=512,
         decision_cache:Phase5DecisionCache|None=None,
         contingent:bool=True,
+        confidence_gate:bool=True,
+        validation_rollouts:int=2,
+        max_validation_rollouts:int=8,
+        confidence_alpha:float=0.25,
     ):
         self.policy=continuation_policy or DeterministicRolloutPolicyV6(
             policy_id=PHASE5_ROLLOUT_POLICY_V6
@@ -491,13 +503,28 @@ class SelectiveTutorQController:
         self.horizon=int(horizon)
         self.shortlist_size=max(1,int(shortlist_size))
         self.contingent=bool(contingent)
+        self.confidence_gate=bool(confidence_gate)
+        self.validation_rollouts=max(1,int(validation_rollouts))
+        self.max_validation_rollouts=max(
+            self.validation_rollouts,int(max_validation_rollouts)
+        )
+        self.confidence_alpha=float(confidence_alpha)
+        if not (0.0 < self.confidence_alpha <= 0.5):
+            raise ValueError("confidence_alpha must be in (0, 0.5]")
+        self._mc_root_seed=int(mc_root_seed)
+        self._max_episode_steps=int(max_episode_steps)
+        self._decision_cache=decision_cache
         continuation_runner=(
             make_bounded_contingent_tutor_runner(
-                mc_root_seed=int(mc_root_seed),
+                mc_root_seed=self._mc_root_seed,
                 screen_rollouts=int(screen_rollouts),
                 confirm_rollouts=int(confirm_rollouts),
                 shortlist_size=self.shortlist_size,
                 decision_cache=decision_cache,
+                confidence_gate=self.confidence_gate,
+                validation_rollouts=self.validation_rollouts,
+                max_validation_rollouts=self.max_validation_rollouts,
+                confidence_alpha=self.confidence_alpha,
             )
             if self.contingent else None
         )
@@ -506,12 +533,14 @@ class SelectiveTutorQController:
             if continuation_runner is not None
             else "plain-v6"
         )
+        self._continuation_runner=continuation_runner
+        self._continuation_id=continuation_id
         self.screen=Phase5MonteCarloDecisionEvaluator(
             rollout_count=int(screen_rollouts),
-            mc_root_seed=int(mc_root_seed),
+            mc_root_seed=self._mc_root_seed,
             horizon=self.horizon,
             continuation_policy=self.policy,
-            max_episode_steps=int(max_episode_steps),
+            max_episode_steps=self._max_episode_steps,
             strict_terminal_reasons=True,
             cache=decision_cache,
             continuation_runner=continuation_runner,
@@ -520,15 +549,41 @@ class SelectiveTutorQController:
         )
         self.confirm=Phase5MonteCarloDecisionEvaluator(
             rollout_count=int(confirm_rollouts),
-            mc_root_seed=int(mc_root_seed),
+            mc_root_seed=self._mc_root_seed,
             horizon=self.horizon,
             continuation_policy=self.policy,
-            max_episode_steps=int(max_episode_steps),
+            max_episode_steps=self._max_episode_steps,
             strict_terminal_reasons=True,
             cache=decision_cache,
             continuation_runner=continuation_runner,
             continuation_id=continuation_id,
             sample_namespace="confirm",
+        )
+
+    def _validation_batch_sizes(self):
+        total=0
+        while total<self.max_validation_rollouts:
+            target=(
+                self.validation_rollouts
+                if total==0
+                else min(self.max_validation_rollouts,total*2)
+            )
+            target=min(self.max_validation_rollouts,max(target,total+1))
+            yield target-total
+            total=target
+
+    def _validation_evaluator(self,*,rollout_count:int,round_index:int):
+        return Phase5MonteCarloDecisionEvaluator(
+            rollout_count=int(rollout_count),
+            mc_root_seed=self._mc_root_seed,
+            horizon=self.horizon,
+            continuation_policy=self.policy,
+            max_episode_steps=self._max_episode_steps,
+            strict_terminal_reasons=True,
+            cache=self._decision_cache,
+            continuation_runner=self._continuation_runner,
+            continuation_id=self._continuation_id,
+            sample_namespace=f"validate-{int(round_index)}",
         )
 
     def _candidate_actions(self,request,fresh_actions,base):
@@ -627,18 +682,99 @@ class SelectiveTutorQController:
         )
         confirmed_base=_estimate_for(confirm,base)
         confirmed_best=confirm.estimates[0]
+        proposed=confirmed_best.action
+        proposed_est=confirmed_best
 
-        # Q is an improver, not a replacement tie-break. Preserve the stable
-        # deterministic leaf policy whenever downstream value is exactly tied.
+        # Exact confirmation ties remain v6 ties.  A candidate must first beat
+        # v6 on the independent confirmation set before spending any adaptive
+        # validation budget.
         if (
             confirmed_best.value.comparison_key()
-            > confirmed_base.value.comparison_key()
+            <= confirmed_base.value.comparison_key()
         ):
-            chosen=confirmed_best.action
-        else:
             chosen=base
+            chosen_est=confirmed_base
+            evidence=PairedQEvidence(0,0,0,1.0)
+            validation_total=0
+            gate_reason="confirm_no_strict_improvement"
+        elif not self.confidence_gate:
+            chosen=proposed
+            chosen_est=proposed_est
+            evidence=PairedQEvidence(0,0,0,1.0)
+            validation_total=0
+            gate_reason="confidence_gate_disabled"
+        else:
+            validation_rows={
+                base.strategic_key():[],
+                proposed.strategic_key():[],
+            }
+            chosen=base
+            chosen_est=confirmed_base
+            evidence=PairedQEvidence(0,0,0,1.0)
+            validation_total=0
+            gate_reason="paired_confidence_unresolved"
 
-        chosen_est=_estimate_for(confirm,chosen)
+            for round_index,batch_size in enumerate(
+                self._validation_batch_sizes()
+            ):
+                validation=self._validation_evaluator(
+                    rollout_count=batch_size,
+                    round_index=round_index,
+                ).evaluate(
+                    runtime,
+                    candidate_actions=(base,proposed),
+                )
+                for estimate in validation.estimates:
+                    validation_rows[estimate.action.strategic_key()].append(
+                        estimate
+                    )
+                validation_total+=int(batch_size)
+
+                base_agg=_aggregate_action_estimates(
+                    base,
+                    validation_rows[base.strategic_key()],
+                    horizon=self.horizon,
+                )
+                proposed_agg=_aggregate_action_estimates(
+                    proposed,
+                    validation_rows[proposed.strategic_key()],
+                    horizon=self.horizon,
+                )
+                evidence=paired_q_evidence(proposed_agg,base_agg)
+
+                candidate_supported=(
+                    proposed_agg.value.comparison_key()
+                    > base_agg.value.comparison_key()
+                    and evidence.better>evidence.worse
+                    and evidence.sign_p_one_sided<=self.confidence_alpha
+                )
+                if candidate_supported:
+                    chosen=proposed
+                    chosen_est=proposed_agg
+                    proposed_est=proposed_agg
+                    confirmed_base=base_agg
+                    gate_reason="paired_confidence_override"
+                    break
+
+                reverse=paired_q_evidence(base_agg,proposed_agg)
+                base_supported=(
+                    base_agg.value.comparison_key()
+                    > proposed_agg.value.comparison_key()
+                    and reverse.better>reverse.worse
+                    and reverse.sign_p_one_sided<=self.confidence_alpha
+                )
+                if base_supported:
+                    chosen=base
+                    chosen_est=base_agg
+                    proposed_est=proposed_agg
+                    confirmed_base=base_agg
+                    gate_reason="paired_confidence_reject"
+                    break
+
+                proposed_est=proposed_agg
+                confirmed_base=base_agg
+                chosen_est=base_agg
+
         return chosen,(
             base,
             chosen,
@@ -646,6 +782,14 @@ class SelectiveTutorQController:
             len(confirm.estimates),
             confirmed_base.value.comparison_key(),
             chosen_est.value.comparison_key(),
+            proposed,
+            proposed_est.value.comparison_key(),
+            int(validation_total),
+            int(evidence.better),
+            int(evidence.worse),
+            int(evidence.ties),
+            float(evidence.sign_p_one_sided),
+            str(gate_reason),
         )
 
 
@@ -657,6 +801,10 @@ def make_selective_tutor_q_episode_runner(
     shortlist_size:int=3,
     decision_cache:Phase5DecisionCache|None=None,
     contingent:bool=True,
+    confidence_gate:bool=True,
+    validation_rollouts:int=2,
+    max_validation_rollouts:int=8,
+    confidence_alpha:float=0.25,
 ):
     """Return an OpeningKeepEvaluator-compatible episode runner.
 
@@ -677,6 +825,10 @@ def make_selective_tutor_q_episode_runner(
             max_episode_steps=max_steps,
             decision_cache=shared_cache,
             contingent=contingent,
+            confidence_gate=confidence_gate,
+            validation_rollouts=validation_rollouts,
+            max_validation_rollouts=max_validation_rollouts,
+            confidence_alpha=confidence_alpha,
         )
         return run_selective_tutor_q_episode(
             runtime,
@@ -739,7 +891,11 @@ def run_selective_tutor_q_episode(
 
         action,q_meta=controller.choose(runtime,request,fresh)
         if q_meta is not None:
-            base,chosen,screen_n,confirm_n,base_key,chosen_key=q_meta
+            (
+                base,chosen,screen_n,confirm_n,base_key,chosen_key,
+                proposed,proposed_key,validation_n,paired_better,
+                paired_worse,paired_ties,paired_p,gate_reason,
+            )=q_meta
             q_rows.append(TutorQDecision(
                 sequence=sequence,
                 turn=int(state.turn),
@@ -751,6 +907,14 @@ def run_selective_tutor_q_episode(
                 confirm_candidate_count=int(confirm_n),
                 v6_value_key=tuple(base_key),
                 chosen_value_key=tuple(chosen_key),
+                proposed_action=proposed.label,
+                proposed_value_key=tuple(proposed_key),
+                validation_rollouts=int(validation_n),
+                paired_better=int(paired_better),
+                paired_worse=int(paired_worse),
+                paired_ties=int(paired_ties),
+                paired_sign_p=float(paired_p),
+                gate_reason=str(gate_reason),
             ))
 
         attempted.add(action.strategic_key())
