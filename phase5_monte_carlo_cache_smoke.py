@@ -88,9 +88,39 @@ def main():
     assert cache.stats.misses==3
     assert len(cache)==3
 
+    # Screen and confirmation samples are deliberately disjoint namespaces.
+    # They must not share a cached Q row even when every other evaluator input
+    # is identical.
+    screen_namespace=Phase5MonteCarloDecisionEvaluator(
+        rollout_count=1,
+        mc_root_seed=20260826,
+        horizon=2,
+        continuation_policy=policy,
+        max_episode_steps=128,
+        strict_terminal_reasons=True,
+        cache=cache,
+        sample_namespace="screen",
+    )
+    confirm_namespace=Phase5MonteCarloDecisionEvaluator(
+        rollout_count=1,
+        mc_root_seed=20260826,
+        horizon=2,
+        continuation_policy=policy,
+        max_episode_steps=128,
+        strict_terminal_reasons=True,
+        cache=cache,
+        sample_namespace="confirm",
+    )
+    screen_namespace.evaluate(b,candidate_actions=tutor)
+    assert cache.stats.misses==4
+    confirm_namespace.evaluate(b,candidate_actions=tutor)
+    assert cache.stats.misses==5
+    assert len(cache)==5
+
     print("strategic Q cache ignores hidden order/RNG provenance: PASS")
     print("candidate strategic-action set namespaces cache entries: PASS")
     print("continuation semantics namespace strategic Q cache entries: PASS")
+    print("screen/confirm hidden-world namespaces are cache-distinct: PASS")
     print("PHASE5 MONTE CARLO CACHE SMOKE: ALL PASS")
 
 

@@ -190,6 +190,7 @@ class Phase5MonteCarloDecisionEvaluator:
         cache: Phase5DecisionCache | None = None,
         continuation_runner=None,
         continuation_id: str | None = None,
+        sample_namespace: str = "default",
     ):
         if rollout_count < 1:
             raise ValueError("rollout_count must be >= 1")
@@ -208,6 +209,7 @@ class Phase5MonteCarloDecisionEvaluator:
             if continuation_id is not None
             else "deterministic-episode:" + self.continuation_policy.policy_id
         )
+        self.sample_namespace = str(sample_namespace)
 
     def _request(self, runtime):
         return rules_decision_request(
@@ -234,6 +236,7 @@ class Phase5MonteCarloDecisionEvaluator:
             self.objective,
             self.continuation_policy.policy_id,
             self.continuation_id,
+            self.sample_namespace,
             self.max_episode_steps,
             self.strict_terminal_reasons,
         )
@@ -301,7 +304,11 @@ class Phase5MonteCarloDecisionEvaluator:
         for sample_index in range(self.rollout_count):
             world = self.sampler.sample(
                 belief,
-                sample_id=("phase5-q", sample_index),
+                sample_id=(
+                    "phase5-q",
+                    self.sample_namespace,
+                    sample_index,
+                ),
             )
             sampled_runtime = materialize_hidden_world(runtime, world)
             sampled_request = self._request(sampled_runtime)
