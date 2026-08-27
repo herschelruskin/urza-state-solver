@@ -182,7 +182,6 @@ def test_bottom_racer_uses_identical_frozen_phase5h_gameplay_policy():
         confirm_rollouts=2,
         shortlist_size=2,
         mc_root_seed=77,
-        q_mc_root_seed=88,
         horizon=6,
     )
     screen_config=evaluator.screen_evaluator.episode_runner.q_policy_config
@@ -190,6 +189,8 @@ def test_bottom_racer_uses_identical_frozen_phase5h_gameplay_policy():
     assert screen_config==PHASE5H_PRODUCTION_TUTOR_Q_CONFIG
     assert confirm_config==PHASE5H_PRODUCTION_TUTOR_Q_CONFIG
     assert screen_config==confirm_config
+    assert screen_config.mc_root_seed==2026082802
+    assert evaluator.q_mc_root_seed==screen_config.mc_root_seed
     assert screen_config.confidence_gate
     assert screen_config.contingent
     assert screen_config.screen_rollouts==1
