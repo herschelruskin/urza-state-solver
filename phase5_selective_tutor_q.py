@@ -44,7 +44,7 @@ from phase5_rollout_policy_v6 import (
     PHASE5_ROLLOUT_POLICY_V6,
 )
 
-PHASE5_SELECTIVE_TUTOR_Q_VERSION="urza-phase5-selective-tutor-q-v2-contingent"
+PHASE5_SELECTIVE_TUTOR_Q_VERSION="urza-phase5-selective-tutor-q-v3-independent-confirm"
 PHASE5_CONTINGENT_TUTOR_Q_VERSION="urza-phase5-contingent-tutor-q-v1"
 
 MAIN_TUTOR_KINDS=frozenset({
