@@ -115,6 +115,22 @@ Q before end-to-end mulligan and deck-level validation demonstrates a need.
 8. Inspect disagreement classes before changing strategy or training on labels.
 9. Existing Phase-5H, information-safety, and London-mulligan regressions remain green.
 
+## Phase 5I benchmark coordinates
+
+- Deck snapshot: `decklist.txt` with **Codex Shredder** (matches normalized human fixture).
+- Human benchmark: 35 exact usable sevens; hand #10 remains excluded as unrecoverable.
+- Human stage mapping: recorded `mulligan_count` == London stage.
+- Opening environment for human comparability: seat 1 of 4, Gemstone Caverns inactive.
+- Frozen Phase-5H Q root seed: **2026082802**.
+- Stage training outer seed: **2026082901**.
+- Human held-out outer seed: **2026083001**.
+- Stage training: 3 fresh sevens per stage, bottom screen=1 outer world,
+  confirmation=2 outer worlds, shortlist=4.
+- Human evaluation: bottom screen=1 outer world, confirmation=2 outer worlds,
+  shortlist=4.
+- Stage labels are learned from fresh random deck hands only; human annotations are
+  read only after solver choice for comparison.
+
 ## Roadmap after Phase 5I
 
 1. Re-run the 35 exact human mulligan benchmark hands.
