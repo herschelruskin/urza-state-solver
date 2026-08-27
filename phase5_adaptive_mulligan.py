@@ -105,6 +105,7 @@ class AdaptiveMulliganStageModel:
     confirm_rollouts_per_bottom:int
     shortlist_size:int
     mc_root_seed:int
+    q_mc_root_seed:int
     horizon:int
     q_cache_hits:int
     q_cache_misses:int
@@ -128,6 +129,7 @@ class AdaptiveOpeningKeepEvaluator:
         confirm_rollouts:int=4,
         shortlist_size:int=4,
         mc_root_seed:int=20260826,
+        q_mc_root_seed:int|None=None,
         horizon:int=6,
         continuation_policy:DeterministicBasePolicy|None=None,
         screen_q_rollouts:int=1,
@@ -146,6 +148,10 @@ class AdaptiveOpeningKeepEvaluator:
         self.confirm_rollouts=int(confirm_rollouts)
         self.shortlist_size=int(shortlist_size)
         self.mc_root_seed=int(mc_root_seed)
+        self.q_mc_root_seed=int(
+            q_mc_root_seed if q_mc_root_seed is not None
+            else self.mc_root_seed + 1_000_003
+        )
         self.horizon=int(horizon)
         self.policy=continuation_policy or DeterministicRolloutPolicyV6(
             policy_id=PHASE5_ROLLOUT_POLICY_V6
@@ -153,14 +159,14 @@ class AdaptiveOpeningKeepEvaluator:
         self.cache=decision_cache or Phase5DecisionCache()
 
         screen_runner=make_selective_tutor_q_episode_runner(
-            mc_root_seed=self.mc_root_seed,
+            mc_root_seed=self.q_mc_root_seed,
             screen_rollouts=1,
             confirm_rollouts=int(screen_q_rollouts),
             shortlist_size=int(q_shortlist_size),
             decision_cache=self.cache,
         )
         confirm_runner=make_selective_tutor_q_episode_runner(
-            mc_root_seed=self.mc_root_seed,
+            mc_root_seed=self.q_mc_root_seed,
             screen_rollouts=1,
             confirm_rollouts=int(confirm_q_rollouts),
             shortlist_size=int(q_shortlist_size),
@@ -170,6 +176,7 @@ class AdaptiveOpeningKeepEvaluator:
             self.deck,
             rollout_count=self.screen_rollouts,
             mc_root_seed=self.mc_root_seed,
+            q_mc_root_seed=self.q_mc_root_seed,
             horizon=self.horizon,
             continuation_policy=self.policy,
             max_episode_steps=max_episode_steps,
@@ -260,6 +267,7 @@ class AdaptiveMulliganStageTrainer:
         confirm_rollouts_per_bottom:int=3,
         shortlist_size:int=4,
         mc_root_seed:int=20260826,
+        q_mc_root_seed:int|None=None,
         horizon:int=6,
         continuation_policy:DeterministicBasePolicy|None=None,
         screen_q_rollouts:int=1,
@@ -279,6 +287,10 @@ class AdaptiveMulliganStageTrainer:
         self.confirm_rollouts_per_bottom=int(confirm_rollouts_per_bottom)
         self.shortlist_size=int(shortlist_size)
         self.mc_root_seed=int(mc_root_seed)
+        self.q_mc_root_seed=int(
+            q_mc_root_seed if q_mc_root_seed is not None
+            else self.mc_root_seed + 1_000_003
+        )
         self.horizon=int(horizon)
         self.policy=continuation_policy or DeterministicRolloutPolicyV6(
             policy_id=PHASE5_ROLLOUT_POLICY_V6
@@ -376,6 +388,7 @@ class AdaptiveMulliganStageTrainer:
             confirm_rollouts_per_bottom=self.confirm_rollouts_per_bottom,
             shortlist_size=self.shortlist_size,
             mc_root_seed=self.mc_root_seed,
+            q_mc_root_seed=self.q_mc_root_seed,
             horizon=self.horizon,
             q_cache_hits=self.cache.stats.hits,
             q_cache_misses=self.cache.stats.misses,
