@@ -559,3 +559,164 @@ class MulliganStageTrainer:
             horizon=self.horizon,
             opening_environment=self.opening_environment,
         )
+
+
+COMMANDER_SEAT_MIXTURE_VERSION = "urza-commander-seat-mixture-v1"
+
+
+def commander_opening_environments(player_count: int = 4) -> Tuple[OpeningEnvironment, ...]:
+    """Return every seat context known before mulligans in a Commander game."""
+    count = int(player_count)
+    if count < 2:
+        raise ValueError("Commander opening environment requires at least two players")
+    return tuple(OpeningEnvironment(seat=seat, player_count=count) for seat in range(1, count + 1))
+
+
+def mix_commander_seat_values(
+    seat_values: Sequence[Tuple[int, WinDistributionValue]],
+    *,
+    player_count: int = 4,
+) -> WinDistributionValue:
+    """Uniform ex-ante mixture of already seat-conditioned policy values.
+
+    The seat is known before opening hands and mulligans. Therefore callers must
+    optimize/fit inside each seat first and only mix the resulting values here.
+    Mixing environments before the keep/mulligan decision would hide information
+    the player actually has and can produce a different policy.
+    """
+    count = int(player_count)
+    if count < 2:
+        raise ValueError("Commander seat mixture requires at least two players")
+    rows = tuple((int(seat), value) for seat, value in seat_values)
+    expected = tuple(range(1, count + 1))
+    seats = tuple(sorted(seat for seat, _ in rows))
+    if seats != expected:
+        raise ValueError(
+            f"seat-conditioned mixture requires exactly seats {expected!r}; got {seats!r}"
+        )
+    horizons = {value.horizon for _, value in rows}
+    if len(horizons) != 1:
+        raise ValueError("cannot mix seat-conditioned values with different horizons")
+    horizon = next(iter(horizons))
+    weight = 1.0 / count
+    by_seat = dict(rows)
+    return WinDistributionValue.mixture(
+        tuple((weight, by_seat[seat]) for seat in expected),
+        horizon=horizon,
+    )
+
+
+@dataclass(frozen=True)
+class CommanderSeatStageEstimate:
+    """A stage value after seat-conditioned decisions, mixed only for reporting."""
+
+    stage: int
+    keep_size: int
+    value: WinDistributionValue
+    seat_values: Tuple[Tuple[int, WinDistributionValue], ...]
+    seat_keep_rates: Tuple[Tuple[int, float], ...]
+
+    @property
+    def keep_rate(self) -> float:
+        return sum(rate for _, rate in self.seat_keep_rates) / len(self.seat_keep_rates)
+
+
+@dataclass(frozen=True)
+class CommanderSeatMulliganModel:
+    """Seat-conditioned London models plus an ex-ante uniform summary."""
+
+    seat_models: Tuple[Tuple[int, MulliganStageModel], ...]
+    stages: Tuple[CommanderSeatStageEstimate, ...]
+    player_count: int = 4
+    version: str = COMMANDER_SEAT_MIXTURE_VERSION
+
+    def seat_model(self, seat: int) -> MulliganStageModel:
+        for model_seat, model in self.seat_models:
+            if model_seat == int(seat):
+                return model
+        raise KeyError(seat)
+
+    def stage_estimate(self, stage: int) -> CommanderSeatStageEstimate:
+        for estimate in self.stages:
+            if estimate.stage == int(stage):
+                return estimate
+        raise KeyError(stage)
+
+
+class CommanderSeatMulliganTrainer:
+    """Fit one London policy per known seat, then mix only the resulting outcomes.
+
+    Common root seeds deliberately give every seat the same sampled fresh sevens and
+    hidden-world coordinates. This keeps seat/Caverns comparisons paired while
+    preserving the real information structure: seat is known before keep/bottom and
+    Gemstone Caverns decisions are made.
+    """
+
+    def __init__(
+        self,
+        deck: Sequence[str],
+        *,
+        player_count: int = 4,
+        hand_samples_per_stage: int = 16,
+        rollout_count_per_bottom: int = 16,
+        mc_root_seed: int = 0,
+        horizon: int = 6,
+        continuation_policy: DeterministicBasePolicy | None = None,
+        strict_terminal_reasons: bool = True,
+        episode_runner: Callable | None = None,
+    ) -> None:
+        self.deck = tuple(str(card) for card in deck)
+        self.player_count = int(player_count)
+        if self.player_count < 2:
+            raise ValueError("Commander seat trainer requires at least two players")
+        if int(hand_samples_per_stage) < 1:
+            raise ValueError("hand_samples_per_stage must be >= 1")
+        if int(rollout_count_per_bottom) < 1:
+            raise ValueError("rollout_count_per_bottom must be >= 1")
+        self.hand_samples_per_stage = int(hand_samples_per_stage)
+        self.rollout_count_per_bottom = int(rollout_count_per_bottom)
+        self.mc_root_seed = int(mc_root_seed)
+        self.horizon = int(horizon)
+        self.continuation_policy = continuation_policy or DeterministicBasePolicy()
+        self.strict_terminal_reasons = bool(strict_terminal_reasons)
+        self.episode_runner = episode_runner or run_deterministic_episode
+
+    def train(self) -> CommanderSeatMulliganModel:
+        seat_models = []
+        for environment in commander_opening_environments(self.player_count):
+            model = MulliganStageTrainer(
+                self.deck,
+                hand_samples_per_stage=self.hand_samples_per_stage,
+                rollout_count_per_bottom=self.rollout_count_per_bottom,
+                mc_root_seed=self.mc_root_seed,
+                horizon=self.horizon,
+                continuation_policy=self.continuation_policy,
+                strict_terminal_reasons=self.strict_terminal_reasons,
+                episode_runner=self.episode_runner,
+                opening_environment=environment,
+            ).train()
+            seat_models.append((environment.seat, model))
+
+        seat_models_tuple = tuple(seat_models)
+        stages = []
+        for stage in range(MULLIGAN_FLOOR_STAGE + 1):
+            per_seat = tuple(
+                (seat, model.stage_estimate(stage))
+                for seat, model in seat_models_tuple
+            )
+            stages.append(CommanderSeatStageEstimate(
+                stage=stage,
+                keep_size=keep_size_for_stage(stage),
+                value=mix_commander_seat_values(
+                    tuple((seat, estimate.value) for seat, estimate in per_seat),
+                    player_count=self.player_count,
+                ),
+                seat_values=tuple((seat, estimate.value) for seat, estimate in per_seat),
+                seat_keep_rates=tuple((seat, estimate.keep_rate) for seat, estimate in per_seat),
+            ))
+
+        return CommanderSeatMulliganModel(
+            seat_models=seat_models_tuple,
+            stages=tuple(stages),
+            player_count=self.player_count,
+        )
