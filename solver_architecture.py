@@ -18,6 +18,7 @@ Design invariants:
 
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import asdict, dataclass, fields, is_dataclass
 from hashlib import sha256
 from typing import Any, Dict, Generic, Iterable, Mapping, MutableMapping, Optional, Protocol, Sequence, Tuple, TypeVar
@@ -144,6 +145,23 @@ def canonical_markov_state_key(state: Any) -> Tuple[Any, ...]:
     )
 
 
+def deduced_library_counts(true_state: Any) -> Tuple[Tuple[str, int], ...]:
+    """Return the order-free multiset a player can deduce remains in their library.
+
+    This simulator models one known Commander deck and the player's own zones.
+    Every modeled movement into or out of that library is known to the player.
+    Therefore card membership/count is logically knowable even when positional
+    order is not.  Reading the concrete library Counter is an implementation
+    shortcut for subtracting all known nonlibrary zones from the fixed decklist.
+    """
+    counts = Counter(str(card) for card in getattr(true_state, "library", ()))
+    return tuple(sorted(
+        (card, int(count))
+        for card, count in counts.items()
+        if int(count) > 0
+    ))
+
+
 @dataclass(frozen=True)
 class InformationState:
     """Persistent legal knowledge about hidden zones."""
@@ -237,7 +255,7 @@ def make_policy_view(true_state: Any, information: InformationState, *, caverns_
         urza_exile_permissions=tuple(sorted(getattr(true_state, "urza_exile_permissions", ()))),
         known_top=tuple(information.known_top),
         known_bottom=tuple(information.known_bottom),
-        known_library_counts=tuple(sorted(information.known_library_counts)),
+        known_library_counts=deduced_library_counts(true_state),
         caverns_live=caverns_live,
     )
 
