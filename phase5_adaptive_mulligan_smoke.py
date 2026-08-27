@@ -192,7 +192,7 @@ def test_forced_keep2_stage_is_terminal_mulligan_floor():
     assert stage.kept_count==2
     assert stage.mulligan_count==0
     assert all(row.decision=="Keep" for row in model.hand_decisions)
-    assert dict(stage.chosen_terminal_reason_counts)=={"horizon":2,"step_limit":2}
+    assert dict(stage.evaluated_keep_terminal_reason_counts)=={"horizon":2,"step_limit":2}
     print("stage 6 is forced keep-2 and records leaf terminal reasons: PASS")
 
 
