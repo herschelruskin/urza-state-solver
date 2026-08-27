@@ -32,6 +32,10 @@ jobs:
         run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_simple_tutor_pending_surface_matches_lineage()"
       - name: Contingent source traversal
         run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_runner_receives_committed_source_lineage()"
+      - name: PA target leaf conversion
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_power_artifact_target_leaf_converts()"
+      - name: Observed target Q ranking
+        run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_observed_target_q_prefers_power_artifact()"
       - name: Transmute two-step chain
         run: python -c "import phase5_contingent_tutor_q_smoke as s; s.test_transmute_follows_sacrifice_then_observed_target()"
       - name: Contingent post-commit evaluation
