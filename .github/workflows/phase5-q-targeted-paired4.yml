@@ -1,9 +1,9 @@
-name: Phase 5 targeted paired-4 Q evaluation
+name: Phase 5 changed-control paired-4 Q evaluation
 
 on:
   push:
     branches:
-      - phase5-q-targeted-paired4
+      - phase5-q-changed-paired4
   workflow_dispatch:
 
 jobs:
@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        hand_id: [12, 13, 19, 20, 21, 24, 25, 27, 29, 33]
+        hand_id: [1, 30]
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
