@@ -8,7 +8,9 @@ import urza_solver as solver
 from non_oracle_episode import run_deterministic_episode
 from non_oracle_rules_adapter_v2 import apply_main_action, rules_decision_request
 from non_oracle_runtime import make_runtime_state
+from phase4_hidden_world import HiddenWorldSampler, materialize_hidden_world
 from phase5_monte_carlo import Phase5DecisionCache, Phase5MonteCarloDecisionEvaluator
+from strategic_value_state import LibraryBeliefKey
 from phase5_rollout_policy_v6 import DeterministicRolloutPolicyV6
 from phase5_selective_tutor_q import (
     CONTINGENT_DEPTH_AFTER_ACTION_KIND,
@@ -150,6 +152,43 @@ def test_observed_target_q_prefers_power_artifact():
     )
     print("observed target Q ranks Power Artifact above Defense Grid: PASS")
 
+
+
+def test_outer_sampled_world_contingent_runner_converts():
+    runtime,tutor=simple_tutor_runtime()
+    policy=FailTutorTargetPolicy()
+    belief=LibraryBeliefKey.from_state(runtime.true_state,runtime.information)
+    world=HiddenWorldSampler(2026082703).sample(
+        belief,sample_id=("phase5-q",0)
+    )
+    sampled=materialize_hidden_world(runtime,world)
+    request=rules_decision_request(
+        sampled,horizon=2,policy_id=policy.policy_id
+    )
+    sampled_tutor=next(
+        a for a in request.actions
+        if a.strategic_key()==tutor.strategic_key()
+    )
+    after=apply_main_action(sampled,sampled_tutor)
+    cache=Phase5DecisionCache()
+    runner=make_bounded_contingent_tutor_runner(
+        mc_root_seed=2026082703,
+        screen_rollouts=1,
+        confirm_rollouts=1,
+        shortlist_size=8,
+        decision_cache=cache,
+    )
+    result=runner(
+        after,
+        root_action=sampled_tutor,
+        horizon=2,
+        policy=policy,
+        max_steps=128,
+    )
+    assert result.won_by_horizon,(result.terminal_reason,result.win_turn,result.win_family)
+    assert result.win_family=="Power Artifact + Grim",result.win_family
+    assert cache.stats.misses>0,cache.stats
+    print("outer sampled world propagates into winning contingent PA choice: PASS")
 
 def test_simple_tutor_pending_surface_matches_lineage():
     runtime,tutor=simple_tutor_runtime()
