@@ -58,6 +58,9 @@ VALUE_TARGETS = frozenset({
     "Vexing Bauble",
     "Mishra's Bauble",
     "Urza's Bauble",
+    "Giant's Boulder",
+    "Chrome Dome",
+    "Imposter Mech",
 })
 UNTAP_TARGETS = frozenset({"Voltaic Key", "Manifold Key"})
 TUTOR_TARGETS = frozenset({"Repurposing Bay", "Codex Shredder"})
@@ -77,6 +80,33 @@ OPPONENT_ONLY_TARGETS = frozenset({
     "Tormod's Crypt",
     "Disruptor Flute",
 })
+
+MANA_TARGETS = frozenset({
+    "Mana Vault",
+    "Grim Monolith",
+    "Basalt Monolith",
+    "Sol Ring",
+    "Lotus Petal",
+    "Seat of the Synod",
+    "Moonsnare Prototype",
+    "Mox Opal",
+    "Chrome Mox",
+    "Mox Diamond",
+    "Sapphire Medallion",
+    "Prized Statue",
+    "Jeweled Amulet",
+})
+
+LIVE_ROLE_MASK = (
+    ROLE_COMBO
+    | ROLE_PRODUCER
+    | ROLE_MANA
+    | ROLE_VALUE
+    | ROLE_UNTAP
+    | ROLE_TUTOR
+    | ROLE_PROTECTION
+    | ROLE_DRAW
+)
 
 MANA_NOW = {
     "Mana Vault": 3,
@@ -250,9 +280,7 @@ def _role_mask(target: str) -> int:
         mask |= ROLE_COMBO
     if target in PRODUCER_TARGETS:
         mask |= ROLE_PRODUCER
-    if target in MANA_NOW or target in {
-        "Mox Opal", "Chrome Mox", "Mox Diamond", "Sapphire Medallion", "Prized Statue"
-    }:
+    if target in MANA_TARGETS:
         mask |= ROLE_MANA
     if target in VALUE_TARGETS:
         mask |= ROLE_VALUE
@@ -354,47 +382,65 @@ def whir_target_frontier(
     card_actions = tuple(a for a in target_actions if _target_name(a))
     features = {a.strategic_key(): target_feature(_target_name(a), observation) for a in card_actions}
 
+    # Conservative promotion rule: every target with an explicitly modeled
+    # combo/mana/value/untap/tutor/protection role survives.  We do NOT Pareto
+    # prune among these live roles, because doing so can alter a valid sequencing
+    # choice such as Whir -> Sol Ring versus developing Urza first.
+    live = []
+    low_information = []
+    for action in card_actions:
+        feature = features[action.strategic_key()]
+        if feature.role_mask & LIVE_ROLE_MASK:
+            live.append(action)
+        else:
+            low_information.append(action)
+
+    retained_keys = set(keep_keys)
+    retained_keys.update(a.strategic_key() for a in live)
+
+    # Opponent-only pieces are legal but normally irrelevant to a no-opponent
+    # win-speed objective.  Keep them only when rollout-v6 explicitly selected
+    # them (must_retain) or when there is literally no richer target.
+    richer_exists = bool(live) or any(
+        features[a.strategic_key()].goldfish_relevance > 0
+        for a in low_information
+    )
     dominated = set()
-    for candidate in card_actions:
-        ckey = candidate.strategic_key()
-        if ckey in keep_keys or _target_name(candidate) == "Defense Grid":
+    neutral_low = []
+    for action in low_information:
+        key = action.strategic_key()
+        feature = features[key]
+        if key in keep_keys:
+            retained_keys.add(key)
             continue
-        cf = features[ckey]
-        for other in card_actions:
-            okey = other.strategic_key()
-            if okey == ckey:
-                continue
-            if dominates(features[okey], cf):
-                dominated.add(ckey)
-                break
+        if (
+            richer_exists
+            and feature.role_mask & ROLE_OPPONENT_ONLY
+        ):
+            dominated.add(key)
+            continue
+        neutral_low.append(action)
 
-    survivors = [
-        a for a in card_actions
-        if a.strategic_key() not in dominated
-        or a.strategic_key() in keep_keys
-        or _target_name(a) == "Defense Grid"
-    ]
-
-    # Collapse identical modeled feature signatures to one deterministic
-    # representative, while retaining the rollout-v6/base action.  This is the
-    # second, explicitly objective-specific compression layer.
+    # Among remaining generic-body targets, collapse identical modeled feature
+    # signatures to one deterministic representative.  This is intentionally
+    # restricted to low-information targets; all strategically live targets
+    # above retain their card identity.
     by_signature = {}
     collapsed = 0
-    for action in sorted(survivors, key=lambda a: a.action_id):
+    for action in sorted(neutral_low, key=lambda a: a.action_id):
         key = action.strategic_key()
-        if key in keep_keys:
-            continue
         sig = features[key].vector()
         if sig in by_signature:
             collapsed += 1
+            dominated.add(key)
             continue
         by_signature[sig] = action
+        retained_keys.add(key)
 
-    retained_keys = set(keep_keys)
-    retained_keys.update(a.strategic_key() for a in by_signature.values())
-    # Defense Grid is always a protected-line representative when revealed.
+    # Defense Grid is already a live protection role, but keep the explicit
+    # assertion here as a regression guard for future role-table edits.
     retained_keys.update(
-        a.strategic_key() for a in survivors
+        a.strategic_key() for a in card_actions
         if _target_name(a) == "Defense Grid"
     )
 
