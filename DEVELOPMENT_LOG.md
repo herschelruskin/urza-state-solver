@@ -313,6 +313,7 @@ The final manual aggregate now consumes exactly:
 - main human-hand run: **33122937057**;
 - repair run A: **33133641811**;
 - repair run B: **33133729255**;
+- isolated hand-12 rerun: **33135490121**;
 - main factorized continuation run: **33123595522**.
 
 Before aggregation it requires exactly 35 unique human-hand artifacts and the full
@@ -321,3 +322,17 @@ Before aggregation it requires exactly 35 unique human-hand artifacts and the fu
 The aggregate now also emits `phase5i_disagreement_report.json`, classifying
 stable/unstable/seat-dependent keep-mull calls and material versus timing-only
 bottom differences.
+
+
+### Hand 12 isolated final rerun
+
+The first repair-A attempt for hand 12 was again terminated by a GitHub-hosted
+runner shutdown signal after approximately eight minutes, with no solver traceback.
+Because GitHub will not rerun a single failed job while the parent matrix run remains
+active, hand 12 was moved to an isolated identical-seed rerun.
+
+Branch: `phase5i-hand12-final-rerun`
+Workflow run: **33135490121**
+
+No evaluation parameters changed. The final aggregate consumes hand 12 only from this
+isolated run; repair-A remains the source for hands 14/26 and dead-stage3-sample1.
