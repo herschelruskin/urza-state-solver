@@ -1,0 +1,44 @@
+name: Phase 5I cache 16 Hand 12 proof
+
+on:
+  push:
+    branches:
+      - phase5i-cache-16
+  workflow_dispatch:
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      PYTHONHASHSEED: '0'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile
+        run: |
+          python -m py_compile phase5i_hand12_world_eval.py
+          python -m py_compile phase5_decision_cache_smoke.py
+      - name: Cache smoke
+        run: python phase5_decision_cache_smoke.py
+      - name: Exact Hand 12 world 0
+        shell: bash
+        run: |
+          set -uo pipefail
+          python phase5i_hand12_world_eval.py --sample-id 0 &
+          pid=$!
+          echo "PYTHON_PID=$pid"
+          while kill -0 "$pid" 2>/dev/null; do
+            echo "RESOURCE_SAMPLE $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            ps -o pid,ppid,%cpu,%mem,rss,vsz,etime,cmd -p "$pid" || true
+            free -m || true
+            sleep 30
+          done
+          wait "$pid"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-hand12-world-0-cache-16
+          path: phase5i_hand12_world_0.json
