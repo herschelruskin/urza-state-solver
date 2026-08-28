@@ -112,6 +112,29 @@ def test_reshape_x_and_sacrifice_are_committed_before_search():
     assert envelope.pending_decision.kind == "x_artifact_search_target"
 
 
+def test_reshape_sacrifice_identity_survives_payment_annotation_change():
+    state = solver.State(
+        turn=2,
+        library=("Mana Vault", "Tail"),
+        hand=(RESHAPE,),
+        battlefield=(
+            solver.Perm(
+                "Grinding Station", tapped=True, producer_urza_ready=True
+            ),
+        ),
+        blue=2,
+        colorless=0,
+        rng_root_seed=20260822,
+    )
+    info = InformationState()
+    cast = choose_reshape_cast(
+        reshape_cast_request(state, info, horizon=6), 0, "Grinding Station"
+    )
+    envelope, _, _ = resolve_reshape_cast(state, cast)
+    assert not any(p.name == "Grinding Station" for p in envelope.true_state.battlefield)
+    print("Reshape sacrifice survives payment-side annotation change: PASS")
+
+
 def test_reshape_search_cannot_retroactively_raise_x_for_hidden_target():
     state = solver.State(
         turn=2,
@@ -184,6 +207,26 @@ def test_whir_improvise_plan_is_committed_before_search():
     assert isinstance(search, SearchZoneObservation)
     assert "Mana Vault" in search.legal_cards
     assert "Basalt Monolith" not in search.legal_cards
+
+
+def test_whir_duplicate_improvise_slots_survive_first_tap():
+    state = solver.State(
+        turn=2,
+        library=("Grim Monolith", "Tail"),
+        hand=(WHIR,),
+        battlefield=(clue(), clue()),
+        blue=3,
+        colorless=0,
+        rng_root_seed=20260822,
+    )
+    request = whir_cast_request(state, InformationState(), horizon=6)
+    cast = choose_whir_cast(
+        request, 2, improvise_names=("Clue", "Clue"), floating_generic=0
+    )
+    envelope, _, _ = resolve_whir_cast(state, cast)
+    assert len(envelope.true_state.battlefield) == 2
+    assert all(p.tapped for p in envelope.true_state.battlefield)
+    print("Whir duplicate improvise slots remain addressable: PASS")
 
 
 def test_whir_exposes_distinct_public_payment_plans_without_hidden_target():
@@ -322,9 +365,11 @@ def main():
     tests = [
         test_reshape_commit_is_hidden_future_invariant,
         test_reshape_x_and_sacrifice_are_committed_before_search,
+        test_reshape_sacrifice_identity_survives_payment_annotation_change,
         test_reshape_search_cannot_retroactively_raise_x_for_hidden_target,
         test_whir_commit_is_hidden_future_invariant,
         test_whir_improvise_plan_is_committed_before_search,
+        test_whir_duplicate_improvise_slots_survive_first_tap,
         test_whir_exposes_distinct_public_payment_plans_without_hidden_target,
         test_post_search_target_choice_uses_only_revealed_eligible_set,
         test_search_shuffle_clears_old_top_and_bottom_information,

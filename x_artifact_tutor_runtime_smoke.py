@@ -53,6 +53,28 @@ def test_cast_commit_actions_are_hidden_future_invariant():
     assert "Sensei's Divining Top" not in text
 
 
+def test_runtime_reshape_sacrifice_survives_payment_annotation_change():
+    runtime = make_runtime_state(solver.State(
+        turn=3,
+        library=("Mana Vault", "Island"),
+        hand=("Reshape",),
+        battlefield=(
+            solver.Perm(
+                "Grinding Station", tapped=True, producer_urza_ready=True
+            ),
+        ),
+        blue=2,
+        colorless=0,
+    ))
+    action = next(
+        a for a in x_actions(runtime, "Reshape", 0)
+        if dict(a.parameters).get("sacrifice_name") == "Grinding Station"
+    )
+    runtime = apply_main_action(runtime, action)
+    assert not any(p.name == "Grinding Station" for p in runtime.true_state.battlefield)
+    assert runtime.stack.top().kind == "x_artifact_reshape_spell"
+
+
 def test_reshape_prized_statue_dies_trigger_is_above_spell():
     runtime = make_runtime_state(solver.State(
         turn=3,
@@ -237,6 +259,28 @@ def test_whir_commits_x_and_improvise_before_search():
     assert "Basalt Monolith" not in targets
 
 
+def test_runtime_whir_duplicate_improvise_slots_survive_first_tap():
+    runtime = make_runtime_state(solver.State(
+        turn=3,
+        library=("Grim Monolith", "Island"),
+        hand=("Whir of Invention",),
+        battlefield=(
+            solver.Perm("Clue", mode="clue"),
+            solver.Perm("Clue", mode="clue"),
+        ),
+        blue=3,
+        colorless=0,
+    ))
+    action = next(
+        a for a in x_actions(runtime, "Whir of Invention", 2)
+        if len(dict(dict(a.parameters)["cast_parameters"])["improvise"]) == 2
+    )
+    runtime = apply_main_action(runtime, action)
+    assert len(runtime.true_state.battlefield) == 2
+    assert all(p.tapped for p in runtime.true_state.battlefield)
+    assert runtime.stack.top().kind == "x_artifact_whir_spell"
+
+
 def test_base_policy_chooses_revealed_artifact_not_fail_to_find():
     runtime = make_runtime_state(solver.State(
         turn=3,
@@ -256,12 +300,14 @@ def test_base_policy_chooses_revealed_artifact_not_fail_to_find():
 def main():
     tests = (
         test_cast_commit_actions_are_hidden_future_invariant,
+        test_runtime_reshape_sacrifice_survives_payment_annotation_change,
         test_reshape_prized_statue_dies_trigger_is_above_spell,
         test_reshape_cast_and_statue_death_trigger_are_orderable_with_other_cast_trigger,
         test_reshape_cam_additional_cost_stages_target_before_trigger_order,
         test_reshape_search_targets_appear_only_when_spell_resolves,
         test_cage_filters_creature_targets_from_reshape_and_whir,
         test_whir_commits_x_and_improvise_before_search,
+        test_runtime_whir_duplicate_improvise_slots_survive_first_tap,
         test_base_policy_chooses_revealed_artifact_not_fail_to_find,
     )
     for test in tests:
