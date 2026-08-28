@@ -19,13 +19,16 @@ import argparse
 from collections import Counter,defaultdict
 import json
 from pathlib import Path
+import random
 
 from phase3_value_engine import WinDistributionValue
-from phase5_mulligan import MULLIGAN_FLOOR_STAGE
+from phase5_mulligan import MULLIGAN_FLOOR_STAGE, value_at_least
 
 
 HORIZON=6
 CONTEXT_WEIGHTS={"dead":0.25,"live":0.75}
+THRESHOLD_BOOTSTRAP_REPLICATES=1000
+THRESHOLD_BOOTSTRAP_SEED=2026083001
 
 
 def value_from_json(payload):
@@ -77,6 +80,13 @@ def _factorized_stage_model(directory,context):
             replicate_values[int(stage["stage"])].append(
                 value_from_json(stage["value"])
             )
+    keep_samples={
+        int(stage["stage"]):tuple(
+            value_from_json(decision["keep_value"])
+            for decision in stage.get("decisions",())
+        )
+        for stage in payload["stages"]
+    }
     return {
         "source":"factorized",
         "replicate_count":len(payload.get("stability_replicates",())),
@@ -86,6 +96,7 @@ def _factorized_stage_model(directory,context):
             for stage in values
         },
         "sample_count_per_stage":payload.get("sample_count_per_stage",{}),
+        "keep_samples":keep_samples,
     }
 
 
@@ -128,6 +139,39 @@ def load_stage_models(directory):
             "sample_count_per_stage":{},
         }
     return result
+
+
+def bootstrap_continuation_models(stage_models,context,*,replicates=THRESHOLD_BOOTSTRAP_REPLICATES):
+    """Bootstrap fresh-hand sampling uncertainty in the backward London DP.
+
+    This resamples only the independent K_s(hand) training hands. It does not
+    alter the frozen player, human-hand K estimate, or outer-world budgets.
+    """
+    model=stage_models[context]
+    keep_samples=model.get("keep_samples")
+    if not keep_samples:
+        return {}
+    rng=random.Random(
+        THRESHOLD_BOOTSTRAP_SEED + (0 if context=="dead" else 1_000_003)
+    )
+    by_stage=defaultdict(list)
+    for _ in range(int(replicates)):
+        fitted={}
+        for stage in range(MULLIGAN_FLOOR_STAGE,-1,-1):
+            samples=tuple(keep_samples.get(stage,()))
+            if not samples:
+                raise ValueError(f"missing bootstrap K samples for {context} stage {stage}")
+            continuation=None if stage==MULLIGAN_FLOOR_STAGE else fitted[stage+1]
+            selected=[]
+            for _draw in range(len(samples)):
+                keep=rng.choice(samples)
+                if continuation is None or value_at_least(keep,continuation):
+                    selected.append(keep)
+                else:
+                    selected.append(continuation)
+            fitted[stage]=mean_values(selected)
+            by_stage[stage].append(fitted[stage])
+    return {stage:tuple(values) for stage,values in by_stage.items()}
 
 
 def hand_context(hand,context):
@@ -180,9 +224,14 @@ def main():
         raise SystemExit(f"expected 35 exact human hand files, found {len(hands)}")
     hands=sorted(hands,key=lambda row:int(row["hand_id"]))
     stage_models=load_stage_models(args.stage_dir)
+    threshold_bootstrap={
+        context:bootstrap_continuation_models(stage_models,context)
+        for context in CONTEXT_WEIGHTS
+    }
 
     rows=[]
     agreement_weighted=0.0
+    bootstrap_agreement_weighted=0.0
     seat_consensus=0
     seat_consensus_correct=0
     by_stage=defaultdict(lambda:{"n":0,"agreement_weight":0.0})
@@ -223,6 +272,31 @@ def main():
                 replicate_unstable_context_decisions+=int(
                     len(set(replicate_decisions))>1
                 )
+            bootstrap_values=(
+                ()
+                if continuation is None
+                else threshold_bootstrap.get(context,{}).get(stage+1,())
+            )
+            bootstrap_keep_probability=(
+                1.0
+                if continuation is None
+                else (
+                    sum(value_at_least(keep,row) for row in bootstrap_values)
+                    / len(bootstrap_values)
+                    if bootstrap_values else None
+                )
+            )
+            bootstrap_human_agreement_probability=(
+                None
+                if bootstrap_keep_probability is None
+                else (
+                    bootstrap_keep_probability
+                    if human_decision=="Keep"
+                    else 1.0-bootstrap_keep_probability
+                )
+            )
+            if bootstrap_human_agreement_probability is not None:
+                bootstrap_agreement_weighted+=weight*bootstrap_human_agreement_probability
             context_rows[context]={
                 "weight":weight,
                 "solver_decision":decision,
@@ -233,6 +307,12 @@ def main():
                 "replicate_stable":(
                     None if not replicate_decisions
                     else len(set(replicate_decisions))==1
+                ),
+                "bootstrap_keep_probability":bootstrap_keep_probability,
+                "bootstrap_human_agreement_probability":bootstrap_human_agreement_probability,
+                "bootstrap_decision_confidence":(
+                    None if bootstrap_keep_probability is None
+                    else max(bootstrap_keep_probability,1.0-bootstrap_keep_probability)
                 ),
             }
             decision_counts[(context,decision)]+=1
@@ -324,6 +404,8 @@ def main():
         "decision":{
             "weighted_agreement":agreement_weighted/len(hands),
             "weighted_correct_equivalent_hands":agreement_weighted,
+            "bootstrap_threshold_replicates":THRESHOLD_BOOTSTRAP_REPLICATES,
+            "bootstrap_weighted_agreement":bootstrap_agreement_weighted/len(hands),
             "seat_consensus_count":seat_consensus,
             "seat_consensus_correct":seat_consensus_correct,
             "replicate_context_decisions":replicate_context_decisions,
