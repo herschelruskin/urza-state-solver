@@ -1,0 +1,44 @@
+name: Phase 5I bounded human repairs
+
+on:
+  push:
+    branches:
+      - phase5i-bounded-human-repairs
+  workflow_dispatch:
+
+jobs:
+  hand:
+    strategy:
+      fail-fast: false
+      matrix:
+        hand_id: [14,25]
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      PYTHONHASHSEED: '0'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile evaluator
+        run: python -m py_compile phase5i_human_hand_eval.py
+      - name: Evaluate exact repaired hand
+        shell: bash
+        run: |
+          set -uo pipefail
+          python phase5i_human_hand_eval.py --hand-id ${{ matrix.hand_id }} &
+          pid=$!
+          echo "PYTHON_PID=$pid"
+          while kill -0 "$pid" 2>/dev/null; do
+            echo "RESOURCE_SAMPLE $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            ps -o pid,ppid,%cpu,%mem,rss,vsz,etime,cmd -p "$pid" || true
+            free -m || true
+            sleep 30
+          done
+          wait "$pid"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-human-hand-${{ matrix.hand_id }}-bounded
+          path: phase5i_human_hand_*.json
