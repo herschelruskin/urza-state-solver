@@ -49,6 +49,12 @@ from non_oracle_runtime import (
 )
 from non_oracle_runtime_value_key import WINDOW_POST_OBSERVATION, WINDOW_PRIORITY
 from trigger_order_adapter import post_cast_observations
+from symbolic_action_space import (
+    add_bit,
+    bit_count,
+    cached_cardinality_zdd,
+    highest_bit,
+)
 from x_artifact_search_adapter import (
     RESHAPE,
     WHIR,
@@ -91,21 +97,29 @@ def _whir_generic_need(state, x: int) -> int:
     return max(0, int(x) - solver.medallion_reduction(state, WHIR))
 
 
-def _whir_x_is_payable(state, x: int) -> bool:
+def _whir_payment_shape(state, x: int):
     if WHIR not in state.hand or state.blue < 3:
-        return False
+        return None
     if not 0 <= int(x) <= MAX_USEFUL_ARTIFACT_X:
-        return False
+        return None
     after_blue = solver.pay(state, 0, 3)
     if after_blue is None:
-        return False
+        return None
     need = _whir_generic_need(state, int(x))
     slots = _artifact_slots(after_blue, untapped_only=True)
-    # Existence check only; do not enumerate combinations.
-    for improvise_count in range(0, min(need, len(slots)) + 1):
-        if solver.can_pay(after_blue, need - improvise_count, 0):
-            return True
-    return False
+    floating_pool = int(after_blue.blue + after_blue.colorless)
+    min_selected = max(0, int(need) - floating_pool)
+    max_selected = min(int(need), len(slots))
+    if min_selected > max_selected:
+        return None
+    zdd = cached_cardinality_zdd(
+        len(slots), min_selected, max_selected
+    )
+    return after_blue, int(need), slots, min_selected, max_selected, zdd
+
+
+def _whir_x_is_payable(state, x: int) -> bool:
+    return _whir_payment_shape(state, int(x)) is not None
 
 
 def _whir_root_intents(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ...]:
@@ -191,10 +205,21 @@ def _find_reshape_underlying(runtime: NonOracleRuntimeState, action: ActionInten
     return matches[0]
 
 
-def _whir_payment_payload(*, x: int, generic_need: int, selected) -> Tuple[Tuple[str, object], ...]:
+def _whir_payment_payload(
+    *,
+    x: int,
+    generic_need: int,
+    selected_mask: int,
+    slot_keys,
+    min_selected: int,
+    max_selected: int,
+) -> Tuple[Tuple[str, object], ...]:
     return (
         ("generic_need", int(generic_need)),
-        ("selected", tuple(tuple(raw) for raw in selected)),
+        ("max_selected", int(max_selected)),
+        ("min_selected", int(min_selected)),
+        ("selected_mask", int(selected_mask)),
+        ("slot_keys", tuple(tuple(raw) for raw in slot_keys)),
         ("source", WHIR),
         ("x", int(x)),
     )
@@ -207,18 +232,22 @@ def _start_whir_payment(
     generic_need: int,
     contingent_on: str,
 ) -> NonOracleRuntimeState:
-    state = runtime.true_state
-    if not _whir_x_is_payable(state, int(x)):
+    shape = _whir_payment_shape(runtime.true_state, int(x))
+    if shape is None:
         raise ValueError("Whir X commitment is no longer payable")
-    expected = _whir_generic_need(state, int(x))
+    after_blue, expected, slots, min_selected, max_selected, zdd = shape
     if int(generic_need) != expected:
         raise ValueError("Whir generic requirement changed after commitment")
+    slot_keys = tuple(tuple(slot.key()) for slot in slots)
     if expected == 0:
-        return _finish_staged_whir(
+        return _finish_symbolic_whir(
             runtime,
             x=int(x),
             generic_need=0,
-            selected=(),
+            selected_mask=0,
+            slot_keys=slot_keys,
+            min_selected=0,
+            max_selected=0,
             floating=0,
         )
     spec = PendingDecisionSpec(
@@ -236,7 +265,10 @@ def _start_whir_payment(
             payload=_whir_payment_payload(
                 x=int(x),
                 generic_need=expected,
-                selected=(),
+                selected_mask=0,
+                slot_keys=slot_keys,
+                min_selected=min_selected,
+                max_selected=max_selected,
             ),
         ),
     )
@@ -250,26 +282,48 @@ def _whir_payment_state(runtime: NonOracleRuntimeState):
     state = runtime.true_state
     x = int(data["x"])
     need = int(data["generic_need"])
-    selected = tuple(tuple(raw) for raw in data.get("selected", ()))
-    if need != _whir_generic_need(state, x):
+    selected_mask = int(data.get("selected_mask", 0))
+    stored_slot_keys = tuple(
+        tuple(raw) for raw in data.get("slot_keys", ())
+    )
+    min_selected = int(data["min_selected"])
+    max_selected = int(data["max_selected"])
+
+    shape = _whir_payment_shape(state, x)
+    if shape is None:
+        raise ValueError("pending Whir payment can no longer be paid")
+    after_blue, expected_need, slots, live_min, live_max, zdd = shape
+    if need != expected_need:
         raise ValueError("pending Whir generic requirement no longer matches state")
-    after_blue = solver.pay(state, 0, 3)
-    if after_blue is None or WHIR not in state.hand:
-        raise ValueError("pending Whir payment can no longer pay UUU")
-    slots = _artifact_slots(after_blue, untapped_only=True)
-    by_key = {tuple(slot.key()): slot for slot in slots}
-    if len(by_key) != len(slots):
-        raise AssertionError("public Whir artifact slot keys must be unique")
-    if len(set(selected)) != len(selected):
-        raise ValueError("pending Whir payment selected the same slot twice")
-    if selected != tuple(sorted(selected)):
-        raise ValueError("pending Whir improvise slots are not in canonical set order")
-    if any(raw not in by_key for raw in selected):
-        raise ValueError("pending Whir improvise slot is no longer legal")
-    if len(selected) > need:
-        raise ValueError("Whir improvise selection exceeds generic requirement")
-    remaining = need - len(selected)
-    return state, after_blue, x, need, selected, remaining, slots, by_key
+    live_slot_keys = tuple(tuple(slot.key()) for slot in slots)
+    if live_slot_keys != stored_slot_keys:
+        raise ValueError("pending Whir public artifact slots changed before commitment finished")
+    if (min_selected, max_selected) != (live_min, live_max):
+        raise ValueError("pending Whir ZDD cardinality bounds changed")
+    if selected_mask >> len(slots):
+        raise ValueError("pending Whir bitset references a nonexistent slot")
+
+    chosen = bit_count(selected_mask)
+    next_index = highest_bit(selected_mask) + 1
+    if chosen > max_selected or not zdd.has_completion(
+        start_index=next_index,
+        chosen_count=chosen,
+    ):
+        raise ValueError("pending Whir bitset has no legal ZDD completion")
+    remaining = need - chosen
+    return (
+        state,
+        after_blue,
+        x,
+        need,
+        selected_mask,
+        remaining,
+        slots,
+        stored_slot_keys,
+        min_selected,
+        max_selected,
+        zdd,
+    )
 
 
 def whir_payment_request(
@@ -280,69 +334,79 @@ def whir_payment_request(
     policy_id: str,
     caverns_live=None,
 ) -> DecisionRequest:
-    state, after_blue, x, need, selected, remaining, slots, by_key = _whir_payment_state(runtime)
-    selected_set = set(selected)
+    (
+        state,
+        after_blue,
+        x,
+        need,
+        selected_mask,
+        remaining,
+        slots,
+        slot_keys,
+        min_selected,
+        max_selected,
+        zdd,
+    ) = _whir_payment_state(runtime)
+
     rows = []
-    if solver.can_pay(after_blue, remaining, 0):
+    chosen = bit_count(selected_mask)
+    if zdd.can_finish(selected_mask):
+        floating = int(need - chosen)
+        if not solver.can_pay(after_blue, floating, 0):
+            raise AssertionError("terminal Whir ZDD node is not mana-payable")
         rows.append(
             ActionIntent(
-                action_id=f"whir.payment.x{x}.finish.{remaining}",
+                action_id=f"whir.payment.x{x}.finish.mask{selected_mask:x}",
                 kind=WHIR_PAYMENT_FINISH,
                 parameters=(
-                    ("floating_generic", int(remaining)),
-                    ("remaining_before", int(remaining)),
+                    ("floating_generic", floating),
+                    ("selected_mask", int(selected_mask)),
                     ("x", int(x)),
                 ),
                 equivalence_key=(
                     WHIR_PAYMENT_FINISH,
                     int(x),
-                    tuple(sorted(selected)),
-                    int(remaining),
+                    int(selected_mask),
+                    floating,
                 ),
-                label=f"Finish Whir X={x}; pay {remaining} generic from mana",
+                label=f"Finish Whir X={x}; pay {floating} generic from mana",
                 decision_stage=DECISION_COMMIT,
                 source=WHIR,
                 contingent_on=runtime.pending.spec.contingent_on,
             )
         )
-    if remaining > 0:
-        last_selected = selected[-1] if selected else None
-        for slot in slots:
-            raw = tuple(slot.key())
-            if raw in selected_set:
-                continue
-            # Improvise payment is a set, not an ordered sequence. Restrict each
-            # extension to increasing public-slot order so every historical
-            # subset has exactly one staged path.
-            if last_selected is not None and raw <= last_selected:
-                continue
-            rows.append(
-                ActionIntent(
-                    action_id=(
-                        f"whir.payment.x{x}.improvise."
-                        f"{len(selected):02d}.{len(rows):03d}"
-                    ),
-                    kind=WHIR_PAYMENT_ADD,
-                    parameters=(
-                        ("remaining_after", int(remaining - 1)),
-                        ("remaining_before", int(remaining)),
-                        ("slot", raw),
-                        ("x", int(x)),
-                    ),
-                    equivalence_key=(
-                        WHIR_PAYMENT_ADD,
-                        int(x),
-                        raw,
-                        int(remaining),
-                    ),
-                    label=f"Whir X={x}: improvise {slot.name or slot.mode}",
-                    decision_stage=DECISION_COMMIT,
-                    source=WHIR,
-                    contingent_on=runtime.pending.spec.contingent_on,
-                )
+
+    for slot_index in zdd.next_include_indices(selected_mask):
+        new_mask = add_bit(selected_mask, slot_index)
+        slot = slots[slot_index]
+        rows.append(
+            ActionIntent(
+                action_id=(
+                    f"whir.payment.x{x}.add."
+                    f"{slot_index:02d}.mask{new_mask:x}"
+                ),
+                kind=WHIR_PAYMENT_ADD,
+                parameters=(
+                    ("selected_mask_after", int(new_mask)),
+                    ("selected_mask_before", int(selected_mask)),
+                    ("slot_index", int(slot_index)),
+                    ("x", int(x)),
+                ),
+                equivalence_key=(
+                    WHIR_PAYMENT_ADD,
+                    int(x),
+                    tuple(slot.key()),
+                    int(new_mask),
+                ),
+                label=f"Whir X={x}: improvise {slot.name or slot.mode}",
+                decision_stage=DECISION_COMMIT,
+                source=WHIR,
+                contingent_on=runtime.pending.spec.contingent_on,
             )
+        )
+
     if not rows:
-        raise ValueError("pending Whir payment has no legal continuation")
+        raise ValueError("pending Whir ZDD has no legal continuation")
     return DecisionRequest(
         observation=runtime.policy_view(caverns_live=caverns_live),
         actions=tuple(sorted(rows, key=lambda action: action.action_id)),
@@ -356,29 +420,46 @@ def whir_payment_request(
     )
 
 
-def _finish_staged_whir(
+def _finish_symbolic_whir(
     runtime: NonOracleRuntimeState,
     *,
     x: int,
     generic_need: int,
-    selected,
+    selected_mask: int,
+    slot_keys,
+    min_selected: int,
+    max_selected: int,
     floating: int,
 ) -> NonOracleRuntimeState:
     state = runtime.true_state
-    expected = _whir_generic_need(state, int(x))
+    shape = _whir_payment_shape(state, int(x))
+    if shape is None:
+        raise ValueError("Whir payment is no longer legal")
+    after_blue, expected, slots, live_min, live_max, zdd = shape
     if int(generic_need) != expected:
         raise ValueError("Whir generic requirement changed before payment finished")
-    selected = tuple(tuple(raw) for raw in selected)
-    if len(selected) + int(floating) != expected:
-        raise ValueError("Whir staged payment does not exactly cover generic requirement")
+    if (int(min_selected), int(max_selected)) != (live_min, live_max):
+        raise ValueError("Whir ZDD cardinality bounds changed before payment finished")
+    live_slot_keys = tuple(tuple(slot.key()) for slot in slots)
+    if tuple(tuple(raw) for raw in slot_keys) != live_slot_keys:
+        raise ValueError("Whir slot registry changed before payment finished")
+    if not zdd.contains_mask(int(selected_mask)):
+        raise ValueError("Whir payment bitset is not a terminal ZDD set")
 
-    paid = solver.pay(state, 0, 3)
-    if paid is None or WHIR not in paid.hand:
-        raise ValueError("Whir can no longer pay its colored cost")
-    slots = tuple(_slot_from_parameter(raw) for raw in selected)
-    indices = tuple(_slot_index(paid, slot) for slot in slots)
+    selected_indices = tuple(
+        index for index in range(len(slots))
+        if int(selected_mask) & (1 << index)
+    )
+    if len(selected_indices) + int(floating) != expected:
+        raise ValueError("Whir symbolic payment does not exactly cover generic requirement")
+
+    paid = after_blue
+    indices = tuple(
+        _slot_index(paid, slots[index])
+        for index in selected_indices
+    )
     if len(set(indices)) != len(indices):
-        raise ValueError("Whir staged payment resolves duplicate battlefield objects")
+        raise ValueError("Whir symbolic payment resolves duplicate battlefield objects")
     for index in indices:
         if paid.battlefield[index].tapped or not solver.is_artifact_perm(paid.battlefield[index]):
             raise ValueError("committed Whir improvise permanent is no longer legal")
@@ -394,7 +475,7 @@ def _finish_staged_whir(
     mana_spent = int(3 + int(floating))
     paid = solver.add_trace(
         paid,
-        f"Phase2 cast Whir X={int(x)}; staged payment committed",
+        f"Phase2 cast Whir X={int(x)}; ZDD payment mask={int(selected_mask):x}",
     )
     runtime = replace(
         runtime,
@@ -431,35 +512,55 @@ def apply_whir_payment_pending(
     legal = {candidate.canonical_key() for candidate in request.actions}
     if action.canonical_key() not in legal:
         raise ValueError("Whir payment action is not legal")
-    state, after_blue, x, need, selected, remaining, slots, by_key = _whir_payment_state(runtime)
+    (
+        state,
+        after_blue,
+        x,
+        need,
+        selected_mask,
+        remaining,
+        slots,
+        slot_keys,
+        min_selected,
+        max_selected,
+        zdd,
+    ) = _whir_payment_state(runtime)
     params = dict(action.parameters)
 
     if action.kind == WHIR_PAYMENT_FINISH:
         floating = int(params["floating_generic"])
-        if floating != remaining:
-            raise ValueError("Whir finish action has stale floating remainder")
-        return _finish_staged_whir(
+        if int(params["selected_mask"]) != selected_mask:
+            raise ValueError("Whir finish action has stale bitset")
+        return _finish_symbolic_whir(
             runtime,
             x=x,
             generic_need=need,
-            selected=selected,
+            selected_mask=selected_mask,
+            slot_keys=slot_keys,
+            min_selected=min_selected,
+            max_selected=max_selected,
             floating=floating,
         )
 
     if action.kind == WHIR_PAYMENT_ADD:
-        raw = tuple(params["slot"])
-        if raw in set(selected) or raw not in by_key:
-            raise ValueError("Whir improvise selection is stale or duplicated")
-        updated = selected + (raw,)
-        new_remaining = need - len(updated)
-        if int(params["remaining_after"]) != new_remaining:
-            raise ValueError("Whir improvise action has stale remaining cost")
+        if int(params["selected_mask_before"]) != selected_mask:
+            raise ValueError("Whir improvise action has stale prior bitset")
+        slot_index = int(params["slot_index"])
+        if slot_index not in zdd.next_include_indices(selected_mask):
+            raise ValueError("Whir ZDD transition is no longer legal")
+        new_mask = add_bit(selected_mask, slot_index)
+        if int(params["selected_mask_after"]) != new_mask:
+            raise ValueError("Whir improvise action has stale next bitset")
+        new_remaining = need - bit_count(new_mask)
         if new_remaining == 0:
-            return _finish_staged_whir(
+            return _finish_symbolic_whir(
                 runtime,
                 x=x,
                 generic_need=need,
-                selected=updated,
+                selected_mask=new_mask,
+                slot_keys=slot_keys,
+                min_selected=min_selected,
+                max_selected=max_selected,
                 floating=0,
             )
         return replace(
@@ -469,7 +570,10 @@ def apply_whir_payment_pending(
                 payload=_whir_payment_payload(
                     x=x,
                     generic_need=need,
-                    selected=updated,
+                    selected_mask=new_mask,
+                    slot_keys=slot_keys,
+                    min_selected=min_selected,
+                    max_selected=max_selected,
                 ),
             ),
         )
