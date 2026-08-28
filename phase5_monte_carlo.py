@@ -147,17 +147,69 @@ def _compact_identity_digest(value) -> bytes:
     return hashlib.sha256(repr(value).encode("utf-8")).digest()
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
+class _PackedEpisodeOutcomes:
+    payload: bytes
+    families: Tuple[str, ...]
+    reasons: Tuple[str, ...]
+
+
+def _pack_episode_outcomes(outcomes: Sequence[EpisodeOutcome]) -> _PackedEpisodeOutcomes:
+    rows=tuple(outcomes)
+    families=tuple(sorted(set(outcome.win_family for outcome in rows if outcome.win_family)))
+    reasons=tuple(sorted(set(outcome.terminal_reason for outcome in rows)))
+    family_index={"":0,**{name:index+1 for index,name in enumerate(families)}}
+    reason_index={name:index for index,name in enumerate(reasons)}
+    if len(families)>=255 or len(reasons)>=256:
+        raise ValueError("too many compact outcome enum values")
+    payload=bytearray()
+    for outcome in rows:
+        win_turn=0 if outcome.win_turn is None else int(outcome.win_turn)
+        terminal_turn=int(outcome.terminal_turn)
+        horizon=int(outcome.horizon)
+        if not all(0<=value<=255 for value in (win_turn,terminal_turn,horizon)):
+            raise ValueError("compact outcome integer outside byte range")
+        payload.extend((
+            win_turn,
+            terminal_turn,
+            horizon,
+            family_index.get(outcome.win_family,0),
+            reason_index[outcome.terminal_reason],
+        ))
+    return _PackedEpisodeOutcomes(bytes(payload),families,reasons)
+
+
+def _unpack_episode_outcomes(packed: _PackedEpisodeOutcomes) -> Tuple[EpisodeOutcome, ...]:
+    data=packed.payload
+    if len(data)%5:
+        raise ValueError("malformed compact outcome payload")
+    rows=[]
+    for offset in range(0,len(data),5):
+        win_turn,terminal_turn,horizon,family_id,reason_id=data[offset:offset+5]
+        family="" if family_id==0 else packed.families[family_id-1]
+        reason=packed.reasons[reason_id]
+        rows.append(EpisodeOutcome(
+            won=bool(win_turn),
+            win_turn=None if win_turn==0 else int(win_turn),
+            terminal_turn=int(terminal_turn),
+            horizon=int(horizon),
+            win_family=family,
+            terminal_reason=reason,
+        ))
+    return tuple(rows)
+
+
+@dataclass(frozen=True, slots=True)
 class _CachedPhase5ActionEstimate:
     strategic_action_key_digest: bytes
     value: WinDistributionValue
     rollouts: int
     terminal_reason_counts: Tuple[Tuple[str, int], ...]
     win_probability_wilson95: Tuple[float, float]
-    outcomes: Tuple[EpisodeOutcome, ...] = ()
+    packed_outcomes: _PackedEpisodeOutcomes
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, slots=True)
 class _CachedPhase5Decision:
     best_strategic_action_key_digest: bytes
     estimates: Tuple[_CachedPhase5ActionEstimate, ...]
@@ -296,7 +348,7 @@ class Phase5MonteCarloDecisionEvaluator:
                 rollouts=row.rollouts,
                 terminal_reason_counts=row.terminal_reason_counts,
                 win_probability_wilson95=row.win_probability_wilson95,
-                outcomes=row.outcomes,
+                outcomes=_unpack_episode_outcomes(row.packed_outcomes),
             ))
         best=root_map.get(cached.best_strategic_action_key_digest)
         if best is None:
@@ -470,7 +522,7 @@ class Phase5MonteCarloDecisionEvaluator:
                         rollouts=estimate.rollouts,
                         terminal_reason_counts=estimate.terminal_reason_counts,
                         win_probability_wilson95=estimate.win_probability_wilson95,
-                        outcomes=estimate.outcomes,
+                        packed_outcomes=_pack_episode_outcomes(estimate.outcomes),
                     )
                     for estimate in evaluation.estimates
                 ),
