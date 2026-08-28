@@ -1,0 +1,64 @@
+name: Phase 5I lossless packed-state validation
+
+on:
+  push:
+    branches:
+      - phase5i-lossless-packed-state
+  workflow_dispatch:
+
+jobs:
+  codec:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile codec
+        run: |
+          python -m py_compile phase5_lossless_packed_codec.py
+          python -m py_compile phase5_lossless_packed_codec_smoke.py
+      - name: Round-trip and size validation
+        run: python phase5_lossless_packed_codec_smoke.py
+      - name: Existing Phase 5 regressions
+        run: |
+          python phase5_compact_cycle_key_smoke.py
+          python phase5_compact_policy_identity_smoke.py
+          python phase5_compact_runtime_value_smoke.py
+          python phase5_monte_carlo_cache_smoke.py
+          python phase5_contingent_tutor_q_smoke.py
+          python phase5_adaptive_confidence_q_smoke.py
+      - name: Source check
+        run: git diff --check
+
+  hand12_world0:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      PYTHONHASHSEED: '0'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Exact Hand 12 world 0 on packed-state branch
+        shell: bash
+        run: |
+          set -uo pipefail
+          python phase5i_hand12_world_eval.py --sample-id 0 &
+          pid=$!
+          while kill -0 "$pid" 2>/dev/null; do
+            echo "RESOURCE $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            ps -o pid,%cpu,%mem,rss,vsz,etime,cmd -p "$pid" || true
+            free -m || true
+            sleep 30
+          done
+          wait "$pid"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-hand12-world-0-lossless-packed
+          path: phase5i_hand12_world_0.json
