@@ -1,0 +1,40 @@
+name: Phase 5I symbolic Hand 12 full proof
+
+on:
+  push:
+    branches:
+      - phase5i-symbolic-hand12-full
+  workflow_dispatch:
+
+jobs:
+  hand12_world0:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      PYTHONHASHSEED: '0'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile exact evaluator
+        run: python -m py_compile phase5i_hand12_world_eval.py
+      - name: Evaluate exact Hand 12 world 0
+        shell: bash
+        run: |
+          set -uo pipefail
+          python phase5i_hand12_world_eval.py --sample-id 0 &
+          pid=$!
+          echo "PYTHON_PID=$pid"
+          while kill -0 "$pid" 2>/dev/null; do
+            echo "RESOURCE $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            ps -o pid,%cpu,%mem,rss,vsz,etime,cmd -p "$pid" || true
+            free -m || true
+            sleep 30
+          done
+          wait "$pid"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-hand12-world-0-symbolic
+          path: phase5i_hand12_world_0.json
