@@ -106,6 +106,15 @@ def main():
             "live_bootstrap_keep_probability":row["seat_contexts"]["live"].get("bootstrap_keep_probability"),
             "dead_bootstrap_decision_confidence":row["seat_contexts"]["dead"].get("bootstrap_decision_confidence"),
             "live_bootstrap_decision_confidence":row["seat_contexts"]["live"].get("bootstrap_decision_confidence"),
+            "dead_joint_bootstrap_keep_probability":row["seat_contexts"]["dead"].get("joint_bootstrap_keep_probability"),
+            "live_joint_bootstrap_keep_probability":row["seat_contexts"]["live"].get("joint_bootstrap_keep_probability"),
+            "dead_joint_bootstrap_decision_confidence":row["seat_contexts"]["dead"].get("joint_bootstrap_decision_confidence"),
+            "live_joint_bootstrap_decision_confidence":row["seat_contexts"]["live"].get("joint_bootstrap_decision_confidence"),
+            "ex_ante_joint_bootstrap_human_agreement_probability":sum(
+                float(row["seat_contexts"][context]["weight"])
+                * float(row["seat_contexts"][context].get("joint_bootstrap_human_agreement_probability") or 0.0)
+                for context in ("dead","live")
+            ),
             "ex_ante_bootstrap_human_agreement_probability":sum(
                 float(row["seat_contexts"][context]["weight"])
                 * float(row["seat_contexts"][context].get("bootstrap_human_agreement_probability") or 0.0)
@@ -139,6 +148,23 @@ def main():
         "threshold_unstable_hand_ids":[x["hand_id"] for x in unstable],
         "seat_dependent_hand_ids":[x["hand_id"] for x in seat_dependent],
         "material_bottom_difference_hand_ids":[x["hand_id"] for x in material_bottom],
+        "lowest_joint_bootstrap_confidence":[
+            {
+                "hand_id":row["hand_id"],
+                "dead":row["dead_joint_bootstrap_decision_confidence"],
+                "live":row["live_joint_bootstrap_decision_confidence"],
+            }
+            for row in sorted(
+                rows,
+                key=lambda x:(
+                    min(
+                        1.0 if x["dead_joint_bootstrap_decision_confidence"] is None else x["dead_joint_bootstrap_decision_confidence"],
+                        1.0 if x["live_joint_bootstrap_decision_confidence"] is None else x["live_joint_bootstrap_decision_confidence"],
+                    ),
+                    x["hand_id"],
+                ),
+            )[:10]
+        ],
         "lowest_bootstrap_confidence":[
             {
                 "hand_id":row["hand_id"],
