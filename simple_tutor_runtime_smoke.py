@@ -212,6 +212,29 @@ def test_spellseeker_etb_trigger_survives_source_leaving():
     assert runtime.true_state.trace[-1] == "Spellseeker ETB -> Retraction Helix"
 
 
+
+
+def test_spellseeker_empty_search_resolves_no_find_and_shuffles():
+    runtime = make_runtime_state(solver.State(
+        turn=6,
+        library=("Island", "Grim Monolith"),
+        hand=("Spellseeker",),
+        battlefield=(),
+        blue=1,
+        colorless=2,
+        rng_root_seed=20260828,
+    ))
+    before = tuple(runtime.true_state.library)
+    runtime = apply_main_action(runtime, tutor_actions(runtime, "Spellseeker")[0])
+    runtime = apply_main_action(runtime, pass_action(runtime))
+    assert runtime.stack.top().kind == "simple_tutor_spellseeker_etb"
+    runtime = apply_main_action(runtime, pass_action(runtime))
+    assert runtime.pending is None
+    assert not runtime.stack.objects
+    assert sorted(runtime.true_state.library) == sorted(before)
+    assert runtime.true_state.trace[-1] == "Spellseeker: search finds no legal target; shuffle"
+    assert rules_decision_request(runtime, horizon=6).actions
+
 def test_base_policy_target_choice_uses_revealed_target_value_not_library_order():
     def chosen(library):
         runtime = make_runtime_state(solver.State(
@@ -242,6 +265,7 @@ def main():
         test_mystical_target_shuffle_then_known_top_is_preserved,
         test_spellseeker_resolves_then_etb_searches_as_separate_stack_object,
         test_spellseeker_etb_trigger_survives_source_leaving,
+        test_spellseeker_empty_search_resolves_no_find_and_shuffles,
         test_base_policy_target_choice_uses_revealed_target_value_not_library_order,
     )
     for test in tests:
