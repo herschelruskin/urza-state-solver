@@ -91,16 +91,251 @@ def _representative(state, signature, predicate):
     return min(rows, key=lambda p: int(p.instance_tag)) if rows else None
 
 
+CHAIN_VISIBLE_PAYOFF_HAND = frozenset({
+    "Banishing Knack", "Retraction Helix", "Power Artifact",
+    "Transmute Artifact", "Reshape", "Whir of Invention",
+    "Mystical Tutor", "Muddle the Mixture", "Dizzy Spell", "Merchant Scroll",
+    "Scour for Scrap", "Dramatic Reversal",
+    "Grinding Station", "Battered Golem", "Forensic Gadgeteer",
+    "The Reality Chip", "Uthros Research Craft", "The One Ring",
+    "Fortune Teller's Talent", "Mystic Remora", "Rhystic Study",
+    "Repurposing Bay", "Tezzeret, Cruel Captain", "Chrome Dome",
+})
+
+CHAIN_DIRECT_REPLAY_ETBS = frozenset({
+    "Witching Well", "Giant's Boulder", "Prized Statue",
+})
+
+
 def _chain_target_allowed(perm) -> bool:
     return bool(
         not solver.is_land_perm(perm)
         and not solver.is_pruned_own_bounce_target(perm)
+        and not solver.is_token_perm(perm)
         and perm.name != "Sewer-veillance Cam"
     )
 
 
 def _land_allowed(perm) -> bool:
     return bool(solver.is_land_perm(perm))
+
+
+def _chain_land_blue_source(land) -> bool:
+    name = str(land.name)
+    return bool(
+        name in {
+            "Island", "Cephalid Coliseum", "Ipnu Rivulet",
+            "Minamo, School at Water's Edge", "Oboro, Palace in the Clouds",
+            "Otawara, Soaring City", "Seat of the Synod", "Saprazzan Skerry",
+        }
+        or (name in solver.MDFC_BLUE_LANDS and land.mode == "landface")
+        or (name == "Gemstone Caverns" and land.mode == "luck")
+        or name in solver.FETCHES
+    )
+
+
+def _chain_land_effective_penalty(state, land, target) -> float:
+    """Visible opportunity cost for choosing the one land sacrificed to a copy."""
+    penalty = float(solver._chain_land_sac_penalty(str(land.name)))
+
+    # An untapped land is still a same-turn mana source. Preserve two-mana
+    # sources more strongly than ordinary one-mana lands.
+    if not land.tapped:
+        penalty += 2.0 if str(land.name) in {
+            "Ancient Tomb", "City of Traitors", "Saprazzan Skerry"
+        } else 1.0
+
+    # Do not casually sacrifice a blue source when the proposed replay still
+    # needs blue that is not already floating.
+    try:
+        _generic, blue_req = solver.spell_cost(state, str(target.name))
+    except Exception:
+        blue_req = 0
+    if int(blue_req) > int(state.blue) and _chain_land_blue_source(land):
+        penalty += 4.0
+    return penalty
+
+
+def _state_after_chain_land_sacrifice(state, land):
+    index = core._perm_index_for_tag(state, int(land.instance_tag))
+    if index is None:
+        return None
+    return solver.remove_perm(state, index, to_grave=True)
+
+
+def _chain_replay_capacity(state, target, land):
+    """Return public mana capacity after the land cost and before replaying target."""
+    after_land = _state_after_chain_land_sacrifice(state, land)
+    if after_land is None:
+        return None
+    dummy = solver.Perm("__chain_replay__", instance_tag=-1)
+    blue_capable, total = solver._immediate_replay_mana_capacity(
+        after_land, dummy, str(target.name), on_battlefield=True
+    )
+    try:
+        generic, blue_req = solver.spell_cost(after_land, str(target.name))
+    except Exception:
+        return None
+    replayable = (
+        int(blue_capable) >= int(blue_req)
+        and int(total) >= int(generic) + int(blue_req)
+    )
+    return after_land, int(blue_capable), int(total), bool(replayable)
+
+
+def _chain_artifact_trigger_reasons(state, target) -> Tuple[str, ...]:
+    if str(target.name) not in solver.ARTIFACTS:
+        return ()
+    remaining = tuple(
+        perm for perm in state.battlefield
+        if int(perm.instance_tag) != int(target.instance_tag)
+    )
+    reasons = []
+
+    producers = tuple(
+        perm for perm in remaining
+        if perm.name in {"Grinding Station", "Battered Golem"}
+    )
+    if state.urza and (
+        producers or str(target.name) in {"Grinding Station", "Battered Golem"}
+    ):
+        reasons.append("producer_mana")
+    elif any(perm.tapped for perm in producers):
+        reasons.append("producer_untap")
+
+    if any(perm.name == "Artificer's Assistant" for perm in remaining):
+        reasons.append("assistant_scry")
+    if any(perm.name == "Forensic Gadgeteer" for perm in remaining):
+        reasons.append("gadgeteer_clue")
+    if (
+        int(state.uthros_counters) >= 3
+        and any(perm.name == "Uthros Research Craft" for perm in remaining)
+        and state.library
+    ):
+        reasons.append("uthros_draw")
+    if any(perm.name == "Tezzeret, Cruel Captain" for perm in remaining):
+        reasons.append("tezzeret_loyalty")
+    if (
+        str(target.name) not in solver.CREATURES
+        and any(
+            perm.name == "Valley Floodcaller" and (perm.tapped or perm.knack_granted)
+            for perm in remaining
+        )
+    ):
+        reasons.append("floodcaller_untap")
+    return tuple(reasons)
+
+
+def _chain_mana_unlock_reasons(
+    state, target, after_land, blue_capable: int, total: int
+) -> Tuple[Tuple[str, ...], int]:
+    dummy = solver.Perm("__chain_replay__", instance_tag=-1)
+    margin = solver.replay_mana_margin(after_land, dummy, str(target.name))
+    if margin is None or int(margin) <= 0:
+        return (), 0
+    margin = int(margin)
+
+    name = str(target.name)
+    blue_gain = margin if (
+        (state.urza and solver.mana_value(name) == 0)
+        or name in {"Mox Opal", "Lotus Petal"}
+    ) else 0
+
+    reasons = []
+    for card in sorted(set(state.hand) & CHAIN_VISIBLE_PAYOFF_HAND):
+        if card == name:
+            continue
+        try:
+            generic, blue_req = solver.spell_cost(after_land, card)
+        except Exception:
+            continue
+        need = int(generic) + int(blue_req)
+        before = int(blue_capable) >= int(blue_req) and int(total) >= need
+        after = (
+            int(blue_capable) + int(blue_gain) >= int(blue_req)
+            and int(total) + margin >= need
+        )
+        if after and not before:
+            reasons.append(f"mana_unlock:{card}")
+
+    # Urza's spin is itself a visible five-mana payoff.
+    if state.urza and int(total) < 5 <= int(total) + margin:
+        reasons.append("mana_unlock:Urza spin")
+    return tuple(reasons), margin
+
+
+def _chain_copy_payoff_profile(state, target, land):
+    """Return (visible payoff reasons, replay margin) for one exact copy branch.
+
+    This is policy pruning only. The true target and land identities remain exact.
+    """
+    name = str(target.name or target.mode)
+
+    # Removing our own Cage can immediately unblock Chip/FTT library casting;
+    # replay is intentionally not required for this payoff.
+    if name == "Grafdigger's Cage" and (
+        state.chip_attached or int(state.ftt_level) >= 2
+    ):
+        return ("cage_unblock",), 0
+
+    capacity = _chain_replay_capacity(state, target, land)
+    if capacity is None:
+        return (), 0
+    after_land, blue_capable, total, replayable = capacity
+    if not replayable:
+        return (), 0
+
+    reasons = []
+    if name == "Spellseeker" and solver.tutor_targets(after_land, "spellseeker"):
+        reasons.append("spellseeker_retutor")
+    if name in CHAIN_DIRECT_REPLAY_ETBS:
+        reasons.append(
+            "prized_statue_treasure" if name == "Prized Statue" else "replay_scry2"
+        )
+    if name == "Power Artifact":
+        other_power_target = any(
+            perm.name in solver.POWER_MANA and perm.name != str(state.pa_target)
+            for perm in after_land.battlefield
+        )
+        if other_power_target:
+            reasons.append("power_artifact_retarget")
+
+    reasons.extend(_chain_artifact_trigger_reasons(state, target))
+    mana_reasons, margin = _chain_mana_unlock_reasons(
+        state, target, after_land, blue_capable, total
+    )
+    reasons.extend(mana_reasons)
+
+    # Stable dedup while preserving diagnostic order.
+    return tuple(dict.fromkeys(reasons)), int(margin)
+
+
+def _chain_reason_strength(reasons: Tuple[str, ...]) -> int:
+    score = 0
+    for reason in reasons:
+        if reason == "cage_unblock":
+            score = max(score, 120)
+        elif reason == "spellseeker_retutor":
+            score = max(score, 115)
+        elif reason == "power_artifact_retarget":
+            score = max(score, 108)
+        elif reason.startswith("mana_unlock:"):
+            score = max(score, 105)
+        elif reason == "uthros_draw":
+            score = max(score, 100)
+        elif reason == "gadgeteer_clue":
+            score = max(score, 94)
+        elif reason == "producer_mana":
+            score = max(score, 92)
+        elif reason == "prized_statue_treasure":
+            score = max(score, 88)
+        elif reason == "floodcaller_untap":
+            score = max(score, 80)
+        elif reason == "producer_untap":
+            score = max(score, 72)
+        elif reason in {"assistant_scry", "tezzeret_loyalty", "replay_scry2"}:
+            score = max(score, 55)
+    return score
 
 
 def _noncreature_spell_object(obj) -> bool:
@@ -324,26 +559,63 @@ def chain_pending_request(runtime, *, horizon: int, objective: str, policy_id: s
         source=CHAIN,
     )]
     serial = 0
-    for land_signature in sorted(lands, key=repr):
-        land = lands[land_signature][0]
-        for target_signature in sorted(targets, key=repr):
-            target = targets[target_signature][0]
-            rows.append(ActionIntent(
-                action_id=f"chain.copy.{serial:04d}",
-                kind=CHAIN_COPY_COMMIT,
-                parameters=(
-                    ("choice", "copy"),
-                    ("land_name", str(land.name)),
-                    ("land_signature", land_signature),
-                    ("target_name", str(target.name or target.mode)),
-                    ("target_signature", target_signature),
-                ),
-                equivalence_key=(CHAIN_COPY_COMMIT, land_signature, target_signature),
-                label=f"Chain copy: sacrifice {land.name}; bounce {target.name or target.mode}",
-                decision_stage=DECISION_MECHANICAL,
-                source=CHAIN,
+    # Do not materialize lands x targets. For each exact public target state,
+    # retain at most one land: the lowest-opportunity-cost land that preserves
+    # a visible same-turn payoff. Distinct card identities are never merged.
+    for target_signature in sorted(targets, key=repr):
+        target = targets[target_signature][0]
+        candidates = []
+        for land_signature in sorted(lands, key=repr):
+            land = lands[land_signature][0]
+            reasons, margin = _chain_copy_payoff_profile(state, target, land)
+            if not reasons:
+                continue
+            strength = _chain_reason_strength(reasons)
+            penalty = _chain_land_effective_penalty(state, land, target)
+            candidates.append((
+                -int(strength),
+                float(penalty),
+                repr(land_signature),
+                land_signature,
+                land,
+                reasons,
+                int(margin),
             ))
-            serial += 1
+        if not candidates:
+            continue
+
+        (
+            _neg_strength,
+            land_penalty,
+            _land_order,
+            land_signature,
+            land,
+            reasons,
+            margin,
+        ) = min(candidates)
+
+        rows.append(ActionIntent(
+            action_id=f"chain.copy.{serial:04d}",
+            kind=CHAIN_COPY_COMMIT,
+            parameters=(
+                ("choice", "copy"),
+                ("land_name", str(land.name)),
+                ("land_penalty", float(land_penalty)),
+                ("land_signature", land_signature),
+                ("payoff_margin", int(margin)),
+                ("payoff_reasons", tuple(reasons)),
+                ("target_name", str(target.name or target.mode)),
+                ("target_signature", target_signature),
+            ),
+            equivalence_key=(CHAIN_COPY_COMMIT, land_signature, target_signature),
+            label=(
+                f"Chain copy: sacrifice {land.name}; bounce "
+                f"{target.name or target.mode} [{', '.join(reasons)}]"
+            ),
+            decision_stage=DECISION_MECHANICAL,
+            source=CHAIN,
+        ))
+        serial += 1
     return DecisionRequest(
         observation=runtime.policy_view(caverns_live=caverns_live),
         actions=tuple(rows),
