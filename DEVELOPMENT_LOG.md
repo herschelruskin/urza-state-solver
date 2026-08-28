@@ -384,3 +384,29 @@ worlds independently with identical MC/Q seeds and then reduces them into the sa
 No policy, world coordinate, rollout budget, or action set changes. The final
 aggregate consumes hand 12 only from run 33135996901. Monolithic hand-12 runs are
 retained only as infrastructure provenance.
+
+
+### Phase 5I PR and uncertainty-report checkpoint
+
+Current Phase 5I draft: **PR #23** from `phase5i-mulligan-frozen-q` onto
+`phase5-adaptive-confidence-q`.
+
+Older divergent draft PR #22 is closed as superseded. It modified historical
+adaptive-mulligan/Q modules directly; the current architecture intentionally leaves
+those experiments unchanged and isolates production behavior behind the frozen
+Phase-5H policy wrapper.
+
+Final benchmark reporting now separates:
+
+- point-estimate keep/mull agreement;
+- agreement restricted to hands whose continuation decision is stable across the
+  two disjoint 4-hand threshold models;
+- threshold-only bootstrap keep probability from 1,000 deterministic resamples of
+  the 8 independent K_s training hands per stage;
+- joint bootstrap keep probability that also resamples each held-out human hand's
+  finite outer-world K_s outcomes;
+- bottom exact match, diagnostic rank, p(win) regret, and timing/family-only
+  disagreements.
+
+These bootstrap diagnostics are evaluation-only. They do not alter the frozen
+gameplay policy, bottom choice, London threshold point estimate, or human labels.
