@@ -23,9 +23,12 @@ jobs:
           python -m py_compile non_oracle_x_artifact_tutor_runtime.py
           python -m py_compile phase5_selective_tutor_q.py
           python -m py_compile phase5_symbolic_action_space_smoke.py
+          python -m py_compile phase5_symbolic_branch_bound_smoke.py
           python -m py_compile phase5i_symbolic_fanout_probe.py
       - name: Symbolic action-space parity
-        run: python phase5_symbolic_action_space_smoke.py
+        run: |
+          python phase5_symbolic_action_space_smoke.py
+          python phase5_symbolic_branch_bound_smoke.py
       - name: Existing X tutor and Phase 5 regressions
         run: |
           python x_artifact_tutor_runtime_smoke.py
