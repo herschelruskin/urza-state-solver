@@ -313,7 +313,7 @@ The final manual aggregate now consumes exactly:
 - main human-hand run: **33122937057**;
 - repair run A: **33133641811**;
 - repair run B: **33133729255**;
-- isolated hand-12 rerun: **33135490121**;
+- factorized hand-12 run: **33135996901**;
 - main factorized continuation run (sample IDs 0-3): **33123595522**;
 - continuation expansion run (sample IDs 4-7): **33135871407**.
 
@@ -363,3 +363,24 @@ player and K_s budgets. Final continuation models will therefore use:
 
 The final human-hand evaluation budgets remain unchanged. The aggregate workflow now
 requires all 112 continuation artifacts before it will score keep/mull agreement.
+
+
+### Hand 12 exact factorization
+
+A second isolated monolithic hand-12 attempt (run 33135490121) was also terminated by
+a hosted-runner shutdown after approximately eight minutes with no solver exception.
+Rather than retrying the same infrastructure-sensitive job again, hand 12 was
+factorized exactly.
+
+Branch: `phase5i-hand12-factorized`
+Workflow run: **33135996901**
+
+Hand 12 is London stage 1, so there is only one legal bottom action: the empty set.
+The original K_s estimate is therefore exactly the equal-weight mixture of outer
+confirmation sample IDs 0, 1, and 2. The factorized workflow evaluates those three
+worlds independently with identical MC/Q seeds and then reduces them into the same
+`phase5i_human_hand_12.json` schema.
+
+No policy, world coordinate, rollout budget, or action set changes. The final
+aggregate consumes hand 12 only from run 33135996901. Monolithic hand-12 runs are
+retained only as infrastructure provenance.
