@@ -25,6 +25,8 @@ from phase5i_mulligan import Phase5IOpeningKeepEvaluator
 OUTER_SCREEN=1
 OUTER_CONFIRM=2
 BOTTOM_SHORTLIST=4
+PARALLEL_BOTTOM_WORKERS=4
+MAX_SCREEN_TIE_BREAK_ROLLOUTS=2
 BASE_SEED=2026083001
 Q_SEED_OFFSET=2_000_003
 HORIZON=6
@@ -94,6 +96,8 @@ def main():
         q_mc_root_seed=q_seed,
         horizon=HORIZON,
         opening_environment=OpeningEnvironment(seat=seat,player_count=4),
+        parallel_workers=PARALLEL_BOTTOM_WORKERS,
+        max_screen_tie_break_rollouts=MAX_SCREEN_TIE_BREAK_ROLLOUTS,
     )
     result=evaluator.evaluate(seven,stage=stage)
     best=result.best
@@ -116,6 +120,13 @@ def main():
         "terminal_reasons":[list(x) for x in best.terminal_reason_counts],
         "legal_bottom_count":result.legal_bottom_count,
         "confirmed_bottom_count":result.confirmed_bottom_count,
+        "fully_confirmed_bottom_count":result.fully_confirmed_bottom_count,
+        "screen_tie_break_rollouts":result.screen_tie_break_rollouts,
+        "confirmation_early_eliminated_bottoms":[
+            list(x) for x in result.confirmation_early_eliminated_bottoms
+        ],
+        "parallel_workers":result.parallel_workers,
+        "confirmation_start_sample":result.confirmation_start_sample,
         "q_cache":{
             "hits":evaluator.cache.stats.hits,
             "misses":evaluator.cache.stats.misses,
@@ -124,6 +135,8 @@ def main():
             "outer_screen":OUTER_SCREEN,
             "outer_confirm":OUTER_CONFIRM,
             "bottom_shortlist":BOTTOM_SHORTLIST,
+            "parallel_bottom_workers":PARALLEL_BOTTOM_WORKERS,
+            "max_screen_tie_break_rollouts":MAX_SCREEN_TIE_BREAK_ROLLOUTS,
         },
     }
     out=Path(
