@@ -337,11 +337,16 @@ def resolve_tutor_target(
             )
         )
     elif spec.source == "Spellseeker":
+        # Spellseeker's search is created by its ETB trigger. Once that trigger
+        # exists, it resolves independently of whether the Spellseeker permanent
+        # is still on the battlefield. The legacy Oracle path uses mode="used"
+        # only to prevent reusing the same simplified ETB source; preserve that
+        # marker when the permanent is still present, but never require the
+        # source permanent to survive until target resolution.
         index = _unused_spellseeker_index(state)
-        if index is None:
-            raise ValueError("Spellseeker search source is no longer available")
         state = solver.move_library_to_hand(state, target)
-        state = solver.update_perm(state, index, mode="used")
+        if index is not None:
+            state = solver.update_perm(state, index, mode="used")
         state = replace(
             state,
             library=solver.shuffled_library(state, "spellseeker:" + target),
