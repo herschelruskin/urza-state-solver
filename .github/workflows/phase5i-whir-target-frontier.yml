@@ -1,4 +1,4 @@
-name: Phase 5I Whir target frontier validation
+name: Phase 5I shared search-shuffle validation
 
 on:
   push:
@@ -19,11 +19,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: Compile frontier
+      - name: Compile shared-search path
         run: |
-          python -m py_compile             phase5_artifact_target_frontier.py             phase5_selective_tutor_q.py             phase5i_hand25_frontier_probe.py
-      - name: Frontier semantics
-        run: python phase5_artifact_target_frontier_smoke.py
+          python -m py_compile x_artifact_search_adapter.py phase5_selective_tutor_q.py phase5_q_targeted_paired4.py
+      - name: Shared shuffle and exact target semantics
+        run: python x_artifact_search_adapter_smoke.py
       - name: Existing Q regressions
         run: |
           python phase5_selective_tutor_q_smoke.py
@@ -61,7 +61,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: Run frontier world probe
+      - name: Run shared-shuffle world probe
         run: |
           python phase5i_hand25_frontier_probe.py             --bottom-card "${{ matrix.bottom }}"             --sample-id "${{ matrix.sample_id }}"
       - uses: actions/upload-artifact@v4
@@ -81,11 +81,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: Run exact Hand 25 evaluator with frontier
+      - name: Run exact Hand 25 evaluator with shared shuffle
         run: python phase5i_human_hand_eval.py --hand-id 25
       - uses: actions/upload-artifact@v4
         with:
-          name: phase5i-hand25-frontier-full
+          name: phase5i-hand25-shared-shuffle-full
           path: phase5i_human_hand_25.json
 
   paired4:
@@ -109,5 +109,5 @@ jobs:
         run: python phase5_q_targeted_paired4.py --hand-id "${{ matrix.hand_id }}"
       - uses: actions/upload-artifact@v4
         with:
-          name: phase5h-frontier-paired4-${{ matrix.hand_id }}
+          name: phase5h-shared-shuffle-paired4-${{ matrix.hand_id }}
           path: phase5_q_targeted_paired4_hand*.json
