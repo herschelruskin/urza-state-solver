@@ -1,0 +1,56 @@
+name: Phase 5I benchmark repairs
+
+on:
+  push:
+    branches:
+      - phase5i-benchmark-repairs
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hand:
+    strategy:
+      fail-fast: false
+      matrix:
+        hand_id: [12, 14, 26]
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile evaluator
+        run: python -m py_compile phase5i_human_hand_eval.py
+      - name: Evaluate repaired human hand
+        run: python phase5i_human_hand_eval.py --hand-id ${{ matrix.hand_id }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-human-hand-${{ matrix.hand_id }}
+          path: phase5i_human_hand_*.json
+
+  stage_sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile factorized evaluator
+        run: |
+          python -m py_compile phase5i_stage_sample_eval.py
+          python -m py_compile phase5i_stage_sample_reduce.py
+      - name: Evaluate missing dead stage 3 sample 1
+        run: python phase5i_stage_sample_eval.py --context dead --stage 3 --sample-id 1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-stage-sample-dead-s3-n1
+          path: phase5i_stage_sample_*.json
