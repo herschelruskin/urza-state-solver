@@ -1,0 +1,24 @@
+name: Cancel obsolete Phase 5I numeric runs
+
+on:
+  push:
+    branches:
+      - phase5i-cancel-obsolete-numeric
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  cancel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Cancel superseded numeric stress runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for run in             33144140774             33144124609             33144109061             33144054296             33144043234             33144037381             33144013535             33144000048             33143977485             33143951843
+          do
+            gh api --method POST repos/${{ github.repository }}/actions/runs/$run/cancel || true
+          done
