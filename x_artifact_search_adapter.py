@@ -341,6 +341,12 @@ def resolve_reshape_cast(
     x = int(params["x"])
     generic = int(params["generic_paid"])
     slot = _slot_from_parameter(tuple(params["sacrifice"]))
+    # The additional-cost permanent is chosen before costs are paid.  Its
+    # observable slot fields may change while paying mana (for example a
+    # producer refund credit can be consumed), but pay() never reorders or
+    # removes battlefield permanents.  Resolve identity now and carry the
+    # stable battlefield index through payment.
+    index = _slot_index(state, slot)
 
     paid = solver.pay(state, generic, 2)
     if paid is None:
@@ -351,7 +357,6 @@ def resolve_reshape_cast(
         graveyard=paid.graveyard + (RESHAPE,),
         spell_cast_this_turn=True,
     )
-    index = _slot_index(paid, slot)
     paid = solver.remove_perm(paid, index)
     paid = solver.vfc_noncreature_cast_trigger(paid, RESHAPE)
     paid = solver.add_trace(
@@ -524,8 +529,11 @@ def resolve_whir_cast(
     paid = solver.pay(state, 0, 3)
     if paid is None:
         raise ValueError("Whir colored cost could not be paid")
-    for slot in slots:
-        index = _slot_index(paid, slot)
+    # Resolve the complete committed improvise set before mutating any member.
+    # This keeps duplicate public slots stable when tapping one would otherwise
+    # renumber the remaining identical untapped objects.
+    indices = tuple(_slot_index(paid, slot) for slot in slots)
+    for index in indices:
         if paid.battlefield[index].tapped or not solver.is_artifact_perm(
             paid.battlefield[index]
         ):

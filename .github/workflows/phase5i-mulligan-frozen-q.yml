@@ -1,0 +1,64 @@
+name: Phase 5I frozen-policy mulligan
+
+on:
+  push:
+    branches:
+      - phase5i-mulligan-frozen-q
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile Phase 5I
+        run: |
+          python -m py_compile phase5_production_policy.py
+          python -m py_compile phase5i_mulligan.py
+          python -m py_compile phase5i_mulligan_smoke.py
+          python -m py_compile phase5i_human_hand_eval.py
+          python -m py_compile phase5i_stage_model_eval.py
+          python -m py_compile phase5i_stage_sample_eval.py
+          python -m py_compile phase5i_stage_sample_reduce.py
+          python -m py_compile phase5i_stage_factorization_smoke.py
+          python -m py_compile phase5i_benchmark_aggregate.py
+          python -m py_compile phase5i_disagreement_report.py
+      - name: Phase 5I integration smoke
+        run: python phase5i_mulligan_smoke.py
+      - name: Factorized London DP regression
+        run: python phase5i_stage_factorization_smoke.py
+      - name: Frozen Phase 5H policy regressions
+        run: |
+          python phase5_adaptive_confidence_q_smoke.py
+          python phase5_selective_tutor_q_smoke.py
+          python phase5_contingent_tutor_q_smoke.py
+      - name: Parent mulligan and opening regressions
+        run: |
+          python phase5_mulligan_smoke.py
+          python phase5_adaptive_mulligan_smoke.py
+          python phase5_caverns_opening_smoke.py
+          python phase5_commander_seat_mixture_smoke.py
+      - name: Runtime and information regressions
+        run: |
+          python tutor_decision_adapter_smoke.py
+          python simple_tutor_runtime_smoke.py
+          python phase5_chain_offer_smoke.py
+          python phase5_deduced_library_knowledge_smoke.py
+          python information_state_propagation_smoke.py
+          python strategic_value_state_smoke.py
+      - name: Human fixture and Phase-1 acceptance
+        run: |
+          python human_benchmark_fixture_smoke.py
+          python phase1_acceptance_smoke.py
+      - name: Diff check
+        run: git diff --check

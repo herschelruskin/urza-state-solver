@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Focused Phase-2 smokes for the staged simple tutor runtime bridge."""
 
+from dataclasses import replace
+
 import urza_solver as solver
 from non_oracle_base_policy import DeterministicBasePolicy
 from non_oracle_rules_adapter import apply_main_action, rules_decision_request
@@ -175,6 +177,41 @@ def test_spellseeker_resolves_then_etb_searches_as_separate_stack_object():
     assert "Island" not in targets
 
 
+def test_spellseeker_etb_trigger_survives_source_leaving():
+    runtime = make_runtime_state(solver.State(
+        turn=3,
+        library=("Retraction Helix", "Merchant Scroll", "Island"),
+        hand=("Spellseeker",),
+        battlefield=(),
+        blue=1,
+        colorless=2,
+    ))
+    runtime = apply_main_action(runtime, tutor_actions(runtime, "Spellseeker")[0])
+    runtime = apply_main_action(runtime, pass_action(runtime))
+    assert runtime.stack.top().kind == "simple_tutor_spellseeker_etb"
+
+    # Simulate the resolved creature leaving before its already-created ETB
+    # trigger resolves. The trigger remains on the stack and must still search.
+    state_without_source = replace(
+        runtime.true_state,
+        battlefield=tuple(
+            p for p in runtime.true_state.battlefield if p.name != "Spellseeker"
+        ),
+    )
+    runtime = replace(runtime, true_state=state_without_source)
+    runtime = apply_main_action(runtime, pass_action(runtime))
+
+    request = rules_decision_request(runtime, horizon=6)
+    target = next(
+        a for a in request.actions
+        if dict(a.parameters).get("target") == "Retraction Helix"
+    )
+    runtime = apply_main_action(runtime, target)
+    assert "Retraction Helix" in runtime.true_state.hand
+    assert not any(p.name == "Spellseeker" for p in runtime.true_state.battlefield)
+    assert runtime.true_state.trace[-1] == "Spellseeker ETB -> Retraction Helix"
+
+
 def test_base_policy_target_choice_uses_revealed_target_value_not_library_order():
     def chosen(library):
         runtime = make_runtime_state(solver.State(
@@ -204,6 +241,7 @@ def main():
         test_merchant_spell_resolves_before_search_and_vfc_trigger_sits_above_it,
         test_mystical_target_shuffle_then_known_top_is_preserved,
         test_spellseeker_resolves_then_etb_searches_as_separate_stack_object,
+        test_spellseeker_etb_trigger_survives_source_leaving,
         test_base_policy_target_choice_uses_revealed_target_value_not_library_order,
     )
     for test in tests:
