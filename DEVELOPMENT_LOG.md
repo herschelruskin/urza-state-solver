@@ -410,3 +410,95 @@ Final benchmark reporting now separates:
 
 These bootstrap diagnostics are evaluation-only. They do not alter the frozen
 gameplay policy, bottom choice, London threshold point estimate, or human labels.
+
+
+## Phase 5I symbolic action-space / memory checkpoint — August 28, 2026
+
+Hand 12 was confirmed to be a real memory/action-space failure rather than a random
+hosted-runner shutdown. Earlier runs reached roughly 15-16 GB RSS plus full swap.
+
+### Lossless packed state
+
+The rules engine remains readable, but retained hot-path identities/checkpoints now
+have lossless/reversible packed encodings.
+
+Representative exact-state sizes:
+
+- full State: 454 packed bytes versus 3,362 bytes for the old tagged canonical repr;
+- full runtime with stack/pending/permissions: about 907 packed bytes;
+- cycle key: about 295 packed bytes versus 6,085 legacy repr bytes;
+- strategic Q key: about 286 packed bytes versus 2,411 legacy repr bytes.
+
+Exact library order, arbitrary RNG seeds, stack objects, pending decisions,
+permissions, permanent execution identity and provenance remain round-trippable.
+Strategic Q/policy projections still deliberately exclude hidden information exactly
+where the legacy non-Oracle equivalence excluded it.
+
+### Symbolic action-space implementation
+
+Branch: `phase5i-symbolic-action-dag`
+
+Implemented:
+
+- integer bitsets for subset state;
+- reduced cardinality ZDDs with shared suffix nodes;
+- generic factored action DAG primitives;
+- conservative Pareto frontier primitives;
+- exact finite-sample branch-and-bound in Phase-5 MC;
+- symbolic Whir payment commitment before search observation.
+
+Whir no longer materializes every X/payment/improvise powerset as root actions.
+The symbolic runtime commits X, then traverses a bitset/ZDD payment DAG without
+revealing new information, then exposes the search target only on resolution.
+
+Exact parity results:
+
+- fixture historical useful Whir payment plans: 303;
+- symbolic main-phase Whir root actions: 5;
+- every useful historical payment plan has exactly one symbolic path;
+- every symbolic leaf produces the same post-payment cast state as the historical
+  monolithic Phase-2 commitment;
+- dominated X values above the maximum deck artifact mana value are removed only
+  after verifying they add no legal target or modeled mana-spent trigger value;
+- hidden library order cannot affect X/improvise commitment actions;
+- contingent Q depth covers every payment choice plus the eventual observed target.
+
+ZDD compression example:
+
+- 20 choose 7 = 77,520 represented subsets;
+- reduced ZDD nodes = 98.
+
+Exact Q branch-bound parity example:
+
+- full continuation evaluations: 24;
+- branch-bound continuation evaluations: 21;
+- branch-pruned actions: 4;
+- Pareto-proven pruned actions: 4;
+- best action/value identical to the unpruned fixed-sample evaluation;
+- designated v6 baseline remains fully paired.
+
+### Hand-12 resource result
+
+Before symbolic action-space reduction:
+
+- pathological maximum request: 4,131 actions;
+- 4,097 were X-artifact-tutor commitments;
+- packed-state-only 3-minute RSS: about 7.26 GB.
+
+After symbolic Whir + packed hot state:
+
+- observed Hand-12 maximum request in the 3-minute probe: 181 actions;
+- 3-minute RSS: 57,052 KB (about 56 MB);
+- swap used: 0.
+
+This identifies action materialization as the dominant prior memory multiplier.
+Remaining large X-tutor requests are primarily Reshape X x sacrifice choices, but
+current memory is already within the local-machine target.
+
+### Current gate
+
+The exhaustive symbolic parity/Q regression suite is green on the symbolic branch.
+A fresh full exact Hand-12 world-0 proof is running from the green symbolic commit,
+followed in parallel by final symbolic reruns of pathological human hands 14 and 25.
+Do not promote the symbolic branch into frozen Phase-5I production until those exact
+benchmark artifacts complete successfully.
