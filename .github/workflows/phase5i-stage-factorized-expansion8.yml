@@ -1,0 +1,39 @@
+name: Phase 5I continuation expansion to 8
+
+on:
+  push:
+    branches:
+      - phase5i-stage-factorized-expansion8
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sample:
+    strategy:
+      fail-fast: false
+      matrix:
+        context: [dead, live]
+        stage: [0,1,2,3,4,5,6]
+        sample_id: [4,5,6,7]
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile factorized evaluator
+        run: |
+          python -m py_compile phase5i_stage_sample_eval.py
+          python -m py_compile phase5i_stage_sample_reduce.py
+      - name: Evaluate additional K_s sample
+        run: python phase5i_stage_sample_eval.py --context ${{ matrix.context }} --stage ${{ matrix.stage }} --sample-id ${{ matrix.sample_id }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-stage-sample-${{ matrix.context }}-s${{ matrix.stage }}-n${{ matrix.sample_id }}
+          path: phase5i_stage_sample_*.json
