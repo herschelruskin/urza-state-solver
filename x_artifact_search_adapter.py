@@ -17,7 +17,13 @@ from itertools import combinations
 from typing import Dict, Optional, Tuple
 
 import urza_solver as solver
-from solver_architecture import InformationState, make_policy_view
+from solver_architecture import (
+    InformationState,
+    RandomStreams,
+    canonical_markov_state_key,
+    make_policy_view,
+    stable_digest,
+)
 from decision_observation import (
     ActionIntent,
     DECISION_COMMIT,
@@ -228,10 +234,54 @@ def _target_from_action(
     return target
 
 
+def _shared_search_shuffle_order(
+    state,
+    context: SearchContext,
+) -> Tuple[str, ...]:
+    """Return one target-independent random ranking of the pre-search library.
+
+    All legal target branches from the same observed search decision use the same
+    random permutation of physical library slots. Choosing a target then deletes
+    that exact card from the shared ranking. This preserves the correct uniform
+    shuffle marginal for every branch while coupling counterfactual branches by
+    common game randomness instead of target-specific shuffle noise.
+    """
+    library = tuple(state.library)
+    state_fingerprint = stable_digest(canonical_markov_state_key(state))
+    event_id = (
+        "qualified-search-shuffle-v1",
+        str(context.source),
+        int(context.x),
+        str(context.search_decision_id),
+        state_fingerprint,
+    )
+    rng = RandomStreams(int(state.rng_root_seed)).game_rng(event_id)
+    indices = list(range(len(library)))
+    rng.shuffle(indices)
+    return tuple(library[index] for index in indices)
+
+
+def _library_after_shared_search_shuffle(
+    state,
+    context: SearchContext,
+    target: str,
+) -> Tuple[str, ...]:
+    ordered = list(_shared_search_shuffle_order(state, context))
+    if target:
+        try:
+            ordered.remove(target)
+        except ValueError as exc:
+            raise ValueError("chosen target is no longer in library") from exc
+    return tuple(ordered)
+
+
 def _finish_search(state, context: SearchContext, target: str) -> TransitionEnvelope:
+    # Generate the shuffle ranking from the common pre-target state. Target
+    # identity remains exact in true state; only the random ranking is shared.
+    shuffled_library = _library_after_shared_search_shuffle(state, context, target)
+
     if not target:
-        salt = f"{_source_prefix(context.source)}:no-target:x{context.x}"
-        shuffled = replace(state, library=solver.shuffled_library(state, salt))
+        shuffled = replace(state, library=shuffled_library)
         shuffled = solver.add_trace(
             shuffled, f"{context.source} X={context.x}: find no card; shuffle"
         )
@@ -242,16 +292,12 @@ def _finish_search(state, context: SearchContext, target: str) -> TransitionEnve
             trace_note="Qualified search failed to find",
         )
 
-    lib = list(state.library)
-    if target not in lib:
+    if target not in state.library:
         raise ValueError("chosen target is no longer in library")
-    lib.remove(target)
-    without = replace(state, library=tuple(lib))
+    without = replace(state, library=shuffled_library)
     entered = solver.add_perm(without, target, sick=target in solver.CREATURES)
-    salt = ("reshape:" + target) if context.source == RESHAPE else ("whir:" + target)
-    shuffled = replace(entered, library=solver.shuffled_library(entered, salt))
     shuffled = solver.add_trace(
-        shuffled, f"{context.source} X={context.x} -> {target}; shuffle"
+        entered, f"{context.source} X={context.x} -> {target}; shuffle"
     )
     return TransitionEnvelope(
         true_state=shuffled,
