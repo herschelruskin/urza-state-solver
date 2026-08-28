@@ -54,72 +54,419 @@ from x_artifact_search_adapter import (
     WHIR,
     SEARCH_KIND,
     SearchContext,
+    _artifact_slots,
     _slot_from_parameter,
     _slot_index,
     _target_intents,
     reshape_cast_intents,
-    whir_cast_intents,
 )
 
 MAIN_USE_X_ARTIFACT_TUTOR = "main_use_x_artifact_tutor"
 SPELL_RESHAPE = "x_artifact_reshape_spell"
 SPELL_WHIR = "x_artifact_whir_spell"
 RUNTIME_X_TARGET = "runtime_x_artifact_target"
+RUNTIME_WHIR_PAYMENT = "runtime_whir_payment"
+WHIR_PAYMENT_ADD = "whir_payment_add_improvise"
+WHIR_PAYMENT_FINISH = "whir_payment_finish"
+
+# No artifact in the deck has mana value above this threshold. For Reshape/Whir,
+# larger X reveals no additional legal target. Modeled cast triggers depend only
+# on whether mana_spent is zero; Whir always spends >=3 and Reshape X above this
+# threshold is also nonzero. Therefore X above this value is strictly resource-
+# dominated and can be removed without removing a strategic outcome.
+MAX_USEFUL_ARTIFACT_X = max(solver.mana_value(card) for card in solver.ARTIFACTS)
+if MAX_USEFUL_ARTIFACT_X >= 99:
+    raise RuntimeError("artifact mana-value metadata incomplete for staged X tutor")
 
 
-def _underlying_cast_intents(runtime: NonOracleRuntimeState, source: str):
-    if source == RESHAPE:
-        return reshape_cast_intents(runtime.true_state)
-    if source == WHIR:
-        return whir_cast_intents(runtime.true_state)
-    raise ValueError(f"unsupported X artifact tutor {source!r}")
+def _reshape_underlying_cast_intents(runtime: NonOracleRuntimeState):
+    return tuple(
+        candidate
+        for candidate in reshape_cast_intents(runtime.true_state)
+        if int(dict(candidate.parameters)["x"]) <= MAX_USEFUL_ARTIFACT_X
+    )
 
 
-def x_artifact_runtime_intents(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ...]:
-    """Expose only pre-search public commitments; never target identities."""
+def _whir_generic_need(state, x: int) -> int:
+    return max(0, int(x) - solver.medallion_reduction(state, WHIR))
+
+
+def _whir_x_is_payable(state, x: int) -> bool:
+    if WHIR not in state.hand or state.blue < 3:
+        return False
+    if not 0 <= int(x) <= MAX_USEFUL_ARTIFACT_X:
+        return False
+    after_blue = solver.pay(state, 0, 3)
+    if after_blue is None:
+        return False
+    need = _whir_generic_need(state, int(x))
+    slots = _artifact_slots(after_blue, untapped_only=True)
+    # Existence check only; do not enumerate combinations.
+    for improvise_count in range(0, min(need, len(slots)) + 1):
+        if solver.can_pay(after_blue, need - improvise_count, 0):
+            return True
+    return False
+
+
+def _whir_root_intents(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ...]:
+    state = runtime.true_state
     rows = []
-    for source in (RESHAPE, WHIR):
-        for candidate in _underlying_cast_intents(runtime, source):
-            params = dict(candidate.parameters)
-            sacrifice_name = ""
-            if source == RESHAPE:
-                sacrifice = tuple(params.get("sacrifice", ()))
-                sacrifice_name = str(sacrifice[0]) if sacrifice else ""
-            rows.append(
-                ActionIntent(
-                    action_id=f"main.x_artifact.{candidate.action_id}",
-                    kind=MAIN_USE_X_ARTIFACT_TUTOR,
-                    parameters=(
-                        ("cast_parameters", tuple(candidate.parameters)),
-                        ("sacrifice_name", sacrifice_name),
-                        ("source", source),
-                        ("x", int(params["x"])),
-                    ),
-                    equivalence_key=(
-                        MAIN_USE_X_ARTIFACT_TUTOR,
-                        source,
-                        candidate.strategic_key(),
-                    ),
-                    label=candidate.label,
-                    decision_stage=DECISION_COMMIT,
-                    source=source,
-                )
+    for x in range(MAX_USEFUL_ARTIFACT_X + 1):
+        if not _whir_x_is_payable(state, x):
+            continue
+        need = _whir_generic_need(state, x)
+        rows.append(
+            ActionIntent(
+                action_id=f"main.x_artifact.whir.x{x}",
+                kind=MAIN_USE_X_ARTIFACT_TUTOR,
+                parameters=(
+                    ("generic_need", int(need)),
+                    ("sacrifice_name", ""),
+                    ("source", WHIR),
+                    ("x", int(x)),
+                ),
+                equivalence_key=(
+                    MAIN_USE_X_ARTIFACT_TUTOR,
+                    WHIR,
+                    "staged-payment",
+                    int(x),
+                    int(need),
+                ),
+                label=f"Cast Whir X={x}; choose payment",
+                decision_stage=DECISION_COMMIT,
+                source=WHIR,
             )
+        )
     return tuple(rows)
 
 
-def _find_underlying(runtime: NonOracleRuntimeState, action: ActionIntent):
+def x_artifact_runtime_intents(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ...]:
+    """Expose pre-search commitments without materializing Whir payment subsets.
+
+    Reshape still commits X+sacrifice in one action. Whir commits X first, then
+    enters a no-observation payment subdecision that selects improvise objects one
+    at a time. Every historical complete payment plan remains reachable.
+    """
+    rows = []
+    for candidate in _reshape_underlying_cast_intents(runtime):
+        params = dict(candidate.parameters)
+        sacrifice = tuple(params.get("sacrifice", ()))
+        sacrifice_name = str(sacrifice[0]) if sacrifice else ""
+        rows.append(
+            ActionIntent(
+                action_id=f"main.x_artifact.{candidate.action_id}",
+                kind=MAIN_USE_X_ARTIFACT_TUTOR,
+                parameters=(
+                    ("cast_parameters", tuple(candidate.parameters)),
+                    ("sacrifice_name", sacrifice_name),
+                    ("source", RESHAPE),
+                    ("x", int(params["x"])),
+                ),
+                equivalence_key=(
+                    MAIN_USE_X_ARTIFACT_TUTOR,
+                    RESHAPE,
+                    candidate.strategic_key(),
+                ),
+                label=candidate.label,
+                decision_stage=DECISION_COMMIT,
+                source=RESHAPE,
+            )
+        )
+    rows.extend(_whir_root_intents(runtime))
+    return tuple(sorted(rows, key=lambda action: action.action_id))
+
+
+def _find_reshape_underlying(runtime: NonOracleRuntimeState, action: ActionIntent):
     params = dict(action.parameters)
-    source = str(params["source"])
+    if str(params["source"]) != RESHAPE:
+        raise ValueError("only Reshape uses an underlying monolithic cast action")
     cast_parameters = tuple(params["cast_parameters"])
     matches = [
         candidate
-        for candidate in _underlying_cast_intents(runtime, source)
+        for candidate in _reshape_underlying_cast_intents(runtime)
         if tuple(candidate.parameters) == cast_parameters
     ]
     if len(matches) != 1:
-        raise ValueError("X-artifact tutor commitment is no longer legal")
-    return source, matches[0]
+        raise ValueError("Reshape commitment is no longer legal")
+    return matches[0]
+
+
+def _whir_payment_payload(*, x: int, generic_need: int, selected) -> Tuple[Tuple[str, object], ...]:
+    return (
+        ("generic_need", int(generic_need)),
+        ("selected", tuple(tuple(raw) for raw in selected)),
+        ("source", WHIR),
+        ("x", int(x)),
+    )
+
+
+def _start_whir_payment(
+    runtime: NonOracleRuntimeState,
+    *,
+    x: int,
+    generic_need: int,
+    contingent_on: str,
+) -> NonOracleRuntimeState:
+    state = runtime.true_state
+    if not _whir_x_is_payable(state, int(x)):
+        raise ValueError("Whir X commitment is no longer payable")
+    expected = _whir_generic_need(state, int(x))
+    if int(generic_need) != expected:
+        raise ValueError("Whir generic requirement changed after commitment")
+    if expected == 0:
+        return _finish_staged_whir(
+            runtime,
+            x=int(x),
+            generic_need=0,
+            selected=(),
+            floating=0,
+        )
+    spec = PendingDecisionSpec(
+        decision_id=f"runtime.whir.payment.x{int(x)}",
+        kind=RUNTIME_WHIR_PAYMENT,
+        source=WHIR,
+        decision_stage=DECISION_COMMIT,
+        contingent_on=str(contingent_on),
+    )
+    return replace(
+        runtime,
+        pending=RuntimePendingDecision(
+            spec=spec,
+            kind=RUNTIME_WHIR_PAYMENT,
+            payload=_whir_payment_payload(
+                x=int(x),
+                generic_need=expected,
+                selected=(),
+            ),
+        ),
+    )
+
+
+def _whir_payment_state(runtime: NonOracleRuntimeState):
+    pending = runtime.pending
+    if pending is None or pending.kind != RUNTIME_WHIR_PAYMENT:
+        raise ValueError("not a pending Whir payment decision")
+    data = dict(pending.payload)
+    state = runtime.true_state
+    x = int(data["x"])
+    need = int(data["generic_need"])
+    selected = tuple(tuple(raw) for raw in data.get("selected", ()))
+    if need != _whir_generic_need(state, x):
+        raise ValueError("pending Whir generic requirement no longer matches state")
+    after_blue = solver.pay(state, 0, 3)
+    if after_blue is None or WHIR not in state.hand:
+        raise ValueError("pending Whir payment can no longer pay UUU")
+    slots = _artifact_slots(after_blue, untapped_only=True)
+    by_key = {tuple(slot.key()): slot for slot in slots}
+    if len(by_key) != len(slots):
+        raise AssertionError("public Whir artifact slot keys must be unique")
+    if len(set(selected)) != len(selected):
+        raise ValueError("pending Whir payment selected the same slot twice")
+    if any(raw not in by_key for raw in selected):
+        raise ValueError("pending Whir improvise slot is no longer legal")
+    if len(selected) > need:
+        raise ValueError("Whir improvise selection exceeds generic requirement")
+    remaining = need - len(selected)
+    return state, after_blue, x, need, selected, remaining, slots, by_key
+
+
+def whir_payment_request(
+    runtime: NonOracleRuntimeState,
+    *,
+    horizon: int,
+    objective: str,
+    policy_id: str,
+    caverns_live=None,
+) -> DecisionRequest:
+    state, after_blue, x, need, selected, remaining, slots, by_key = _whir_payment_state(runtime)
+    selected_set = set(selected)
+    rows = []
+    if solver.can_pay(after_blue, remaining, 0):
+        rows.append(
+            ActionIntent(
+                action_id=f"whir.payment.x{x}.finish.{remaining}",
+                kind=WHIR_PAYMENT_FINISH,
+                parameters=(
+                    ("floating_generic", int(remaining)),
+                    ("remaining_before", int(remaining)),
+                    ("x", int(x)),
+                ),
+                equivalence_key=(
+                    WHIR_PAYMENT_FINISH,
+                    int(x),
+                    tuple(sorted(selected)),
+                    int(remaining),
+                ),
+                label=f"Finish Whir X={x}; pay {remaining} generic from mana",
+                decision_stage=DECISION_COMMIT,
+                source=WHIR,
+                contingent_on=runtime.pending.spec.contingent_on,
+            )
+        )
+    if remaining > 0:
+        for slot in slots:
+            raw = tuple(slot.key())
+            if raw in selected_set:
+                continue
+            rows.append(
+                ActionIntent(
+                    action_id=(
+                        f"whir.payment.x{x}.improvise."
+                        f"{len(selected):02d}.{len(rows):03d}"
+                    ),
+                    kind=WHIR_PAYMENT_ADD,
+                    parameters=(
+                        ("remaining_after", int(remaining - 1)),
+                        ("remaining_before", int(remaining)),
+                        ("slot", raw),
+                        ("x", int(x)),
+                    ),
+                    equivalence_key=(
+                        WHIR_PAYMENT_ADD,
+                        int(x),
+                        raw,
+                        int(remaining),
+                    ),
+                    label=f"Whir X={x}: improvise {slot.name or slot.mode}",
+                    decision_stage=DECISION_COMMIT,
+                    source=WHIR,
+                    contingent_on=runtime.pending.spec.contingent_on,
+                )
+            )
+    if not rows:
+        raise ValueError("pending Whir payment has no legal continuation")
+    return DecisionRequest(
+        observation=runtime.policy_view(caverns_live=caverns_live),
+        actions=tuple(sorted(rows, key=lambda action: action.action_id)),
+        context=PolicyDecisionContext(
+            horizon=horizon,
+            objective=objective,
+            policy_id=policy_id,
+            decision_id=runtime.pending.spec.decision_id,
+            decision_stage=DECISION_COMMIT,
+        ),
+    )
+
+
+def _finish_staged_whir(
+    runtime: NonOracleRuntimeState,
+    *,
+    x: int,
+    generic_need: int,
+    selected,
+    floating: int,
+) -> NonOracleRuntimeState:
+    state = runtime.true_state
+    expected = _whir_generic_need(state, int(x))
+    if int(generic_need) != expected:
+        raise ValueError("Whir generic requirement changed before payment finished")
+    selected = tuple(tuple(raw) for raw in selected)
+    if len(selected) + int(floating) != expected:
+        raise ValueError("Whir staged payment does not exactly cover generic requirement")
+
+    paid = solver.pay(state, 0, 3)
+    if paid is None or WHIR not in paid.hand:
+        raise ValueError("Whir can no longer pay its colored cost")
+    slots = tuple(_slot_from_parameter(raw) for raw in selected)
+    indices = tuple(_slot_index(paid, slot) for slot in slots)
+    if len(set(indices)) != len(indices):
+        raise ValueError("Whir staged payment resolves duplicate battlefield objects")
+    for index in indices:
+        if paid.battlefield[index].tapped or not solver.is_artifact_perm(paid.battlefield[index]):
+            raise ValueError("committed Whir improvise permanent is no longer legal")
+        paid = solver.update_perm(paid, index, tapped=True)
+    paid = solver.pay(paid, int(floating), 0)
+    if paid is None:
+        raise ValueError("Whir floating generic remainder can no longer be paid")
+    paid = replace(
+        paid,
+        hand=solver.remove_one(paid.hand, WHIR),
+        spell_cast_this_turn=True,
+    )
+    mana_spent = int(3 + int(floating))
+    paid = solver.add_trace(
+        paid,
+        f"Phase2 cast Whir X={int(x)}; staged payment committed",
+    )
+    runtime = replace(
+        runtime,
+        true_state=solver._ensure_oracle_instance_tags(paid),
+        pending=None,
+    )
+    spell, runtime = _allocate_spell(
+        runtime,
+        kind=SPELL_WHIR,
+        source=WHIR,
+        x=int(x),
+        mana_spent=mana_spent,
+    )
+    return _finish_cast_triggers(
+        runtime,
+        source=WHIR,
+        spell=spell,
+        mana_spent=mana_spent,
+        prized_died=False,
+        cam_died=False,
+    )
+
+
+def apply_whir_payment_pending(
+    runtime: NonOracleRuntimeState,
+    action: ActionIntent,
+) -> NonOracleRuntimeState:
+    request = whir_payment_request(
+        runtime,
+        horizon=max(1, int(runtime.true_state.turn)),
+        objective="win_by_horizon",
+        policy_id="runtime",
+    )
+    legal = {candidate.canonical_key() for candidate in request.actions}
+    if action.canonical_key() not in legal:
+        raise ValueError("Whir payment action is not legal")
+    state, after_blue, x, need, selected, remaining, slots, by_key = _whir_payment_state(runtime)
+    params = dict(action.parameters)
+
+    if action.kind == WHIR_PAYMENT_FINISH:
+        floating = int(params["floating_generic"])
+        if floating != remaining:
+            raise ValueError("Whir finish action has stale floating remainder")
+        return _finish_staged_whir(
+            runtime,
+            x=x,
+            generic_need=need,
+            selected=selected,
+            floating=floating,
+        )
+
+    if action.kind == WHIR_PAYMENT_ADD:
+        raw = tuple(params["slot"])
+        if raw in set(selected) or raw not in by_key:
+            raise ValueError("Whir improvise selection is stale or duplicated")
+        updated = selected + (raw,)
+        new_remaining = need - len(updated)
+        if int(params["remaining_after"]) != new_remaining:
+            raise ValueError("Whir improvise action has stale remaining cost")
+        if new_remaining == 0:
+            return _finish_staged_whir(
+                runtime,
+                x=x,
+                generic_need=need,
+                selected=updated,
+                floating=0,
+            )
+        return replace(
+            runtime,
+            pending=replace(
+                runtime.pending,
+                payload=_whir_payment_payload(
+                    x=x,
+                    generic_need=need,
+                    selected=updated,
+                ),
+            ),
+        )
+
+    raise ValueError("unknown Whir payment action kind")
 
 
 def _remove_artifact_for_reshape_cost(state, index: int):
@@ -220,9 +567,20 @@ def begin_x_artifact_tutor(runtime: NonOracleRuntimeState, action: ActionIntent)
     legal = {candidate.canonical_key() for candidate in x_artifact_runtime_intents(runtime)}
     if action.canonical_key() not in legal:
         raise ValueError("X-artifact tutor commitment is not currently legal")
-    source, underlying = _find_underlying(runtime, action)
-    params = dict(underlying.parameters)
+    action_params = dict(action.parameters)
+    source = str(action_params["source"])
     state = runtime.true_state
+
+    if source == WHIR:
+        return _start_whir_payment(
+            runtime,
+            x=int(action_params["x"]),
+            generic_need=int(action_params["generic_need"]),
+            contingent_on=action.action_id,
+        )
+
+    underlying = _find_reshape_underlying(runtime, action)
+    params = dict(underlying.parameters)
     x = int(params["x"])
     prized_died = False
     cam_died = False
@@ -262,43 +620,6 @@ def begin_x_artifact_tutor(runtime: NonOracleRuntimeState, action: ActionIntent)
             mana_spent=mana_spent,
             prized_died=prized_died,
             cam_died=cam_died,
-        )
-
-    if source == WHIR:
-        paid = solver.pay(state, 0, 3)
-        if paid is None or source not in paid.hand:
-            raise ValueError("Whir can no longer pay its colored cost")
-        slots = tuple(
-            _slot_from_parameter(tuple(raw))
-            for raw in tuple(params["improvise"])
-        )
-        indices = tuple(_slot_index(paid, slot) for slot in slots)
-        for index in indices:
-            if paid.battlefield[index].tapped or not solver.is_artifact_perm(paid.battlefield[index]):
-                raise ValueError("committed Whir improvise permanent is no longer legal")
-            paid = solver.update_perm(paid, index, tapped=True)
-        floating = int(params["floating_generic"])
-        paid = solver.pay(paid, floating, 0)
-        if paid is None:
-            raise ValueError("Whir generic remainder can no longer be paid")
-        paid = replace(
-            paid,
-            hand=solver.remove_one(paid.hand, source),
-            spell_cast_this_turn=True,
-        )
-        mana_spent = int(3 + floating)
-        paid = solver.add_trace(paid, f"Phase2 cast Whir X={x}; payment plan committed")
-        runtime = replace(runtime, true_state=solver._ensure_oracle_instance_tags(paid))
-        spell, runtime = _allocate_spell(
-            runtime, kind=SPELL_WHIR, source=source, x=x, mana_spent=mana_spent
-        )
-        return _finish_cast_triggers(
-            runtime,
-            source=source,
-            spell=spell,
-            mana_spent=mana_spent,
-            prized_died=False,
-            cam_died=False,
         )
 
     raise AssertionError("unhandled X-artifact tutor source")
@@ -348,7 +669,10 @@ def handles_x_artifact_stack_top(runtime: NonOracleRuntimeState) -> bool:
 
 
 def handles_x_artifact_pending(runtime: NonOracleRuntimeState) -> bool:
-    return bool(runtime.pending and runtime.pending.kind == RUNTIME_X_TARGET)
+    return bool(
+        runtime.pending
+        and runtime.pending.kind in {RUNTIME_X_TARGET, RUNTIME_WHIR_PAYMENT}
+    )
 
 
 def x_artifact_pending_request(
@@ -360,8 +684,16 @@ def x_artifact_pending_request(
     caverns_live=None,
 ) -> DecisionRequest:
     pending = runtime.pending
+    if pending is not None and pending.kind == RUNTIME_WHIR_PAYMENT:
+        return whir_payment_request(
+            runtime,
+            horizon=horizon,
+            objective=objective,
+            policy_id=policy_id,
+            caverns_live=caverns_live,
+        )
     if pending is None or pending.kind != RUNTIME_X_TARGET:
-        raise ValueError("not a pending X-artifact target decision")
+        raise ValueError("not a pending X-artifact decision")
     data = dict(pending.payload)
     source = str(data["source"])
     x = int(data["x"])
@@ -387,8 +719,10 @@ def x_artifact_pending_request(
 
 def apply_x_artifact_pending(runtime: NonOracleRuntimeState, action: ActionIntent) -> NonOracleRuntimeState:
     pending = runtime.pending
+    if pending is not None and pending.kind == RUNTIME_WHIR_PAYMENT:
+        return apply_whir_payment_pending(runtime, action)
     if pending is None or pending.kind != RUNTIME_X_TARGET:
-        raise ValueError("not a pending X-artifact target decision")
+        raise ValueError("not a pending X-artifact decision")
     request = x_artifact_pending_request(
         runtime, horizon=max(1, int(runtime.true_state.turn)), objective="win_by_horizon", policy_id="runtime"
     )
