@@ -1,0 +1,46 @@
+name: Phase 5I final repair v2
+
+on:
+  push:
+    branches:
+      - phase5i-final-repair-v2
+  workflow_dispatch:
+
+jobs:
+  hand12_world0:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile Hand 12 evaluator
+        run: python -m py_compile phase5i_hand12_world_eval.py
+      - name: Evaluate exact Hand 12 world 0
+        run: python phase5i_hand12_world_eval.py --sample-id 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-hand12-world-0-final
+          path: phase5i_hand12_world_0.json
+
+  live_stage2_sample7:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile continuation evaluator
+        run: python -m py_compile phase5i_stage_sample_eval.py
+      - name: Evaluate exact continuation coordinate
+        run: python phase5i_stage_sample_eval.py --context live --stage 2 --sample-id 7
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-stage-sample-live-s2-n7-final
+          path: phase5i_stage_sample_live_s2_n7.json
