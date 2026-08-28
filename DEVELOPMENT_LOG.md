@@ -290,12 +290,29 @@ Repair outputs:
 
 No successful benchmark result is rerun or replaced.
 
+### Full matrix audit
+
+A full 100-job-page audit found two additional incomplete inputs that were hidden
+beyond the first 30 convenience API results:
+
+- human hand 25: original 120-minute wall-clock cancellation;
+- continuation sample live / stage 4 / sample 3: same Spellseeker lifecycle bug.
+
+Second repair branch: `phase5i-benchmark-repairs-extra`
+Workflow run: **33133729255**
+
+It reruns only hand 25 and live/stage 4/sample 3 from the fixed production runtime,
+with identical seeds/budgets and a 240-minute wall-clock ceiling.
+
+No successful original artifact is replaced.
+
 ### Final aggregate source lock
 
 The final manual aggregate now consumes exactly:
 
 - main human-hand run: **33122937057**;
-- repair run: **33133641811**;
+- repair run A: **33133641811**;
+- repair run B: **33133729255**;
 - main factorized continuation run: **33123595522**.
 
 Before aggregation it requires exactly 35 unique human-hand artifacts and the full
