@@ -1,0 +1,78 @@
+name: Phase 5I staged Reshape validation
+
+on:
+  push:
+    branches:
+      - phase5i-symbolic-reshape-dag
+  workflow_dispatch:
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile staged Reshape path
+        run: |
+          python -m py_compile non_oracle_x_artifact_tutor_runtime.py
+          python -m py_compile phase5_selective_tutor_q.py
+          python -m py_compile phase5_staged_reshape_parity_smoke.py
+          python -m py_compile x_artifact_tutor_runtime_smoke.py
+      - name: Exact staged Reshape parity
+        run: python phase5_staged_reshape_parity_smoke.py
+      - name: X tutor runtime regression
+        run: python x_artifact_tutor_runtime_smoke.py
+      - name: Symbolic and Q regressions
+        run: |
+          python phase5_staged_whir_payment_smoke.py
+          python phase5_symbolic_action_space_smoke.py
+          python phase5_symbolic_branch_bound_smoke.py
+          python phase5_contingent_tutor_q_smoke.py
+          python phase5_adaptive_confidence_q_smoke.py
+          python phase5i_mulligan_smoke.py
+      - name: Source check
+        run: git diff --check
+
+  hand12_probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PYTHONHASHSEED: '0'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Two-minute Hand 12 fanout probe
+        shell: bash
+        run: |
+          set -u
+          python phase5i_symbolic_fanout_probe.py &
+          pid=$!
+          start=$(date +%s)
+          peak=0
+          while kill -0 "$pid" 2>/dev/null; do
+            rss=$(ps -o rss= -p "$pid" 2>/dev/null | tr -d ' ' || true)
+            if [ -n "$rss" ] && [ "$rss" -gt "$peak" ]; then peak=$rss; fi
+            now=$(date +%s)
+            elapsed=$((now-start))
+            echo "RESHAPEPROBE elapsed_s=$elapsed peak_rss_kb=$peak"
+            if [ "$elapsed" -ge 120 ]; then
+              echo "RESHAPEPROBE intentional_stop_at_120s"
+              kill -TERM "$pid" 2>/dev/null || true
+              sleep 2
+              kill -KILL "$pid" 2>/dev/null || true
+              wait "$pid" || true
+              echo "RESHAPEPROBE_FINAL peak_rss_kb=$peak"
+              exit 0
+            fi
+            sleep 10
+          done
+          wait "$pid"
+          echo "RESHAPEPROBE_FINAL peak_rss_kb=$peak"
