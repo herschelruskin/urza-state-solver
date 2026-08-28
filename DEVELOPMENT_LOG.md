@@ -502,3 +502,41 @@ A fresh full exact Hand-12 world-0 proof is running from the green symbolic comm
 followed in parallel by final symbolic reruns of pathological human hands 14 and 25.
 Do not promote the symbolic branch into frozen Phase-5I production until those exact
 benchmark artifacts complete successfully.
+
+
+## Phase 5I staged Reshape checkpoint — August 28, 2026
+
+Branch: `phase5i-symbolic-reshape-dag`
+
+Reshape now uses the same factored-action principle as Whir, without requiring a
+subset ZDD:
+
+`choose X -> choose additional-cost artifact sacrifice -> cast -> resolve/search`
+
+No observation or priority window is inserted between X and sacrifice. The library
+is unchanged and no hidden information becomes available between those two public
+commitments.
+
+Exact parity gate:
+
+- historical useful X+sacrifice root commitments in fixture: 60;
+- staged main-phase Reshape X roots: 5;
+- every historical useful commitment maps to exactly one staged path;
+- every staged path produces exactly the same Phase-2 runtime/stack state as the
+  historical monolithic commitment;
+- hidden library order cannot affect the X root or sacrifice action set;
+- bounded contingent Q follows sacrifice and then the eventual observed target;
+- existing X-tutor, Whir, contingent-Q, adaptive-Q and mulligan regressions remain
+  green.
+
+Hand-12 two-minute resource/fanout probe on this branch:
+
+- prior symbolic Whir-only maximum request: 181 actions;
+- staged-Reshape maximum observed request: 127 actions;
+- largest observed request no longer contains the X-artifact Cartesian family;
+- peak RSS: 56,820 KB (about 55.5 MB);
+- no memory-growth/OOM signature.
+
+Action-space architecture is now frozen for the next homogeneous Phase-5I benchmark.
+Transmute is already staged (cast -> sacrifice -> observed target -> payment) and Bay
+is linear in sacrifice choices, so neither is being refactored before the benchmark.
