@@ -1,0 +1,50 @@
+name: Phase 5I Hand 25 Postmortem
+
+on:
+  push:
+    branches:
+      - phase5i-hand25-postmortem-current
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase5i-hand25-postmortem-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  coordinate:
+    name: hand25 (${{ matrix.bottom }}, world ${{ matrix.sample }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 14
+      matrix:
+        bottom:
+          - "Hydroelectric Specimen"
+          - "Minamo, School at Water's Edge"
+          - "Whir of Invention"
+          - "Sapphire Medallion"
+          - "Uthros Research Craft"
+          - "Voltaic Key"
+          - "Island"
+        sample: [0, 1, 2, 3]
+    env:
+      PYTHONHASHSEED: "0"
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Profile exact bottom/world coordinate
+        run: python phase5i_hand25_frontier_probe.py --bottom-card "${{ matrix.bottom }}" --sample-id "${{ matrix.sample }}"
+      - name: Upload coordinate diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hand25-postmortem-${{ strategy.job-index }}
+          path: phase5i_hand25_frontier_*.json
+          if-no-files-found: warn
