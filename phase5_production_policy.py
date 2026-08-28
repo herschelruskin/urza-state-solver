@@ -16,6 +16,7 @@ from phase5_selective_tutor_q import make_selective_tutor_q_episode_runner
 
 
 PHASE5H_PRODUCTION_POLICY_VERSION = "urza-phase5h-production-policy-v1"
+PHASE5H_PRODUCTION_CACHE_MAX_ENTRIES = 512
 
 
 @dataclass(frozen=True)
@@ -71,6 +72,16 @@ PHASE5H_PRODUCTION_Q = FrozenTutorQConfig(
 )
 
 
+def make_phase5h_production_decision_cache() -> Phase5DecisionCache:
+    """Return the bounded runtime cache for the frozen Phase-5H player.
+
+    The bound is execution-only: evicted entries are recomputed from the same
+    explicit seeds, so policy values and action choices are unchanged.
+    """
+
+    return Phase5DecisionCache(max_entries=PHASE5H_PRODUCTION_CACHE_MAX_ENTRIES)
+
+
 def make_phase5h_production_episode_runner(
     *,
     mc_root_seed: int,
@@ -79,12 +90,17 @@ def make_phase5h_production_episode_runner(
 ):
     """Return the frozen Phase-5H OpeningKeepEvaluator-compatible player."""
 
+    cache = (
+        decision_cache
+        if decision_cache is not None
+        else make_phase5h_production_decision_cache()
+    )
     runner = make_selective_tutor_q_episode_runner(
         mc_root_seed=int(mc_root_seed),
         screen_rollouts=int(config.screen_rollouts),
         confirm_rollouts=int(config.confirm_rollouts),
         shortlist_size=int(config.shortlist_size),
-        decision_cache=decision_cache,
+        decision_cache=cache,
         contingent=bool(config.contingent),
         confidence_gate=bool(config.confidence_gate),
         validation_rollouts=int(config.validation_rollouts),
