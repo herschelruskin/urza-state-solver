@@ -324,7 +324,7 @@ class Phase5MonteCarloDecisionEvaluator:
     def _restore_cached(self, cached, root_map):
         estimates=[]
         for row in cached.estimates:
-            action=root_map.get(row.strategic_action_key_digest)
+            action=root_map.get(row.strategic_action_key_packed)
             if action is None:
                 raise Phase5MonteCarloError(
                     "cached strategic action is not legal in current equivalent runtime"
@@ -337,7 +337,7 @@ class Phase5MonteCarloDecisionEvaluator:
                 win_probability_wilson95=row.win_probability_wilson95,
                 outcomes=_unpack_episode_outcomes(row.packed_outcomes),
             ))
-        best=root_map.get(cached.best_strategic_action_key_digest)
+        best=root_map.get(cached.best_strategic_action_key_packed)
         if best is None:
             raise Phase5MonteCarloError(
                 "cached best strategic action is not legal in current equivalent runtime"
@@ -497,12 +497,12 @@ class Phase5MonteCarloDecisionEvaluator:
         )
         if self.cache is not None and cache_key is not None:
             self.cache.set(cache_key,_CachedPhase5Decision(
-                best_strategic_action_key_digest=packed_action_strategic_key(
+                best_strategic_action_key_packed=packed_action_strategic_key(
                     evaluation.best_action
                 ),
                 estimates=tuple(
                     _CachedPhase5ActionEstimate(
-                        strategic_action_key_digest=packed_action_strategic_key(
+                        strategic_action_key_packed=packed_action_strategic_key(
                             estimate.action
                         ),
                         value=estimate.value,
