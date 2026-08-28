@@ -540,3 +540,66 @@ Hand-12 two-minute resource/fanout probe on this branch:
 Action-space architecture is now frozen for the next homogeneous Phase-5I benchmark.
 Transmute is already staged (cast -> sacrifice -> observed target -> payment) and Bay
 is linear in sacrifice choices, so neither is being refactored before the benchmark.
+
+
+## Phase 5I Whir target-frontier experiment — August 28, 2026
+
+Branch: `phase5i-whir-target-frontier`
+
+Motivation: Hand 25 proved that the symbolic Whir-payment/ZDD work fixed the
+catastrophic memory multiplier, but some engine-rich worlds still issue tens or
+hundreds of thousands of decision requests.  The post-resolution Whir search was
+still exposing every legal artifact with mana value <= X as a bounded-Q candidate,
+including opponent-facing goldfish-irrelevant targets such as Pithing Needle.
+
+Implementation:
+
+- rules/search legality is unchanged: Whir still reveals every legal target;
+- bounded Q applies an information-safe, objective-specific target frontier only
+  after the legal search set is observed;
+- target roles are encoded as an integer bitmask with compact numeric features;
+- every combo, producer, mana, value, draw, untap, tutor, or protection role is
+  retained in the conservative version;
+- Defense Grid is explicitly retained as the strongest current protected-line
+  representative, although Phase 5I still optimizes win timing rather than
+  protection probability;
+- opponent-facing low-information targets (Pithing Needle, Grafdigger's Cage,
+  Tormod's Crypt, Disruptor Flute) may be removed from `win_by_horizon` Q unless
+  rollout-v6 itself selected them;
+- identical low-information generic feature signatures may collapse to one
+  deterministic representative;
+- non-goldfish objectives bypass this filter entirely.
+
+This is not claimed as lossless rules equivalence: singleton card identity can
+technically alter future shuffled draws.  It is therefore versioned as an
+objective-specific policy approximation and is not yet promoted into the frozen
+Phase-5H/5I production identity.
+
+Validation:
+
+- frontier semantic smoke PASS;
+- existing selective-Q, contingent-Q, adaptive-confidence-Q, symbolic action-space,
+  branch-bound, staged Whir, staged Reshape, and Phase-5I mulligan regressions PASS;
+- synthetic frontier example: 6 legal artifact targets -> 4 retained while keeping
+  Battered Golem, Mana Vault, Sensei's Divining Top, and Defense Grid;
+- Hand-25 baseline diagnostic established a CPU/search-time rather than RAM
+  pathology (e.g. Island/sample0: 242,712 decision requests, 713 s, same low
+  action fanout);
+- conservative frontier Island/sample0: 239,290 requests, 546 s, exact same
+  174-step trajectory and same Q-cache counts;
+- several other conservative probe worlds preserve exact trajectories/Q-cache
+  counts with modest request reductions; finite-run wall time is noisy on hosted
+  runners;
+- an earlier more aggressive Pareto version changed a Sapphire sequencing line
+  and was rejected for promotion in favor of the conservative role-preserving
+  frontier.
+
+Promotion gates still running from the conservative frontier:
+
+1. exact full Hand-25 evaluator;
+2. frozen Phase-5H 10-hand x 4-world paired quality benchmark;
+3. no held-out quality degradation versus the frozen bounded confidence-Q player.
+
+Do not mix artifacts from this experimental branch into the authoritative
+homogeneous Phase-5I benchmark unless the frontier is explicitly promoted and
+Phase 5I is rerun from one new frozen source commit.
