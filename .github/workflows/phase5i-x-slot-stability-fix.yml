@@ -27,7 +27,9 @@ jobs:
         with:
           python-version: '3.13'
       - name: Apply stable permanent commitment patch
-        run: python phase5i_apply_x_slot_stability_fix.py
+        run: |
+          python phase5i_apply_x_slot_stability_fix.py
+          python phase5i_apply_x_slot_stability_fix_cleanup.py
       - name: Compile patched X-artifact modules
         run: |
           python -m py_compile x_artifact_search_adapter.py
