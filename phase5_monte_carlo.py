@@ -14,7 +14,7 @@ information-constrained policy.
 
 from __future__ import annotations
 
-from collections import Counter
+from collections import Counter, OrderedDict
 from dataclasses import dataclass
 from math import sqrt
 from typing import Iterable, Sequence, Tuple
@@ -132,6 +132,7 @@ def _value(outcomes: Sequence[EpisodeOutcome], *, horizon: int) -> WinDistributi
 class Phase5DecisionCacheStats:
     hits: int = 0
     misses: int = 0
+    evictions: int = 0
 
 
 @dataclass(frozen=True)
@@ -151,15 +152,23 @@ class _CachedPhase5Decision:
 
 
 class Phase5DecisionCache:
-    """Expected-value cache keyed only by strategic runtime/action identity.
+    """Expected-value LRU cache keyed by strategic runtime/action identity.
 
-    Cached rows never retain execution-specific ActionIntent objects.  On a hit,
+    Cached rows never retain execution-specific ActionIntent objects. On a hit,
     the evaluator recovers the current legal action object by strategic_key(),
     mirroring the Phase-3 action-cache discipline.
+
+    max_entries is a runtime-memory bound only. Eviction cannot change a Q value
+    because every miss is recomputed from explicit deterministic seeds and the
+    same information-safe strategic state. None preserves historical unbounded
+    behavior for provenance tests.
     """
 
-    def __init__(self):
-        self._rows = {}
+    def __init__(self, max_entries: int | None = None):
+        if max_entries is not None and int(max_entries) < 1:
+            raise ValueError("max_entries must be >= 1 or None")
+        self.max_entries = None if max_entries is None else int(max_entries)
+        self._rows = OrderedDict()
         self.stats = Phase5DecisionCacheStats()
 
     def get(self, key):
@@ -167,10 +176,22 @@ class Phase5DecisionCache:
             self.stats.misses += 1
             return None
         self.stats.hits += 1
-        return self._rows[key]
+        value = self._rows[key]
+        self._rows.move_to_end(key)
+        return value
 
     def set(self, key, value):
+        if key in self._rows:
+            self._rows[key] = value
+            self._rows.move_to_end(key)
+            return
         self._rows[key] = value
+        if self.max_entries is not None and len(self._rows) > self.max_entries:
+            self._rows.popitem(last=False)
+            self.stats.evictions += 1
+
+    def clear(self):
+        self._rows.clear()
 
     def __len__(self):
         return len(self._rows)
