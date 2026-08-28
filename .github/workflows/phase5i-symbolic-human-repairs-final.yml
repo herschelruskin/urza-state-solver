@@ -1,0 +1,44 @@
+name: Phase 5I symbolic human repairs final
+
+on:
+  push:
+    branches:
+      - phase5i-symbolic-human-repairs-final
+  workflow_dispatch:
+
+jobs:
+  human_hand:
+    strategy:
+      fail-fast: false
+      matrix:
+        hand_id: [14,25]
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      PYTHONHASHSEED: '0'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Evaluate exact human hand
+        shell: bash
+        run: |
+          set -uo pipefail
+          python phase5i_human_hand_eval.py --hand-id ${{ matrix.hand_id }} &
+          pid=$!
+          peak=0
+          while kill -0 "$pid" 2>/dev/null; do
+            rss=$(ps -o rss= -p "$pid" 2>/dev/null | tr -d ' ' || true)
+            if [ -n "$rss" ] && [ "$rss" -gt "$peak" ]; then peak=$rss; fi
+            echo "RESOURCE hand=${{ matrix.hand_id }} peak_rss_kb=$peak $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            ps -o pid,%cpu,%mem,rss,vsz,etime,cmd -p "$pid" || true
+            sleep 30
+          done
+          wait "$pid"
+          echo "FINAL_PEAK_RSS_KB=$peak"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-human-hand-${{ matrix.hand_id }}-symbolic-final
+          path: phase5i_human_hand_*.json
