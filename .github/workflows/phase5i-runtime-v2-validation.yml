@@ -1,0 +1,72 @@
+name: Phase 5I Runtime v2 Validation
+
+on:
+  push:
+    branches:
+      - phase5i-mulligan-runtime-v2
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase5i-runtime-v2-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONHASHSEED: "0"
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Compile runtime-v2 modules
+        run: python -m py_compile phase5i_mulligan.py phase5i_human_hand_eval.py phase5i_stage_sample_eval.py
+      - name: Run Phase 5I integration smoke
+        run: python phase5i_mulligan_smoke.py
+
+  hand25:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env:
+      PYTHONHASHSEED: "0"
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Benchmark optimized Hand 25
+        run: |
+          START=$(date +%s)
+          python phase5i_human_hand_eval.py --hand-id 25
+          END=$(date +%s)
+          echo "HAND25_RUNTIME_SECONDS=$((END-START))"
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path("phase5i_human_hand_25.json").read_text())
+          c=p["contexts"][0]
+          print("HAND25_RUNTIME_V2="+json.dumps({
+              "best_bottom":c["solver"]["best"]["bottom"],
+              "pwin":c["solver"]["best"]["value"]["win_probability"],
+              "shortlisted":c["solver"]["shortlisted_bottoms"],
+              "confirmed_bottom_count":c["solver"]["confirmed_bottom_count"],
+              "fully_confirmed_bottom_count":c["solver"]["fully_confirmed_bottom_count"],
+              "tie_break_rollouts":c["solver"]["screen_tie_break_rollouts"],
+              "early_eliminated":c["solver"]["confirmation_early_eliminated_bottoms"],
+              "parallel_workers":c["solver"]["parallel_workers"],
+              "confirmation_start_sample":c["solver"]["confirmation_start_sample"],
+              "q_cache":c["q_cache"],
+          },sort_keys=True))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-runtime-v2-hand25
+          path: phase5i_human_hand_25.json
