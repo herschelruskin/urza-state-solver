@@ -32,6 +32,7 @@ from phase5_packed_keys import (
     packed_observation_key,
     packed_phase5_decision_cache_key,
 )
+from symbolic_action_space import ParetoPoint, pareto_dominates
 
 PHASE5_MC_VERSION = "urza-phase5-decision-monte-carlo-v2-paired-outcomes"
 
@@ -75,6 +76,9 @@ class Phase5DecisionEvaluation:
     mc_root_seed: int
     horizon: int
     continuation_policy_id: str
+    candidate_count: int = 0
+    branch_pruned_count: int = 0
+    pareto_pruned_count: int = 0
     version: str = PHASE5_MC_VERSION
 
 
@@ -94,6 +98,116 @@ def _representatives(actions: Iterable[ActionIntent]) -> Tuple[ActionIntent, ...
     for action in sorted(actions, key=lambda a: a.action_id):
         rows.setdefault(action.strategic_key(), action)
     return tuple(rows[key] for key in sorted(rows, key=repr))
+
+
+def _partial_objective_bounds(
+    rows: Sequence[EpisodeOutcome],
+    *,
+    total_rollouts: int,
+    horizon: int,
+) -> Tuple[Tuple[float, ...], Tuple[float, ...]]:
+    """Exact lower/upper final comparison keys for a partial fixed sample set.
+
+    Lower bound assumes every unevaluated world is a loss. Upper bound assumes
+    every unevaluated world is a T1 win, the strongest possible outcome under
+    the Phase-3 objective.
+    """
+    total=int(total_rollouts)
+    if total<1:
+        raise ValueError("total_rollouts must be >= 1")
+    seen=len(rows)
+    if seen>total:
+        raise ValueError("partial outcome count exceeds total rollouts")
+    remaining=total-seen
+    exact=[0]*int(horizon)
+    for outcome in rows:
+        if outcome.won:
+            if outcome.win_turn is None:
+                raise ValueError("winning outcome is missing win_turn")
+            exact[int(outcome.win_turn)-1]+=1
+
+    wins=sum(exact)
+    cumulative=[]
+    running=0
+    for index in range(max(0,int(horizon)-1)):
+        running+=exact[index]
+        cumulative.append(running)
+
+    lower=tuple(
+        round(value/total,15)
+        for value in (wins,*cumulative)
+    )
+    upper=tuple(
+        round(value/total,15)
+        for value in (
+            wins+remaining,
+            *(value+remaining for value in cumulative),
+        )
+    )
+    return lower,upper
+
+
+def _bound_prunable_keys(
+    active_keys,
+    outcomes,
+    *,
+    total_rollouts:int,
+    horizon:int,
+    retain_top_n:int,
+    must_retain_keys,
+):
+    """Return exact fixed-sample losers that cannot enter the retained top-N.
+
+    Two admissible tests are combined:
+    1. lexicographic branch bound: candidate best-case < kth-best worst-case;
+    2. Pareto bound: at least N other worst-case vectors component-dominate the
+       candidate best-case vector.
+
+    Strict inequalities preserve all possible ties.
+    """
+    active=tuple(active_keys)
+    n=max(1,min(int(retain_top_n),len(active)))
+    must=frozenset(must_retain_keys)
+    bounds={
+        key:_partial_objective_bounds(
+            tuple(outcomes[key]),
+            total_rollouts=total_rollouts,
+            horizon=horizon,
+        )
+        for key in active
+    }
+    ranked_lower=sorted(
+        (lower,key)
+        for key,(lower,_upper) in bounds.items()
+    )
+    kth_lower=ranked_lower[-n][0]
+
+    pruned=set()
+    pareto_pruned=set()
+    for key in active:
+        if key in must:
+            continue
+        lower,upper=bounds[key]
+        lexicographic=upper<kth_lower
+
+        candidate_upper=ParetoPoint(key,tuple(upper))
+        dominators=0
+        for other,(other_lower,_other_upper) in bounds.items():
+            if other==key:
+                continue
+            if pareto_dominates(
+                ParetoPoint(other,tuple(other_lower)),
+                candidate_upper,
+            ):
+                dominators+=1
+                if dominators>=n:
+                    break
+        pareto=dominators>=n
+        if lexicographic or pareto:
+            pruned.add(key)
+            if pareto:
+                pareto_pruned.add(key)
+    return frozenset(pruned),frozenset(pareto_pruned)
 
 
 def _episode_outcome(result: NonOracleEpisodeResult, *, horizon: int) -> EpisodeOutcome:
@@ -349,9 +463,20 @@ class Phase5MonteCarloDecisionEvaluator:
             mc_root_seed=self.mc_root_seed,
             horizon=self.horizon,
             continuation_policy_id=self.continuation_policy.policy_id,
+            candidate_count=len(candidate_keys),
+            branch_pruned_count=len(branch_pruned),
+            pareto_pruned_count=len(pareto_pruned),
         )
 
-    def evaluate(self, runtime, *, candidate_actions=None) -> Phase5DecisionEvaluation:
+    def evaluate(
+        self,
+        runtime,
+        *,
+        candidate_actions=None,
+        retain_top_n: int | None = None,
+        must_retain_actions=(),
+        exact_branch_bound: bool = False,
+    ) -> Phase5DecisionEvaluation:
         root_request = self._request(runtime)
         all_root = _representatives(root_request.actions)
         if not all_root:
@@ -385,9 +510,30 @@ class Phase5MonteCarloDecisionEvaluator:
             for action in root_actions
         }
 
+        must_retain_keys=frozenset(
+            packed_action_strategic_key(action)
+            for action in tuple(must_retain_actions or ())
+        )
+        if not must_retain_keys.issubset(candidate_keys):
+            raise Phase5MonteCarloError(
+                "must-retain action is absent from candidate action subset"
+            )
+        retain_n=(
+            len(candidate_keys)
+            if retain_top_n is None
+            else max(1,min(int(retain_top_n),len(candidate_keys)))
+        )
+
         cache_key=None
         if self.cache is not None:
             cache_key=self._cache_key(runtime,candidate_keys)
+            if exact_branch_bound:
+                cache_key += (
+                    b"\x00branch-bound-v1\x00"
+                    + str(retain_n).encode("ascii")
+                    + b"\x00"
+                    + b"".join(sorted(must_retain_keys))
+                )
             cached=self.cache.get(cache_key)
             if cached is not None:
                 return self._restore_cached(cached,root_map)
@@ -396,6 +542,9 @@ class Phase5MonteCarloDecisionEvaluator:
 
         outcomes = {key: [] for key in candidate_keys}
         reasons = {key: Counter() for key in candidate_keys}
+        active_keys=set(candidate_keys)
+        branch_pruned=set()
+        pareto_pruned=set()
 
         for sample_index in range(self.rollout_count):
             world = self.sampler.sample(
@@ -418,7 +567,7 @@ class Phase5MonteCarloDecisionEvaluator:
                     "sampled hidden world changed the policy-visible action set"
                 )
 
-            for key in sorted(candidate_keys, key=repr):
+            for key in sorted(active_keys, key=repr):
                 action = sampled_all[key]
                 after = apply_main_action(sampled_runtime, action)
                 if self.continuation_runner is None:
@@ -461,8 +610,22 @@ class Phase5MonteCarloDecisionEvaluator:
                     )
                 outcomes[key].append(_episode_outcome(result, horizon=self.horizon))
 
+            if exact_branch_bound and len(active_keys)>retain_n:
+                newly_pruned,newly_pareto=_bound_prunable_keys(
+                    active_keys,
+                    outcomes,
+                    total_rollouts=self.rollout_count,
+                    horizon=self.horizon,
+                    retain_top_n=retain_n,
+                    must_retain_keys=must_retain_keys,
+                )
+                if newly_pruned:
+                    active_keys.difference_update(newly_pruned)
+                    branch_pruned.update(newly_pruned)
+                    pareto_pruned.update(newly_pareto)
+
         estimates = []
-        for key in sorted(candidate_keys, key=repr):
+        for key in sorted(active_keys, key=repr):
             rows = tuple(outcomes[key])
             value = _value(rows, horizon=self.horizon)
             wins = sum(x.won for x in rows)
