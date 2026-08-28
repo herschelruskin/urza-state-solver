@@ -13,7 +13,7 @@ jobs:
     env:
       PYTHONHASHSEED: '0'
       HUMAN_RUN_ID: '33122937057'
-      HAND12_RUN_ID: '33123674159'
+      REPAIR_RUN_ID: '33133641811'
       STAGE_RUN_ID: '33123595522'
     steps:
       - uses: actions/checkout@v4
@@ -31,14 +31,15 @@ jobs:
           path: human
           merge-multiple: true
 
-      - name: Replace missing hand 12 from identical-seed isolated rerun
+      - name: Add repaired human-hand artifacts
         uses: actions/download-artifact@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
-          run-id: ${{ env.HAND12_RUN_ID }}
-          name: phase5i-human-hand-12
+          run-id: ${{ env.REPAIR_RUN_ID }}
+          pattern: phase5i-human-hand-*
           path: human
+          merge-multiple: true
 
       - name: Download factorized continuation samples
         uses: actions/download-artifact@v4
@@ -49,6 +50,15 @@ jobs:
           pattern: phase5i-stage-sample-*
           path: stage_samples
           merge-multiple: true
+
+      - name: Add repaired continuation sample
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.REPAIR_RUN_ID }}
+          name: phase5i-stage-sample-dead-s3-n1
+          path: stage_samples
 
       - name: Verify fixed benchmark inputs
         run: |
@@ -95,6 +105,12 @@ jobs:
             --stage-dir stage_models \
             --output phase5i_human_benchmark_summary.json
 
+      - name: Classify benchmark disagreements
+        run: |
+          python phase5i_disagreement_report.py \
+            --summary phase5i_human_benchmark_summary.json \
+            --output phase5i_disagreement_report.json
+
       - name: Sanity-check summary
         run: |
           python - <<'PY'
@@ -114,4 +130,5 @@ jobs:
           name: phase5i-final-benchmark
           path: |
             phase5i_human_benchmark_summary.json
+            phase5i_disagreement_report.json
             stage_models/*.json
