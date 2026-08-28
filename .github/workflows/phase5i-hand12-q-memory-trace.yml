@@ -1,0 +1,24 @@
+name: Phase 5I Hand 12 Q memory trace
+
+on:
+  push:
+    branches:
+      - phase5i-q-memory-trace
+  workflow_dispatch:
+
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONHASHSEED: '0'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile tracer
+        run: python -m py_compile phase5i_hand12_q_memory_trace.py
+      - name: Trace exact Hand 12 world 0
+        run: python phase5i_hand12_q_memory_trace.py
