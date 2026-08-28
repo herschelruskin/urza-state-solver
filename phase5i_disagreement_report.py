@@ -102,6 +102,15 @@ def main():
             "live_decision":row["seat_contexts"]["live"]["solver_decision"],
             "dead_replicate_decisions":row["seat_contexts"]["dead"].get("replicate_decisions",[]),
             "live_replicate_decisions":row["seat_contexts"]["live"].get("replicate_decisions",[]),
+            "dead_bootstrap_keep_probability":row["seat_contexts"]["dead"].get("bootstrap_keep_probability"),
+            "live_bootstrap_keep_probability":row["seat_contexts"]["live"].get("bootstrap_keep_probability"),
+            "dead_bootstrap_decision_confidence":row["seat_contexts"]["dead"].get("bootstrap_decision_confidence"),
+            "live_bootstrap_decision_confidence":row["seat_contexts"]["live"].get("bootstrap_decision_confidence"),
+            "ex_ante_bootstrap_human_agreement_probability":sum(
+                float(row["seat_contexts"][context]["weight"])
+                * float(row["seat_contexts"][context].get("bootstrap_human_agreement_probability") or 0.0)
+                for context in ("dead","live")
+            ),
         })
 
     material_bottom=[
@@ -130,6 +139,23 @@ def main():
         "threshold_unstable_hand_ids":[x["hand_id"] for x in unstable],
         "seat_dependent_hand_ids":[x["hand_id"] for x in seat_dependent],
         "material_bottom_difference_hand_ids":[x["hand_id"] for x in material_bottom],
+        "lowest_bootstrap_confidence":[
+            {
+                "hand_id":row["hand_id"],
+                "dead":row["dead_bootstrap_decision_confidence"],
+                "live":row["live_bootstrap_decision_confidence"],
+            }
+            for row in sorted(
+                rows,
+                key=lambda x:(
+                    min(
+                        1.0 if x["dead_bootstrap_decision_confidence"] is None else x["dead_bootstrap_decision_confidence"],
+                        1.0 if x["live_bootstrap_decision_confidence"] is None else x["live_bootstrap_decision_confidence"],
+                    ),
+                    x["hand_id"],
+                ),
+            )[:10]
+        ],
         "rows":rows,
     }
     Path(args.output).write_text(json.dumps(payload,indent=2)+"\n",encoding="utf-8")
