@@ -69,6 +69,7 @@ PENDING_TUTOR_Q_KINDS=frozenset({
     "transmute_choose_sacrifice",
     "transmute_choose_target",
     "x_artifact_search_target",
+    "reshape_choose_sacrifice",
     "whir_payment_add_improvise",
     "whir_payment_finish",
     "remaining_search_target",
@@ -95,6 +96,13 @@ CONTINGENT_DEPTH_AFTER_ACTION_KIND={
 def contingent_depth_after_action(action:ActionIntent)->int:
     kind=str(action.kind)
     params=dict(getattr(action,"parameters",()) or ())
+    if kind=="main_use_x_artifact_tutor" and str(action.source)=="Reshape":
+        # Reshape X is committed first, then its additional-cost sacrifice is
+        # chosen with no intervening observation/priority window, followed by the
+        # observed library target on spell resolution.
+        return 2
+    if kind=="reshape_choose_sacrifice":
+        return 1
     if kind=="main_use_x_artifact_tutor" and str(action.source)=="Whir of Invention":
         # Staged Whir can choose at most generic_need improvise objects, followed
         # by the observed search target. No hidden information is revealed during
