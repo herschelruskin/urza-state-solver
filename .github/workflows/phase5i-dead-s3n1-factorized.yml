@@ -1,0 +1,58 @@
+name: Phase 5I dead s3n1 exact factorization
+
+on:
+  push:
+    branches:
+      - phase5i-dead-s3n1-factorized
+  workflow_dispatch:
+
+jobs:
+  bottom:
+    strategy:
+      fail-fast: false
+      matrix:
+        bottom_index: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile factor
+        run: python -m py_compile phase5i_dead_s3n1_bottom_eval.py
+      - name: Evaluate bottom factor
+        run: python phase5i_dead_s3n1_bottom_eval.py --bottom-index ${{ matrix.bottom_index }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-dead-s3n1-bottom-${{ matrix.bottom_index }}
+          path: phase5i_dead_s3n1_bottom_*.json
+
+  reduce:
+    needs: bottom
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: phase5i-dead-s3n1-bottom-*
+          path: factors
+          merge-multiple: true
+      - name: Compile reducer
+        run: python -m py_compile phase5i_dead_s3n1_reduce.py
+      - name: Reduce exact sample
+        run: |
+          cp factors/phase5i_dead_s3n1_bottom_*.json .
+          python phase5i_dead_s3n1_reduce.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-stage-sample-dead-s3-n1
+          path: phase5i_stage_sample_dead_s3_n1.json
