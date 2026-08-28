@@ -6,6 +6,10 @@ on:
       - phase5i-whir-target-frontier
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   semantic:
     runs-on: ubuntu-latest
