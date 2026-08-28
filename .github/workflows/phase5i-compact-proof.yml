@@ -1,0 +1,65 @@
+name: Phase 5I compact stress proof
+
+on:
+  push:
+    branches:
+      - phase5i-compact-proof
+
+jobs:
+  hand12:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      PYTHONHASHSEED: '0'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Exact Hand 12 world 0
+        shell: bash
+        run: |
+          set -uo pipefail
+          python phase5i_hand12_world_eval.py --sample-id 0 &
+          pid=$!
+          while kill -0 "$pid" 2>/dev/null; do
+            echo "RESOURCE $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            ps -o pid,%cpu,%mem,rss,vsz,etime,cmd -p "$pid" || true
+            free -m || true
+            sleep 30
+          done
+          wait "$pid"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-hand12-world-0-compact
+          path: phase5i_hand12_world_0.json
+
+  hand14_bottom32:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      PYTHONHASHSEED: '0'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Exact Hand 14 bottom 32
+        shell: bash
+        run: |
+          set -uo pipefail
+          python phase5i_human_bottom_eval.py --hand-id 14 --bottom-index 32 &
+          pid=$!
+          while kill -0 "$pid" 2>/dev/null; do
+            echo "RESOURCE $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            ps -o pid,%cpu,%mem,rss,vsz,etime,cmd -p "$pid" || true
+            free -m || true
+            sleep 30
+          done
+          wait "$pid"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-h14-bottom-32-compact
+          path: phase5i_human_bottom_h14_b32.json
