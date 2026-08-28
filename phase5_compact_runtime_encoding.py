@@ -269,3 +269,37 @@ def compact_runtime_cycle_digest(runtime)->bytes:
     writer.generic(tuple(_pending_strategic_key(runtime.pending)))
 
     return writer.digest()
+
+
+def compact_observation_digest(observation)->bytes:
+    """Fixed-size identity for policy-visible observations.
+
+    RuntimePolicyView/PolicyView are dataclasses containing only public state.
+    Generic compact encoding therefore preserves their equality relation without
+    constructing the recursively tagged stable_key() tuple.
+    """
+    writer=_DigestWriter(b"policy-observation")
+    writer.generic(observation)
+    return writer.digest()
+
+
+def compact_action_strategic_digest(action)->bytes:
+    """Fixed-size identity matching ActionIntent.strategic_key() semantics."""
+    writer=_DigestWriter(b"strategic-action")
+    equivalence_key=tuple(getattr(action,"equivalence_key",()) or ())
+    if equivalence_key:
+        writer.text(str(action.decision_stage))
+        writer.text(str(action.kind))
+        writer.generic(equivalence_key)
+    else:
+        writer.text(str(action.kind))
+        params=tuple(sorted(
+            ((str(key),value) for key,value in action.parameters),
+            key=lambda row:row[0],
+        ))
+        writer.generic(params)
+        writer.text(str(action.action_id))
+        writer.text(str(action.decision_stage))
+        writer.text(str(action.source))
+        writer.text(str(action.contingent_on))
+    return writer.digest()
