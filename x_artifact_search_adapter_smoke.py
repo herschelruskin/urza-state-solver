@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Focused regressions for staged X searches and shared shuffle coupling."""
+"""Focused regressions for staged X searches and shared shuffle coupling (CI)."""
 
 from dataclasses import replace
 
