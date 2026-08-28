@@ -318,7 +318,7 @@ The final manual aggregate now consumes exactly:
 - continuation expansion run (sample IDs 4-7): **33135871407**.
 
 Before aggregation it requires exactly 35 unique human-hand artifacts and the full
-2 contexts x 7 stages x 4 sample IDs = 56 continuation samples.
+2 contexts x 7 stages x 8 sample IDs = **112 continuation samples**.
 
 The aggregate now also emits `phase5i_disagreement_report.json`, classifying
 stable/unstable/seat-dependent keep-mull calls and material versus timing-only
