@@ -29,7 +29,7 @@ from phase3_value_engine import PHASE3_OBJECTIVE_ID, WinDistributionValue
 from phase4_hidden_world import HiddenWorldSampler, materialize_hidden_world
 from solver_architecture import EpisodeOutcome
 from strategic_value_state import LibraryBeliefKey
-from phase5_compact_runtime_encoding import compact_action_strategic_digest, compact_observation_digest
+from phase5_compact_runtime_encoding import compact_action_strategic_digest, compact_observation_digest, compact_runtime_value_digest
 
 PHASE5_MC_VERSION = "urza-phase5-decision-monte-carlo-v2-paired-outcomes"
 
@@ -320,8 +320,8 @@ class Phase5MonteCarloDecisionEvaluator:
         identity = (
             PHASE5_MC_VERSION,
             "strategic-decision-cache-v2-digest",
-            canonical_runtime_object_value_key(runtime),
-            tuple(sorted(candidate_keys, key=repr)),
+            compact_runtime_value_digest(runtime),
+            tuple(sorted(candidate_keys)),
             self.rollout_count,
             self.mc_root_seed,
             self.horizon,
