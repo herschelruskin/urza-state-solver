@@ -31,6 +31,8 @@ from non_oracle_episode import (
     NonOracleEpisodeResult,
     _blocked_reason,
     _checked_runtime,
+    _fresh_actions_from_attempt_ledger,
+    _record_attempt,
     episode_cycle_key,
 )
 from non_oracle_rules_adapter_v2 import apply_main_action, rules_decision_request
@@ -401,10 +403,11 @@ def make_bounded_contingent_tutor_runner(
                 )
 
             cycle_key=episode_cycle_key(runtime)
-            attempted=attempted_by_cycle_state.setdefault(cycle_key,set())
-            fresh=tuple(
-                action for action in request.actions
-                if packed_action_strategic_key(action) not in attempted
+            fresh,action_blob,attempted_mask,action_index=(
+                _fresh_actions_from_attempt_ledger(
+                    request.actions,
+                    attempted_by_cycle_state.get(cycle_key),
+                )
             )
             if not fresh:
                 return NonOracleEpisodeResult(
@@ -450,7 +453,9 @@ def make_bounded_contingent_tutor_runner(
                     )
                 )
 
-            attempted.add(packed_action_strategic_key(action))
+            attempted_by_cycle_state[cycle_key]=_record_attempt(
+                action,action_blob,attempted_mask,action_index
+            )
             before_turn=int(state.turn)
             before_window=runtime.window.kind
             observation_key=()
@@ -883,10 +888,11 @@ def run_selective_tutor_q_episode(
             return SelectiveTutorQEpisodeResult(episode,tuple(q_rows))
 
         cycle_key=episode_cycle_key(runtime)
-        attempted=attempted_by_cycle_state.setdefault(cycle_key,set())
-        fresh=tuple(
-            action for action in request.actions
-            if action.strategic_key() not in attempted
+        fresh,action_blob,attempted_mask,action_index=(
+            _fresh_actions_from_attempt_ledger(
+                request.actions,
+                attempted_by_cycle_state.get(cycle_key),
+            )
         )
         if not fresh:
             episode=NonOracleEpisodeResult(
@@ -922,7 +928,9 @@ def run_selective_tutor_q_episode(
                 gate_reason=str(gate_reason),
             ))
 
-        attempted.add(action.strategic_key())
+        attempted_by_cycle_state[cycle_key]=_record_attempt(
+            action,action_blob,attempted_mask,action_index
+        )
         before_turn=int(state.turn)
         before_window=runtime.window.kind
         observation_key=request.observation.key()
