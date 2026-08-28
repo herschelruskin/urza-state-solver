@@ -1,0 +1,38 @@
+name: Phase 5I symbolic final parity
+
+on:
+  push:
+    branches:
+      - phase5i-symbolic-action-dag
+  workflow_dispatch:
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile final symbolic parity suite
+        run: |
+          python -m py_compile phase5_staged_whir_payment_smoke.py
+          python -m py_compile phase5_symbolic_action_space_smoke.py
+          python -m py_compile phase5_symbolic_branch_bound_smoke.py
+          python -m py_compile phase5_selective_tutor_q.py
+      - name: Exhaustive Whir and Q parity
+        run: |
+          python phase5_staged_whir_payment_smoke.py
+          python phase5_symbolic_action_space_smoke.py
+          python phase5_symbolic_branch_bound_smoke.py
+      - name: Core Q regressions
+        run: |
+          python x_artifact_tutor_runtime_smoke.py
+          python phase5_contingent_tutor_q_smoke.py
+          python phase5_adaptive_confidence_q_smoke.py
+          python phase5i_mulligan_smoke.py
+      - name: Source check
+        run: git diff --check
