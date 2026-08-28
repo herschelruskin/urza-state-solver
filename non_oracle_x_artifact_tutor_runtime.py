@@ -238,7 +238,9 @@ def begin_x_artifact_tutor(runtime: NonOracleRuntimeState, action: ActionIntent)
             spell_cast_this_turn=True,
         )
         slot = _slot_from_parameter(tuple(params["sacrifice"]))
-        index = _slot_index(paid, slot)
+        # Recover the committed source from the pre-payment state.  pay() can
+        # mutate public permanent annotations but preserves battlefield order.
+        index = _slot_index(state, slot)
         if not solver.is_artifact_perm(paid.battlefield[index]):
             raise ValueError("Reshape sacrifice is no longer an artifact")
         paid, sacrificed = _remove_artifact_for_reshape_cost(paid, index)
@@ -266,9 +268,12 @@ def begin_x_artifact_tutor(runtime: NonOracleRuntimeState, action: ActionIntent)
         paid = solver.pay(state, 0, 3)
         if paid is None or source not in paid.hand:
             raise ValueError("Whir can no longer pay its colored cost")
-        for raw in tuple(params["improvise"]):
-            slot = _slot_from_parameter(tuple(raw))
-            index = _slot_index(paid, slot)
+        slots = tuple(
+            _slot_from_parameter(tuple(raw))
+            for raw in tuple(params["improvise"])
+        )
+        indices = tuple(_slot_index(paid, slot) for slot in slots)
+        for index in indices:
             if paid.battlefield[index].tapped or not solver.is_artifact_perm(paid.battlefield[index]):
                 raise ValueError("committed Whir improvise permanent is no longer legal")
             paid = solver.update_perm(paid, index, tapped=True)
