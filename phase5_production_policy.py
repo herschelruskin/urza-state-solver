@@ -16,7 +16,7 @@ from phase5_selective_tutor_q import make_selective_tutor_q_episode_runner
 
 
 PHASE5H_PRODUCTION_POLICY_VERSION = "urza-phase5h-production-policy-v1"
-PHASE5H_PRODUCTION_CACHE_MAX_ENTRIES = 512
+PHASE5H_PRODUCTION_CACHE_MAX_ENTRIES = 32
 
 
 @dataclass(frozen=True)
