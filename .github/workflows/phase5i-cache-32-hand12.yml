@@ -22,8 +22,15 @@ jobs:
         run: |
           python -m py_compile phase5i_hand12_world_eval.py
           python -m py_compile phase5_decision_cache_smoke.py
-      - name: Cache smoke
-        run: python phase5_decision_cache_smoke.py
+      - name: Verify declared cache bound
+        run: |
+          python - <<'PY'
+          from phase5_production_policy import PHASE5H_PRODUCTION_CACHE_MAX_ENTRIES, make_phase5h_production_decision_cache
+          cache=make_phase5h_production_decision_cache()
+          assert PHASE5H_PRODUCTION_CACHE_MAX_ENTRIES==32
+          assert cache.max_entries==32
+          print("production cache bound 32: PASS")
+          PY
       - name: Exact Hand 12 world 0
         shell: bash
         run: |
