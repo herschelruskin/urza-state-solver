@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Smoke tests for the objective-aware Whir target frontier."""
+"""Smoke tests for the identity-safe objective-aware Whir target frontier."""
 
 from types import SimpleNamespace
 
