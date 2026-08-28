@@ -83,3 +83,27 @@ jobs:
         with:
           name: phase5i-hand25-frontier-full
           path: phase5i_human_hand_25.json
+
+  paired4:
+    needs: semantic
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        hand_id: [12, 13, 19, 20, 21, 24, 25, 27, 29, 33]
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      PYTHONHASHSEED: '0'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Frozen Phase 5H paired4 hand
+        run: python phase5_q_targeted_paired4.py --hand-id "${{ matrix.hand_id }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5h-frontier-paired4-${{ matrix.hand_id }}
+          path: phase5_q_targeted_paired4_hand*.json
