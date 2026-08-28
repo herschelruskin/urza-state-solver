@@ -294,7 +294,7 @@ def _chain_copy_payoff_profile(state, target, land):
         )
     if name == "Power Artifact":
         other_power_target = any(
-            perm.name in solver.POWER_MANA and perm.name != str(state.pa_target)
+            perm.name in {"Grim Monolith", "Basalt Monolith"} and perm.name != str(state.pa_target)
             for perm in after_land.battlefield
         )
         if other_power_target:
