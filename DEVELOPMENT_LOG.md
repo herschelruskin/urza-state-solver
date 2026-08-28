@@ -603,3 +603,41 @@ Promotion gates still running from the conservative frontier:
 Do not mix artifacts from this experimental branch into the authoritative
 homogeneous Phase-5I benchmark unless the frontier is explicitly promoted and
 Phase 5I is rerun from one new frozen source commit.
+
+
+## Phase 5H final frozen player checkpoint — August 28, 2026
+
+Frozen source commit: `e7c6b7a03bfe6540314a7f20313df4b33a74328e`
+
+The Whir target-frontier approximation was rejected.  Exact Whir target identities
+remain available to Q.  Search shuffles now use a shared pre-target random ranking:
+each legal target branch removes only its exact chosen card from the same shuffled
+ordering, preserving exact true-state library identity while reducing
+counterfactual RNG noise.
+
+Chain of Vapor optional copies now use visible-payoff policy pruning rather than
+Cartesian land x target materialization:
+
+- decline is always retained;
+- Urza, Construct, and token bounce targets are excluded from the goldfish policy;
+- each exact retained bounce target keeps one lowest-opportunity-cost legal land;
+- a copy survives only with an explicit visible payoff such as producer mana/untap,
+  Uthros draw, Gadgeteer Clue, Spellseeker retutor, Cage unblock, replay ETB value,
+  or a concrete mana-positive same-turn unlock;
+- exact target and land identities remain in the resulting true transition.
+
+Final Phase-5H promotion gate on the Chain-enabled shared-shuffle player:
+
+- semantic/regression suite: PASS;
+- paired hands: 12, 13, 19, 20, 21, 24, 25, 27, 29, 33;
+- 40 total paired worlds;
+- rollout-v6 wins: 5/40;
+- one-step bounded Q wins: 11/40;
+- contingent two-step Q wins: 13/40;
+- one-step Q worse than v6: 0/40 worlds;
+- contingent Q worse than v6: 0/40 worlds.
+
+Phase 5H is frozen at the source commit above.  Phase 5I must be evaluated
+homogeneously from this exact production source.  Workflow-only provenance or
+batching commits may descend from it, but no production policy/rules code changes
+are permitted without reopening the Phase-5H gate.
