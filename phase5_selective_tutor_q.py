@@ -68,6 +68,8 @@ PENDING_TUTOR_Q_KINDS=frozenset({
     "transmute_choose_sacrifice",
     "transmute_choose_target",
     "x_artifact_search_target",
+    "whir_payment_add_improvise",
+    "whir_payment_finish",
     "remaining_search_target",
 })
 
@@ -90,7 +92,22 @@ CONTINGENT_DEPTH_AFTER_ACTION_KIND={
 
 
 def contingent_depth_after_action(action:ActionIntent)->int:
-    return int(CONTINGENT_DEPTH_AFTER_ACTION_KIND.get(str(action.kind),0))
+    kind=str(action.kind)
+    params=dict(action.parameters)
+    if kind=="main_use_x_artifact_tutor" and str(action.source)=="Whir of Invention":
+        # Staged Whir can choose at most generic_need improvise objects, followed
+        # by the observed search target. No hidden information is revealed during
+        # payment staging, so this is the exact old payment-plan tree in bounded
+        # sequential form.
+        return int(params.get("generic_need",0))+1
+    if kind=="whir_payment_add_improvise":
+        # remaining_before=r: after this selection there can be at most r-1 more
+        # selections plus the search target => r future contingent decisions.
+        return max(1,int(params.get("remaining_before",1)))
+    if kind=="whir_payment_finish":
+        # Payment is complete; only the eventual observed search target remains.
+        return 1
+    return int(CONTINGENT_DEPTH_AFTER_ACTION_KIND.get(kind,0))
 
 
 def is_contingent_descendant_decision(
