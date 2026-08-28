@@ -22,9 +22,11 @@ jobs:
           python -m py_compile phase5_compact_runtime_encoding.py
           python -m py_compile non_oracle_episode.py
           python -m py_compile phase5_compact_cycle_key_smoke.py
+          python -m py_compile phase5_compact_policy_identity_smoke.py
       - name: Identity and episode regressions
         run: |
           python phase5_compact_cycle_key_smoke.py
+          python phase5_compact_policy_identity_smoke.py
           python phase5_episode_cycle_smoke.py
           python phase5_compact_cache_identity_smoke.py
           python phase5_monte_carlo_cache_smoke.py
