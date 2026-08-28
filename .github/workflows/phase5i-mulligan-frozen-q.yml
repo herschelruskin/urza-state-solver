@@ -49,6 +49,8 @@ jobs:
           python phase5_commander_seat_mixture_smoke.py
       - name: Runtime and information regressions
         run: |
+          python tutor_decision_adapter_smoke.py
+          python simple_tutor_runtime_smoke.py
           python phase5_chain_offer_smoke.py
           python phase5_deduced_library_knowledge_smoke.py
           python information_state_propagation_smoke.py
