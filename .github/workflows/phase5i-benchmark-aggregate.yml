@@ -14,6 +14,7 @@ jobs:
       PYTHONHASHSEED: '0'
       HUMAN_RUN_ID: '33122937057'
       REPAIR_RUN_ID: '33133641811'
+      EXTRA_REPAIR_RUN_ID: '33133729255'
       STAGE_RUN_ID: '33123595522'
     steps:
       - uses: actions/checkout@v4
@@ -41,6 +42,15 @@ jobs:
           path: human
           merge-multiple: true
 
+      - name: Add repaired hand 25
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.EXTRA_REPAIR_RUN_ID }}
+          name: phase5i-human-hand-25
+          path: human
+
       - name: Download factorized continuation samples
         uses: actions/download-artifact@v4
         with:
@@ -58,6 +68,15 @@ jobs:
           repository: ${{ github.repository }}
           run-id: ${{ env.REPAIR_RUN_ID }}
           name: phase5i-stage-sample-dead-s3-n1
+          path: stage_samples
+
+      - name: Add repaired live continuation sample
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.EXTRA_REPAIR_RUN_ID }}
+          name: phase5i-stage-sample-live-s4-n3
           path: stage_samples
 
       - name: Verify fixed benchmark inputs
