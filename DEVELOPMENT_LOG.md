@@ -242,3 +242,65 @@ complete it will report:
 4. Diagnose residual policy/rules coverage gaps from trajectory failures.
 5. Add protection / interaction probability to winning trajectories.
 6. Add paired card-swap evaluator using common random worlds.
+
+
+## Phase 5I repair checkpoint — August 27/28, 2026
+
+The first full benchmark launch exposed four incomplete inputs:
+
+- hand 12: GitHub-hosted runner shutdown; no solver traceback;
+- hand 14: wall-clock cancellation at the original 120-minute ceiling;
+- hand 26: genuine typed-runtime Spellseeker lifecycle bug;
+- continuation sample dead / stage 3 / sample 1: wall-clock cancellation at the
+  original 120-minute ceiling.
+
+### Spellseeker fix
+
+Hand 26 exposed a rules error in the staged tutor resolver. The code required an
+"unused" Spellseeker permanent to still be on the battlefield when the already
+created ETB search target resolved.
+
+Correct rule now implemented:
+
+- once Spellseeker's ETB trigger exists, its search resolves independently of the
+  source permanent;
+- if Spellseeker is still present, the legacy Oracle compatibility path may mark
+  that simplified permanent mode="used";
+- if it has left the battlefield, the trigger/search still resolves normally.
+
+Regressions added at both the Phase-1 tutor adapter and typed Phase-2 runtime levels,
+including an explicit source-leaves-before-trigger-resolution case.
+
+Production Phase-5I CI is green at commit **dab572bb** with both tutor lifecycle
+smokes now run explicitly.
+
+### Deterministic repair run
+
+Repair branch: `phase5i-benchmark-repairs`
+Workflow run: **33133641811**
+
+The repair run reuses the exact original evaluator scripts, seeds, Q configuration,
+bottom budgets, and continuation sample coordinates. Only the wall-clock ceiling is
+raised to 240 minutes.
+
+Repair outputs:
+
+- human hands 12, 14, 26;
+- continuation sample dead / stage 3 / sample 1.
+
+No successful benchmark result is rerun or replaced.
+
+### Final aggregate source lock
+
+The final manual aggregate now consumes exactly:
+
+- main human-hand run: **33122937057**;
+- repair run: **33133641811**;
+- main factorized continuation run: **33123595522**.
+
+Before aggregation it requires exactly 35 unique human-hand artifacts and the full
+2 contexts x 7 stages x 4 sample IDs = 56 continuation samples.
+
+The aggregate now also emits `phase5i_disagreement_report.json`, classifying
+stable/unstable/seat-dependent keep-mull calls and material versus timing-only
+bottom differences.
