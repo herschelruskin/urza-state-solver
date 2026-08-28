@@ -63,7 +63,11 @@ class _DigestWriter:
 
     def integer(self,value:int):
         self.h.update(b"I")
-        self.h.update(struct.pack(">q",int(value)))
+        number=int(value)
+        self.h.update(b"-" if number<0 else b"+")
+        magnitude=abs(number)
+        data=magnitude.to_bytes(max(1,(magnitude.bit_length()+7)//8),"big")
+        self.raw(data)
 
     def floating(self,value:float):
         self.h.update(b"F")
