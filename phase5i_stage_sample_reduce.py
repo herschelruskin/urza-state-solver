@@ -147,10 +147,21 @@ def main():
             "stages":list(reduce_stage_model(by_stage,allowed_sample_ids=sample_ids)),
         })
 
+    outer_confirm_values={
+        int(sample["budgets"]["outer_confirm"])
+        for stage in range(7)
+        for sample in by_stage[stage]
+    }
+    if len(outer_confirm_values)!=1:
+        raise SystemExit(
+            f"inconsistent outer-confirm budgets for {args.context}: "
+            f"{sorted(outer_confirm_values)}"
+        )
     payload={
         "kind":"phase5i-factorized-stage-model",
         "context":args.context,
         "representative_seat":1 if args.context=="dead" else 2,
+        "outer_confirm_rollouts":next(iter(outer_confirm_values)),
         "sample_count_per_stage":{
             str(stage):len(by_stage[stage]) for stage in range(7)
         },
