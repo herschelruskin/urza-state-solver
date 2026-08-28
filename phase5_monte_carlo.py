@@ -29,6 +29,7 @@ from phase3_value_engine import PHASE3_OBJECTIVE_ID, WinDistributionValue
 from phase4_hidden_world import HiddenWorldSampler, materialize_hidden_world
 from solver_architecture import EpisodeOutcome
 from strategic_value_state import LibraryBeliefKey
+from phase5_compact_runtime_encoding import compact_action_strategic_digest, compact_observation_digest
 
 PHASE5_MC_VERSION = "urza-phase5-decision-monte-carlo-v2-paired-outcomes"
 
@@ -255,7 +256,10 @@ class Phase5MonteCarloDecisionEvaluator:
 
     @staticmethod
     def _map(actions):
-        return {action.strategic_key(): action for action in _representatives(actions)}
+        return {
+            compact_action_strategic_digest(action): action
+            for action in _representatives(actions)
+        }
 
 
     def _cache_key(self, runtime, candidate_keys):
@@ -279,13 +283,9 @@ class Phase5MonteCarloDecisionEvaluator:
         return _compact_identity_digest(identity)
 
     def _restore_cached(self, cached, root_map):
-        compact_root_map={
-            _compact_identity_digest(key): action
-            for key,action in root_map.items()
-        }
         estimates=[]
         for row in cached.estimates:
-            action=compact_root_map.get(row.strategic_action_key_digest)
+            action=root_map.get(row.strategic_action_key_digest)
             if action is None:
                 raise Phase5MonteCarloError(
                     "cached strategic action is not legal in current equivalent runtime"
@@ -298,7 +298,7 @@ class Phase5MonteCarloDecisionEvaluator:
                 win_probability_wilson95=row.win_probability_wilson95,
                 outcomes=row.outcomes,
             ))
-        best=compact_root_map.get(cached.best_strategic_action_key_digest)
+        best=root_map.get(cached.best_strategic_action_key_digest)
         if best is None:
             raise Phase5MonteCarloError(
                 "cached best strategic action is not legal in current equivalent runtime"
@@ -321,15 +321,30 @@ class Phase5MonteCarloDecisionEvaluator:
         if candidate_actions is None:
             root_actions = all_root
         else:
-            allowed = {action.strategic_key() for action in candidate_actions}
-            root_actions = tuple(a for a in all_root if a.strategic_key() in allowed)
+            allowed = {
+                compact_action_strategic_digest(action)
+                for action in candidate_actions
+            }
+            root_actions = tuple(
+                action for action in all_root
+                if compact_action_strategic_digest(action) in allowed
+            )
             if not root_actions:
                 raise Phase5MonteCarloError("candidate action subset is empty")
 
-        root_observation_key = root_request.observation.key()
-        root_keys = frozenset(action.strategic_key() for action in all_root)
-        candidate_keys = frozenset(action.strategic_key() for action in root_actions)
-        root_map = {action.strategic_key(): action for action in root_actions}
+        root_observation_key = compact_observation_digest(root_request.observation)
+        root_keys = frozenset(
+            compact_action_strategic_digest(action)
+            for action in all_root
+        )
+        candidate_keys = frozenset(
+            compact_action_strategic_digest(action)
+            for action in root_actions
+        )
+        root_map = {
+            compact_action_strategic_digest(action): action
+            for action in root_actions
+        }
 
         cache_key=None
         if self.cache is not None:
@@ -354,7 +369,7 @@ class Phase5MonteCarloDecisionEvaluator:
             )
             sampled_runtime = materialize_hidden_world(runtime, world)
             sampled_request = self._request(sampled_runtime)
-            if sampled_request.observation.key() != root_observation_key:
+            if compact_observation_digest(sampled_request.observation) != root_observation_key:
                 raise Phase5MonteCarloError(
                     "sampled hidden world changed current PolicyView before observation"
                 )
@@ -443,13 +458,13 @@ class Phase5MonteCarloDecisionEvaluator:
         )
         if self.cache is not None and cache_key is not None:
             self.cache.set(cache_key,_CachedPhase5Decision(
-                best_strategic_action_key_digest=_compact_identity_digest(
-                    evaluation.best_action.strategic_key()
+                best_strategic_action_key_digest=compact_action_strategic_digest(
+                    evaluation.best_action
                 ),
                 estimates=tuple(
                     _CachedPhase5ActionEstimate(
-                        strategic_action_key_digest=_compact_identity_digest(
-                            estimate.action.strategic_key()
+                        strategic_action_key_digest=compact_action_strategic_digest(
+                            estimate.action
                         ),
                         value=estimate.value,
                         rollouts=estimate.rollouts,
