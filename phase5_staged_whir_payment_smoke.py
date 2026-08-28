@@ -61,9 +61,18 @@ def walk_staged(runtime, root):
         return {(x,(),0):started}
     finals={}
 
+    def selected_from_payload(data, mask=None):
+        slot_keys=tuple(tuple(raw) for raw in data["slot_keys"])
+        selected_mask=int(data["selected_mask"] if mask is None else mask)
+        return tuple(
+            slot_keys[index]
+            for index in range(len(slot_keys))
+            if selected_mask & (1 << index)
+        )
+
     def visit(current):
         data=dict(current.pending.payload)
-        selected=tuple(tuple(raw) for raw in data["selected"])
+        selected=selected_from_payload(data)
         request=xrt.whir_payment_request(
             current,
             horizon=6,
@@ -82,8 +91,8 @@ def walk_staged(runtime, root):
                 continue
 
             assert action.kind==xrt.WHIR_PAYMENT_ADD
-            raw=tuple(params["slot"])
-            updated=selected+(raw,)
+            updated_mask=int(params["selected_mask_after"])
+            updated=selected_from_payload(data,updated_mask)
             result=xrt.apply_whir_payment_pending(current,action)
             if result.pending is None:
                 plan=(x,updated,0)
