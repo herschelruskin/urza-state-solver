@@ -23,6 +23,8 @@ altering V/Q identity or exposing hidden state to the policy.
 
 from __future__ import annotations
 
+from collections import deque
+
 from dataclasses import dataclass, replace
 from typing import Optional, Tuple
 
@@ -118,6 +120,7 @@ def run_deterministic_episode(
     horizon: int = 6,
     policy: DeterministicBasePolicy | None = None,
     max_steps: int = 512,
+    max_recorded_steps: int | None = None,
 ) -> NonOracleEpisodeResult:
     """Execute one policy trajectory until win, horizon, blocker, or exhausted cycle.
 
@@ -129,9 +132,11 @@ def run_deterministic_episode(
     """
     if horizon < 1:
         raise ValueError("episode horizon must be >= 1")
+    if max_recorded_steps is not None and int(max_recorded_steps) < 0:
+        raise ValueError("max_recorded_steps must be >= 0 or None")
     policy = policy or DeterministicBasePolicy()
     runtime = _checked_runtime(runtime)
-    steps = []
+    steps = [] if max_recorded_steps is None else deque(maxlen=int(max_recorded_steps))
     attempted_by_cycle_state = {}
 
     for sequence in range(max_steps):
@@ -188,21 +193,22 @@ def run_deterministic_episode(
         runtime = apply_main_action(runtime, action)
         runtime = _checked_runtime(runtime)
         after = runtime.true_state
-        steps.append(
-            EpisodeStep(
-                sequence=sequence,
-                turn_before=before_turn,
-                window_kind=before_window,
-                observation_key=observation_key,
-                action_id=action.action_id,
-                action_kind=action.kind,
-                action_label=action.label,
-                action_strategic_key=action.strategic_key(),
-                turn_after=int(after.turn),
-                won_after=bool(after.won),
-                win_family_after=str(after.win_family),
+        if max_recorded_steps is None or int(max_recorded_steps) > 0:
+            steps.append(
+                EpisodeStep(
+                    sequence=sequence,
+                    turn_before=before_turn,
+                    window_kind=before_window,
+                    observation_key=observation_key,
+                    action_id=action.action_id,
+                    action_kind=action.kind,
+                    action_label=action.label,
+                    action_strategic_key=action.strategic_key(),
+                    turn_after=int(after.turn),
+                    won_after=bool(after.won),
+                    win_family_after=str(after.win_family),
+                )
             )
-        )
 
     return NonOracleEpisodeResult(
         runtime,
