@@ -1,0 +1,71 @@
+name: Phase 5I symbolic action DAG validation
+
+on:
+  push:
+    branches:
+      - phase5i-symbolic-action-dag
+  workflow_dispatch:
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile symbolic path
+        run: |
+          python -m py_compile symbolic_action_space.py
+          python -m py_compile non_oracle_x_artifact_tutor_runtime.py
+          python -m py_compile phase5_selective_tutor_q.py
+          python -m py_compile phase5_symbolic_action_space_smoke.py
+      - name: Symbolic action-space parity
+        run: python phase5_symbolic_action_space_smoke.py
+      - name: Existing X tutor and Phase 5 regressions
+        run: |
+          python non_oracle_x_artifact_tutor_runtime_smoke.py
+          python phase5_contingent_tutor_q_smoke.py
+          python phase5_adaptive_confidence_q_smoke.py
+          python phase5i_mulligan_smoke.py
+      - name: Source check
+        run: git diff --check
+
+  hand12_probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      PYTHONHASHSEED: '0'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Three-minute Hand 12 symbolic RSS/fanout probe
+        shell: bash
+        run: |
+          set -u
+          python phase5i_hand12_q_memory_trace.py &
+          pid=$!
+          start=$(date +%s)
+          while kill -0 "$pid" 2>/dev/null; do
+            now=$(date +%s)
+            elapsed=$((now-start))
+            echo "SYMBOLICPROBE elapsed_s=$elapsed $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            ps -o pid,%cpu,%mem,rss,vsz,etime,cmd -p "$pid" || true
+            free -m || true
+            if [ "$elapsed" -ge 180 ]; then
+              echo "SYMBOLICPROBE intentional_stop_at_180s"
+              kill -TERM "$pid" 2>/dev/null || true
+              sleep 2
+              kill -KILL "$pid" 2>/dev/null || true
+              wait "$pid" || true
+              exit 0
+            fi
+            sleep 10
+          done
+          wait "$pid"
