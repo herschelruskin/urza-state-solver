@@ -71,7 +71,12 @@ jobs:
           two=row['world_comparison']['two_vs_v6']
           assert int(one['worse'])==0,(row['hand_id'],one)
           assert int(two['worse'])==0,(row['hand_id'],two)
-          print(json.dumps({'hand':row['hand_id'],'pwin':row['pwin'],'one_vs_v6':one,'two_vs_v6':two},sort_keys=True))
+          pwin={
+              'v6':row['v6']['win_probability'],
+              'one':row['one']['win_probability'],
+              'two':row['two']['win_probability'],
+          }
+          print(json.dumps({'hand':row['hand_id'],'pwin':pwin,'one_vs_v6':one,'two_vs_v6':two},sort_keys=True))
           PY
 
   human_standard:
