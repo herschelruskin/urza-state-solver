@@ -314,7 +314,8 @@ The final manual aggregate now consumes exactly:
 - repair run A: **33133641811**;
 - repair run B: **33133729255**;
 - isolated hand-12 rerun: **33135490121**;
-- main factorized continuation run: **33123595522**.
+- main factorized continuation run (sample IDs 0-3): **33123595522**;
+- continuation expansion run (sample IDs 4-7): **33135871407**.
 
 Before aggregation it requires exactly 35 unique human-hand artifacts and the full
 2 contexts x 7 stages x 4 sample IDs = 56 continuation samples.
@@ -336,3 +337,29 @@ Workflow run: **33135490121**
 
 No evaluation parameters changed. The final aggregate consumes hand 12 only from this
 isolated run; repair-A remains the source for hands 14/26 and dead-stage3-sample1.
+
+
+### Continuation-threshold expansion after stability audit
+
+A preliminary reduction using the first four K_s samples per stage exposed large
+threshold variance. In the Caverns-live context, the two disjoint two-hand
+pseudo-replicates produced stage-0 continuation win probabilities of approximately
+0.47 versus 0.88. Preliminary keep/mull agreement on the 31 already-completed
+human hands was therefore not treated as a valid model score.
+
+This triggers the predeclared Phase-5I rule: increase independent stage sampling;
+do not tune toward human labels.
+
+Expansion branch: `phase5i-stage-factorized-expansion8`
+Workflow run: **33135871407**
+
+It adds sample IDs 4-7 for every context/stage using the exact same frozen Phase-5H
+player and K_s budgets. Final continuation models will therefore use:
+
+- 8 fresh hands per stage/context;
+- 2 contexts x 7 stages x 8 = 112 independent K_s artifacts;
+- stability replicate A = sample IDs 0-3;
+- stability replicate B = sample IDs 4-7.
+
+The final human-hand evaluation budgets remain unchanged. The aggregate workflow now
+requires all 112 continuation artifacts before it will score keep/mull agreement.
