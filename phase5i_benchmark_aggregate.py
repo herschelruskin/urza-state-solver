@@ -96,6 +96,7 @@ def _factorized_stage_model(directory,context):
             for stage in values
         },
         "sample_count_per_stage":payload.get("sample_count_per_stage",{}),
+        "outer_confirm_rollouts":int(payload.get("outer_confirm_rollouts",0)),
         "keep_samples":keep_samples,
     }
 
@@ -141,16 +142,52 @@ def load_stage_models(directory):
     return result
 
 
-def bootstrap_continuation_models(stage_models,context,*,replicates=THRESHOLD_BOOTSTRAP_REPLICATES):
-    """Bootstrap fresh-hand sampling uncertainty in the backward London DP.
+def _empirical_outcome_population(value,rollout_count):
+    rollout_count=int(rollout_count)
+    counts=[int(round(float(p)*rollout_count)) for p in value.exact_win]
+    no_win_count=int(round(float(value.no_win)*rollout_count))
+    population=[]
+    for turn,count in enumerate(counts,1):
+        population.extend([turn]*count)
+    population.extend([None]*no_win_count)
+    if len(population)!=rollout_count:
+        raise ValueError(
+            f"cannot reconstruct {rollout_count} outcomes from {value.comparison_key()}: "
+            f"got {len(population)}"
+        )
+    return tuple(population)
 
-    This resamples only the independent K_s(hand) training hands. It does not
-    alter the frozen player, human-hand K estimate, or outer-world budgets.
+
+def _resample_empirical_value(value,rollout_count,rng):
+    population=_empirical_outcome_population(value,rollout_count)
+    exact=[0.0]*HORIZON
+    no_win=0
+    for _ in range(int(rollout_count)):
+        outcome=rng.choice(population)
+        if outcome is None:
+            no_win+=1
+        else:
+            exact[int(outcome)-1]+=1.0
+    return WinDistributionValue(
+        horizon=HORIZON,
+        exact_win=tuple(x/int(rollout_count) for x in exact),
+        no_win=no_win/int(rollout_count),
+        win_families=(),
+    )
+
+
+def bootstrap_continuation_models(stage_models,context,*,replicates=THRESHOLD_BOOTSTRAP_REPLICATES):
+    """Hierarchical bootstrap of the backward London continuation model.
+
+    Each replicate resamples independent K_s training hands and, for each chosen
+    training hand, resamples its finite outer-world outcomes. This is diagnostic
+    only; it does not alter the frozen player or the point-estimate stage model.
     """
     model=stage_models[context]
     keep_samples=model.get("keep_samples")
     if not keep_samples:
         return {}
+    outer_rollouts=int(model.get("outer_confirm_rollouts") or 0)
     rng=random.Random(
         THRESHOLD_BOOTSTRAP_SEED + (0 if context=="dead" else 1_000_003)
     )
@@ -164,7 +201,11 @@ def bootstrap_continuation_models(stage_models,context,*,replicates=THRESHOLD_BO
             continuation=None if stage==MULLIGAN_FLOOR_STAGE else fitted[stage+1]
             selected=[]
             for _draw in range(len(samples)):
-                keep=rng.choice(samples)
+                raw_keep=rng.choice(samples)
+                keep=(
+                    _resample_empirical_value(raw_keep,outer_rollouts,rng)
+                    if outer_rollouts else raw_keep
+                )
                 if continuation is None or value_at_least(keep,continuation):
                     selected.append(keep)
                 else:
@@ -183,35 +224,11 @@ def bootstrap_keep_value_draws(
 ):
     """Nonparametric bootstrap of one hand's finite outer-world outcomes."""
     rollout_count=int(rollout_count)
-    counts=[int(round(float(p)*rollout_count)) for p in keep.exact_win]
-    no_win_count=int(round(float(keep.no_win)*rollout_count))
-    population=[]
-    for turn,count in enumerate(counts,1):
-        population.extend([turn]*count)
-    population.extend([None]*no_win_count)
-    if len(population)!=rollout_count:
-        raise ValueError(
-            f"cannot reconstruct {rollout_count} hand outcomes from {keep.comparison_key()}: "
-            f"got {len(population)}"
-        )
     rng=random.Random(int(seed))
-    values=[]
-    for _ in range(int(replicates)):
-        exact=[0.0]*HORIZON
-        no_win=0
-        for _draw in range(rollout_count):
-            outcome=rng.choice(population)
-            if outcome is None:
-                no_win+=1
-            else:
-                exact[int(outcome)-1]+=1.0
-        values.append(WinDistributionValue(
-            horizon=HORIZON,
-            exact_win=tuple(x/rollout_count for x in exact),
-            no_win=no_win/rollout_count,
-            win_families=(),
-        ))
-    return tuple(values)
+    return tuple(
+        _resample_empirical_value(keep,rollout_count,rng)
+        for _ in range(int(replicates))
+    )
 
 
 def joint_bootstrap_keep_probability(
