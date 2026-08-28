@@ -28,6 +28,30 @@ def pass_action(runtime):
     )
 
 
+def finish_whir_payment(runtime, *, maximize_improvise=False):
+    """Advance only the pre-search Whir payment DAG until the spell is on stack."""
+    while runtime.pending is not None and runtime.pending.kind == "runtime_whir_payment":
+        request = rules_decision_request(runtime, horizon=6)
+        add = tuple(
+            action for action in request.actions
+            if action.kind == "whir_payment_add_improvise"
+        )
+        finish = tuple(
+            action for action in request.actions
+            if action.kind == "whir_payment_finish"
+        )
+        if maximize_improvise and add:
+            chosen = add[0]
+        elif finish:
+            chosen = finish[0]
+        elif add:
+            chosen = add[0]
+        else:
+            raise AssertionError("Whir payment DAG has no continuation")
+        runtime = apply_main_action(runtime, chosen)
+    return runtime
+
+
 def test_cast_commit_actions_are_hidden_future_invariant():
     left = make_runtime_state(solver.State(
         turn=3,
@@ -223,6 +247,7 @@ def test_cage_filters_creature_targets_from_reshape_and_whir():
     ))
     action = x_actions(whir, "Whir of Invention", 1)[0]
     whir = apply_main_action(whir, action)
+    whir = finish_whir_payment(whir)
     whir = apply_main_action(whir, pass_action(whir))
     targets = {
         dict(a.parameters).get("target")
@@ -242,11 +267,13 @@ def test_whir_commits_x_and_improvise_before_search():
         colorless=0,
     ))
     candidates = x_actions(runtime, "Whir of Invention", 2)
-    action = next(
-        a for a in candidates
-        if len(dict(dict(a.parameters)["cast_parameters"])["improvise"]) == 2
-    )
-    runtime = apply_main_action(runtime, action)
+    assert len(candidates) == 1
+    runtime = apply_main_action(runtime, candidates[0])
+    assert runtime.pending is not None
+    assert runtime.pending.kind == "runtime_whir_payment"
+    # No search target is visible while payment is still being committed.
+    assert "Grim Monolith" not in repr(rules_decision_request(runtime, horizon=6).actions)
+    runtime = finish_whir_payment(runtime, maximize_improvise=True)
     assert all(p.tapped for p in runtime.true_state.battlefield)
     assert runtime.stack.top().kind == "x_artifact_whir_spell"
     assert runtime.pending is None
@@ -271,11 +298,10 @@ def test_runtime_whir_duplicate_improvise_slots_survive_first_tap():
         blue=3,
         colorless=0,
     ))
-    action = next(
-        a for a in x_actions(runtime, "Whir of Invention", 2)
-        if len(dict(dict(a.parameters)["cast_parameters"])["improvise"]) == 2
-    )
-    runtime = apply_main_action(runtime, action)
+    actions = x_actions(runtime, "Whir of Invention", 2)
+    assert len(actions) == 1
+    runtime = apply_main_action(runtime, actions[0])
+    runtime = finish_whir_payment(runtime, maximize_improvise=True)
     assert len(runtime.true_state.battlefield) == 2
     assert all(p.tapped for p in runtime.true_state.battlefield)
     assert runtime.stack.top().kind == "x_artifact_whir_spell"
