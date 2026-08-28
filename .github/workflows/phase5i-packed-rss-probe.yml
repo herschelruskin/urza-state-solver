@@ -1,0 +1,44 @@
+name: Phase 5I packed RSS probe
+
+on:
+  push:
+    branches:
+      - phase5i-packed-rss-probe
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      PYTHONHASHSEED: '0'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Run exact Hand 12 world 0 for three minutes
+        shell: bash
+        run: |
+          set -u
+          python phase5i_hand12_world_eval.py --sample-id 0 &
+          pid=$!
+          start=$(date +%s)
+          while kill -0 "$pid" 2>/dev/null; do
+            now=$(date +%s)
+            elapsed=$((now-start))
+            echo "RSSPROBE elapsed_s=$elapsed $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            ps -o pid,%cpu,%mem,rss,vsz,etime,cmd -p "$pid" || true
+            free -m || true
+            if [ "$elapsed" -ge 180 ]; then
+              echo "RSSPROBE intentional_stop_at_180s"
+              kill -TERM "$pid" 2>/dev/null || true
+              sleep 2
+              kill -KILL "$pid" 2>/dev/null || true
+              wait "$pid" || true
+              exit 0
+            fi
+            sleep 10
+          done
+          wait "$pid"
