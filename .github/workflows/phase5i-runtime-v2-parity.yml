@@ -1,0 +1,66 @@
+name: Phase 5I Runtime v2 Parity
+
+on:
+  push:
+    branches:
+      - phase5i-mulligan-runtime-v2-parity
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  hand24-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONHASHSEED: "0"
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Compare legacy and parallel exact-safe paths
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from phase5_mulligan import OpeningEnvironment, unique_bottom_subsets
+          from phase5i_human_hand_eval import load_deck, MC_ROOT_SEED, Q_MC_ROOT_SEED, HORIZON
+          from phase5i_mulligan import Phase5IOpeningKeepEvaluator
+
+          fixture=json.loads(Path("benchmarks/human/human_mulligan_exact_hands.json").read_text())
+          row=next(x for x in fixture["hands"] if int(x["hand_id"])==24)
+          seven=tuple(row["drawn_seven"])
+          stage=int(row["mulligan_count"])
+          legal=unique_bottom_subsets(seven,stage)
+          common=dict(
+              deck=load_deck(),
+              screen_rollouts=1,
+              confirm_rollouts=3,
+              shortlist_size=4,
+              mc_root_seed=MC_ROOT_SEED,
+              q_mc_root_seed=Q_MC_ROOT_SEED,
+              horizon=HORIZON,
+              opening_environment=OpeningEnvironment(seat=1,player_count=4),
+              max_screen_tie_break_rollouts=0,
+          )
+          legacy_eval=Phase5IOpeningKeepEvaluator(parallel_workers=1,**common)
+          legacy=legacy_eval._legacy_evaluate(seven,stage=stage,legal=legal)
+          adaptive_eval=Phase5IOpeningKeepEvaluator(parallel_workers=4,**common)
+          adaptive=adaptive_eval._adaptive_evaluate(seven,stage=stage,legal=legal)
+          assert adaptive.shortlisted_bottoms==legacy.shortlisted_bottoms,(adaptive.shortlisted_bottoms,legacy.shortlisted_bottoms)
+          assert adaptive.best.bottom==legacy.best.bottom,(adaptive.best.bottom,legacy.best.bottom)
+          assert adaptive.best.value.comparison_key()==legacy.best.value.comparison_key(),(
+              adaptive.best.value.comparison_key(),legacy.best.value.comparison_key()
+          )
+          print("RUNTIME_V2_PARITY="+json.dumps({
+              "hand":24,
+              "shortlist":[list(x) for x in adaptive.shortlisted_bottoms],
+              "best_bottom":list(adaptive.best.bottom),
+              "best_key":list(adaptive.best.value.comparison_key()),
+              "early_eliminated":[list(x) for x in adaptive.confirmation_early_eliminated_bottoms],
+              "fully_confirmed":adaptive.fully_confirmed_bottom_count,
+          },sort_keys=True))
+          PY
