@@ -1,0 +1,67 @@
+name: Phase 5I factorization parity
+
+on:
+  push:
+    branches:
+      - phase5i-factorization-parity
+
+jobs:
+  bottom:
+    strategy:
+      fail-fast: false
+      matrix:
+        bottom_index: [0,1,2,3,4,5,6]
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Evaluate Hand 34 bottom
+        run: python phase5i_human_bottom_eval.py --hand-id 34 --bottom-index ${{ matrix.bottom_index }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-h34-bottom-${{ matrix.bottom_index }}
+          path: phase5i_human_bottom_h34_b*.json
+
+  compare:
+    needs: bottom
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ORIGINAL_RUN_ID: '33122937057'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: phase5i-h34-bottom-*
+          path: factors
+          merge-multiple: true
+      - name: Reduce factorized Hand 34
+        run: python phase5i_human_bottom_reduce.py --hand-id 34 --input-dir factors --output phase5i_human_hand_34_factorized.json
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.ORIGINAL_RUN_ID }}
+          name: phase5i-human-hand-34
+          path: original
+      - name: Compare factorized and original semantics
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          fac=json.loads(Path('phase5i_human_hand_34_factorized.json').read_text())
+          orig=json.loads(next(Path('original').glob('phase5i_human_hand_*.json')).read_text())
+          assert fac['human']==orig['human']
+          assert fac['contexts'][0]['solver']==orig['contexts'][0]['solver']
+          assert fac['contexts'][0]['human_bottom_diagnostic']==orig['contexts'][0]['human_bottom_diagnostic']
+          assert fac['ex_ante_after_seat_conditioned_optimization']==orig['ex_ante_after_seat_conditioned_optimization']
+          print('Phase 5I factorization parity vs original Hand 34: PASS')
+          PY
