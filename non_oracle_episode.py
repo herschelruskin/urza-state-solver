@@ -35,6 +35,7 @@ from non_oracle_rules_adapter_v2 import apply_main_action, rules_decision_reques
 from non_oracle_runtime import NonOracleRuntimeState
 from solver_architecture import canonical_markov_state_key, stable_key
 from phase5_packed_keys import packed_action_strategic_key, packed_episode_cycle_key
+from phase5_lossless_packed_codec import pack_lossless_body
 
 EPISODE_RUNNER_VERSION = "urza-non-oracle-episode-v2-cycle-aware"
 EPISODE_CYCLE_KEY_VERSION = "urza-episode-cycle-v1"
@@ -93,6 +94,41 @@ def episode_cycle_key(runtime: NonOracleRuntimeState) -> bytes:
     readable rules state remains unchanged.
     """
     return packed_episode_cycle_key(runtime)
+
+
+def _fresh_actions_from_attempt_ledger(actions, ledger):
+    """Return fresh strategic actions using an exact packed action-set + bitmask.
+
+    The action-set blob is collision-free. On an exact cycle-state revisit the
+    strategic action set must be identical; drift fails loudly rather than
+    reinterpreting bit positions.
+    """
+    action_keys=tuple(sorted({
+        packed_action_strategic_key(action)
+        for action in actions
+    }))
+    action_blob=pack_lossless_body(action_keys)
+    if ledger is None:
+        attempted_mask=0
+    else:
+        prior_blob,attempted_mask=ledger
+        if prior_blob!=action_blob:
+            raise AssertionError(
+                "exact episode cycle state produced a different strategic action set"
+            )
+    index={key:i for i,key in enumerate(action_keys)}
+    fresh=tuple(
+        action for action in actions
+        if not (attempted_mask & (1 << index[packed_action_strategic_key(action)]))
+    )
+    return fresh,action_blob,int(attempted_mask),index
+
+
+def _record_attempt(action,action_blob,attempted_mask,index):
+    key=packed_action_strategic_key(action)
+    if key not in index:
+        raise AssertionError("chosen action missing from packed strategic action set")
+    return (action_blob,int(attempted_mask) | (1 << index[key]))
 
 
 def _blocked_reason(runtime: NonOracleRuntimeState, horizon: int) -> str:
@@ -166,10 +202,11 @@ def run_deterministic_episode(
             )
 
         cycle_key = episode_cycle_key(runtime)
-        attempted = attempted_by_cycle_state.setdefault(cycle_key, set())
-        fresh_actions = tuple(
-            action for action in request.actions
-            if packed_action_strategic_key(action) not in attempted
+        fresh_actions,action_blob,attempted_mask,action_index = (
+            _fresh_actions_from_attempt_ledger(
+                request.actions,
+                attempted_by_cycle_state.get(cycle_key),
+            )
         )
         if not fresh_actions:
             return NonOracleEpisodeResult(
@@ -186,7 +223,9 @@ def run_deterministic_episode(
             fresh_actions,
             request.context,
         )
-        attempted.add(packed_action_strategic_key(action))
+        attempted_by_cycle_state[cycle_key]=_record_attempt(
+            action,action_blob,attempted_mask,action_index
+        )
         before_turn = int(state.turn)
         before_window = runtime.window.kind
         observation_key = (
