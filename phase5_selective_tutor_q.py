@@ -93,7 +93,7 @@ CONTINGENT_DEPTH_AFTER_ACTION_KIND={
 
 def contingent_depth_after_action(action:ActionIntent)->int:
     kind=str(action.kind)
-    params=dict(action.parameters)
+    params=dict(getattr(action,"parameters",()) or ())
     if kind=="main_use_x_artifact_tutor" and str(action.source)=="Whir of Invention":
         # Staged Whir can choose at most generic_need improvise objects, followed
         # by the observed search target. No hidden information is revealed during
