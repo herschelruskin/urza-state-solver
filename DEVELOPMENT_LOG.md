@@ -654,3 +654,83 @@ split into isolated per-hand jobs, with hands 12, 14, 25, and 26 in a dedicated
 low-concurrency heavy lane.  The 112 factorized London continuation samples remain
 independent jobs and aggregate only after every homogeneous source artifact
 completes successfully.
+
+
+## Phase 5I mulligan runtime v2 — August 28, 2026
+
+Branch: `phase5i-mulligan-runtime-v2`
+Validated source parent: `206282ba72413e61f18c6d5119d880126506bd8f`
+
+This optimization changes only the Phase-5I opening-hand evaluator/orchestration.
+Frozen Phase-5H gameplay/rules/card action semantics are unchanged.
+
+Implemented runtime changes:
+
+1. **Process-parallel bottom racing.**
+   Independent London bottom candidates can run in separate worker processes.
+   Each worker owns one bounded Phase-5H Q cache across that bottom's outer
+   worlds, preserving within-bottom cache locality while reducing wall time.
+   Human and stage-sample entry points currently request four workers.
+
+2. **Adaptive exact-cutoff tie re-screening.**
+   The initial screen remains the frozen Phase-5H player.  If an exact
+   finite-sample tie straddles the configured shortlist cutoff, only that
+   boundary tie group receives additional paired outer worlds (maximum two by
+   current configuration).  Candidates already below the original cutoff never
+   re-enter.  If the boundary remains tied after the bounded re-screen, all
+   remaining exact ties are conservatively retained.
+
+3. **Exact confirmation early elimination.**
+   One fully evaluated confirmation candidate establishes an exact incumbent.
+   Another candidate may stop only when the most optimistic possible completion
+   of all remaining worlds (every unseen world wins on T1) is still
+   lexicographically below the incumbent's exact win-distribution objective.
+   Equality is never pruned, preserving deterministic tie-breaking.
+
+RNG/correctness details:
+
+- legacy confirmation outer-world IDs are preserved exactly;
+- tie-break worlds use later, disjoint sample IDs, so adaptive tie resolution
+  does not shift the existing confirmation random tape;
+- process-local cache misses recompute deterministic values from the same
+  explicit seeds and therefore do not change player choices;
+- live Gemstone Caverns hands currently fall back to the legacy aggregate
+  evaluator because they can have multiple pregame exile choices per bottom;
+  this is a performance fallback, not a policy/card restriction.
+
+Instrumentation added to human/stage artifacts:
+
+- requested shortlist count and fully-confirmed count;
+- adaptive tie-break rollout count;
+- exact early-eliminated bottoms;
+- worker count;
+- confirmation sample start;
+- aggregate actual Q-cache hit/miss/eviction work.
+
+Commits:
+
+- `bfdf69dcc6fce299d6c532e3ddfff5a745d42027` core parallel/adaptive/exact-safe evaluator;
+- `6d5e541c4be9b7dace2c8e976b7660c2aa670ec7` human benchmark wiring;
+- `95041b6560d2b1f6e88869a9242e41b8d65bd442` stage-sample wiring;
+- `4917bae9b0b6272030baf2756b2e8fee357d75ae` bound/distribution smoke tests;
+- `06485c54f81d749c5cc4a385b626f50413c1abe9` preserve legacy confirmation RNG window.
+
+Validation:
+
+- compile: PASS;
+- Phase-5I integration smoke including exact optimistic-bound and distribution
+  merge tests: PASS;
+- optimized Hand-25 A/B run: `33217243724` (in progress at checkpoint);
+- legacy-vs-parallel same-world Hand-24 parity run with adaptive ties disabled:
+  `33217537433` (in progress at checkpoint);
+- current-code 7-bottom x 4-world Hand-25 postmortem:
+  `33216668759`.
+
+Current Hand-25 postmortem evidence already confirms deep repeated-search cost
+rather than one giant action list.  Example on final frozen gameplay code:
+bottom Island / outer world 0 took 741.0 s, generated 253,504 decision requests,
+had 671 Q-cache hits / 284 misses, and max instantaneous request size was only 95.
+Large late fanout families included Transmute target choice (~36-37), Grinding
+Station mill targets (~25-27), and Repurposing Bay activations (~31).  Do not
+constrain these card behaviors heuristically before the outer runtime-v2 A/B is
+measured and structural/factoring options are audited.
