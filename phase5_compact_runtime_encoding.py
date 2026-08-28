@@ -11,6 +11,8 @@ tuples containing full card names and library state.
 
 from __future__ import annotations
 
+from collections import Counter
+
 from dataclasses import fields, is_dataclass
 import hashlib
 from pathlib import Path
@@ -302,4 +304,112 @@ def compact_action_strategic_digest(action)->bytes:
         writer.text(str(action.decision_stage))
         writer.text(str(action.source))
         writer.text(str(action.contingent_on))
+    return writer.digest()
+
+
+def _write_strategic_value_state(writer:_DigestWriter,runtime):
+    """Direct numeric equivalent of canonical_runtime_object_value_key(runtime).
+
+    Exact hidden library order and RNG provenance are deliberately absent.
+    """
+    state=runtime.true_state
+    info=runtime.information
+
+    writer.raw(b"strategic-state")
+    writer.integer(int(state.turn))
+
+    # LibraryBeliefKey: order-free remaining multiset + legally known positions.
+    counts=Counter(str(card) for card in state.library)
+    writer.integer(len(counts))
+    for card,count in sorted(counts.items()):
+        writer.card(card)
+        writer.integer(int(count))
+    _write_card_sequence(writer,info.known_top,sort_cards=False)
+    _write_card_sequence(writer,info.known_bottom,sort_cards=False)
+    known_counts=tuple(sorted((str(card),int(count)) for card,count in info.known_library_counts))
+    writer.integer(len(known_counts))
+    for card,count in known_counts:
+        if count<0:
+            raise ValueError(f"negative known library count for {card!r}: {count}")
+        writer.card(card)
+        writer.integer(count)
+
+    _write_card_sequence(writer,state.hand,sort_cards=True)
+
+    rows=tuple(sorted(state.battlefield,key=_permanent_signature))
+    writer.integer(len(rows))
+    for perm in rows:
+        _write_permanent(writer,perm)
+
+    _write_card_sequence(writer,state.graveyard,sort_cards=True)
+    _write_card_sequence(writer,state.exile,sort_cards=True)
+
+    for name in (
+        "blue","colorless","drain_bank","bauble_draws","remora_age",
+        "ring_counters","ftt_level","uthros_counters","vfc_pumps",
+        "commander_casts_from_zone",
+    ):
+        writer.text(name)
+        writer.integer(int(getattr(state,name,0)))
+
+    for name in (
+        "land_played","remora_upkeep_pending","saga3_pending","urza",
+        "chip_attached","spell_cast_this_turn","commander_in_command_zone","won",
+    ):
+        writer.text(name)
+        writer.boolean(bool(getattr(state,name,False)))
+
+    writer.text("chip_target")
+    writer.text(str(getattr(state,"chip_target","")))
+    writer.text("pa_target")
+    writer.text(str(getattr(state,"pa_target","")))
+
+    writer.text("urza_exile_permissions")
+    _write_card_sequence(
+        writer,
+        getattr(state,"urza_exile_permissions",()),
+        sort_cards=True,
+    )
+
+    writer.text("oracle_stack")
+    writer.generic(tuple(
+        tuple(str(item) for item in entry)
+        for entry in getattr(state,"oracle_stack",())
+    ))
+
+    # objective_memory is empty for the production Phase-5 MC cache path.
+    writer.text("objective_memory")
+    writer.generic(())
+
+    writer.raw(b"permissions")
+    permission_rows=tuple(sorted(
+        (
+            str(permission.card),
+            int(permission.expires_turn),
+            bool(permission.without_paying_mana_cost),
+            str(permission.source),
+        )
+        for permission in runtime.permissions.permissions
+    ))
+    writer.integer(len(permission_rows))
+    for card,expires,free,source in permission_rows:
+        writer.card(card)
+        writer.integer(expires)
+        writer.boolean(free)
+        writer.text(source)
+
+    writer.raw(b"runtime-stack")
+    writer.generic(tuple(runtime.stack.strategic_key()))
+
+    writer.raw(b"window")
+    writer.text(str(runtime.window.kind))
+
+    writer.raw(b"pending")
+    writer.generic(tuple(_pending_strategic_key(runtime.pending)))
+
+
+def compact_runtime_value_digest(runtime)->bytes:
+    """Fixed 32-byte strategic Q identity, excluding exact hidden order/RNG."""
+    writer=_DigestWriter(b"runtime-value")
+    _write_strategic_value_state(writer,runtime)
     return writer.digest()
