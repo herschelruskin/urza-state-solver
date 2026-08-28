@@ -71,7 +71,9 @@ MAIN_USE_X_ARTIFACT_TUTOR = "main_use_x_artifact_tutor"
 SPELL_RESHAPE = "x_artifact_reshape_spell"
 SPELL_WHIR = "x_artifact_whir_spell"
 RUNTIME_X_TARGET = "runtime_x_artifact_target"
+RUNTIME_RESHAPE_SACRIFICE = "runtime_reshape_sacrifice"
 RUNTIME_WHIR_PAYMENT = "runtime_whir_payment"
+RESHAPE_CHOOSE_SACRIFICE = "reshape_choose_sacrifice"
 WHIR_PAYMENT_ADD = "whir_payment_add_improvise"
 WHIR_PAYMENT_FINISH = "whir_payment_finish"
 
@@ -85,12 +87,47 @@ if MAX_USEFUL_ARTIFACT_X >= 99:
     raise RuntimeError("artifact mana-value metadata incomplete for staged X tutor")
 
 
-def _reshape_underlying_cast_intents(runtime: NonOracleRuntimeState):
-    return tuple(
-        candidate
-        for candidate in reshape_cast_intents(runtime.true_state)
-        if int(dict(candidate.parameters)["x"]) <= MAX_USEFUL_ARTIFACT_X
-    )
+def _reshape_generic_cost(state, x: int) -> int:
+    return max(0, int(x) - solver.medallion_reduction(state, RESHAPE))
+
+
+def _reshape_x_is_payable(state, x: int) -> bool:
+    if RESHAPE not in state.hand or state.blue < 2:
+        return False
+    if not 0 <= int(x) <= MAX_USEFUL_ARTIFACT_X:
+        return False
+    if not _artifact_slots(state):
+        return False
+    return bool(solver.can_pay(state, _reshape_generic_cost(state, int(x)), 2))
+
+
+def _reshape_root_intents(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ...]:
+    state=runtime.true_state
+    rows=[]
+    for x in range(MAX_USEFUL_ARTIFACT_X + 1):
+        if not _reshape_x_is_payable(state,x):
+            continue
+        generic=_reshape_generic_cost(state,x)
+        rows.append(ActionIntent(
+            action_id=f"main.x_artifact.reshape.x{x}",
+            kind=MAIN_USE_X_ARTIFACT_TUTOR,
+            parameters=(
+                ("generic_paid",int(generic)),
+                ("source",RESHAPE),
+                ("x",int(x)),
+            ),
+            equivalence_key=(
+                MAIN_USE_X_ARTIFACT_TUTOR,
+                RESHAPE,
+                "staged-sacrifice",
+                int(x),
+                int(generic),
+            ),
+            label=f"Cast Reshape X={x}; choose sacrifice",
+            decision_stage=DECISION_COMMIT,
+            source=RESHAPE,
+        ))
+    return tuple(rows)
 
 
 def _whir_generic_need(state, x: int) -> int:
@@ -155,54 +192,165 @@ def _whir_root_intents(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ..
 
 
 def x_artifact_runtime_intents(runtime: NonOracleRuntimeState) -> Tuple[ActionIntent, ...]:
-    """Expose pre-search commitments without materializing Whir payment subsets.
+    """Expose factored pre-search commitments without Cartesian materialization.
 
-    Reshape still commits X+sacrifice in one action. Whir commits X first, then
-    enters a no-observation payment subdecision that selects improvise objects one
-    at a time. Every historical complete payment plan remains reachable.
+    Reshape commits X, then chooses its additional-cost sacrifice in a no-observation
+    pending decision. Whir commits X, then traverses its symbolic improvise-payment
+    DAG. Search targets remain hidden until the corresponding spell resolves.
     """
-    rows = []
-    for candidate in _reshape_underlying_cast_intents(runtime):
-        params = dict(candidate.parameters)
-        sacrifice = tuple(params.get("sacrifice", ()))
-        sacrifice_name = str(sacrifice[0]) if sacrifice else ""
-        rows.append(
-            ActionIntent(
-                action_id=f"main.x_artifact.{candidate.action_id}",
-                kind=MAIN_USE_X_ARTIFACT_TUTOR,
-                parameters=(
-                    ("cast_parameters", tuple(candidate.parameters)),
-                    ("sacrifice_name", sacrifice_name),
-                    ("source", RESHAPE),
-                    ("x", int(params["x"])),
-                ),
-                equivalence_key=(
-                    MAIN_USE_X_ARTIFACT_TUTOR,
-                    RESHAPE,
-                    candidate.strategic_key(),
-                ),
-                label=candidate.label,
-                decision_stage=DECISION_COMMIT,
-                source=RESHAPE,
-            )
-        )
+    rows=list(_reshape_root_intents(runtime))
     rows.extend(_whir_root_intents(runtime))
-    return tuple(sorted(rows, key=lambda action: action.action_id))
+    return tuple(sorted(rows,key=lambda action:action.action_id))
 
 
-def _find_reshape_underlying(runtime: NonOracleRuntimeState, action: ActionIntent):
-    params = dict(action.parameters)
-    if str(params["source"]) != RESHAPE:
-        raise ValueError("only Reshape uses an underlying monolithic cast action")
-    cast_parameters = tuple(params["cast_parameters"])
-    matches = [
-        candidate
-        for candidate in _reshape_underlying_cast_intents(runtime)
-        if tuple(candidate.parameters) == cast_parameters
-    ]
-    if len(matches) != 1:
-        raise ValueError("Reshape commitment is no longer legal")
-    return matches[0]
+def _reshape_sacrifice_request(
+    runtime:NonOracleRuntimeState,
+    *,
+    horizon:int,
+    objective:str,
+    policy_id:str,
+    caverns_live=None,
+)->DecisionRequest:
+    pending=runtime.pending
+    if pending is None or pending.kind!=RUNTIME_RESHAPE_SACRIFICE:
+        raise ValueError("not a pending Reshape sacrifice decision")
+    data=dict(pending.payload)
+    x=int(data["x"])
+    generic=int(data["generic_paid"])
+    if not _reshape_x_is_payable(runtime.true_state,x):
+        raise ValueError("pending Reshape X commitment is no longer payable")
+    if generic!=_reshape_generic_cost(runtime.true_state,x):
+        raise ValueError("pending Reshape generic cost changed")
+    rows=[]
+    for index,slot in enumerate(_artifact_slots(runtime.true_state)):
+        rows.append(ActionIntent(
+            action_id=f"reshape.sacrifice.x{x}.{index:03d}",
+            kind=RESHAPE_CHOOSE_SACRIFICE,
+            parameters=(
+                ("generic_paid",generic),
+                ("sacrifice",slot.key()),
+                ("sacrifice_name",str(slot.name or slot.mode)),
+                ("x",x),
+            ),
+            equivalence_key=(
+                RESHAPE_CHOOSE_SACRIFICE,
+                x,
+                generic,
+                slot.key(),
+            ),
+            label=f"Reshape X={x}: sacrifice {slot.name or slot.mode}",
+            decision_stage=DECISION_COMMIT,
+            source=RESHAPE,
+            contingent_on=pending.spec.contingent_on,
+        ))
+    if not rows:
+        raise ValueError("pending Reshape has no artifact to sacrifice")
+    return DecisionRequest(
+        observation=runtime.policy_view(caverns_live=caverns_live),
+        actions=tuple(rows),
+        context=PolicyDecisionContext(
+            horizon=horizon,
+            objective=objective,
+            policy_id=policy_id,
+            decision_id=pending.spec.decision_id,
+            decision_stage=DECISION_COMMIT,
+        ),
+    )
+
+
+def _start_reshape_sacrifice(
+    runtime:NonOracleRuntimeState,
+    *,
+    x:int,
+    generic_paid:int,
+    contingent_on:str,
+)->NonOracleRuntimeState:
+    if not _reshape_x_is_payable(runtime.true_state,int(x)):
+        raise ValueError("Reshape X commitment is no longer payable")
+    expected=_reshape_generic_cost(runtime.true_state,int(x))
+    if int(generic_paid)!=expected:
+        raise ValueError("Reshape generic commitment is stale")
+    spec=PendingDecisionSpec(
+        decision_id=f"runtime.reshape.sacrifice.x{int(x)}",
+        kind=RESHAPE_CHOOSE_SACRIFICE,
+        source=RESHAPE,
+        decision_stage=DECISION_COMMIT,
+        contingent_on=str(contingent_on),
+    )
+    return replace(
+        runtime,
+        pending=RuntimePendingDecision(
+            spec=spec,
+            kind=RUNTIME_RESHAPE_SACRIFICE,
+            payload=(
+                ("generic_paid",int(expected)),
+                ("source",RESHAPE),
+                ("x",int(x)),
+            ),
+        ),
+    )
+
+
+def _apply_reshape_sacrifice(
+    runtime:NonOracleRuntimeState,
+    action:ActionIntent,
+)->NonOracleRuntimeState:
+    request=_reshape_sacrifice_request(
+        runtime,
+        horizon=max(1,int(runtime.true_state.turn)),
+        objective="win_by_horizon",
+        policy_id="runtime",
+    )
+    legal={candidate.canonical_key() for candidate in request.actions}
+    if action.canonical_key() not in legal:
+        raise ValueError("Reshape sacrifice commitment is no longer legal")
+    params=dict(action.parameters)
+    x=int(params["x"])
+    generic=int(params["generic_paid"])
+    slot=_slot_from_parameter(tuple(params["sacrifice"]))
+    state=runtime.true_state
+    if not _reshape_x_is_payable(state,x):
+        raise ValueError("Reshape can no longer pay committed X")
+    index=_slot_index(state,slot)
+
+    paid=solver.pay(state,generic,2)
+    if paid is None or RESHAPE not in paid.hand:
+        raise ValueError("Reshape can no longer pay its committed cost")
+    paid=replace(
+        paid,
+        hand=solver.remove_one(paid.hand,RESHAPE),
+        spell_cast_this_turn=True,
+    )
+    if not solver.is_artifact_perm(paid.battlefield[index]):
+        raise ValueError("Reshape sacrifice is no longer an artifact")
+    paid,sacrificed=_remove_artifact_for_reshape_cost(paid,index)
+    prized_died=sacrificed.name=="Prized Statue"
+    cam_died=sacrificed.name=="Sewer-veillance Cam"
+    mana_spent=int(generic+2)
+    paid=solver.add_trace(
+        paid,
+        f"Phase2 cast Reshape X={x}; sacrifice {sacrificed.name or sacrificed.mode} as additional cost",
+    )
+    runtime=replace(
+        runtime,
+        true_state=solver._ensure_oracle_instance_tags(paid),
+        pending=None,
+    )
+    spell,runtime=_allocate_spell(
+        runtime,
+        kind=SPELL_RESHAPE,
+        source=RESHAPE,
+        x=x,
+        mana_spent=mana_spent,
+    )
+    return _finish_cast_triggers(
+        runtime,
+        source=RESHAPE,
+        spell=spell,
+        mana_spent=mana_spent,
+        prized_died=prized_died,
+        cam_died=cam_died,
+    )
 
 
 def _whir_payment_payload(
@@ -692,47 +840,12 @@ def begin_x_artifact_tutor(runtime: NonOracleRuntimeState, action: ActionIntent)
             contingent_on=action.action_id,
         )
 
-    underlying = _find_reshape_underlying(runtime, action)
-    params = dict(underlying.parameters)
-    x = int(params["x"])
-    prized_died = False
-    cam_died = False
-
     if source == RESHAPE:
-        generic = int(params["generic_paid"])
-        paid = solver.pay(state, generic, 2)
-        if paid is None or source not in paid.hand:
-            raise ValueError("Reshape can no longer pay its committed cost")
-        paid = replace(
-            paid,
-            hand=solver.remove_one(paid.hand, source),
-            spell_cast_this_turn=True,
-        )
-        slot = _slot_from_parameter(tuple(params["sacrifice"]))
-        # Recover the committed source from the pre-payment state.  pay() can
-        # mutate public permanent annotations but preserves battlefield order.
-        index = _slot_index(state, slot)
-        if not solver.is_artifact_perm(paid.battlefield[index]):
-            raise ValueError("Reshape sacrifice is no longer an artifact")
-        paid, sacrificed = _remove_artifact_for_reshape_cost(paid, index)
-        prized_died = sacrificed.name == "Prized Statue"
-        cam_died = sacrificed.name == "Sewer-veillance Cam"
-        mana_spent = int(generic + 2)
-        paid = solver.add_trace(
-            paid,
-            f"Phase2 cast Reshape X={x}; sacrifice {sacrificed.name or sacrificed.mode} as additional cost",
-        )
-        runtime = replace(runtime, true_state=solver._ensure_oracle_instance_tags(paid))
-        spell, runtime = _allocate_spell(
-            runtime, kind=SPELL_RESHAPE, source=source, x=x, mana_spent=mana_spent
-        )
-        return _finish_cast_triggers(
+        return _start_reshape_sacrifice(
             runtime,
-            source=source,
-            spell=spell,
-            mana_spent=mana_spent,
-            prized_died=prized_died,
-            cam_died=cam_died,
+            x=int(action_params["x"]),
+            generic_paid=int(action_params["generic_paid"]),
+            contingent_on=action.action_id,
         )
 
     raise AssertionError("unhandled X-artifact tutor source")
@@ -784,7 +897,11 @@ def handles_x_artifact_stack_top(runtime: NonOracleRuntimeState) -> bool:
 def handles_x_artifact_pending(runtime: NonOracleRuntimeState) -> bool:
     return bool(
         runtime.pending
-        and runtime.pending.kind in {RUNTIME_X_TARGET, RUNTIME_WHIR_PAYMENT}
+        and runtime.pending.kind in {
+            RUNTIME_X_TARGET,
+            RUNTIME_RESHAPE_SACRIFICE,
+            RUNTIME_WHIR_PAYMENT,
+        }
     )
 
 
@@ -799,6 +916,14 @@ def x_artifact_pending_request(
     pending = runtime.pending
     if pending is not None and pending.kind == RUNTIME_WHIR_PAYMENT:
         return whir_payment_request(
+            runtime,
+            horizon=horizon,
+            objective=objective,
+            policy_id=policy_id,
+            caverns_live=caverns_live,
+        )
+    if pending is not None and pending.kind == RUNTIME_RESHAPE_SACRIFICE:
+        return _reshape_sacrifice_request(
             runtime,
             horizon=horizon,
             objective=objective,
@@ -834,6 +959,8 @@ def apply_x_artifact_pending(runtime: NonOracleRuntimeState, action: ActionInten
     pending = runtime.pending
     if pending is not None and pending.kind == RUNTIME_WHIR_PAYMENT:
         return apply_whir_payment_pending(runtime, action)
+    if pending is not None and pending.kind == RUNTIME_RESHAPE_SACRIFICE:
+        return _apply_reshape_sacrifice(runtime, action)
     if pending is None or pending.kind != RUNTIME_X_TARGET:
         raise ValueError("not a pending X-artifact decision")
     request = x_artifact_pending_request(
