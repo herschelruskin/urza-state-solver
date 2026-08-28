@@ -1,0 +1,52 @@
+name: Phase 5I benchmark extra repairs
+
+on:
+  push:
+    branches:
+      - phase5i-benchmark-repairs-extra
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hand25:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile evaluator
+        run: python -m py_compile phase5i_human_hand_eval.py
+      - name: Evaluate human hand 25
+        run: python phase5i_human_hand_eval.py --hand-id 25
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-human-hand-25
+          path: phase5i_human_hand_*.json
+
+  live_stage4_sample3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile factorized evaluator
+        run: |
+          python -m py_compile phase5i_stage_sample_eval.py
+          python -m py_compile phase5i_stage_sample_reduce.py
+      - name: Evaluate live stage 4 sample 3
+        run: python phase5i_stage_sample_eval.py --context live --stage 4 --sample-id 3
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-stage-sample-live-s4-n3
+          path: phase5i_stage_sample_*.json
