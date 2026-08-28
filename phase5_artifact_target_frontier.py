@@ -22,7 +22,7 @@ from decision_observation import ActionIntent
 from non_oracle_runtime_view import RuntimePolicyView
 
 
-ARTIFACT_TARGET_FRONTIER_VERSION = "urza-artifact-target-frontier-v1"
+ARTIFACT_TARGET_FRONTIER_VERSION = "urza-artifact-target-frontier-v2-opponent-only"
 
 ROLE_COMBO = 1 << 0
 ROLE_PRODUCER = 1 << 1
@@ -382,63 +382,38 @@ def whir_target_frontier(
     card_actions = tuple(a for a in target_actions if _target_name(a))
     features = {a.strategic_key(): target_feature(_target_name(a), observation) for a in card_actions}
 
-    # Conservative promotion rule: every target with an explicitly modeled
-    # combo/mana/value/untap/tutor/protection role survives.  We do NOT Pareto
-    # prune among these live roles, because doing so can alter a valid sequencing
-    # choice such as Whir -> Sol Ring versus developing Urza first.
-    live = []
-    low_information = []
-    for action in card_actions:
-        feature = features[action.strategic_key()]
-        if feature.role_mask & LIVE_ROLE_MASK:
-            live.append(action)
-        else:
-            low_information.append(action)
-
+    # Identity-safe goldfish compression: every non-opponent artifact target
+    # survives as its own card identity. Even strategically generic singleton
+    # artifacts can change downstream shuffle/draw distributions by leaving the
+    # library, so they are not action-equivalent for Q valuation.
     retained_keys = set(keep_keys)
-    retained_keys.update(a.strategic_key() for a in live)
-
-    # Opponent-only pieces are legal but normally irrelevant to a no-opponent
-    # win-speed objective.  Keep them only when rollout-v6 explicitly selected
-    # them (must_retain) or when there is literally no richer target.
-    richer_exists = bool(live) or any(
-        features[a.strategic_key()].goldfish_relevance > 0
-        for a in low_information
-    )
-    dominated = set()
-    neutral_low = []
-    for action in low_information:
+    non_opponent = []
+    opponent_only = []
+    for action in card_actions:
         key = action.strategic_key()
         feature = features[key]
-        if key in keep_keys:
+        if feature.role_mask & ROLE_OPPONENT_ONLY:
+            opponent_only.append(action)
+        else:
+            non_opponent.append(action)
             retained_keys.add(key)
-            continue
-        if (
-            richer_exists
-            and feature.role_mask & ROLE_OPPONENT_ONLY
-        ):
-            dominated.add(key)
-            continue
-        neutral_low.append(action)
 
-    # Among remaining generic-body targets, collapse identical modeled feature
-    # signatures to one deterministic representative.  This is intentionally
-    # restricted to low-information targets; all strategically live targets
-    # above retain their card identity.
-    by_signature = {}
-    collapsed = 0
-    for action in sorted(neutral_low, key=lambda a: a.action_id):
+    # Under the no-opponent win-speed objective, these pieces have no modeled
+    # upside. Remove them only when a non-opponent target is available. The v6
+    # base choice (must_retain) always survives, preserving fallback semantics.
+    richer_exists = bool(non_opponent)
+    dominated = set()
+    for action in opponent_only:
         key = action.strategic_key()
-        sig = features[key].vector()
-        if sig in by_signature:
-            collapsed += 1
+        if key in keep_keys or not richer_exists:
+            retained_keys.add(key)
+        else:
             dominated.add(key)
-            continue
-        by_signature[sig] = action
-        retained_keys.add(key)
 
-    # Defense Grid is already a live protection role, but keep the explicit
-    # assertion here as a regression guard for future role-table edits.
+    collapsed = 0
+
+    # Defense Grid is protection, not opponent-only interaction, and should
+    # always survive. Keep this explicit guard for future role-table edits.
     retained_keys.update(
         a.strategic_key() for a in card_actions
         if _target_name(a) == "Defense Grid"
