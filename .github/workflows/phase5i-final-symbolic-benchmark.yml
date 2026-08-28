@@ -7,6 +7,11 @@ on:
       - phase5i-final-chain-frozen
   workflow_dispatch:
 
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   preflight:
     runs-on: ubuntu-latest
@@ -23,6 +28,7 @@ jobs:
           python phase5_staged_reshape_parity_smoke.py
           python phase5_staged_whir_payment_smoke.py
           python x_artifact_search_adapter_smoke.py
+          python simple_tutor_runtime_smoke.py
           python phase5_chain_offer_smoke.py
           python phase5_symbolic_action_space_smoke.py
           python phase5_symbolic_branch_bound_smoke.py
@@ -34,8 +40,42 @@ jobs:
       - name: Source check
         run: git diff --check
 
-  human_standard:
+  phase5h_gate:
     needs: preflight
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        hand_id: [12,13,19,20,21,24,25,27,29,33]
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    env:
+      PYTHONHASHSEED: '0'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Revalidate frozen Phase 5H paired hand
+        run: python phase5_q_targeted_paired4.py --hand-id ${{ matrix.hand_id }}
+      - name: Require zero Q-vs-v6 regressions
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          paths=list(Path('.').glob('phase5_q_targeted_paired4_hand*.json'))
+          assert len(paths)==1,paths
+          row=json.loads(paths[0].read_text())
+          one=row['world_comparison']['one_vs_v6']
+          two=row['world_comparison']['two_vs_v6']
+          assert int(one['worse'])==0,(row['hand_id'],one)
+          assert int(two['worse'])==0,(row['hand_id'],two)
+          print(json.dumps({'hand':row['hand_id'],'pwin':row['pwin'],'one_vs_v6':one,'two_vs_v6':two},sort_keys=True))
+          PY
+
+  human_standard:
+    needs: [preflight, phase5h_gate]
     strategy:
       fail-fast: false
       max-parallel: 12
@@ -59,7 +99,7 @@ jobs:
           path: phase5i_human_hand_*.json
 
   human_heavy:
-    needs: preflight
+    needs: [preflight, phase5h_gate]
     strategy:
       fail-fast: false
       max-parallel: 2
@@ -83,7 +123,7 @@ jobs:
           path: phase5i_human_hand_*.json
 
   stage_sample:
-    needs: preflight
+    needs: [preflight, phase5h_gate]
     strategy:
       fail-fast: false
       max-parallel: 16
@@ -175,7 +215,7 @@ jobs:
           payload={
               "kind":"phase5i-final-chain-frozen-provenance",
               "git_sha":os.environ.get("GITHUB_SHA",""),
-              "frozen_phase5h_source_sha":"e7c6b7a03bfe6540314a7f20313df4b33a74328e",
+              "frozen_phase5h_source_sha":"c7dd2b8b14fcacfd8ef03fdf511f8cbb2dfd7e72",
               "human_hand_count":35,
               "stage_sample_count":112,
               "contexts":["dead","live"],
