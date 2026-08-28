@@ -34,7 +34,7 @@ from non_oracle_base_policy import DeterministicBasePolicy
 from non_oracle_rules_adapter_v2 import apply_main_action, rules_decision_request
 from non_oracle_runtime import NonOracleRuntimeState
 from solver_architecture import canonical_markov_state_key, stable_key
-from phase5_compact_runtime_encoding import compact_runtime_cycle_digest
+from phase5_packed_keys import packed_episode_cycle_key
 
 EPISODE_RUNNER_VERSION = "urza-non-oracle-episode-v2-cycle-aware"
 EPISODE_CYCLE_KEY_VERSION = "urza-episode-cycle-v1"
@@ -88,11 +88,11 @@ def legacy_episode_cycle_key(runtime: NonOracleRuntimeState) -> Tuple[object, ..
 def episode_cycle_key(runtime: NonOracleRuntimeState) -> bytes:
     """Exact sampled-world + semantic runtime identity for trajectory cycles.
 
-    Production retains only a fixed 32-byte digest built from one-byte card IDs,
-    packed scalar state, and semantic runtime sidecars.  The readable rules state
-    remains unchanged; this only replaces the hot cycle-detection representation.
+    Production retains the canonical packed projection bytes directly.  They are
+    collision-free and reversible to the Markov/runtime projection while the
+    readable rules state remains unchanged.
     """
-    return compact_runtime_cycle_digest(runtime)
+    return packed_episode_cycle_key(runtime)
 
 
 def _blocked_reason(runtime: NonOracleRuntimeState, horizon: int) -> str:
