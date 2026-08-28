@@ -1,0 +1,81 @@
+name: Phase 5I shared search-shuffle validation
+
+on:
+  push:
+    branches:
+      - phase5i-search-shuffle-coupling
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  semantic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile shared-shuffle path
+        run: |
+          python -m py_compile x_artifact_search_adapter.py phase5_selective_tutor_q.py
+      - name: Search shuffle and exact identity regressions
+        run: python x_artifact_search_adapter_smoke.py
+      - name: Existing Q and staged tutor regressions
+        run: |
+          python phase5_selective_tutor_q_smoke.py
+          python phase5_contingent_tutor_q_smoke.py
+          python phase5_adaptive_confidence_q_smoke.py
+          python phase5_symbolic_action_space_smoke.py
+          python phase5_symbolic_branch_bound_smoke.py
+          python phase5_staged_whir_payment_smoke.py
+          python phase5_staged_reshape_parity_smoke.py
+          python phase5i_mulligan_smoke.py
+
+  paired4:
+    needs: semantic
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        hand_id: [12, 13, 19, 20, 21, 24, 25, 27, 29, 33]
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      PYTHONHASHSEED: '0'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Frozen Phase 5H paired4 hand with shared search shuffle
+        run: python phase5_q_targeted_paired4.py --hand-id "${{ matrix.hand_id }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5h-shared-shuffle-paired4-${{ matrix.hand_id }}
+          path: phase5_q_targeted_paired4_hand*.json
+
+  hand25:
+    needs: semantic
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      PYTHONHASHSEED: '0'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Exact Phase 5I Hand 25 evaluator
+        run: python phase5i_human_hand_eval.py --hand-id 25
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-shared-shuffle-hand25
+          path: phase5i_human_hand_25.json
