@@ -32,6 +32,7 @@ from non_oracle_base_policy import DeterministicBasePolicy
 from non_oracle_rules_adapter_v2 import apply_main_action, rules_decision_request
 from non_oracle_runtime import NonOracleRuntimeState
 from solver_architecture import canonical_markov_state_key, stable_key
+from phase5_compact_runtime_encoding import compact_runtime_cycle_digest
 
 EPISODE_RUNNER_VERSION = "urza-non-oracle-episode-v2-cycle-aware"
 EPISODE_CYCLE_KEY_VERSION = "urza-episode-cycle-v1"
@@ -71,15 +72,8 @@ def _checked_runtime(runtime: NonOracleRuntimeState) -> NonOracleRuntimeState:
     return runtime if checked is runtime.true_state else replace(runtime, true_state=checked)
 
 
-def episode_cycle_key(runtime: NonOracleRuntimeState) -> Tuple[object, ...]:
-    """Exact sampled-world + semantic runtime identity for trajectory cycles.
-
-    This is deliberately stricter than ``runtime.value_key()``: the concrete
-    Markov key preserves hidden library order and the root game-randomness tape.
-    Conversely, semantic runtime identity deliberately ignores stack sequence IDs
-    and other execution provenance so a real physical recurrence is detectable.
-    The key is consumed only by the episode controller and is never policy-visible.
-    """
+def legacy_episode_cycle_key(runtime: NonOracleRuntimeState) -> Tuple[object, ...]:
+    """Historical full tuple identity retained only for parity/regression tests."""
     return stable_key(
         (
             canonical_markov_state_key(runtime.true_state),
@@ -87,6 +81,16 @@ def episode_cycle_key(runtime: NonOracleRuntimeState) -> Tuple[object, ...]:
         ),
         version=EPISODE_CYCLE_KEY_VERSION,
     )
+
+
+def episode_cycle_key(runtime: NonOracleRuntimeState) -> bytes:
+    """Exact sampled-world + semantic runtime identity for trajectory cycles.
+
+    Production retains only a fixed 32-byte digest built from one-byte card IDs,
+    packed scalar state, and semantic runtime sidecars.  The readable rules state
+    remains unchanged; this only replaces the hot cycle-detection representation.
+    """
+    return compact_runtime_cycle_digest(runtime)
 
 
 def _blocked_reason(runtime: NonOracleRuntimeState, horizon: int) -> str:
