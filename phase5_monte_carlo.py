@@ -319,6 +319,9 @@ class _CachedPhase5ActionEstimate:
 class _CachedPhase5Decision:
     best_strategic_action_key_packed: bytes
     estimates: Tuple[_CachedPhase5ActionEstimate, ...]
+    candidate_count: int = 0
+    branch_pruned_count: int = 0
+    pareto_pruned_count: int = 0
 
 
 class Phase5DecisionCache:
@@ -463,9 +466,9 @@ class Phase5MonteCarloDecisionEvaluator:
             mc_root_seed=self.mc_root_seed,
             horizon=self.horizon,
             continuation_policy_id=self.continuation_policy.policy_id,
-            candidate_count=len(candidate_keys),
-            branch_pruned_count=len(branch_pruned),
-            pareto_pruned_count=len(pareto_pruned),
+            candidate_count=int(cached.candidate_count),
+            branch_pruned_count=int(cached.branch_pruned_count),
+            pareto_pruned_count=int(cached.pareto_pruned_count),
         )
 
     def evaluate(
@@ -657,6 +660,9 @@ class Phase5MonteCarloDecisionEvaluator:
             mc_root_seed=self.mc_root_seed,
             horizon=self.horizon,
             continuation_policy_id=self.continuation_policy.policy_id,
+            candidate_count=len(candidate_keys),
+            branch_pruned_count=len(branch_pruned),
+            pareto_pruned_count=len(pareto_pruned),
         )
         if self.cache is not None and cache_key is not None:
             self.cache.set(cache_key,_CachedPhase5Decision(
@@ -676,5 +682,8 @@ class Phase5MonteCarloDecisionEvaluator:
                     )
                     for estimate in evaluation.estimates
                 ),
+                candidate_count=int(evaluation.candidate_count),
+                branch_pruned_count=int(evaluation.branch_pruned_count),
+                pareto_pruned_count=int(evaluation.pareto_pruned_count),
             ))
         return evaluation
