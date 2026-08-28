@@ -28,6 +28,26 @@ def pass_action(runtime):
     )
 
 
+def commit_reshape(runtime, x, sacrifice_name=None):
+    """Commit X, then the additional-cost sacrifice, without an observation gap."""
+    roots=x_actions(runtime,"Reshape",x)
+    assert len(roots)==1, (x,len(roots))
+    runtime=apply_main_action(runtime,roots[0])
+    assert runtime.pending is not None
+    assert runtime.pending.kind=="runtime_reshape_sacrifice"
+    request=rules_decision_request(runtime,horizon=6)
+    assert request.actions
+    assert all(action.kind=="reshape_choose_sacrifice" for action in request.actions)
+    if sacrifice_name is None:
+        chosen=request.actions[0]
+    else:
+        chosen=next(
+            action for action in request.actions
+            if dict(action.parameters).get("sacrifice_name")==sacrifice_name
+        )
+    return apply_main_action(runtime,chosen)
+
+
 def finish_whir_payment(runtime, *, maximize_improvise=False):
     """Advance only the pre-search Whir payment DAG until the spell is on stack."""
     while runtime.pending is not None and runtime.pending.kind == "runtime_whir_payment":
@@ -90,11 +110,7 @@ def test_runtime_reshape_sacrifice_survives_payment_annotation_change():
         blue=2,
         colorless=0,
     ))
-    action = next(
-        a for a in x_actions(runtime, "Reshape", 0)
-        if dict(a.parameters).get("sacrifice_name") == "Grinding Station"
-    )
-    runtime = apply_main_action(runtime, action)
+    runtime = commit_reshape(runtime,0,"Grinding Station")
     assert not any(p.name == "Grinding Station" for p in runtime.true_state.battlefield)
     assert runtime.stack.top().kind == "x_artifact_reshape_spell"
 
@@ -108,11 +124,7 @@ def test_reshape_prized_statue_dies_trigger_is_above_spell():
         blue=2,
         colorless=3,
     ))
-    action = next(
-        a for a in x_actions(runtime, "Reshape", 3)
-        if dict(a.parameters).get("sacrifice_name") == "Prized Statue"
-    )
-    runtime = apply_main_action(runtime, action)
+    runtime = commit_reshape(runtime,3,"Prized Statue")
     assert "Reshape" not in runtime.true_state.hand
     assert not any(p.name == "Prized Statue" for p in runtime.true_state.battlefield)
     assert "Reshape" not in runtime.true_state.graveyard
@@ -134,11 +146,7 @@ def test_reshape_cast_and_statue_death_trigger_are_orderable_with_other_cast_tri
         blue=2,
         colorless=3,
     ))
-    action = next(
-        a for a in x_actions(runtime, "Reshape", 3)
-        if dict(a.parameters).get("sacrifice_name") == "Prized Statue"
-    )
-    runtime = apply_main_action(runtime, action)
+    runtime = commit_reshape(runtime,3,"Prized Statue")
     request = rules_decision_request(runtime, horizon=6)
     assert request.actions and all(a.kind == "runtime_stack_order" for a in request.actions)
     labels = "\n".join(a.label for a in request.actions)
@@ -160,11 +168,7 @@ def test_reshape_cam_additional_cost_stages_target_before_trigger_order():
         blue=2,
         colorless=2,
     ))
-    action = next(
-        a for a in x_actions(runtime, "Reshape")
-        if dict(a.parameters).get("sacrifice_name") == "Sewer-veillance Cam"
-    )
-    runtime = apply_main_action(runtime, action)
+    runtime = commit_reshape(runtime,0,"Sewer-veillance Cam")
     assert not any(p.name == "Sewer-veillance Cam" for p in runtime.true_state.battlefield)
     assert runtime.stack.objects and runtime.stack.objects[-1].kind == "x_artifact_reshape_spell"
     assert runtime.pending is not None and runtime.pending.kind == DECISION_CAM_TARGET
@@ -194,8 +198,14 @@ def test_reshape_search_targets_appear_only_when_spell_resolves():
         colorless=3,
         rng_root_seed=99,
     ))
-    action = x_actions(runtime, "Reshape", 3)[0]
-    runtime = apply_main_action(runtime, action)
+    runtime = apply_main_action(runtime,x_actions(runtime,"Reshape",3)[0])
+    assert runtime.pending is not None
+    assert runtime.pending.kind=="runtime_reshape_sacrifice"
+    assert "Basalt Monolith" not in repr(rules_decision_request(runtime,horizon=6).actions)
+    runtime = apply_main_action(
+        runtime,
+        rules_decision_request(runtime,horizon=6).actions[0],
+    )
     assert runtime.pending is None
     assert "Basalt Monolith" not in repr(rules_decision_request(runtime, horizon=6).actions)
 
@@ -224,11 +234,7 @@ def test_cage_filters_creature_targets_from_reshape_and_whir():
         blue=2,
         colorless=1,
     ))
-    action = next(
-        a for a in x_actions(reshape, "Reshape", 1)
-        if dict(a.parameters).get("sacrifice_name") == "Tormod's Crypt"
-    )
-    reshape = apply_main_action(reshape, action)
+    reshape = commit_reshape(reshape,1,"Tormod's Crypt")
     reshape = apply_main_action(reshape, pass_action(reshape))
     targets = {
         dict(a.parameters).get("target")
@@ -316,7 +322,7 @@ def test_base_policy_chooses_revealed_artifact_not_fail_to_find():
         blue=2,
         colorless=3,
     ))
-    runtime = apply_main_action(runtime, x_actions(runtime, "Reshape", 3)[0])
+    runtime = commit_reshape(runtime,3)
     runtime = apply_main_action(runtime, pass_action(runtime))
     request = rules_decision_request(runtime, horizon=6)
     chosen = DeterministicBasePolicy().choose_request(request)
