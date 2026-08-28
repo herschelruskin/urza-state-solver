@@ -280,6 +280,67 @@ def test_post_search_target_choice_uses_only_revealed_eligible_set():
     assert any(isinstance(event, ShuffleObservation) for event in final.observations.events)
 
 
+def test_search_targets_share_pre_target_shuffle_ranking():
+    state = solver.State(
+        turn=2,
+        library=(
+            "Pithing Needle",
+            "Grafdigger's Cage",
+            "Mana Vault",
+            "Tail",
+        ),
+        hand=(WHIR,),
+        battlefield=(),
+        blue=3,
+        colorless=1,
+        rng_root_seed=20260828,
+    )
+    info = InformationState()
+    cast = choose_whir_cast(
+        whir_cast_request(state, info, horizon=6),
+        1,
+        improvise_names=(),
+        floating_generic=1,
+    )
+    envelope, context, search = resolve_whir_cast(state, cast)
+    request = whir_target_request(
+        envelope.true_state, info, context, search, horizon=6
+    )
+
+    fail = resolve_whir_target(
+        envelope.true_state, context, search, choose_target(request, "")
+    ).true_state
+    needle = resolve_whir_target(
+        envelope.true_state, context, search, choose_target(request, "Pithing Needle")
+    ).true_state
+    cage = resolve_whir_target(
+        envelope.true_state, context, search, choose_target(request, "Grafdigger's Cage")
+    ).true_state
+
+    # Exact rules identity is preserved.
+    assert any(p.name == "Pithing Needle" for p in needle.battlefield)
+    assert not any(p.name == "Grafdigger's Cage" for p in needle.battlefield)
+    assert any(p.name == "Grafdigger's Cage" for p in cage.battlefield)
+    assert "Pithing Needle" not in needle.library
+    assert "Grafdigger's Cage" not in cage.library
+
+    # All branches are projections of one common random ranking: the no-find
+    # branch is the shared full permutation, while each target branch is exactly
+    # that same permutation with its selected physical card deleted.
+    assert tuple(x for x in fail.library if x != "Pithing Needle") == needle.library
+    assert tuple(x for x in fail.library if x != "Grafdigger's Cage") == cage.library
+    assert tuple(x for x in needle.library if x != "Grafdigger's Cage") == tuple(
+        x for x in cage.library if x != "Pithing Needle"
+    )
+
+    # Replaying the same target from the same pre-target state is deterministic.
+    needle_again = resolve_whir_target(
+        envelope.true_state, context, search, choose_target(request, "Pithing Needle")
+    ).true_state
+    assert needle_again.library == needle.library
+    print("Shared pre-target search shuffle ranking preserves exact target identity: PASS")
+
+
 def test_search_shuffle_clears_old_top_and_bottom_information():
     state = solver.State(
         turn=2,
@@ -372,6 +433,7 @@ def main():
         test_whir_duplicate_improvise_slots_survive_first_tap,
         test_whir_exposes_distinct_public_payment_plans_without_hidden_target,
         test_post_search_target_choice_uses_only_revealed_eligible_set,
+        test_search_targets_share_pre_target_shuffle_ranking,
         test_search_shuffle_clears_old_top_and_bottom_information,
         test_reshape_and_whir_match_oracle_nonlibrary_physical_result_for_same_line,
     ]
