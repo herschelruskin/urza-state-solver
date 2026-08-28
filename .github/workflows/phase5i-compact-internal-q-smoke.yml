@@ -1,0 +1,29 @@
+name: Phase 5I compact internal Q smoke
+
+on:
+  push:
+    branches:
+      - phase5i-compact-internal-q
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile compact episode path
+        run: |
+          python -m py_compile non_oracle_episode.py
+          python -m py_compile phase5_selective_tutor_q.py
+      - name: Regression suite
+        run: |
+          python phase5_episode_cycle_smoke.py
+          python phase5_contingent_tutor_q_smoke.py
+          python phase5_adaptive_confidence_q_smoke.py
+      - name: Source check
+        run: git diff --check
