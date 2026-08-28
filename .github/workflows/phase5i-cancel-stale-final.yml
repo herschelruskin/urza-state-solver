@@ -1,0 +1,23 @@
+name: Cancel superseded Phase 5I runs
+
+on:
+  push:
+    branches:
+      - phase5i-cancel-stale-final
+
+jobs:
+  cancel:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Cancel obsolete runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          for id in 33197131294 33193870260 33193791197 33193756393 33201305190 33201328591 33201657838 33201682307; do
+            echo "Cancelling $id"
+            gh api -X POST "repos/$REPO/actions/runs/$id/cancel" || true
+          done
