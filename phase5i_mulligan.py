@@ -35,6 +35,7 @@ from phase5_production_policy import (
     FrozenTutorQConfig,
     PHASE5H_PRODUCTION_POLICY_VERSION,
     PHASE5H_PRODUCTION_Q,
+    make_phase5h_production_decision_cache,
     make_phase5h_production_episode_runner,
 )
 from phase5_rollout_policy_v6 import (
@@ -102,7 +103,11 @@ class Phase5IOpeningKeepEvaluator:
         )
         self.horizon = int(horizon)
         self.q_config = q_config
-        self.cache = decision_cache if decision_cache is not None else Phase5DecisionCache()
+        self.cache = (
+            decision_cache
+            if decision_cache is not None
+            else make_phase5h_production_decision_cache()
+        )
         self.opening_environment = opening_environment or OpeningEnvironment()
         self.policy = DeterministicRolloutPolicyV6(policy_id=PHASE5_ROLLOUT_POLICY_V6)
 
