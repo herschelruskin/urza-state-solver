@@ -21,6 +21,7 @@ strategic invariant to pay whenever the selected target is legally payable.
 from __future__ import annotations
 
 from collections import Counter, deque
+import inspect
 from dataclasses import dataclass
 from math import comb
 from typing import Tuple
@@ -506,6 +507,32 @@ def make_bounded_contingent_tutor_runner(
     return runner
 
 
+def _evaluate_with_exact_pruning(
+    evaluator,
+    runtime,
+    *,
+    candidate_actions,
+    retain_top_n:int,
+    must_retain_actions,
+):
+    """Use exact finite-sample pruning when the evaluator supports it."""
+    try:
+        parameters=inspect.signature(evaluator.evaluate).parameters
+    except (TypeError,ValueError):
+        parameters={}
+    if "exact_branch_bound" not in parameters:
+        return evaluator.evaluate(
+            runtime,
+            candidate_actions=candidate_actions,
+        )
+    return evaluator.evaluate(
+        runtime,
+        candidate_actions=candidate_actions,
+        retain_top_n=retain_top_n,
+        must_retain_actions=must_retain_actions,
+        exact_branch_bound=True,
+    )
+
 class SelectiveTutorQController:
     def __init__(
         self,
@@ -681,12 +708,12 @@ class SelectiveTutorQController:
         if len(candidates)<2:
             return base,None
 
-        screen=self.screen.evaluate(
+        screen=_evaluate_with_exact_pruning(
+            self.screen,
             runtime,
             candidate_actions=candidates,
             retain_top_n=self.shortlist_size,
             must_retain_actions=(base,),
-            exact_branch_bound=True,
         )
         screen_by_key={
             est.action.strategic_key():est for est in screen.estimates
@@ -709,12 +736,12 @@ class SelectiveTutorQController:
         ):
             shortlist.append(base_est)
 
-        confirm=self.confirm.evaluate(
+        confirm=_evaluate_with_exact_pruning(
+            self.confirm,
             runtime,
             candidate_actions=tuple(row.action for row in shortlist),
             retain_top_n=1,
             must_retain_actions=(base,),
-            exact_branch_bound=True,
         )
         confirmed_base=_estimate_for(confirm,base)
         confirmed_best=confirm.estimates[0]
