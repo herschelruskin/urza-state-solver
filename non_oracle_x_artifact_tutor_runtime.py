@@ -262,6 +262,8 @@ def _whir_payment_state(runtime: NonOracleRuntimeState):
         raise AssertionError("public Whir artifact slot keys must be unique")
     if len(set(selected)) != len(selected):
         raise ValueError("pending Whir payment selected the same slot twice")
+    if selected != tuple(sorted(selected)):
+        raise ValueError("pending Whir improvise slots are not in canonical set order")
     if any(raw not in by_key for raw in selected):
         raise ValueError("pending Whir improvise slot is no longer legal")
     if len(selected) > need:
@@ -304,9 +306,15 @@ def whir_payment_request(
             )
         )
     if remaining > 0:
+        last_selected = selected[-1] if selected else None
         for slot in slots:
             raw = tuple(slot.key())
             if raw in selected_set:
+                continue
+            # Improvise payment is a set, not an ordered sequence. Restrict each
+            # extension to increasing public-slot order so every historical
+            # subset has exactly one staged path.
+            if last_selected is not None and raw <= last_selected:
                 continue
             rows.append(
                 ActionIntent(
