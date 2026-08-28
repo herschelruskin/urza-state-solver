@@ -33,15 +33,23 @@ jobs:
           path: human
           merge-multiple: true
 
-      - name: Add repaired human-hand artifacts
+      - name: Add repaired hand 14
         uses: actions/download-artifact@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
           run-id: ${{ env.REPAIR_RUN_ID }}
-          pattern: phase5i-human-hand-1[46]|phase5i-human-hand-26
+          name: phase5i-human-hand-14
           path: human
-          merge-multiple: true
+
+      - name: Add repaired hand 26
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.REPAIR_RUN_ID }}
+          name: phase5i-human-hand-26
+          path: human
 
       - name: Add final isolated hand 12
         uses: actions/download-artifact@v4
