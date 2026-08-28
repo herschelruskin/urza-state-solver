@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - phase5i-search-shuffle-coupling
+      - phase5i-chain-copy-visible-payoff
   workflow_dispatch:
 
 concurrency:
@@ -21,9 +22,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: Compile shared-shuffle path
+      - name: Compile shared-shuffle and Chain path
         run: |
-          python -m py_compile x_artifact_search_adapter.py phase5_selective_tutor_q.py
+          python -m py_compile x_artifact_search_adapter.py phase5_selective_tutor_q.py non_oracle_chain_offer_runtime.py phase5_rollout_policy_v5.py phase5_chain_offer_smoke.py
+      - name: Chain visible-payoff and factorization regressions
+        run: python phase5_chain_offer_smoke.py
       - name: Search shuffle and exact identity regressions
         run: python x_artifact_search_adapter_smoke.py
       - name: Existing Q and staged tutor regressions
@@ -54,11 +57,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: Frozen Phase 5H paired4 hand with shared search shuffle
+      - name: Frozen Phase 5H paired4 hand with shared shuffle + Chain heuristic
         run: python phase5_q_targeted_paired4.py --hand-id "${{ matrix.hand_id }}"
       - uses: actions/upload-artifact@v4
         with:
-          name: phase5h-shared-shuffle-paired4-${{ matrix.hand_id }}
+          name: phase5h-chain-visible-payoff-paired4-${{ matrix.hand_id }}
           path: phase5_q_targeted_paired4_hand*.json
 
   hand25:
@@ -77,5 +80,5 @@ jobs:
         run: python phase5i_human_hand_eval.py --hand-id 25
       - uses: actions/upload-artifact@v4
         with:
-          name: phase5i-shared-shuffle-hand25
+          name: phase5i-chain-visible-payoff-hand25
           path: phase5i_human_hand_25.json
