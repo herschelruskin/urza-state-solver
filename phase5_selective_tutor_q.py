@@ -681,7 +681,13 @@ class SelectiveTutorQController:
         if len(candidates)<2:
             return base,None
 
-        screen=self.screen.evaluate(runtime,candidate_actions=candidates)
+        screen=self.screen.evaluate(
+            runtime,
+            candidate_actions=candidates,
+            retain_top_n=self.shortlist_size,
+            must_retain_actions=(base,),
+            exact_branch_bound=True,
+        )
         screen_by_key={
             est.action.strategic_key():est for est in screen.estimates
         }
@@ -706,6 +712,9 @@ class SelectiveTutorQController:
         confirm=self.confirm.evaluate(
             runtime,
             candidate_actions=tuple(row.action for row in shortlist),
+            retain_top_n=1,
+            must_retain_actions=(base,),
+            exact_branch_bound=True,
         )
         confirmed_base=_estimate_for(confirm,base)
         confirmed_best=confirm.estimates[0]
@@ -805,8 +814,8 @@ class SelectiveTutorQController:
         return chosen,(
             base,
             chosen,
-            len(screen.estimates),
-            len(confirm.estimates),
+            int(screen.candidate_count or len(screen.estimates)),
+            int(confirm.candidate_count or len(confirm.estimates)),
             confirmed_base.value.comparison_key(),
             chosen_est.value.comparison_key(),
             proposed,
