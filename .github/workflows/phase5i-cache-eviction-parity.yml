@@ -1,0 +1,22 @@
+name: Phase 5I cache eviction parity
+
+on:
+  push:
+    branches:
+      - phase5i-cache-eviction-parity
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Run eviction parity regression
+        run: python phase5_cache_eviction_parity_smoke.py
+      - name: Source check
+        run: git diff --check
