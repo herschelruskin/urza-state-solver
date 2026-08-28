@@ -15,7 +15,7 @@ jobs:
       HUMAN_RUN_ID: '33122937057'
       REPAIR_RUN_ID: '33133641811'
       EXTRA_REPAIR_RUN_ID: '33133729255'
-      HAND12_FINAL_RUN_ID: '33135490121'
+      HAND12_FACTOR_RUN_ID: '33135996901'
       STAGE_RUN_ID: '33123595522'
       STAGE_EXPANSION_RUN_ID: '33135871407'
     steps:
@@ -57,7 +57,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
-          run-id: ${{ env.HAND12_FINAL_RUN_ID }}
+          run-id: ${{ env.HAND12_FACTOR_RUN_ID }}
           name: phase5i-human-hand-12
           path: human
 
