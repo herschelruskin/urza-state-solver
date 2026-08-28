@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - phase5i-whir-target-frontier
+      - phase5i-whir-target-frontier-v2
   workflow_dispatch:
 
 concurrency:
