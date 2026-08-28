@@ -189,7 +189,11 @@ def run_deterministic_episode(
         attempted.add(action.strategic_key())
         before_turn = int(state.turn)
         before_window = runtime.window.kind
-        observation_key = request.observation.key()
+        observation_key = (
+            request.observation.key()
+            if max_recorded_steps is None
+            else ()
+        )
         runtime = apply_main_action(runtime, action)
         runtime = _checked_runtime(runtime)
         after = runtime.true_state
