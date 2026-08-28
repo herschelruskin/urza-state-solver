@@ -20,7 +20,7 @@ strategic invariant to pay whenever the selected target is legally payable.
 
 from __future__ import annotations
 
-from collections import Counter
+from collections import Counter, deque
 from dataclasses import dataclass
 from math import comb
 from typing import Tuple
@@ -367,12 +367,16 @@ def make_bounded_contingent_tutor_runner(
         if remaining<=0:
             from non_oracle_episode import run_deterministic_episode
             return run_deterministic_episode(
-                runtime,horizon=horizon,policy=policy,max_steps=max_steps
+                runtime,
+                horizon=horizon,
+                policy=policy,
+                max_steps=max_steps,
+                max_recorded_steps=12,
             )
 
         lineage_source=str(getattr(root_action,"source",""))
         runtime=_checked_runtime(runtime)
-        steps=[]
+        steps=deque(maxlen=12)
         attempted_by_cycle_state={}
 
         for sequence in range(max_steps):
