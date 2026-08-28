@@ -17,6 +17,7 @@ jobs:
       EXTRA_REPAIR_RUN_ID: '33133729255'
       HAND12_FINAL_RUN_ID: '33135490121'
       STAGE_RUN_ID: '33123595522'
+      STAGE_EXPANSION_RUN_ID: '33135871407'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -97,6 +98,16 @@ jobs:
           name: phase5i-stage-sample-live-s4-n3
           path: stage_samples
 
+      - name: Download continuation expansion samples 4-7
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.STAGE_EXPANSION_RUN_ID }}
+          pattern: phase5i-stage-sample-*
+          path: stage_samples
+          merge-multiple: true
+
       - name: Verify fixed benchmark inputs
         run: |
           python - <<'PY'
@@ -119,9 +130,10 @@ jobs:
               (context,s,n)
               for context in ('dead','live')
               for s in range(7)
-              for n in range(4)
+              for n in range(8)
           }
           assert keys==expected_stage,(len(keys),len(expected_stage),sorted(expected_stage-keys)[:10])
+          assert len(stage)==112,(len(stage),112)
           print(f'Verified {len(human)} human hands and {len(stage)} factorized K_s samples')
           PY
 
