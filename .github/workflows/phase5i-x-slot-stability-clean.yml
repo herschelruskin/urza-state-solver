@@ -1,0 +1,46 @@
+name: Phase 5I X-slot clean promotion
+
+on:
+  push:
+    branches:
+      - phase5i-x-slot-stability-clean
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Copy validated source changes only
+        run: |
+          git fetch origin phase5i-x-slot-stability-fix
+          git checkout origin/phase5i-x-slot-stability-fix -- \
+            x_artifact_search_adapter.py \
+            non_oracle_x_artifact_tutor_runtime.py \
+            x_artifact_search_adapter_smoke.py \
+            x_artifact_tutor_runtime_smoke.py
+      - name: Revalidate promoted diff
+        run: |
+          python x_artifact_search_adapter_smoke.py
+          python x_artifact_tutor_runtime_smoke.py
+          python phase5_adaptive_confidence_q_smoke.py
+          python phase5_contingent_tutor_q_smoke.py
+          git diff --check
+      - name: Commit clean source diff and remove bootstrap workflow
+        run: |
+          git rm .github/workflows/phase5i-x-slot-stability-clean.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add x_artifact_search_adapter.py non_oracle_x_artifact_tutor_runtime.py x_artifact_search_adapter_smoke.py x_artifact_tutor_runtime_smoke.py
+          git commit -m 'Stabilize Reshape and Whir permanent commitments across payment'
+          git push origin HEAD:phase5i-x-slot-stability-clean
