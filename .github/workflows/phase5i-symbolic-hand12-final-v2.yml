@@ -1,0 +1,26 @@
+name: Phase 5I symbolic Hand 12 final v2
+
+on:
+  push:
+    branches:
+      - phase5i-symbolic-hand12-final-v2
+  workflow_dispatch:
+
+jobs:
+  hand12_world0:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      PYTHONHASHSEED: '0'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Evaluate exact Hand 12 world 0
+        run: python phase5i_hand12_world_eval.py --sample-id 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-hand12-world-0-symbolic-final-v2
+          path: phase5i_hand12_world_0.json
