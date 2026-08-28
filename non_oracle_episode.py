@@ -34,7 +34,7 @@ from non_oracle_base_policy import DeterministicBasePolicy
 from non_oracle_rules_adapter_v2 import apply_main_action, rules_decision_request
 from non_oracle_runtime import NonOracleRuntimeState
 from solver_architecture import canonical_markov_state_key, stable_key
-from phase5_packed_keys import packed_episode_cycle_key
+from phase5_packed_keys import packed_action_strategic_key, packed_episode_cycle_key
 
 EPISODE_RUNNER_VERSION = "urza-non-oracle-episode-v2-cycle-aware"
 EPISODE_CYCLE_KEY_VERSION = "urza-episode-cycle-v1"
@@ -169,7 +169,7 @@ def run_deterministic_episode(
         attempted = attempted_by_cycle_state.setdefault(cycle_key, set())
         fresh_actions = tuple(
             action for action in request.actions
-            if action.strategic_key() not in attempted
+            if packed_action_strategic_key(action) not in attempted
         )
         if not fresh_actions:
             return NonOracleEpisodeResult(
@@ -186,7 +186,7 @@ def run_deterministic_episode(
             fresh_actions,
             request.context,
         )
-        attempted.add(action.strategic_key())
+        attempted.add(packed_action_strategic_key(action))
         before_turn = int(state.turn)
         before_window = runtime.window.kind
         observation_key = (
@@ -207,7 +207,11 @@ def run_deterministic_episode(
                     action_id=action.action_id,
                     action_kind=action.kind,
                     action_label=action.label,
-                    action_strategic_key=action.strategic_key(),
+                    action_strategic_key=(
+                        action.strategic_key()
+                        if max_recorded_steps is None
+                        else packed_action_strategic_key(action)
+                    ),
                     turn_after=int(after.turn),
                     won_after=bool(after.won),
                     win_family_after=str(after.win_family),
