@@ -1,0 +1,24 @@
+name: Phase 5I factorized human smoke
+
+on:
+  push:
+    branches:
+      - phase5i-factorized-human-smoke
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile factorized human toolchain
+        run: |
+          python -m py_compile phase5i_human_bottom_eval.py
+          python -m py_compile phase5i_human_bottom_reduce.py
+      - name: Source check
+        run: git diff --check
