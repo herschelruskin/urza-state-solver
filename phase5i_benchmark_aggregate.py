@@ -294,6 +294,18 @@ def main():
             "bottom":bottom_summary,
         })
 
+    stable_rows=[
+        row for row in rows
+        if row["seat_contexts"]["dead"].get("replicate_stable") is not False
+        and row["seat_contexts"]["live"].get("replicate_stable") is not False
+    ]
+    unstable_rows=[row for row in rows if row not in stable_rows]
+    stable_weighted_agreement=(
+        sum(float(row["ex_ante_decision_agreement_probability"]) for row in stable_rows)
+        / len(stable_rows)
+        if stable_rows else None
+    )
+
     payload={
         "kind":"phase5i-human-benchmark-summary",
         "human_hand_count":len(hands),
@@ -320,6 +332,10 @@ def main():
                 replicate_unstable_context_decisions/replicate_context_decisions
                 if replicate_context_decisions else None
             ),
+            "stable_hand_count":len(stable_rows),
+            "unstable_hand_count":len(unstable_rows),
+            "stable_weighted_agreement":stable_weighted_agreement,
+            "unstable_hand_ids":[int(row["hand_id"]) for row in unstable_rows],
             "by_stage":{
                 str(stage):{
                     "n":row["n"],
