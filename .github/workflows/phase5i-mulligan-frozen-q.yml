@@ -32,6 +32,7 @@ jobs:
           python -m py_compile phase5i_stage_sample_reduce.py
           python -m py_compile phase5i_stage_factorization_smoke.py
           python -m py_compile phase5i_benchmark_aggregate.py
+          python -m py_compile phase5i_disagreement_report.py
       - name: Phase 5I integration smoke
         run: python phase5i_mulligan_smoke.py
       - name: Factorized London DP regression
