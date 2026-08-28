@@ -387,6 +387,7 @@ def whir_payment_request(
                 ),
                 kind=WHIR_PAYMENT_ADD,
                 parameters=(
+                    ("remaining_before", int(remaining)),
                     ("selected_mask_after", int(new_mask)),
                     ("selected_mask_before", int(selected_mask)),
                     ("slot_index", int(slot_index)),
