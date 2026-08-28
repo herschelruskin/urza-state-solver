@@ -24,10 +24,14 @@ jobs:
           python -m py_compile phase5_packed_keys.py
           python -m py_compile phase5_packed_key_parity_smoke.py
           python -m py_compile phase5_monte_carlo.py
+          python -m py_compile non_oracle_episode.py
+          python -m py_compile phase5_selective_tutor_q.py
+          python -m py_compile phase5_attempt_ledger_smoke.py
       - name: Round-trip and size validation
         run: |
           python phase5_lossless_packed_codec_smoke.py
           python phase5_packed_key_parity_smoke.py
+          python phase5_attempt_ledger_smoke.py
       - name: Existing Phase 5 regressions
         run: |
           python phase5_compact_cycle_key_smoke.py
