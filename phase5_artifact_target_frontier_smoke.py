@@ -63,6 +63,23 @@ def main():
     assert "Pithing Needle" not in kept
     assert "Grafdigger's Cage" not in kept
 
+    identity_actions = (
+        target("", 0),
+        target("Generic Artifact A", 1),
+        target("Generic Artifact B", 2),
+        target("Pithing Needle", 3),
+    )
+    identity_result = whir_target_frontier(
+        obs(),
+        identity_actions,
+        objective="win_by_horizon",
+    )
+    identity_kept = names(identity_result)
+    assert "Generic Artifact A" in identity_kept
+    assert "Generic Artifact B" in identity_kept
+    assert "Pithing Needle" not in identity_kept
+    assert identity_result.collapsed_signature_count == 0
+
     needle = actions[1]
     retained = whir_target_frontier(
         obs(),
