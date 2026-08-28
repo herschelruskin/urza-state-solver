@@ -641,3 +641,16 @@ Phase 5H is frozen at the source commit above.  Phase 5I must be evaluated
 homogeneously from this exact production source.  Workflow-only provenance or
 batching commits may descend from it, but no production policy/rules code changes
 are permitted without reopening the Phase-5H gate.
+
+
+## Phase 5I final homogeneous launch — August 28, 2026
+
+Phase 5I is launched from the frozen Phase-5H production source
+`e7c6b7a03bfe6540314a7f20313df4b33a74328e`.
+
+The launch commit changes only workflow/provenance/logging files.  Production
+rules and policy code are unchanged from the frozen source.  Human evaluation is
+split into isolated per-hand jobs, with hands 12, 14, 25, and 26 in a dedicated
+low-concurrency heavy lane.  The 112 factorized London continuation samples remain
+independent jobs and aggregate only after every homogeneous source artifact
+completes successfully.
