@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Focused Phase-1 regressions for staged Reshape / Whir X searches."""
+"""Focused regressions for staged X searches and shared shuffle coupling."""
 
 from dataclasses import replace
 
