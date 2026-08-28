@@ -174,6 +174,75 @@ def bootstrap_continuation_models(stage_models,context,*,replicates=THRESHOLD_BO
     return {stage:tuple(values) for stage,values in by_stage.items()}
 
 
+def bootstrap_keep_value_draws(
+    keep,
+    *,
+    rollout_count,
+    replicates,
+    seed,
+):
+    """Nonparametric bootstrap of one hand's finite outer-world outcomes."""
+    rollout_count=int(rollout_count)
+    counts=[int(round(float(p)*rollout_count)) for p in keep.exact_win]
+    no_win_count=int(round(float(keep.no_win)*rollout_count))
+    population=[]
+    for turn,count in enumerate(counts,1):
+        population.extend([turn]*count)
+    population.extend([None]*no_win_count)
+    if len(population)!=rollout_count:
+        raise ValueError(
+            f"cannot reconstruct {rollout_count} hand outcomes from {keep.comparison_key()}: "
+            f"got {len(population)}"
+        )
+    rng=random.Random(int(seed))
+    values=[]
+    for _ in range(int(replicates)):
+        exact=[0.0]*HORIZON
+        no_win=0
+        for _draw in range(rollout_count):
+            outcome=rng.choice(population)
+            if outcome is None:
+                no_win+=1
+            else:
+                exact[int(outcome)-1]+=1.0
+        values.append(WinDistributionValue(
+            horizon=HORIZON,
+            exact_win=tuple(x/rollout_count for x in exact),
+            no_win=no_win/rollout_count,
+            win_families=(),
+        ))
+    return tuple(values)
+
+
+def joint_bootstrap_keep_probability(
+    keep,
+    continuation_values,
+    *,
+    rollout_count,
+    hand_id,
+    context,
+):
+    if not continuation_values:
+        return 1.0
+    keep_values=bootstrap_keep_value_draws(
+        keep,
+        rollout_count=rollout_count,
+        replicates=len(continuation_values),
+        seed=(
+            THRESHOLD_BOOTSTRAP_SEED
+            + int(hand_id)*10_000_019
+            + (0 if context=="dead" else 5_000_011)
+        ),
+    )
+    return (
+        sum(
+            value_at_least(keep_value,continuation)
+            for keep_value,continuation in zip(keep_values,continuation_values)
+        )
+        / len(continuation_values)
+    )
+
+
 def hand_context(hand,context):
     contexts=hand["contexts"]
     invariant=next((x for x in contexts if x["label"]=="seat_invariant"),None)
@@ -232,6 +301,7 @@ def main():
     rows=[]
     agreement_weighted=0.0
     bootstrap_agreement_weighted=0.0
+    joint_bootstrap_agreement_weighted=0.0
     seat_consensus=0
     seat_consensus_correct=0
     by_stage=defaultdict(lambda:{"n":0,"agreement_weight":0.0})
@@ -297,6 +367,19 @@ def main():
             )
             if bootstrap_human_agreement_probability is not None:
                 bootstrap_agreement_weighted+=weight*bootstrap_human_agreement_probability
+            joint_keep_probability=joint_bootstrap_keep_probability(
+                keep,
+                bootstrap_values,
+                rollout_count=int(row["solver"]["best"].get("rollouts",3)),
+                hand_id=int(hand["hand_id"]),
+                context=context,
+            )
+            joint_human_agreement_probability=(
+                joint_keep_probability
+                if human_decision=="Keep"
+                else 1.0-joint_keep_probability
+            )
+            joint_bootstrap_agreement_weighted+=weight*joint_human_agreement_probability
             context_rows[context]={
                 "weight":weight,
                 "solver_decision":decision,
@@ -313,6 +396,11 @@ def main():
                 "bootstrap_decision_confidence":(
                     None if bootstrap_keep_probability is None
                     else max(bootstrap_keep_probability,1.0-bootstrap_keep_probability)
+                ),
+                "joint_bootstrap_keep_probability":joint_keep_probability,
+                "joint_bootstrap_human_agreement_probability":joint_human_agreement_probability,
+                "joint_bootstrap_decision_confidence":max(
+                    joint_keep_probability,1.0-joint_keep_probability
                 ),
             }
             decision_counts[(context,decision)]+=1
@@ -406,6 +494,7 @@ def main():
             "weighted_correct_equivalent_hands":agreement_weighted,
             "bootstrap_threshold_replicates":THRESHOLD_BOOTSTRAP_REPLICATES,
             "bootstrap_weighted_agreement":bootstrap_agreement_weighted/len(hands),
+            "joint_bootstrap_weighted_agreement":joint_bootstrap_agreement_weighted/len(hands),
             "seat_consensus_count":seat_consensus,
             "seat_consensus_correct":seat_consensus_correct,
             "replicate_context_decisions":replicate_context_decisions,
