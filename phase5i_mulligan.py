@@ -472,7 +472,14 @@ class Phase5IOpeningKeepEvaluator:
                 len(contenders) > slots_remaining
                 and tie_rounds < self.max_screen_tie_break_rollouts
             ):
-                sample_id = self.screen_rollouts + tie_rounds
+                # Preserve the legacy confirmation window exactly.  Adaptive
+                # tie-break worlds live after both fixed screen and confirmation
+                # windows, so adding a tie resolver never changes confirmation RNG.
+                sample_id = (
+                    self.screen_rollouts
+                    + self.confirm_rollouts
+                    + tie_rounds
+                )
                 extra = self._run_payloads(
                     (
                         self._task_payload(
@@ -527,7 +534,7 @@ class Phase5IOpeningKeepEvaluator:
                 opening_environment=self.opening_environment,
             )
 
-            confirmation_start = self.screen_rollouts + tie_rounds
+            confirmation_start = self.screen_rollouts
             screen_rank = _rank_keep_estimates(
                 tuple(screen_rows[bottom] for bottom in shortlist)
             )
