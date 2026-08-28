@@ -148,18 +148,55 @@ class DeterministicRolloutPolicyV5(DeterministicRolloutPolicyV4):
     def _chain_copy_score(self, observation: RuntimePolicyView, action: ActionIntent) -> float:
         if action.kind == CHAIN_COPY_DECLINE:
             return 35.0
+
         params = dict(action.parameters)
         target = str(params.get("target_name", ""))
-        board = set(self._battlefield_names(observation))
-        if not (board & PRODUCER_PIECES) or target not in CHEAP_CHAIN_RECYCLES:
+        reasons = tuple(params.get("payoff_reasons", ()))
+        land_penalty = float(params.get("land_penalty", 5.0))
+        margin = int(params.get("payoff_margin", 0))
+
+        # New typed Chain surface only exposes copy branches with a concrete
+        # visible payoff. Keep scoring reason-aware so weak setup triggers can
+        # still lose to decline while strong tutor/mana/card payoffs win.
+        strength = 0.0
+        for reason in reasons:
+            reason = str(reason)
+            if reason == "cage_unblock":
+                strength = max(strength, 118.0)
+            elif reason == "spellseeker_retutor":
+                strength = max(strength, 112.0)
+            elif reason == "power_artifact_retarget":
+                strength = max(strength, 106.0)
+            elif reason.startswith("mana_unlock:"):
+                strength = max(strength, 102.0 + 3.0 * max(0, margin))
+            elif reason == "uthros_draw":
+                strength = max(strength, 98.0)
+            elif reason == "gadgeteer_clue":
+                strength = max(strength, 90.0)
+            elif reason == "producer_mana":
+                strength = max(strength, 88.0)
+            elif reason == "prized_statue_treasure":
+                strength = max(strength, 84.0)
+            elif reason == "floodcaller_untap":
+                strength = max(strength, 76.0)
+            elif reason == "producer_untap":
+                strength = max(strength, 66.0)
+            elif reason == "replay_scry2":
+                strength = max(strength, 48.0)
+            elif reason in {"assistant_scry", "tezzeret_loyalty"}:
+                strength = max(strength, 42.0)
+
+        if strength <= 0.0:
             return -120.0
+
+        # Multiple independent visible payoffs are genuinely better, but cap the
+        # bonus so a long reason list cannot swamp the land-sacrifice cost.
+        strength += min(12.0, 4.0 * max(0, len(reasons) - 1))
         try:
             mv = int(solver.mana_value(target))
         except Exception:
             mv = 2
-        # A land is a meaningful cost.  Only an already-online producer plus a
-        # cheap artifact recycle can outrank declining the optional copy.
-        return 74.0 - 8.0 * max(0, mv)
+        return strength - 0.8 * land_penalty - 2.0 * max(0, mv)
 
     def _main_action_score(self, observation: RuntimePolicyView, action: ActionIntent) -> float:
         if action.kind == "main_mana_action":
