@@ -47,17 +47,13 @@ from phase5_monte_carlo import (
     _wilson,
 )
 from phase5_packed_keys import packed_action_strategic_key
-from phase5_artifact_target_frontier import (
-    ARTIFACT_TARGET_FRONTIER_VERSION,
-    whir_target_frontier,
-)
 from phase5_rollout_policy_v6 import (
     DeterministicRolloutPolicyV6,
     PHASE5_ROLLOUT_POLICY_V6,
 )
 
-PHASE5_SELECTIVE_TUTOR_Q_VERSION="urza-phase5-selective-tutor-q-v5-whir-target-frontier"
-PHASE5_CONTINGENT_TUTOR_Q_VERSION="urza-phase5-contingent-tutor-q-v3-whir-target-frontier"
+PHASE5_SELECTIVE_TUTOR_Q_VERSION="urza-phase5-selective-tutor-q-v4-confidence-gated"
+PHASE5_CONTINGENT_TUTOR_Q_VERSION="urza-phase5-contingent-tutor-q-v2-confidence-gated"
 
 MAIN_TUTOR_KINDS=frozenset({
     "main_use_simple_tutor",
@@ -659,22 +655,7 @@ class SelectiveTutorQController:
             return ()
 
         if kinds & PENDING_TUTOR_Q_KINDS:
-            representatives=_representatives(fresh_actions)
-            if (
-                kinds=={"x_artifact_search_target"}
-                and any(
-                    str(getattr(action,"source",""))=="Whir of Invention"
-                    for action in representatives
-                )
-            ):
-                frontier=whir_target_frontier(
-                    request.observation,
-                    representatives,
-                    objective=str(request.context.objective),
-                    must_retain=(base,),
-                )
-                return frontier.actions
-            return representatives
+            return _representatives(fresh_actions)
 
         tutor_actions=tuple(
             action for action in fresh_actions if action.kind in MAIN_TUTOR_KINDS
