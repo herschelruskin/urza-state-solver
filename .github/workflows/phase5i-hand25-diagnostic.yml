@@ -1,0 +1,60 @@
+name: Phase 5I Hand 25 factored diagnostic
+
+on:
+  push:
+    branches:
+      - phase5i-hand25-diagnostic
+  workflow_dispatch:
+
+jobs:
+  world:
+    strategy:
+      fail-fast: false
+      max-parallel: 7
+      matrix:
+        bottom:
+          - "Hydroelectric Specimen"
+          - "Minamo, School at Water's Edge"
+          - "Whir of Invention"
+          - "Sapphire Medallion"
+          - "Uthros Research Craft"
+          - "Voltaic Key"
+          - "Island"
+        sample_id: [0, 1, 2, 3]
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      PYTHONHASHSEED: '0'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile diagnostic
+        run: python -m py_compile phase5i_hand25_world_diagnostic.py
+      - name: Run one exact bottom/world with RSS heartbeat
+        shell: bash
+        run: |
+          set -u
+          python phase5i_hand25_world_diagnostic.py             --bottom-card "${{ matrix.bottom }}"             --sample-id "${{ matrix.sample_id }}" &
+          pid=$!
+          start=$(date +%s)
+          peak=0
+          while kill -0 "$pid" 2>/dev/null; do
+            rss=$(ps -o rss= -p "$pid" 2>/dev/null | tr -d ' ' || true)
+            if [ -n "$rss" ] && [ "$rss" -gt "$peak" ]; then peak=$rss; fi
+            now=$(date +%s)
+            elapsed=$((now-start))
+            echo "H25_RSS bottom=${{ matrix.bottom }} sample=${{ matrix.sample_id }} elapsed_s=$elapsed rss_kb=${rss:-0} peak_rss_kb=$peak"
+            sleep 60
+          done
+          wait "$pid"
+          rc=$?
+          echo "H25_RSS_FINAL bottom=${{ matrix.bottom }} sample=${{ matrix.sample_id }} peak_rss_kb=$peak rc=$rc"
+          exit "$rc"
+      - uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: phase5i-hand25-diag-${{ strategy.job-index }}
+          path: phase5i_hand25_diag_*.json
