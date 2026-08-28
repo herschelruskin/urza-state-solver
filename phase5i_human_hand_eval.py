@@ -28,6 +28,8 @@ from phase5i_mulligan import Phase5IOpeningKeepEvaluator
 OUTER_SCREEN = 1
 OUTER_CONFIRM = 3
 BOTTOM_SHORTLIST = 4
+PARALLEL_BOTTOM_WORKERS = 4
+MAX_SCREEN_TIE_BREAK_ROLLOUTS = 2
 MC_ROOT_SEED = 2026082901
 Q_MC_ROOT_SEED = 2026082902
 HORIZON = 6
@@ -117,6 +119,8 @@ def evaluate_context(deck,row,label,environment,weight):
         q_mc_root_seed=Q_MC_ROOT_SEED,
         horizon=HORIZON,
         opening_environment=environment,
+        parallel_workers=PARALLEL_BOTTOM_WORKERS,
+        max_screen_tie_break_rollouts=MAX_SCREEN_TIE_BREAK_ROLLOUTS,
     )
     solved=evaluator.evaluate(seven,stage=stage)
     best=solved.best
@@ -175,6 +179,13 @@ def evaluate_context(deck,row,label,environment,weight):
             "best":estimate_json(best),
             "legal_bottom_count":solved.legal_bottom_count,
             "confirmed_bottom_count":solved.confirmed_bottom_count,
+            "fully_confirmed_bottom_count":solved.fully_confirmed_bottom_count,
+            "screen_tie_break_rollouts":solved.screen_tie_break_rollouts,
+            "confirmation_early_eliminated_bottoms":[
+                list(x) for x in solved.confirmation_early_eliminated_bottoms
+            ],
+            "parallel_workers":solved.parallel_workers,
+            "confirmation_start_sample":solved.confirmation_start_sample,
             "shortlisted_bottoms":[list(x) for x in solved.shortlisted_bottoms],
         },
         "human_bottom_diagnostic":{
@@ -260,6 +271,8 @@ def main():
             "outer_screen":OUTER_SCREEN,
             "outer_confirm":OUTER_CONFIRM,
             "bottom_shortlist":BOTTOM_SHORTLIST,
+            "parallel_bottom_workers":PARALLEL_BOTTOM_WORKERS,
+            "max_screen_tie_break_rollouts":MAX_SCREEN_TIE_BREAK_ROLLOUTS,
             "mc_root_seed":MC_ROOT_SEED,
             "q_mc_root_seed":Q_MC_ROOT_SEED,
         },
