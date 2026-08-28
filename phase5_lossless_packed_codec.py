@@ -60,6 +60,7 @@ from urza_permission_adapter import (
     UrzaPermissionState,
 )
 from phase3_value_engine import WinDistributionValue
+from strategic_value_state import LibraryBeliefKey, StrategicValueState
 from phase5_compact_runtime_encoding import CARD_NAMES, CARD_TO_ID, CARD_REGISTRY_DIGEST
 
 
@@ -100,6 +101,8 @@ _CLASS_ROWS=(
     (30, UrzaPermissionState),
     (31, EpisodeOutcome),
     (32, WinDistributionValue),
+    (33, LibraryBeliefKey),
+    (34, StrategicValueState),
 )
 _CLASS_TO_ID={cls:class_id for class_id,cls in _CLASS_ROWS}
 _ID_TO_CLASS={class_id:cls for class_id,cls in _CLASS_ROWS}
@@ -297,9 +300,24 @@ def _decode_value(data:memoryview,offset:int)->tuple[Any,int]:
     raise PackedStateError(f"unknown packed tag {tag}")
 
 
-def pack_lossless(value:Any)->bytes:
+def pack_lossless_body(value:Any)->bytes:
+    """Compact reversible body for in-process keys with a known active schema."""
     body=bytearray()
     _encode_value(body,value)
+    return bytes(body)
+
+
+def unpack_lossless_body(payload:bytes)->Any:
+    """Inverse of pack_lossless_body() under the current registry/schema."""
+    data=memoryview(payload)
+    value,offset=_decode_value(data,0)
+    if offset!=len(data):
+        raise PackedStateError(f"trailing bytes after packed body: {len(data)-offset}")
+    return value
+
+
+def pack_lossless(value:Any)->bytes:
+    body=pack_lossless_body(value)
     header=bytearray(PACKED_STATE_MAGIC)
     header.append(PACKED_STATE_VERSION)
     header.extend(CARD_REGISTRY_DIGEST)
