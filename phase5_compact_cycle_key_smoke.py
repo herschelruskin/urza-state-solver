@@ -8,6 +8,7 @@ from non_oracle_episode import episode_cycle_key, legacy_episode_cycle_key
 from non_oracle_runtime import NonOracleRuntimeState, make_runtime_state
 from non_oracle_runtime_value_key import RuntimeDecisionWindow, WINDOW_PRIORITY
 from phase5_compact_runtime_encoding import CARD_NAMES, CARD_TO_ID
+from phase5_packed_keys import unpack_packed_projection
 
 
 def same_relation(a,b,expected):
@@ -92,10 +93,13 @@ def main():
     same_relation(base,permissioned,False)
 
     key=episode_cycle_key(base)
-    assert isinstance(key,bytes) and len(key)==32
-    print("compact numeric cycle identity matches legacy equivalence relation: PASS")
+    assert isinstance(key,bytes) and key.startswith(b"C")
+    projection=unpack_packed_projection(key)
+    assert projection[0]=="urza-phase5-packed-keys-v1"
+    assert projection[1]=="episode-cycle"
+    print("packed numeric cycle identity matches legacy equivalence relation: PASS")
     print("known deck card IDs fit in one byte: PASS")
-    print("production cycle key is fixed 32 bytes: PASS")
+    print(f"production cycle key is reversible packed bytes: PASS ({len(key)} bytes)")
 
 
 if __name__=="__main__":
