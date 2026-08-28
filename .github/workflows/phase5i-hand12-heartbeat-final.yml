@@ -1,0 +1,40 @@
+name: Phase 5I Hand 12 heartbeat final
+
+on:
+  push:
+    branches:
+      - phase5i-hand12-heartbeat-final
+  workflow_dispatch:
+
+jobs:
+  world0:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      PYTHONHASHSEED: '0'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile evaluator
+        run: python -m py_compile phase5i_hand12_world_eval.py
+      - name: Evaluate exact Hand 12 world 0 with heartbeat
+        shell: bash
+        run: |
+          set -uo pipefail
+          python phase5i_hand12_world_eval.py --sample-id 0 &
+          pid=$!
+          echo "PYTHON_PID=$pid"
+          while kill -0 "$pid" 2>/dev/null; do
+            echo "HEARTBEAT $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            ps -o pid,ppid,%cpu,%mem,rss,vsz,etime,cmd -p "$pid" || true
+            free -m || true
+            sleep 15
+          done
+          wait "$pid"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-hand12-world-0-heartbeat-final
+          path: phase5i_hand12_world_0.json
