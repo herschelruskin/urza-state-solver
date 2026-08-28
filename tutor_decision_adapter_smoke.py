@@ -256,6 +256,34 @@ def test_spellseeker_target_resolution_matches_oracle_physical_state():
     assert canonical_markov_state_key(resolved.true_state) == canonical_markov_state_key(oracle)
 
 
+def test_spellseeker_trigger_resolves_after_source_leaves_battlefield():
+    state = solver.State(
+        turn=2,
+        library=("Dramatic Reversal", "Mystical Tutor", "Island"),
+        hand=("Island",),
+        battlefield=(solver.Perm("Spellseeker"),),
+        blue=1,
+        rng_root_seed=20260822,
+    )
+    prior = InformationState()
+    commit = choose_source(
+        simple_tutor_commit_request(state, prior, horizon=6),
+        "Spellseeker",
+    )
+    search = resolve_simple_tutor_commit(state, commit)
+    info = information_after_tutor_search(prior, search)
+    request = tutor_target_request(search.true_state, info, search, horizon=6)
+    chosen = choose_target(request, "Dramatic Reversal")
+
+    # The ETB trigger already exists. Removing the source permanent must not
+    # counter its search or invalidate the post-observation target decision.
+    source_gone = replace(search.true_state, battlefield=())
+    resolved = resolve_tutor_target(source_gone, search, chosen)
+    assert "Dramatic Reversal" in resolved.true_state.hand
+    assert not any(p.name == "Spellseeker" for p in resolved.true_state.battlefield)
+    assert resolved.true_state.trace[-1] == "Spellseeker ETB -> Dramatic Reversal"
+
+
 def main():
     tests = [
         test_tutor_use_hidden_permutation_invariance,
@@ -268,6 +296,7 @@ def main():
         test_merchant_target_resolution_matches_oracle_physical_state,
         test_mystical_target_resolution_matches_oracle_physical_state,
         test_spellseeker_target_resolution_matches_oracle_physical_state,
+        test_spellseeker_trigger_resolves_after_source_leaves_battlefield,
     ]
     for test in tests:
         test()
