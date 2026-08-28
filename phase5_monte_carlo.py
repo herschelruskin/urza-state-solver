@@ -16,7 +16,6 @@ from __future__ import annotations
 
 from collections import Counter, OrderedDict
 from dataclasses import dataclass
-import hashlib
 from math import sqrt
 from typing import Iterable, Sequence, Tuple
 
@@ -24,12 +23,15 @@ from decision_observation import ActionIntent
 from non_oracle_base_policy import DeterministicBasePolicy
 from non_oracle_episode import NonOracleEpisodeResult, run_deterministic_episode
 from non_oracle_rules_adapter_v2 import apply_main_action, rules_decision_request
-from non_oracle_runtime_value_key import canonical_runtime_object_value_key
 from phase3_value_engine import PHASE3_OBJECTIVE_ID, WinDistributionValue
 from phase4_hidden_world import HiddenWorldSampler, materialize_hidden_world
 from solver_architecture import EpisodeOutcome
 from strategic_value_state import LibraryBeliefKey
-from phase5_compact_runtime_encoding import compact_action_strategic_digest, compact_observation_digest, compact_runtime_value_digest
+from phase5_packed_keys import (
+    packed_action_strategic_key,
+    packed_observation_key,
+    packed_phase5_decision_cache_key,
+)
 
 PHASE5_MC_VERSION = "urza-phase5-decision-monte-carlo-v2-paired-outcomes"
 
@@ -137,16 +139,6 @@ class Phase5DecisionCacheStats:
     evictions: int = 0
 
 
-def _compact_identity_digest(value) -> bytes:
-    """Return a deterministic fixed-size identity for retained memoization rows.
-
-    The full strategic key remains the collision-free semantic source of truth while
-    this process is computing it. Only its SHA-256 digest is retained in the cache,
-    avoiding long-lived copies of deeply nested tagged state/action tuples.
-    """
-    return hashlib.sha256(repr(value).encode("utf-8")).digest()
-
-
 @dataclass(frozen=True, slots=True)
 class _PackedEpisodeOutcomes:
     payload: bytes
@@ -201,7 +193,7 @@ def _unpack_episode_outcomes(packed: _PackedEpisodeOutcomes) -> Tuple[EpisodeOut
 
 @dataclass(frozen=True, slots=True)
 class _CachedPhase5ActionEstimate:
-    strategic_action_key_digest: bytes
+    strategic_action_key_packed: bytes
     value: WinDistributionValue
     rollouts: int
     terminal_reason_counts: Tuple[Tuple[str, int], ...]
@@ -211,7 +203,7 @@ class _CachedPhase5ActionEstimate:
 
 @dataclass(frozen=True, slots=True)
 class _CachedPhase5Decision:
-    best_strategic_action_key_digest: bytes
+    best_strategic_action_key_packed: bytes
     estimates: Tuple[_CachedPhase5ActionEstimate, ...]
 
 
@@ -309,30 +301,25 @@ class Phase5MonteCarloDecisionEvaluator:
     @staticmethod
     def _map(actions):
         return {
-            compact_action_strategic_digest(action): action
+            packed_action_strategic_key(action): action
             for action in _representatives(actions)
         }
 
 
     def _cache_key(self, runtime, candidate_keys):
-        # Retain only a fixed 32-byte digest in the LRU. The full tuple is
-        # constructed transiently to preserve exact strategic identity.
-        identity = (
-            PHASE5_MC_VERSION,
-            "strategic-decision-cache-v2-digest",
-            compact_runtime_value_digest(runtime),
-            tuple(sorted(candidate_keys)),
-            self.rollout_count,
-            self.mc_root_seed,
-            self.horizon,
-            self.objective,
-            self.continuation_policy.policy_id,
-            self.continuation_id,
-            self.sample_namespace,
-            self.max_episode_steps,
-            self.strict_terminal_reasons,
+        return packed_phase5_decision_cache_key(
+            runtime=runtime,
+            candidate_action_keys=candidate_keys,
+            rollout_count=self.rollout_count,
+            mc_root_seed=self.mc_root_seed,
+            horizon=self.horizon,
+            objective=self.objective,
+            policy_id=self.continuation_policy.policy_id,
+            continuation_id=self.continuation_id,
+            sample_namespace=self.sample_namespace,
+            max_episode_steps=self.max_episode_steps,
+            strict_terminal_reasons=self.strict_terminal_reasons,
         )
-        return _compact_identity_digest(identity)
 
     def _restore_cached(self, cached, root_map):
         estimates=[]
@@ -374,27 +361,27 @@ class Phase5MonteCarloDecisionEvaluator:
             root_actions = all_root
         else:
             allowed = {
-                compact_action_strategic_digest(action)
+                packed_action_strategic_key(action)
                 for action in candidate_actions
             }
             root_actions = tuple(
                 action for action in all_root
-                if compact_action_strategic_digest(action) in allowed
+                if packed_action_strategic_key(action) in allowed
             )
             if not root_actions:
                 raise Phase5MonteCarloError("candidate action subset is empty")
 
-        root_observation_key = compact_observation_digest(root_request.observation)
+        root_observation_key = packed_observation_key(root_request.observation)
         root_keys = frozenset(
-            compact_action_strategic_digest(action)
+            packed_action_strategic_key(action)
             for action in all_root
         )
         candidate_keys = frozenset(
-            compact_action_strategic_digest(action)
+            packed_action_strategic_key(action)
             for action in root_actions
         )
         root_map = {
-            compact_action_strategic_digest(action): action
+            packed_action_strategic_key(action): action
             for action in root_actions
         }
 
@@ -421,7 +408,7 @@ class Phase5MonteCarloDecisionEvaluator:
             )
             sampled_runtime = materialize_hidden_world(runtime, world)
             sampled_request = self._request(sampled_runtime)
-            if compact_observation_digest(sampled_request.observation) != root_observation_key:
+            if packed_observation_key(sampled_request.observation) != root_observation_key:
                 raise Phase5MonteCarloError(
                     "sampled hidden world changed current PolicyView before observation"
                 )
@@ -510,12 +497,12 @@ class Phase5MonteCarloDecisionEvaluator:
         )
         if self.cache is not None and cache_key is not None:
             self.cache.set(cache_key,_CachedPhase5Decision(
-                best_strategic_action_key_digest=compact_action_strategic_digest(
+                best_strategic_action_key_digest=packed_action_strategic_key(
                     evaluation.best_action
                 ),
                 estimates=tuple(
                     _CachedPhase5ActionEstimate(
-                        strategic_action_key_digest=compact_action_strategic_digest(
+                        strategic_action_key_digest=packed_action_strategic_key(
                             estimate.action
                         ),
                         value=estimate.value,
