@@ -373,6 +373,7 @@ class Phase5MonteCarloDecisionEvaluator:
                         horizon=self.horizon,
                         policy=self.continuation_policy,
                         max_steps=self.max_episode_steps,
+                        max_recorded_steps=12,
                     )
                 else:
                     result = self.continuation_runner(
