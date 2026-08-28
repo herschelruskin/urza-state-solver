@@ -43,6 +43,7 @@ from phase5_monte_carlo import (
     _value,
     _wilson,
 )
+from phase5_packed_keys import packed_action_strategic_key
 from phase5_rollout_policy_v6 import (
     DeterministicRolloutPolicyV6,
     PHASE5_ROLLOUT_POLICY_V6,
@@ -403,7 +404,7 @@ def make_bounded_contingent_tutor_runner(
             attempted=attempted_by_cycle_state.setdefault(cycle_key,set())
             fresh=tuple(
                 action for action in request.actions
-                if action.strategic_key() not in attempted
+                if packed_action_strategic_key(action) not in attempted
             )
             if not fresh:
                 return NonOracleEpisodeResult(
@@ -449,10 +450,10 @@ def make_bounded_contingent_tutor_runner(
                     )
                 )
 
-            attempted.add(action.strategic_key())
+            attempted.add(packed_action_strategic_key(action))
             before_turn=int(state.turn)
             before_window=runtime.window.kind
-            observation_key=request.observation.key()
+            observation_key=()
             runtime=_checked_runtime(apply_main_action(runtime,action))
             after=runtime.true_state
             steps.append(EpisodeStep(
@@ -463,7 +464,7 @@ def make_bounded_contingent_tutor_runner(
                 action_id=action.action_id,
                 action_kind=action.kind,
                 action_label=action.label,
-                action_strategic_key=action.strategic_key(),
+                action_strategic_key=packed_action_strategic_key(action),
                 turn_after=int(after.turn),
                 won_after=bool(after.won),
                 win_family_after=str(after.win_family),
