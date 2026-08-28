@@ -1,0 +1,60 @@
+name: Phase 5I symbolic Hand 12 all worlds
+
+on:
+  push:
+    branches:
+      - phase5i-symbolic-hand12-all-worlds
+  workflow_dispatch:
+
+jobs:
+  world:
+    strategy:
+      fail-fast: false
+      matrix:
+        sample_id: [0,1,2]
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      PYTHONHASHSEED: '0'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Evaluate exact Hand 12 world
+        run: python phase5i_hand12_world_eval.py --sample-id ${{ matrix.sample_id }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-symbolic-hand12-world-${{ matrix.sample_id }}
+          path: phase5i_hand12_world_*.json
+
+  reduce:
+    needs: world
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: phase5i-symbolic-hand12-world-*
+          path: worlds
+          merge-multiple: true
+      - name: Reduce symbolic Hand 12
+        run: |
+          python phase5i_hand12_reduce.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          row=json.loads(Path("phase5i_human_hand_12.json").read_text())
+          assert row["hand_id"]==12
+          assert row["factorization"]["outer_world_sample_ids"]==[0,1,2]
+          print(json.dumps(row["ex_ante_after_seat_conditioned_optimization"],indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: phase5i-human-hand-12-symbolic-final
+          path: phase5i_human_hand_12.json
