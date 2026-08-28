@@ -198,6 +198,32 @@ def _search_pending(runtime, *, source, search_kind, result_zone, contingent_on)
         runtime.information,
         ObservationBatch((observation,)),
     )
+
+    # A search of a hidden zone may legally fail to find.  When the modeled
+    # eligible set is actually empty there is no player choice to expose:
+    # resolve the no-find branch mechanically, shuffle the concrete library,
+    # and return to priority.  This prevents an empty pending decision from
+    # becoming an artificial rollout hard blocker.
+    if not legal_targets:
+        state = replace(
+            runtime.true_state,
+            library=solver.shuffled_library(
+                runtime.true_state,
+                f"simple-tutor-no-find:{source}:{search_kind}",
+            ),
+        )
+        state = solver.add_trace(
+            state,
+            f"{source}: search finds no legal target; shuffle",
+        )
+        return replace(
+            runtime,
+            true_state=solver._ensure_oracle_instance_tags(state),
+            information=info,
+            pending=None,
+            window=RuntimeDecisionWindow(WINDOW_PRIORITY),
+        )
+
     spec = PendingDecisionSpec(
         decision_id=f"runtime.simple_tutor.{source}.target",
         kind=TUTOR_TARGET_DECISION_KIND,
