@@ -370,7 +370,9 @@ def main():
             joint_keep_probability=joint_bootstrap_keep_probability(
                 keep,
                 bootstrap_values,
-                rollout_count=int(row["solver"]["best"].get("rollouts",3)),
+                rollout_count=int(
+                    hand_context(hand,context)["solver"]["best"].get("rollouts",3)
+                ),
                 hand_id=int(hand["hand_id"]),
                 context=context,
             )
