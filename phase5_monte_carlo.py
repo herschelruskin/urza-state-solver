@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from collections import Counter, OrderedDict
 from dataclasses import dataclass
+import hashlib
 from math import sqrt
 from typing import Iterable, Sequence, Tuple
 
@@ -135,9 +136,19 @@ class Phase5DecisionCacheStats:
     evictions: int = 0
 
 
+def _compact_identity_digest(value) -> bytes:
+    """Return a deterministic fixed-size identity for retained memoization rows.
+
+    The full strategic key remains the collision-free semantic source of truth while
+    this process is computing it. Only its SHA-256 digest is retained in the cache,
+    avoiding long-lived copies of deeply nested tagged state/action tuples.
+    """
+    return hashlib.sha256(repr(value).encode("utf-8")).digest()
+
+
 @dataclass(frozen=True)
 class _CachedPhase5ActionEstimate:
-    strategic_action_key: Tuple[object, ...]
+    strategic_action_key_digest: bytes
     value: WinDistributionValue
     rollouts: int
     terminal_reason_counts: Tuple[Tuple[str, int], ...]
@@ -147,7 +158,7 @@ class _CachedPhase5ActionEstimate:
 
 @dataclass(frozen=True)
 class _CachedPhase5Decision:
-    best_strategic_action_key: Tuple[object, ...]
+    best_strategic_action_key_digest: bytes
     estimates: Tuple[_CachedPhase5ActionEstimate, ...]
 
 
@@ -248,9 +259,11 @@ class Phase5MonteCarloDecisionEvaluator:
 
 
     def _cache_key(self, runtime, candidate_keys):
-        return (
+        # Retain only a fixed 32-byte digest in the LRU. The full tuple is
+        # constructed transiently to preserve exact strategic identity.
+        identity = (
             PHASE5_MC_VERSION,
-            "strategic-decision-cache-v1",
+            "strategic-decision-cache-v2-digest",
             canonical_runtime_object_value_key(runtime),
             tuple(sorted(candidate_keys, key=repr)),
             self.rollout_count,
@@ -263,11 +276,16 @@ class Phase5MonteCarloDecisionEvaluator:
             self.max_episode_steps,
             self.strict_terminal_reasons,
         )
+        return _compact_identity_digest(identity)
 
     def _restore_cached(self, cached, root_map):
+        compact_root_map={
+            _compact_identity_digest(key): action
+            for key,action in root_map.items()
+        }
         estimates=[]
         for row in cached.estimates:
-            action=root_map.get(row.strategic_action_key)
+            action=compact_root_map.get(row.strategic_action_key_digest)
             if action is None:
                 raise Phase5MonteCarloError(
                     "cached strategic action is not legal in current equivalent runtime"
@@ -280,7 +298,7 @@ class Phase5MonteCarloDecisionEvaluator:
                 win_probability_wilson95=row.win_probability_wilson95,
                 outcomes=row.outcomes,
             ))
-        best=root_map.get(cached.best_strategic_action_key)
+        best=compact_root_map.get(cached.best_strategic_action_key_digest)
         if best is None:
             raise Phase5MonteCarloError(
                 "cached best strategic action is not legal in current equivalent runtime"
@@ -424,10 +442,14 @@ class Phase5MonteCarloDecisionEvaluator:
         )
         if self.cache is not None and cache_key is not None:
             self.cache.set(cache_key,_CachedPhase5Decision(
-                best_strategic_action_key=evaluation.best_action.strategic_key(),
+                best_strategic_action_key_digest=_compact_identity_digest(
+                    evaluation.best_action.strategic_key()
+                ),
                 estimates=tuple(
                     _CachedPhase5ActionEstimate(
-                        strategic_action_key=estimate.action.strategic_key(),
+                        strategic_action_key_digest=_compact_identity_digest(
+                            estimate.action.strategic_key()
+                        ),
                         value=estimate.value,
                         rollouts=estimate.rollouts,
                         terminal_reason_counts=estimate.terminal_reason_counts,
