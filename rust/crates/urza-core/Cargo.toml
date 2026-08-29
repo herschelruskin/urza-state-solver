@@ -4,8 +4,13 @@ version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 
+[dependencies]
+serde.workspace = true
+thiserror.workspace = true
+
 [dev-dependencies]
 criterion.workspace = true
+serde_json.workspace = true
 
 [[bench]]
 name = "r0_state_keys"
