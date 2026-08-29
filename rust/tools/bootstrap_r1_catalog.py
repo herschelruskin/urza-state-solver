@@ -101,6 +101,7 @@ def main() -> None:
         for card in records:
             if (
                 not card.get("oracle_id")
+                or card.get("layout") == "art_series"
                 or card.get("lang", "en") != "en"
                 or "paper" not in card.get("games", [])
             ):

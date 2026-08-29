@@ -77,4 +77,6 @@ Bootstrap attempt 2 proved that filtering the Oracle Cards export by its represe
 
 Bootstrap attempt 3 reached the Default Cards export but encountered non-Oracle objects without `oracle_id` (for example tokens/emblems). These are now excluded before indexing; the active deck itself still requires one stable Oracle ID per CardDefId.
 
-Validation/result: pending default-card Oracle-only bootstrap workflow.
+Bootstrap attempt 4 resolved the historical-card issue and reduced all remaining same-name ambiguity to Scryfall Art Series objects. A representative example is the separate `Mana Drain // Mana Drain` Art Series identity (`Card // Card`) versus the gameplay Mana Drain Oracle identity. The transform now excludes `layout == "art_series"`; this avoids format-legality heuristics and keeps only gameplay-card identities.
+
+Validation/result: pending gameplay-layout bootstrap workflow.
