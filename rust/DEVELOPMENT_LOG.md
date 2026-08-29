@@ -83,4 +83,26 @@ Bootstrap attempt 5 succeeded: all 95 active CardDefIds resolved uniquely from t
 
 The committed R1 catalog intentionally stores no full Oracle rules text. It stores a per-card SHA-256 of the current Oracle text, the source snapshot timestamp, stable Oracle ID, representative Scryfall ID, mana cost/value, type line, MDFC face identity/cost/type metadata, layout, and syntactic feature flags. This satisfies the R1 metadata pinning contract while keeping full rules text out of the repository.
 
-Validation/result: Rust-side R1 catalog validation and digest CI pending.
+Validation/result: R1 catalog validation is green on GitHub Actions run `33273988174`; pinned R1 catalog BLAKE3 is `4b39c7db7bfd2c6f68d7a49efa515cdffb2c6a9716022bc0b21eeec56754a983`.
+
+## 2026-08-29 — R1 normalized state, RNG, and information boundary
+
+Classification: MODEL architecture and deterministic infrastructure. No card gameplay RULE handlers.
+
+Implemented:
+- normalized unordered `CardZone` storage and ObjectId-sorted battlefield storage so container insertion order is not replay-semantic;
+- exact `TrueLibrary` with ordered hidden cards plus explicit known-top/known-bottom bounds;
+- typed `SourceRef`, stack source identity, delayed-object card identity, and typed pending-decision payloads;
+- structural state validation for library knowledge bounds, duplicate object/permission IDs, missing/self/cyclic attachments, source-card mismatches, delayed object references, and permission expiry references;
+- serde replay round-trip for exact state keys;
+- production deterministic coordinate stream, unbiased bounded draws, and Fisher–Yates shuffle on the R0 coordinate PRF;
+- exact `TrueState -> InformationState` projection;
+- structural `CanonicalObjectId` equivalence classes using local permanent state, attachments, incoming attachment classes, and future-relevant external roles rather than raw ObjectId;
+- canonical policy-visible permission slots with raw PermissionId removed;
+- hidden middle library order projected only as card counts while known top/bottom order is preserved;
+- R1 ValueKey schema `value_key_v1_r1`;
+- model version `urza_model_r1_2026_08_29` and information schema `information_state_v1_r1`.
+
+Acceptance tests include hidden-order leakage, raw ObjectId renaming, symmetric duplicate objects, attachments, exact replay JSON round-trip, information JSON round-trip, known top/bottom fidelity, RNG occurrence separation and deterministic shuffle, plus future-relevant pending/window/counter/life/mana/permission/delayed state.
+
+Validation: final R1 acceptance CI pending.

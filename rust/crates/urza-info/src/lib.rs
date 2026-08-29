@@ -14,6 +14,8 @@ use urza_core::{
     TrueState,
 };
 
+pub const INFORMATION_SCHEMA_VERSION: &str = "information_state_v1_r1";
+
 #[derive(
     Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
 )]
@@ -999,6 +1001,148 @@ mod tests {
         assert_eq!(info.battlefield.len(), 2);
         assert_eq!(info.battlefield[0].canonical_id, CanonicalObjectId(0));
         assert_eq!(info.battlefield[0], info.battlefield[1]);
+    }
+
+    #[test]
+    fn known_bottom_order_remains_observable() {
+        let a = TrueState {
+            library: TrueLibrary::new(
+                vec![CardDefId(9), CardDefId(3), CardDefId(1), CardDefId(2)],
+                LibraryKnowledge {
+                    known_top: 0,
+                    known_bottom: 2,
+                },
+            )
+            .unwrap(),
+            ..TrueState::default()
+        };
+        let b = TrueState {
+            library: TrueLibrary::new(
+                vec![CardDefId(9), CardDefId(3), CardDefId(2), CardDefId(1)],
+                LibraryKnowledge {
+                    known_top: 0,
+                    known_bottom: 2,
+                },
+            )
+            .unwrap(),
+            ..a.clone()
+        };
+        assert_ne!(observe(&a).unwrap(), observe(&b).unwrap());
+    }
+
+    #[test]
+    fn permission_execution_ids_are_canonicalized_out_of_observation() {
+        use urza_core::{DelayedEvent, PermissionId, UrzaPermission};
+
+        fn world(permission_id: u32) -> TrueState {
+            TrueState {
+                urza_permissions: vec![UrzaPermission {
+                    permission_id: PermissionId(permission_id),
+                    card: CardDefId(40),
+                    expires_turn: 3,
+                    free_cast: true,
+                    source: SourceRef {
+                        object_id: None,
+                        card: CardDefId(94),
+                    },
+                }],
+                delayed_events: vec![DelayedEvent::PermissionExpiry {
+                    permission: PermissionId(permission_id),
+                    due_turn: 3,
+                }],
+                ..TrueState::default()
+            }
+        }
+
+        assert_ne!(ReplayKey::from(&world(10)), ReplayKey::from(&world(99)));
+        assert_eq!(observe(&world(10)).unwrap(), observe(&world(99)).unwrap());
+    }
+
+    #[test]
+    fn future_relevant_payloads_survive_projection() {
+        use urza_core::{
+            DelayedEvent, ManaPool, PendingDecision, PermissionId, UrzaPermission, Window,
+        };
+
+        let mut source_permanent = permanent(55, 22, None);
+        source_permanent.tapped = true;
+        source_permanent.counters.age = 2;
+        source_permanent.counters.lore = 3;
+
+        let source = SourceRef {
+            object_id: Some(ObjectId(55)),
+            card: CardDefId(22),
+        };
+        let state = TrueState {
+            turn: 3,
+            window: Window::UpkeepDecision,
+            life: 33,
+            battlefield: BattlefieldZone::new(vec![source_permanent]),
+            mana: ManaPool {
+                blue: 2,
+                colorless: 1,
+                ..ManaPool::default()
+            },
+            pending: PendingDecision::CumulativeUpkeepPayment {
+                source,
+                age_counters: 2,
+                generic_per_age: 1,
+            },
+            delayed_events: vec![
+                DelayedEvent::ManaDrainCredit {
+                    colorless: 4,
+                    due_turn: 4,
+                },
+                DelayedEvent::PermissionExpiry {
+                    permission: PermissionId(7),
+                    due_turn: 3,
+                },
+            ],
+            urza_permissions: vec![UrzaPermission {
+                permission_id: PermissionId(7),
+                card: CardDefId(8),
+                expires_turn: 3,
+                free_cast: true,
+                source,
+            }],
+            spell_cast_this_turn: true,
+            ..TrueState::default()
+        };
+
+        let info = observe(&state).unwrap();
+        assert_eq!(info.turn, 3);
+        assert_eq!(info.window, Window::UpkeepDecision);
+        assert_eq!(info.life, 33);
+        assert_eq!(info.mana.blue, 2);
+        assert_eq!(info.mana.colorless, 1);
+        assert!(info.spell_cast_this_turn);
+        assert_eq!(info.battlefield[0].counters.age, 2);
+        assert_eq!(info.battlefield[0].counters.lore, 3);
+        assert!(matches!(
+            info.pending,
+            super::ObservedPendingDecision::CumulativeUpkeepPayment {
+                age_counters: 2,
+                generic_per_age: 1,
+                ..
+            }
+        ));
+        assert!(info.delayed_events.iter().any(|event| matches!(
+            event,
+            super::ObservedDelayedEvent::ManaDrainCredit {
+                colorless: 4,
+                due_turn: 4
+            }
+        )));
+        assert!(info.delayed_events.iter().any(|event| matches!(
+            event,
+            super::ObservedDelayedEvent::PermissionExpiry {
+                permission_slot: 0,
+                due_turn: 3
+            }
+        )));
+        assert_eq!(info.urza_permissions.len(), 1);
+        assert_eq!(info.urza_permissions[0].permission_slot, 0);
+        assert!(info.urza_permissions[0].free_cast);
     }
 
     #[test]

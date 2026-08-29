@@ -1,5 +1,7 @@
 #![forbid(unsafe_code)]
 
+pub const MODEL_VERSION: &str = "urza_model_r1_2026_08_29";
+
 mod ids;
 mod metrics;
 mod state;

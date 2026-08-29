@@ -19,26 +19,20 @@ The audited v2 Rust rebuild specification remains normative. Python is only a fi
 - Saga-III/remora singleton pending flags were removed from `InformationState`; R1 must represent these through per-object state, stack, pending decisions, and windows.
 - Hand 25 remains a fixture only; no rule or policy is specialized to it.
 
-## R1 work intentionally not started here
+## R1 implementation status
 
-R1 still owns:
+R1 proper has now implemented:
 
-1. pinned/versioned current Oracle metadata for every active card:
-   - stable external identity;
-   - mana cost and mana value;
-   - type line;
-   - Oracle text digest/version date;
-   - MDFC faces;
-   - generated feature flags/indexes;
-2. compact fixed/normalized zone and true-library representations;
-3. complete canonical object projection from execution `ObjectId` to strategic `CanonicalObjectId`, including attachments/relationships;
-4. typed pending-decision payloads sufficient for future legality, not only decision-kind skeletons;
-5. production random permutation/generator implementation built on the R0 coordinate PRF;
-6. exact TrueState -> InformationState observation/projection logic;
-7. replay/information round-trip fixtures;
-8. information-leakage tests demonstrating that two worlds differing only in unknown order present equal policy observations;
-9. structural state invariants and validation for object uniqueness/attachments;
-10. an R1 catalog/version digest replacing the identity-only R0 catalog where appropriate.
+1. DONE — pinned/versioned active-card Oracle metadata: stable Oracle identity, representative printing identity, mana cost/value, type line, Oracle-text SHA-256 and snapshot timestamp, MDFC faces, and derived syntactic indexes.
+2. DONE — normalized unordered card/battlefield storage and ordered `TrueLibrary` with explicit knowledge bounds.
+3. DONE — structural canonical object projection including attachment and external-role relationships.
+4. DONE — typed pending-decision payloads sufficient for future legality decisions.
+5. DONE — production coordinate-stream bounded RNG and Fisher–Yates permutation.
+6. DONE — exact validated `TrueState -> InformationState` observation/projection.
+7. DONE — exact ReplayKey and InformationState JSON round-trip fixtures.
+8. DONE — hidden-order leakage fixtures and raw ObjectId renaming fixtures.
+9. DONE — structural state invariants for library knowledge, object uniqueness, attachments, sources, delayed references, and permissions.
+10. DONE — pinned R1 catalog digest `4b39c7db7bfd2c6f68d7a49efa515cdffb2c6a9716022bc0b21eeec56754a983`.
 
 ## R1 acceptance gate
 
