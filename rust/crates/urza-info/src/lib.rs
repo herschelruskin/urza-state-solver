@@ -52,10 +52,22 @@ pub struct ObservedStackObject {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ObservedDelayedEvent {
-    BaubleDraw { source: CanonicalObjectId, due_turn: u8 },
-    ChromeCopySacrifice { object: CanonicalObjectId, due_turn: u8 },
-    ManaDrainCredit { colorless: u16, due_turn: u8 },
-    PermissionExpiry { permission_slot: u16, due_turn: u8 },
+    BaubleDraw {
+        source: CanonicalObjectId,
+        due_turn: u8,
+    },
+    ChromeCopySacrifice {
+        object: CanonicalObjectId,
+        due_turn: u8,
+    },
+    ManaDrainCredit {
+        colorless: u16,
+        due_turn: u8,
+    },
+    PermissionExpiry {
+        permission_slot: u16,
+        due_turn: u8,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

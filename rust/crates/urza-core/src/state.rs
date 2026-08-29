@@ -99,17 +99,38 @@ pub struct PendingDecision {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum StackObject {
-    Spell { object_id: ObjectId, card: CardDefId },
-    ControlledTrigger { source: ObjectId, ability: AbilityId },
-    ActivatedAbility { source: ObjectId, ability: AbilityId },
+    Spell {
+        object_id: ObjectId,
+        card: CardDefId,
+    },
+    ControlledTrigger {
+        source: ObjectId,
+        ability: AbilityId,
+    },
+    ActivatedAbility {
+        source: ObjectId,
+        ability: AbilityId,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum DelayedEvent {
-    BaubleDraw { source: ObjectId, due_turn: u8 },
-    ChromeCopySacrifice { object: ObjectId, due_turn: u8 },
-    ManaDrainCredit { colorless: u16, due_turn: u8 },
-    PermissionExpiry { permission: PermissionId, due_turn: u8 },
+    BaubleDraw {
+        source: ObjectId,
+        due_turn: u8,
+    },
+    ChromeCopySacrifice {
+        object: ObjectId,
+        due_turn: u8,
+    },
+    ManaDrainCredit {
+        colorless: u16,
+        due_turn: u8,
+    },
+    PermissionExpiry {
+        permission: PermissionId,
+        due_turn: u8,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

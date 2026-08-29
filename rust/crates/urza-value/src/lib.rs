@@ -31,9 +31,7 @@ impl ValueKey {
 fn delayed_event_sort_key(event: &ObservedDelayedEvent) -> (u8, u16, u8) {
     match event {
         ObservedDelayedEvent::BaubleDraw { source, due_turn } => (0, source.0, *due_turn),
-        ObservedDelayedEvent::ChromeCopySacrifice { object, due_turn } => {
-            (1, object.0, *due_turn)
-        }
+        ObservedDelayedEvent::ChromeCopySacrifice { object, due_turn } => (1, object.0, *due_turn),
         ObservedDelayedEvent::ManaDrainCredit {
             colorless,
             due_turn,
