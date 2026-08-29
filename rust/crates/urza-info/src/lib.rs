@@ -163,17 +163,22 @@ impl<'a> PolicyView<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::{CardCount, InformationState, PolicyView};
+    use super::{CardCount, InformationState, LibraryBelief, PolicyView};
     use urza_core::CardDefId;
 
     #[test]
     fn policy_view_exposes_belief_not_true_library_order() {
-        let mut info = InformationState::default();
-        info.library.remaining_counts = vec![CardCount {
-            card: CardDefId(7),
-            count: 2,
-        }];
-        info.library.known_top = vec![CardDefId(9)];
+        let info = InformationState {
+            library: LibraryBelief {
+                remaining_counts: vec![CardCount {
+                    card: CardDefId(7),
+                    count: 2,
+                }],
+                known_top: vec![CardDefId(9)],
+                known_bottom: Vec::new(),
+            },
+            ..InformationState::default()
+        };
         let view = PolicyView::new(&info);
         assert_eq!(view.library_belief().known_top, vec![CardDefId(9)]);
         assert_eq!(view.library_belief().remaining_counts[0].count, 2);

@@ -2,8 +2,10 @@ use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use urza_core::{CardDefId, ReplayKey, TrueState};
 
 fn replay_key_clone(c: &mut Criterion) {
-    let mut state = TrueState::default();
-    state.library = (0..99).map(CardDefId).collect();
+    let state = TrueState {
+        library: (0..99).map(CardDefId).collect(),
+        ..TrueState::default()
+    };
     c.bench_function("r0/replay_key_clone_99_cards", |b| {
         b.iter(|| ReplayKey::from(black_box(&state)))
     });

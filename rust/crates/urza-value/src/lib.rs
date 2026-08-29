@@ -79,22 +79,27 @@ impl WinDistribution {
 mod tests {
     use super::ValueKey;
     use urza_core::CardDefId;
-    use urza_info::{CardCount, InformationState};
+    use urza_info::{CardCount, InformationState, LibraryBelief};
 
     #[test]
     fn strategic_key_ignores_unordered_zone_container_order() {
-        let mut a = InformationState::default();
-        a.hand = vec![CardDefId(3), CardDefId(1)];
-        a.library.remaining_counts = vec![
-            CardCount {
-                card: CardDefId(7),
-                count: 1,
+        let a = InformationState {
+            hand: vec![CardDefId(3), CardDefId(1)],
+            library: LibraryBelief {
+                remaining_counts: vec![
+                    CardCount {
+                        card: CardDefId(7),
+                        count: 1,
+                    },
+                    CardCount {
+                        card: CardDefId(2),
+                        count: 2,
+                    },
+                ],
+                ..LibraryBelief::default()
             },
-            CardCount {
-                card: CardDefId(2),
-                count: 2,
-            },
-        ];
+            ..InformationState::default()
+        };
 
         let mut b = a.clone();
         b.hand.reverse();

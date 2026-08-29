@@ -228,15 +228,19 @@ mod tests {
 
     #[test]
     fn replay_identity_retains_hidden_order_and_rng_progression() {
-        let mut a = TrueState::default();
-        a.library = vec![CardDefId(1), CardDefId(2)];
+        let a = TrueState {
+            library: vec![CardDefId(1), CardDefId(2)],
+            ..TrueState::default()
+        };
 
         let mut b = a.clone();
         b.library.reverse();
         assert_ne!(ReplayKey::from(&a), ReplayKey::from(&b));
 
-        let mut c = a.clone();
-        c.rng_occurrence_cursor = 1;
+        let c = TrueState {
+            rng_occurrence_cursor: 1,
+            ..a.clone()
+        };
         assert_ne!(ReplayKey::from(&a), ReplayKey::from(&c));
     }
 }
