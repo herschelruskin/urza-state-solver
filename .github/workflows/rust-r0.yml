@@ -23,25 +23,21 @@ jobs:
         with:
           toolchain: 1.89.0
           components: rustfmt, clippy
-      - name: Generate dependency lock for pre-R1 capture
+      - name: Locked dependency graph
         working-directory: rust
-        run: |
-          cargo generate-lockfile
-          echo PRE_R1_CARGO_LOCK_BEGIN
-          cat Cargo.lock
-          echo PRE_R1_CARGO_LOCK_END
+        run: cargo metadata --locked --format-version 1 --no-deps > /dev/null
       - name: Format check
         working-directory: rust
         run: cargo fmt --all -- --check
       - name: Clippy
         working-directory: rust
-        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+        run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
       - name: Tests
         working-directory: rust
-        run: cargo test --workspace --all-targets
+        run: cargo test --locked --workspace --all-targets
       - name: Bench compile
         working-directory: rust
-        run: cargo check --workspace --benches
+        run: cargo check --locked --workspace --benches
       - name: R0 audit report
         working-directory: rust
-        run: cargo run -p urza-cli -- r0-audit
+        run: cargo run --locked -p urza-cli -- r0-audit

@@ -35,15 +35,17 @@ impl ValueKey {
             .sort_unstable_by_key(|permanent| permanent.canonical_id);
 
         let mut slot_map = BTreeMap::new();
-        normalized.urza_permissions.sort_unstable_by_key(|permission| {
-            (
-                permission.card,
-                permission.expires_turn,
-                permission.free_cast,
-                permission.source,
-                permission.permission_slot,
-            )
-        });
+        normalized
+            .urza_permissions
+            .sort_unstable_by_key(|permission| {
+                (
+                    permission.card,
+                    permission.expires_turn,
+                    permission.free_cast,
+                    permission.source,
+                    permission.permission_slot,
+                )
+            });
         for (canonical_slot, permission) in normalized.urza_permissions.iter_mut().enumerate() {
             let canonical_slot = canonical_slot as u16;
             if slot_map
@@ -150,11 +152,11 @@ impl WinDistribution {
 #[cfg(test)]
 mod tests {
     use super::{ValueKey, ValueKeyError};
+    use urza_info::CardDefId;
     use urza_info::{
         CanonicalObjectId, CardCount, InformationState, LibraryBelief, ObservedDelayedEvent,
         ObservedPermission,
     };
-    use urza_info::CardDefId;
 
     #[test]
     fn strategic_key_ignores_unordered_zone_and_count_container_order() {

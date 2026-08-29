@@ -7,7 +7,7 @@ R0 establishes compact identifiers/state skeletons, the information boundary, re
 Foundation commands:
 
     cargo fmt --all -- --check
-    cargo clippy --workspace --all-targets --all-features -- -D warnings
-    cargo test --workspace --all-targets
-    cargo check --workspace --benches
-    cargo run -p urza-cli -- r0-audit
+    cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
+    cargo test --locked --workspace --all-targets
+    cargo check --locked --workspace --benches
+    cargo run --locked -p urza-cli -- r0-audit
