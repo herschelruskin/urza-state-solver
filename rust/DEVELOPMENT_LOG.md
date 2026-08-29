@@ -105,4 +105,14 @@ Implemented:
 
 Acceptance tests include hidden-order leakage, raw ObjectId renaming, symmetric duplicate objects, attachments, exact replay JSON round-trip, information JSON round-trip, known top/bottom fidelity, RNG occurrence separation and deterministic shuffle, plus future-relevant pending/window/counter/life/mana/permission/delayed state.
 
-Validation: final R1 acceptance CI pending.
+Validation:
+- GitHub Actions run `33274504574`: PASS on commit `5e39de6aa97db159c42c5158d782113f66e7c2b7`.
+- locked dependency graph: PASS.
+- rustfmt: PASS.
+- strict Clippy (`-D warnings`): PASS.
+- workspace/all-target tests: PASS; 39 passed, 0 failed.
+- benchmark compilation: PASS.
+- R0 audit: PASS.
+- R1 catalog audit: PASS.
+
+R1 acceptance gate is closed. R2 sequencing/rules work may begin from this checkpoint.

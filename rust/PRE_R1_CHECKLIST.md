@@ -56,3 +56,14 @@ Do not port card rules during this gate.
 - result: PASS;
 - focused/workspace tests: 22 passed, 0 failed;
 - R1 may now begin from this locked foundation.
+
+
+## Validated R1 checkpoint
+
+- implementation commit: `5e39de6aa97db159c42c5158d782113f66e7c2b7`;
+- validation run: GitHub Actions `33274504574`;
+- result: PASS;
+- workspace/all-target tests: 39 passed, 0 failed;
+- format, strict Clippy, locked dependency graph, benchmark compilation, R0 audit, and R1 catalog audit: PASS;
+- R1 catalog BLAKE3: `4b39c7db7bfd2c6f68d7a49efa515cdffb2c6a9716022bc0b21eeec56754a983`;
+- R1 acceptance gate is complete; R2 may start from this checkpoint.
