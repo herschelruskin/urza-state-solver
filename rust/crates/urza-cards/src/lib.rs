@@ -164,11 +164,15 @@ pub fn load_coverage() -> Result<CoverageRegistry, CatalogError> {
 }
 
 pub fn catalog_digest_hex() -> String {
-    blake3::hash(CATALOG_R0_JSON.as_bytes()).to_hex().to_string()
+    blake3::hash(CATALOG_R0_JSON.as_bytes())
+        .to_hex()
+        .to_string()
 }
 
 pub fn r1_catalog_digest_hex() -> String {
-    blake3::hash(CATALOG_R1_JSON.as_bytes()).to_hex().to_string()
+    blake3::hash(CATALOG_R1_JSON.as_bytes())
+        .to_hex()
+        .to_string()
 }
 
 pub fn validate_catalog_and_coverage() -> Result<(), CatalogError> {
@@ -193,7 +197,10 @@ pub fn validate_catalog_and_coverage() -> Result<(), CatalogError> {
     let mut names = BTreeSet::new();
     for card in &catalog.cards {
         if !ids.insert(card.id) {
-            return Err(CatalogError::Invariant(format!("duplicate card id {}", card.id)));
+            return Err(CatalogError::Invariant(format!(
+                "duplicate card id {}",
+                card.id
+            )));
         }
         if !names.insert(card.name.clone()) {
             return Err(CatalogError::Invariant(format!(
@@ -395,7 +402,10 @@ fn derive_feature_flags(card: &R1CardMetadata) -> R1FeatureFlags {
     let type_lines: Vec<&str> = if card.faces.is_empty() {
         vec![card.type_line.as_str()]
     } else {
-        card.faces.iter().map(|face| face.type_line.as_str()).collect()
+        card.faces
+            .iter()
+            .map(|face| face.type_line.as_str())
+            .collect()
     };
     let contains_type = |needle: &str| {
         type_lines.iter().any(|line| {
@@ -432,13 +442,10 @@ fn is_hex_digest(value: &str, len: usize) -> bool {
 
 fn is_uuid_like(value: &str) -> bool {
     value.len() == 36
-        && value
-            .chars()
-            .enumerate()
-            .all(|(index, ch)| match index {
-                8 | 13 | 18 | 23 => ch == '-',
-                _ => ch.is_ascii_hexdigit(),
-            })
+        && value.chars().enumerate().all(|(index, ch)| match index {
+            8 | 13 | 18 | 23 => ch == '-',
+            _ => ch.is_ascii_hexdigit(),
+        })
 }
 
 fn parse_decklist(input: &str) -> Result<BTreeMap<String, u8>, CatalogError> {

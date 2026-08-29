@@ -51,7 +51,6 @@ fn run_r0_audit() {
     );
 }
 
-
 fn run_r1_audit() {
     validate_r1_catalog().expect("R1 catalog invariants");
     let catalog = load_r1_catalog().expect("embedded R1 catalog");
