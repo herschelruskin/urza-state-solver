@@ -1,0 +1,9 @@
+[package]
+name = "urza-mulligan"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+urza-cards = { path = "../urza-cards" }
+urza-value = { path = "../urza-value" }

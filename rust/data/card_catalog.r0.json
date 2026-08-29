@@ -1,0 +1,579 @@
+{
+  "schema_version": 1,
+  "catalog_version": "urza-active-r0-2026-08-29",
+  "metadata_scope": "identity-counts-only; Oracle/rules metadata intentionally deferred to R1",
+  "source_branch": "rust-engine-rebuild",
+  "source_decklist_blob_sha": "c493b445820eeaa85566511afb3a0e002373598b",
+  "cards": [
+    {
+      "id": 0,
+      "name": "Aether Spellbomb",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 1,
+      "name": "An Offer You Can't Refuse",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 2,
+      "name": "Ancient Tomb",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 3,
+      "name": "Artificer's Assistant",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 4,
+      "name": "Banishing Knack",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 5,
+      "name": "Basalt Monolith",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 6,
+      "name": "Battered Golem",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 7,
+      "name": "Cephalid Coliseum",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 8,
+      "name": "Chain of Vapor",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 9,
+      "name": "Chrome Dome",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 10,
+      "name": "Chrome Mox",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 11,
+      "name": "City of Traitors",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 12,
+      "name": "Codex Shredder",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 13,
+      "name": "Crystal Vein",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 14,
+      "name": "Defense Grid",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 15,
+      "name": "Disruptor Flute",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 16,
+      "name": "Dizzy Spell",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 17,
+      "name": "Dramatic Reversal",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 18,
+      "name": "Everflowing Chalice",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 19,
+      "name": "Faerie Mastermind",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 20,
+      "name": "Fierce Guardianship",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 21,
+      "name": "Flooded Strand",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 22,
+      "name": "Flusterstorm",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 23,
+      "name": "Force of Negation",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 24,
+      "name": "Force of Will",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 25,
+      "name": "Forensic Gadgeteer",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 26,
+      "name": "Fortune Teller's Talent",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 27,
+      "name": "Gemstone Caverns",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 28,
+      "name": "Giant's Boulder",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 29,
+      "name": "Gitaxian Probe",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 30,
+      "name": "Grafdigger's Cage",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 31,
+      "name": "Grim Monolith",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 32,
+      "name": "Grinding Station",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 33,
+      "name": "Hope of Ghirapur",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 34,
+      "name": "Hydroelectric Specimen",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 35,
+      "name": "Imposter Mech",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 36,
+      "name": "Ipnu Rivulet",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 37,
+      "name": "Island",
+      "deck_count": 6,
+      "commander": false
+    },
+    {
+      "id": 38,
+      "name": "Jeweled Amulet",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 39,
+      "name": "Lotus Petal",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 40,
+      "name": "Mana Drain",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 41,
+      "name": "Mana Vault",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 42,
+      "name": "Manifold Key",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 43,
+      "name": "Mental Misstep",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 44,
+      "name": "Merchant Scroll",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 45,
+      "name": "Minamo, School at Water's Edge",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 46,
+      "name": "Mindbreak Trap",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 47,
+      "name": "Mishra's Bauble",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 48,
+      "name": "Misty Rainforest",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 49,
+      "name": "Moonsnare Prototype",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 50,
+      "name": "Mox Diamond",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 51,
+      "name": "Mox Opal",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 52,
+      "name": "Muddle the Mixture",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 53,
+      "name": "Mystic Remora",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 54,
+      "name": "Mystical Tutor",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 55,
+      "name": "Oboro, Palace in the Clouds",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 56,
+      "name": "Otawara, Soaring City",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 57,
+      "name": "Pact of Negation",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 58,
+      "name": "Pithing Needle",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 59,
+      "name": "Polluted Delta",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 60,
+      "name": "Power Artifact",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 61,
+      "name": "Prismatic Vista",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 62,
+      "name": "Prized Statue",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 63,
+      "name": "Repurposing Bay",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 64,
+      "name": "Reshape",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 65,
+      "name": "Retraction Helix",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 66,
+      "name": "Rhystic Study",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 67,
+      "name": "Sapphire Medallion",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 68,
+      "name": "Saprazzan Skerry",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 69,
+      "name": "Scalding Tarn",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 70,
+      "name": "Scour for Scrap",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 71,
+      "name": "Sea Gate Restoration",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 72,
+      "name": "Seat of the Synod",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 73,
+      "name": "Sensei's Divining Top",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 74,
+      "name": "Sewer-veillance Cam",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 75,
+      "name": "Sink into Stupor",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 76,
+      "name": "Sol Ring",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 77,
+      "name": "Spellseeker",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 78,
+      "name": "Spellskite",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 79,
+      "name": "Swan Song",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 80,
+      "name": "Tezzeret, Cruel Captain",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 81,
+      "name": "The One Ring",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 82,
+      "name": "The Reality Chip",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 83,
+      "name": "Tormod's Crypt",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 84,
+      "name": "Transmute Artifact",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 85,
+      "name": "Urza, Lord High Artificer",
+      "deck_count": 1,
+      "commander": true
+    },
+    {
+      "id": 86,
+      "name": "Urza's Bauble",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 87,
+      "name": "Urza's Saga",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 88,
+      "name": "Uthros Research Craft",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 89,
+      "name": "Valley Floodcaller",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 90,
+      "name": "Vexing Bauble",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 91,
+      "name": "Voltaic Key",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 92,
+      "name": "Welding Jar",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 93,
+      "name": "Whir of Invention",
+      "deck_count": 1,
+      "commander": false
+    },
+    {
+      "id": 94,
+      "name": "Witching Well",
+      "deck_count": 1,
+      "commander": false
+    }
+  ]
+}

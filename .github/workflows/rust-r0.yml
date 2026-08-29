@@ -1,0 +1,40 @@
+name: Rust R0 foundation
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - "rust/**"
+      - "decklist.txt"
+      - "benchmarks/human/human_mulligan_exact_hands.json"
+      - ".github/workflows/rust-r0.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  r0:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+          components: rustfmt, clippy
+      - name: Format check
+        working-directory: rust
+        run: cargo fmt --all -- --check
+      - name: Clippy
+        working-directory: rust
+        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+      - name: Tests
+        working-directory: rust
+        run: cargo test --workspace --all-targets
+      - name: Bench compile
+        working-directory: rust
+        run: cargo check --workspace --benches
+      - name: R0 audit report
+        working-directory: rust
+        run: cargo run -p urza-cli -- r0-audit

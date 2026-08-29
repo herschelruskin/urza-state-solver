@@ -1,0 +1,481 @@
+{
+  "schema_version": 1,
+  "coverage_version": "r0-foundation-2026-08-29",
+  "entries": [
+    {
+      "card_id": 0,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 1,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 2,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 3,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 4,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 5,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 6,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 7,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 8,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 9,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 10,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 11,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 12,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 13,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 14,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 15,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 16,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 17,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 18,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 19,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 20,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 21,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 22,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 23,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 24,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 25,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 26,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 27,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 28,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 29,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 30,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 31,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 32,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 33,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 34,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 35,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 36,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 37,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 38,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 39,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 40,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 41,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 42,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 43,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 44,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 45,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 46,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 47,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 48,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 49,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 50,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 51,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 52,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 53,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 54,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 55,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 56,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 57,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 58,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 59,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 60,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 61,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 62,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 63,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 64,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 65,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 66,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 67,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 68,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 69,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 70,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 71,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 72,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 73,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 74,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 75,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 76,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 77,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 78,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 79,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 80,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 81,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 82,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 83,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 84,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 85,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 86,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 87,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 88,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 89,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 90,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 91,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 92,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 93,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    },
+    {
+      "card_id": 94,
+      "status": "INTENTIONALLY_UNMODELED",
+      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+    }
+  ]
+}

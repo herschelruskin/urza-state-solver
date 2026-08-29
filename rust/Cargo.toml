@@ -1,0 +1,26 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/urza-core",
+    "crates/urza-rules",
+    "crates/urza-info",
+    "crates/urza-rng",
+    "crates/urza-policy",
+    "crates/urza-value",
+    "crates/urza-mc",
+    "crates/urza-mulligan",
+    "crates/urza-cards",
+    "crates/urza-cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.89"
+
+[workspace.dependencies]
+blake3 = "=1.8.2"
+criterion = "=0.7.0"
+serde = { version = "=1.0.219", features = ["derive"] }
+serde_json = "=1.0.142"
+thiserror = "=2.0.16"

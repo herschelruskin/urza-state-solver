@@ -1,0 +1,12 @@
+[package]
+name = "urza-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+
+[[bench]]
+name = "r0_state_keys"
+harness = false

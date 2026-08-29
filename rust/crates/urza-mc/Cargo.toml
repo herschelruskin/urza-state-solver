@@ -1,0 +1,9 @@
+[package]
+name = "urza-mc"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+urza-rng = { path = "../urza-rng" }
+urza-value = { path = "../urza-value" }

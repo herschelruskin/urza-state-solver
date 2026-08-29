@@ -1,0 +1,12 @@
+[package]
+name = "urza-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+urza-cards = { path = "../urza-cards" }
+urza-core = { path = "../urza-core" }
+urza-rng = { path = "../urza-rng" }

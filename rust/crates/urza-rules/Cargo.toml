@@ -1,0 +1,9 @@
+[package]
+name = "urza-rules"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+urza-core = { path = "../urza-core" }
+urza-info = { path = "../urza-info" }
