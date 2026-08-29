@@ -79,4 +79,8 @@ Bootstrap attempt 3 reached the Default Cards export but encountered non-Oracle 
 
 Bootstrap attempt 4 resolved the historical-card issue and reduced all remaining same-name ambiguity to Scryfall Art Series objects. A representative example is the separate `Mana Drain // Mana Drain` Art Series identity (`Card // Card`) versus the gameplay Mana Drain Oracle identity. The transform now excludes `layout == "art_series"`; this avoids format-legality heuristics and keeps only gameplay-card identities.
 
-Validation/result: pending gameplay-layout bootstrap workflow.
+Bootstrap attempt 5 succeeded: all 95 active CardDefIds resolved uniquely from the 2026-08-29 Scryfall Default Cards bulk snapshot after restricting to English paper gameplay objects and excluding Art Series layouts. The pinned source bulk ID is `e2ef41e3-5778-4bc2-af3f-78eca4dd9c23`, updated `2026-08-29T09:05:30.581+00:00`, with downloaded-file SHA-256 `1f47981292cda34437b22e80de15ab435503f0b12e02df471bb405d83ac58425`.
+
+The committed R1 catalog intentionally stores no full Oracle rules text. It stores a per-card SHA-256 of the current Oracle text, the source snapshot timestamp, stable Oracle ID, representative Scryfall ID, mana cost/value, type line, MDFC face identity/cost/type metadata, layout, and syntactic feature flags. This satisfies the R1 metadata pinning contract while keeping full rules text out of the repository.
+
+Validation/result: Rust-side R1 catalog validation and digest CI pending.

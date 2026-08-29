@@ -9,7 +9,6 @@ behavior.
 from __future__ import annotations
 
 import argparse
-import datetime as dt
 import gzip
 import hashlib
 import json
@@ -47,8 +46,15 @@ def face_record(face: dict) -> dict:
         "name": face["name"],
         "mana_cost": face.get("mana_cost", ""),
         "type_line": face.get("type_line", ""),
-        "oracle_text": face.get("oracle_text", ""),
     }
+
+
+def integer_mana_value(card: dict) -> int:
+    value = card.get("cmc", 0)
+    integer = int(value)
+    if integer != value:
+        raise RuntimeError(f"fractional mana value is unsupported in the active R1 catalog: {card['name']}={value}")
+    return integer
 
 
 def type_flags(type_lines: list[str]) -> dict:
@@ -145,9 +151,8 @@ def main() -> None:
                 "source_scryfall_id": card["id"],
                 "layout": card.get("layout", "normal"),
                 "mana_cost": card.get("mana_cost", ""),
-                "mana_value": card.get("cmc", 0),
+                "mana_value": integer_mana_value(card),
                 "type_line": card.get("type_line", ""),
-                "oracle_text": card.get("oracle_text", ""),
                 "oracle_text_sha256": text_sha256(card),
                 "faces": faces,
                 "deck_face_index": face_index,
@@ -167,7 +172,7 @@ def main() -> None:
     snapshot = {
         "schema_version": 1,
         "catalog_version": "urza-active-r1-oracle-2026-08-29",
-        "generated_at_utc": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
+        "catalog_as_of_utc": bulk["updated_at"],
         "source": {
             "provider": "Scryfall bulk Default Cards; English paper printings grouped by Oracle ID",
             "bulk_api": args.bulk_meta_url,

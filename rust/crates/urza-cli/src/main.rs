@@ -8,8 +8,9 @@ fn main() {
     let command = std::env::args().nth(1).unwrap_or_else(|| "help".to_owned());
     match command.as_str() {
         "r0-audit" => run_r0_audit(),
+        "r1-audit" => run_r1_audit(),
         _ => {
-            eprintln!("usage: urza-cli r0-audit");
+            eprintln!("usage: urza-cli <r0-audit|r1-audit>");
             std::process::exit(2);
         }
     }
@@ -47,5 +48,35 @@ fn run_r0_audit() {
     println!(
         "{}",
         serde_json::to_string_pretty(&report).expect("serializable audit report")
+    );
+}
+
+
+fn run_r1_audit() {
+    validate_r1_catalog().expect("R1 catalog invariants");
+    let catalog = load_r1_catalog().expect("embedded R1 catalog");
+    let multiface_count = catalog
+        .cards
+        .iter()
+        .filter(|card| card.feature_flags.is_multiface)
+        .count();
+
+    let report = json!({
+        "phase": "R1",
+        "catalog_version": catalog.catalog_version,
+        "catalog_digest_blake3": r1_catalog_digest_hex(),
+        "catalog_as_of_utc": catalog.catalog_as_of_utc,
+        "source_bulk_type": catalog.source.bulk_type,
+        "source_bulk_updated_at": catalog.source.bulk_updated_at,
+        "source_bulk_file_sha256": catalog.source.bulk_file_sha256,
+        "active_card_identities": catalog.cards.len(),
+        "multiface_cards": multiface_count,
+        "full_oracle_text_stored": false,
+        "oracle_text_integrity": "per-card SHA-256 digest",
+    });
+
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&report).expect("serializable R1 audit report")
     );
 }

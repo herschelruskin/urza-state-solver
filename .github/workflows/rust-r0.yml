@@ -41,13 +41,6 @@ jobs:
       - name: R0 audit report
         working-directory: rust
         run: cargo run --locked -p urza-cli -- r0-audit
-      - name: Bootstrap R1 Oracle catalog preview
+      - name: R1 catalog audit
         working-directory: rust
-        run: |
-          python3 tools/bootstrap_r1_catalog.py \
-            --r0-catalog data/card_catalog.r0.json \
-            --output /tmp/card_catalog.r1.json
-          echo R1_CATALOG_JSON_BEGIN
-          base64 -w0 /tmp/card_catalog.r1.json
-          echo
-          echo R1_CATALOG_JSON_END
+        run: cargo run --locked -p urza-cli -- r1-audit
