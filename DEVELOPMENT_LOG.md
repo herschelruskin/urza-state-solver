@@ -734,3 +734,37 @@ Large late fanout families included Transmute target choice (~36-37), Grinding
 Station mill targets (~25-27), and Repurposing Bay activations (~31).  Do not
 constrain these card behaviors heuristically before the outer runtime-v2 A/B is
 measured and structural/factoring options are audited.
+
+
+## Rust rebuild clean-base audit — August 28, 2026
+
+Branch: `rust-engine-rebuild`
+Audited spec commit: `ec99eecb821e5146160ebdf8042212906d0cec9a`
+
+Before beginning Rust implementation, the rebuild specification received a source-of-truth and rules/architecture audit specifically to avoid treating Python implementation details as normative semantics.
+
+Key corrections/locks:
+- current Comprehensive Rules / Oracle text + explicit project abstractions outrank Python parity;
+- Python remains a regression witness/fixture generator, not the rules source of truth;
+- Tezzeret -3 puts the searched MV<=1 artifact into hand; Tezzeret 0 also adds a +1/+1 counter to an artifact-creature target;
+- Artificer's Assistant triggers on historic spells, not artifact spells only;
+- Voltaic Key may target itself; Manifold Key requires another target artifact;
+- Otawara's channel target types are artifact/creature/enchantment/planeswalker, so land status alone does not invalidate an otherwise matching permanent;
+- Urza's Saga III uses printed mana cost exactly {0}/{1}, not generic MV<=1;
+- Repurposing Bay is sorcery-speed and exact MV+1;
+- own life starts at 40 and belongs in core state;
+- per-object counters/attachments and typed delayed events replace Python redundant globals/trace-backed provenance;
+- CardDefId is u16 and physical ObjectId is separate;
+- strategic ValueKey and exact sampled-world/cycle identity are distinct;
+- production RNG must include a deterministic stochastic-event occurrence coordinate so repeated random events can be fresh, while same-logical-event counterfactual branches deliberately share CRN coordinates;
+- game / outer-MC / environment / policy RNG domains are independent;
+- MC cache namespace includes model/policy/objective/environment/RNG tape/budget identity, not ValueKey alone;
+- runtime-v2 mulligan parallel/tie/early-stop work remains an EXPERIMENT and does not define game semantics;
+- R0 must generate a machine-readable card coverage registry and fail CI if any active card is missing/duplicate/unclassified.
+
+Deck coverage check at the audit:
+- 99 cards excluding commander;
+- 95 distinct card names including Urza;
+- no silent-card-coverage exception is permitted in Rust.
+
+Performance reference remains Hand 25, especially Hydroelectric-bottom/world-2 (~1667 s, 762,012 decision requests in Python). Rust performance changes should be validated on deterministic fixtures and should prefer representation/caching/factoring/exact bounds before policy restrictions.
