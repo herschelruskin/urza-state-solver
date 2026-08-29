@@ -99,7 +99,11 @@ def main() -> None:
     by_name: dict[str, list[tuple[dict, int | None]]] = {}
     with source:
         for card in records:
-            if card.get("lang", "en") != "en" or "paper" not in card.get("games", []):
+            if (
+                not card.get("oracle_id")
+                or card.get("lang", "en") != "en"
+                or "paper" not in card.get("games", [])
+            ):
                 continue
             by_name.setdefault(card["name"], []).append((card, None))
             for index, face in enumerate(card.get("card_faces", [])):

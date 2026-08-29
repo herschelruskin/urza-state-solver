@@ -75,4 +75,6 @@ Bootstrap attempt 1 reached the live Scryfall snapshot successfully but rejected
 
 Bootstrap attempt 2 proved that filtering the Oracle Cards export by its representative printing's `games` field is also insufficient: six historical paper cards disappeared because their representative record was not a paper printing, and same-name ambiguities remained. The acquisition source is therefore changed to Scryfall `default_cards`: first select actual English paper printings, then group those printings by stable `oracle_id`, choosing the newest paper printing only as the snapshot carrier. The stable identity remains `oracle_id`.
 
-Validation/result: pending paper-printing-grouped bootstrap workflow.
+Bootstrap attempt 3 reached the Default Cards export but encountered non-Oracle objects without `oracle_id` (for example tokens/emblems). These are now excluded before indexing; the active deck itself still requires one stable Oracle ID per CardDefId.
+
+Validation/result: pending default-card Oracle-only bootstrap workflow.
