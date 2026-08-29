@@ -10,7 +10,8 @@ pub use urza_core::{
     ManaPool, PendingDecisionKind, PermanentMode, Phase, Window,
 };
 use urza_core::{
-    DelayedEvent, ObjectId, PendingDecision, SourceRef, StackObject, StateValidationError, TrueState,
+    DelayedEvent, ObjectId, PendingDecision, SourceRef, StackObject, StateValidationError,
+    TrueState,
 };
 
 #[derive(
@@ -51,17 +52,13 @@ pub struct ObservedPermanent {
     pub granted_ability: Option<GrantedAbility>,
 }
 
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
-)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct ObservedSourceRef {
     pub canonical_object: Option<CanonicalObjectId>,
     pub card: CardDefId,
 }
 
-#[derive(
-    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
-)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum ObservedStackKind {
     Spell,
     ControlledTrigger,
@@ -150,9 +147,7 @@ impl ObservedPendingDecision {
     }
 }
 
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum ObservedDelayedEvent {
     BaubleDraw {
         source: ObservedSourceRef,
@@ -173,9 +168,7 @@ pub enum ObservedDelayedEvent {
     },
 }
 
-#[derive(
-    Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
-)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub struct ObservedPermission {
     pub permission_slot: u16,
     pub card: CardDefId,
@@ -293,12 +286,10 @@ pub fn observe(state: &TrueState) -> Result<InformationState, ObservationError> 
         .delayed_events
         .iter()
         .map(|event| match event {
-            DelayedEvent::BaubleDraw { source, due_turn } => {
-                ObservedDelayedEvent::BaubleDraw {
-                    source: observe_source(*source, &object_classes),
-                    due_turn: *due_turn,
-                }
-            }
+            DelayedEvent::BaubleDraw { source, due_turn } => ObservedDelayedEvent::BaubleDraw {
+                source: observe_source(*source, &object_classes),
+                due_turn: *due_turn,
+            },
             DelayedEvent::ChromeCopySacrifice {
                 object,
                 card,
@@ -386,12 +377,10 @@ fn observe_pending(
         PendingDecision::TutorTarget { source } => ObservedPendingDecision::TutorTarget {
             source: observe_source(*source, object_classes),
         },
-        PendingDecision::ScryChoice { source, looked_at } => {
-            ObservedPendingDecision::ScryChoice {
-                source: observe_source(*source, object_classes),
-                looked_at: looked_at.clone(),
-            }
-        }
+        PendingDecision::ScryChoice { source, looked_at } => ObservedPendingDecision::ScryChoice {
+            source: observe_source(*source, object_classes),
+            looked_at: looked_at.clone(),
+        },
         PendingDecision::TopReorder { source, cards } => ObservedPendingDecision::TopReorder {
             source: observe_source(*source, object_classes),
             cards: cards.clone(),
@@ -594,10 +583,7 @@ fn canonical_object_classes(state: &TrueState) -> BTreeMap<ObjectId, CanonicalOb
                     permanent.object_id,
                     RefinementSignature {
                         local: locals[&permanent.object_id].clone(),
-                        roles: roles
-                            .get(&permanent.object_id)
-                            .cloned()
-                            .unwrap_or_default(),
+                        roles: roles.get(&permanent.object_id).cloned().unwrap_or_default(),
                         attached_to_class: permanent.attached_to.map(|target| labels[&target]),
                         incoming_attachment_classes: incoming
                             .get(&permanent.object_id)
@@ -621,7 +607,10 @@ fn canonical_object_classes(state: &TrueState) -> BTreeMap<ObjectId, CanonicalOb
 }
 
 fn dense_labels<T: Ord + Clone>(items: Vec<(ObjectId, T)>) -> BTreeMap<ObjectId, u16> {
-    let mut unique: Vec<_> = items.iter().map(|(_, signature)| signature.clone()).collect();
+    let mut unique: Vec<_> = items
+        .iter()
+        .map(|(_, signature)| signature.clone())
+        .collect();
     unique.sort_unstable();
     unique.dedup();
     items
@@ -767,9 +756,7 @@ fn pending_role(pending: &PendingDecision) -> ExternalRole {
         PendingDecision::TriggerOrder { trigger_count, .. } => {
             (10, u16::from(*trigger_count), 0, Vec::new())
         }
-        PendingDecision::ColiseumDiscard { count, .. } => {
-            (11, u16::from(*count), 0, Vec::new())
-        }
+        PendingDecision::ColiseumDiscard { count, .. } => (11, u16::from(*count), 0, Vec::new()),
         PendingDecision::CumulativeUpkeepPayment {
             age_counters,
             generic_per_age,
@@ -817,7 +804,7 @@ impl<'a> PolicyView<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::{observe, CardCount, CanonicalObjectId, InformationState, PolicyView};
+    use super::{CanonicalObjectId, CardCount, InformationState, PolicyView, observe};
     use urza_core::{
         BattlefieldZone, CardDefId, CounterState, LibraryKnowledge, ObjectId, PermanentState,
         ReplayKey, SourceRef, StackObject, TrueLibrary, TrueState,
@@ -1010,10 +997,7 @@ mod tests {
         };
         let info = observe(&state).unwrap();
         assert_eq!(info.battlefield.len(), 2);
-        assert_eq!(
-            info.battlefield[0].canonical_id,
-            CanonicalObjectId(0)
-        );
+        assert_eq!(info.battlefield[0].canonical_id, CanonicalObjectId(0));
         assert_eq!(info.battlefield[0], info.battlefield[1]);
     }
 
