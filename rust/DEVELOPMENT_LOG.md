@@ -22,4 +22,15 @@ Implemented in R0:
 - structured engine counter/timing scaffolding and a Criterion replay-key microbenchmark;
 - GitHub Actions format/clippy/test/bench-compile/audit workflow.
 
-CI result: pending at initial commit creation; update after the executed workflow result is inspected.
+Validation:
+- GitHub Actions run `33271673785`: PASS on commit `c8c49b85f66021299e0a4aee744fae60496e3860`.
+- `cargo fmt --all -- --check`: PASS.
+- `cargo clippy --workspace --all-targets --all-features -- -D warnings`: PASS.
+- `cargo test --workspace --all-targets`: PASS; 12 focused R0 tests, 0 failures.
+- `cargo check --workspace --benches`: PASS.
+- Criterion replay-key smoke: PASS.
+- `cargo run -p urza-cli -- r0-audit`: PASS.
+- R0 catalog BLAKE3 digest: `2ef2f7dd52b72af46d24a0183096803ef9fb9d65524b9e77f7d87da4e2809f21`.
+- Audit output confirms 95 distinct active names including Urza, 99 noncommander cards, 95 explicit coverage entries, own life 40, and Hand 25 fixture identity.
+
+The first three workflow attempts found and drove fixes for formatting, a Clippy test-construction warning, and deprecated Criterion `black_box` use. No semantic test failures occurred.
