@@ -1,13 +1,26 @@
 # Urza Simulator — Rust Engine Rebuild Specification
 
-Status: clean-room performance rebuild plan
-Rust branch: rust-engine-rebuild
-Reference Python branch: phase5i-mulligan-runtime-v2
-Reference Python head at branch creation: c35b963acef211efa674a8e7af3aab18b9da7268
+**Status:** audited v2 clean-room rebuild specification
+**Audit date:** 2026-08-28
+**Rust branch:** `rust-engine-rebuild`
+**Authoritative accepted Python validation run:** `33202063879` at workflow head `206282ba72413e61f18c6d5119d880126506bd8f`
+**Accepted rules repair included in that baseline:** zero-target simple-tutor no-find `c7dd2b8b14fcacfd8ef03fdf511f8cbb2dfd7e72`
+**Performance experiment only:** `phase5i-mulligan-runtime-v2` at `c35b963acef211efa674a8e7af3aab18b9da7268`
+
+## Source-of-truth hierarchy
+
+The Rust engine is **not** a byte-for-byte port of Python. If sources disagree:
+
+1. Current Magic Comprehensive Rules + current Oracle card text + explicit project abstraction decisions.
+2. Audited rules/information fixtures encoding those decisions.
+3. Final accepted non-oracle Python behavior as a regression witness and fixture generator.
+4. Historical Oracle code, rejected branches, old comments, and performance experiments as evidence only.
+
+Every important behavior should be classified as **RULE**, **MODEL**, **POLICY**, **PARITY**, or **EXPERIMENT**. Never force Rust to match Python solely because Python did it first.
 
 ## Purpose
 
-Rebuild the validated non-oracle Urza solver in Rust so performance no longer forces policy simplification. Preserve the difficult conceptual work already completed in Python: legal-information boundaries, deterministic hidden worlds, canonical strategic state, replayability, selective bounded Q, London mulligan DP, deck-specific rules coverage, and regression testing.
+Rebuild the accepted non-oracle Urza solver architecture in Rust so performance no longer forces policy simplification. Preserve validated information/policy/model contracts from Python, but correct audited rules mistakes instead of preserving them for superficial parity. Retain legal-information boundaries, reproducible hidden worlds, canonical strategic state, replayability, selective bounded Q, London mulligan DP, deck-specific rules coverage, and regression testing.
 
 The Rust engine should become faster by making representation, caching, factoring, branch bounds, and parallel execution better — not by teaching the player that weird but legal lines do not exist.
 
@@ -67,7 +80,7 @@ Initially out of scope:
 - full four-agent opponent simulation
 - every obscure Commander interaction
 - exhaustive opponent targeting
-- life-total strategy unless a modeled line needs it
+- opponent life/damage strategy unless a later interaction model needs it; **our own life total starts at 40 and is intrinsic state from R1** because it constrains life payments/self-damage
 - neural value/policy approximation before exact/factored methods are exhausted
 
 Add a new card mechanic only when it causes a reproducible blocker, illegal state, hidden-information leak, material benchmark distortion, or a required final capability.
@@ -109,7 +122,9 @@ Randomness must not depend on:
 - memory address/object identity
 - unordered-container iteration
 
-Every event derives from root seed + versioned namespace + stable coordinate.
+Every event derives from root seed/world ID + versioned namespace + stable semantic coordinate + an explicit stochastic-event occurrence/cursor. A repeated physical shuffle/random event after revisiting the same state/action must be able to consume a fresh random result. Counterfactual branches representing the **same logical random event** deliberately share the occurrence coordinate for common-random-number coupling. Occurrence IDs must never depend on thread scheduling.
+
+Keep game randomness, outer hidden-world sampling, environment randomness, and optional policy/tie randomness in independent namespaces so consuming one domain cannot perturb another.
 
 ### Distinct identities
 
@@ -159,13 +174,13 @@ Keep Python initially as the executable reference and fixture generator.
 
 ### Card IDs
 
-Use CardId(u8) while the registry remains below 256 names. Strings stay at parsing/logging boundaries.
+Use a definition ID such as `CardDefId(u16)`; strings stay at parsing/logging boundaries. `u16` avoids a future format migration when card-swap experiments expand the catalog beyond this deck. Use a separate execution-only `ObjectId` for physical battlefield/stack objects.
 
 Version the registry and save a digest in benchmark artifacts.
 
 ### Library
 
-A 99-card true library can be represented as a fixed array of byte-sized CardIds plus length/index metadata. Copying a few hundred bytes may be faster than complex arenas/COW; benchmark before adding indirection.
+A 99-card true library can be represented as a fixed array of `CardDefId` values plus length/index metadata (about 198 bytes at u16). Copying a few hundred bytes may be faster than complex arenas/COW; benchmark before adding indirection.
 
 Strategic library belief stores:
 - remaining multiset/counts
@@ -174,19 +189,23 @@ Strategic library belief stores:
 - deduced counts
 - no unknown order
 
+Mana should use compact typed pools (at minimum blue/colorless plus special stored typed mana). **Generic is a cost requirement, not a mana type.**
+
 ### Permanents
 
-Compact fields:
-- CardId
-- tapped
-- sick
-- counters
-- small mode enum
-- knack_granted
-- producer_urza_ready
-- token/attachment fields where needed
+Do **not** port the Python State layout 1:1. Prefer authoritative per-object state:
 
-Execution instance IDs may distinguish same-name objects for a transition but should not enter strategic equality unless future legality depends on them.
+- `CardDefId`, tapped/sick/type/mode flags;
+- Ring burden counters on the exact Ring;
+- Uthros charge counters on the exact Uthros;
+- Saga lore counters on each Saga;
+- Power Artifact / Reality Chip attachments to exact objects;
+- Knack/Helix grants on exact creatures;
+- Chrome Dome copy objects and lifetime obligations.
+
+Execution `ObjectId` values distinguish physical objects for transitions. Strategic equality should canonicalize same-name objects deterministically while preserving attachment/relationship distinctions that affect future legality.
+
+Do not recover gameplay state from trace text. Use typed delayed events such as pending Bauble draws, Chrome-copy sacrifice, Mana Drain credit, and permission expiry. Trace is reporting only.
 
 ### Actions
 
@@ -204,11 +223,18 @@ Strategic state includes:
 
 Use a stable PRF/seed derivation such as BLAKE3 plus a versioned reproducible RNG.
 
+Maintain three identities separately:
+1. strategic expected-value state, excluding RNG provenance;
+2. exact sampled-world/replay state, including stochastic-event progression;
+3. common-random-number coordinates intentionally shared by counterfactual candidates.
+
+The accepted Python state-fingerprint RNG scheme is a compatibility witness, not mandatory production semantics. If exact old replay is useful, implement a versioned compatibility mode. Production Rust should use occurrence-indexed random events so a genuinely repeated random event is fresh.
+
 Critical tutor-search rule learned in Python:
 
-1. derive one random permutation/ranking from the common pre-target library/search event
-2. each candidate-target branch deletes its exact selected target from that same permutation
-3. remaining order is the branch library
+1. derive one random permutation/ranking from the common **pre-target** library/search event and its occurrence ID;
+2. each candidate-target branch deletes its exact selected target from that same permutation;
+3. remaining order is the branch library.
 
 Do not independently reshuffle target branches. The corrected common-random-number construction materially improves finite-sample comparisons.
 
@@ -217,10 +243,12 @@ Do not independently reshuffle target branches. The corrected common-random-numb
 ### Sensei's Divining Top
 Activate/reveal top 3 → observe → choose order.
 
-Top draw is a committed action followed by draw observation.
+Top draw is one committed activation whose resolution is: draw a card, then if Top is still on the battlefield put Top on top of its owner's library. The drawn card becomes known during resolution, but no unrelated policy action occurs between those instructions.
 
 ### Scry
 Commit/resolve source → observe N → choose top/bottom arrangement.
+
+Artificer's Assistant must trigger on a **historic spell**, not artifact spells only. Historic includes artifacts, legendary spells, and Sagas; lands are played rather than cast.
 
 ### Simple tutors
 Commit/pay → observe legal search set → choose target or legal no-find → placement/shuffle.
@@ -237,16 +265,18 @@ Choose X + sacrifice as casting commitment → search observation → choose MV<
 Choose X + improvise/payment while casting → search observation → choose MV<=X target → shuffle.
 
 ### Repurposing Bay
-Pay 2/tap/sacrifice → exact MV+1 search observation → choose target → battlefield → shuffle/ETB.
+Pay {2}, tap Bay, sacrifice another artifact → exact MV+1 search observation → choose target → battlefield → shuffle/ETB. Activate only as a sorcery.
 
-### Tezzeret -3
-Commit loyalty → observe MV<=1 search → choose target.
+### Tezzeret, Cruel Captain
+- 0: untap target artifact or creature; if it is an artifact creature, put a +1/+1 counter on it.
+- -3: commit loyalty → observe artifact MV<=1 search → choose/reveal target → **put it into hand** → shuffle.
+- -7/combat-emblem support is explicit deferred scope until needed; never invent a shortcut.
 
 ### Urza's Saga III
-Independent pending trigger. Can resolve after Saga leaves. Search decision happens at trigger resolution; final-chapter sacrifice timing must be correct.
+Independent pending trigger. Can resolve after Saga leaves. Chapter III searches an artifact card with **printed mana cost exactly {0} or {1}** (not merely mana value <=1), puts it onto the battlefield, then shuffles. Search decision happens at trigger resolution; final-chapter sacrifice timing must be correct.
 
 ### Scour for Scrap
-Graveyard target is locked when cast. It cannot be created later and retroactively targeted. Library-search mode is staged after observation.
+{3}{U} instant; choose one or both. Its library mode searches an artifact card, reveals it, puts it **into hand**, then shuffles. Its graveyard mode returns target artifact card from graveyard to hand. A graveyard target is locked when the spell is cast and cannot be created later and retroactively targeted.
 
 ### Cephalid Coliseum
 Activate threshold ability → draw 3 observations → choose discard 3.
@@ -280,7 +310,7 @@ Policy decisions to remove Cage are not rules legality.
 
 Controlled simultaneous cast triggers may include:
 - Valley Floodcaller
-- Artificer's Assistant
+- Artificer's Assistant when a **historic spell** is cast
 - Uthros
 - Forensic Gadgeteer
 - Vexing Bauble
@@ -357,6 +387,22 @@ Python's final goldfish policy used visible-payoff factoring to avoid land×targ
 
 ### Otawara / Aether Spellbomb / Well / Cam / Baubles / Vexing / Shredder / Jar
 Preserve exact printed-style costs/tap/sacrifice semantics already captured by Python fixtures, especially which artifacts can be tapped to Urza first and still use a non-tap sacrifice ability later.
+
+### Native rules corrections from the audit
+
+These are RULE-level corrections/clarifications and must not be replaced with Python convenience behavior:
+
+- **Voltaic Key:** {1},{T}: untap target artifact; it may target itself.
+- **Manifold Key:** {1},{T}: untap **another** target artifact; it cannot target itself. Its {3},{T} unblockable mode can be explicitly combat-deferred.
+- **Moonsnare Prototype:** {T} plus tapping another untapped artifact/creature we control adds {C}; Channel {4}{U}, discard: owner of target nonland permanent puts it on top or bottom. Our own nonland permanent may be a strategic target.
+- **Otawara:** Channel {3}{U}, reduced by {1} per legendary creature we control; returns target artifact, creature, enchantment, or planeswalker. Being a land does not automatically disqualify an otherwise valid artifact/enchantment permanent.
+- **Giant's Boulder:** ETB scry 2; {1},{T} any-color mana; {7},{T},sacrifice destroys target permanent. Our own permanents are legal targets, so only opponent-facing valuation is environment-deferred.
+- **The One Ring:** exact Ring object carries burden counters; upkeep life loss and tap/draw ability are intrinsic, and own life is modeled.
+- **Mana Vault:** does not untap normally; upkeep pay-4 untap option and tapped draw-step damage are real state/actions.
+- **Aether Spellbomb:** its draw mode is {1}, sacrifice: draw; no tap is required.
+- **Sewer-veillance Cam:** ETB/LTB trigger may tap **or untap** target creature; draw mode is {3}{U}, sacrifice: draw two.
+- **Uthros Research Craft:** exact object carries charge counters; its 3+ artifact-cast trigger draws and adds a charge counter and resolves before the triggering artifact spell.
+- **Forensic Gadgeteer / Power Artifact:** activated-ability reductions have their actual one-mana floor; do not implement unrestricted subtraction.
 
 ### Grinding Station
 Strategically live mill/sacrifice lines can create huge repeated request counts. Use compact artifact sets and incremental information updates before restricting behavior.
@@ -436,7 +482,7 @@ Final corrected Phase 5H gate:
 - one-step worse than v6: 0
 - contingent worse than v6: 0
 
-Older comments may show 12/40 and 14/40 from pre-RNG-coupling history. Use the corrected final tape for Rust parity.
+Older comments may show 12/40 and 14/40 from pre-RNG-coupling history. The final Python 5/11/13 result is a **finite-sample parity witness under the accepted Python RNG tape**, not a Magic invariant. Exact count parity is required only in an explicit Python-compatible tape mode; production occurrence-indexed Rust RNG gets its own paired quality gate on identical Rust worlds.
 
 ## Cache lesson
 
@@ -449,6 +495,8 @@ Rust should benchmark larger caches:
 - 256k/unbounded coordinate
 
 Record hit/miss/eviction, bytes per entry and wall time. A native compact cache may remove major recomputation that Python tolerated to stay memory-safe.
+
+A cached Monte Carlo estimate must be namespaced by more than ValueKey: include rules/model/card-catalog version, policy/Q configuration, objective/horizon, environment version, RNG/sample namespace or tape, rollout budget, and continuation identity as applicable. Never reuse an estimate from a different tape/budget as if it were the same estimate.
 
 ## London mulligan model
 
@@ -477,6 +525,8 @@ Runtime lesson: a one-world screen can create cutoff ties and accidentally confi
 - exact early confirmation stop when all unseen worlds as T1 wins still cannot catch incumbent
 
 These are mulligan-layer changes only.
+
+The outer parallel/tie-racing/early-stop work on `phase5i-mulligan-runtime-v2` is an **EXPERIMENT**, not inherited game semantics. Exact early stopping is safe only after all internal choice dimensions for that candidate (for example a Caverns pregame plan) are fixed; equality remains live.
 
 ## Symbolic/factored action lessons
 
@@ -543,6 +593,10 @@ Exclude unless objective needs:
 - RNG seed/unknown order
 - interaction_seen for pure win objective
 - reporting-only Urza cast turn
+
+Strategic ValueKey must be built from the normalized Rust state and include all future-relevant public/known state: turn + explicit phase/step, own life, library belief, hand/public zones, canonical per-object battlefield state/attachments, typed mana/stored mana, land-play status, commander state, live permissions, ordered stack/window/pending choice, and typed delayed obligations. It excludes trace/profiling, unknown library order, and execution-only object/RNG provenance unless an objective explicitly needs that memory.
+
+Physical cycle detection uses a separate exact sampled-world key including ordered hidden library and replay/random-event progression. Never use ValueKey as a concrete-world cycle key.
 
 ## Rust key/cache strategy
 
@@ -639,6 +693,17 @@ Build immutable CardId bitsets/tables for:
 - interaction/protection pieces
 
 Target enumeration should be bitset intersections against current library membership rather than repeated string scans.
+
+## Active-card coverage gate
+
+The branch decklist is 99 cards excluding Urza and contains 95 distinct names including the commander. R0 must generate a versioned card catalog and a machine-readable coverage registry. Every active card must have exactly one explicit status:
+- RULES_ACTIVE
+- PRIMITIVE_ACTIVE
+- ENVIRONMENT_DEFERRED
+- POLICY_ONLY
+- INTENTIONALLY_UNMODELED(reason)
+
+CI must fail on a missing, duplicate, or unclassified active card. A prose mention or old Python handler does **not** count as implemented. Printed card metadata comes from the pinned/current Oracle catalog, not from duplicated hand-written constants.
 
 ## Preferred performance-reduction order
 
