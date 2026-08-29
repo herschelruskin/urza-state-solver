@@ -25,6 +25,8 @@ const DECKLIST: &str = include_str!(concat!(
 
 pub const R0_CATALOG_DIGEST_BLAKE3: &str =
     "2ef2f7dd52b72af46d24a0183096803ef9fb9d65524b9e77f7d87da4e2809f21";
+pub const R1_CATALOG_DIGEST_BLAKE3: &str =
+    "4b39c7db7bfd2c6f68d7a49efa515cdffb2c6a9716022bc0b21eeec56754a983";
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
 pub struct CardCatalog {
@@ -287,6 +289,13 @@ pub fn validate_r1_catalog() -> Result<(), CatalogError> {
     let r0 = load_catalog()?;
     let r1 = load_r1_catalog()?;
 
+    let digest = r1_catalog_digest_hex();
+    if digest != R1_CATALOG_DIGEST_BLAKE3 {
+        return Err(CatalogError::Invariant(format!(
+            "R1 catalog digest drift: expected {R1_CATALOG_DIGEST_BLAKE3}, got {digest}"
+        )));
+    }
+
     if r1.schema_version != 1 {
         return Err(CatalogError::Invariant(format!(
             "unexpected R1 catalog schema {}",
@@ -507,6 +516,7 @@ mod tests {
     #[test]
     fn r1_catalog_is_total_pinned_and_syntactically_self_consistent() {
         validate_r1_catalog().unwrap();
+        assert_eq!(r1_catalog_digest_hex(), R1_CATALOG_DIGEST_BLAKE3);
     }
 
     #[test]

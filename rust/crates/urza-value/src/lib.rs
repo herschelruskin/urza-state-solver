@@ -3,9 +3,9 @@
 use std::collections::BTreeMap;
 
 use thiserror::Error;
-use urza_info::{CardCount, InformationState, ObservedDelayedEvent};
+use urza_info::{CardCount, InformationState};
 
-pub const VALUE_KEY_SCHEMA_VERSION: &str = "value_key_v1_pre_r1";
+pub const VALUE_KEY_SCHEMA_VERSION: &str = "value_key_v1_r1";
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ValueKey(InformationState);
@@ -70,9 +70,7 @@ impl ValueKey {
             }
         }
 
-        normalized
-            .delayed_events
-            .sort_unstable_by_key(delayed_event_sort_key);
+        normalized.delayed_events.sort_unstable();
 
         Ok(Self(normalized))
     }
@@ -98,21 +96,6 @@ fn canonical_library_counts(counts: &[CardCount]) -> Result<Vec<CardCount>, Valu
             Ok(CardCount { card, count })
         })
         .collect()
-}
-
-fn delayed_event_sort_key(event: &ObservedDelayedEvent) -> (u8, u16, u8) {
-    match event {
-        ObservedDelayedEvent::BaubleDraw { source, due_turn } => (0, source.0, *due_turn),
-        ObservedDelayedEvent::ChromeCopySacrifice { object, due_turn } => (1, object.0, *due_turn),
-        ObservedDelayedEvent::ManaDrainCredit {
-            colorless,
-            due_turn,
-        } => (2, *colorless, *due_turn),
-        ObservedDelayedEvent::PermissionExpiry {
-            permission_slot,
-            due_turn,
-        } => (3, *permission_slot, *due_turn),
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -155,7 +138,7 @@ mod tests {
     use urza_info::CardDefId;
     use urza_info::{
         CanonicalObjectId, CardCount, InformationState, LibraryBelief, ObservedDelayedEvent,
-        ObservedPermission,
+        ObservedPermission, ObservedSourceRef,
     };
 
     #[test]
@@ -235,7 +218,10 @@ mod tests {
             card: CardDefId(5),
             expires_turn: 3,
             free_cast: true,
-            source: CanonicalObjectId(1),
+            source: ObservedSourceRef {
+                canonical_object: Some(CanonicalObjectId(1)),
+                card: CardDefId(99),
+            },
         };
         let permission_b = ObservedPermission {
             permission_slot: 77,
