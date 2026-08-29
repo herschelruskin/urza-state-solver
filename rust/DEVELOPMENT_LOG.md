@@ -63,3 +63,12 @@ Validation:
 - R0 audit CLI: PASS with the original pinned R0 catalog digest and deck-count invariants unchanged.
 
 Pre-R1 is complete. No Oracle metadata, card-rule handlers, sequencing kernel, policy heuristics, or Python implementation structures were introduced.
+
+
+## 2026-08-29 — R1 proper started: Oracle catalog bootstrap
+
+Classification: RULE-source metadata acquisition only; no gameplay RULE handlers. The transformation script is migration/build tooling.
+
+R1 begins by snapshotting the current active-card Oracle metadata through Scryfall's bulk Oracle-card export, with the discovered bulk ID/update timestamp/download URI and source-file SHA-256 pinned into the resulting catalog. Stable R0 CardDefId assignments are preserved. MDFC/multiface records retain face metadata and the deck-facing matched face index. Derived feature flags are syntactic indexes over type lines/layout/mana costs, not gameplay rules.
+
+Validation/result: pending bootstrap workflow.
