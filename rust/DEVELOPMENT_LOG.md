@@ -71,4 +71,6 @@ Classification: RULE-source metadata acquisition only; no gameplay RULE handlers
 
 R1 begins by snapshotting the current active-card Oracle metadata through Scryfall's bulk Oracle-card export, with the discovered bulk ID/update timestamp/download URI and source-file SHA-256 pinned into the resulting catalog. Stable R0 CardDefId assignments are preserved. MDFC/multiface records retain face metadata and the deck-facing matched face index. Derived feature flags are syntactic indexes over type lines/layout/mana costs, not gameplay rules.
 
-Validation/result: pending bootstrap workflow.
+Bootstrap attempt 1 reached the live Scryfall snapshot successfully but rejected 12 same-name ambiguities. Inspection showed the bulk Oracle dataset also carries non-paper/digital identities. The transform now filters to records whose `games` include `paper`; R1 will not pick among Oracle IDs using simulator/Python heuristics.
+
+Validation/result: pending paper-only bootstrap workflow.
