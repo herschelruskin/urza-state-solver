@@ -218,8 +218,8 @@ impl TrueLibrary {
     }
 
     pub fn validate(&self) -> Result<(), StateValidationError> {
-        let known = usize::from(self.knowledge.known_top)
-            + usize::from(self.knowledge.known_bottom);
+        let known =
+            usize::from(self.knowledge.known_top) + usize::from(self.knowledge.known_bottom);
         if known > self.cards.len() {
             return Err(StateValidationError::LibraryKnowledgeOutOfBounds {
                 library_len: self.cards.len(),
@@ -824,7 +824,9 @@ mod tests {
         };
         assert_eq!(
             bad_permission.validate(),
-            Err(StateValidationError::UnknownPermissionExpiry(PermissionId(8)))
+            Err(StateValidationError::UnknownPermissionExpiry(PermissionId(
+                8
+            )))
         );
     }
 
