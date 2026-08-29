@@ -34,3 +34,23 @@ Validation:
 - Audit output confirms 95 distinct active names including Urza, 99 noncommander cards, 95 explicit coverage entries, own life 40, and Hand 25 fixture identity.
 
 The first three workflow attempts found and drove fixes for formatting, a Clippy test-construction warning, and deprecated Criterion `black_box` use. No semantic test failures occurred.
+
+
+## 2026-08-29 — pre-R1 foundation hardening
+
+Classification: MODEL/architecture hardening; no card RULE implementation. Strategic-key tests are MODEL correctness contracts. RNG tests are MODEL/reproducibility contracts. Dependency locking and CI are EXPERIMENT/development infrastructure.
+
+Purpose: close R0 loopholes before beginning R1 metadata/state work.
+
+Changes:
+- removed the direct `urza-core` dependency from `urza-policy` and added a manifest-level regression test so policy code cannot accidentally import `TrueState`/ReplayKey execution types;
+- pinned the exact R0 catalog digest in code;
+- upgraded strategic ValueKey canonicalization to merge duplicate library-count representations and canonicalize permission slot IDs out of strategic identity while preserving typed expiry relationships;
+- added model/value namespace fields for model version and ValueKey schema version;
+- retained known-top order and stack order as value-relevant distinctions with focused tests;
+- added stronger RNG tests for root/domain/logical-event/occurrence separation and same-logical-event CRN sharing;
+- removed unused singleton Saga-III/Remora pending fields from InformationState and added a per-object age counter for cumulative-upkeep state;
+- added PRE_R1_CHECKLIST.md defining what R1 must still deliver and its acceptance gate;
+- dependency lockfile capture/locked-CI conversion pending validation in this checkpoint.
+
+Validation: pending CI.

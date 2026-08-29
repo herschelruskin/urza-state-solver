@@ -5,5 +5,5 @@ edition.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-urza-core = { path = "../urza-core" }
+thiserror.workspace = true
 urza-info = { path = "../urza-info" }

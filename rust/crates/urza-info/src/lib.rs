@@ -98,9 +98,6 @@ pub struct InformationState {
     pub delayed_events: Vec<ObservedDelayedEvent>,
     pub urza_permissions: Vec<ObservedPermission>,
     pub spell_cast_this_turn: bool,
-    pub saga_iii_pending: bool,
-    pub remora_age: u8,
-    pub remora_upkeep_pending: bool,
 }
 
 impl Default for InformationState {
@@ -123,9 +120,6 @@ impl Default for InformationState {
             delayed_events: Vec::new(),
             urza_permissions: Vec::new(),
             spell_cast_this_turn: false,
-            saga_iii_pending: false,
-            remora_age: 0,
-            remora_upkeep_pending: false,
         }
     }
 }
@@ -163,8 +157,8 @@ impl<'a> PolicyView<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::{CardCount, InformationState, LibraryBelief, PolicyView};
-    use urza_core::CardDefId;
+    use super::{CardCount, InformationState, LibraryBelief, ObservedPermanent, PolicyView};
+    use urza_core::{CardDefId, CounterState};
 
     #[test]
     fn policy_view_exposes_belief_not_true_library_order() {
@@ -182,5 +176,24 @@ mod tests {
         let view = PolicyView::new(&info);
         assert_eq!(view.library_belief().known_top, vec![CardDefId(9)]);
         assert_eq!(view.library_belief().remaining_counts[0].count, 2);
+    }
+
+    #[test]
+    fn cumulative_upkeep_age_is_observed_per_permanent() {
+        let permanent = ObservedPermanent {
+            canonical_id: super::CanonicalObjectId(4),
+            card: CardDefId(22),
+            tapped: false,
+            summoning_sick: false,
+            token: false,
+            counters: CounterState {
+                age: 2,
+                ..CounterState::default()
+            },
+            mode: Default::default(),
+            attached_to: None,
+            granted_ability: None,
+        };
+        assert_eq!(permanent.counters.age, 2);
     }
 }

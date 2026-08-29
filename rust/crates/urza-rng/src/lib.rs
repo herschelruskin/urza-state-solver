@@ -124,17 +124,46 @@ mod tests {
     }
 
     #[test]
-    fn search_crn_seed_is_pre_target_and_shared_by_candidate_branches() {
+    fn logical_events_are_independent_coordinates() {
+        let root = RootSeed::from_u64(1234);
+        let a = coordinate(RngDomain::Game, 0);
+        let b = RngCoordinate {
+            logical_event: LogicalEventId(a.logical_event.0 + 1),
+            ..a
+        };
+        assert_ne!(derive_seed(root, a), derive_seed(root, b));
+    }
+
+    #[test]
+    fn root_seeds_are_independent() {
+        let coordinate = coordinate(RngDomain::Game, 0);
+        assert_ne!(
+            derive_seed(RootSeed::from_u64(1), coordinate),
+            derive_seed(RootSeed::from_u64(2), coordinate)
+        );
+    }
+
+    #[test]
+    fn search_crn_is_shared_only_for_the_same_logical_occurrence() {
         let root = RootSeed::from_u64(999);
-        let event = CommonRandomCoordinate::search_event(
+        let shared = CommonRandomCoordinate::search_event(
             WorldId(2),
             EventType(17),
             LogicalEventId(88),
             EventOccurrence(4),
             [5; 16],
         );
-        let candidate_a = event.seed(root);
-        let candidate_b = event.seed(root);
-        assert_eq!(candidate_a, candidate_b);
+        let same_event_candidate_a = shared.seed(root);
+        let same_event_candidate_b = shared.seed(root);
+        assert_eq!(same_event_candidate_a, same_event_candidate_b);
+
+        let next_occurrence = CommonRandomCoordinate::search_event(
+            WorldId(2),
+            EventType(17),
+            LogicalEventId(88),
+            EventOccurrence(5),
+            [5; 16],
+        );
+        assert_ne!(same_event_candidate_a, next_occurrence.seed(root));
     }
 }

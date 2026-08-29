@@ -1,4 +1,4 @@
-name: Rust R0 foundation
+name: Rust foundation gates
 
 on:
   push:
@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 jobs:
-  r0:
+  foundation:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -23,6 +23,13 @@ jobs:
         with:
           toolchain: 1.89.0
           components: rustfmt, clippy
+      - name: Generate dependency lock for pre-R1 capture
+        working-directory: rust
+        run: |
+          cargo generate-lockfile
+          echo PRE_R1_CARGO_LOCK_BEGIN
+          cat Cargo.lock
+          echo PRE_R1_CARGO_LOCK_END
       - name: Format check
         working-directory: rust
         run: cargo fmt --all -- --check

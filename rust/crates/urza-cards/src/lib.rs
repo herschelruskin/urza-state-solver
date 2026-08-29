@@ -19,6 +19,9 @@ const DECKLIST: &str = include_str!(concat!(
     "/../../../decklist.txt"
 ));
 
+pub const R0_CATALOG_DIGEST_BLAKE3: &str =
+    "2ef2f7dd52b72af46d24a0183096803ef9fb9d65524b9e77f7d87da4e2809f21";
+
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
 pub struct CardCatalog {
     pub schema_version: u16,
@@ -90,6 +93,13 @@ pub fn catalog_digest_hex() -> String {
 pub fn validate_catalog_and_coverage() -> Result<(), CatalogError> {
     let catalog = load_catalog()?;
     let coverage = load_coverage()?;
+
+    let digest = catalog_digest_hex();
+    if digest != R0_CATALOG_DIGEST_BLAKE3 {
+        return Err(CatalogError::Invariant(format!(
+            "R0 catalog digest drift: expected {R0_CATALOG_DIGEST_BLAKE3}, got {digest}"
+        )));
+    }
 
     if catalog.cards.len() != 95 {
         return Err(CatalogError::Invariant(format!(
@@ -216,6 +226,11 @@ mod tests {
     #[test]
     fn active_deck_catalog_and_coverage_are_total() {
         validate_catalog_and_coverage().unwrap();
+    }
+
+    #[test]
+    fn r0_catalog_digest_is_explicitly_pinned() {
+        assert_eq!(catalog_digest_hex(), R0_CATALOG_DIGEST_BLAKE3);
     }
 
     #[test]

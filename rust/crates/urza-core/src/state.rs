@@ -41,6 +41,7 @@ pub struct CounterState {
     pub charge: u16,
     pub burden: u16,
     pub lore: u16,
+    pub age: u16,
     pub loyalty: i16,
     pub luck: u8,
 }
@@ -89,6 +90,7 @@ pub enum PendingDecisionKind {
     BayTarget,
     TriggerOrder,
     ColiseumDiscard,
+    CumulativeUpkeepPayment,
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
@@ -218,8 +220,8 @@ impl From<&TrueState> for ReplayKey {
 
 #[cfg(test)]
 mod tests {
-    use super::{ReplayKey, TrueState};
-    use crate::CardDefId;
+    use super::{CounterState, PermanentState, ReplayKey, TrueState};
+    use crate::{CardDefId, ObjectId};
 
     #[test]
     fn default_state_tracks_our_life_from_forty() {
@@ -242,5 +244,33 @@ mod tests {
             ..a.clone()
         };
         assert_ne!(ReplayKey::from(&a), ReplayKey::from(&c));
+    }
+
+    #[test]
+    fn age_counters_are_per_object_not_singleton_state() {
+        let first = PermanentState {
+            object_id: ObjectId(1),
+            card: CardDefId(10),
+            tapped: false,
+            summoning_sick: false,
+            token: false,
+            counters: CounterState {
+                age: 1,
+                ..CounterState::default()
+            },
+            mode: Default::default(),
+            attached_to: None,
+            granted_ability: None,
+        };
+        let second = PermanentState {
+            object_id: ObjectId(2),
+            counters: CounterState {
+                age: 3,
+                ..CounterState::default()
+            },
+            ..first.clone()
+        };
+        assert_eq!(first.counters.age, 1);
+        assert_eq!(second.counters.age, 3);
     }
 }
