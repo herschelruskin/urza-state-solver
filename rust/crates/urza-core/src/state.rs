@@ -538,10 +538,11 @@ impl TrueState {
 
         let mut exact_objects: BTreeSet<ObjectId> = live.keys().copied().collect();
         for object in &self.stack {
-            if let StackObject::Spell { object_id, .. } = object {
-                if !exact_objects.insert(*object_id) {
-                    return Err(StateValidationError::DuplicateObjectId(*object_id));
-                }
+            let StackObject::Spell { object_id, .. } = object else {
+                continue;
+            };
+            if !exact_objects.insert(*object_id) {
+                return Err(StateValidationError::DuplicateObjectId(*object_id));
             }
         }
 
@@ -561,16 +562,18 @@ impl TrueState {
         self.validate_attachment_cycles()?;
 
         for source in self.source_refs() {
-            if let Some(object_id) = source.object_id {
-                if let Some(card) = live.get(&object_id) {
-                    if *card != source.card {
-                        return Err(StateValidationError::SourceCardMismatch {
-                            object: object_id,
-                            expected: *card,
-                            observed: source.card,
-                        });
-                    }
-                }
+            let Some(object_id) = source.object_id else {
+                continue;
+            };
+            let Some(card) = live.get(&object_id) else {
+                continue;
+            };
+            if *card != source.card {
+                return Err(StateValidationError::SourceCardMismatch {
+                    object: object_id,
+                    expected: *card,
+                    observed: source.card,
+                });
             }
         }
 
