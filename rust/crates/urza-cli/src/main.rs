@@ -1,5 +1,8 @@
 use serde_json::json;
-use urza_cards::{catalog_digest_hex, load_catalog, load_coverage, validate_catalog_and_coverage};
+use urza_cards::{
+    catalog_digest_hex, load_catalog, load_coverage, load_r1_catalog, r1_catalog_digest_hex,
+    validate_catalog_and_coverage, validate_r1_catalog,
+};
 use urza_cli::hand25_fixture;
 use urza_core::TrueState;
 use urza_rng::RNG_SCHEME_VERSION;
