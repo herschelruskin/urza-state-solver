@@ -53,4 +53,13 @@ Changes:
 - added PRE_R1_CHECKLIST.md defining what R1 must still deliver and its acceptance gate;
 - dependency lockfile capture/locked-CI conversion pending validation in this checkpoint.
 
-Validation: pending CI.
+Validation:
+- GitHub Actions run `33273083782`: PASS on commit `7f95a6142cef25493f7a2e9725e3b42e65c6a9f2`.
+- committed `rust/Cargo.lock`; CI dependency resolution and every Cargo build/test command run with `--locked`;
+- format: PASS;
+- strict Clippy (`-D warnings`): PASS;
+- workspace/all-target tests: PASS, 22 tests, 0 failures;
+- benchmark compilation: PASS;
+- R0 audit CLI: PASS with the original pinned R0 catalog digest and deck-count invariants unchanged.
+
+Pre-R1 is complete. No Oracle metadata, card-rule handlers, sequencing kernel, policy heuristics, or Python implementation structures were introduced.

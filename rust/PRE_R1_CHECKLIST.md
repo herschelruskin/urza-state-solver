@@ -8,7 +8,7 @@ The audited v2 Rust rebuild specification remains normative. Python is only a fi
 
 ## Completed before R1
 
-- Cargo dependency resolution is to be committed as `rust/Cargo.lock` and CI switched to `--locked`.
+- Cargo dependency resolution is committed as `rust/Cargo.lock`, and CI uses `--locked` for dependency graph/build/test commands.
 - `urza-policy` has no direct dependency on `urza-core`; policy must enter through `urza-info`.
 - R0 active-card identity catalog has an explicit pinned BLAKE3 digest.
 - `ValueKey` canonicalization merges equivalent library-count representations.
@@ -53,3 +53,12 @@ R1 is not complete merely because the new types compile. Before R2 sequencing be
 - CI must be green with locked dependencies.
 
 Do not port card rules during this gate.
+
+
+## Validated checkpoint
+
+- implementation commit: `7f95a6142cef25493f7a2e9725e3b42e65c6a9f2`;
+- validation run: GitHub Actions `33273083782`;
+- result: PASS;
+- focused/workspace tests: 22 passed, 0 failed;
+- R1 may now begin from this locked foundation.
