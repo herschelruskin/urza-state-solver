@@ -73,4 +73,6 @@ R1 begins by snapshotting the current active-card Oracle metadata through Scryfa
 
 Bootstrap attempt 1 reached the live Scryfall snapshot successfully but rejected 12 same-name ambiguities. Inspection showed the bulk Oracle dataset also carries non-paper/digital identities. The transform now filters to records whose `games` include `paper`; R1 will not pick among Oracle IDs using simulator/Python heuristics.
 
-Validation/result: pending paper-only bootstrap workflow.
+Bootstrap attempt 2 proved that filtering the Oracle Cards export by its representative printing's `games` field is also insufficient: six historical paper cards disappeared because their representative record was not a paper printing, and same-name ambiguities remained. The acquisition source is therefore changed to Scryfall `default_cards`: first select actual English paper printings, then group those printings by stable `oracle_id`, choosing the newest paper printing only as the snapshot carrier. The stable identity remains `oracle_id`.
+
+Validation/result: pending paper-printing-grouped bootstrap workflow.

@@ -75,10 +75,10 @@ def main() -> None:
 
     args.cache_dir.mkdir(parents=True, exist_ok=True)
     meta = fetch_json(args.bulk_meta_url)
-    oracle = next(item for item in meta["data"] if item["type"] == "oracle_cards")
-    download_uri = oracle.get("jsonl_download_uri") or oracle.get("download_uri")
+    bulk = next(item for item in meta["data"] if item["type"] == "default_cards")
+    download_uri = bulk.get("jsonl_download_uri") or bulk.get("download_uri")
     if not download_uri:
-        raise RuntimeError("Scryfall oracle_cards bulk object has no download URI")
+        raise RuntimeError("Scryfall default_cards bulk object has no download URI")
 
     bulk_path = args.cache_dir / ("oracle-cards.jsonl.gz" if download_uri.endswith(".gz") else "oracle-cards.json")
     download(download_uri, bulk_path)
@@ -114,7 +114,9 @@ def main() -> None:
         matches = by_name.get(entry["name"], [])
         unique: dict[str, tuple[dict, int | None]] = {}
         for card, face_index in matches:
-            unique[card["oracle_id"]] = (card, face_index)
+            prior = unique.get(card["oracle_id"])
+            if prior is None or card.get("released_at", "") > prior[0].get("released_at", ""):
+                unique[card["oracle_id"]] = (card, face_index)
         matches = list(unique.values())
         if not matches:
             missing.append(entry["name"])
@@ -162,14 +164,15 @@ def main() -> None:
         "catalog_version": "urza-active-r1-oracle-2026-08-29",
         "generated_at_utc": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
         "source": {
-            "provider": "Scryfall bulk Oracle Cards",
+            "provider": "Scryfall bulk Default Cards; English paper printings grouped by Oracle ID",
             "bulk_api": args.bulk_meta_url,
-            "bulk_id": oracle["id"],
-            "bulk_updated_at": oracle["updated_at"],
+            "bulk_type": "default_cards",
+            "bulk_id": bulk["id"],
+            "bulk_updated_at": bulk["updated_at"],
             "bulk_download_uri": download_uri,
             "bulk_file_sha256": bulk_sha256,
-            "content_type": oracle.get("content_type"),
-            "content_encoding": oracle.get("content_encoding"),
+            "content_type": bulk.get("content_type"),
+            "content_encoding": bulk.get("content_encoding"),
         },
         "r0_catalog_digest_blake3": "2ef2f7dd52b72af46d24a0183096803ef9fb9d65524b9e77f7d87da4e2809f21",
         "cards": output_cards,
