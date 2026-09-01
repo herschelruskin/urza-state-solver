@@ -479,7 +479,6 @@ fn parse_decklist(input: &str) -> Result<BTreeMap<String, u8>, CatalogError> {
     Ok(out)
 }
 
-
 pub const URZA_CONSTRUCT_TOKEN_CARD_ID: CardDefId = CardDefId(95);
 
 #[derive(Debug, Clone)]
@@ -541,6 +540,10 @@ impl R2CardDatabase {
         Ok(Self { cards })
     }
 
+    pub fn profile(&self, card: CardDefId) -> Option<urza_rules::CardProfile> {
+        self.cards.get(&card).copied()
+    }
+
     pub fn card_id_by_name(&self, name: &str) -> Result<CardDefId, CatalogError> {
         let catalog = load_r1_catalog()?;
         catalog
@@ -554,7 +557,7 @@ impl R2CardDatabase {
 
 impl urza_rules::CardDatabase for R2CardDatabase {
     fn profile(&self, card: CardDefId) -> Option<urza_rules::CardProfile> {
-        self.cards.get(&card).copied()
+        self.profile(card)
     }
 
     fn commander_card(&self) -> CardDefId {
@@ -603,9 +606,18 @@ mod tests {
         let key = r2.card_id_by_name("Voltaic Key").unwrap();
         let urza = r2.card_id_by_name("Urza, Lord High Artificer").unwrap();
 
-        assert_eq!(r2.profile(island).unwrap().role, urza_rules::R2CardRole::BasicIsland);
-        assert_eq!(r2.profile(key).unwrap().role, urza_rules::R2CardRole::ArtifactPermanent);
-        assert_eq!(r2.profile(urza).unwrap().role, urza_rules::R2CardRole::UrzaCommander);
+        assert_eq!(
+            r2.profile(island).unwrap().role,
+            urza_rules::R2CardRole::BasicIsland
+        );
+        assert_eq!(
+            r2.profile(key).unwrap().role,
+            urza_rules::R2CardRole::ArtifactPermanent
+        );
+        assert_eq!(
+            r2.profile(urza).unwrap().role,
+            urza_rules::R2CardRole::UrzaCommander
+        );
         assert_eq!(
             r2.profile(URZA_CONSTRUCT_TOKEN_CARD_ID).unwrap().role,
             urza_rules::R2CardRole::UrzaConstructToken

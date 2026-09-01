@@ -2,7 +2,7 @@
 
 use thiserror::Error;
 use urza_core::{
-    BattlefieldZone, CardDefId, CardZone, CommanderZone, CounterState, LibraryKnowledge, ManaPool,
+    BattlefieldZone, CardDefId, CommanderZone, CounterState, LibraryKnowledge, ManaPool,
     ObjectId, PendingDecision, PermanentMode, PermanentState, Phase, StackObject,
     StateValidationError, TrueLibrary, TrueState, Window,
 };
@@ -481,17 +481,12 @@ pub fn shuffle_library(
         concrete_fingerprint,
     };
     urza_rng::shuffle(state.library.cards_mut(), root, coordinate);
-    state
-        .library
-        .set_knowledge(LibraryKnowledge::default())?;
+    state.library.set_knowledge(LibraryKnowledge::default())?;
     state.rng_occurrence_cursor = next_occurrence;
     Ok(occurrence)
 }
 
-pub fn observe_library_search<F>(
-    state: &TrueState,
-    mut eligible: F,
-) -> LibrarySearchObservation
+pub fn observe_library_search<F>(state: &TrueState, mut eligible: F) -> LibrarySearchObservation
 where
     F: FnMut(CardDefId) -> bool,
 {
@@ -795,11 +790,7 @@ fn ensure_no_pending_decision(state: &TrueState) -> Result<(), RuleError> {
     }
 }
 
-fn validate_payment(
-    pool: ManaPool,
-    payment: ManaPayment,
-    cost: ManaCost,
-) -> Result<(), RuleError> {
+fn validate_payment(pool: ManaPool, payment: ManaPayment, cost: ManaCost) -> Result<(), RuleError> {
     if payment.satisfies(cost) && payment.is_available_from(pool) {
         Ok(())
     } else {
@@ -864,7 +855,11 @@ fn next_object_id(state: &TrueState) -> Result<ObjectId, RuleError> {
             StackObject::ControlledTrigger { .. } | StackObject::ActivatedAbility { .. } => None,
         })
         .max();
-    let current_max = battlefield_max.into_iter().chain(stack_max).max().unwrap_or(0);
+    let current_max = battlefield_max
+        .into_iter()
+        .chain(stack_max)
+        .max()
+        .unwrap_or(0);
     current_max
         .checked_add(1)
         .map(ObjectId)
@@ -980,12 +975,16 @@ mod tests {
         let payments = enumerate_payments(pool, cost);
         assert_eq!(payments.len(), 3);
         assert!(payments.iter().all(|payment| payment.satisfies(cost)));
-        assert!(payments
-            .iter()
-            .any(|payment| payment.blue == 2 && payment.colorless == 2));
-        assert!(payments
-            .iter()
-            .any(|payment| payment.blue == 4 && payment.colorless == 0));
+        assert!(
+            payments
+                .iter()
+                .any(|payment| payment.blue == 2 && payment.colorless == 2)
+        );
+        assert!(
+            payments
+                .iter()
+                .any(|payment| payment.blue == 4 && payment.colorless == 0)
+        );
     }
 
     #[test]
@@ -1009,9 +1008,8 @@ mod tests {
             ..TrueState::default()
         };
 
-        let observe_even = |state: &TrueState| {
-            observe_library_search(state, |card| card.0 % 2 == 0)
-        };
+        let observe_even =
+            |state: &TrueState| observe_library_search(state, |card| card.0 % 2 == 0);
         assert_eq!(observe_even(&a), observe_even(&b));
         assert_eq!(
             observe_even(&a).candidates,
@@ -1136,11 +1134,13 @@ mod tests {
         .unwrap();
         assert_eq!(state.stack.len(), 1);
         apply_action(&mut state, &cards, Action::PassPriority).unwrap();
-        assert!(state
-            .battlefield
-            .permanents()
-            .iter()
-            .any(|permanent| permanent.card == KEY));
+        assert!(
+            state
+                .battlefield
+                .permanents()
+                .iter()
+                .any(|permanent| permanent.card == KEY)
+        );
 
         state.mana = ManaPool {
             blue: 2,
@@ -1163,11 +1163,13 @@ mod tests {
 
         assert_eq!(state.commander.zone, CommanderZone::Battlefield);
         assert_eq!(state.commander.command_zone_casts, 1);
-        assert!(state
-            .battlefield
-            .permanents()
-            .iter()
-            .any(|permanent| permanent.card == URZA));
+        assert!(
+            state
+                .battlefield
+                .permanents()
+                .iter()
+                .any(|permanent| permanent.card == URZA)
+        );
         let construct = state
             .battlefield
             .permanents()
