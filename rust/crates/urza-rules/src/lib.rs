@@ -1126,10 +1126,10 @@ fn choose_tutor_target<D: CardDatabase>(
         .ok_or(RuleError::UnsupportedCardMechanic(source.card))?;
 
     let candidates = simple_tutor_candidates(state, cards, kind);
-    if let Some(target) = target {
-        if candidates.binary_search(&target).is_err() {
-            return Err(RuleError::InvalidTutorTarget(target));
-        }
+    if let Some(target) = target
+        && candidates.binary_search(&target).is_err()
+    {
+        return Err(RuleError::InvalidTutorTarget(target));
     }
 
     let pre_target_cards = state.library.cards().to_vec();
