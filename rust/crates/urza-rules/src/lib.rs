@@ -551,14 +551,7 @@ fn apply_action_internal<D: CardDatabase>(
             payment,
             improvise_sources,
         } => {
-            cast_whir(
-                state,
-                cards,
-                card,
-                x_value,
-                payment,
-                &improvise_sources,
-            )?;
+            cast_whir(state, cards, card, x_value, payment, &improvise_sources)?;
             Transition::default()
         }
         Action::CastReshape {
@@ -611,12 +604,10 @@ pub fn legal_contingent_actions<D: CardDatabase>(
             let Some(kind) = profile.simple_tutor else {
                 return Vec::new();
             };
-            search_actions_from_information(information, cards, |profile| {
-                match kind {
-                    SimpleTutorKind::Spellseeker => profile.search_classes.spellseeker,
-                    SimpleTutorKind::MerchantScroll => profile.search_classes.merchant_scroll,
-                    SimpleTutorKind::MysticalTutor => profile.search_classes.mystical_tutor,
-                }
+            search_actions_from_information(information, cards, |profile| match kind {
+                SimpleTutorKind::Spellseeker => profile.search_classes.spellseeker,
+                SimpleTutorKind::MerchantScroll => profile.search_classes.merchant_scroll,
+                SimpleTutorKind::MysticalTutor => profile.search_classes.mystical_tutor,
             })
         }
         ObservedPendingDecision::WhirTarget { x_value, .. }
@@ -1069,7 +1060,8 @@ fn cast_whir<D: CardDatabase>(
     ensure_priority(state)?;
     ensure_no_pending_decision(state)?;
     let profile = card_profile(cards, card)?;
-    if profile.role != R2CardRole::SearchSpell || profile.special_search != SpecialSearchKind::Whir {
+    if profile.role != R2CardRole::SearchSpell || profile.special_search != SpecialSearchKind::Whir
+    {
         return Err(RuleError::UnsupportedCardMechanic(card));
     }
     if !state.hand.cards().contains(&card) {
@@ -1478,9 +1470,7 @@ fn stage_parameterized_search<D: CardDatabase>(
     cards: &D,
     pending: PendingDecision,
 ) -> Result<Transition, RuleError> {
-    let source = pending
-        .source()
-        .ok_or(RuleError::SearchDecisionMismatch)?;
+    let source = pending.source().ok_or(RuleError::SearchDecisionMismatch)?;
     let candidates = pending_search_candidates(state, cards, &pending);
     state.pending = pending;
     state.window = Window::PostObservation;
@@ -1594,9 +1584,7 @@ fn choose_search_target<D: CardDatabase>(
         return Err(RuleError::InvalidSearchTarget(target));
     }
 
-    let source = pending
-        .source()
-        .ok_or(RuleError::SearchDecisionMismatch)?;
+    let source = pending.source().ok_or(RuleError::SearchDecisionMismatch)?;
     let shuffled_remainder = consume_shared_search_shuffle(state, target, rng)?;
 
     match pending {
@@ -1609,13 +1597,9 @@ fn choose_search_target<D: CardDatabase>(
         }
         PendingDecision::WhirTarget { .. }
         | PendingDecision::ReshapeTarget { .. }
-        | PendingDecision::BayTarget { .. } => complete_battlefield_search(
-            state,
-            cards,
-            source,
-            target,
-            shuffled_remainder,
-        ),
+        | PendingDecision::BayTarget { .. } => {
+            complete_battlefield_search(state, cards, source, target, shuffled_remainder)
+        }
         PendingDecision::TransmuteTarget {
             sacrificed_mana_value,
             ..
@@ -3221,11 +3205,13 @@ mod tests {
             },
         )
         .unwrap();
-        assert!(state
-            .battlefield
-            .permanents()
-            .iter()
-            .any(|permanent| permanent.card == ARTIFACT_MV3));
+        assert!(
+            state
+                .battlefield
+                .permanents()
+                .iter()
+                .any(|permanent| permanent.card == ARTIFACT_MV3)
+        );
         assert_eq!(
             completion.observations[0],
             RulesObservation::SearchCompleted {
@@ -3311,5 +3297,4 @@ mod tests {
             }
         );
     }
-
 }

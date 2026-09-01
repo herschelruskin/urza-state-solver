@@ -263,11 +263,7 @@ pub fn observe(state: &TrueState) -> Result<InformationState, ObservationError> 
         .stack
         .iter()
         .map(|object| match object {
-            StackObject::Spell {
-                card,
-                x_value,
-                ..
-            } => ObservedStackObject {
+            StackObject::Spell { card, x_value, .. } => ObservedStackObject {
                 kind: ObservedStackKind::Spell,
                 card: Some(*card),
                 source: None,

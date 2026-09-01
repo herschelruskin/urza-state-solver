@@ -675,9 +675,9 @@ impl R3CardDatabase {
         }
 
         let bay = card_id_by_name_from_r1("Repurposing Bay")?;
-        let bay_profile = cards
-            .get_mut(&bay)
-            .ok_or_else(|| CatalogError::Invariant("missing R3 Repurposing Bay profile".to_owned()))?;
+        let bay_profile = cards.get_mut(&bay).ok_or_else(|| {
+            CatalogError::Invariant("missing R3 Repurposing Bay profile".to_owned())
+        })?;
         bay_profile.role = urza_rules::R2CardRole::ArtifactPermanent;
         bay_profile.special_search = urza_rules::SpecialSearchKind::RepurposingBay;
 
@@ -1268,5 +1268,4 @@ mod tests {
             })
         );
     }
-
 }
