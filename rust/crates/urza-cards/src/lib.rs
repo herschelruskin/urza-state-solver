@@ -695,9 +695,9 @@ impl R3CardDatabase {
         top_profile.utility = urza_rules::UtilityKind::SenseisDiviningTop;
 
         let saga = card_id_by_name_from_r1("Urza's Saga")?;
-        let saga_profile = cards.get_mut(&saga).ok_or_else(|| {
-            CatalogError::Invariant("missing R3 Urza's Saga profile".to_owned())
-        })?;
+        let saga_profile = cards
+            .get_mut(&saga)
+            .ok_or_else(|| CatalogError::Invariant("missing R3 Urza's Saga profile".to_owned()))?;
         saga_profile.role = urza_rules::R2CardRole::Land;
         saga_profile.battlefield_face = CardFace::Front;
         saga_profile.land_entry = urza_rules::LandEntryRule::Untapped;
@@ -705,9 +705,9 @@ impl R3CardDatabase {
         saga_profile.utility = urza_rules::UtilityKind::UrzasSaga;
 
         let tezzeret = card_id_by_name_from_r1("Tezzeret, Cruel Captain")?;
-        let tezzeret_profile = cards.get_mut(&tezzeret).ok_or_else(|| {
-            CatalogError::Invariant("missing R3 Tezzeret profile".to_owned())
-        })?;
+        let tezzeret_profile = cards
+            .get_mut(&tezzeret)
+            .ok_or_else(|| CatalogError::Invariant("missing R3 Tezzeret profile".to_owned()))?;
         tezzeret_profile.role = urza_rules::R2CardRole::PlaneswalkerPermanent;
         tezzeret_profile.utility = urza_rules::UtilityKind::TezzeretCruelCaptain;
         tezzeret_profile.starting_loyalty = 4;
@@ -1323,7 +1323,10 @@ mod tests {
         let top = r3.card_id_by_name("Sensei's Divining Top").unwrap();
         let chalice = r3.card_id_by_name("Everflowing Chalice").unwrap();
 
-        assert_eq!(r3.profile(saga).unwrap().utility, urza_rules::UtilityKind::UrzasSaga);
+        assert_eq!(
+            r3.profile(saga).unwrap().utility,
+            urza_rules::UtilityKind::UrzasSaga
+        );
         assert_eq!(r3.profile(saga).unwrap().role, R2CardRole::Land);
         assert_eq!(
             r3.profile(tezzeret).unwrap().utility,
@@ -1336,5 +1339,4 @@ mod tests {
             "X-cost artifact has MV0 but is not printed exactly {0} or {1}"
         );
     }
-
 }

@@ -4511,10 +4511,7 @@ mod tests {
         )
         .unwrap();
         let saga_object = object_for(&state, SAGA);
-        assert_eq!(
-            state.battlefield.get(saga_object).unwrap().counters.lore,
-            1
-        );
+        assert_eq!(state.battlefield.get(saga_object).unwrap().counters.lore, 1);
         assert!(matches!(
             state.stack.last(),
             Some(StackObject::ControlledTrigger {
@@ -4536,10 +4533,7 @@ mod tests {
         state.phase = Phase::Draw;
         state.window = Window::Priority;
         apply_action(&mut state, &cards, Action::PassPriority).unwrap();
-        assert_eq!(
-            state.battlefield.get(saga_object).unwrap().counters.lore,
-            2
-        );
+        assert_eq!(state.battlefield.get(saga_object).unwrap().counters.lore, 2);
         let chapter_two = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
         assert!(matches!(
             chapter_two.observations.as_slice(),
@@ -4549,10 +4543,7 @@ mod tests {
         state.phase = Phase::Draw;
         state.window = Window::Priority;
         apply_action(&mut state, &cards, Action::PassPriority).unwrap();
-        assert_eq!(
-            state.battlefield.get(saga_object).unwrap().counters.lore,
-            3
-        );
+        assert_eq!(state.battlefield.get(saga_object).unwrap().counters.lore, 3);
         let search = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
         assert_eq!(
             search.observations,
@@ -4567,9 +4558,7 @@ mod tests {
         let completion = apply_action_with_rng(
             &mut state,
             &cards,
-            Action::ChooseSearchTarget {
-                target: Some(TOP),
-            },
+            Action::ChooseSearchTarget { target: Some(TOP) },
             GameRngContext {
                 root: RootSeed::from_u64(88),
                 world: WorldId(0),
@@ -4616,10 +4605,7 @@ mod tests {
         .unwrap();
         apply_action(&mut state, &cards, Action::PassPriority).unwrap();
         let tezzeret = object_for(&state, TEZZERET);
-        assert_eq!(
-            state.battlefield.get(tezzeret).unwrap().counters.loyalty,
-            4
-        );
+        assert_eq!(state.battlefield.get(tezzeret).unwrap().counters.loyalty, 4);
 
         apply_action(
             &mut state,
@@ -4627,10 +4613,7 @@ mod tests {
             Action::ActivateTezzeretMinusThree { source: tezzeret },
         )
         .unwrap();
-        assert_eq!(
-            state.battlefield.get(tezzeret).unwrap().counters.loyalty,
-            1
-        );
+        assert_eq!(state.battlefield.get(tezzeret).unwrap().counters.loyalty, 1);
         let search = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
         assert_eq!(
             search.observations,
@@ -4644,9 +4627,7 @@ mod tests {
         apply_action_with_rng(
             &mut state,
             &cards,
-            Action::ChooseSearchTarget {
-                target: Some(TOP),
-            },
+            Action::ChooseSearchTarget { target: Some(TOP) },
             GameRngContext {
                 root: RootSeed::from_u64(99),
                 world: WorldId(1),
@@ -4657,5 +4638,4 @@ mod tests {
         assert!(state.hand.cards().contains(&TOP));
         assert!(!state.library.cards().contains(&TOP));
     }
-
 }
