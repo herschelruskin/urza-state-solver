@@ -1334,8 +1334,8 @@ fn resolve_spell<D: CardDatabase>(
             object_id: None,
             card,
         };
-        if let Some(kind) = profile.simple_tutor {
-            return stage_simple_tutor(state, cards, source, kind);
+        if profile.simple_tutor.is_some() {
+            return stage_simple_tutor(state, cards, source);
         }
         return match profile.special_search {
             SpecialSearchKind::Whir => {
@@ -1428,7 +1428,7 @@ fn resolve_spell<D: CardDatabase>(
         });
     }
 
-    if let Some(kind) = profile.simple_tutor {
+    if profile.simple_tutor.is_some() {
         let staged = stage_simple_tutor(
             state,
             cards,
@@ -1436,7 +1436,6 @@ fn resolve_spell<D: CardDatabase>(
                 object_id: Some(object_id),
                 card,
             },
-            kind,
         )?;
         observations.extend(staged.observations);
     } else {
@@ -1450,7 +1449,6 @@ fn stage_simple_tutor<D: CardDatabase>(
     state: &mut TrueState,
     cards: &D,
     source: SourceRef,
-    kind: SimpleTutorKind,
 ) -> Result<Transition, RuleError> {
     let pending = PendingDecision::TutorTarget { source };
     let candidates = pending_search_candidates(state, cards, &pending);
@@ -1541,7 +1539,10 @@ fn choose_transmute_sacrifice<D: CardDatabase>(
     let PendingDecision::TransmuteSacrifice { source } = state.pending.clone() else {
         return Err(RuleError::SearchDecisionMismatch);
     };
-    let artifact = resolve_canonical_object(state, canonical)?
+    let artifact = resolve_canonical_object(state, canonical)
+        .map_err(|error| match error {
+            urza_info::ObservationError::InvalidState(error) => RuleError::InvalidState(error),
+        })?
         .ok_or(RuleError::MissingCanonicalPermanent(canonical))?;
     let sacrificed = validate_sacrifice_artifact(state, cards, artifact)?;
 
@@ -2136,6 +2137,7 @@ mod tests {
                         generic: 1,
                         ..ManaCost::default()
                     }),
+                    mana_value: 1,
                     role: R2CardRole::ArtifactPermanent,
                     battlefield_face: CardFace::Front,
                     is_artifact: true,
@@ -3157,7 +3159,7 @@ mod tests {
         assert!(matches!(
             state.pending,
             PendingDecision::TransmuteTarget {
-                sacrificed_mana_value: 0,
+                sacrificed_mana_value: 1,
                 ..
             }
         ));
@@ -3179,7 +3181,7 @@ mod tests {
             state.pending,
             PendingDecision::TransmuteDifferencePayment {
                 target: ARTIFACT_MV3,
-                difference: GenericCost(3),
+                difference: GenericCost(2),
                 ..
             }
         ));
@@ -3193,13 +3195,12 @@ mod tests {
             },
         )
         .unwrap();
-        state.mana.colorless += 1;
         let completion = apply_action(
             &mut state,
             &cards,
             Action::PayTransmuteDifference {
                 payment: Some(ManaPayment {
-                    colorless: 3,
+                    colorless: 2,
                     ..ManaPayment::default()
                 }),
             },
