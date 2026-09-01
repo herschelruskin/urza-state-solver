@@ -1292,5 +1292,4 @@ mod tests {
             urza_rules::UtilityKind::None
         );
     }
-
 }

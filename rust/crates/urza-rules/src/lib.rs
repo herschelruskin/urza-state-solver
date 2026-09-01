@@ -5,9 +5,9 @@ use std::collections::BTreeSet;
 use thiserror::Error;
 use urza_core::{
     AbilityId, BattlefieldZone, CardDefId, CardFace, CommanderZone, CounterState, DelayedEvent,
-    GenericCost, LibraryKnowledge, ManaPool, ObjectId, PendingDecision, PermissionId, PermanentMode,
-    PermanentState, Phase, SourceRef, StackObject, StateValidationError, TrueLibrary, TrueState,
-    Window,
+    GenericCost, LibraryKnowledge, ManaPool, ObjectId, PendingDecision, PermanentMode,
+    PermanentState, PermissionId, Phase, SourceRef, StackObject, StateValidationError, TrueLibrary,
+    TrueState, Window,
 };
 use urza_info::{
     CanonicalObjectId, InformationState, ObservedPendingDecision, resolve_canonical_object,
@@ -736,12 +736,10 @@ pub fn legal_contingent_actions<D: CardDatabase>(
             actions.push(Action::PayTransmuteDifference { payment: None });
             actions
         }
-        ObservedPendingDecision::TopReorder { cards, .. } => {
-            unique_permutations(cards)
-                .into_iter()
-                .map(|order| Action::ChooseTopOrder { order })
-                .collect()
-        }
+        ObservedPendingDecision::TopReorder { cards, .. } => unique_permutations(cards)
+            .into_iter()
+            .map(|order| Action::ChooseTopOrder { order })
+            .collect(),
         ObservedPendingDecision::ScryChoice { looked_at, .. } => {
             let mut actions = Vec::new();
             for order in unique_permutations(looked_at) {
@@ -1760,10 +1758,7 @@ fn resolve_spell<D: CardDatabase>(
     Ok(Transition { observations })
 }
 
-fn stage_top_reorder(
-    state: &mut TrueState,
-    source: SourceRef,
-) -> Result<Transition, RuleError> {
+fn stage_top_reorder(state: &mut TrueState, source: SourceRef) -> Result<Transition, RuleError> {
     let count = state.library.cards().len().min(3);
     let cards = state.library.cards()[..count].to_vec();
     mark_known_top(state, count)?;
@@ -1809,9 +1804,9 @@ fn mark_known_top(state: &mut TrueState, count: usize) -> Result<(), RuleError> 
     let len = state.library.cards().len();
     let known_top = u8::try_from(count).map_err(|_| RuleError::ArithmeticOverflow)?;
     let remaining = len.saturating_sub(count);
-    let known_bottom = old.known_bottom.min(
-        u8::try_from(remaining).map_err(|_| RuleError::ArithmeticOverflow)?,
-    );
+    let known_bottom = old
+        .known_bottom
+        .min(u8::try_from(remaining).map_err(|_| RuleError::ArithmeticOverflow)?);
     state.library.set_knowledge(LibraryKnowledge {
         known_top,
         known_bottom,
@@ -1819,10 +1814,7 @@ fn mark_known_top(state: &mut TrueState, count: usize) -> Result<(), RuleError> 
     Ok(())
 }
 
-fn choose_top_order(
-    state: &mut TrueState,
-    order: Vec<CardDefId>,
-) -> Result<Transition, RuleError> {
+fn choose_top_order(state: &mut TrueState, order: Vec<CardDefId>) -> Result<Transition, RuleError> {
     if state.window != Window::PostObservation {
         return Err(RuleError::SearchDecisionMismatch);
     }
@@ -1887,10 +1879,7 @@ fn choose_scry(
     Ok(Transition::default())
 }
 
-fn resolve_top_draw(
-    state: &mut TrueState,
-    source: SourceRef,
-) -> Result<Transition, RuleError> {
+fn resolve_top_draw(state: &mut TrueState, source: SourceRef) -> Result<Transition, RuleError> {
     let drawn = draw_cards(state, 1)?;
     let mut observations = vec![RulesObservation::CardsDrawn(drawn)];
     if let Some(object_id) = source.object_id
@@ -1988,7 +1977,11 @@ fn same_multiset(left: &[CardDefId], right: &[CardDefId]) -> bool {
 }
 
 fn unique_permutations(cards: &[CardDefId]) -> Vec<Vec<CardDefId>> {
-    fn visit(prefix: &mut Vec<CardDefId>, rest: &mut Vec<CardDefId>, out: &mut Vec<Vec<CardDefId>>) {
+    fn visit(
+        prefix: &mut Vec<CardDefId>,
+        rest: &mut Vec<CardDefId>,
+        out: &mut Vec<Vec<CardDefId>>,
+    ) {
         if rest.is_empty() {
             if !out.contains(prefix) {
                 out.push(prefix.clone());
@@ -4099,10 +4092,12 @@ mod tests {
         state.window = Window::Priority;
         apply_action(&mut state, &cards, Action::PassPriority).unwrap();
         assert!(state.urza_permissions.is_empty());
-        assert!(state
-            .delayed_events
-            .iter()
-            .all(|event| !matches!(event, DelayedEvent::PermissionExpiry { .. })));
+        assert!(
+            state
+                .delayed_events
+                .iter()
+                .all(|event| !matches!(event, DelayedEvent::PermissionExpiry { .. }))
+        );
     }
 
     #[test]
@@ -4148,5 +4143,4 @@ mod tests {
         assert!(state.urza_permissions.is_empty());
         assert!(state.exile.cards().is_empty());
     }
-
 }
