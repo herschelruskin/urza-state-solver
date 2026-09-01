@@ -14,7 +14,7 @@ use urza_core::{
     TrueState,
 };
 
-pub const INFORMATION_SCHEMA_VERSION: &str = "information_state_v3_r3";
+pub const INFORMATION_SCHEMA_VERSION: &str = "information_state_v4_r3";
 
 #[derive(
     Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
@@ -114,6 +114,12 @@ pub enum ObservedPendingDecision {
     BayTarget {
         source: ObservedSourceRef,
         sacrificed_mana_value: u16,
+    },
+    SagaTarget {
+        source: ObservedSourceRef,
+    },
+    TezzeretTarget {
+        source: ObservedSourceRef,
     },
     TriggerOrder {
         source: ObservedSourceRef,
@@ -436,6 +442,12 @@ fn observe_pending(
             source: observe_source(*source, object_classes),
             sacrificed_mana_value: *sacrificed_mana_value,
         },
+        PendingDecision::SagaTarget { source } => ObservedPendingDecision::SagaTarget {
+            source: observe_source(*source, object_classes),
+        },
+        PendingDecision::TezzeretTarget { source } => ObservedPendingDecision::TezzeretTarget {
+            source: observe_source(*source, object_classes),
+        },
         PendingDecision::TriggerOrder {
             source,
             trigger_count,
@@ -708,11 +720,13 @@ fn local_signature(permanent: &urza_core::PermanentState) -> LocalSignature {
             PermanentMode::RealityChipAttached => (2, 0),
             PermanentMode::UthrosStation => (3, 0),
             PermanentMode::UthrosCreature => (4, 0),
-            PermanentMode::Other(value) => (5, value),
+            PermanentMode::UrzasSaga => (5, 0),
+            PermanentMode::Other(value) => (6, value),
         },
         granted_ability: match permanent.granted_ability {
             None => 0,
             Some(GrantedAbility::KnackBounceUntilEndOfTurn) => 1,
+            Some(GrantedAbility::SagaColorlessMana) => 2,
         },
     }
 }
@@ -818,15 +832,17 @@ fn pending_role(pending: &PendingDecision) -> ExternalRole {
             sacrificed_mana_value,
             ..
         } => (9, *sacrificed_mana_value, 0, Vec::new()),
+        PendingDecision::SagaTarget { .. } => (10, 0, 0, Vec::new()),
+        PendingDecision::TezzeretTarget { .. } => (11, 0, 0, Vec::new()),
         PendingDecision::TriggerOrder { trigger_count, .. } => {
-            (10, u16::from(*trigger_count), 0, Vec::new())
+            (12, u16::from(*trigger_count), 0, Vec::new())
         }
-        PendingDecision::ColiseumDiscard { count, .. } => (11, u16::from(*count), 0, Vec::new()),
+        PendingDecision::ColiseumDiscard { count, .. } => (13, u16::from(*count), 0, Vec::new()),
         PendingDecision::CumulativeUpkeepPayment {
             age_counters,
             generic_per_age,
             ..
-        } => (12, *age_counters, *generic_per_age, Vec::new()),
+        } => (14, *age_counters, *generic_per_age, Vec::new()),
     };
     ExternalRole::Pending {
         kind,

@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
 pub const R2_MODEL_VERSION: &str = "urza_model_r2_2026_09_01";
-pub const MODEL_VERSION: &str = "urza_model_r3_2026_09_01";
+pub const MODEL_VERSION: &str = "urza_model_r3b_2026_09_01";
 
 mod ids;
 mod metrics;

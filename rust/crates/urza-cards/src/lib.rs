@@ -531,10 +531,13 @@ impl R2CardDatabase {
                         merchant_scroll: card.feature_flags.is_instant,
                         mystical_tutor: card.feature_flags.is_instant
                             || card.feature_flags.is_sorcery,
+                        saga_iii: card.feature_flags.is_artifact
+                            && matches!(card.mana_cost.as_str(), "{0}" | "{1}"),
                     },
                     simple_tutor: None,
                     special_search: urza_rules::SpecialSearchKind::None,
                     utility: urza_rules::UtilityKind::None,
+                    starting_loyalty: 0,
                     is_artifact: card.feature_flags.is_artifact,
                     is_creature: card.feature_flags.is_creature,
                 },
@@ -555,6 +558,7 @@ impl R2CardDatabase {
                 simple_tutor: None,
                 special_search: urza_rules::SpecialSearchKind::None,
                 utility: urza_rules::UtilityKind::None,
+                starting_loyalty: 0,
                 is_artifact: true,
                 is_creature: true,
             },
@@ -689,6 +693,24 @@ impl R3CardDatabase {
         })?;
         top_profile.role = urza_rules::R2CardRole::ArtifactPermanent;
         top_profile.utility = urza_rules::UtilityKind::SenseisDiviningTop;
+
+        let saga = card_id_by_name_from_r1("Urza's Saga")?;
+        let saga_profile = cards.get_mut(&saga).ok_or_else(|| {
+            CatalogError::Invariant("missing R3 Urza's Saga profile".to_owned())
+        })?;
+        saga_profile.role = urza_rules::R2CardRole::Land;
+        saga_profile.battlefield_face = CardFace::Front;
+        saga_profile.land_entry = urza_rules::LandEntryRule::Untapped;
+        saga_profile.mana_ability = urza_rules::ManaAbility::None;
+        saga_profile.utility = urza_rules::UtilityKind::UrzasSaga;
+
+        let tezzeret = card_id_by_name_from_r1("Tezzeret, Cruel Captain")?;
+        let tezzeret_profile = cards.get_mut(&tezzeret).ok_or_else(|| {
+            CatalogError::Invariant("missing R3 Tezzeret profile".to_owned())
+        })?;
+        tezzeret_profile.role = urza_rules::R2CardRole::PlaneswalkerPermanent;
+        tezzeret_profile.utility = urza_rules::UtilityKind::TezzeretCruelCaptain;
+        tezzeret_profile.starting_loyalty = 4;
 
         Ok(Self { cards })
     }
@@ -1185,7 +1207,7 @@ mod tests {
     fn r3_simple_tutor_registry_extends_r2_without_reclassifying_later_mechanics() {
         validate_r3_database().unwrap();
         let r3 = R3CardDatabase::load().unwrap();
-        assert_eq!(r3.supported_active_cards().len(), 30);
+        assert_eq!(r3.supported_active_cards().len(), 32);
 
         let spellseeker = r3.card_id_by_name("Spellseeker").unwrap();
         let merchant = r3.card_id_by_name("Merchant Scroll").unwrap();
@@ -1292,4 +1314,27 @@ mod tests {
             urza_rules::UtilityKind::None
         );
     }
+
+    #[test]
+    fn r3_saga_and_tezzeret_registry_encode_exact_search_constraints() {
+        let r3 = R3CardDatabase::load().unwrap();
+        let saga = r3.card_id_by_name("Urza's Saga").unwrap();
+        let tezzeret = r3.card_id_by_name("Tezzeret, Cruel Captain").unwrap();
+        let top = r3.card_id_by_name("Sensei's Divining Top").unwrap();
+        let chalice = r3.card_id_by_name("Everflowing Chalice").unwrap();
+
+        assert_eq!(r3.profile(saga).unwrap().utility, urza_rules::UtilityKind::UrzasSaga);
+        assert_eq!(r3.profile(saga).unwrap().role, R2CardRole::Land);
+        assert_eq!(
+            r3.profile(tezzeret).unwrap().utility,
+            urza_rules::UtilityKind::TezzeretCruelCaptain
+        );
+        assert_eq!(r3.profile(tezzeret).unwrap().starting_loyalty, 4);
+        assert!(r3.profile(top).unwrap().search_classes.saga_iii);
+        assert!(
+            !r3.profile(chalice).unwrap().search_classes.saga_iii,
+            "X-cost artifact has MV0 but is not printed exactly {0} or {1}"
+        );
+    }
+
 }

@@ -404,8 +404,8 @@
     },
     {
       "card_id": 80,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R3 primitive active: ordinary planeswalker cast with starting loyalty, -3 loyalty paid before resolution, then staged artifact-MV<=1 search to hand using the shared pre-target shuffle; 0, -7, and artifact-ETB loyalty trigger remain deferred"
     },
     {
       "card_id": 81,
@@ -439,8 +439,8 @@
     },
     {
       "card_id": 87,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R3 primitive active: explicit lore/chapter I–III sequencing, chapter I grants colorless mana, chapter II creates the shared Construct token, and chapter III stages an exact printed-{0}/{1} artifact search before final-chapter sacrifice after the search finishes"
     },
     {
       "card_id": 88,

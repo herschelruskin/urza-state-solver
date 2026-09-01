@@ -19,13 +19,17 @@ use urza_rng::{
 
 pub const RULES_PHASE: &str = "R3";
 pub const R2_RULES_VERSION: &str = "r2_core_kernel_v2";
-pub const RULES_VERSION: &str = "r3_observation_permissions_v3";
+pub const RULES_VERSION: &str = "r3_search_complete_v4";
 pub const HORIZON_TURN: u8 = 6;
 pub const RNG_EVENT_SEARCH_SHUFFLE: EventType = EventType(0x0301);
 pub const ABILITY_REPURPOSING_BAY_SEARCH: AbilityId = AbilityId(0x0301);
 pub const ABILITY_TOP_LOOK: AbilityId = AbilityId(0x0302);
 pub const ABILITY_TOP_DRAW: AbilityId = AbilityId(0x0303);
 pub const ABILITY_URZA_SPIN: AbilityId = AbilityId(0x0304);
+pub const ABILITY_SAGA_CHAPTER_I: AbilityId = AbilityId(0x0305);
+pub const ABILITY_SAGA_CHAPTER_II: AbilityId = AbilityId(0x0306);
+pub const ABILITY_SAGA_CHAPTER_III: AbilityId = AbilityId(0x0307);
+pub const ABILITY_TEZZERET_MINUS_THREE: AbilityId = AbilityId(0x0308);
 pub const RNG_EVENT_URZA_SPIN_SHUFFLE: EventType = EventType(0x0302);
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -248,6 +252,7 @@ pub enum R2CardRole {
     Land,
     ArtifactPermanent,
     CreaturePermanent,
+    PlaneswalkerPermanent,
     SearchSpell,
     UrzaCommander,
     UrzaConstructToken,
@@ -290,6 +295,7 @@ pub struct SearchClassFlags {
     pub spellseeker: bool,
     pub merchant_scroll: bool,
     pub mystical_tutor: bool,
+    pub saga_iii: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -327,6 +333,8 @@ pub enum UtilityKind {
     #[default]
     None,
     SenseisDiviningTop,
+    UrzasSaga,
+    TezzeretCruelCaptain,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -350,6 +358,7 @@ pub struct CardProfile {
     pub simple_tutor: Option<SimpleTutorKind>,
     pub special_search: SpecialSearchKind,
     pub utility: UtilityKind,
+    pub starting_loyalty: i16,
     pub is_artifact: bool,
     pub is_creature: bool,
 }
@@ -411,6 +420,9 @@ pub enum Action {
     ActivateUrzaSpin {
         source: ObjectId,
         payment: ManaPayment,
+    },
+    ActivateTezzeretMinusThree {
+        source: ObjectId,
     },
     PlayUrzaPermission {
         permission_slot: u16,
@@ -637,6 +649,10 @@ fn apply_action_internal<D: CardDatabase>(
             activate_urza_spin(state, cards, source, payment)?;
             Transition::default()
         }
+        Action::ActivateTezzeretMinusThree { source } => {
+            activate_tezzeret_minus_three(state, cards, source)?;
+            Transition::default()
+        }
         Action::PlayUrzaPermission {
             permission_slot,
             face,
@@ -701,6 +717,16 @@ pub fn legal_contingent_actions<D: CardDatabase>(
             };
             search_actions_from_information(information, cards, |profile| {
                 profile.is_artifact && profile.mana_value == target_mana_value
+            })
+        }
+        ObservedPendingDecision::SagaTarget { .. } => {
+            search_actions_from_information(information, cards, |profile| {
+                profile.search_classes.saga_iii
+            })
+        }
+        ObservedPendingDecision::TezzeretTarget { .. } => {
+            search_actions_from_information(information, cards, |profile| {
+                profile.is_artifact && profile.mana_value <= 1
             })
         }
         ObservedPendingDecision::TransmuteSacrifice { .. } => {
@@ -830,6 +856,7 @@ pub fn advance_phase(state: &mut TrueState) -> Result<Transition, RuleError> {
                 .push(RulesObservation::CardsDrawn(drawn));
         }
         Phase::Draw => {
+            advance_saga_lore(state)?;
             state.phase = Phase::PrecombatMain;
             state.window = Window::Priority;
         }
@@ -1005,6 +1032,7 @@ fn play_land<D: CardDatabase>(
 
     let removed = state.hand.remove_one(card);
     debug_assert!(removed);
+    let saga = profile.utility == UtilityKind::UrzasSaga;
     insert_permanent(
         state,
         PermanentState {
@@ -1014,12 +1042,32 @@ fn play_land<D: CardDatabase>(
             tapped,
             summoning_sick: false,
             token: false,
-            counters: CounterState::default(),
-            mode: PermanentMode::Normal,
+            counters: if saga {
+                CounterState {
+                    lore: 1,
+                    ..CounterState::default()
+                }
+            } else {
+                CounterState::default()
+            },
+            mode: if saga {
+                PermanentMode::UrzasSaga
+            } else {
+                PermanentMode::Normal
+            },
             attached_to: None,
             granted_ability: None,
         },
     );
+    if saga {
+        state.stack.push(StackObject::ControlledTrigger {
+            source: SourceRef {
+                object_id: Some(object_id),
+                card,
+            },
+            ability: ABILITY_SAGA_CHAPTER_I,
+        });
+    }
     state.land_played_this_turn = true;
     Ok(Transition {
         observations: vec![RulesObservation::PermanentEntered {
@@ -1041,7 +1089,14 @@ fn activate_mana_ability<D: CardDatabase>(
     if permanent.tapped {
         return Err(RuleError::PermanentTapped(source));
     }
-    let ability = card_profile(cards, permanent.card)?.mana_ability;
+    let profile = card_profile(cards, permanent.card)?;
+    let ability = if profile.mana_ability != ManaAbility::None {
+        profile.mana_ability
+    } else if permanent.granted_ability == Some(urza_core::GrantedAbility::SagaColorlessMana) {
+        ManaAbility::TapForColorless(1)
+    } else {
+        ManaAbility::None
+    };
     if ability == ManaAbility::None {
         return Err(RuleError::NotManaSource(source));
     }
@@ -1194,6 +1249,40 @@ fn activate_urza_spin<D: CardDatabase>(
     Ok(())
 }
 
+fn activate_tezzeret_minus_three<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: ObjectId,
+) -> Result<(), RuleError> {
+    ensure_sorcery_window(state)?;
+    let permanent = battlefield_permanent(state, source)?.clone();
+    let profile = card_profile(cards, permanent.card)?;
+    if profile.utility != UtilityKind::TezzeretCruelCaptain {
+        return Err(RuleError::UnsupportedCardMechanic(permanent.card));
+    }
+    if permanent.counters.loyalty < 3 {
+        return Err(RuleError::IllegalTiming);
+    }
+
+    let mut permanents = state.battlefield.permanents().to_vec();
+    let live = permanents
+        .iter_mut()
+        .find(|candidate| candidate.object_id == source)
+        .ok_or(RuleError::MissingPermanent(source))?;
+    live.counters.loyalty -= 3;
+    state.battlefield = BattlefieldZone::new(permanents);
+    state.stack.push(StackObject::ActivatedAbility {
+        source: SourceRef {
+            object_id: Some(source),
+            card: permanent.card,
+        },
+        ability: ABILITY_TEZZERET_MINUS_THREE,
+        parameter: None,
+    });
+    state.window = Window::Priority;
+    Ok(())
+}
+
 fn play_urza_permission<D: CardDatabase>(
     state: &mut TrueState,
     cards: &D,
@@ -1230,6 +1319,7 @@ fn play_urza_permission<D: CardDatabase>(
         let object_id = next_object_id(state)?;
         let removed = state.exile.remove_one(permission.card);
         debug_assert!(removed);
+        let saga = profile.utility == UtilityKind::UrzasSaga;
         insert_permanent(
             state,
             PermanentState {
@@ -1239,12 +1329,32 @@ fn play_urza_permission<D: CardDatabase>(
                 tapped: false,
                 summoning_sick: false,
                 token: false,
-                counters: CounterState::default(),
-                mode: PermanentMode::Normal,
+                counters: if saga {
+                    CounterState {
+                        lore: 1,
+                        ..CounterState::default()
+                    }
+                } else {
+                    CounterState::default()
+                },
+                mode: if saga {
+                    PermanentMode::UrzasSaga
+                } else {
+                    PermanentMode::Normal
+                },
                 attached_to: None,
                 granted_ability: None,
             },
         );
+        if saga {
+            state.stack.push(StackObject::ControlledTrigger {
+                source: SourceRef {
+                    object_id: Some(object_id),
+                    card: permission.card,
+                },
+                ability: ABILITY_SAGA_CHAPTER_I,
+            });
+        }
         state.land_played_this_turn = true;
         consume_permission(state, permission_id);
         return Ok(Transition {
@@ -1260,9 +1370,9 @@ fn play_urza_permission<D: CardDatabase>(
         return Err(RuleError::InvalidPermissionFace);
     }
     match profile.role {
-        R2CardRole::ArtifactPermanent | R2CardRole::CreaturePermanent => {
-            ensure_sorcery_window(state)?
-        }
+        R2CardRole::ArtifactPermanent
+        | R2CardRole::CreaturePermanent
+        | R2CardRole::PlaneswalkerPermanent => ensure_sorcery_window(state)?,
         R2CardRole::SearchSpell => {
             let instant = profile
                 .simple_tutor
@@ -1329,6 +1439,7 @@ fn cast_from_hand<D: CardDatabase>(
         },
         R2CardRole::ArtifactPermanent
         | R2CardRole::CreaturePermanent
+        | R2CardRole::PlaneswalkerPermanent
         | R2CardRole::UrzaCommander => ensure_sorcery_window(state)?,
         _ => return Err(RuleError::UnsupportedCardMechanic(card)),
     }
@@ -1615,6 +1726,35 @@ fn resolve_top_stack_object<D: CardDatabase>(
             state.stack.pop();
             resolve_urza_spin(state, source, rng)
         }
+        StackObject::ControlledTrigger {
+            source,
+            ability: ABILITY_SAGA_CHAPTER_I,
+        } => {
+            state.stack.pop();
+            resolve_saga_chapter_i(state, source)
+        }
+        StackObject::ControlledTrigger {
+            source,
+            ability: ABILITY_SAGA_CHAPTER_II,
+        } => {
+            state.stack.pop();
+            resolve_saga_chapter_ii(state, cards, source)
+        }
+        StackObject::ControlledTrigger {
+            source,
+            ability: ABILITY_SAGA_CHAPTER_III,
+        } => {
+            state.stack.pop();
+            stage_parameterized_search(state, cards, PendingDecision::SagaTarget { source })
+        }
+        StackObject::ActivatedAbility {
+            source,
+            ability: ABILITY_TEZZERET_MINUS_THREE,
+            ..
+        } => {
+            state.stack.pop();
+            stage_parameterized_search(state, cards, PendingDecision::TezzeretTarget { source })
+        }
         StackObject::ControlledTrigger { .. } | StackObject::ActivatedAbility { .. } => {
             Err(RuleError::UnsupportedStackObject)
         }
@@ -1633,6 +1773,7 @@ fn resolve_spell<D: CardDatabase>(
         profile.role,
         R2CardRole::ArtifactPermanent
             | R2CardRole::CreaturePermanent
+            | R2CardRole::PlaneswalkerPermanent
             | R2CardRole::SearchSpell
             | R2CardRole::UrzaCommander
     ) {
@@ -1704,7 +1845,10 @@ fn resolve_spell<D: CardDatabase>(
             tapped: false,
             summoning_sick: profile.is_creature,
             token: false,
-            counters: CounterState::default(),
+            counters: CounterState {
+                loyalty: profile.starting_loyalty,
+                ..CounterState::default()
+            },
             mode: PermanentMode::Normal,
             attached_to: None,
             granted_ability: None,
@@ -1756,6 +1900,117 @@ fn resolve_spell<D: CardDatabase>(
     }
 
     Ok(Transition { observations })
+}
+
+fn advance_saga_lore(state: &mut TrueState) -> Result<(), RuleError> {
+    let mut permanents = state.battlefield.permanents().to_vec();
+    let mut triggers = Vec::new();
+    for permanent in &mut permanents {
+        if permanent.mode != PermanentMode::UrzasSaga {
+            continue;
+        }
+        permanent.counters.lore = permanent
+            .counters
+            .lore
+            .checked_add(1)
+            .ok_or(RuleError::ArithmeticOverflow)?;
+        let ability = match permanent.counters.lore {
+            2 => Some(ABILITY_SAGA_CHAPTER_II),
+            3 => Some(ABILITY_SAGA_CHAPTER_III),
+            _ => None,
+        };
+        if let Some(ability) = ability {
+            triggers.push(StackObject::ControlledTrigger {
+                source: SourceRef {
+                    object_id: Some(permanent.object_id),
+                    card: permanent.card,
+                },
+                ability,
+            });
+        }
+    }
+    state.battlefield = BattlefieldZone::new(permanents);
+    state.stack.extend(triggers);
+    Ok(())
+}
+
+fn resolve_saga_chapter_i(
+    state: &mut TrueState,
+    source: SourceRef,
+) -> Result<Transition, RuleError> {
+    if let Some(object_id) = source.object_id
+        && state.battlefield.get(object_id).is_some()
+    {
+        let mut permanents = state.battlefield.permanents().to_vec();
+        if let Some(saga) = permanents
+            .iter_mut()
+            .find(|permanent| permanent.object_id == object_id)
+        {
+            saga.granted_ability = Some(urza_core::GrantedAbility::SagaColorlessMana);
+        }
+        state.battlefield = BattlefieldZone::new(permanents);
+    }
+    state.window = Window::Priority;
+    Ok(Transition::default())
+}
+
+fn resolve_saga_chapter_ii<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    _source: SourceRef,
+) -> Result<Transition, RuleError> {
+    let construct = cards.urza_construct_token_card();
+    let profile = card_profile(cards, construct)?;
+    let object_id = next_object_id(state)?;
+    insert_permanent(
+        state,
+        PermanentState {
+            object_id,
+            card: construct,
+            face: profile.battlefield_face,
+            tapped: false,
+            summoning_sick: true,
+            token: true,
+            counters: CounterState::default(),
+            mode: PermanentMode::Normal,
+            attached_to: None,
+            granted_ability: None,
+        },
+    );
+    state.window = Window::Priority;
+    Ok(Transition {
+        observations: vec![RulesObservation::PermanentEntered {
+            card: construct,
+            face: profile.battlefield_face,
+            token: true,
+        }],
+    })
+}
+
+fn sacrifice_saga_after_final_chapter(
+    state: &mut TrueState,
+    source: SourceRef,
+) -> Result<(), RuleError> {
+    let Some(object_id) = source.object_id else {
+        return Ok(());
+    };
+    let Some(permanent) = state.battlefield.get(object_id) else {
+        return Ok(());
+    };
+    if permanent.card != source.card || permanent.mode != PermanentMode::UrzasSaga {
+        return Ok(());
+    }
+    let mut permanents = state.battlefield.permanents().to_vec();
+    let index = permanents
+        .iter()
+        .position(|candidate| candidate.object_id == object_id)
+        .ok_or(RuleError::MissingPermanent(object_id))?;
+    let saga = permanents.remove(index);
+    state.battlefield = BattlefieldZone::new(permanents);
+    if !saga.token {
+        state.graveyard.insert(saga.card);
+    }
+    Ok(())
 }
 
 fn stage_top_reorder(state: &mut TrueState, source: SourceRef) -> Result<Transition, RuleError> {
@@ -2124,6 +2379,8 @@ fn search_target_eligible<D: CardDatabase>(
             .is_some_and(|target_mana_value| {
                 profile.is_artifact && profile.mana_value == target_mana_value
             }),
+        PendingDecision::SagaTarget { .. } => profile.search_classes.saga_iii,
+        PendingDecision::TezzeretTarget { .. } => profile.is_artifact && profile.mana_value <= 1,
         _ => false,
     }
 }
@@ -2174,6 +2431,8 @@ fn choose_search_target<D: CardDatabase>(
             | PendingDecision::ReshapeTarget { .. }
             | PendingDecision::TransmuteTarget { .. }
             | PendingDecision::BayTarget { .. }
+            | PendingDecision::SagaTarget { .. }
+            | PendingDecision::TezzeretTarget { .. }
     ) {
         return Err(RuleError::SearchDecisionMismatch);
     }
@@ -2200,6 +2459,27 @@ fn choose_search_target<D: CardDatabase>(
         | PendingDecision::ReshapeTarget { .. }
         | PendingDecision::BayTarget { .. } => {
             complete_battlefield_search(state, cards, source, target, shuffled_remainder)
+        }
+        PendingDecision::SagaTarget { .. } => {
+            let result =
+                complete_battlefield_search(state, cards, source, target, shuffled_remainder)?;
+            sacrifice_saga_after_final_chapter(state, source)?;
+            Ok(result)
+        }
+        PendingDecision::TezzeretTarget { .. } => {
+            state.library = TrueLibrary::unknown(shuffled_remainder);
+            if let Some(target) = target {
+                state.hand.insert(target);
+            }
+            state.pending = PendingDecision::None;
+            state.window = Window::Priority;
+            Ok(Transition {
+                observations: vec![RulesObservation::SearchCompleted {
+                    source: source.card,
+                    target,
+                    destination: SearchDestination::Hand,
+                }],
+            })
         }
         PendingDecision::TransmuteTarget {
             sacrificed_mana_value,
@@ -2483,7 +2763,10 @@ fn put_card_onto_battlefield_with_id<D: CardDatabase>(
             tapped: false,
             summoning_sick: profile.is_creature,
             token: false,
-            counters: CounterState::default(),
+            counters: CounterState {
+                loyalty: profile.starting_loyalty,
+                ..CounterState::default()
+            },
             mode: PermanentMode::Normal,
             attached_to: None,
             granted_ability: None,
@@ -2647,6 +2930,10 @@ mod tests {
     const ARTIFACT_MV2: CardDefId = CardDefId(17);
     const ARTIFACT_MV3: CardDefId = CardDefId(18);
     const TOP: CardDefId = CardDefId(19);
+    const SAGA: CardDefId = CardDefId(20);
+    const TEZZERET: CardDefId = CardDefId(21);
+    const ARTIFACT_MV0: CardDefId = CardDefId(22);
+    const ARTIFACT_X_MV0: CardDefId = CardDefId(23);
 
     #[derive(Default)]
     struct TestCards {
@@ -2891,6 +3178,64 @@ mod tests {
                     role: R2CardRole::ArtifactPermanent,
                     battlefield_face: CardFace::Front,
                     utility: UtilityKind::SenseisDiviningTop,
+                    is_artifact: true,
+                    search_classes: SearchClassFlags {
+                        saga_iii: true,
+                        ..SearchClassFlags::default()
+                    },
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                SAGA,
+                CardProfile {
+                    card: SAGA,
+                    role: R2CardRole::Land,
+                    battlefield_face: CardFace::Front,
+                    land_entry: LandEntryRule::Untapped,
+                    utility: UtilityKind::UrzasSaga,
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                TEZZERET,
+                CardProfile {
+                    card: TEZZERET,
+                    mana_cost: Some(ManaCost {
+                        generic: 3,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 3,
+                    role: R2CardRole::PlaneswalkerPermanent,
+                    battlefield_face: CardFace::Front,
+                    utility: UtilityKind::TezzeretCruelCaptain,
+                    starting_loyalty: 4,
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                ARTIFACT_MV0,
+                CardProfile {
+                    card: ARTIFACT_MV0,
+                    mana_cost: Some(ManaCost::default()),
+                    mana_value: 0,
+                    role: R2CardRole::ArtifactPermanent,
+                    battlefield_face: CardFace::Front,
+                    search_classes: SearchClassFlags {
+                        saga_iii: true,
+                        ..SearchClassFlags::default()
+                    },
+                    is_artifact: true,
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                ARTIFACT_X_MV0,
+                CardProfile {
+                    card: ARTIFACT_X_MV0,
+                    mana_value: 0,
+                    role: R2CardRole::ArtifactPermanent,
+                    battlefield_face: CardFace::Front,
                     is_artifact: true,
                     ..CardProfile::default()
                 },
@@ -4143,4 +4488,174 @@ mod tests {
         assert!(state.urza_permissions.is_empty());
         assert!(state.exile.cards().is_empty());
     }
+
+    #[test]
+    fn saga_chapters_progress_and_final_search_uses_printed_cost_class_then_sacrifices() {
+        let cards = TestCards::r3();
+        let mut state = TrueState {
+            turn: 1,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![ARTIFACT_MV0, ARTIFACT_X_MV0, TOP]),
+            hand: CardZone::new(vec![SAGA]),
+            ..TrueState::default()
+        };
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::PlayLand {
+                card: SAGA,
+                entry: LandEntryChoice::Default,
+            },
+        )
+        .unwrap();
+        let saga_object = object_for(&state, SAGA);
+        assert_eq!(
+            state.battlefield.get(saga_object).unwrap().counters.lore,
+            1
+        );
+        assert!(matches!(
+            state.stack.last(),
+            Some(StackObject::ControlledTrigger {
+                ability: ABILITY_SAGA_CHAPTER_I,
+                ..
+            })
+        ));
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateManaAbility {
+                source: saga_object,
+            },
+        )
+        .unwrap();
+        assert_eq!(state.mana.colorless, 1);
+
+        state.phase = Phase::Draw;
+        state.window = Window::Priority;
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            state.battlefield.get(saga_object).unwrap().counters.lore,
+            2
+        );
+        let chapter_two = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert!(matches!(
+            chapter_two.observations.as_slice(),
+            [RulesObservation::PermanentEntered { token: true, .. }]
+        ));
+
+        state.phase = Phase::Draw;
+        state.window = Window::Priority;
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            state.battlefield.get(saga_object).unwrap().counters.lore,
+            3
+        );
+        let search = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            search.observations,
+            vec![RulesObservation::SearchAvailable {
+                source: SAGA,
+                candidates: vec![ARTIFACT_MV0, TOP],
+                may_fail: true,
+            }]
+        );
+        assert!(state.battlefield.get(saga_object).is_some());
+
+        let completion = apply_action_with_rng(
+            &mut state,
+            &cards,
+            Action::ChooseSearchTarget {
+                target: Some(TOP),
+            },
+            GameRngContext {
+                root: RootSeed::from_u64(88),
+                world: WorldId(0),
+                logical_event: LogicalEventId(700),
+            },
+        )
+        .unwrap();
+        assert!(completion.observations.iter().any(|observation| {
+            matches!(
+                observation,
+                RulesObservation::PermanentEntered { card: TOP, .. }
+            )
+        }));
+        assert!(state.battlefield.get(saga_object).is_none());
+        assert!(state.graveyard.cards().contains(&SAGA));
+    }
+
+    #[test]
+    fn tezzeret_minus_three_pays_loyalty_before_observing_mv_one_artifact_search() {
+        let cards = TestCards::r3();
+        let mut state = TrueState {
+            turn: 1,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![ARTIFACT_MV0, TOP, ARTIFACT_MV2]),
+            hand: CardZone::new(vec![TEZZERET]),
+            mana: ManaPool {
+                colorless: 3,
+                ..ManaPool::default()
+            },
+            ..TrueState::default()
+        };
+        apply_action(
+            &mut state,
+            &cards,
+            Action::CastFromHand {
+                card: TEZZERET,
+                payment: ManaPayment {
+                    colorless: 3,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        let tezzeret = object_for(&state, TEZZERET);
+        assert_eq!(
+            state.battlefield.get(tezzeret).unwrap().counters.loyalty,
+            4
+        );
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateTezzeretMinusThree { source: tezzeret },
+        )
+        .unwrap();
+        assert_eq!(
+            state.battlefield.get(tezzeret).unwrap().counters.loyalty,
+            1
+        );
+        let search = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            search.observations,
+            vec![RulesObservation::SearchAvailable {
+                source: TEZZERET,
+                candidates: vec![ARTIFACT_MV0, TOP],
+                may_fail: true,
+            }]
+        );
+
+        apply_action_with_rng(
+            &mut state,
+            &cards,
+            Action::ChooseSearchTarget {
+                target: Some(TOP),
+            },
+            GameRngContext {
+                root: RootSeed::from_u64(99),
+                world: WorldId(1),
+                logical_event: LogicalEventId(701),
+            },
+        )
+        .unwrap();
+        assert!(state.hand.cards().contains(&TOP));
+        assert!(!state.library.cards().contains(&TOP));
+    }
+
 }

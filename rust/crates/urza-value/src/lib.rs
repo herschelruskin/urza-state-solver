@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 use thiserror::Error;
 use urza_info::{CardCount, InformationState, ObservedDelayedEvent};
 
-pub const VALUE_KEY_SCHEMA_VERSION: &str = "value_key_v3_r3";
+pub const VALUE_KEY_SCHEMA_VERSION: &str = "value_key_v4_r3";
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ValueKey(InformationState);

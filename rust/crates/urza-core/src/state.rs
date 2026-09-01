@@ -68,12 +68,14 @@ pub enum PermanentMode {
     RealityChipAttached,
     UthrosStation,
     UthrosCreature,
+    UrzasSaga,
     Other(u8),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum GrantedAbility {
     KnackBounceUntilEndOfTurn,
+    SagaColorlessMana,
 }
 
 /// Canonicalized storage for zones whose physical card order is not game state.
@@ -321,6 +323,8 @@ pub enum PendingDecisionKind {
     WhirTarget,
     ReshapeTarget,
     BayTarget,
+    SagaTarget,
+    TezzeretTarget,
     TriggerOrder,
     ColiseumDiscard,
     CumulativeUpkeepPayment,
@@ -364,6 +368,12 @@ pub enum PendingDecision {
         source: SourceRef,
         sacrificed_mana_value: u16,
     },
+    SagaTarget {
+        source: SourceRef,
+    },
+    TezzeretTarget {
+        source: SourceRef,
+    },
     TriggerOrder {
         source: SourceRef,
         trigger_count: u8,
@@ -400,6 +410,8 @@ impl PendingDecision {
             Self::WhirTarget { .. } => PendingDecisionKind::WhirTarget,
             Self::ReshapeTarget { .. } => PendingDecisionKind::ReshapeTarget,
             Self::BayTarget { .. } => PendingDecisionKind::BayTarget,
+            Self::SagaTarget { .. } => PendingDecisionKind::SagaTarget,
+            Self::TezzeretTarget { .. } => PendingDecisionKind::TezzeretTarget,
             Self::TriggerOrder { .. } => PendingDecisionKind::TriggerOrder,
             Self::ColiseumDiscard { .. } => PendingDecisionKind::ColiseumDiscard,
             Self::CumulativeUpkeepPayment { .. } => PendingDecisionKind::CumulativeUpkeepPayment,
@@ -418,6 +430,8 @@ impl PendingDecision {
             | Self::WhirTarget { source, .. }
             | Self::ReshapeTarget { source, .. }
             | Self::BayTarget { source, .. }
+            | Self::SagaTarget { source }
+            | Self::TezzeretTarget { source }
             | Self::TriggerOrder { source, .. }
             | Self::ColiseumDiscard { source, .. }
             | Self::CumulativeUpkeepPayment { source, .. } => Some(*source),
