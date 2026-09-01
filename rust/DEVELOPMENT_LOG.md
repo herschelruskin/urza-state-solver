@@ -137,4 +137,14 @@ Coverage is advanced only for Island, Urza, and Voltaic Key as `PRIMITIVE_ACTIVE
 
 Focused unit fixtures cover mana payment, hidden-order-safe search observation, draw knowledge updates, shuffle occurrence consumption, deterministic land/artifact/Urza sequencing, artifact mana, and horizon progression.
 
-Validation: pending CI on this R2-start commit.
+Validation:
+- GitHub Actions run `33552829600`: PASS on commit `e6e0b6bd0e5e0953d0970568ebb19b509936e6da`.
+- locked dependency graph: PASS.
+- rustfmt: PASS.
+- strict Clippy (`-D warnings`): PASS.
+- workspace/all-target tests: PASS; 46 passed, 0 failed.
+- benchmark compilation: PASS.
+- R0 audit: PASS.
+- R1 catalog audit: PASS.
+
+This is an R2-start checkpoint, not the R2 acceptance gate. Remaining R2 work includes broadening the supported land/mana and simple-artifact primitive surface, then adding audited deterministic trajectory/parity fixtures before R2 is declared complete.
