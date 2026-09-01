@@ -5,7 +5,7 @@ use urza_cards::{
     validate_r1_catalog, validate_r2_database, validate_r3_database,
 };
 use urza_cli::hand25_fixture;
-use urza_core::{MODEL_VERSION, TrueState};
+use urza_core::{MODEL_VERSION, R2_MODEL_VERSION, TrueState};
 use urza_rng::RNG_SCHEME_VERSION;
 use urza_rules::{HORIZON_TURN, R2_RULES_VERSION, R2CardRole, RULES_VERSION};
 
@@ -105,7 +105,7 @@ fn run_r2_audit() {
     let report = json!({
         "phase": "R2",
         "rules_version": R2_RULES_VERSION,
-        "model_version": MODEL_VERSION,
+        "model_version": R2_MODEL_VERSION,
         "horizon_turn": HORIZON_TURN,
         "supported_active_card_identities": supported_names.len(),
         "supported_active_names": supported_names,

@@ -14,7 +14,7 @@ use urza_core::{
     TrueState,
 };
 
-pub const INFORMATION_SCHEMA_VERSION: &str = "information_state_v2_r2";
+pub const INFORMATION_SCHEMA_VERSION: &str = "information_state_v3_r3";
 
 #[derive(
     Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
@@ -74,6 +74,7 @@ pub struct ObservedStackObject {
     pub card: Option<CardDefId>,
     pub source: Option<ObservedSourceRef>,
     pub ability: Option<AbilityId>,
+    pub parameter: Option<u16>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -99,6 +100,7 @@ pub enum ObservedPendingDecision {
     },
     TransmuteDifferencePayment {
         source: ObservedSourceRef,
+        target: CardDefId,
         difference: GenericCost,
     },
     WhirTarget {
@@ -261,23 +263,34 @@ pub fn observe(state: &TrueState) -> Result<InformationState, ObservationError> 
         .stack
         .iter()
         .map(|object| match object {
-            StackObject::Spell { card, .. } => ObservedStackObject {
+            StackObject::Spell {
+                card,
+                x_value,
+                ..
+            } => ObservedStackObject {
                 kind: ObservedStackKind::Spell,
                 card: Some(*card),
                 source: None,
                 ability: None,
+                parameter: *x_value,
             },
             StackObject::ControlledTrigger { source, ability } => ObservedStackObject {
                 kind: ObservedStackKind::ControlledTrigger,
                 card: None,
                 source: Some(observe_source(*source, &object_classes)),
                 ability: Some(*ability),
+                parameter: None,
             },
-            StackObject::ActivatedAbility { source, ability } => ObservedStackObject {
+            StackObject::ActivatedAbility {
+                source,
+                ability,
+                parameter,
+            } => ObservedStackObject {
                 kind: ObservedStackKind::ActivatedAbility,
                 card: None,
                 source: Some(observe_source(*source, &object_classes)),
                 ability: Some(*ability),
+                parameter: *parameter,
             },
         })
         .collect();
@@ -401,12 +414,15 @@ fn observe_pending(
             source: observe_source(*source, object_classes),
             sacrificed_mana_value: *sacrificed_mana_value,
         },
-        PendingDecision::TransmuteDifferencePayment { source, difference } => {
-            ObservedPendingDecision::TransmuteDifferencePayment {
-                source: observe_source(*source, object_classes),
-                difference: *difference,
-            }
-        }
+        PendingDecision::TransmuteDifferencePayment {
+            source,
+            target,
+            difference,
+        } => ObservedPendingDecision::TransmuteDifferencePayment {
+            source: observe_source(*source, object_classes),
+            target: *target,
+            difference: *difference,
+        },
         PendingDecision::WhirTarget { source, x_value } => ObservedPendingDecision::WhirTarget {
             source: observe_source(*source, object_classes),
             x_value: *x_value,
@@ -512,6 +528,7 @@ enum ExternalRole {
         position: u16,
         kind: u8,
         ability: AbilityId,
+        parameter: Option<u16>,
     },
     Pending {
         kind: u8,
@@ -539,6 +556,17 @@ struct RefinementSignature {
     roles: Vec<ExternalRole>,
     attached_to_class: Option<u16>,
     incoming_attachment_classes: Vec<u16>,
+}
+
+pub fn resolve_canonical_object(
+    state: &TrueState,
+    canonical: CanonicalObjectId,
+) -> Result<Option<ObjectId>, ObservationError> {
+    state.validate()?;
+    Ok(canonical_object_classes(state)
+        .into_iter()
+        .filter_map(|(object, class)| (class == canonical).then_some(object))
+        .min())
 }
 
 fn canonical_object_classes(state: &TrueState) -> BTreeMap<ObjectId, CanonicalObjectId> {
@@ -667,10 +695,14 @@ fn external_roles(state: &TrueState) -> BTreeMap<ObjectId, Vec<ExternalRole>> {
     let mut roles = BTreeMap::<ObjectId, Vec<ExternalRole>>::new();
 
     for (position, object) in state.stack.iter().enumerate() {
-        let (source, kind, ability) = match object {
+        let (source, kind, ability, parameter) = match object {
             StackObject::Spell { .. } => continue,
-            StackObject::ControlledTrigger { source, ability } => (source, 1, *ability),
-            StackObject::ActivatedAbility { source, ability } => (source, 2, *ability),
+            StackObject::ControlledTrigger { source, ability } => (source, 1, *ability, None),
+            StackObject::ActivatedAbility {
+                source,
+                ability,
+                parameter,
+            } => (source, 2, *ability, *parameter),
         };
         push_source_role(
             &mut roles,
@@ -679,6 +711,7 @@ fn external_roles(state: &TrueState) -> BTreeMap<ObjectId, Vec<ExternalRole>> {
                 position: u16::try_from(position).expect("stack depth fits in u16"),
                 kind,
                 ability,
+                parameter,
             },
         );
     }

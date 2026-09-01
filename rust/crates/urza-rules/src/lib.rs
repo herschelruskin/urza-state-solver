@@ -1,21 +1,27 @@
 #![forbid(unsafe_code)]
 
+use std::collections::BTreeSet;
+
 use thiserror::Error;
 use urza_core::{
-    BattlefieldZone, CardDefId, CardFace, CommanderZone, CounterState, LibraryKnowledge, ManaPool,
-    ObjectId, PendingDecision, PermanentMode, PermanentState, Phase, SourceRef, StackObject,
-    StateValidationError, TrueLibrary, TrueState, Window,
+    AbilityId, BattlefieldZone, CardDefId, CardFace, CommanderZone, CounterState, DelayedEvent,
+    GenericCost, LibraryKnowledge, ManaPool, ObjectId, PendingDecision, PermanentMode,
+    PermanentState, Phase, SourceRef, StackObject, StateValidationError, TrueLibrary, TrueState,
+    Window,
 };
-use urza_info::{InformationState, ObservedPendingDecision};
+use urza_info::{
+    CanonicalObjectId, InformationState, ObservedPendingDecision, resolve_canonical_object,
+};
 use urza_rng::{
     EventOccurrence, EventType, LogicalEventId, RngCoordinate, RngDomain, RootSeed, WorldId,
 };
 
 pub const RULES_PHASE: &str = "R3";
 pub const R2_RULES_VERSION: &str = "r2_core_kernel_v2";
-pub const RULES_VERSION: &str = "r3_search_staging_v1";
+pub const RULES_VERSION: &str = "r3_search_staging_v2";
 pub const HORIZON_TURN: u8 = 6;
 pub const RNG_EVENT_SEARCH_SHUFFLE: EventType = EventType(0x0301);
+pub const ABILITY_REPURPOSING_BAY_SEARCH: AbilityId = AbilityId(0x0301);
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ManaCost {
@@ -301,10 +307,22 @@ impl SimpleTutorKind {
     }
 }
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
+pub enum SpecialSearchKind {
+    #[default]
+    None,
+    Whir,
+    Reshape,
+    TransmuteArtifact,
+    RepurposingBay,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum SearchDestination {
     Hand,
     LibraryTop,
+    Battlefield,
+    Graveyard,
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
@@ -318,6 +336,7 @@ pub struct CardProfile {
     pub mana_ability: ManaAbility,
     pub search_classes: SearchClassFlags,
     pub simple_tutor: Option<SimpleTutorKind>,
+    pub special_search: SpecialSearchKind,
     pub is_artifact: bool,
     pub is_creature: bool,
 }
@@ -335,7 +354,7 @@ pub struct GameRngContext {
     pub logical_event: LogicalEventId,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Action {
     PassPriority,
     PlayLand {
@@ -352,11 +371,34 @@ pub enum Action {
         card: CardDefId,
         payment: ManaPayment,
     },
+    CastWhir {
+        card: CardDefId,
+        x_value: u16,
+        payment: ManaPayment,
+        improvise_sources: Vec<ObjectId>,
+    },
+    CastReshape {
+        card: CardDefId,
+        x_value: u16,
+        sacrifice: ObjectId,
+        payment: ManaPayment,
+    },
+    ActivateRepurposingBay {
+        source: ObjectId,
+        sacrifice: ObjectId,
+        payment: ManaPayment,
+    },
     CastCommander {
         payment: ManaPayment,
     },
-    ChooseTutorTarget {
+    ChooseTransmuteSacrifice {
+        artifact: CanonicalObjectId,
+    },
+    ChooseSearchTarget {
         target: Option<CardDefId>,
+    },
+    PayTransmuteDifference {
+        payment: Option<ManaPayment>,
     },
 }
 
@@ -444,8 +486,24 @@ pub enum RuleError {
     MissingGameRngContext,
     #[error("no simple-tutor target decision is pending")]
     NoTutorDecisionPending,
-    #[error("card {0:?} is not a legal target for the pending tutor")]
-    InvalidTutorTarget(CardDefId),
+    #[error("card {0:?} is not a legal target for the pending search")]
+    InvalidSearchTarget(CardDefId),
+    #[error("the requested search action does not match the pending decision")]
+    SearchDecisionMismatch,
+    #[error("object {0:?} cannot be used more than once for the same cost")]
+    DuplicateCostObject(ObjectId),
+    #[error("too many improvise sources were supplied for X={x_value}")]
+    ExcessImprovise { x_value: u16 },
+    #[error("object {0:?} is not a legal sacrifice for this effect")]
+    InvalidSacrifice(ObjectId),
+    #[error("object {0:?} has an incoming attachment; this sacrifice interaction is deferred")]
+    AttachedSacrificeDeferred(ObjectId),
+    #[error("the Repurposing Bay source and sacrificed artifact must be different objects")]
+    BayCannotSacrificeSelf,
+    #[error("no permanent corresponds to observed canonical object {0:?}")]
+    MissingCanonicalPermanent(CanonicalObjectId),
+    #[error("no Transmute Artifact difference-payment decision is pending")]
+    NoTransmutePaymentPending,
 }
 
 pub fn apply_action<D: CardDatabase>(
@@ -487,16 +545,55 @@ fn apply_action_internal<D: CardDatabase>(
             cast_from_hand(state, cards, card, payment)?;
             Transition::default()
         }
+        Action::CastWhir {
+            card,
+            x_value,
+            payment,
+            improvise_sources,
+        } => {
+            cast_whir(
+                state,
+                cards,
+                card,
+                x_value,
+                payment,
+                &improvise_sources,
+            )?;
+            Transition::default()
+        }
+        Action::CastReshape {
+            card,
+            x_value,
+            sacrifice,
+            payment,
+        } => {
+            cast_reshape(state, cards, card, x_value, sacrifice, payment)?;
+            Transition::default()
+        }
+        Action::ActivateRepurposingBay {
+            source,
+            sacrifice,
+            payment,
+        } => {
+            activate_repurposing_bay(state, cards, source, sacrifice, payment)?;
+            Transition::default()
+        }
         Action::CastCommander { payment } => {
             cast_commander(state, cards, payment)?;
             Transition::default()
         }
-        Action::ChooseTutorTarget { target } => choose_tutor_target(
+        Action::ChooseTransmuteSacrifice { artifact } => {
+            choose_transmute_sacrifice(state, cards, artifact)?
+        }
+        Action::ChooseSearchTarget { target } => choose_search_target(
             state,
             cards,
             target,
             rng.ok_or(RuleError::MissingGameRngContext)?,
         )?,
+        Action::PayTransmuteDifference { payment } => {
+            pay_transmute_difference(state, cards, payment)?
+        }
     };
     state.validate()?;
     Ok(transition)
@@ -506,16 +603,89 @@ pub fn legal_contingent_actions<D: CardDatabase>(
     information: &InformationState,
     cards: &D,
 ) -> Vec<Action> {
-    let ObservedPendingDecision::TutorTarget { source } = &information.pending else {
-        return Vec::new();
-    };
-    let Some(profile) = cards.profile(source.card) else {
-        return Vec::new();
-    };
-    let Some(kind) = profile.simple_tutor else {
-        return Vec::new();
-    };
+    match &information.pending {
+        ObservedPendingDecision::TutorTarget { source } => {
+            let Some(profile) = cards.profile(source.card) else {
+                return Vec::new();
+            };
+            let Some(kind) = profile.simple_tutor else {
+                return Vec::new();
+            };
+            search_actions_from_information(information, cards, |profile| {
+                match kind {
+                    SimpleTutorKind::Spellseeker => profile.search_classes.spellseeker,
+                    SimpleTutorKind::MerchantScroll => profile.search_classes.merchant_scroll,
+                    SimpleTutorKind::MysticalTutor => profile.search_classes.mystical_tutor,
+                }
+            })
+        }
+        ObservedPendingDecision::WhirTarget { x_value, .. }
+        | ObservedPendingDecision::ReshapeTarget { x_value, .. } => {
+            let x_value = *x_value;
+            search_actions_from_information(information, cards, |profile| {
+                profile.is_artifact && profile.mana_value <= x_value
+            })
+        }
+        ObservedPendingDecision::TransmuteTarget { .. } => {
+            search_actions_from_information(information, cards, |profile| profile.is_artifact)
+        }
+        ObservedPendingDecision::BayTarget {
+            sacrificed_mana_value,
+            ..
+        } => {
+            let Some(target_mana_value) = sacrificed_mana_value.checked_add(1) else {
+                return vec![Action::ChooseSearchTarget { target: None }];
+            };
+            search_actions_from_information(information, cards, |profile| {
+                profile.is_artifact && profile.mana_value == target_mana_value
+            })
+        }
+        ObservedPendingDecision::TransmuteSacrifice { .. } => {
+            let mut seen = BTreeSet::new();
+            information
+                .battlefield
+                .iter()
+                .filter(|permanent| {
+                    cards
+                        .profile(permanent.card)
+                        .is_some_and(|profile| profile.is_artifact)
+                })
+                .filter_map(|permanent| {
+                    seen.insert(permanent.canonical_id).then_some(
+                        Action::ChooseTransmuteSacrifice {
+                            artifact: permanent.canonical_id,
+                        },
+                    )
+                })
+                .collect()
+        }
+        ObservedPendingDecision::TransmuteDifferencePayment { difference, .. } => {
+            let cost = ManaCost {
+                generic: difference.0,
+                ..ManaCost::default()
+            };
+            let mut actions: Vec<_> = enumerate_payments(information.mana, cost)
+                .into_iter()
+                .map(|payment| Action::PayTransmuteDifference {
+                    payment: Some(payment),
+                })
+                .collect();
+            actions.push(Action::PayTransmuteDifference { payment: None });
+            actions
+        }
+        _ => Vec::new(),
+    }
+}
 
+fn search_actions_from_information<D, F>(
+    information: &InformationState,
+    cards: &D,
+    mut eligible: F,
+) -> Vec<Action>
+where
+    D: CardDatabase,
+    F: FnMut(CardProfile) -> bool,
+{
     let mut library_cards = Vec::new();
     for count in &information.library.remaining_counts {
         if count.count > 0 {
@@ -529,12 +699,12 @@ pub fn legal_contingent_actions<D: CardDatabase>(
 
     let mut actions: Vec<_> = library_cards
         .into_iter()
-        .filter(|card| simple_tutor_eligible(cards, kind, *card))
-        .map(|target| Action::ChooseTutorTarget {
+        .filter(|card| cards.profile(*card).is_some_and(&mut eligible))
+        .map(|target| Action::ChooseSearchTarget {
             target: Some(target),
         })
         .collect();
-    actions.push(Action::ChooseTutorTarget { target: None });
+    actions.push(Action::ChooseSearchTarget { target: None });
     actions
 }
 
@@ -781,8 +951,7 @@ fn activate_mana_ability<D: CardDatabase>(
     cards: &D,
     source: ObjectId,
 ) -> Result<(), RuleError> {
-    ensure_priority(state)?;
-    ensure_no_pending_decision(state)?;
+    ensure_mana_activation_window(state)?;
 
     let permanent = battlefield_permanent(state, source)?.clone();
     if permanent.tapped {
@@ -823,8 +992,7 @@ fn activate_urza_artifact_mana<D: CardDatabase>(
     cards: &D,
     artifact: ObjectId,
 ) -> Result<(), RuleError> {
-    ensure_priority(state)?;
-    ensure_no_pending_decision(state)?;
+    ensure_mana_activation_window(state)?;
 
     let urza_present = state
         .battlefield
@@ -861,23 +1029,182 @@ fn cast_from_hand<D: CardDatabase>(
 ) -> Result<(), RuleError> {
     let profile = card_profile(cards, card)?;
     match profile.role {
-        R2CardRole::SearchSpell => {
-            let kind = profile
-                .simple_tutor
-                .ok_or(RuleError::UnsupportedCardMechanic(card))?;
-            if kind.instant_speed() {
-                ensure_priority(state)?;
-                ensure_no_pending_decision(state)?;
-            } else {
-                ensure_sorcery_window(state)?;
+        R2CardRole::SearchSpell => match profile.special_search {
+            SpecialSearchKind::None => {
+                let kind = profile
+                    .simple_tutor
+                    .ok_or(RuleError::UnsupportedCardMechanic(card))?;
+                if kind.instant_speed() {
+                    ensure_priority(state)?;
+                    ensure_no_pending_decision(state)?;
+                } else {
+                    ensure_sorcery_window(state)?;
+                }
             }
-        }
+            SpecialSearchKind::TransmuteArtifact => ensure_sorcery_window(state)?,
+            SpecialSearchKind::Whir | SpecialSearchKind::Reshape => {
+                return Err(RuleError::UnsupportedCardMechanic(card));
+            }
+            SpecialSearchKind::RepurposingBay => {
+                return Err(RuleError::UnsupportedCardMechanic(card));
+            }
+        },
         R2CardRole::ArtifactPermanent
         | R2CardRole::CreaturePermanent
         | R2CardRole::UrzaCommander => ensure_sorcery_window(state)?,
         _ => return Err(RuleError::UnsupportedCardMechanic(card)),
     }
 
+    cast_paid_spell(state, cards, card, payment, None)
+}
+
+fn cast_whir<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    card: CardDefId,
+    x_value: u16,
+    payment: ManaPayment,
+    improvise_sources: &[ObjectId],
+) -> Result<(), RuleError> {
+    ensure_priority(state)?;
+    ensure_no_pending_decision(state)?;
+    let profile = card_profile(cards, card)?;
+    if profile.role != R2CardRole::SearchSpell || profile.special_search != SpecialSearchKind::Whir {
+        return Err(RuleError::UnsupportedCardMechanic(card));
+    }
+    if !state.hand.cards().contains(&card) {
+        return Err(RuleError::CardNotInHand(card));
+    }
+
+    let mut unique = BTreeSet::new();
+    for source in improvise_sources {
+        if !unique.insert(*source) {
+            return Err(RuleError::DuplicateCostObject(*source));
+        }
+        let permanent = battlefield_permanent(state, *source)?;
+        if permanent.tapped || !card_profile(cards, permanent.card)?.is_artifact {
+            return Err(RuleError::InvalidSacrifice(*source));
+        }
+    }
+    let improvise_count =
+        u16::try_from(improvise_sources.len()).map_err(|_| RuleError::ArithmeticOverflow)?;
+    let Some(remaining_x) = x_value.checked_sub(improvise_count) else {
+        return Err(RuleError::ExcessImprovise { x_value });
+    };
+    let cost = ManaCost {
+        blue: 3,
+        generic: remaining_x,
+        ..ManaCost::default()
+    };
+    validate_payment(state.mana, payment, cost)?;
+    let object_id = next_object_id(state)?;
+
+    spend_payment(&mut state.mana, payment);
+    for source in improvise_sources {
+        set_tapped(state, *source)?;
+    }
+    let removed = state.hand.remove_one(card);
+    debug_assert!(removed);
+    state.stack.push(StackObject::Spell {
+        object_id,
+        card,
+        x_value: Some(x_value),
+    });
+    state.spell_cast_this_turn = true;
+    state.window = Window::Priority;
+    Ok(())
+}
+
+fn cast_reshape<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    card: CardDefId,
+    x_value: u16,
+    sacrifice: ObjectId,
+    payment: ManaPayment,
+) -> Result<(), RuleError> {
+    ensure_sorcery_window(state)?;
+    let profile = card_profile(cards, card)?;
+    if profile.role != R2CardRole::SearchSpell
+        || profile.special_search != SpecialSearchKind::Reshape
+    {
+        return Err(RuleError::UnsupportedCardMechanic(card));
+    }
+    if !state.hand.cards().contains(&card) {
+        return Err(RuleError::CardNotInHand(card));
+    }
+    validate_sacrifice_artifact(state, cards, sacrifice)?;
+    let cost = ManaCost {
+        blue: 2,
+        generic: x_value,
+        ..ManaCost::default()
+    };
+    validate_payment(state.mana, payment, cost)?;
+    let object_id = next_object_id(state)?;
+
+    spend_payment(&mut state.mana, payment);
+    sacrifice_artifact(state, sacrifice)?;
+    let removed = state.hand.remove_one(card);
+    debug_assert!(removed);
+    state.stack.push(StackObject::Spell {
+        object_id,
+        card,
+        x_value: Some(x_value),
+    });
+    state.spell_cast_this_turn = true;
+    state.window = Window::Priority;
+    Ok(())
+}
+
+fn activate_repurposing_bay<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: ObjectId,
+    sacrifice: ObjectId,
+    payment: ManaPayment,
+) -> Result<(), RuleError> {
+    ensure_sorcery_window(state)?;
+    if source == sacrifice {
+        return Err(RuleError::BayCannotSacrificeSelf);
+    }
+    let bay = battlefield_permanent(state, source)?.clone();
+    if bay.tapped {
+        return Err(RuleError::PermanentTapped(source));
+    }
+    let bay_profile = card_profile(cards, bay.card)?;
+    if bay_profile.special_search != SpecialSearchKind::RepurposingBay {
+        return Err(RuleError::UnsupportedCardMechanic(bay.card));
+    }
+    let sacrificed = validate_sacrifice_artifact(state, cards, sacrifice)?;
+    let cost = ManaCost {
+        generic: 2,
+        ..ManaCost::default()
+    };
+    validate_payment(state.mana, payment, cost)?;
+
+    spend_payment(&mut state.mana, payment);
+    set_tapped(state, source)?;
+    sacrifice_artifact(state, sacrifice)?;
+    state.stack.push(StackObject::ActivatedAbility {
+        source: SourceRef {
+            object_id: Some(source),
+            card: bay.card,
+        },
+        ability: ABILITY_REPURPOSING_BAY_SEARCH,
+        parameter: Some(sacrificed.mana_value),
+    });
+    state.window = Window::Priority;
+    Ok(())
+}
+
+fn cast_paid_spell<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    card: CardDefId,
+    payment: ManaPayment,
+    x_value: Option<u16>,
+) -> Result<(), RuleError> {
+    let profile = card_profile(cards, card)?;
     if !state.hand.cards().contains(&card) {
         return Err(RuleError::CardNotInHand(card));
     }
@@ -894,7 +1221,11 @@ fn cast_from_hand<D: CardDatabase>(
     let removed = state.hand.remove_one(card);
     debug_assert!(removed);
 
-    state.stack.push(StackObject::Spell { object_id, card });
+    state.stack.push(StackObject::Spell {
+        object_id,
+        card,
+        x_value,
+    });
     state.spell_cast_this_turn = true;
     state.window = Window::Priority;
     if card == cards.commander_card() {
@@ -938,6 +1269,7 @@ fn cast_commander<D: CardDatabase>(
     state.stack.push(StackObject::Spell {
         object_id,
         card: commander,
+        x_value: None,
     });
     state.commander.zone = CommanderZone::Stack;
     state.commander.command_zone_casts = next_cast_count;
@@ -953,10 +1285,44 @@ fn resolve_top_stack_object<D: CardDatabase>(
     let Some(top) = state.stack.last().cloned() else {
         return Ok(Transition::default());
     };
-    let StackObject::Spell { object_id, card } = top else {
-        return Err(RuleError::UnsupportedStackObject);
-    };
 
+    match top {
+        StackObject::Spell {
+            object_id,
+            card,
+            x_value,
+        } => resolve_spell(state, cards, object_id, card, x_value),
+        StackObject::ActivatedAbility {
+            source,
+            ability,
+            parameter,
+        } if ability == ABILITY_REPURPOSING_BAY_SEARCH => {
+            let Some(sacrificed_mana_value) = parameter else {
+                return Err(RuleError::UnsupportedStackObject);
+            };
+            state.stack.pop();
+            stage_parameterized_search(
+                state,
+                cards,
+                PendingDecision::BayTarget {
+                    source,
+                    sacrificed_mana_value,
+                },
+            )
+        }
+        StackObject::ControlledTrigger { .. } | StackObject::ActivatedAbility { .. } => {
+            Err(RuleError::UnsupportedStackObject)
+        }
+    }
+}
+
+fn resolve_spell<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    object_id: ObjectId,
+    card: CardDefId,
+    x_value: Option<u16>,
+) -> Result<Transition, RuleError> {
     let profile = card_profile(cards, card)?;
     if !matches!(
         profile.role,
@@ -969,21 +1335,42 @@ fn resolve_top_stack_object<D: CardDatabase>(
     }
 
     if profile.role == R2CardRole::SearchSpell {
-        let kind = profile
-            .simple_tutor
-            .ok_or(RuleError::UnsupportedCardMechanic(card))?;
         state.stack.pop();
         state.window = Window::Resolving;
         state.graveyard.insert(card);
-        return stage_simple_tutor(
-            state,
-            cards,
-            SourceRef {
-                object_id: None,
-                card,
-            },
-            kind,
-        );
+        let source = SourceRef {
+            object_id: None,
+            card,
+        };
+        if let Some(kind) = profile.simple_tutor {
+            return stage_simple_tutor(state, cards, source, kind);
+        }
+        return match profile.special_search {
+            SpecialSearchKind::Whir => {
+                let x_value = x_value.ok_or(RuleError::UnsupportedStackObject)?;
+                stage_parameterized_search(
+                    state,
+                    cards,
+                    PendingDecision::WhirTarget { source, x_value },
+                )
+            }
+            SpecialSearchKind::Reshape => {
+                let x_value = x_value.ok_or(RuleError::UnsupportedStackObject)?;
+                stage_parameterized_search(
+                    state,
+                    cards,
+                    PendingDecision::ReshapeTarget { source, x_value },
+                )
+            }
+            SpecialSearchKind::TransmuteArtifact => {
+                state.pending = PendingDecision::TransmuteSacrifice { source };
+                state.window = Window::Resolving;
+                Ok(Transition::default())
+            }
+            SpecialSearchKind::None | SpecialSearchKind::RepurposingBay => {
+                Err(RuleError::UnsupportedCardMechanic(card))
+            }
+        };
     }
 
     let construct = if profile.role == R2CardRole::UrzaCommander {
@@ -1073,8 +1460,9 @@ fn stage_simple_tutor<D: CardDatabase>(
     source: SourceRef,
     kind: SimpleTutorKind,
 ) -> Result<Transition, RuleError> {
-    let candidates = simple_tutor_candidates(state, cards, kind);
-    state.pending = PendingDecision::TutorTarget { source };
+    let pending = PendingDecision::TutorTarget { source };
+    let candidates = pending_search_candidates(state, cards, &pending);
+    state.pending = pending;
     state.window = Window::PostObservation;
     Ok(Transition {
         observations: vec![RulesObservation::SearchAvailable {
@@ -1085,53 +1473,319 @@ fn stage_simple_tutor<D: CardDatabase>(
     })
 }
 
-fn simple_tutor_candidates<D: CardDatabase>(
-    state: &TrueState,
+fn stage_parameterized_search<D: CardDatabase>(
+    state: &mut TrueState,
     cards: &D,
-    kind: SimpleTutorKind,
-) -> Vec<CardDefId> {
-    observe_library_search(state, |card| simple_tutor_eligible(cards, kind, card)).candidates
+    pending: PendingDecision,
+) -> Result<Transition, RuleError> {
+    let source = pending
+        .source()
+        .ok_or(RuleError::SearchDecisionMismatch)?;
+    let candidates = pending_search_candidates(state, cards, &pending);
+    state.pending = pending;
+    state.window = Window::PostObservation;
+    Ok(Transition {
+        observations: vec![RulesObservation::SearchAvailable {
+            source: source.card,
+            candidates,
+            may_fail: true,
+        }],
+    })
 }
 
-fn simple_tutor_eligible<D: CardDatabase>(
+fn pending_search_candidates<D: CardDatabase>(
+    state: &TrueState,
     cards: &D,
-    kind: SimpleTutorKind,
+    pending: &PendingDecision,
+) -> Vec<CardDefId> {
+    observe_library_search(state, |card| search_target_eligible(cards, pending, card)).candidates
+}
+
+fn search_target_eligible<D: CardDatabase>(
+    cards: &D,
+    pending: &PendingDecision,
     card: CardDefId,
 ) -> bool {
     let Some(profile) = cards.profile(card) else {
         return false;
     };
-    match kind {
-        SimpleTutorKind::Spellseeker => profile.search_classes.spellseeker,
-        SimpleTutorKind::MerchantScroll => profile.search_classes.merchant_scroll,
-        SimpleTutorKind::MysticalTutor => profile.search_classes.mystical_tutor,
+    match pending {
+        PendingDecision::TutorTarget { source } => {
+            let Some(source_profile) = cards.profile(source.card) else {
+                return false;
+            };
+            let Some(kind) = source_profile.simple_tutor else {
+                return false;
+            };
+            match kind {
+                SimpleTutorKind::Spellseeker => profile.search_classes.spellseeker,
+                SimpleTutorKind::MerchantScroll => profile.search_classes.merchant_scroll,
+                SimpleTutorKind::MysticalTutor => profile.search_classes.mystical_tutor,
+            }
+        }
+        PendingDecision::WhirTarget { x_value, .. }
+        | PendingDecision::ReshapeTarget { x_value, .. } => {
+            profile.is_artifact && profile.mana_value <= *x_value
+        }
+        PendingDecision::TransmuteTarget { .. } => profile.is_artifact,
+        PendingDecision::BayTarget {
+            sacrificed_mana_value,
+            ..
+        } => sacrificed_mana_value
+            .checked_add(1)
+            .is_some_and(|target_mana_value| {
+                profile.is_artifact && profile.mana_value == target_mana_value
+            }),
+        _ => false,
     }
 }
 
-fn choose_tutor_target<D: CardDatabase>(
+fn choose_transmute_sacrifice<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    canonical: CanonicalObjectId,
+) -> Result<Transition, RuleError> {
+    if state.window != Window::Resolving {
+        return Err(RuleError::SearchDecisionMismatch);
+    }
+    let PendingDecision::TransmuteSacrifice { source } = state.pending.clone() else {
+        return Err(RuleError::SearchDecisionMismatch);
+    };
+    let artifact = resolve_canonical_object(state, canonical)?
+        .ok_or(RuleError::MissingCanonicalPermanent(canonical))?;
+    let sacrificed = validate_sacrifice_artifact(state, cards, artifact)?;
+
+    sacrifice_artifact(state, artifact)?;
+    stage_parameterized_search(
+        state,
+        cards,
+        PendingDecision::TransmuteTarget {
+            source,
+            sacrificed_mana_value: sacrificed.mana_value,
+        },
+    )
+}
+
+fn choose_search_target<D: CardDatabase>(
     state: &mut TrueState,
     cards: &D,
     target: Option<CardDefId>,
     rng: GameRngContext,
 ) -> Result<Transition, RuleError> {
     if state.window != Window::PostObservation {
-        return Err(RuleError::NoTutorDecisionPending);
+        return Err(RuleError::SearchDecisionMismatch);
     }
-    let PendingDecision::TutorTarget { source } = state.pending.clone() else {
-        return Err(RuleError::NoTutorDecisionPending);
-    };
-    let profile = card_profile(cards, source.card)?;
-    let kind = profile
-        .simple_tutor
-        .ok_or(RuleError::UnsupportedCardMechanic(source.card))?;
+    let pending = state.pending.clone();
+    if !matches!(
+        pending,
+        PendingDecision::TutorTarget { .. }
+            | PendingDecision::WhirTarget { .. }
+            | PendingDecision::ReshapeTarget { .. }
+            | PendingDecision::TransmuteTarget { .. }
+            | PendingDecision::BayTarget { .. }
+    ) {
+        return Err(RuleError::SearchDecisionMismatch);
+    }
 
-    let candidates = simple_tutor_candidates(state, cards, kind);
+    let candidates = pending_search_candidates(state, cards, &pending);
     if let Some(target) = target
         && candidates.binary_search(&target).is_err()
     {
-        return Err(RuleError::InvalidTutorTarget(target));
+        return Err(RuleError::InvalidSearchTarget(target));
     }
 
+    let source = pending
+        .source()
+        .ok_or(RuleError::SearchDecisionMismatch)?;
+    let shuffled_remainder = consume_shared_search_shuffle(state, target, rng)?;
+
+    match pending {
+        PendingDecision::TutorTarget { .. } => {
+            let profile = card_profile(cards, source.card)?;
+            let kind = profile
+                .simple_tutor
+                .ok_or(RuleError::UnsupportedCardMechanic(source.card))?;
+            complete_simple_tutor(state, cards, source, kind, target, shuffled_remainder)
+        }
+        PendingDecision::WhirTarget { .. }
+        | PendingDecision::ReshapeTarget { .. }
+        | PendingDecision::BayTarget { .. } => complete_battlefield_search(
+            state,
+            cards,
+            source,
+            target,
+            shuffled_remainder,
+        ),
+        PendingDecision::TransmuteTarget {
+            sacrificed_mana_value,
+            ..
+        } => {
+            state.library = TrueLibrary::unknown(shuffled_remainder);
+            let Some(target) = target else {
+                state.pending = PendingDecision::None;
+                state.window = Window::Priority;
+                return Ok(Transition {
+                    observations: vec![RulesObservation::SearchCompleted {
+                        source: source.card,
+                        target: None,
+                        destination: SearchDestination::Battlefield,
+                    }],
+                });
+            };
+            let target_profile = card_profile(cards, target)?;
+            if target_profile.mana_value <= sacrificed_mana_value {
+                let entered = put_card_onto_battlefield(state, cards, target)?;
+                state.pending = PendingDecision::None;
+                state.window = Window::Priority;
+                Ok(Transition {
+                    observations: vec![
+                        RulesObservation::SearchCompleted {
+                            source: source.card,
+                            target: Some(target),
+                            destination: SearchDestination::Battlefield,
+                        },
+                        entered,
+                    ],
+                })
+            } else {
+                let difference = target_profile
+                    .mana_value
+                    .checked_sub(sacrificed_mana_value)
+                    .ok_or(RuleError::ArithmeticOverflow)?;
+                state.pending = PendingDecision::TransmuteDifferencePayment {
+                    source,
+                    target,
+                    difference: GenericCost(difference),
+                };
+                state.window = Window::Resolving;
+                Ok(Transition::default())
+            }
+        }
+        _ => Err(RuleError::SearchDecisionMismatch),
+    }
+}
+
+fn complete_simple_tutor<D: CardDatabase>(
+    state: &mut TrueState,
+    _cards: &D,
+    source: SourceRef,
+    kind: SimpleTutorKind,
+    target: Option<CardDefId>,
+    shuffled_remainder: Vec<CardDefId>,
+) -> Result<Transition, RuleError> {
+    match (kind.destination(), target) {
+        (SearchDestination::Hand, Some(target)) => {
+            state.library = TrueLibrary::unknown(shuffled_remainder);
+            state.hand.insert(target);
+        }
+        (SearchDestination::Hand, None) => {
+            state.library = TrueLibrary::unknown(shuffled_remainder);
+        }
+        (SearchDestination::LibraryTop, Some(target)) => {
+            let mut library = Vec::with_capacity(shuffled_remainder.len() + 1);
+            library.push(target);
+            library.extend(shuffled_remainder);
+            state.library = TrueLibrary::new(
+                library,
+                LibraryKnowledge {
+                    known_top: 1,
+                    known_bottom: 0,
+                },
+            )?;
+        }
+        (SearchDestination::LibraryTop, None) => {
+            state.library = TrueLibrary::unknown(shuffled_remainder);
+        }
+        (SearchDestination::Battlefield | SearchDestination::Graveyard, _) => {
+            return Err(RuleError::SearchDecisionMismatch);
+        }
+    }
+
+    state.pending = PendingDecision::None;
+    state.window = Window::Priority;
+    Ok(Transition {
+        observations: vec![RulesObservation::SearchCompleted {
+            source: source.card,
+            target,
+            destination: kind.destination(),
+        }],
+    })
+}
+
+fn complete_battlefield_search<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: SourceRef,
+    target: Option<CardDefId>,
+    shuffled_remainder: Vec<CardDefId>,
+) -> Result<Transition, RuleError> {
+    state.library = TrueLibrary::unknown(shuffled_remainder);
+    state.pending = PendingDecision::None;
+    state.window = Window::Priority;
+    let mut observations = vec![RulesObservation::SearchCompleted {
+        source: source.card,
+        target,
+        destination: SearchDestination::Battlefield,
+    }];
+    if let Some(target) = target {
+        observations.push(put_card_onto_battlefield(state, cards, target)?);
+    }
+    Ok(Transition { observations })
+}
+
+fn pay_transmute_difference<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    payment: Option<ManaPayment>,
+) -> Result<Transition, RuleError> {
+    if state.window != Window::Resolving {
+        return Err(RuleError::NoTransmutePaymentPending);
+    }
+    let PendingDecision::TransmuteDifferencePayment {
+        source,
+        target,
+        difference,
+    } = state.pending.clone()
+    else {
+        return Err(RuleError::NoTransmutePaymentPending);
+    };
+
+    let destination;
+    let mut observations = Vec::new();
+    if let Some(payment) = payment {
+        let cost = ManaCost {
+            generic: difference.0,
+            ..ManaCost::default()
+        };
+        validate_payment(state.mana, payment, cost)?;
+        let object_id = next_object_id(state)?;
+        spend_payment(&mut state.mana, payment);
+        let entered = put_card_onto_battlefield_with_id(state, cards, target, object_id)?;
+        destination = SearchDestination::Battlefield;
+        observations.push(entered);
+    } else {
+        state.graveyard.insert(target);
+        destination = SearchDestination::Graveyard;
+    }
+
+    state.pending = PendingDecision::None;
+    state.window = Window::Priority;
+    observations.insert(
+        0,
+        RulesObservation::SearchCompleted {
+            source: source.card,
+            target: Some(target),
+            destination,
+        },
+    );
+    Ok(Transition { observations })
+}
+
+fn consume_shared_search_shuffle(
+    state: &mut TrueState,
+    target: Option<CardDefId>,
+    rng: GameRngContext,
+) -> Result<Vec<CardDefId>, RuleError> {
     let pre_target_cards = state.library.cards().to_vec();
     let pre_target_fingerprint = library_fingerprint(&pre_target_cards);
     let occurrence = EventOccurrence(state.rng_occurrence_cursor);
@@ -1154,45 +1808,11 @@ fn choose_tutor_target<D: CardDatabase>(
         let position = shared_ranking
             .iter()
             .position(|card| *card == target)
-            .expect("validated tutor target exists in pre-target library");
+            .ok_or(RuleError::InvalidSearchTarget(target))?;
         shared_ranking.remove(position);
     }
     state.rng_occurrence_cursor = next_occurrence;
-
-    match (kind.destination(), target) {
-        (SearchDestination::Hand, Some(target)) => {
-            state.library = TrueLibrary::unknown(shared_ranking);
-            state.hand.insert(target);
-        }
-        (SearchDestination::Hand, None) => {
-            state.library = TrueLibrary::unknown(shared_ranking);
-        }
-        (SearchDestination::LibraryTop, Some(target)) => {
-            let mut library = Vec::with_capacity(shared_ranking.len() + 1);
-            library.push(target);
-            library.extend(shared_ranking);
-            state.library = TrueLibrary::new(
-                library,
-                LibraryKnowledge {
-                    known_top: 1,
-                    known_bottom: 0,
-                },
-            )?;
-        }
-        (SearchDestination::LibraryTop, None) => {
-            state.library = TrueLibrary::unknown(shared_ranking);
-        }
-    }
-
-    state.pending = PendingDecision::None;
-    state.window = Window::Priority;
-    Ok(Transition {
-        observations: vec![RulesObservation::SearchCompleted {
-            source: source.card,
-            target,
-            destination: kind.destination(),
-        }],
-    })
+    Ok(shared_ranking)
 }
 
 fn library_fingerprint(cards: &[CardDefId]) -> [u8; 16] {
@@ -1205,6 +1825,98 @@ fn library_fingerprint(cards: &[CardDefId]) -> [u8; 16] {
     let mut fingerprint = [0_u8; 16];
     fingerprint.copy_from_slice(&digest.as_bytes()[..16]);
     fingerprint
+}
+
+fn validate_sacrifice_artifact<D: CardDatabase>(
+    state: &TrueState,
+    cards: &D,
+    object: ObjectId,
+) -> Result<CardProfile, RuleError> {
+    let permanent = battlefield_permanent(state, object)?;
+    let profile = card_profile(cards, permanent.card)?;
+    if !profile.is_artifact {
+        return Err(RuleError::InvalidSacrifice(object));
+    }
+    if state
+        .battlefield
+        .permanents()
+        .iter()
+        .any(|candidate| candidate.attached_to == Some(object))
+    {
+        return Err(RuleError::AttachedSacrificeDeferred(object));
+    }
+    Ok(profile)
+}
+
+fn sacrifice_artifact(state: &mut TrueState, object: ObjectId) -> Result<(), RuleError> {
+    let mut permanents = state.battlefield.permanents().to_vec();
+    let Some(index) = permanents
+        .iter()
+        .position(|permanent| permanent.object_id == object)
+    else {
+        return Err(RuleError::MissingPermanent(object));
+    };
+    let permanent = permanents.remove(index);
+    state.battlefield = BattlefieldZone::new(permanents);
+    if !permanent.token {
+        state.graveyard.insert(permanent.card);
+    }
+    state.delayed_events.retain(|event| {
+        !matches!(
+            event,
+            DelayedEvent::ChromeCopySacrifice {
+                object: delayed,
+                ..
+            } if *delayed == object
+        )
+    });
+    Ok(())
+}
+
+fn put_card_onto_battlefield<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    card: CardDefId,
+) -> Result<RulesObservation, RuleError> {
+    let object_id = next_object_id(state)?;
+    put_card_onto_battlefield_with_id(state, cards, card, object_id)
+}
+
+fn put_card_onto_battlefield_with_id<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    card: CardDefId,
+    object_id: ObjectId,
+) -> Result<RulesObservation, RuleError> {
+    let profile = card_profile(cards, card)?;
+    insert_permanent(
+        state,
+        PermanentState {
+            object_id,
+            card,
+            face: profile.battlefield_face,
+            tapped: false,
+            summoning_sick: profile.is_creature,
+            token: false,
+            counters: CounterState::default(),
+            mode: PermanentMode::Normal,
+            attached_to: None,
+            granted_ability: None,
+        },
+    );
+    Ok(RulesObservation::PermanentEntered {
+        card,
+        face: profile.battlefield_face,
+        token: false,
+    })
+}
+
+fn ensure_mana_activation_window(state: &TrueState) -> Result<(), RuleError> {
+    match (&state.pending, state.window) {
+        (PendingDecision::None, Window::Priority)
+        | (PendingDecision::TransmuteDifferencePayment { .. }, Window::Resolving) => Ok(()),
+        _ => Err(RuleError::IllegalTiming),
+    }
 }
 
 fn ensure_priority(state: &TrueState) -> Result<(), RuleError> {
@@ -1343,6 +2055,12 @@ mod tests {
     const TARGET_A: CardDefId = CardDefId(10);
     const TARGET_B: CardDefId = CardDefId(11);
     const TARGET_C: CardDefId = CardDefId(12);
+    const WHIR: CardDefId = CardDefId(13);
+    const RESHAPE: CardDefId = CardDefId(14);
+    const TRANSMUTE: CardDefId = CardDefId(15);
+    const BAY: CardDefId = CardDefId(16);
+    const ARTIFACT_MV2: CardDefId = CardDefId(17);
+    const ARTIFACT_MV3: CardDefId = CardDefId(18);
 
     #[derive(Default)]
     struct TestCards {
@@ -1493,6 +2211,87 @@ mod tests {
                     },
                 );
             }
+            cards.profiles.insert(
+                WHIR,
+                CardProfile {
+                    card: WHIR,
+                    mana_cost: Some(ManaCost {
+                        blue: 3,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 3,
+                    role: R2CardRole::SearchSpell,
+                    special_search: SpecialSearchKind::Whir,
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                RESHAPE,
+                CardProfile {
+                    card: RESHAPE,
+                    mana_cost: Some(ManaCost {
+                        blue: 2,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 2,
+                    role: R2CardRole::SearchSpell,
+                    special_search: SpecialSearchKind::Reshape,
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                TRANSMUTE,
+                CardProfile {
+                    card: TRANSMUTE,
+                    mana_cost: Some(ManaCost {
+                        blue: 2,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 2,
+                    role: R2CardRole::SearchSpell,
+                    special_search: SpecialSearchKind::TransmuteArtifact,
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                BAY,
+                CardProfile {
+                    card: BAY,
+                    mana_cost: Some(ManaCost {
+                        blue: 1,
+                        generic: 2,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 3,
+                    role: R2CardRole::ArtifactPermanent,
+                    battlefield_face: CardFace::Front,
+                    special_search: SpecialSearchKind::RepurposingBay,
+                    is_artifact: true,
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                ARTIFACT_MV2,
+                CardProfile {
+                    card: ARTIFACT_MV2,
+                    mana_value: 2,
+                    role: R2CardRole::ArtifactPermanent,
+                    battlefield_face: CardFace::Front,
+                    is_artifact: true,
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                ARTIFACT_MV3,
+                CardProfile {
+                    card: ARTIFACT_MV3,
+                    mana_value: 3,
+                    role: R2CardRole::ArtifactPermanent,
+                    battlefield_face: CardFace::Front,
+                    is_artifact: true,
+                    ..CardProfile::default()
+                },
+            );
             cards
         }
     }
@@ -1982,16 +2781,16 @@ mod tests {
         assert_eq!(
             legal_contingent_actions(&left_info, &cards),
             vec![
-                Action::ChooseTutorTarget {
+                Action::ChooseSearchTarget {
                     target: Some(TARGET_A)
                 },
-                Action::ChooseTutorTarget {
+                Action::ChooseSearchTarget {
                     target: Some(TARGET_B)
                 },
-                Action::ChooseTutorTarget {
+                Action::ChooseSearchTarget {
                     target: Some(TARGET_C)
                 },
-                Action::ChooseTutorTarget { target: None },
+                Action::ChooseSearchTarget { target: None },
             ]
         );
     }
@@ -2037,7 +2836,7 @@ mod tests {
         apply_action_with_rng(
             &mut choose_a,
             &cards,
-            Action::ChooseTutorTarget {
+            Action::ChooseSearchTarget {
                 target: Some(TARGET_A),
             },
             rng,
@@ -2046,7 +2845,7 @@ mod tests {
         apply_action_with_rng(
             &mut choose_b,
             &cards,
-            Action::ChooseTutorTarget {
+            Action::ChooseSearchTarget {
                 target: Some(TARGET_B),
             },
             rng,
@@ -2110,12 +2909,12 @@ mod tests {
         let info = urza_info::observe(&state).unwrap();
         assert_eq!(
             legal_contingent_actions(&info, &cards),
-            vec![Action::ChooseTutorTarget { target: None }]
+            vec![Action::ChooseSearchTarget { target: None }]
         );
         apply_action_with_rng(
             &mut state,
             &cards,
-            Action::ChooseTutorTarget { target: None },
+            Action::ChooseSearchTarget { target: None },
             GameRngContext {
                 root: RootSeed::from_u64(8),
                 world: WorldId(0),
@@ -2192,4 +2991,325 @@ mod tests {
             ]
         );
     }
+
+    fn artifact_permanent(object: u32, card: CardDefId) -> PermanentState {
+        PermanentState {
+            object_id: ObjectId(object),
+            card,
+            face: CardFace::Front,
+            tapped: false,
+            summoning_sick: false,
+            token: false,
+            counters: CounterState::default(),
+            mode: PermanentMode::Normal,
+            attached_to: None,
+            granted_ability: None,
+        }
+    }
+
+    #[test]
+    fn whir_commits_x_and_improvise_before_search_observation() {
+        let cards = TestCards::r3();
+        let mut state = TrueState {
+            turn: 1,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![ARTIFACT_MV2, ARTIFACT_MV3, TARGET_A]),
+            hand: CardZone::new(vec![WHIR]),
+            battlefield: BattlefieldZone::new(vec![
+                artifact_permanent(1, KEY),
+                artifact_permanent(2, SOL_RING),
+            ]),
+            mana: ManaPool {
+                blue: 3,
+                ..ManaPool::default()
+            },
+            ..TrueState::default()
+        };
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::CastWhir {
+                card: WHIR,
+                x_value: 2,
+                payment: ManaPayment {
+                    blue: 3,
+                    ..ManaPayment::default()
+                },
+                improvise_sources: vec![ObjectId(1), ObjectId(2)],
+            },
+        )
+        .unwrap();
+        assert!(state.battlefield.get(ObjectId(1)).unwrap().tapped);
+        assert!(state.battlefield.get(ObjectId(2)).unwrap().tapped);
+        assert!(matches!(
+            state.stack.last(),
+            Some(StackObject::Spell {
+                card: WHIR,
+                x_value: Some(2),
+                ..
+            })
+        ));
+
+        let observation = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            observation.observations,
+            vec![RulesObservation::SearchAvailable {
+                source: WHIR,
+                candidates: vec![ARTIFACT_MV2],
+                may_fail: true,
+            }]
+        );
+        assert!(matches!(
+            state.pending,
+            PendingDecision::WhirTarget { x_value: 2, .. }
+        ));
+    }
+
+    #[test]
+    fn reshape_sacrifices_as_casting_cost_then_stages_mv_bounded_search() {
+        let cards = TestCards::r3();
+        let mut state = TrueState {
+            turn: 1,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![ARTIFACT_MV2, ARTIFACT_MV3]),
+            hand: CardZone::new(vec![RESHAPE]),
+            battlefield: BattlefieldZone::new(vec![artifact_permanent(1, KEY)]),
+            mana: ManaPool {
+                blue: 2,
+                colorless: 2,
+                ..ManaPool::default()
+            },
+            ..TrueState::default()
+        };
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::CastReshape {
+                card: RESHAPE,
+                x_value: 2,
+                sacrifice: ObjectId(1),
+                payment: ManaPayment {
+                    blue: 2,
+                    colorless: 2,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+        assert!(state.battlefield.get(ObjectId(1)).is_none());
+        assert_eq!(state.graveyard.cards(), &[KEY]);
+
+        let transition = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            transition.observations,
+            vec![RulesObservation::SearchAvailable {
+                source: RESHAPE,
+                candidates: vec![ARTIFACT_MV2],
+                may_fail: true,
+            }]
+        );
+    }
+
+    #[test]
+    fn transmute_stages_sacrifice_search_and_difference_payment_with_mana_abilities() {
+        let cards = TestCards::r3();
+        let mut state = TrueState {
+            turn: 1,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![ARTIFACT_MV3, TARGET_A]),
+            hand: CardZone::new(vec![TRANSMUTE]),
+            battlefield: BattlefieldZone::new(vec![
+                artifact_permanent(1, KEY),
+                artifact_permanent(2, SOL_RING),
+            ]),
+            mana: ManaPool {
+                blue: 2,
+                ..ManaPool::default()
+            },
+            ..TrueState::default()
+        };
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::CastFromHand {
+                card: TRANSMUTE,
+                payment: ManaPayment {
+                    blue: 2,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert!(matches!(
+            state.pending,
+            PendingDecision::TransmuteSacrifice { .. }
+        ));
+        assert_eq!(state.window, Window::Resolving);
+
+        let info = urza_info::observe(&state).unwrap();
+        let sacrifice_action = legal_contingent_actions(&info, &cards)
+            .into_iter()
+            .find(|action| {
+                matches!(
+                    action,
+                    Action::ChooseTransmuteSacrifice { artifact }
+                        if *artifact == info
+                            .battlefield
+                            .iter()
+                            .find(|permanent| permanent.card == KEY)
+                            .unwrap()
+                            .canonical_id
+                )
+            })
+            .unwrap();
+        apply_action(&mut state, &cards, sacrifice_action).unwrap();
+        assert!(matches!(
+            state.pending,
+            PendingDecision::TransmuteTarget {
+                sacrificed_mana_value: 0,
+                ..
+            }
+        ));
+
+        apply_action_with_rng(
+            &mut state,
+            &cards,
+            Action::ChooseSearchTarget {
+                target: Some(ARTIFACT_MV3),
+            },
+            GameRngContext {
+                root: RootSeed::from_u64(99),
+                world: WorldId(0),
+                logical_event: LogicalEventId(41),
+            },
+        )
+        .unwrap();
+        assert!(matches!(
+            state.pending,
+            PendingDecision::TransmuteDifferencePayment {
+                target: ARTIFACT_MV3,
+                difference: GenericCost(3),
+                ..
+            }
+        ));
+        assert_eq!(state.window, Window::Resolving);
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateManaAbility {
+                source: ObjectId(2),
+            },
+        )
+        .unwrap();
+        state.mana.colorless += 1;
+        let completion = apply_action(
+            &mut state,
+            &cards,
+            Action::PayTransmuteDifference {
+                payment: Some(ManaPayment {
+                    colorless: 3,
+                    ..ManaPayment::default()
+                }),
+            },
+        )
+        .unwrap();
+        assert!(state
+            .battlefield
+            .permanents()
+            .iter()
+            .any(|permanent| permanent.card == ARTIFACT_MV3));
+        assert_eq!(
+            completion.observations[0],
+            RulesObservation::SearchCompleted {
+                source: TRANSMUTE,
+                target: Some(ARTIFACT_MV3),
+                destination: SearchDestination::Battlefield,
+            }
+        );
+    }
+
+    #[test]
+    fn repurposing_bay_commits_costs_before_exact_mv_plus_one_search() {
+        let cards = TestCards::r3();
+        let mut state = TrueState {
+            turn: 1,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![ARTIFACT_MV2, ARTIFACT_MV3]),
+            battlefield: BattlefieldZone::new(vec![
+                artifact_permanent(1, BAY),
+                artifact_permanent(2, ARTIFACT_MV2),
+            ]),
+            mana: ManaPool {
+                colorless: 2,
+                ..ManaPool::default()
+            },
+            ..TrueState::default()
+        };
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateRepurposingBay {
+                source: ObjectId(1),
+                sacrifice: ObjectId(2),
+                payment: ManaPayment {
+                    colorless: 2,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+        assert!(state.battlefield.get(ObjectId(1)).unwrap().tapped);
+        assert!(state.battlefield.get(ObjectId(2)).is_none());
+        assert!(matches!(
+            state.stack.last(),
+            Some(StackObject::ActivatedAbility {
+                ability: ABILITY_REPURPOSING_BAY_SEARCH,
+                parameter: Some(2),
+                ..
+            })
+        ));
+
+        let transition = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            transition.observations,
+            vec![RulesObservation::SearchAvailable {
+                source: BAY,
+                candidates: vec![ARTIFACT_MV3],
+                may_fail: true,
+            }]
+        );
+
+        let completion = apply_action_with_rng(
+            &mut state,
+            &cards,
+            Action::ChooseSearchTarget {
+                target: Some(ARTIFACT_MV3),
+            },
+            GameRngContext {
+                root: RootSeed::from_u64(7),
+                world: WorldId(1),
+                logical_event: LogicalEventId(12),
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            completion.observations[0],
+            RulesObservation::SearchCompleted {
+                source: BAY,
+                target: Some(ARTIFACT_MV3),
+                destination: SearchDestination::Battlefield,
+            }
+        );
+    }
+
 }

@@ -319,13 +319,13 @@
     },
     {
       "card_id": 63,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R3 primitive active: sorcery-speed {2}, tap, and sacrifice-another-artifact costs are committed before its activated ability resolves; resolution observes exact sacrificed-MV+1 artifact targets, then target/no-find puts the chosen artifact onto the battlefield and shuffles"
     },
     {
       "card_id": 64,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R3 primitive active: X, mana payment, and artifact sacrifice are committed as casting costs; after resolution an MV<=X artifact search is observed, then target/no-find is chosen and the selected artifact is put onto the battlefield using the shared pre-target search shuffle"
     },
     {
       "card_id": 65,
@@ -424,8 +424,8 @@
     },
     {
       "card_id": 84,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R3 primitive active: cast for UU, choose/sacrifice an artifact during resolution before search information, then observe artifact targets; a higher-MV target creates a later exact generic-difference pay-or-decline decision, with mana abilities legal during that payment window"
     },
     {
       "card_id": 85,
@@ -469,8 +469,8 @@
     },
     {
       "card_id": 93,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R3 primitive active: X and improvise sources are committed while casting; after resolution an MV<=X artifact search is observed, then target/no-find is chosen and the selected artifact is put onto the battlefield using the shared pre-target search shuffle"
     },
     {
       "card_id": 94,

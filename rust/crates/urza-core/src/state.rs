@@ -349,6 +349,7 @@ pub enum PendingDecision {
     },
     TransmuteDifferencePayment {
         source: SourceRef,
+        target: CardDefId,
         difference: GenericCost,
     },
     WhirTarget {
@@ -429,6 +430,7 @@ pub enum StackObject {
     Spell {
         object_id: ObjectId,
         card: CardDefId,
+        x_value: Option<u16>,
     },
     ControlledTrigger {
         source: SourceRef,
@@ -437,6 +439,7 @@ pub enum StackObject {
     ActivatedAbility {
         source: SourceRef,
         ability: AbilityId,
+        parameter: Option<u16>,
     },
 }
 

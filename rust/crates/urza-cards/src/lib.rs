@@ -533,6 +533,7 @@ impl R2CardDatabase {
                             || card.feature_flags.is_sorcery,
                     },
                     simple_tutor: None,
+                    special_search: urza_rules::SpecialSearchKind::None,
                     is_artifact: card.feature_flags.is_artifact,
                     is_creature: card.feature_flags.is_creature,
                 },
@@ -551,6 +552,7 @@ impl R2CardDatabase {
                 mana_ability: urza_rules::ManaAbility::None,
                 search_classes: urza_rules::SearchClassFlags::default(),
                 simple_tutor: None,
+                special_search: urza_rules::SpecialSearchKind::None,
                 is_artifact: true,
                 is_creature: true,
             },
@@ -636,6 +638,48 @@ impl R3CardDatabase {
             profile.role = role;
             profile.simple_tutor = Some(tutor);
         }
+
+        for (name, kind, base_cost) in [
+            (
+                "Whir of Invention",
+                urza_rules::SpecialSearchKind::Whir,
+                urza_rules::ManaCost {
+                    blue: 3,
+                    ..urza_rules::ManaCost::default()
+                },
+            ),
+            (
+                "Reshape",
+                urza_rules::SpecialSearchKind::Reshape,
+                urza_rules::ManaCost {
+                    blue: 2,
+                    ..urza_rules::ManaCost::default()
+                },
+            ),
+            (
+                "Transmute Artifact",
+                urza_rules::SpecialSearchKind::TransmuteArtifact,
+                urza_rules::ManaCost {
+                    blue: 2,
+                    ..urza_rules::ManaCost::default()
+                },
+            ),
+        ] {
+            let card = card_id_by_name_from_r1(name)?;
+            let profile = cards
+                .get_mut(&card)
+                .ok_or_else(|| CatalogError::Invariant(format!("missing R3 profile for {name}")))?;
+            profile.role = urza_rules::R2CardRole::SearchSpell;
+            profile.special_search = kind;
+            profile.mana_cost = Some(base_cost);
+        }
+
+        let bay = card_id_by_name_from_r1("Repurposing Bay")?;
+        let bay_profile = cards
+            .get_mut(&bay)
+            .ok_or_else(|| CatalogError::Invariant("missing R3 Repurposing Bay profile".to_owned()))?;
+        bay_profile.role = urza_rules::R2CardRole::ArtifactPermanent;
+        bay_profile.special_search = urza_rules::SpecialSearchKind::RepurposingBay;
 
         Ok(Self { cards })
     }
@@ -1132,7 +1176,7 @@ mod tests {
     fn r3_simple_tutor_registry_extends_r2_without_reclassifying_later_mechanics() {
         validate_r3_database().unwrap();
         let r3 = R3CardDatabase::load().unwrap();
-        assert_eq!(r3.supported_active_cards().len(), 25);
+        assert_eq!(r3.supported_active_cards().len(), 29);
 
         let spellseeker = r3.card_id_by_name("Spellseeker").unwrap();
         let merchant = r3.card_id_by_name("Merchant Scroll").unwrap();
@@ -1187,4 +1231,42 @@ mod tests {
             urza_rules::SearchClassFlags::default()
         );
     }
+
+    #[test]
+    fn r3_advanced_search_registry_carries_x_and_activation_mechanics() {
+        let r3 = R3CardDatabase::load().unwrap();
+        for (name, expected) in [
+            ("Whir of Invention", urza_rules::SpecialSearchKind::Whir),
+            ("Reshape", urza_rules::SpecialSearchKind::Reshape),
+            (
+                "Transmute Artifact",
+                urza_rules::SpecialSearchKind::TransmuteArtifact,
+            ),
+            (
+                "Repurposing Bay",
+                urza_rules::SpecialSearchKind::RepurposingBay,
+            ),
+        ] {
+            let card = r3.card_id_by_name(name).unwrap();
+            assert_eq!(r3.profile(card).unwrap().special_search, expected);
+        }
+
+        let whir = r3.card_id_by_name("Whir of Invention").unwrap();
+        assert_eq!(
+            r3.profile(whir).unwrap().mana_cost,
+            Some(urza_rules::ManaCost {
+                blue: 3,
+                ..urza_rules::ManaCost::default()
+            })
+        );
+        let reshape = r3.card_id_by_name("Reshape").unwrap();
+        assert_eq!(
+            r3.profile(reshape).unwrap().mana_cost,
+            Some(urza_rules::ManaCost {
+                blue: 2,
+                ..urza_rules::ManaCost::default()
+            })
+        );
+    }
+
 }
