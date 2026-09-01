@@ -1113,10 +1113,10 @@ fn activate_top_look<D: CardDatabase>(
 ) -> Result<(), RuleError> {
     ensure_priority(state)?;
     ensure_no_pending_decision(state)?;
-    let permanent = battlefield_permanent(state, source)?;
-    let profile = card_profile(cards, permanent.card)?;
+    let card = battlefield_permanent(state, source)?.card;
+    let profile = card_profile(cards, card)?;
     if profile.utility != UtilityKind::SenseisDiviningTop {
-        return Err(RuleError::UnsupportedCardMechanic(permanent.card));
+        return Err(RuleError::UnsupportedCardMechanic(card));
     }
     let cost = ManaCost {
         generic: 1,
@@ -1127,7 +1127,7 @@ fn activate_top_look<D: CardDatabase>(
     state.stack.push(StackObject::ActivatedAbility {
         source: SourceRef {
             object_id: Some(source),
-            card: permanent.card,
+            card,
         },
         ability: ABILITY_TOP_LOOK,
         parameter: None,
@@ -1172,8 +1172,8 @@ fn activate_urza_spin<D: CardDatabase>(
 ) -> Result<(), RuleError> {
     ensure_priority(state)?;
     ensure_no_pending_decision(state)?;
-    let permanent = battlefield_permanent(state, source)?;
-    if permanent.card != cards.commander_card() {
+    let card = battlefield_permanent(state, source)?.card;
+    if card != cards.commander_card() {
         return Err(RuleError::UrzaNotOnBattlefield);
     }
     let cost = ManaCost {
@@ -1185,7 +1185,7 @@ fn activate_urza_spin<D: CardDatabase>(
     state.stack.push(StackObject::ActivatedAbility {
         source: SourceRef {
             object_id: Some(source),
-            card: permanent.card,
+            card,
         },
         ability: ABILITY_URZA_SPIN,
         parameter: None,
