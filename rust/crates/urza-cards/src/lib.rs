@@ -1187,5 +1187,4 @@ mod tests {
             urza_rules::SearchClassFlags::default()
         );
     }
-
 }

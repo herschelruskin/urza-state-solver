@@ -1,13 +1,13 @@
 use serde_json::json;
 use urza_cards::{
-    R2CardDatabase, R3CardDatabase, URZA_CONSTRUCT_TOKEN_CARD_ID, catalog_digest_hex,
-    load_catalog, load_coverage, load_r1_catalog, r1_catalog_digest_hex,
-    validate_catalog_and_coverage, validate_r1_catalog, validate_r2_database, validate_r3_database,
+    R2CardDatabase, R3CardDatabase, URZA_CONSTRUCT_TOKEN_CARD_ID, catalog_digest_hex, load_catalog,
+    load_coverage, load_r1_catalog, r1_catalog_digest_hex, validate_catalog_and_coverage,
+    validate_r1_catalog, validate_r2_database, validate_r3_database,
 };
 use urza_cli::hand25_fixture;
 use urza_core::{MODEL_VERSION, TrueState};
 use urza_rng::RNG_SCHEME_VERSION;
-use urza_rules::{HORIZON_TURN, R2CardRole, R2_RULES_VERSION, RULES_VERSION};
+use urza_rules::{HORIZON_TURN, R2_RULES_VERSION, R2CardRole, RULES_VERSION};
 
 fn main() {
     let command = std::env::args().nth(1).unwrap_or_else(|| "help".to_owned());
@@ -118,7 +118,6 @@ fn run_r2_audit() {
         serde_json::to_string_pretty(&report).expect("serializable R2 audit report")
     );
 }
-
 
 fn run_r3_audit() {
     validate_r3_database().expect("R3 database/coverage invariants");

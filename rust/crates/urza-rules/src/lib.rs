@@ -1932,7 +1932,8 @@ mod tests {
     }
 
     #[test]
-    fn staged_tutor_observation_is_hidden_order_invariant_and_policy_actions_use_information_only() {
+    fn staged_tutor_observation_is_hidden_order_invariant_and_policy_actions_use_information_only()
+    {
         let cards = TestCards::r3();
         let build = |library: Vec<CardDefId>| TrueState {
             turn: 1,
@@ -2003,12 +2004,7 @@ mod tests {
             phase: Phase::PrecombatMain,
             window: Window::Priority,
             library: TrueLibrary::unknown(vec![
-                TARGET_A,
-                KEY,
-                TARGET_B,
-                TARGET_C,
-                ISLAND,
-                SOL_RING,
+                TARGET_A, KEY, TARGET_B, TARGET_C, ISLAND, SOL_RING,
             ]),
             hand: CardZone::new(vec![MYSTICAL]),
             mana: ManaPool {
@@ -2163,11 +2159,13 @@ mod tests {
         .unwrap();
         let transition = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
 
-        assert!(state
-            .battlefield
-            .permanents()
-            .iter()
-            .any(|permanent| permanent.card == SPELLSEEKER));
+        assert!(
+            state
+                .battlefield
+                .permanents()
+                .iter()
+                .any(|permanent| permanent.card == SPELLSEEKER)
+        );
         assert_eq!(state.window, Window::PostObservation);
         assert!(matches!(
             state.pending,
@@ -2194,5 +2192,4 @@ mod tests {
             ]
         );
     }
-
 }
