@@ -148,3 +148,41 @@ Validation:
 - R1 catalog audit: PASS.
 
 This is an R2-start checkpoint, not the R2 acceptance gate. Remaining R2 work includes broadening the supported land/mana and simple-artifact primitive surface, then adding audited deterministic trajectory/parity fixtures before R2 is declared complete.
+
+
+## 2026-09-01 — R2 acceptance gate complete
+
+Classification: RULE/MODEL kernel plus PARITY fixtures. No POLICY implementation and no Python gameplay-logic port.
+
+R2 was broadened from the initial three-card primitive slice to the audited acceptance surface and then closed against the specification's simple deterministic trajectory gate.
+
+Changes:
+- added explicit `CardFace` to permanent state and observation/canonicalization so MDFC back faces are future-relevant state rather than opaque modes;
+- bumped model/information/ValueKey namespaces to R2 schemas and rules to `r2_core_kernel_v2`;
+- generalized land play, entry choices, intrinsic mana abilities, self-damage, and mana payment while retaining typed life/mana state;
+- added the three active MDFC land backs with explicit pay-3-life-or-enter-tapped behavior and blue mana, while leaving their front spells unsupported;
+- added Ancient Tomb, Cephalid Coliseum, Crystal Vein, ordinary blue-producing land primitives, Seat artifact-land identity, and Sol Ring mana;
+- broadened ordinary artifact cast/stack/battlefield-entry primitives only for cards without an automatic entry/replacement rule that R2 would otherwise falsify;
+- retained explicit stack/priority resolution and added typed permanent-entry observations;
+- added automatic opponent-cycle/untap advancement while preserving explicit priority phases;
+- made search observations hidden-order invariant and duplicate-identity collapsed;
+- made horizon failure and mana overflow paths non-mutating where covered;
+- expanded `PRIMITIVE_ACTIVE` coverage to exactly 22 active identities with per-card statements of what remains deferred;
+- added bidirectional R2 profile/coverage validation and an `r2-audit` CI gate;
+- added a real-catalog deterministic acceptance trajectory covering land, mana, artifact cast/stack/resolution, turn advance/natural draw, Urza command-zone cast, Construct entry, and Urza artifact mana.
+
+Accepted Python non-oracle tests were used only as regression witnesses for sequencing expectations (artifact remains on stack until pass/resolution; natural draw is exposed only after committed turn progression). Rust implementation structures and Python gameplay logic were not ported.
+
+Validation:
+- implementation commit: `841b2f32d9054dcaebfaf37b8893e67959f201d6`;
+- GitHub Actions run `33554550014`: PASS;
+- locked dependency graph: PASS;
+- rustfmt: PASS;
+- strict Clippy (`-D warnings`): PASS;
+- workspace/all-target tests: PASS; 50 passed, 0 failed;
+- benchmark compilation: PASS;
+- R0 audit: PASS;
+- R1 catalog audit: PASS;
+- R2 core audit: PASS, reporting 22 supported active identities and horizon 6.
+
+R2 acceptance is closed. R3 search/tutor staging may begin from this checkpoint. R3 remains responsible for simple tutors, Whir, Reshape, Transmute, Bay, Saga III, Tezzeret, Top/scry, and Urza spin permission; R4 remains responsible for broader engine-card interactions and win-catalog coverage.
