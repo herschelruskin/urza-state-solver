@@ -515,10 +515,24 @@ impl R2CardDatabase {
                 urza_rules::CardProfile {
                     card: CardDefId(card.id),
                     mana_cost,
+                    mana_value: card.mana_value,
                     role,
                     battlefield_face,
                     land_entry,
                     mana_ability,
+                    search_classes: urza_rules::SearchClassFlags {
+                        spellseeker: (card.feature_flags.is_instant
+                            || card.feature_flags.is_sorcery)
+                            && card.mana_value <= 2,
+                        // The pinned active deck is mono-blue; every instant
+                        // card in this catalog is blue. If future card-swap
+                        // catalogs break that invariant, pin color metadata
+                        // before extending this index.
+                        merchant_scroll: card.feature_flags.is_instant,
+                        mystical_tutor: card.feature_flags.is_instant
+                            || card.feature_flags.is_sorcery,
+                    },
+                    simple_tutor: None,
                     is_artifact: card.feature_flags.is_artifact,
                     is_creature: card.feature_flags.is_creature,
                 },
@@ -530,10 +544,13 @@ impl R2CardDatabase {
             urza_rules::CardProfile {
                 card: URZA_CONSTRUCT_TOKEN_CARD_ID,
                 mana_cost: None,
+                mana_value: 0,
                 role: urza_rules::R2CardRole::UrzaConstructToken,
                 battlefield_face: CardFace::Front,
                 land_entry: urza_rules::LandEntryRule::None,
                 mana_ability: urza_rules::ManaAbility::None,
+                search_classes: urza_rules::SearchClassFlags::default(),
+                simple_tutor: None,
                 is_artifact: true,
                 is_creature: true,
             },
@@ -584,6 +601,130 @@ impl urza_rules::CardDatabase for R2CardDatabase {
     fn urza_construct_token_card(&self) -> CardDefId {
         URZA_CONSTRUCT_TOKEN_CARD_ID
     }
+}
+
+#[derive(Debug, Clone)]
+pub struct R3CardDatabase {
+    cards: BTreeMap<CardDefId, urza_rules::CardProfile>,
+}
+
+impl R3CardDatabase {
+    pub fn load() -> Result<Self, CatalogError> {
+        let mut cards = R2CardDatabase::load()?.cards;
+
+        for (name, role, tutor) in [
+            (
+                "Spellseeker",
+                urza_rules::R2CardRole::CreaturePermanent,
+                urza_rules::SimpleTutorKind::Spellseeker,
+            ),
+            (
+                "Merchant Scroll",
+                urza_rules::R2CardRole::SearchSpell,
+                urza_rules::SimpleTutorKind::MerchantScroll,
+            ),
+            (
+                "Mystical Tutor",
+                urza_rules::R2CardRole::SearchSpell,
+                urza_rules::SimpleTutorKind::MysticalTutor,
+            ),
+        ] {
+            let card = card_id_by_name_from_r1(name)?;
+            let profile = cards
+                .get_mut(&card)
+                .ok_or_else(|| CatalogError::Invariant(format!("missing R3 profile for {name}")))?;
+            profile.role = role;
+            profile.simple_tutor = Some(tutor);
+        }
+
+        Ok(Self { cards })
+    }
+
+    pub fn profile(&self, card: CardDefId) -> Option<urza_rules::CardProfile> {
+        self.cards.get(&card).copied()
+    }
+
+    pub fn card_id_by_name(&self, name: &str) -> Result<CardDefId, CatalogError> {
+        card_id_by_name_from_r1(name)
+    }
+
+    pub fn supported_active_cards(&self) -> Vec<CardDefId> {
+        self.cards
+            .iter()
+            .filter_map(|(card, profile)| {
+                (card.0 < URZA_CONSTRUCT_TOKEN_CARD_ID.0
+                    && profile.role != urza_rules::R2CardRole::Unsupported)
+                    .then_some(*card)
+            })
+            .collect()
+    }
+}
+
+impl urza_rules::CardDatabase for R3CardDatabase {
+    fn profile(&self, card: CardDefId) -> Option<urza_rules::CardProfile> {
+        self.profile(card)
+    }
+
+    fn commander_card(&self) -> CardDefId {
+        self.cards
+            .values()
+            .find(|profile| profile.role == urza_rules::R2CardRole::UrzaCommander)
+            .map(|profile| profile.card)
+            .expect("validated R3 database contains Urza")
+    }
+
+    fn urza_construct_token_card(&self) -> CardDefId {
+        URZA_CONSTRUCT_TOKEN_CARD_ID
+    }
+}
+
+fn card_id_by_name_from_r1(name: &str) -> Result<CardDefId, CatalogError> {
+    let catalog = load_r1_catalog()?;
+    catalog
+        .cards
+        .iter()
+        .find(|card| card.deck_name == name)
+        .map(|card| CardDefId(card.id))
+        .ok_or_else(|| CatalogError::Invariant(format!("unknown active card name {name}")))
+}
+
+pub fn validate_r3_database() -> Result<(), CatalogError> {
+    let catalog = load_r1_catalog()?;
+    let coverage = load_coverage()?;
+    let database = R3CardDatabase::load()?;
+    let coverage_by_id: BTreeMap<_, _> = coverage
+        .entries
+        .iter()
+        .map(|entry| (entry.card_id, entry.status))
+        .collect();
+
+    for card in &catalog.cards {
+        let profile = database.profile(CardDefId(card.id)).ok_or_else(|| {
+            CatalogError::Invariant(format!("missing R3 profile for {}", card.deck_name))
+        })?;
+        let status = *coverage_by_id.get(&card.id).ok_or_else(|| {
+            CatalogError::Invariant(format!("missing coverage for {}", card.deck_name))
+        })?;
+
+        if profile.role == urza_rules::R2CardRole::Unsupported {
+            if status != CoverageStatus::IntentionallyUnmodeled {
+                return Err(CatalogError::Invariant(format!(
+                    "{} is unsupported by current R3 slice but coverage says {:?}",
+                    card.deck_name, status
+                )));
+            }
+        } else if !matches!(
+            status,
+            CoverageStatus::PrimitiveActive | CoverageStatus::RulesActive
+        ) {
+            return Err(CatalogError::Invariant(format!(
+                "{} has an R3-visible rules primitive but coverage says {:?}",
+                card.deck_name, status
+            )));
+        }
+    }
+
+    Ok(())
 }
 
 fn r2_primitive_shape(
@@ -679,17 +820,12 @@ pub fn validate_r2_database() -> Result<(), CatalogError> {
             CatalogError::Invariant(format!("missing coverage for {}", card.deck_name))
         })?;
 
-        if profile.role == urza_rules::R2CardRole::Unsupported {
-            if status != CoverageStatus::IntentionallyUnmodeled {
-                return Err(CatalogError::Invariant(format!(
-                    "{} is unsupported by R2 but coverage says {:?}",
-                    card.deck_name, status
-                )));
-            }
-        } else if !matches!(
-            status,
-            CoverageStatus::PrimitiveActive | CoverageStatus::RulesActive
-        ) {
+        if profile.role != urza_rules::R2CardRole::Unsupported
+            && !matches!(
+                status,
+                CoverageStatus::PrimitiveActive | CoverageStatus::RulesActive
+            )
+        {
             return Err(CatalogError::Invariant(format!(
                 "{} has an R2 primitive but coverage says {:?}",
                 card.deck_name, status
@@ -730,8 +866,8 @@ mod tests {
         Window,
     };
     use urza_rules::{
-        Action, LandEntryChoice, ManaPayment, R2CardRole, RulesObservation, advance_automatic,
-        apply_action,
+        Action, LandEntryChoice, ManaPayment, R2CardRole, RulesObservation, SimpleTutorKind,
+        advance_automatic, apply_action,
     };
 
     fn object_for(state: &TrueState, card: CardDefId) -> ObjectId {
@@ -991,4 +1127,65 @@ mod tests {
             assert_eq!(card.id as usize, expected);
         }
     }
+
+    #[test]
+    fn r3_simple_tutor_registry_extends_r2_without_reclassifying_later_mechanics() {
+        validate_r3_database().unwrap();
+        let r3 = R3CardDatabase::load().unwrap();
+        assert_eq!(r3.supported_active_cards().len(), 25);
+
+        let spellseeker = r3.card_id_by_name("Spellseeker").unwrap();
+        let merchant = r3.card_id_by_name("Merchant Scroll").unwrap();
+        let mystical = r3.card_id_by_name("Mystical Tutor").unwrap();
+
+        assert_eq!(
+            r3.profile(spellseeker).unwrap().simple_tutor,
+            Some(SimpleTutorKind::Spellseeker)
+        );
+        assert_eq!(
+            r3.profile(spellseeker).unwrap().role,
+            R2CardRole::CreaturePermanent
+        );
+        assert_eq!(
+            r3.profile(merchant).unwrap().simple_tutor,
+            Some(SimpleTutorKind::MerchantScroll)
+        );
+        assert_eq!(r3.profile(merchant).unwrap().role, R2CardRole::SearchSpell);
+        assert_eq!(
+            r3.profile(mystical).unwrap().simple_tutor,
+            Some(SimpleTutorKind::MysticalTutor)
+        );
+        assert_eq!(r3.profile(mystical).unwrap().role, R2CardRole::SearchSpell);
+    }
+
+    #[test]
+    fn pinned_search_class_indexes_capture_simple_tutor_constraints() {
+        let r3 = R3CardDatabase::load().unwrap();
+        let pact = r3.card_id_by_name("Pact of Negation").unwrap();
+        let whir = r3.card_id_by_name("Whir of Invention").unwrap();
+        let merchant = r3.card_id_by_name("Merchant Scroll").unwrap();
+        let sol_ring = r3.card_id_by_name("Sol Ring").unwrap();
+
+        let pact_profile = r3.profile(pact).unwrap();
+        assert!(pact_profile.search_classes.spellseeker);
+        assert!(pact_profile.search_classes.merchant_scroll);
+        assert!(pact_profile.search_classes.mystical_tutor);
+
+        let whir_profile = r3.profile(whir).unwrap();
+        assert!(!whir_profile.search_classes.spellseeker);
+        assert!(whir_profile.search_classes.merchant_scroll);
+        assert!(whir_profile.search_classes.mystical_tutor);
+
+        let merchant_profile = r3.profile(merchant).unwrap();
+        assert!(merchant_profile.search_classes.spellseeker);
+        assert!(!merchant_profile.search_classes.merchant_scroll);
+        assert!(merchant_profile.search_classes.mystical_tutor);
+
+        let sol_ring_profile = r3.profile(sol_ring).unwrap();
+        assert_eq!(
+            sol_ring_profile.search_classes,
+            urza_rules::SearchClassFlags::default()
+        );
+    }
+
 }

@@ -47,3 +47,6 @@ jobs:
       - name: R2 core audit
         working-directory: rust
         run: cargo run --locked -p urza-cli -- r2-audit
+      - name: R3 staged-search audit
+        working-directory: rust
+        run: cargo run --locked -p urza-cli -- r3-audit

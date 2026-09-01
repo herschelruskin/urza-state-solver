@@ -3,16 +3,19 @@
 use thiserror::Error;
 use urza_core::{
     BattlefieldZone, CardDefId, CardFace, CommanderZone, CounterState, LibraryKnowledge, ManaPool,
-    ObjectId, PendingDecision, PermanentMode, PermanentState, Phase, StackObject,
+    ObjectId, PendingDecision, PermanentMode, PermanentState, Phase, SourceRef, StackObject,
     StateValidationError, TrueLibrary, TrueState, Window,
 };
+use urza_info::{InformationState, ObservedPendingDecision};
 use urza_rng::{
     EventOccurrence, EventType, LogicalEventId, RngCoordinate, RngDomain, RootSeed, WorldId,
 };
 
-pub const RULES_PHASE: &str = "R2";
-pub const RULES_VERSION: &str = "r2_core_kernel_v2";
+pub const RULES_PHASE: &str = "R3";
+pub const R2_RULES_VERSION: &str = "r2_core_kernel_v2";
+pub const RULES_VERSION: &str = "r3_search_staging_v1";
 pub const HORIZON_TURN: u8 = 6;
+pub const RNG_EVENT_SEARCH_SHUFFLE: EventType = EventType(0x0301);
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ManaCost {
@@ -233,6 +236,8 @@ pub enum R2CardRole {
     Unsupported,
     Land,
     ArtifactPermanent,
+    CreaturePermanent,
+    SearchSpell,
     UrzaCommander,
     UrzaConstructToken,
 }
@@ -270,13 +275,49 @@ pub enum ManaAbility {
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
+pub struct SearchClassFlags {
+    pub spellseeker: bool,
+    pub merchant_scroll: bool,
+    pub mystical_tutor: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum SimpleTutorKind {
+    Spellseeker,
+    MerchantScroll,
+    MysticalTutor,
+}
+
+impl SimpleTutorKind {
+    fn destination(self) -> SearchDestination {
+        match self {
+            Self::Spellseeker | Self::MerchantScroll => SearchDestination::Hand,
+            Self::MysticalTutor => SearchDestination::LibraryTop,
+        }
+    }
+
+    fn instant_speed(self) -> bool {
+        matches!(self, Self::MysticalTutor)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum SearchDestination {
+    Hand,
+    LibraryTop,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
 pub struct CardProfile {
     pub card: CardDefId,
     pub mana_cost: Option<ManaCost>,
+    pub mana_value: u16,
     pub role: R2CardRole,
     pub battlefield_face: CardFace,
     pub land_entry: LandEntryRule,
     pub mana_ability: ManaAbility,
+    pub search_classes: SearchClassFlags,
+    pub simple_tutor: Option<SimpleTutorKind>,
     pub is_artifact: bool,
     pub is_creature: bool,
 }
@@ -285,6 +326,13 @@ pub trait CardDatabase {
     fn profile(&self, card: CardDefId) -> Option<CardProfile>;
     fn commander_card(&self) -> CardDefId;
     fn urza_construct_token_card(&self) -> CardDefId;
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct GameRngContext {
+    pub root: RootSeed,
+    pub world: WorldId,
+    pub logical_event: LogicalEventId,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -307,6 +355,9 @@ pub enum Action {
     CastCommander {
         payment: ManaPayment,
     },
+    ChooseTutorTarget {
+        target: Option<CardDefId>,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -316,6 +367,16 @@ pub enum RulesObservation {
         card: CardDefId,
         face: CardFace,
         token: bool,
+    },
+    SearchAvailable {
+        source: CardDefId,
+        candidates: Vec<CardDefId>,
+        may_fail: bool,
+    },
+    SearchCompleted {
+        source: CardDefId,
+        target: Option<CardDefId>,
+        destination: SearchDestination,
     },
 }
 
@@ -337,9 +398,9 @@ pub enum RuleError {
     InvalidState(#[from] StateValidationError),
     #[error("unknown card definition {0:?}")]
     UnknownCard(CardDefId),
-    #[error("R2 does not yet support the intrinsic mechanic for card {0:?}")]
+    #[error("current milestone does not yet support the intrinsic mechanic for card {0:?}")]
     UnsupportedCardMechanic(CardDefId),
-    #[error("R2 cannot resolve this stack object yet")]
+    #[error("current milestone cannot resolve this stack object yet")]
     UnsupportedStackObject,
     #[error("action is not legal in the current phase/window")]
     IllegalTiming,
@@ -379,12 +440,36 @@ pub enum RuleError {
     RngOccurrenceExhausted,
     #[error("numeric rules state overflow")]
     ArithmeticOverflow,
+    #[error("this action requires an explicit game RNG context")]
+    MissingGameRngContext,
+    #[error("no simple-tutor target decision is pending")]
+    NoTutorDecisionPending,
+    #[error("card {0:?} is not a legal target for the pending tutor")]
+    InvalidTutorTarget(CardDefId),
 }
 
 pub fn apply_action<D: CardDatabase>(
     state: &mut TrueState,
     cards: &D,
     action: Action,
+) -> Result<Transition, RuleError> {
+    apply_action_internal(state, cards, action, None)
+}
+
+pub fn apply_action_with_rng<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    action: Action,
+    rng: GameRngContext,
+) -> Result<Transition, RuleError> {
+    apply_action_internal(state, cards, action, Some(rng))
+}
+
+fn apply_action_internal<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    action: Action,
+    rng: Option<GameRngContext>,
 ) -> Result<Transition, RuleError> {
     state.validate()?;
     let transition = match action {
@@ -406,9 +491,51 @@ pub fn apply_action<D: CardDatabase>(
             cast_commander(state, cards, payment)?;
             Transition::default()
         }
+        Action::ChooseTutorTarget { target } => choose_tutor_target(
+            state,
+            cards,
+            target,
+            rng.ok_or(RuleError::MissingGameRngContext)?,
+        )?,
     };
     state.validate()?;
     Ok(transition)
+}
+
+pub fn legal_contingent_actions<D: CardDatabase>(
+    information: &InformationState,
+    cards: &D,
+) -> Vec<Action> {
+    let ObservedPendingDecision::TutorTarget { source } = &information.pending else {
+        return Vec::new();
+    };
+    let Some(profile) = cards.profile(source.card) else {
+        return Vec::new();
+    };
+    let Some(kind) = profile.simple_tutor else {
+        return Vec::new();
+    };
+
+    let mut library_cards = Vec::new();
+    for count in &information.library.remaining_counts {
+        if count.count > 0 {
+            library_cards.push(count.card);
+        }
+    }
+    library_cards.extend(information.library.known_top.iter().copied());
+    library_cards.extend(information.library.known_bottom.iter().copied());
+    library_cards.sort_unstable();
+    library_cards.dedup();
+
+    let mut actions: Vec<_> = library_cards
+        .into_iter()
+        .filter(|card| simple_tutor_eligible(cards, kind, *card))
+        .map(|target| Action::ChooseTutorTarget {
+            target: Some(target),
+        })
+        .collect();
+    actions.push(Action::ChooseTutorTarget { target: None });
+    actions
 }
 
 pub fn advance_phase(state: &mut TrueState) -> Result<Transition, RuleError> {
@@ -732,14 +859,25 @@ fn cast_from_hand<D: CardDatabase>(
     card: CardDefId,
     payment: ManaPayment,
 ) -> Result<(), RuleError> {
-    ensure_sorcery_window(state)?;
     let profile = card_profile(cards, card)?;
-    if !matches!(
-        profile.role,
-        R2CardRole::ArtifactPermanent | R2CardRole::UrzaCommander
-    ) {
-        return Err(RuleError::UnsupportedCardMechanic(card));
+    match profile.role {
+        R2CardRole::SearchSpell => {
+            let kind = profile
+                .simple_tutor
+                .ok_or(RuleError::UnsupportedCardMechanic(card))?;
+            if kind.instant_speed() {
+                ensure_priority(state)?;
+                ensure_no_pending_decision(state)?;
+            } else {
+                ensure_sorcery_window(state)?;
+            }
+        }
+        R2CardRole::ArtifactPermanent
+        | R2CardRole::CreaturePermanent
+        | R2CardRole::UrzaCommander => ensure_sorcery_window(state)?,
+        _ => return Err(RuleError::UnsupportedCardMechanic(card)),
     }
+
     if !state.hand.cards().contains(&card) {
         return Err(RuleError::CardNotInHand(card));
     }
@@ -822,9 +960,30 @@ fn resolve_top_stack_object<D: CardDatabase>(
     let profile = card_profile(cards, card)?;
     if !matches!(
         profile.role,
-        R2CardRole::ArtifactPermanent | R2CardRole::UrzaCommander
+        R2CardRole::ArtifactPermanent
+            | R2CardRole::CreaturePermanent
+            | R2CardRole::SearchSpell
+            | R2CardRole::UrzaCommander
     ) {
         return Err(RuleError::UnsupportedCardMechanic(card));
+    }
+
+    if profile.role == R2CardRole::SearchSpell {
+        let kind = profile
+            .simple_tutor
+            .ok_or(RuleError::UnsupportedCardMechanic(card))?;
+        state.stack.pop();
+        state.window = Window::Resolving;
+        state.graveyard.insert(card);
+        return stage_simple_tutor(
+            state,
+            cards,
+            SourceRef {
+                object_id: None,
+                card,
+            },
+            kind,
+        );
     }
 
     let construct = if profile.role == R2CardRole::UrzaCommander {
@@ -890,8 +1049,162 @@ fn resolve_top_stack_object<D: CardDatabase>(
         });
     }
 
-    state.window = Window::Priority;
+    if let Some(kind) = profile.simple_tutor {
+        let staged = stage_simple_tutor(
+            state,
+            cards,
+            SourceRef {
+                object_id: Some(object_id),
+                card,
+            },
+            kind,
+        )?;
+        observations.extend(staged.observations);
+    } else {
+        state.window = Window::Priority;
+    }
+
     Ok(Transition { observations })
+}
+
+fn stage_simple_tutor<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: SourceRef,
+    kind: SimpleTutorKind,
+) -> Result<Transition, RuleError> {
+    let candidates = simple_tutor_candidates(state, cards, kind);
+    state.pending = PendingDecision::TutorTarget { source };
+    state.window = Window::PostObservation;
+    Ok(Transition {
+        observations: vec![RulesObservation::SearchAvailable {
+            source: source.card,
+            candidates,
+            may_fail: true,
+        }],
+    })
+}
+
+fn simple_tutor_candidates<D: CardDatabase>(
+    state: &TrueState,
+    cards: &D,
+    kind: SimpleTutorKind,
+) -> Vec<CardDefId> {
+    observe_library_search(state, |card| simple_tutor_eligible(cards, kind, card)).candidates
+}
+
+fn simple_tutor_eligible<D: CardDatabase>(
+    cards: &D,
+    kind: SimpleTutorKind,
+    card: CardDefId,
+) -> bool {
+    let Some(profile) = cards.profile(card) else {
+        return false;
+    };
+    match kind {
+        SimpleTutorKind::Spellseeker => profile.search_classes.spellseeker,
+        SimpleTutorKind::MerchantScroll => profile.search_classes.merchant_scroll,
+        SimpleTutorKind::MysticalTutor => profile.search_classes.mystical_tutor,
+    }
+}
+
+fn choose_tutor_target<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    target: Option<CardDefId>,
+    rng: GameRngContext,
+) -> Result<Transition, RuleError> {
+    if state.window != Window::PostObservation {
+        return Err(RuleError::NoTutorDecisionPending);
+    }
+    let PendingDecision::TutorTarget { source } = state.pending.clone() else {
+        return Err(RuleError::NoTutorDecisionPending);
+    };
+    let profile = card_profile(cards, source.card)?;
+    let kind = profile
+        .simple_tutor
+        .ok_or(RuleError::UnsupportedCardMechanic(source.card))?;
+
+    let candidates = simple_tutor_candidates(state, cards, kind);
+    if let Some(target) = target {
+        if candidates.binary_search(&target).is_err() {
+            return Err(RuleError::InvalidTutorTarget(target));
+        }
+    }
+
+    let pre_target_cards = state.library.cards().to_vec();
+    let pre_target_fingerprint = library_fingerprint(&pre_target_cards);
+    let occurrence = EventOccurrence(state.rng_occurrence_cursor);
+    let next_occurrence = state
+        .rng_occurrence_cursor
+        .checked_add(1)
+        .ok_or(RuleError::RngOccurrenceExhausted)?;
+    let coordinate = RngCoordinate {
+        domain: RngDomain::Game,
+        world: rng.world,
+        event_type: RNG_EVENT_SEARCH_SHUFFLE,
+        logical_event: rng.logical_event,
+        occurrence,
+        concrete_fingerprint: pre_target_fingerprint,
+    };
+
+    let mut shared_ranking = pre_target_cards;
+    urza_rng::shuffle(&mut shared_ranking, rng.root, coordinate);
+    if let Some(target) = target {
+        let position = shared_ranking
+            .iter()
+            .position(|card| *card == target)
+            .expect("validated tutor target exists in pre-target library");
+        shared_ranking.remove(position);
+    }
+    state.rng_occurrence_cursor = next_occurrence;
+
+    match (kind.destination(), target) {
+        (SearchDestination::Hand, Some(target)) => {
+            state.library = TrueLibrary::unknown(shared_ranking);
+            state.hand.insert(target);
+        }
+        (SearchDestination::Hand, None) => {
+            state.library = TrueLibrary::unknown(shared_ranking);
+        }
+        (SearchDestination::LibraryTop, Some(target)) => {
+            let mut library = Vec::with_capacity(shared_ranking.len() + 1);
+            library.push(target);
+            library.extend(shared_ranking);
+            state.library = TrueLibrary::new(
+                library,
+                LibraryKnowledge {
+                    known_top: 1,
+                    known_bottom: 0,
+                },
+            )?;
+        }
+        (SearchDestination::LibraryTop, None) => {
+            state.library = TrueLibrary::unknown(shared_ranking);
+        }
+    }
+
+    state.pending = PendingDecision::None;
+    state.window = Window::Priority;
+    Ok(Transition {
+        observations: vec![RulesObservation::SearchCompleted {
+            source: source.card,
+            target,
+            destination: kind.destination(),
+        }],
+    })
+}
+
+fn library_fingerprint(cards: &[CardDefId]) -> [u8; 16] {
+    let mut hasher = blake3::Hasher::new();
+    hasher.update(b"r3-search-pre-target-library-v1");
+    for card in cards {
+        hasher.update(&card.0.to_le_bytes());
+    }
+    let digest = hasher.finalize();
+    let mut fingerprint = [0_u8; 16];
+    fingerprint.copy_from_slice(&digest.as_bytes()[..16]);
+    fingerprint
 }
 
 fn ensure_priority(state: &TrueState) -> Result<(), RuleError> {
@@ -1025,6 +1338,11 @@ mod tests {
     const ANCIENT_TOMB: CardDefId = CardDefId(5);
     const MDFC_LAND: CardDefId = CardDefId(6);
     const KEY: CardDefId = CardDefId(7);
+    const MYSTICAL: CardDefId = CardDefId(8);
+    const SPELLSEEKER: CardDefId = CardDefId(9);
+    const TARGET_A: CardDefId = CardDefId(10);
+    const TARGET_B: CardDefId = CardDefId(11);
+    const TARGET_C: CardDefId = CardDefId(12);
 
     #[derive(Default)]
     struct TestCards {
@@ -1123,6 +1441,59 @@ mod tests {
                 },
             );
             Self { profiles }
+        }
+    }
+
+    impl TestCards {
+        fn r3() -> Self {
+            let mut cards = Self::r2();
+            cards.profiles.insert(
+                MYSTICAL,
+                CardProfile {
+                    card: MYSTICAL,
+                    mana_cost: Some(ManaCost {
+                        blue: 1,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 1,
+                    role: R2CardRole::SearchSpell,
+                    simple_tutor: Some(SimpleTutorKind::MysticalTutor),
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                SPELLSEEKER,
+                CardProfile {
+                    card: SPELLSEEKER,
+                    mana_cost: Some(ManaCost {
+                        blue: 1,
+                        generic: 2,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 3,
+                    role: R2CardRole::CreaturePermanent,
+                    battlefield_face: CardFace::Front,
+                    simple_tutor: Some(SimpleTutorKind::Spellseeker),
+                    is_creature: true,
+                    ..CardProfile::default()
+                },
+            );
+            for target in [TARGET_A, TARGET_B, TARGET_C] {
+                cards.profiles.insert(
+                    target,
+                    CardProfile {
+                        card: target,
+                        mana_value: 1,
+                        search_classes: SearchClassFlags {
+                            spellseeker: true,
+                            merchant_scroll: true,
+                            mystical_tutor: true,
+                        },
+                        ..CardProfile::default()
+                    },
+                );
+            }
+            cards
         }
     }
 
@@ -1559,4 +1930,269 @@ mod tests {
         );
         assert_eq!(horizon, before);
     }
+
+    #[test]
+    fn staged_tutor_observation_is_hidden_order_invariant_and_policy_actions_use_information_only() {
+        let cards = TestCards::r3();
+        let build = |library: Vec<CardDefId>| TrueState {
+            turn: 1,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(library),
+            hand: CardZone::new(vec![MYSTICAL]),
+            mana: ManaPool {
+                blue: 1,
+                ..ManaPool::default()
+            },
+            ..TrueState::default()
+        };
+
+        let mut left = build(vec![TARGET_A, KEY, TARGET_B, TARGET_C]);
+        let mut right = build(vec![TARGET_C, TARGET_B, KEY, TARGET_A]);
+
+        for state in [&mut left, &mut right] {
+            apply_action(
+                state,
+                &cards,
+                Action::CastFromHand {
+                    card: MYSTICAL,
+                    payment: ManaPayment {
+                        blue: 1,
+                        ..ManaPayment::default()
+                    },
+                },
+            )
+            .unwrap();
+        }
+        let left_observation = apply_action(&mut left, &cards, Action::PassPriority).unwrap();
+        let right_observation = apply_action(&mut right, &cards, Action::PassPriority).unwrap();
+
+        assert_eq!(left_observation, right_observation);
+        assert_eq!(left.window, Window::PostObservation);
+        assert!(matches!(left.pending, PendingDecision::TutorTarget { .. }));
+
+        let left_info = urza_info::observe(&left).unwrap();
+        let right_info = urza_info::observe(&right).unwrap();
+        assert_eq!(left_info, right_info);
+        assert_eq!(
+            legal_contingent_actions(&left_info, &cards),
+            legal_contingent_actions(&right_info, &cards)
+        );
+        assert_eq!(
+            legal_contingent_actions(&left_info, &cards),
+            vec![
+                Action::ChooseTutorTarget {
+                    target: Some(TARGET_A)
+                },
+                Action::ChooseTutorTarget {
+                    target: Some(TARGET_B)
+                },
+                Action::ChooseTutorTarget {
+                    target: Some(TARGET_C)
+                },
+                Action::ChooseTutorTarget { target: None },
+            ]
+        );
+    }
+
+    #[test]
+    fn tutor_target_branches_delete_from_one_shared_pre_target_shuffle_ranking() {
+        let cards = TestCards::r3();
+        let mut base = TrueState {
+            turn: 1,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![
+                TARGET_A,
+                KEY,
+                TARGET_B,
+                TARGET_C,
+                ISLAND,
+                SOL_RING,
+            ]),
+            hand: CardZone::new(vec![MYSTICAL]),
+            mana: ManaPool {
+                blue: 1,
+                ..ManaPool::default()
+            },
+            ..TrueState::default()
+        };
+        apply_action(
+            &mut base,
+            &cards,
+            Action::CastFromHand {
+                card: MYSTICAL,
+                payment: ManaPayment {
+                    blue: 1,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+        apply_action(&mut base, &cards, Action::PassPriority).unwrap();
+
+        let mut choose_a = base.clone();
+        let mut choose_b = base;
+        let rng = GameRngContext {
+            root: RootSeed::from_u64(31337),
+            world: WorldId(2),
+            logical_event: LogicalEventId(91),
+        };
+        apply_action_with_rng(
+            &mut choose_a,
+            &cards,
+            Action::ChooseTutorTarget {
+                target: Some(TARGET_A),
+            },
+            rng,
+        )
+        .unwrap();
+        apply_action_with_rng(
+            &mut choose_b,
+            &cards,
+            Action::ChooseTutorTarget {
+                target: Some(TARGET_B),
+            },
+            rng,
+        )
+        .unwrap();
+
+        assert_eq!(choose_a.library.known_top(), &[TARGET_A]);
+        assert_eq!(choose_b.library.known_top(), &[TARGET_B]);
+        assert_eq!(choose_a.rng_occurrence_cursor, 1);
+        assert_eq!(choose_b.rng_occurrence_cursor, 1);
+
+        let common_order = |state: &TrueState| {
+            state
+                .library
+                .cards()
+                .iter()
+                .copied()
+                .filter(|card| !matches!(*card, TARGET_A | TARGET_B))
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(common_order(&choose_a), common_order(&choose_b));
+    }
+
+    #[test]
+    fn zero_target_tutor_has_one_forced_no_find_action_and_resolves_without_blocking() {
+        let cards = TestCards::r3();
+        let mut state = TrueState {
+            turn: 1,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![KEY, ISLAND, SOL_RING]),
+            hand: CardZone::new(vec![MYSTICAL]),
+            mana: ManaPool {
+                blue: 1,
+                ..ManaPool::default()
+            },
+            ..TrueState::default()
+        };
+        apply_action(
+            &mut state,
+            &cards,
+            Action::CastFromHand {
+                card: MYSTICAL,
+                payment: ManaPayment {
+                    blue: 1,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+        let observation = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            observation.observations,
+            vec![RulesObservation::SearchAvailable {
+                source: MYSTICAL,
+                candidates: Vec::new(),
+                may_fail: true,
+            }]
+        );
+
+        let info = urza_info::observe(&state).unwrap();
+        assert_eq!(
+            legal_contingent_actions(&info, &cards),
+            vec![Action::ChooseTutorTarget { target: None }]
+        );
+        apply_action_with_rng(
+            &mut state,
+            &cards,
+            Action::ChooseTutorTarget { target: None },
+            GameRngContext {
+                root: RootSeed::from_u64(8),
+                world: WorldId(0),
+                logical_event: LogicalEventId(7),
+            },
+        )
+        .unwrap();
+        assert!(matches!(state.pending, PendingDecision::None));
+        assert_eq!(state.window, Window::Priority);
+        assert_eq!(state.rng_occurrence_cursor, 1);
+    }
+
+    #[test]
+    fn spellseeker_enters_before_post_observation_tutor_choice() {
+        let cards = TestCards::r3();
+        let mut state = TrueState {
+            turn: 1,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![TARGET_A, KEY]),
+            hand: CardZone::new(vec![SPELLSEEKER]),
+            mana: ManaPool {
+                blue: 1,
+                colorless: 2,
+                ..ManaPool::default()
+            },
+            ..TrueState::default()
+        };
+        apply_action(
+            &mut state,
+            &cards,
+            Action::CastFromHand {
+                card: SPELLSEEKER,
+                payment: ManaPayment {
+                    blue: 1,
+                    colorless: 2,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+        let transition = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+
+        assert!(state
+            .battlefield
+            .permanents()
+            .iter()
+            .any(|permanent| permanent.card == SPELLSEEKER));
+        assert_eq!(state.window, Window::PostObservation);
+        assert!(matches!(
+            state.pending,
+            PendingDecision::TutorTarget {
+                source: SourceRef {
+                    object_id: Some(_),
+                    card: SPELLSEEKER
+                }
+            }
+        ));
+        assert_eq!(
+            transition.observations,
+            vec![
+                RulesObservation::PermanentEntered {
+                    card: SPELLSEEKER,
+                    face: CardFace::Front,
+                    token: false,
+                },
+                RulesObservation::SearchAvailable {
+                    source: SPELLSEEKER,
+                    candidates: vec![TARGET_A],
+                    may_fail: true,
+                },
+            ]
+        );
+    }
+
 }

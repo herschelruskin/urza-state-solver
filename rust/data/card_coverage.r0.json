@@ -224,8 +224,8 @@
     },
     {
       "card_id": 44,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R3 primitive active: sorcery cast resolves to a staged blue-instant library search; target/no-find choice occurs only after the search observation, target goes to hand, then the shared pre-target search permutation determines the shuffle"
     },
     {
       "card_id": 45,
@@ -274,8 +274,8 @@
     },
     {
       "card_id": 54,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R3 primitive active: instant-speed cast resolves to a staged instant-or-sorcery library search; target/no-find choice occurs only after observation, selected target is placed on top after the shared pre-target shuffle"
     },
     {
       "card_id": 55,
@@ -389,8 +389,8 @@
     },
     {
       "card_id": 77,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R3 primitive active: creature cast/ETB is explicit, then its MV<=2 instant-or-sorcery search becomes a post-observation contingent target/no-find decision; selected target goes to hand before the shared search shuffle"
     },
     {
       "card_id": 78,
