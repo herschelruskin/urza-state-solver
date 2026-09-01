@@ -538,6 +538,7 @@ dependencies = [
  "urza-cards",
  "urza-core",
  "urza-rng",
+ "urza-rules",
 ]
 
 [[package]]

@@ -1,19 +1,22 @@
 use serde_json::json;
 use urza_cards::{
-    catalog_digest_hex, load_catalog, load_coverage, load_r1_catalog, r1_catalog_digest_hex,
-    validate_catalog_and_coverage, validate_r1_catalog,
+    R2CardDatabase, URZA_CONSTRUCT_TOKEN_CARD_ID, catalog_digest_hex, load_catalog, load_coverage,
+    load_r1_catalog, r1_catalog_digest_hex, validate_catalog_and_coverage, validate_r1_catalog,
+    validate_r2_database,
 };
 use urza_cli::hand25_fixture;
-use urza_core::TrueState;
+use urza_core::{MODEL_VERSION, TrueState};
 use urza_rng::RNG_SCHEME_VERSION;
+use urza_rules::{HORIZON_TURN, R2CardRole, RULES_VERSION};
 
 fn main() {
     let command = std::env::args().nth(1).unwrap_or_else(|| "help".to_owned());
     match command.as_str() {
         "r0-audit" => run_r0_audit(),
         "r1-audit" => run_r1_audit(),
+        "r2-audit" => run_r2_audit(),
         _ => {
-            eprintln!("usage: urza-cli <r0-audit|r1-audit>");
+            eprintln!("usage: urza-cli <r0-audit|r1-audit|r2-audit>");
             std::process::exit(2);
         }
     }
@@ -80,5 +83,38 @@ fn run_r1_audit() {
     println!(
         "{}",
         serde_json::to_string_pretty(&report).expect("serializable R1 audit report")
+    );
+}
+
+
+fn run_r2_audit() {
+    validate_r2_database().expect("R2 database/coverage invariants");
+    let catalog = load_r1_catalog().expect("embedded R1 catalog");
+    let database = R2CardDatabase::load().expect("R2 card database");
+    let supported_names: Vec<_> = catalog
+        .cards
+        .iter()
+        .filter(|card| {
+            database
+                .profile(urza_core::CardDefId(card.id))
+                .is_some_and(|profile| profile.role != R2CardRole::Unsupported)
+        })
+        .map(|card| card.deck_name.as_str())
+        .collect();
+
+    let report = json!({
+        "phase": "R2",
+        "rules_version": RULES_VERSION,
+        "model_version": MODEL_VERSION,
+        "horizon_turn": HORIZON_TURN,
+        "supported_active_card_identities": supported_names.len(),
+        "supported_active_names": supported_names,
+        "synthetic_construct_card_id": URZA_CONSTRUCT_TOKEN_CARD_ID.0,
+        "scope": "core sequencing primitives only; later card mechanics remain explicitly deferred",
+    });
+
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&report).expect("serializable R2 audit report")
     );
 }

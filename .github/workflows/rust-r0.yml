@@ -44,3 +44,6 @@ jobs:
       - name: R1 catalog audit
         working-directory: rust
         run: cargo run --locked -p urza-cli -- r1-audit
+      - name: R2 core audit
+        working-directory: rust
+        run: cargo run --locked -p urza-cli -- r2-audit

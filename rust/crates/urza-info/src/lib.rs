@@ -6,15 +6,15 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 pub use urza_core::{
-    AbilityId, CardDefId, CommanderState, CommanderZone, CounterState, GenericCost, GrantedAbility,
-    ManaPool, PendingDecisionKind, PermanentMode, Phase, Window,
+    AbilityId, CardDefId, CardFace, CommanderState, CommanderZone, CounterState, GenericCost,
+    GrantedAbility, ManaPool, PendingDecisionKind, PermanentMode, Phase, Window,
 };
 use urza_core::{
     DelayedEvent, ObjectId, PendingDecision, SourceRef, StackObject, StateValidationError,
     TrueState,
 };
 
-pub const INFORMATION_SCHEMA_VERSION: &str = "information_state_v1_r1";
+pub const INFORMATION_SCHEMA_VERSION: &str = "information_state_v2_r2";
 
 #[derive(
     Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
@@ -45,6 +45,7 @@ pub struct ObservedPermanent {
     /// Structural equivalence-class label, not an execution ObjectId.
     pub canonical_id: CanonicalObjectId,
     pub card: CardDefId,
+    pub face: CardFace,
     pub tapped: bool,
     pub summoning_sick: bool,
     pub token: bool,
@@ -242,6 +243,7 @@ pub fn observe(state: &TrueState) -> Result<InformationState, ObservationError> 
         .map(|permanent| ObservedPermanent {
             canonical_id: object_classes[&permanent.object_id],
             card: permanent.card,
+            face: permanent.face,
             tapped: permanent.tapped,
             summoning_sick: permanent.summoning_sick,
             token: permanent.token,
@@ -495,6 +497,7 @@ fn observe_permissions(
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 struct LocalSignature {
     card: CardDefId,
+    face: CardFace,
     tapped: bool,
     summoning_sick: bool,
     token: bool,
@@ -632,6 +635,7 @@ fn dense_labels<T: Ord + Clone>(items: Vec<(ObjectId, T)>) -> BTreeMap<ObjectId,
 fn local_signature(permanent: &urza_core::PermanentState) -> LocalSignature {
     LocalSignature {
         card: permanent.card,
+        face: permanent.face,
         tapped: permanent.tapped,
         summoning_sick: permanent.summoning_sick,
         token: permanent.token,
@@ -808,7 +812,8 @@ impl<'a> PolicyView<'a> {
 mod tests {
     use super::{CanonicalObjectId, CardCount, InformationState, PolicyView, observe};
     use urza_core::{
-        BattlefieldZone, CardDefId, CounterState, LibraryKnowledge, ObjectId, PermanentState,
+        BattlefieldZone, CardDefId, CardFace, CounterState, LibraryKnowledge, ObjectId,
+        PermanentState,
         ReplayKey, SourceRef, StackObject, TrueLibrary, TrueState,
     };
 
@@ -816,6 +821,7 @@ mod tests {
         PermanentState {
             object_id: ObjectId(object),
             card: CardDefId(card),
+            face: CardFace::Front,
             tapped: false,
             summoning_sick: false,
             token: false,
@@ -1164,4 +1170,22 @@ mod tests {
         let decoded: InformationState = serde_json::from_str(&encoded).unwrap();
         assert_eq!(decoded, info);
     }
+
+    #[test]
+    fn permanent_face_is_future_relevant_to_observation() {
+        let front = TrueState {
+            battlefield: BattlefieldZone::new(vec![permanent(1, 34, None)]),
+            ..TrueState::default()
+        };
+        let mut back_permanent = permanent(1, 34, None);
+        back_permanent.face = CardFace::Back;
+        let back = TrueState {
+            battlefield: BattlefieldZone::new(vec![back_permanent]),
+            ..TrueState::default()
+        };
+
+        assert_ne!(observe(&front).unwrap(), observe(&back).unwrap());
+        assert_eq!(observe(&back).unwrap().battlefield[0].face, CardFace::Back);
+    }
+
 }

@@ -4,8 +4,8 @@
   "entries": [
     {
       "card_id": 0,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 primitive: ordinary artifact cast/stack/battlefield entry; activated abilities are deferred"
     },
     {
       "card_id": 1,
@@ -14,8 +14,8 @@
     },
     {
       "card_id": 2,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 primitive: land play and intrinsic tap for two colorless with 2 self-damage"
     },
     {
       "card_id": 3,
@@ -39,8 +39,8 @@
     },
     {
       "card_id": 7,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 primitive: land play and intrinsic blue-mana ability with 1 self-damage; threshold loot is deferred"
     },
     {
       "card_id": 8,
@@ -64,13 +64,13 @@
     },
     {
       "card_id": 12,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 primitive: ordinary artifact cast/stack/battlefield entry; activated abilities are deferred"
     },
     {
       "card_id": 13,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 primitive: land play and intrinsic tap for one colorless; sacrifice mana mode is deferred"
     },
     {
       "card_id": 14,
@@ -169,13 +169,13 @@
     },
     {
       "card_id": 33,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 primitive: ordinary artifact-creature cast/stack/battlefield entry; combat/sacrifice ability is deferred"
     },
     {
       "card_id": 34,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 primitive: back land face, pay-3-life-or-enter-tapped choice, and blue mana; front spell is deferred"
     },
     {
       "card_id": 35,
@@ -190,7 +190,7 @@
     {
       "card_id": 37,
       "status": "PRIMITIVE_ACTIVE",
-      "reason": "R2 initial sequencing primitive: land play/mana, Urza cast/Construct/artifact mana, or generic artifact cast only; remaining intrinsic mechanics are still deferred"
+      "reason": "R2 primitive: land play and intrinsic blue mana"
     },
     {
       "card_id": 38,
@@ -214,8 +214,8 @@
     },
     {
       "card_id": 42,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 primitive: ordinary artifact cast/stack/battlefield entry; untap/unblockable activations are deferred"
     },
     {
       "card_id": 43,
@@ -229,8 +229,8 @@
     },
     {
       "card_id": 45,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 primitive: land play and intrinsic blue mana; legendary-permanent untap ability is deferred"
     },
     {
       "card_id": 46,
@@ -239,8 +239,8 @@
     },
     {
       "card_id": 47,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 primitive: ordinary artifact cast/stack/battlefield entry; delayed-draw activation is deferred"
     },
     {
       "card_id": 48,
@@ -279,13 +279,13 @@
     },
     {
       "card_id": 55,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 primitive: land play and intrinsic blue mana; self-bounce ability is deferred"
     },
     {
       "card_id": 56,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 primitive: land play and intrinsic blue mana; Channel ability is deferred"
     },
     {
       "card_id": 57,
@@ -359,13 +359,13 @@
     },
     {
       "card_id": 71,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 primitive: back land face, pay-3-life-or-enter-tapped choice, and blue mana; front spell is deferred"
     },
     {
       "card_id": 72,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 primitive: artifact-land play, intrinsic blue mana, and Urza artifact-mana eligibility"
     },
     {
       "card_id": 73,
@@ -379,13 +379,13 @@
     },
     {
       "card_id": 75,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 primitive: back land face, pay-3-life-or-enter-tapped choice, and blue mana; front spell is deferred"
     },
     {
       "card_id": 76,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 primitive: ordinary artifact cast/entry and intrinsic tap for two colorless"
     },
     {
       "card_id": 77,
@@ -419,8 +419,8 @@
     },
     {
       "card_id": 83,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 primitive: ordinary artifact cast/stack/battlefield entry; exile activation is deferred"
     },
     {
       "card_id": 84,
@@ -430,12 +430,12 @@
     {
       "card_id": 85,
       "status": "PRIMITIVE_ACTIVE",
-      "reason": "R2 initial sequencing primitive: land play/mana, Urza cast/Construct/artifact mana, or generic artifact cast only; remaining intrinsic mechanics are still deferred"
+      "reason": "R2 primitive: command-zone cast/tax, Construct ETB, and artifact mana; spin permission remains R3"
     },
     {
       "card_id": 86,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 primitive: ordinary artifact cast/stack/battlefield entry; delayed-draw activation is deferred"
     },
     {
       "card_id": 87,
@@ -460,12 +460,12 @@
     {
       "card_id": 91,
       "status": "PRIMITIVE_ACTIVE",
-      "reason": "R2 initial sequencing primitive: land play/mana, Urza cast/Construct/artifact mana, or generic artifact cast only; remaining intrinsic mechanics are still deferred"
+      "reason": "R2 primitive: ordinary artifact cast/stack/battlefield entry; untap activation is deferred"
     },
     {
       "card_id": 92,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 primitive: ordinary artifact cast/stack/battlefield entry; regeneration activation is deferred"
     },
     {
       "card_id": 93,

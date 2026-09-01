@@ -4,7 +4,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde::Deserialize;
 use thiserror::Error;
-use urza_core::CardDefId;
+use urza_core::{CardDefId, CardFace};
 
 const CATALOG_R0_JSON: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -492,14 +492,10 @@ impl R2CardDatabase {
         let mut cards = BTreeMap::new();
 
         for card in catalog.cards {
-            let role = match card.deck_name.as_str() {
-                "Island" => urza_rules::R2CardRole::BasicIsland,
-                "Urza, Lord High Artificer" => urza_rules::R2CardRole::UrzaCommander,
-                "Voltaic Key" => urza_rules::R2CardRole::ArtifactPermanent,
-                _ => urza_rules::R2CardRole::Unsupported,
-            };
+            let (role, battlefield_face, land_entry, mana_ability) =
+                r2_primitive_shape(card.deck_name.as_str());
 
-            let mana_cost = if card.feature_flags.is_land {
+            let mana_cost = if role == urza_rules::R2CardRole::Land {
                 None
             } else {
                 match urza_rules::ManaCost::parse_scryfall(&card.mana_cost) {
@@ -520,6 +516,9 @@ impl R2CardDatabase {
                     card: CardDefId(card.id),
                     mana_cost,
                     role,
+                    battlefield_face,
+                    land_entry,
+                    mana_ability,
                     is_artifact: card.feature_flags.is_artifact,
                     is_creature: card.feature_flags.is_creature,
                 },
@@ -532,6 +531,9 @@ impl R2CardDatabase {
                 card: URZA_CONSTRUCT_TOKEN_CARD_ID,
                 mana_cost: None,
                 role: urza_rules::R2CardRole::UrzaConstructToken,
+                battlefield_face: CardFace::Front,
+                land_entry: urza_rules::LandEntryRule::None,
+                mana_ability: urza_rules::ManaAbility::None,
                 is_artifact: true,
                 is_creature: true,
             },
@@ -553,6 +555,17 @@ impl R2CardDatabase {
             .map(|card| CardDefId(card.id))
             .ok_or_else(|| CatalogError::Invariant(format!("unknown active card name {name}")))
     }
+
+    pub fn supported_active_cards(&self) -> Vec<CardDefId> {
+        self.cards
+            .iter()
+            .filter_map(|(card, profile)| {
+                (card.0 < URZA_CONSTRUCT_TOKEN_CARD_ID.0
+                    && profile.role != urza_rules::R2CardRole::Unsupported)
+                    .then_some(*card)
+            })
+            .collect()
+    }
 }
 
 impl urza_rules::CardDatabase for R2CardDatabase {
@@ -573,9 +586,166 @@ impl urza_rules::CardDatabase for R2CardDatabase {
     }
 }
 
+fn r2_primitive_shape(
+    name: &str,
+) -> (
+    urza_rules::R2CardRole,
+    CardFace,
+    urza_rules::LandEntryRule,
+    urza_rules::ManaAbility,
+) {
+    use urza_rules::{LandEntryRule, ManaAbility, R2CardRole};
+
+    match name {
+        "Ancient Tomb" => (
+            R2CardRole::Land,
+            CardFace::Front,
+            LandEntryRule::Untapped,
+            ManaAbility::TapForColorlessAndDamage { mana: 2, damage: 2 },
+        ),
+        "Cephalid Coliseum" => (
+            R2CardRole::Land,
+            CardFace::Front,
+            LandEntryRule::Untapped,
+            ManaAbility::TapForBlueAndDamage { damage: 1 },
+        ),
+        "Crystal Vein" => (
+            R2CardRole::Land,
+            CardFace::Front,
+            LandEntryRule::Untapped,
+            ManaAbility::TapForColorless(1),
+        ),
+        "Hydroelectric Specimen" | "Sea Gate Restoration" | "Sink into Stupor" => (
+            R2CardRole::Land,
+            CardFace::Back,
+            LandEntryRule::PayLifeOrTapped { life: 3 },
+            ManaAbility::TapForBlue,
+        ),
+        "Island"
+        | "Minamo, School at Water's Edge"
+        | "Oboro, Palace in the Clouds"
+        | "Otawara, Soaring City"
+        | "Seat of the Synod" => (
+            R2CardRole::Land,
+            CardFace::Front,
+            LandEntryRule::Untapped,
+            ManaAbility::TapForBlue,
+        ),
+        "Sol Ring" => (
+            R2CardRole::ArtifactPermanent,
+            CardFace::Front,
+            LandEntryRule::None,
+            ManaAbility::TapForColorless(2),
+        ),
+        "Aether Spellbomb"
+        | "Codex Shredder"
+        | "Hope of Ghirapur"
+        | "Manifold Key"
+        | "Mishra's Bauble"
+        | "Tormod's Crypt"
+        | "Urza's Bauble"
+        | "Voltaic Key"
+        | "Welding Jar" => (
+            R2CardRole::ArtifactPermanent,
+            CardFace::Front,
+            LandEntryRule::None,
+            ManaAbility::None,
+        ),
+        "Urza, Lord High Artificer" => (
+            R2CardRole::UrzaCommander,
+            CardFace::Front,
+            LandEntryRule::None,
+            ManaAbility::None,
+        ),
+        _ => (
+            R2CardRole::Unsupported,
+            CardFace::Front,
+            LandEntryRule::None,
+            ManaAbility::None,
+        ),
+    }
+}
+
+pub fn validate_r2_database() -> Result<(), CatalogError> {
+    let catalog = load_r1_catalog()?;
+    let coverage = load_coverage()?;
+    let database = R2CardDatabase::load()?;
+
+    let coverage_by_id: BTreeMap<_, _> = coverage
+        .entries
+        .iter()
+        .map(|entry| (entry.card_id, entry.status))
+        .collect();
+
+    for card in &catalog.cards {
+        let profile = database
+            .profile(CardDefId(card.id))
+            .ok_or_else(|| CatalogError::Invariant(format!("missing R2 profile for {}", card.deck_name)))?;
+        let status = *coverage_by_id
+            .get(&card.id)
+            .ok_or_else(|| CatalogError::Invariant(format!("missing coverage for {}", card.deck_name)))?;
+
+        if profile.role == urza_rules::R2CardRole::Unsupported {
+            if status != CoverageStatus::IntentionallyUnmodeled {
+                return Err(CatalogError::Invariant(format!(
+                    "{} is unsupported by R2 but coverage says {:?}",
+                    card.deck_name, status
+                )));
+            }
+        } else if !matches!(status, CoverageStatus::PrimitiveActive | CoverageStatus::RulesActive) {
+            return Err(CatalogError::Invariant(format!(
+                "{} has an R2 primitive but coverage says {:?}",
+                card.deck_name, status
+            )));
+        }
+    }
+
+    if catalog
+        .cards
+        .iter()
+        .any(|card| CardDefId(card.id) == URZA_CONSTRUCT_TOKEN_CARD_ID)
+    {
+        return Err(CatalogError::Invariant(
+            "synthetic Construct token collided with active-card catalog".to_owned(),
+        ));
+    }
+
+    let construct = database
+        .profile(URZA_CONSTRUCT_TOKEN_CARD_ID)
+        .ok_or_else(|| CatalogError::Invariant("missing synthetic Construct profile".to_owned()))?;
+    if construct.role != urza_rules::R2CardRole::UrzaConstructToken
+        || !construct.is_artifact
+        || !construct.is_creature
+    {
+        return Err(CatalogError::Invariant(
+            "synthetic Construct profile is malformed".to_owned(),
+        ));
+    }
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use urza_core::{
+        CardZone, CommanderState, CommanderZone, ManaPool, ObjectId, Phase, TrueLibrary, TrueState,
+        Window,
+    };
+    use urza_rules::{
+        Action, LandEntryChoice, ManaPayment, R2CardRole, RulesObservation, advance_automatic,
+        apply_action,
+    };
+
+    fn object_for(state: &TrueState, card: CardDefId) -> ObjectId {
+        state
+            .battlefield
+            .permanents()
+            .iter()
+            .find(|permanent| permanent.card == card)
+            .expect("expected permanent")
+            .object_id
+    }
 
     #[test]
     fn active_deck_catalog_and_coverage_are_total() {
@@ -585,51 +755,6 @@ mod tests {
     #[test]
     fn r0_catalog_digest_is_explicitly_pinned() {
         assert_eq!(catalog_digest_hex(), R0_CATALOG_DIGEST_BLAKE3);
-    }
-
-    #[test]
-    fn coverage_never_claims_unsupported_r2_cards_are_active() {
-        let coverage = load_coverage().unwrap();
-        let r2 = R2CardDatabase::load().unwrap();
-        for entry in coverage.entries {
-            let profile = r2.profile(CardDefId(entry.card_id)).unwrap();
-            if profile.role == urza_rules::R2CardRole::Unsupported {
-                assert_eq!(entry.status, CoverageStatus::IntentionallyUnmodeled);
-            }
-        }
-    }
-
-    #[test]
-    fn r2_database_exposes_only_the_initial_audited_primitive_slice() {
-        let r2 = R2CardDatabase::load().unwrap();
-        let island = r2.card_id_by_name("Island").unwrap();
-        let key = r2.card_id_by_name("Voltaic Key").unwrap();
-        let urza = r2.card_id_by_name("Urza, Lord High Artificer").unwrap();
-
-        assert_eq!(
-            r2.profile(island).unwrap().role,
-            urza_rules::R2CardRole::BasicIsland
-        );
-        assert_eq!(
-            r2.profile(key).unwrap().role,
-            urza_rules::R2CardRole::ArtifactPermanent
-        );
-        assert_eq!(
-            r2.profile(urza).unwrap().role,
-            urza_rules::R2CardRole::UrzaCommander
-        );
-        assert_eq!(
-            r2.profile(URZA_CONSTRUCT_TOKEN_CARD_ID).unwrap().role,
-            urza_rules::R2CardRole::UrzaConstructToken
-        );
-    }
-
-    #[test]
-    fn catalog_ids_are_dense_and_deterministic() {
-        let catalog = load_catalog().unwrap();
-        for (expected, card) in catalog.cards.iter().enumerate() {
-            assert_eq!(card.id as usize, expected);
-        }
     }
 
     #[test]
@@ -655,5 +780,217 @@ mod tests {
                 "Sink into Stupor"
             ]
         );
+    }
+
+    #[test]
+    fn r2_database_and_coverage_are_bidirectionally_consistent() {
+        validate_r2_database().unwrap();
+        let r2 = R2CardDatabase::load().unwrap();
+        assert_eq!(r2.supported_active_cards().len(), 22);
+    }
+
+    #[test]
+    fn r2_mdfc_land_primitives_use_back_face_and_life_choice() {
+        let r2 = R2CardDatabase::load().unwrap();
+        for name in [
+            "Hydroelectric Specimen",
+            "Sea Gate Restoration",
+            "Sink into Stupor",
+        ] {
+            let card = r2.card_id_by_name(name).unwrap();
+            let profile = r2.profile(card).unwrap();
+            assert_eq!(profile.role, R2CardRole::Land);
+            assert_eq!(profile.battlefield_face, CardFace::Back);
+            assert_eq!(
+                profile.land_entry,
+                urza_rules::LandEntryRule::PayLifeOrTapped { life: 3 }
+            );
+            assert_eq!(profile.mana_ability, urza_rules::ManaAbility::TapForBlue);
+        }
+    }
+
+    #[test]
+    fn r2_real_catalog_acceptance_trajectory_matches_audited_witness_semantics() {
+        let cards = R2CardDatabase::load().unwrap();
+        let island = cards.card_id_by_name("Island").unwrap();
+        let sol_ring = cards.card_id_by_name("Sol Ring").unwrap();
+        let urza = cards.card_id_by_name("Urza, Lord High Artificer").unwrap();
+
+        let mut state = TrueState {
+            turn: 1,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![island]),
+            hand: CardZone::new(vec![island, sol_ring]),
+            commander: CommanderState {
+                zone: CommanderZone::CommandZone,
+                command_zone_casts: 0,
+            },
+            ..TrueState::default()
+        };
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::PlayLand {
+                card: island,
+                entry: LandEntryChoice::Default,
+            },
+        )
+        .unwrap();
+        let first_island = object_for(&state, island);
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateManaAbility {
+                source: first_island,
+            },
+        )
+        .unwrap();
+        apply_action(
+            &mut state,
+            &cards,
+            Action::CastFromHand {
+                card: sol_ring,
+                payment: ManaPayment {
+                    blue: 1,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+
+        assert_eq!(state.stack.len(), 1);
+        assert!(state.battlefield.permanents().iter().all(|p| p.card != sol_ring));
+        let resolution = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            resolution.observations,
+            vec![RulesObservation::PermanentEntered {
+                card: sol_ring,
+                face: CardFace::Front,
+                token: false,
+            }]
+        );
+
+        let sol_ring_object = object_for(&state, sol_ring);
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateManaAbility {
+                source: sol_ring_object,
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            state.mana,
+            ManaPool {
+                colorless: 2,
+                ..ManaPool::default()
+            }
+        );
+
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        advance_automatic(&mut state).unwrap();
+        assert_eq!(state.turn, 2);
+        assert_eq!(state.phase, Phase::Upkeep);
+
+        let natural_draw = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            natural_draw.observations,
+            vec![RulesObservation::CardsDrawn(vec![island])]
+        );
+        assert_eq!(state.hand.cards(), &[island]);
+        assert!(state.library.cards().is_empty());
+
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(state.phase, Phase::PrecombatMain);
+        apply_action(
+            &mut state,
+            &cards,
+            Action::PlayLand {
+                card: island,
+                entry: LandEntryChoice::Default,
+            },
+        )
+        .unwrap();
+
+        let islands: Vec<_> = state
+            .battlefield
+            .permanents()
+            .iter()
+            .filter(|permanent| permanent.card == island)
+            .map(|permanent| permanent.object_id)
+            .collect();
+        assert_eq!(islands.len(), 2);
+        for source in islands {
+            apply_action(
+                &mut state,
+                &cards,
+                Action::ActivateManaAbility { source },
+            )
+            .unwrap();
+        }
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateManaAbility {
+                source: sol_ring_object,
+            },
+        )
+        .unwrap();
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::CastCommander {
+                payment: ManaPayment {
+                    blue: 2,
+                    colorless: 2,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+        assert_eq!(state.commander.zone, CommanderZone::Stack);
+
+        let urza_resolution = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(state.commander.zone, CommanderZone::Battlefield);
+        assert_eq!(state.commander.command_zone_casts, 1);
+        assert_eq!(
+            urza_resolution.observations,
+            vec![
+                RulesObservation::PermanentEntered {
+                    card: urza,
+                    face: CardFace::Front,
+                    token: false,
+                },
+                RulesObservation::PermanentEntered {
+                    card: URZA_CONSTRUCT_TOKEN_CARD_ID,
+                    face: CardFace::Front,
+                    token: true,
+                },
+            ]
+        );
+
+        let construct = object_for(&state, URZA_CONSTRUCT_TOKEN_CARD_ID);
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateUrzaArtifactMana {
+                artifact: construct,
+            },
+        )
+        .unwrap();
+        assert_eq!(state.mana.blue, 1);
+        assert!(state.battlefield.get(construct).unwrap().tapped);
+    }
+
+    #[test]
+    fn catalog_ids_are_dense_and_deterministic() {
+        let catalog = load_catalog().unwrap();
+        for (expected, card) in catalog.cards.iter().enumerate() {
+            assert_eq!(card.id as usize, expected);
+        }
     }
 }

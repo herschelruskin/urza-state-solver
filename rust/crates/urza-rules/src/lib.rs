@@ -2,16 +2,16 @@
 
 use thiserror::Error;
 use urza_core::{
-    BattlefieldZone, CardDefId, CommanderZone, CounterState, LibraryKnowledge, ManaPool, ObjectId,
-    PendingDecision, PermanentMode, PermanentState, Phase, StackObject, StateValidationError,
-    TrueLibrary, TrueState, Window,
+    BattlefieldZone, CardDefId, CardFace, CommanderZone, CounterState, LibraryKnowledge, ManaPool,
+    ObjectId, PendingDecision, PermanentMode, PermanentState, Phase, StackObject,
+    StateValidationError, TrueLibrary, TrueState, Window,
 };
 use urza_rng::{
     EventOccurrence, EventType, LogicalEventId, RngCoordinate, RngDomain, RootSeed, WorldId,
 };
 
 pub const RULES_PHASE: &str = "R2";
-pub const RULES_VERSION: &str = "r2_core_kernel_v1";
+pub const RULES_VERSION: &str = "r2_core_kernel_v2";
 pub const HORIZON_TURN: u8 = 6;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -231,10 +231,35 @@ fn enumerate_generic_allocations(
 pub enum R2CardRole {
     #[default]
     Unsupported,
-    BasicIsland,
+    Land,
     ArtifactPermanent,
     UrzaCommander,
     UrzaConstructToken,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
+pub enum LandEntryRule {
+    #[default]
+    None,
+    Untapped,
+    PayLifeOrTapped { life: u8 },
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
+pub enum LandEntryChoice {
+    #[default]
+    Default,
+    PayLife,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
+pub enum ManaAbility {
+    #[default]
+    None,
+    TapForBlue,
+    TapForColorless(u16),
+    TapForBlueAndDamage { damage: u16 },
+    TapForColorlessAndDamage { mana: u16, damage: u16 },
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
@@ -242,6 +267,9 @@ pub struct CardProfile {
     pub card: CardDefId,
     pub mana_cost: Option<ManaCost>,
     pub role: R2CardRole,
+    pub battlefield_face: CardFace,
+    pub land_entry: LandEntryRule,
+    pub mana_ability: ManaAbility,
     pub is_artifact: bool,
     pub is_creature: bool,
 }
@@ -257,8 +285,9 @@ pub enum Action {
     PassPriority,
     PlayLand {
         card: CardDefId,
+        entry: LandEntryChoice,
     },
-    ActivateIslandMana {
+    ActivateManaAbility {
         source: ObjectId,
     },
     ActivateUrzaArtifactMana {
@@ -276,6 +305,11 @@ pub enum Action {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RulesObservation {
     CardsDrawn(Vec<CardDefId>),
+    PermanentEntered {
+        card: CardDefId,
+        face: CardFace,
+        token: bool,
+    },
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -312,8 +346,12 @@ pub enum RuleError {
     MissingPermanent(ObjectId),
     #[error("object {0:?} is already tapped")]
     PermanentTapped(ObjectId),
-    #[error("object {0:?} is not a supported Island mana source")]
-    NotIslandSource(ObjectId),
+    #[error("object {0:?} does not have an R2-supported intrinsic mana ability")]
+    NotManaSource(ObjectId),
+    #[error("land-entry choice is not legal for card {0:?}")]
+    InvalidLandEntryChoice(CardDefId),
+    #[error("cannot pay {required} life from life total {available}")]
+    InsufficientLife { required: u16, available: u16 },
     #[error("object {0:?} is not an artifact")]
     NotArtifact(ObjectId),
     #[error("Urza is not on the battlefield")]
@@ -344,12 +382,9 @@ pub fn apply_action<D: CardDatabase>(
     state.validate()?;
     let transition = match action {
         Action::PassPriority => pass_priority(state, cards)?,
-        Action::PlayLand { card } => {
-            play_land(state, cards, card)?;
-            Transition::default()
-        }
-        Action::ActivateIslandMana { source } => {
-            activate_island_mana(state, cards, source)?;
+        Action::PlayLand { card, entry } => play_land(state, cards, card, entry)?,
+        Action::ActivateManaAbility { source } => {
+            activate_mana_ability(state, cards, source)?;
             Transition::default()
         }
         Action::ActivateUrzaArtifactMana { artifact } => {
@@ -376,6 +411,10 @@ pub fn advance_phase(state: &mut TrueState) -> Result<Transition, RuleError> {
         return Err(RuleError::IllegalTiming);
     }
 
+    if state.phase == Phase::OpponentCycle && state.turn >= HORIZON_TURN {
+        return Err(RuleError::HorizonReached);
+    }
+
     state.mana = ManaPool::default();
     let mut transition = Transition::default();
 
@@ -397,9 +436,9 @@ pub fn advance_phase(state: &mut TrueState) -> Result<Transition, RuleError> {
             state.window = Window::Priority;
         }
         Phase::Upkeep => {
+            let drawn = draw_cards(state, 1)?;
             state.phase = Phase::Draw;
             state.window = Window::Priority;
-            let drawn = draw_cards(state, 1)?;
             transition
                 .observations
                 .push(RulesObservation::CardsDrawn(drawn));
@@ -417,15 +456,34 @@ pub fn advance_phase(state: &mut TrueState) -> Result<Transition, RuleError> {
             state.window = Window::None;
         }
         Phase::OpponentCycle => {
-            if state.turn >= HORIZON_TURN {
-                return Err(RuleError::HorizonReached);
-            }
             state.turn = state
                 .turn
                 .checked_add(1)
                 .ok_or(RuleError::ArithmeticOverflow)?;
             state.phase = Phase::Untap;
             state.window = Window::None;
+        }
+    }
+
+    state.validate()?;
+    Ok(transition)
+}
+
+pub fn advance_automatic(state: &mut TrueState) -> Result<Transition, RuleError> {
+    state.validate()?;
+    ensure_no_pending_decision(state)?;
+    if !state.stack.is_empty() {
+        return Err(RuleError::IllegalTiming);
+    }
+
+    let mut transition = Transition::default();
+    loop {
+        match (state.phase, state.window) {
+            (Phase::OpponentCycle, Window::None) | (Phase::Untap, Window::None) => {
+                let next = advance_phase(state)?;
+                transition.observations.extend(next.observations);
+            }
+            _ => break,
         }
     }
 
@@ -498,6 +556,7 @@ where
         .filter(|card| eligible(*card))
         .collect();
     candidates.sort_unstable();
+    candidates.dedup();
     LibrarySearchObservation { candidates }
 }
 
@@ -512,22 +571,22 @@ fn pass_priority<D: CardDatabase>(
         return advance_phase(state);
     }
 
-    resolve_top_stack_object(state, cards)?;
-    Ok(Transition::default())
+    resolve_top_stack_object(state, cards)
 }
 
 fn play_land<D: CardDatabase>(
     state: &mut TrueState,
     cards: &D,
     card: CardDefId,
-) -> Result<(), RuleError> {
+    entry: LandEntryChoice,
+) -> Result<Transition, RuleError> {
     ensure_sorcery_window(state)?;
     if state.land_played_this_turn {
         return Err(RuleError::LandAlreadyPlayed);
     }
 
     let profile = card_profile(cards, card)?;
-    if profile.role != R2CardRole::BasicIsland {
+    if profile.role != R2CardRole::Land {
         return Err(RuleError::UnsupportedCardMechanic(card));
     }
     if !state.hand.cards().contains(&card) {
@@ -535,6 +594,30 @@ fn play_land<D: CardDatabase>(
     }
 
     let object_id = next_object_id(state)?;
+    let tapped = match profile.land_entry {
+        LandEntryRule::Untapped => {
+            if entry != LandEntryChoice::Default {
+                return Err(RuleError::InvalidLandEntryChoice(card));
+            }
+            false
+        }
+        LandEntryRule::PayLifeOrTapped { life } => match entry {
+            LandEntryChoice::Default => true,
+            LandEntryChoice::PayLife => {
+                let life = u16::from(life);
+                if state.life < life {
+                    return Err(RuleError::InsufficientLife {
+                        required: life,
+                        available: state.life,
+                    });
+                }
+                state.life -= life;
+                false
+            }
+        },
+        LandEntryRule::None => return Err(RuleError::UnsupportedCardMechanic(card)),
+    };
+
     let removed = state.hand.remove_one(card);
     debug_assert!(removed);
     insert_permanent(
@@ -542,7 +625,8 @@ fn play_land<D: CardDatabase>(
         PermanentState {
             object_id,
             card,
-            tapped: false,
+            face: profile.battlefield_face,
+            tapped,
             summoning_sick: false,
             token: false,
             counters: CounterState::default(),
@@ -552,10 +636,16 @@ fn play_land<D: CardDatabase>(
         },
     );
     state.land_played_this_turn = true;
-    Ok(())
+    Ok(Transition {
+        observations: vec![RulesObservation::PermanentEntered {
+            card,
+            face: profile.battlefield_face,
+            token: false,
+        }],
+    })
 }
 
-fn activate_island_mana<D: CardDatabase>(
+fn activate_mana_ability<D: CardDatabase>(
     state: &mut TrueState,
     cards: &D,
     source: ObjectId,
@@ -567,16 +657,30 @@ fn activate_island_mana<D: CardDatabase>(
     if permanent.tapped {
         return Err(RuleError::PermanentTapped(source));
     }
-    if card_profile(cards, permanent.card)?.role != R2CardRole::BasicIsland {
-        return Err(RuleError::NotIslandSource(source));
+    let ability = card_profile(cards, permanent.card)?.mana_ability;
+    if ability == ManaAbility::None {
+        return Err(RuleError::NotManaSource(source));
+    }
+
+    let mut mana = state.mana;
+    let mut life = state.life;
+    match ability {
+        ManaAbility::None => unreachable!("checked above"),
+        ManaAbility::TapForBlue => add_blue(&mut mana, 1)?,
+        ManaAbility::TapForColorless(amount) => add_colorless(&mut mana, amount)?,
+        ManaAbility::TapForBlueAndDamage { damage } => {
+            add_blue(&mut mana, 1)?;
+            life = life.saturating_sub(damage);
+        }
+        ManaAbility::TapForColorlessAndDamage { mana: amount, damage } => {
+            add_colorless(&mut mana, amount)?;
+            life = life.saturating_sub(damage);
+        }
     }
 
     set_tapped(state, source)?;
-    state.mana.blue = state
-        .mana
-        .blue
-        .checked_add(1)
-        .ok_or(RuleError::ArithmeticOverflow)?;
+    state.mana = mana;
+    state.life = life;
     Ok(())
 }
 
@@ -605,12 +709,13 @@ fn activate_urza_artifact_mana<D: CardDatabase>(
         return Err(RuleError::NotArtifact(artifact));
     }
 
-    set_tapped(state, artifact)?;
-    state.mana.blue = state
+    let blue = state
         .mana
         .blue
         .checked_add(1)
         .ok_or(RuleError::ArithmeticOverflow)?;
+    set_tapped(state, artifact)?;
+    state.mana.blue = blue;
     Ok(())
 }
 
@@ -699,9 +804,9 @@ fn cast_commander<D: CardDatabase>(
 fn resolve_top_stack_object<D: CardDatabase>(
     state: &mut TrueState,
     cards: &D,
-) -> Result<(), RuleError> {
+) -> Result<Transition, RuleError> {
     let Some(top) = state.stack.last().cloned() else {
-        return Ok(());
+        return Ok(Transition::default());
     };
     let StackObject::Spell { object_id, card } = top else {
         return Err(RuleError::UnsupportedStackObject);
@@ -715,15 +820,29 @@ fn resolve_top_stack_object<D: CardDatabase>(
         return Err(RuleError::UnsupportedCardMechanic(card));
     }
 
-    let popped = state.stack.pop();
-    debug_assert!(popped.is_some());
-    state.window = Window::Resolving;
+    let construct = if profile.role == R2CardRole::UrzaCommander {
+        let construct_id = next_object_id(state)?;
+        let construct_card = cards.urza_construct_token_card();
+        let construct_profile = card_profile(cards, construct_card)?;
+        if construct_profile.role != R2CardRole::UrzaConstructToken
+            || !construct_profile.is_artifact
+            || !construct_profile.is_creature
+        {
+            return Err(RuleError::UnsupportedCardMechanic(construct_card));
+        }
+        Some((construct_id, construct_card, construct_profile))
+    } else {
+        None
+    };
 
+    state.stack.pop();
+    state.window = Window::Resolving;
     insert_permanent(
         state,
         PermanentState {
             object_id,
             card,
+            face: profile.battlefield_face,
             tapped: false,
             summoning_sick: profile.is_creature,
             token: false,
@@ -734,22 +853,20 @@ fn resolve_top_stack_object<D: CardDatabase>(
         },
     );
 
-    if profile.role == R2CardRole::UrzaCommander {
+    let mut observations = vec![RulesObservation::PermanentEntered {
+        card,
+        face: profile.battlefield_face,
+        token: false,
+    }];
+
+    if let Some((construct_id, construct_card, construct_profile)) = construct {
         state.commander.zone = CommanderZone::Battlefield;
-        let construct_id = next_object_id(state)?;
-        let construct_card = cards.urza_construct_token_card();
-        let construct_profile = card_profile(cards, construct_card)?;
-        if construct_profile.role != R2CardRole::UrzaConstructToken
-            || !construct_profile.is_artifact
-            || !construct_profile.is_creature
-        {
-            return Err(RuleError::UnsupportedCardMechanic(construct_card));
-        }
         insert_permanent(
             state,
             PermanentState {
                 object_id: construct_id,
                 card: construct_card,
+                face: construct_profile.battlefield_face,
                 tapped: false,
                 summoning_sick: true,
                 token: true,
@@ -759,10 +876,15 @@ fn resolve_top_stack_object<D: CardDatabase>(
                 granted_ability: None,
             },
         );
+        observations.push(RulesObservation::PermanentEntered {
+            card: construct_card,
+            face: construct_profile.battlefield_face,
+            token: true,
+        });
     }
 
     state.window = Window::Priority;
-    Ok(())
+    Ok(Transition { observations })
 }
 
 fn ensure_priority(state: &TrueState) -> Result<(), RuleError> {
@@ -796,6 +918,22 @@ fn validate_payment(pool: ManaPool, payment: ManaPayment, cost: ManaCost) -> Res
     } else {
         Err(RuleError::InvalidManaPayment)
     }
+}
+
+fn add_blue(pool: &mut ManaPool, amount: u16) -> Result<(), RuleError> {
+    pool.blue = pool
+        .blue
+        .checked_add(amount)
+        .ok_or(RuleError::ArithmeticOverflow)?;
+    Ok(())
+}
+
+fn add_colorless(pool: &mut ManaPool, amount: u16) -> Result<(), RuleError> {
+    pool.colorless = pool
+        .colorless
+        .checked_add(amount)
+        .ok_or(RuleError::ArithmeticOverflow)?;
+    Ok(())
 }
 
 fn spend_payment(pool: &mut ManaPool, payment: ManaPayment) {
@@ -874,9 +1012,12 @@ mod tests {
     use urza_core::{CardZone, CommanderState};
 
     const ISLAND: CardDefId = CardDefId(1);
-    const KEY: CardDefId = CardDefId(2);
+    const SOL_RING: CardDefId = CardDefId(2);
     const URZA: CardDefId = CardDefId(3);
     const CONSTRUCT: CardDefId = CardDefId(4);
+    const ANCIENT_TOMB: CardDefId = CardDefId(5);
+    const MDFC_LAND: CardDefId = CardDefId(6);
+    const KEY: CardDefId = CardDefId(7);
 
     #[derive(Default)]
     struct TestCards {
@@ -890,23 +1031,26 @@ mod tests {
                 ISLAND,
                 CardProfile {
                     card: ISLAND,
-                    mana_cost: None,
-                    role: R2CardRole::BasicIsland,
-                    is_artifact: false,
-                    is_creature: false,
+                    role: R2CardRole::Land,
+                    battlefield_face: CardFace::Front,
+                    land_entry: LandEntryRule::Untapped,
+                    mana_ability: ManaAbility::TapForBlue,
+                    ..CardProfile::default()
                 },
             );
             profiles.insert(
-                KEY,
+                SOL_RING,
                 CardProfile {
-                    card: KEY,
+                    card: SOL_RING,
                     mana_cost: Some(ManaCost {
                         generic: 1,
                         ..ManaCost::default()
                     }),
                     role: R2CardRole::ArtifactPermanent,
+                    battlefield_face: CardFace::Front,
+                    mana_ability: ManaAbility::TapForColorless(2),
                     is_artifact: true,
-                    is_creature: false,
+                    ..CardProfile::default()
                 },
             );
             profiles.insert(
@@ -919,18 +1063,59 @@ mod tests {
                         ..ManaCost::default()
                     }),
                     role: R2CardRole::UrzaCommander,
-                    is_artifact: false,
+                    battlefield_face: CardFace::Front,
                     is_creature: true,
+                    ..CardProfile::default()
                 },
             );
             profiles.insert(
                 CONSTRUCT,
                 CardProfile {
                     card: CONSTRUCT,
-                    mana_cost: None,
                     role: R2CardRole::UrzaConstructToken,
+                    battlefield_face: CardFace::Front,
                     is_artifact: true,
                     is_creature: true,
+                    ..CardProfile::default()
+                },
+            );
+            profiles.insert(
+                ANCIENT_TOMB,
+                CardProfile {
+                    card: ANCIENT_TOMB,
+                    role: R2CardRole::Land,
+                    battlefield_face: CardFace::Front,
+                    land_entry: LandEntryRule::Untapped,
+                    mana_ability: ManaAbility::TapForColorlessAndDamage {
+                        mana: 2,
+                        damage: 2,
+                    },
+                    ..CardProfile::default()
+                },
+            );
+            profiles.insert(
+                MDFC_LAND,
+                CardProfile {
+                    card: MDFC_LAND,
+                    role: R2CardRole::Land,
+                    battlefield_face: CardFace::Back,
+                    land_entry: LandEntryRule::PayLifeOrTapped { life: 3 },
+                    mana_ability: ManaAbility::TapForBlue,
+                    ..CardProfile::default()
+                },
+            );
+            profiles.insert(
+                KEY,
+                CardProfile {
+                    card: KEY,
+                    mana_cost: Some(ManaCost {
+                        generic: 1,
+                        ..ManaCost::default()
+                    }),
+                    role: R2CardRole::ArtifactPermanent,
+                    battlefield_face: CardFace::Front,
+                    is_artifact: true,
+                    ..CardProfile::default()
                 },
             );
             Self { profiles }
@@ -949,6 +1134,16 @@ mod tests {
         fn urza_construct_token_card(&self) -> CardDefId {
             CONSTRUCT
         }
+    }
+
+    fn object_for(state: &TrueState, card: CardDefId) -> ObjectId {
+        state
+            .battlefield
+            .permanents()
+            .iter()
+            .find(|permanent| permanent.card == card)
+            .expect("expected permanent")
+            .object_id
     }
 
     #[test]
@@ -988,12 +1183,12 @@ mod tests {
     }
 
     #[test]
-    fn search_observation_never_exposes_hidden_library_order() {
+    fn search_observation_is_order_invariant_and_collapses_identical_targets() {
         let a = TrueState {
             library: TrueLibrary::unknown(vec![
                 CardDefId(9),
                 CardDefId(2),
-                CardDefId(7),
+                CardDefId(2),
                 CardDefId(4),
             ]),
             ..TrueState::default()
@@ -1001,9 +1196,9 @@ mod tests {
         let b = TrueState {
             library: TrueLibrary::unknown(vec![
                 CardDefId(4),
-                CardDefId(7),
                 CardDefId(2),
                 CardDefId(9),
+                CardDefId(2),
             ]),
             ..TrueState::default()
         };
@@ -1018,7 +1213,7 @@ mod tests {
     }
 
     #[test]
-    fn draw_updates_known_top_and_all_known_bottom_without_leaking_order() {
+    fn draw_updates_known_top_and_all_known_bottom() {
         let mut known_top = TrueState {
             library: TrueLibrary::new(
                 vec![CardDefId(1), CardDefId(2), CardDefId(3)],
@@ -1090,13 +1285,91 @@ mod tests {
     }
 
     #[test]
-    fn deterministic_r2_trajectory_covers_land_cast_stack_urza_and_artifact_mana() {
+    fn mdfc_land_face_and_life_entry_choice_are_explicit_state() {
+        let cards = TestCards::r2();
+        let mut tapped = TrueState {
+            turn: 1,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            hand: CardZone::new(vec![MDFC_LAND]),
+            ..TrueState::default()
+        };
+        apply_action(
+            &mut tapped,
+            &cards,
+            Action::PlayLand {
+                card: MDFC_LAND,
+                entry: LandEntryChoice::Default,
+            },
+        )
+        .unwrap();
+        let permanent = tapped.battlefield.get(object_for(&tapped, MDFC_LAND)).unwrap();
+        assert_eq!(permanent.face, CardFace::Back);
+        assert!(permanent.tapped);
+        assert_eq!(tapped.life, 40);
+
+        let mut paid = TrueState {
+            turn: 1,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            hand: CardZone::new(vec![MDFC_LAND]),
+            ..TrueState::default()
+        };
+        apply_action(
+            &mut paid,
+            &cards,
+            Action::PlayLand {
+                card: MDFC_LAND,
+                entry: LandEntryChoice::PayLife,
+            },
+        )
+        .unwrap();
+        let permanent = paid.battlefield.get(object_for(&paid, MDFC_LAND)).unwrap();
+        assert_eq!(permanent.face, CardFace::Back);
+        assert!(!permanent.tapped);
+        assert_eq!(paid.life, 37);
+    }
+
+    #[test]
+    fn intrinsic_mana_sources_track_tapping_and_self_damage() {
         let cards = TestCards::r2();
         let mut state = TrueState {
             turn: 1,
             phase: Phase::PrecombatMain,
             window: Window::Priority,
-            hand: CardZone::new(vec![ISLAND, KEY]),
+            hand: CardZone::new(vec![ANCIENT_TOMB]),
+            ..TrueState::default()
+        };
+        apply_action(
+            &mut state,
+            &cards,
+            Action::PlayLand {
+                card: ANCIENT_TOMB,
+                entry: LandEntryChoice::Default,
+            },
+        )
+        .unwrap();
+        let tomb = object_for(&state, ANCIENT_TOMB);
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateManaAbility { source: tomb },
+        )
+        .unwrap();
+        assert_eq!(state.mana.colorless, 2);
+        assert_eq!(state.life, 38);
+        assert!(state.battlefield.get(tomb).unwrap().tapped);
+    }
+
+    #[test]
+    fn r2_acceptance_trajectory_covers_turn_draw_land_artifact_stack_urza_and_mana() {
+        let cards = TestCards::r2();
+        let mut state = TrueState {
+            turn: 1,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![ISLAND]),
+            hand: CardZone::new(vec![ISLAND, SOL_RING]),
             commander: CommanderState {
                 zone: CommanderZone::CommandZone,
                 command_zone_casts: 0,
@@ -1104,27 +1377,29 @@ mod tests {
             ..TrueState::default()
         };
 
-        apply_action(&mut state, &cards, Action::PlayLand { card: ISLAND }).unwrap();
-        let island = state
-            .battlefield
-            .permanents()
-            .iter()
-            .find(|permanent| permanent.card == ISLAND)
-            .unwrap()
-            .object_id;
         apply_action(
             &mut state,
             &cards,
-            Action::ActivateIslandMana { source: island },
+            Action::PlayLand {
+                card: ISLAND,
+                entry: LandEntryChoice::Default,
+            },
         )
         .unwrap();
-        assert_eq!(state.mana.blue, 1);
-
+        let first_island = object_for(&state, ISLAND);
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateManaAbility {
+                source: first_island,
+            },
+        )
+        .unwrap();
         apply_action(
             &mut state,
             &cards,
             Action::CastFromHand {
-                card: KEY,
+                card: SOL_RING,
                 payment: ManaPayment {
                     blue: 1,
                     ..ManaPayment::default()
@@ -1133,20 +1408,80 @@ mod tests {
         )
         .unwrap();
         assert_eq!(state.stack.len(), 1);
-        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
-        assert!(
-            state
-                .battlefield
-                .permanents()
-                .iter()
-                .any(|permanent| permanent.card == KEY)
-        );
+        assert!(state.battlefield.permanents().iter().all(|p| p.card != SOL_RING));
 
-        state.mana = ManaPool {
-            blue: 2,
-            colorless: 2,
-            ..ManaPool::default()
-        };
+        let resolved = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            resolved.observations,
+            vec![RulesObservation::PermanentEntered {
+                card: SOL_RING,
+                face: CardFace::Front,
+                token: false,
+            }]
+        );
+        let sol_ring = object_for(&state, SOL_RING);
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateManaAbility { source: sol_ring },
+        )
+        .unwrap();
+        assert_eq!(state.mana.colorless, 2);
+
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(state.phase, Phase::OpponentCycle);
+        assert_eq!(state.window, Window::None);
+
+        advance_automatic(&mut state).unwrap();
+        assert_eq!(state.turn, 2);
+        assert_eq!(state.phase, Phase::Upkeep);
+        assert_eq!(state.window, Window::Priority);
+        assert!(!state.battlefield.get(first_island).unwrap().tapped);
+        assert!(!state.battlefield.get(sol_ring).unwrap().tapped);
+
+        let draw = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            draw.observations,
+            vec![RulesObservation::CardsDrawn(vec![ISLAND])]
+        );
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(state.phase, Phase::PrecombatMain);
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::PlayLand {
+                card: ISLAND,
+                entry: LandEntryChoice::Default,
+            },
+        )
+        .unwrap();
+        let islands: Vec<_> = state
+            .battlefield
+            .permanents()
+            .iter()
+            .filter(|permanent| permanent.card == ISLAND)
+            .map(|permanent| permanent.object_id)
+            .collect();
+        assert_eq!(islands.len(), 2);
+        for island in islands {
+            apply_action(
+                &mut state,
+                &cards,
+                Action::ActivateManaAbility { source: island },
+            )
+            .unwrap();
+        }
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateManaAbility { source: sol_ring },
+        )
+        .unwrap();
+        assert_eq!(state.mana.blue, 2);
+        assert_eq!(state.mana.colorless, 2);
+
         apply_action(
             &mut state,
             &cards,
@@ -1159,70 +1494,56 @@ mod tests {
             },
         )
         .unwrap();
-        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
-
+        let urza_resolution = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            urza_resolution.observations,
+            vec![
+                RulesObservation::PermanentEntered {
+                    card: URZA,
+                    face: CardFace::Front,
+                    token: false,
+                },
+                RulesObservation::PermanentEntered {
+                    card: CONSTRUCT,
+                    face: CardFace::Front,
+                    token: true,
+                },
+            ]
+        );
         assert_eq!(state.commander.zone, CommanderZone::Battlefield);
         assert_eq!(state.commander.command_zone_casts, 1);
-        assert!(
-            state
-                .battlefield
-                .permanents()
-                .iter()
-                .any(|permanent| permanent.card == URZA)
-        );
-        let construct = state
-            .battlefield
-            .permanents()
-            .iter()
-            .find(|permanent| permanent.card == CONSTRUCT)
-            .unwrap();
-        assert!(construct.token);
-        assert!(construct.summoning_sick);
 
-        let key = state
-            .battlefield
-            .permanents()
-            .iter()
-            .find(|permanent| permanent.card == KEY)
-            .unwrap()
-            .object_id;
+        let construct = object_for(&state, CONSTRUCT);
+        assert!(state.battlefield.get(construct).unwrap().summoning_sick);
         apply_action(
             &mut state,
             &cards,
-            Action::ActivateUrzaArtifactMana { artifact: key },
+            Action::ActivateUrzaArtifactMana {
+                artifact: construct,
+            },
         )
         .unwrap();
         assert_eq!(state.mana.blue, 1);
-        assert!(state.battlefield.get(key).unwrap().tapped);
+        assert!(state.battlefield.get(construct).unwrap().tapped);
     }
 
     #[test]
-    fn phase_progression_draws_before_main_and_stops_after_turn_six() {
-        let cards = TestCards::r2();
-        let mut state = TrueState {
-            turn: 1,
-            phase: Phase::Upkeep,
-            window: Window::Priority,
-            library: TrueLibrary::unknown(vec![CardDefId(9), CardDefId(8)]),
-            ..TrueState::default()
-        };
-
-        let transition = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
-        assert_eq!(state.phase, Phase::Draw);
-        assert_eq!(
-            transition.observations,
-            vec![RulesObservation::CardsDrawn(vec![CardDefId(9)])]
-        );
-        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
-        assert_eq!(state.phase, Phase::PrecombatMain);
-
+    fn phase_progression_stops_after_turn_six_without_mutating_horizon_state() {
         let mut horizon = TrueState {
             turn: HORIZON_TURN,
             phase: Phase::OpponentCycle,
             window: Window::None,
+            mana: ManaPool {
+                blue: 1,
+                ..ManaPool::default()
+            },
             ..TrueState::default()
         };
-        assert_eq!(advance_phase(&mut horizon), Err(RuleError::HorizonReached));
-        assert_eq!(horizon.turn, HORIZON_TURN);
+        let before = horizon.clone();
+        assert_eq!(
+            advance_automatic(&mut horizon),
+            Err(RuleError::HorizonReached)
+        );
+        assert_eq!(horizon, before);
     }
 }

@@ -51,6 +51,25 @@ pub struct CounterState {
     pub luck: u8,
 }
 
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    Default,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+)]
+pub enum CardFace {
+    #[default]
+    Front,
+    Back,
+}
+
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum PermanentMode {
     #[default]
@@ -235,6 +254,7 @@ impl TrueLibrary {
 pub struct PermanentState {
     pub object_id: ObjectId,
     pub card: CardDefId,
+    pub face: CardFace,
     pub tapped: bool,
     pub summoning_sick: bool,
     pub token: bool,
@@ -706,8 +726,8 @@ pub enum StateValidationError {
 #[cfg(test)]
 mod tests {
     use super::{
-        BattlefieldZone, CardZone, CounterState, DelayedEvent, LibraryKnowledge, PermanentState,
-        ReplayKey, StateValidationError, TrueLibrary, TrueState,
+        BattlefieldZone, CardFace, CardZone, CounterState, DelayedEvent, LibraryKnowledge,
+        PermanentState, ReplayKey, StateValidationError, TrueLibrary, TrueState,
     };
     use crate::{CardDefId, ObjectId, PermissionId};
 
@@ -715,6 +735,7 @@ mod tests {
         PermanentState {
             object_id: ObjectId(object),
             card: CardDefId(card),
+            face: CardFace::Front,
             tapped: false,
             summoning_sick: false,
             token: false,
