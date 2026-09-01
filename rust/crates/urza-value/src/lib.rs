@@ -319,5 +319,4 @@ mod tests {
             ValueKey::try_from_information(&make(Some(2))).unwrap()
         );
     }
-
 }
