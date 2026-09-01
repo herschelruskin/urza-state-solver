@@ -484,14 +484,11 @@ pub fn advance_automatic(state: &mut TrueState) -> Result<Transition, RuleError>
     }
 
     let mut transition = Transition::default();
-    loop {
-        match (state.phase, state.window) {
-            (Phase::OpponentCycle, Window::None) | (Phase::Untap, Window::None) => {
-                let next = advance_phase(state)?;
-                transition.observations.extend(next.observations);
-            }
-            _ => break,
-        }
+    while let (Phase::OpponentCycle, Window::None) | (Phase::Untap, Window::None) =
+        (state.phase, state.window)
+    {
+        let next = advance_phase(state)?;
+        transition.observations.extend(next.observations);
     }
 
     state.validate()?;
