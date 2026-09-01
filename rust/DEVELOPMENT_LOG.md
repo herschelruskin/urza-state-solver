@@ -186,3 +186,31 @@ Validation:
 - R2 core audit: PASS, reporting 22 supported active identities and horizon 6.
 
 R2 acceptance is closed. R3 search/tutor staging may begin from this checkpoint. R3 remains responsible for simple tutors, Whir, Reshape, Transmute, Bay, Saga III, Tezzeret, Top/scry, and Urza spin permission; R4 remains responsible for broader engine-card interactions and win-catalog coverage.
+
+
+## 2026-09-01 — R3 proper started: staged simple-tutor foundation
+
+Classification: RULE/MODEL/PARITY boundary work. No POLICY heuristic implementation and no Python gameplay-logic port.
+
+Started from validated R2 acceptance head `7d01f098fa32d2df453d828b8cba509e4f950814`.
+
+Implemented the first R3 slice around the shared decision -> observation -> contingent-decision contract:
+
+- Spellseeker, Merchant Scroll, and Mystical Tutor now resolve through explicit staged searches;
+- policy-visible contingent target/no-find actions are generated from `InformationState` only;
+- hidden library permutation cannot alter the search observation or target action set;
+- zero-target legal no-find is a forced continuation rather than a blocker;
+- Spellseeker enters the battlefield before its ETB search decision;
+- selected targets go to the correct destination (hand or known top);
+- search branches use one common pre-target shuffled ranking and delete the selected target, rather than independently reshuffling post-target libraries;
+- static search-class indexes are carried by the R3 card database;
+- R2's historical 22-card audit surface is preserved while current R3 coverage advances to 25 supported identities;
+- CI now includes an `r3-audit` gate.
+
+Validation:
+- implementation checkpoint `9834759df176aca4809c74d959a9f5f9fc2ed0d5`;
+- GitHub Actions run `33567546432`: PASS;
+- locked dependencies, rustfmt, strict Clippy, benchmark compilation, R0/R1/R2 audits, and R3 staged-search audit: PASS;
+- workspace/all-target tests: 56 passed, 0 failed.
+
+This is an R3-start checkpoint, not R3 acceptance. Remaining R3 scope is Whir, Reshape, Transmute, Bay, Saga III, Tezzeret, Top/scry, and Urza spin permission.
