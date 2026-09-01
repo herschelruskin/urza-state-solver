@@ -637,14 +637,8 @@ fn r2_primitive_shape(
             LandEntryRule::None,
             ManaAbility::TapForColorless(2),
         ),
-        "Aether Spellbomb"
-        | "Codex Shredder"
-        | "Hope of Ghirapur"
-        | "Manifold Key"
-        | "Mishra's Bauble"
-        | "Tormod's Crypt"
-        | "Urza's Bauble"
-        | "Voltaic Key"
+        "Aether Spellbomb" | "Codex Shredder" | "Hope of Ghirapur" | "Manifold Key"
+        | "Mishra's Bauble" | "Tormod's Crypt" | "Urza's Bauble" | "Voltaic Key"
         | "Welding Jar" => (
             R2CardRole::ArtifactPermanent,
             CardFace::Front,
@@ -678,12 +672,12 @@ pub fn validate_r2_database() -> Result<(), CatalogError> {
         .collect();
 
     for card in &catalog.cards {
-        let profile = database
-            .profile(CardDefId(card.id))
-            .ok_or_else(|| CatalogError::Invariant(format!("missing R2 profile for {}", card.deck_name)))?;
-        let status = *coverage_by_id
-            .get(&card.id)
-            .ok_or_else(|| CatalogError::Invariant(format!("missing coverage for {}", card.deck_name)))?;
+        let profile = database.profile(CardDefId(card.id)).ok_or_else(|| {
+            CatalogError::Invariant(format!("missing R2 profile for {}", card.deck_name))
+        })?;
+        let status = *coverage_by_id.get(&card.id).ok_or_else(|| {
+            CatalogError::Invariant(format!("missing coverage for {}", card.deck_name))
+        })?;
 
         if profile.role == urza_rules::R2CardRole::Unsupported {
             if status != CoverageStatus::IntentionallyUnmodeled {
@@ -692,7 +686,10 @@ pub fn validate_r2_database() -> Result<(), CatalogError> {
                     card.deck_name, status
                 )));
             }
-        } else if !matches!(status, CoverageStatus::PrimitiveActive | CoverageStatus::RulesActive) {
+        } else if !matches!(
+            status,
+            CoverageStatus::PrimitiveActive | CoverageStatus::RulesActive
+        ) {
             return Err(CatalogError::Invariant(format!(
                 "{} has an R2 primitive but coverage says {:?}",
                 card.deck_name, status
@@ -861,7 +858,13 @@ mod tests {
         .unwrap();
 
         assert_eq!(state.stack.len(), 1);
-        assert!(state.battlefield.permanents().iter().all(|p| p.card != sol_ring));
+        assert!(
+            state
+                .battlefield
+                .permanents()
+                .iter()
+                .all(|p| p.card != sol_ring)
+        );
         let resolution = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
         assert_eq!(
             resolution.observations,
@@ -924,12 +927,7 @@ mod tests {
             .collect();
         assert_eq!(islands.len(), 2);
         for source in islands {
-            apply_action(
-                &mut state,
-                &cards,
-                Action::ActivateManaAbility { source },
-            )
-            .unwrap();
+            apply_action(&mut state, &cards, Action::ActivateManaAbility { source }).unwrap();
         }
         apply_action(
             &mut state,

@@ -86,7 +86,6 @@ fn run_r1_audit() {
     );
 }
 
-
 fn run_r2_audit() {
     validate_r2_database().expect("R2 database/coverage invariants");
     let catalog = load_r1_catalog().expect("embedded R1 catalog");

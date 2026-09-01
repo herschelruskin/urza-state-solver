@@ -813,8 +813,7 @@ mod tests {
     use super::{CanonicalObjectId, CardCount, InformationState, PolicyView, observe};
     use urza_core::{
         BattlefieldZone, CardDefId, CardFace, CounterState, LibraryKnowledge, ObjectId,
-        PermanentState,
-        ReplayKey, SourceRef, StackObject, TrueLibrary, TrueState,
+        PermanentState, ReplayKey, SourceRef, StackObject, TrueLibrary, TrueState,
     };
 
     fn permanent(object: u32, card: u16, attached_to: Option<u32>) -> PermanentState {
@@ -1187,5 +1186,4 @@ mod tests {
         assert_ne!(observe(&front).unwrap(), observe(&back).unwrap());
         assert_eq!(observe(&back).unwrap().battlefield[0].face, CardFace::Back);
     }
-
 }

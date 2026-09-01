@@ -242,7 +242,9 @@ pub enum LandEntryRule {
     #[default]
     None,
     Untapped,
-    PayLifeOrTapped { life: u8 },
+    PayLifeOrTapped {
+        life: u8,
+    },
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
@@ -258,8 +260,13 @@ pub enum ManaAbility {
     None,
     TapForBlue,
     TapForColorless(u16),
-    TapForBlueAndDamage { damage: u16 },
-    TapForColorlessAndDamage { mana: u16, damage: u16 },
+    TapForBlueAndDamage {
+        damage: u16,
+    },
+    TapForColorlessAndDamage {
+        mana: u16,
+        damage: u16,
+    },
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
@@ -672,7 +679,10 @@ fn activate_mana_ability<D: CardDatabase>(
             add_blue(&mut mana, 1)?;
             life = life.saturating_sub(damage);
         }
-        ManaAbility::TapForColorlessAndDamage { mana: amount, damage } => {
+        ManaAbility::TapForColorlessAndDamage {
+            mana: amount,
+            damage,
+        } => {
             add_colorless(&mut mana, amount)?;
             life = life.saturating_sub(damage);
         }
@@ -1086,10 +1096,7 @@ mod tests {
                     role: R2CardRole::Land,
                     battlefield_face: CardFace::Front,
                     land_entry: LandEntryRule::Untapped,
-                    mana_ability: ManaAbility::TapForColorlessAndDamage {
-                        mana: 2,
-                        damage: 2,
-                    },
+                    mana_ability: ManaAbility::TapForColorlessAndDamage { mana: 2, damage: 2 },
                     ..CardProfile::default()
                 },
             );
@@ -1303,7 +1310,10 @@ mod tests {
             },
         )
         .unwrap();
-        let permanent = tapped.battlefield.get(object_for(&tapped, MDFC_LAND)).unwrap();
+        let permanent = tapped
+            .battlefield
+            .get(object_for(&tapped, MDFC_LAND))
+            .unwrap();
         assert_eq!(permanent.face, CardFace::Back);
         assert!(permanent.tapped);
         assert_eq!(tapped.life, 40);
@@ -1408,7 +1418,13 @@ mod tests {
         )
         .unwrap();
         assert_eq!(state.stack.len(), 1);
-        assert!(state.battlefield.permanents().iter().all(|p| p.card != SOL_RING));
+        assert!(
+            state
+                .battlefield
+                .permanents()
+                .iter()
+                .all(|p| p.card != SOL_RING)
+        );
 
         let resolved = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
         assert_eq!(
