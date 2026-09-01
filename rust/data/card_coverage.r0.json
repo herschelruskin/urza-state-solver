@@ -189,8 +189,8 @@
     },
     {
       "card_id": 37,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 initial sequencing primitive: land play/mana, Urza cast/Construct/artifact mana, or generic artifact cast only; remaining intrinsic mechanics are still deferred"
     },
     {
       "card_id": 38,
@@ -429,8 +429,8 @@
     },
     {
       "card_id": 85,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 initial sequencing primitive: land play/mana, Urza cast/Construct/artifact mana, or generic artifact cast only; remaining intrinsic mechanics are still deferred"
     },
     {
       "card_id": 86,
@@ -459,8 +459,8 @@
     },
     {
       "card_id": 91,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R2 initial sequencing primitive: land play/mana, Urza cast/Construct/artifact mana, or generic artifact cast only; remaining intrinsic mechanics are still deferred"
     },
     {
       "card_id": 92,

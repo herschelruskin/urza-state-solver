@@ -526,6 +526,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "urza-core",
+ "urza-rules",
 ]
 
 [[package]]
@@ -593,8 +594,10 @@ dependencies = [
 name = "urza-rules"
 version = "0.1.0"
 dependencies = [
+ "thiserror",
  "urza-core",
  "urza-info",
+ "urza-rng",
 ]
 
 [[package]]

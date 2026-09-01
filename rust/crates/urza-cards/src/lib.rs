@@ -479,6 +479,97 @@ fn parse_decklist(input: &str) -> Result<BTreeMap<String, u8>, CatalogError> {
     Ok(out)
 }
 
+
+pub const URZA_CONSTRUCT_TOKEN_CARD_ID: CardDefId = CardDefId(95);
+
+#[derive(Debug, Clone)]
+pub struct R2CardDatabase {
+    cards: BTreeMap<CardDefId, urza_rules::CardProfile>,
+}
+
+impl R2CardDatabase {
+    pub fn load() -> Result<Self, CatalogError> {
+        let catalog = load_r1_catalog()?;
+        let mut cards = BTreeMap::new();
+
+        for card in catalog.cards {
+            let role = match card.deck_name.as_str() {
+                "Island" => urza_rules::R2CardRole::BasicIsland,
+                "Urza, Lord High Artificer" => urza_rules::R2CardRole::UrzaCommander,
+                "Voltaic Key" => urza_rules::R2CardRole::ArtifactPermanent,
+                _ => urza_rules::R2CardRole::Unsupported,
+            };
+
+            let mana_cost = if card.feature_flags.is_land {
+                None
+            } else {
+                match urza_rules::ManaCost::parse_scryfall(&card.mana_cost) {
+                    Ok(cost) => Some(cost),
+                    Err(_) if role == urza_rules::R2CardRole::Unsupported => None,
+                    Err(error) => {
+                        return Err(CatalogError::Invariant(format!(
+                            "R2 mana-cost parse failed for {}: {error}",
+                            card.deck_name
+                        )));
+                    }
+                }
+            };
+
+            cards.insert(
+                CardDefId(card.id),
+                urza_rules::CardProfile {
+                    card: CardDefId(card.id),
+                    mana_cost,
+                    role,
+                    is_artifact: card.feature_flags.is_artifact,
+                    is_creature: card.feature_flags.is_creature,
+                },
+            );
+        }
+
+        cards.insert(
+            URZA_CONSTRUCT_TOKEN_CARD_ID,
+            urza_rules::CardProfile {
+                card: URZA_CONSTRUCT_TOKEN_CARD_ID,
+                mana_cost: None,
+                role: urza_rules::R2CardRole::UrzaConstructToken,
+                is_artifact: true,
+                is_creature: true,
+            },
+        );
+
+        Ok(Self { cards })
+    }
+
+    pub fn card_id_by_name(&self, name: &str) -> Result<CardDefId, CatalogError> {
+        let catalog = load_r1_catalog()?;
+        catalog
+            .cards
+            .iter()
+            .find(|card| card.deck_name == name)
+            .map(|card| CardDefId(card.id))
+            .ok_or_else(|| CatalogError::Invariant(format!("unknown active card name {name}")))
+    }
+}
+
+impl urza_rules::CardDatabase for R2CardDatabase {
+    fn profile(&self, card: CardDefId) -> Option<urza_rules::CardProfile> {
+        self.cards.get(&card).copied()
+    }
+
+    fn commander_card(&self) -> CardDefId {
+        self.cards
+            .values()
+            .find(|profile| profile.role == urza_rules::R2CardRole::UrzaCommander)
+            .map(|profile| profile.card)
+            .expect("validated R2 database contains Urza")
+    }
+
+    fn urza_construct_token_card(&self) -> CardDefId {
+        URZA_CONSTRUCT_TOKEN_CARD_ID
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -494,15 +585,31 @@ mod tests {
     }
 
     #[test]
-    fn r0_does_not_falsely_claim_rules_coverage() {
+    fn coverage_never_claims_unsupported_r2_cards_are_active() {
         let coverage = load_coverage().unwrap();
-        assert!(coverage.entries.iter().all(|entry| {
-            entry.status == CoverageStatus::IntentionallyUnmodeled
-                && entry
-                    .reason
-                    .as_deref()
-                    .is_some_and(|reason| !reason.is_empty())
-        }));
+        let r2 = R2CardDatabase::load().unwrap();
+        for entry in coverage.entries {
+            let profile = r2.profile(CardDefId(entry.card_id)).unwrap();
+            if profile.role == urza_rules::R2CardRole::Unsupported {
+                assert_eq!(entry.status, CoverageStatus::IntentionallyUnmodeled);
+            }
+        }
+    }
+
+    #[test]
+    fn r2_database_exposes_only_the_initial_audited_primitive_slice() {
+        let r2 = R2CardDatabase::load().unwrap();
+        let island = r2.card_id_by_name("Island").unwrap();
+        let key = r2.card_id_by_name("Voltaic Key").unwrap();
+        let urza = r2.card_id_by_name("Urza, Lord High Artificer").unwrap();
+
+        assert_eq!(r2.profile(island).unwrap().role, urza_rules::R2CardRole::BasicIsland);
+        assert_eq!(r2.profile(key).unwrap().role, urza_rules::R2CardRole::ArtifactPermanent);
+        assert_eq!(r2.profile(urza).unwrap().role, urza_rules::R2CardRole::UrzaCommander);
+        assert_eq!(
+            r2.profile(URZA_CONSTRUCT_TOKEN_CARD_ID).unwrap().role,
+            urza_rules::R2CardRole::UrzaConstructToken
+        );
     }
 
     #[test]

@@ -116,3 +116,25 @@ Validation:
 - R1 catalog audit: PASS.
 
 R1 acceptance gate is closed. R2 sequencing/rules work may begin from this checkpoint.
+
+
+## 2026-09-01 — R2 proper started: core sequencing/rules kernel
+
+Classification: RULE/MODEL kernel. No POLICY implementation and no Python gameplay logic port.
+
+Started directly from validated R1 checkpoint `ec8d320b6686cf2a4a76e208f37210fa7e3ad34d`.
+
+Initial R2 slice implements:
+- typed R2 actions for priority pass, basic Island play/mana, generic artifact casting, command-zone Urza casting, and Urza artifact mana;
+- exact mana-cost parsing/payment enumeration for the currently supported simple symbols, preserving payment-choice distinctions;
+- stack-based spell casting/resolution rather than cast/ETB macros;
+- Urza command tax/cast count, battlefield entry, and a synthetic execution-only Construct token definition outside the pinned 95-card active-deck catalog;
+- turn/phase progression through the modeled T1-T6 horizon, with normal draw observation before main phase;
+- explicit draw transition, knowledge-bound updates, deterministic shuffle using the R1 occurrence-aware RNG cursor, and search-observation candidate projection sorted independently of true hidden order;
+- explicit unsupported-mechanic errors rather than silently treating unimplemented cards as vanilla permanents.
+
+Coverage is advanced only for Island, Urza, and Voltaic Key as `PRIMITIVE_ACTIVE`; this means the specific R2 primitive surface is available, not that their full intrinsic card text is implemented. Urza spin remains R3; Voltaic Key's untap ability remains later rules work.
+
+Focused unit fixtures cover mana payment, hidden-order-safe search observation, draw knowledge updates, shuffle occurrence consumption, deterministic land/artifact/Urza sequencing, artifact mana, and horizon progression.
+
+Validation: pending CI on this R2-start commit.
