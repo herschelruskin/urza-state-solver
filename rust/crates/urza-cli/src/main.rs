@@ -158,7 +158,7 @@ fn run_r3_audit() {
         "supported_active_names": supported_names,
         "staged_simple_tutors": simple_tutors,
         "decision_boundary": "commit -> search observation -> target/no-find -> shared pre-target shuffle",
-        "scope": "initial R3 staged-search foundation; Whir/Reshape/Transmute/Bay/Saga/Tezzeret/Top/scry/Urza spin remain to broaden",
+        "scope": "R3 staged searches plus Top/scry observation factoring and Urza spin permission; Saga III and Tezzeret search remain to broaden",
     });
 
     println!(

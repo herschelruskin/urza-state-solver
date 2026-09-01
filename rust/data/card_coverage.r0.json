@@ -369,8 +369,8 @@
     },
     {
       "card_id": 73,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R3 primitive active: ordinary artifact cast, staged {1} top-three look -> post-observation reorder choice, and atomic tap/draw-then-put-Top-on-library resolution"
     },
     {
       "card_id": 74,
@@ -430,7 +430,7 @@
     {
       "card_id": 85,
       "status": "PRIMITIVE_ACTIVE",
-      "reason": "R2 primitive: command-zone cast/tax, Construct ETB, and artifact mana; spin permission remains R3"
+      "reason": "R3 primitive: command-zone cast/tax, Construct ETB, artifact mana, plus five-mana spin that shuffles with occurrence-aware RNG, exiles/observes the top card, creates an until-EOT free-play permission, and supports consuming that permission for currently modeled legal card faces"
     },
     {
       "card_id": 86,

@@ -461,6 +461,36 @@ fn observe_pending(
     }
 }
 
+pub fn resolve_permission_slot(
+    state: &TrueState,
+    slot: u16,
+) -> Result<Option<urza_core::PermissionId>, ObservationError> {
+    state.validate()?;
+    let object_classes = canonical_object_classes(state);
+    let mut indexed: Vec<_> = state
+        .urza_permissions
+        .iter()
+        .map(|permission| {
+            (
+                permission,
+                observe_source(permission.source, &object_classes),
+            )
+        })
+        .collect();
+    indexed.sort_unstable_by_key(|(permission, source)| {
+        (
+            permission.card,
+            permission.expires_turn,
+            permission.free_cast,
+            *source,
+            permission.permission_id,
+        )
+    });
+    Ok(indexed
+        .get(usize::from(slot))
+        .map(|(permission, _)| permission.permission_id))
+}
+
 fn observe_permissions(
     permissions: &[urza_core::UrzaPermission],
     object_classes: &BTreeMap<ObjectId, CanonicalObjectId>,

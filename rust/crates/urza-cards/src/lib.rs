@@ -534,6 +534,7 @@ impl R2CardDatabase {
                     },
                     simple_tutor: None,
                     special_search: urza_rules::SpecialSearchKind::None,
+                    utility: urza_rules::UtilityKind::None,
                     is_artifact: card.feature_flags.is_artifact,
                     is_creature: card.feature_flags.is_creature,
                 },
@@ -553,6 +554,7 @@ impl R2CardDatabase {
                 search_classes: urza_rules::SearchClassFlags::default(),
                 simple_tutor: None,
                 special_search: urza_rules::SpecialSearchKind::None,
+                utility: urza_rules::UtilityKind::None,
                 is_artifact: true,
                 is_creature: true,
             },
@@ -680,6 +682,13 @@ impl R3CardDatabase {
         })?;
         bay_profile.role = urza_rules::R2CardRole::ArtifactPermanent;
         bay_profile.special_search = urza_rules::SpecialSearchKind::RepurposingBay;
+
+        let top = card_id_by_name_from_r1("Sensei's Divining Top")?;
+        let top_profile = cards.get_mut(&top).ok_or_else(|| {
+            CatalogError::Invariant("missing R3 Sensei's Divining Top profile".to_owned())
+        })?;
+        top_profile.role = urza_rules::R2CardRole::ArtifactPermanent;
+        top_profile.utility = urza_rules::UtilityKind::SenseisDiviningTop;
 
         Ok(Self { cards })
     }
@@ -1176,7 +1185,7 @@ mod tests {
     fn r3_simple_tutor_registry_extends_r2_without_reclassifying_later_mechanics() {
         validate_r3_database().unwrap();
         let r3 = R3CardDatabase::load().unwrap();
-        assert_eq!(r3.supported_active_cards().len(), 29);
+        assert_eq!(r3.supported_active_cards().len(), 30);
 
         let spellseeker = r3.card_id_by_name("Spellseeker").unwrap();
         let merchant = r3.card_id_by_name("Merchant Scroll").unwrap();
@@ -1268,4 +1277,20 @@ mod tests {
             })
         );
     }
+
+    #[test]
+    fn r3_top_registry_activates_top_without_reclassifying_other_artifacts() {
+        let r3 = R3CardDatabase::load().unwrap();
+        let top = r3.card_id_by_name("Sensei's Divining Top").unwrap();
+        let key = r3.card_id_by_name("Voltaic Key").unwrap();
+        assert_eq!(
+            r3.profile(top).unwrap().utility,
+            urza_rules::UtilityKind::SenseisDiviningTop
+        );
+        assert_eq!(
+            r3.profile(key).unwrap().utility,
+            urza_rules::UtilityKind::None
+        );
+    }
+
 }

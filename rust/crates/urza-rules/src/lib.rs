@@ -5,12 +5,13 @@ use std::collections::BTreeSet;
 use thiserror::Error;
 use urza_core::{
     AbilityId, BattlefieldZone, CardDefId, CardFace, CommanderZone, CounterState, DelayedEvent,
-    GenericCost, LibraryKnowledge, ManaPool, ObjectId, PendingDecision, PermanentMode,
+    GenericCost, LibraryKnowledge, ManaPool, ObjectId, PendingDecision, PermissionId, PermanentMode,
     PermanentState, Phase, SourceRef, StackObject, StateValidationError, TrueLibrary, TrueState,
     Window,
 };
 use urza_info::{
     CanonicalObjectId, InformationState, ObservedPendingDecision, resolve_canonical_object,
+    resolve_permission_slot,
 };
 use urza_rng::{
     EventOccurrence, EventType, LogicalEventId, RngCoordinate, RngDomain, RootSeed, WorldId,
@@ -18,10 +19,14 @@ use urza_rng::{
 
 pub const RULES_PHASE: &str = "R3";
 pub const R2_RULES_VERSION: &str = "r2_core_kernel_v2";
-pub const RULES_VERSION: &str = "r3_search_staging_v2";
+pub const RULES_VERSION: &str = "r3_observation_permissions_v3";
 pub const HORIZON_TURN: u8 = 6;
 pub const RNG_EVENT_SEARCH_SHUFFLE: EventType = EventType(0x0301);
 pub const ABILITY_REPURPOSING_BAY_SEARCH: AbilityId = AbilityId(0x0301);
+pub const ABILITY_TOP_LOOK: AbilityId = AbilityId(0x0302);
+pub const ABILITY_TOP_DRAW: AbilityId = AbilityId(0x0303);
+pub const ABILITY_URZA_SPIN: AbilityId = AbilityId(0x0304);
+pub const RNG_EVENT_URZA_SPIN_SHUFFLE: EventType = EventType(0x0302);
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ManaCost {
@@ -317,6 +322,13 @@ pub enum SpecialSearchKind {
     RepurposingBay,
 }
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
+pub enum UtilityKind {
+    #[default]
+    None,
+    SenseisDiviningTop,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum SearchDestination {
     Hand,
@@ -337,6 +349,7 @@ pub struct CardProfile {
     pub search_classes: SearchClassFlags,
     pub simple_tutor: Option<SimpleTutorKind>,
     pub special_search: SpecialSearchKind,
+    pub utility: UtilityKind,
     pub is_artifact: bool,
     pub is_creature: bool,
 }
@@ -388,6 +401,21 @@ pub enum Action {
         sacrifice: ObjectId,
         payment: ManaPayment,
     },
+    ActivateTopLook {
+        source: ObjectId,
+        payment: ManaPayment,
+    },
+    ActivateTopDraw {
+        source: ObjectId,
+    },
+    ActivateUrzaSpin {
+        source: ObjectId,
+        payment: ManaPayment,
+    },
+    PlayUrzaPermission {
+        permission_slot: u16,
+        face: CardFace,
+    },
     CastCommander {
         payment: ManaPayment,
     },
@@ -399,6 +427,13 @@ pub enum Action {
     },
     PayTransmuteDifference {
         payment: Option<ManaPayment>,
+    },
+    ChooseTopOrder {
+        order: Vec<CardDefId>,
+    },
+    ChooseScry {
+        top: Vec<CardDefId>,
+        bottom: Vec<CardDefId>,
     },
 }
 
@@ -419,6 +454,17 @@ pub enum RulesObservation {
         source: CardDefId,
         target: Option<CardDefId>,
         destination: SearchDestination,
+    },
+    TopCardsObserved {
+        source: CardDefId,
+        cards: Vec<CardDefId>,
+    },
+    ScryCardsObserved {
+        source: CardDefId,
+        cards: Vec<CardDefId>,
+    },
+    UrzaCardExiled {
+        card: CardDefId,
     },
 }
 
@@ -504,6 +550,14 @@ pub enum RuleError {
     MissingCanonicalPermanent(CanonicalObjectId),
     #[error("no Transmute Artifact difference-payment decision is pending")]
     NoTransmutePaymentPending,
+    #[error("the requested top/scry ordering is not a permutation of the observed cards")]
+    InvalidObservedCardOrdering,
+    #[error("permission slot {0} does not exist")]
+    MissingPermissionSlot(u16),
+    #[error("the requested card face is not supported by this permission")]
+    InvalidPermissionFace,
+    #[error("the selected permission card is no longer in exile")]
+    PermissionCardNotInExile,
 }
 
 pub fn apply_action<D: CardDatabase>(
@@ -531,7 +585,7 @@ fn apply_action_internal<D: CardDatabase>(
 ) -> Result<Transition, RuleError> {
     state.validate()?;
     let transition = match action {
-        Action::PassPriority => pass_priority(state, cards)?,
+        Action::PassPriority => pass_priority(state, cards, rng)?,
         Action::PlayLand { card, entry } => play_land(state, cards, card, entry)?,
         Action::ActivateManaAbility { source } => {
             activate_mana_ability(state, cards, source)?;
@@ -571,6 +625,22 @@ fn apply_action_internal<D: CardDatabase>(
             activate_repurposing_bay(state, cards, source, sacrifice, payment)?;
             Transition::default()
         }
+        Action::ActivateTopLook { source, payment } => {
+            activate_top_look(state, cards, source, payment)?;
+            Transition::default()
+        }
+        Action::ActivateTopDraw { source } => {
+            activate_top_draw(state, cards, source)?;
+            Transition::default()
+        }
+        Action::ActivateUrzaSpin { source, payment } => {
+            activate_urza_spin(state, cards, source, payment)?;
+            Transition::default()
+        }
+        Action::PlayUrzaPermission {
+            permission_slot,
+            face,
+        } => play_urza_permission(state, cards, permission_slot, face)?,
         Action::CastCommander { payment } => {
             cast_commander(state, cards, payment)?;
             Transition::default()
@@ -587,6 +657,8 @@ fn apply_action_internal<D: CardDatabase>(
         Action::PayTransmuteDifference { payment } => {
             pay_transmute_difference(state, cards, payment)?
         }
+        Action::ChooseTopOrder { order } => choose_top_order(state, order)?,
+        Action::ChooseScry { top, bottom } => choose_scry(state, top, bottom)?,
     };
     state.validate()?;
     Ok(transition)
@@ -662,6 +734,27 @@ pub fn legal_contingent_actions<D: CardDatabase>(
                 })
                 .collect();
             actions.push(Action::PayTransmuteDifference { payment: None });
+            actions
+        }
+        ObservedPendingDecision::TopReorder { cards, .. } => {
+            unique_permutations(cards)
+                .into_iter()
+                .map(|order| Action::ChooseTopOrder { order })
+                .collect()
+        }
+        ObservedPendingDecision::ScryChoice { looked_at, .. } => {
+            let mut actions = Vec::new();
+            for order in unique_permutations(looked_at) {
+                for top_count in 0..=order.len() {
+                    let action = Action::ChooseScry {
+                        top: order[..top_count].to_vec(),
+                        bottom: order[top_count..].to_vec(),
+                    };
+                    if !actions.contains(&action) {
+                        actions.push(action);
+                    }
+                }
+            }
             actions
         }
         _ => Vec::new(),
@@ -747,6 +840,7 @@ pub fn advance_phase(state: &mut TrueState) -> Result<Transition, RuleError> {
             state.window = Window::Priority;
         }
         Phase::EndStep => {
+            expire_urza_permissions(state);
             state.phase = Phase::OpponentCycle;
             state.window = Window::None;
         }
@@ -855,6 +949,7 @@ where
 fn pass_priority<D: CardDatabase>(
     state: &mut TrueState,
     cards: &D,
+    rng: Option<GameRngContext>,
 ) -> Result<Transition, RuleError> {
     ensure_priority(state)?;
     ensure_no_pending_decision(state)?;
@@ -863,7 +958,7 @@ fn pass_priority<D: CardDatabase>(
         return advance_phase(state);
     }
 
-    resolve_top_stack_object(state, cards)
+    resolve_top_stack_object(state, cards, rng)
 }
 
 fn play_land<D: CardDatabase>(
@@ -1010,6 +1105,200 @@ fn activate_urza_artifact_mana<D: CardDatabase>(
     set_tapped(state, artifact)?;
     state.mana.blue = blue;
     Ok(())
+}
+
+fn activate_top_look<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: ObjectId,
+    payment: ManaPayment,
+) -> Result<(), RuleError> {
+    ensure_priority(state)?;
+    ensure_no_pending_decision(state)?;
+    let permanent = battlefield_permanent(state, source)?;
+    let profile = card_profile(cards, permanent.card)?;
+    if profile.utility != UtilityKind::SenseisDiviningTop {
+        return Err(RuleError::UnsupportedCardMechanic(permanent.card));
+    }
+    let cost = ManaCost {
+        generic: 1,
+        ..ManaCost::default()
+    };
+    validate_payment(state.mana, payment, cost)?;
+    spend_payment(&mut state.mana, payment);
+    state.stack.push(StackObject::ActivatedAbility {
+        source: SourceRef {
+            object_id: Some(source),
+            card: permanent.card,
+        },
+        ability: ABILITY_TOP_LOOK,
+        parameter: None,
+    });
+    state.window = Window::Priority;
+    Ok(())
+}
+
+fn activate_top_draw<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: ObjectId,
+) -> Result<(), RuleError> {
+    ensure_priority(state)?;
+    ensure_no_pending_decision(state)?;
+    let permanent = battlefield_permanent(state, source)?.clone();
+    let profile = card_profile(cards, permanent.card)?;
+    if profile.utility != UtilityKind::SenseisDiviningTop {
+        return Err(RuleError::UnsupportedCardMechanic(permanent.card));
+    }
+    if permanent.tapped {
+        return Err(RuleError::PermanentTapped(source));
+    }
+    set_tapped(state, source)?;
+    state.stack.push(StackObject::ActivatedAbility {
+        source: SourceRef {
+            object_id: Some(source),
+            card: permanent.card,
+        },
+        ability: ABILITY_TOP_DRAW,
+        parameter: None,
+    });
+    state.window = Window::Priority;
+    Ok(())
+}
+
+fn activate_urza_spin<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: ObjectId,
+    payment: ManaPayment,
+) -> Result<(), RuleError> {
+    ensure_priority(state)?;
+    ensure_no_pending_decision(state)?;
+    let permanent = battlefield_permanent(state, source)?;
+    if permanent.card != cards.commander_card() {
+        return Err(RuleError::UrzaNotOnBattlefield);
+    }
+    let cost = ManaCost {
+        generic: 5,
+        ..ManaCost::default()
+    };
+    validate_payment(state.mana, payment, cost)?;
+    spend_payment(&mut state.mana, payment);
+    state.stack.push(StackObject::ActivatedAbility {
+        source: SourceRef {
+            object_id: Some(source),
+            card: permanent.card,
+        },
+        ability: ABILITY_URZA_SPIN,
+        parameter: None,
+    });
+    state.window = Window::Priority;
+    Ok(())
+}
+
+fn play_urza_permission<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    permission_slot: u16,
+    face: CardFace,
+) -> Result<Transition, RuleError> {
+    let permission_id = resolve_permission_slot(state, permission_slot)
+        .map_err(|error| match error {
+            urza_info::ObservationError::InvalidState(error) => RuleError::InvalidState(error),
+        })?
+        .ok_or(RuleError::MissingPermissionSlot(permission_slot))?;
+    let permission = state
+        .urza_permissions
+        .iter()
+        .find(|permission| permission.permission_id == permission_id)
+        .cloned()
+        .ok_or(RuleError::MissingPermissionSlot(permission_slot))?;
+    if permission.expires_turn < state.turn {
+        return Err(RuleError::MissingPermissionSlot(permission_slot));
+    }
+    if !state.exile.cards().contains(&permission.card) {
+        return Err(RuleError::PermissionCardNotInExile);
+    }
+    let profile = card_profile(cards, permission.card)?;
+
+    if profile.role == R2CardRole::Land {
+        ensure_sorcery_window(state)?;
+        if state.land_played_this_turn {
+            return Err(RuleError::LandAlreadyPlayed);
+        }
+        if face != profile.battlefield_face {
+            return Err(RuleError::InvalidPermissionFace);
+        }
+        let object_id = next_object_id(state)?;
+        let removed = state.exile.remove_one(permission.card);
+        debug_assert!(removed);
+        insert_permanent(
+            state,
+            PermanentState {
+                object_id,
+                card: permission.card,
+                face,
+                tapped: false,
+                summoning_sick: false,
+                token: false,
+                counters: CounterState::default(),
+                mode: PermanentMode::Normal,
+                attached_to: None,
+                granted_ability: None,
+            },
+        );
+        state.land_played_this_turn = true;
+        consume_permission(state, permission_id);
+        return Ok(Transition {
+            observations: vec![RulesObservation::PermanentEntered {
+                card: permission.card,
+                face,
+                token: false,
+            }],
+        });
+    }
+
+    if face != CardFace::Front {
+        return Err(RuleError::InvalidPermissionFace);
+    }
+    match profile.role {
+        R2CardRole::ArtifactPermanent | R2CardRole::CreaturePermanent => {
+            ensure_sorcery_window(state)?
+        }
+        R2CardRole::SearchSpell => {
+            let instant = profile
+                .simple_tutor
+                .is_some_and(SimpleTutorKind::instant_speed)
+                || profile.special_search == SpecialSearchKind::Whir;
+            if instant {
+                ensure_priority(state)?;
+                ensure_no_pending_decision(state)?;
+            } else {
+                ensure_sorcery_window(state)?;
+            }
+            if profile.special_search == SpecialSearchKind::Reshape {
+                return Err(RuleError::UnsupportedCardMechanic(permission.card));
+            }
+        }
+        _ => return Err(RuleError::UnsupportedCardMechanic(permission.card)),
+    }
+
+    let object_id = next_object_id(state)?;
+    let removed = state.exile.remove_one(permission.card);
+    debug_assert!(removed);
+    state.stack.push(StackObject::Spell {
+        object_id,
+        card: permission.card,
+        x_value: matches!(
+            profile.special_search,
+            SpecialSearchKind::Whir | SpecialSearchKind::Reshape
+        )
+        .then_some(0),
+    });
+    state.spell_cast_this_turn = true;
+    state.window = Window::Priority;
+    consume_permission(state, permission_id);
+    Ok(Transition::default())
 }
 
 fn cast_from_hand<D: CardDatabase>(
@@ -1273,6 +1562,7 @@ fn cast_commander<D: CardDatabase>(
 fn resolve_top_stack_object<D: CardDatabase>(
     state: &mut TrueState,
     cards: &D,
+    rng: Option<GameRngContext>,
 ) -> Result<Transition, RuleError> {
     let Some(top) = state.stack.last().cloned() else {
         return Ok(Transition::default());
@@ -1301,6 +1591,31 @@ fn resolve_top_stack_object<D: CardDatabase>(
                     sacrificed_mana_value,
                 },
             )
+        }
+        StackObject::ActivatedAbility {
+            source,
+            ability: ABILITY_TOP_LOOK,
+            ..
+        } => {
+            state.stack.pop();
+            stage_top_reorder(state, source)
+        }
+        StackObject::ActivatedAbility {
+            source,
+            ability: ABILITY_TOP_DRAW,
+            ..
+        } => {
+            state.stack.pop();
+            resolve_top_draw(state, source)
+        }
+        StackObject::ActivatedAbility {
+            source,
+            ability: ABILITY_URZA_SPIN,
+            ..
+        } => {
+            let rng = rng.ok_or(RuleError::MissingGameRngContext)?;
+            state.stack.pop();
+            resolve_urza_spin(state, source, rng)
         }
         StackObject::ControlledTrigger { .. } | StackObject::ActivatedAbility { .. } => {
             Err(RuleError::UnsupportedStackObject)
@@ -1443,6 +1758,298 @@ fn resolve_spell<D: CardDatabase>(
     }
 
     Ok(Transition { observations })
+}
+
+fn stage_top_reorder(
+    state: &mut TrueState,
+    source: SourceRef,
+) -> Result<Transition, RuleError> {
+    let count = state.library.cards().len().min(3);
+    let cards = state.library.cards()[..count].to_vec();
+    mark_known_top(state, count)?;
+    state.pending = PendingDecision::TopReorder {
+        source,
+        cards: cards.clone(),
+    };
+    state.window = Window::PostObservation;
+    Ok(Transition {
+        observations: vec![RulesObservation::TopCardsObserved {
+            source: source.card,
+            cards,
+        }],
+    })
+}
+
+pub fn stage_scry(
+    state: &mut TrueState,
+    source: SourceRef,
+    count: usize,
+) -> Result<Transition, RuleError> {
+    state.validate()?;
+    ensure_no_pending_decision(state)?;
+    let count = count.min(state.library.cards().len());
+    let looked_at = state.library.cards()[..count].to_vec();
+    mark_known_top(state, count)?;
+    state.pending = PendingDecision::ScryChoice {
+        source,
+        looked_at: looked_at.clone(),
+    };
+    state.window = Window::PostObservation;
+    state.validate()?;
+    Ok(Transition {
+        observations: vec![RulesObservation::ScryCardsObserved {
+            source: source.card,
+            cards: looked_at,
+        }],
+    })
+}
+
+fn mark_known_top(state: &mut TrueState, count: usize) -> Result<(), RuleError> {
+    let old = state.library.knowledge();
+    let len = state.library.cards().len();
+    let known_top = u8::try_from(count).map_err(|_| RuleError::ArithmeticOverflow)?;
+    let remaining = len.saturating_sub(count);
+    let known_bottom = old.known_bottom.min(
+        u8::try_from(remaining).map_err(|_| RuleError::ArithmeticOverflow)?,
+    );
+    state.library.set_knowledge(LibraryKnowledge {
+        known_top,
+        known_bottom,
+    })?;
+    Ok(())
+}
+
+fn choose_top_order(
+    state: &mut TrueState,
+    order: Vec<CardDefId>,
+) -> Result<Transition, RuleError> {
+    if state.window != Window::PostObservation {
+        return Err(RuleError::SearchDecisionMismatch);
+    }
+    let PendingDecision::TopReorder { cards, .. } = state.pending.clone() else {
+        return Err(RuleError::SearchDecisionMismatch);
+    };
+    if !same_multiset(&cards, &order) {
+        return Err(RuleError::InvalidObservedCardOrdering);
+    }
+    let count = cards.len();
+    let mut library = order;
+    library.extend_from_slice(&state.library.cards()[count..]);
+    let bottom = state.library.knowledge().known_bottom;
+    state.library = TrueLibrary::new(
+        library,
+        LibraryKnowledge {
+            known_top: u8::try_from(count).map_err(|_| RuleError::ArithmeticOverflow)?,
+            known_bottom: bottom,
+        },
+    )?;
+    state.pending = PendingDecision::None;
+    state.window = Window::Priority;
+    Ok(Transition::default())
+}
+
+fn choose_scry(
+    state: &mut TrueState,
+    top: Vec<CardDefId>,
+    bottom: Vec<CardDefId>,
+) -> Result<Transition, RuleError> {
+    if state.window != Window::PostObservation {
+        return Err(RuleError::SearchDecisionMismatch);
+    }
+    let PendingDecision::ScryChoice { looked_at, .. } = state.pending.clone() else {
+        return Err(RuleError::SearchDecisionMismatch);
+    };
+    let mut proposed = top.clone();
+    proposed.extend(bottom.iter().copied());
+    if !same_multiset(&looked_at, &proposed) {
+        return Err(RuleError::InvalidObservedCardOrdering);
+    }
+
+    let count = looked_at.len();
+    let old_bottom = usize::from(state.library.knowledge().known_bottom);
+    let remaining_old_bottom = old_bottom.min(state.library.cards().len().saturating_sub(count));
+    let middle = state.library.cards()[count..].to_vec();
+    let mut library = top.clone();
+    library.extend(middle);
+    library.extend(bottom.iter().copied());
+    let known_bottom = remaining_old_bottom
+        .checked_add(bottom.len())
+        .ok_or(RuleError::ArithmeticOverflow)?;
+    state.library = TrueLibrary::new(
+        library,
+        LibraryKnowledge {
+            known_top: u8::try_from(top.len()).map_err(|_| RuleError::ArithmeticOverflow)?,
+            known_bottom: u8::try_from(known_bottom).map_err(|_| RuleError::ArithmeticOverflow)?,
+        },
+    )?;
+    state.pending = PendingDecision::None;
+    state.window = Window::Priority;
+    Ok(Transition::default())
+}
+
+fn resolve_top_draw(
+    state: &mut TrueState,
+    source: SourceRef,
+) -> Result<Transition, RuleError> {
+    let drawn = draw_cards(state, 1)?;
+    let mut observations = vec![RulesObservation::CardsDrawn(drawn)];
+    if let Some(object_id) = source.object_id
+        && state.battlefield.get(object_id).is_some()
+    {
+        remove_permanent_to_library_top(state, object_id)?;
+    }
+    state.window = Window::Priority;
+    observations.shrink_to_fit();
+    Ok(Transition { observations })
+}
+
+fn resolve_urza_spin(
+    state: &mut TrueState,
+    source: SourceRef,
+    rng: GameRngContext,
+) -> Result<Transition, RuleError> {
+    let fingerprint = library_fingerprint(state.library.cards());
+    shuffle_library(
+        state,
+        rng.root,
+        rng.world,
+        RNG_EVENT_URZA_SPIN_SHUFFLE,
+        rng.logical_event,
+        fingerprint,
+    )?;
+    if state.library.cards().is_empty() {
+        state.window = Window::Priority;
+        return Ok(Transition::default());
+    }
+
+    let card = state.library.cards()[0];
+    state.library = TrueLibrary::unknown(state.library.cards()[1..].to_vec());
+    state.exile.insert(card);
+    let permission_id = next_permission_id(state)?;
+    state.urza_permissions.push(urza_core::UrzaPermission {
+        permission_id,
+        card,
+        expires_turn: state.turn,
+        free_cast: true,
+        source,
+    });
+    state.delayed_events.push(DelayedEvent::PermissionExpiry {
+        permission: permission_id,
+        due_turn: state.turn,
+    });
+    state.window = Window::Priority;
+    Ok(Transition {
+        observations: vec![RulesObservation::UrzaCardExiled { card }],
+    })
+}
+
+fn remove_permanent_to_library_top(
+    state: &mut TrueState,
+    object_id: ObjectId,
+) -> Result<(), RuleError> {
+    let mut permanents = state.battlefield.permanents().to_vec();
+    let Some(index) = permanents
+        .iter()
+        .position(|permanent| permanent.object_id == object_id)
+    else {
+        return Ok(());
+    };
+    let permanent = permanents.remove(index);
+    state.battlefield = BattlefieldZone::new(permanents);
+    if permanent.token {
+        return Ok(());
+    }
+    let mut library = Vec::with_capacity(state.library.cards().len() + 1);
+    library.push(permanent.card);
+    library.extend_from_slice(state.library.cards());
+    let old = state.library.knowledge();
+    state.library = TrueLibrary::new(
+        library,
+        LibraryKnowledge {
+            known_top: old
+                .known_top
+                .checked_add(1)
+                .ok_or(RuleError::ArithmeticOverflow)?,
+            known_bottom: old.known_bottom,
+        },
+    )?;
+    Ok(())
+}
+
+fn same_multiset(left: &[CardDefId], right: &[CardDefId]) -> bool {
+    if left.len() != right.len() {
+        return false;
+    }
+    let mut left = left.to_vec();
+    let mut right = right.to_vec();
+    left.sort_unstable();
+    right.sort_unstable();
+    left == right
+}
+
+fn unique_permutations(cards: &[CardDefId]) -> Vec<Vec<CardDefId>> {
+    fn visit(prefix: &mut Vec<CardDefId>, rest: &mut Vec<CardDefId>, out: &mut Vec<Vec<CardDefId>>) {
+        if rest.is_empty() {
+            if !out.contains(prefix) {
+                out.push(prefix.clone());
+            }
+            return;
+        }
+        for index in 0..rest.len() {
+            let card = rest.remove(index);
+            prefix.push(card);
+            visit(prefix, rest, out);
+            prefix.pop();
+            rest.insert(index, card);
+        }
+    }
+
+    let mut out = Vec::new();
+    visit(&mut Vec::new(), &mut cards.to_vec(), &mut out);
+    out
+}
+
+fn next_permission_id(state: &TrueState) -> Result<PermissionId, RuleError> {
+    state
+        .urza_permissions
+        .iter()
+        .map(|permission| permission.permission_id.0)
+        .max()
+        .unwrap_or(0)
+        .checked_add(1)
+        .map(PermissionId)
+        .ok_or(RuleError::ArithmeticOverflow)
+}
+
+fn consume_permission(state: &mut TrueState, permission_id: PermissionId) {
+    state
+        .urza_permissions
+        .retain(|permission| permission.permission_id != permission_id);
+    state.delayed_events.retain(|event| {
+        !matches!(
+            event,
+            DelayedEvent::PermissionExpiry { permission, .. } if *permission == permission_id
+        )
+    });
+}
+
+fn expire_urza_permissions(state: &mut TrueState) {
+    let expired: BTreeSet<_> = state
+        .urza_permissions
+        .iter()
+        .filter(|permission| permission.expires_turn <= state.turn)
+        .map(|permission| permission.permission_id)
+        .collect();
+    state
+        .urza_permissions
+        .retain(|permission| !expired.contains(&permission.permission_id));
+    state.delayed_events.retain(|event| {
+        !matches!(
+            event,
+            DelayedEvent::PermissionExpiry { permission, due_turn }
+                if *due_turn <= state.turn && expired.contains(permission)
+        )
+    });
 }
 
 fn stage_simple_tutor<D: CardDatabase>(
@@ -2046,6 +2653,7 @@ mod tests {
     const BAY: CardDefId = CardDefId(16);
     const ARTIFACT_MV2: CardDefId = CardDefId(17);
     const ARTIFACT_MV3: CardDefId = CardDefId(18);
+    const TOP: CardDefId = CardDefId(19);
 
     #[derive(Default)]
     struct TestCards {
@@ -2274,6 +2882,22 @@ mod tests {
                     mana_value: 3,
                     role: R2CardRole::ArtifactPermanent,
                     battlefield_face: CardFace::Front,
+                    is_artifact: true,
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                TOP,
+                CardProfile {
+                    card: TOP,
+                    mana_cost: Some(ManaCost {
+                        generic: 1,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 1,
+                    role: R2CardRole::ArtifactPermanent,
+                    battlefield_face: CardFace::Front,
+                    utility: UtilityKind::SenseisDiviningTop,
                     is_artifact: true,
                     ..CardProfile::default()
                 },
@@ -3298,4 +3922,231 @@ mod tests {
             }
         );
     }
+
+    #[test]
+    fn top_look_observes_then_factors_reorder_choice() {
+        let cards = TestCards::r3();
+        let mut state = TrueState {
+            turn: 1,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![TARGET_A, TARGET_B, TARGET_C, ISLAND]),
+            battlefield: BattlefieldZone::new(vec![artifact_permanent(1, TOP)]),
+            mana: ManaPool {
+                colorless: 1,
+                ..ManaPool::default()
+            },
+            ..TrueState::default()
+        };
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateTopLook {
+                source: ObjectId(1),
+                payment: ManaPayment {
+                    colorless: 1,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+        let observed = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            observed.observations,
+            vec![RulesObservation::TopCardsObserved {
+                source: TOP,
+                cards: vec![TARGET_A, TARGET_B, TARGET_C],
+            }]
+        );
+        let info = urza_info::observe(&state).unwrap();
+        assert_eq!(legal_contingent_actions(&info, &cards).len(), 6);
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ChooseTopOrder {
+                order: vec![TARGET_C, TARGET_A, TARGET_B],
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            state.library.cards(),
+            &[TARGET_C, TARGET_A, TARGET_B, ISLAND]
+        );
+        assert_eq!(state.library.knowledge().known_top, 3);
+    }
+
+    #[test]
+    fn top_draw_is_atomic_draw_then_put_top_on_library() {
+        let cards = TestCards::r3();
+        let mut state = TrueState {
+            turn: 1,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![TARGET_A, TARGET_B]),
+            battlefield: BattlefieldZone::new(vec![artifact_permanent(1, TOP)]),
+            ..TrueState::default()
+        };
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateTopDraw {
+                source: ObjectId(1),
+            },
+        )
+        .unwrap();
+        let transition = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            transition.observations,
+            vec![RulesObservation::CardsDrawn(vec![TARGET_A])]
+        );
+        assert_eq!(state.hand.cards(), &[TARGET_A]);
+        assert_eq!(state.library.cards(), &[TOP, TARGET_B]);
+        assert_eq!(state.library.known_top(), &[TOP]);
+        assert!(state.battlefield.get(ObjectId(1)).is_none());
+        assert!(matches!(state.pending, PendingDecision::None));
+    }
+
+    #[test]
+    fn generic_scry_observes_before_top_bottom_choice() {
+        let mut state = TrueState {
+            turn: 1,
+            phase: Phase::PrecombatMain,
+            window: Window::Resolving,
+            library: TrueLibrary::unknown(vec![TARGET_A, TARGET_B, TARGET_C]),
+            ..TrueState::default()
+        };
+        let source = SourceRef {
+            object_id: None,
+            card: CardDefId(500),
+        };
+        let transition = stage_scry(&mut state, source, 2).unwrap();
+        assert_eq!(
+            transition.observations,
+            vec![RulesObservation::ScryCardsObserved {
+                source: CardDefId(500),
+                cards: vec![TARGET_A, TARGET_B],
+            }]
+        );
+        let info = urza_info::observe(&state).unwrap();
+        assert!(!legal_contingent_actions(&info, &TestCards::r3()).is_empty());
+
+        apply_action(
+            &mut state,
+            &TestCards::r3(),
+            Action::ChooseScry {
+                top: vec![TARGET_B],
+                bottom: vec![TARGET_A],
+            },
+        )
+        .unwrap();
+        assert_eq!(state.library.cards(), &[TARGET_B, TARGET_C, TARGET_A]);
+        assert_eq!(state.library.known_top(), &[TARGET_B]);
+        assert_eq!(state.library.known_bottom(), &[TARGET_A]);
+    }
+
+    #[test]
+    fn urza_spin_requires_rng_creates_persistent_permission_and_expires_at_eot() {
+        let cards = TestCards::r3();
+        let mut state = TrueState {
+            turn: 2,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![ISLAND, TARGET_A, TARGET_B]),
+            battlefield: BattlefieldZone::new(vec![artifact_permanent(1, URZA)]),
+            mana: ManaPool {
+                colorless: 5,
+                ..ManaPool::default()
+            },
+            ..TrueState::default()
+        };
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateUrzaSpin {
+                source: ObjectId(1),
+                payment: ManaPayment {
+                    colorless: 5,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            apply_action(&mut state, &cards, Action::PassPriority),
+            Err(RuleError::MissingGameRngContext)
+        );
+        let transition = apply_action_with_rng(
+            &mut state,
+            &cards,
+            Action::PassPriority,
+            GameRngContext {
+                root: RootSeed::from_u64(123),
+                world: WorldId(4),
+                logical_event: LogicalEventId(300),
+            },
+        )
+        .unwrap();
+        assert_eq!(state.urza_permissions.len(), 1);
+        assert_eq!(state.exile.len(), 1);
+        assert_eq!(state.rng_occurrence_cursor, 1);
+        assert!(matches!(
+            transition.observations.as_slice(),
+            [RulesObservation::UrzaCardExiled { .. }]
+        ));
+
+        state.phase = Phase::EndStep;
+        state.window = Window::Priority;
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert!(state.urza_permissions.is_empty());
+        assert!(state
+            .delayed_events
+            .iter()
+            .all(|event| !matches!(event, DelayedEvent::PermissionExpiry { .. })));
+    }
+
+    #[test]
+    fn urza_permission_can_play_an_exiled_land_face_without_revealing_future_order() {
+        let cards = TestCards::r3();
+        let mut state = TrueState {
+            turn: 2,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            exile: CardZone::new(vec![MDFC_LAND]),
+            urza_permissions: vec![urza_core::UrzaPermission {
+                permission_id: PermissionId(7),
+                card: MDFC_LAND,
+                expires_turn: 2,
+                free_cast: true,
+                source: SourceRef {
+                    object_id: None,
+                    card: URZA,
+                },
+            }],
+            delayed_events: vec![DelayedEvent::PermissionExpiry {
+                permission: PermissionId(7),
+                due_turn: 2,
+            }],
+            ..TrueState::default()
+        };
+        apply_action(
+            &mut state,
+            &cards,
+            Action::PlayUrzaPermission {
+                permission_slot: 0,
+                face: CardFace::Back,
+            },
+        )
+        .unwrap();
+        let permanent = state
+            .battlefield
+            .permanents()
+            .iter()
+            .find(|permanent| permanent.card == MDFC_LAND)
+            .unwrap();
+        assert_eq!(permanent.face, CardFace::Back);
+        assert!(state.urza_permissions.is_empty());
+        assert!(state.exile.cards().is_empty());
+    }
+
 }
