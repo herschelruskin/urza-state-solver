@@ -978,6 +978,7 @@ mod tests {
                     card: CardDefId(2),
                 },
                 ability: urza_core::AbilityId(3),
+                parameter: None,
             }],
             ..TrueState::default()
         };
@@ -992,6 +993,7 @@ mod tests {
                     card: CardDefId(2),
                 },
                 ability: urza_core::AbilityId(3),
+                parameter: None,
             }],
             ..TrueState::default()
         };
