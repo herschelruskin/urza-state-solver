@@ -38,7 +38,7 @@ fn run_r0_audit() {
         "distinct_active_names_including_commander": catalog.cards.len(),
         "noncommander_deck_count": noncommander_count,
         "coverage_entries": coverage.entries.len(),
-        "coverage_policy": "explicit; all R0 entries intentionally unmodeled until rules fixtures exist",
+        "coverage_policy": "explicit per-card status; implementation coverage advances only with milestone rules fixtures",
         "default_our_life": TrueState::default().life,
         "rng_scheme": RNG_SCHEME_VERSION,
         "hand25": {
