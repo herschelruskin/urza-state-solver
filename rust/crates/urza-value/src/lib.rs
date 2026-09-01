@@ -276,12 +276,14 @@ mod tests {
             card: Some(CardDefId(1)),
             source: None,
             ability: None,
+            parameter: None,
         };
         let second = ObservedStackObject {
             kind: ObservedStackKind::Spell,
             card: Some(CardDefId(2)),
             source: None,
             ability: None,
+            parameter: None,
         };
         let a = InformationState {
             stack: vec![first.clone(), second.clone()],
@@ -297,4 +299,25 @@ mod tests {
             ValueKey::try_from_information(&b).unwrap()
         );
     }
+
+    #[test]
+    fn stack_numeric_parameter_is_strategically_future_relevant() {
+        use urza_info::{ObservedStackKind, ObservedStackObject};
+
+        let make = |parameter| InformationState {
+            stack: vec![ObservedStackObject {
+                kind: ObservedStackKind::Spell,
+                card: Some(CardDefId(93)),
+                source: None,
+                ability: None,
+                parameter,
+            }],
+            ..InformationState::default()
+        };
+        assert_ne!(
+            ValueKey::try_from_information(&make(Some(1))).unwrap(),
+            ValueKey::try_from_information(&make(Some(2))).unwrap()
+        );
+    }
+
 }
