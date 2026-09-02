@@ -6862,7 +6862,6 @@ mod tests {
         assert!(state.battlefield.get(ObjectId(40)).unwrap().tapped);
     }
 
-
     #[test]
     fn chip_top_permission_can_play_a_land_and_cage_does_not_stop_it() {
         let cards = TestCards::r4();
