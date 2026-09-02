@@ -814,9 +814,9 @@ impl R4CardDatabase {
         power_artifact_profile.attached_artifact_activation_reduction = 2;
 
         let reality_chip = card_id_by_name_from_r1("The Reality Chip")?;
-        let reality_chip_profile = cards.get_mut(&reality_chip).ok_or_else(|| {
-            CatalogError::Invariant("missing R4 Reality Chip profile".to_owned())
-        })?;
+        let reality_chip_profile = cards
+            .get_mut(&reality_chip)
+            .ok_or_else(|| CatalogError::Invariant("missing R4 Reality Chip profile".to_owned()))?;
         reality_chip_profile.role = urza_rules::R2CardRole::CreaturePermanent;
         reality_chip_profile.utility = urza_rules::UtilityKind::RealityChip;
 

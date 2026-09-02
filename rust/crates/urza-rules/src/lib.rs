@@ -642,7 +642,9 @@ pub enum RuleError {
     InvalidPermissionFace,
     #[error("the selected permission card is no longer in exile")]
     PermissionCardNotInExile,
-    #[error("the top card of the library is not legally playable through the active top permission")]
+    #[error(
+        "the top card of the library is not legally playable through the active top permission"
+    )]
     LibraryTopPermissionUnavailable,
     #[error("Grafdigger's Cage prevents casting this spell from the library")]
     LibraryCastBlockedByCage,
@@ -2610,7 +2612,12 @@ fn resolve_top_stack_object<D: CardDatabase>(
             ..
         } => {
             state.stack.pop();
-            resolve_ftt_level(state, cards, source, PermanentMode::FortuneTellersTalentLevel2)
+            resolve_ftt_level(
+                state,
+                cards,
+                source,
+                PermanentMode::FortuneTellersTalentLevel2,
+            )
         }
         StackObject::ActivatedAbility {
             source,
@@ -2618,7 +2625,12 @@ fn resolve_top_stack_object<D: CardDatabase>(
             ..
         } => {
             state.stack.pop();
-            resolve_ftt_level(state, cards, source, PermanentMode::FortuneTellersTalentLevel3)
+            resolve_ftt_level(
+                state,
+                cards,
+                source,
+                PermanentMode::FortuneTellersTalentLevel3,
+            )
         }
         StackObject::ControlledTrigger { .. }
         | StackObject::ActivatedAbility { .. }
@@ -2683,7 +2695,9 @@ fn resolve_reality_chip_detach<D: CardDatabase>(
         state.window = Window::Priority;
         return Ok(Transition::default());
     };
-    if chip.card != source.card || card_profile(cards, chip.card)?.utility != UtilityKind::RealityChip {
+    if chip.card != source.card
+        || card_profile(cards, chip.card)?.utility != UtilityKind::RealityChip
+    {
         state.window = Window::Priority;
         return Ok(Transition::default());
     }
@@ -6758,10 +6772,7 @@ mod tests {
             granted_ability: None,
         };
         assert_eq!(
-            detect_terminal_win(
-                &make(vec![urza.clone(), top.clone(), ftt3], true),
-                &cards,
-            ),
+            detect_terminal_win(&make(vec![urza.clone(), top.clone(), ftt3], true), &cards,),
             Some(WinFamily::TopFttLevelThree)
         );
 
@@ -6790,10 +6801,7 @@ mod tests {
 
         assert_eq!(
             detect_terminal_win(
-                &make(
-                    vec![urza.clone(), top.clone(), producer, gadgeteer],
-                    false,
-                ),
+                &make(vec![urza.clone(), top.clone(), producer, gadgeteer], false,),
                 &cards,
             ),
             Some(WinFamily::TopGadgeteerProducer)
@@ -6913,5 +6921,4 @@ mod tests {
             }]
         );
     }
-
 }

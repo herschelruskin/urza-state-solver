@@ -1432,10 +1432,7 @@ mod tests {
     #[test]
     fn targeted_activated_ability_preserves_public_source_and_target() {
         let state = TrueState {
-            battlefield: BattlefieldZone::new(vec![
-                permanent(10, 1, None),
-                permanent(20, 2, None),
-            ]),
+            battlefield: BattlefieldZone::new(vec![permanent(10, 1, None), permanent(20, 2, None)]),
             stack: vec![StackObject::TargetedActivatedAbility {
                 source: SourceRef {
                     object_id: Some(ObjectId(10)),
@@ -1458,5 +1455,4 @@ mod tests {
         assert_eq!(observed.stack[0].source.unwrap().card, CardDefId(1));
         assert_eq!(observed.stack[0].target.unwrap().card, CardDefId(2));
     }
-
 }
