@@ -542,6 +542,7 @@ impl R2CardDatabase {
                     native_untap_generic: None,
                     artifact_activation_reduction: 0,
                     attached_artifact_activation_reduction: 0,
+                    top_loop_producer: false,
                     skip_normal_untap: false,
                     starting_loyalty: 0,
                     is_artifact: card.feature_flags.is_artifact,
@@ -569,6 +570,7 @@ impl R2CardDatabase {
                 native_untap_generic: None,
                 artifact_activation_reduction: 0,
                 attached_artifact_activation_reduction: 0,
+                top_loop_producer: false,
                 skip_normal_untap: false,
                 starting_loyalty: 0,
                 is_artifact: true,
@@ -800,6 +802,7 @@ impl R4CardDatabase {
         gadgeteer_profile.role = urza_rules::R2CardRole::CreaturePermanent;
         gadgeteer_profile.engine = urza_rules::EngineKind::ForensicGadgeteer;
         gadgeteer_profile.artifact_activation_reduction = 1;
+        gadgeteer_profile.top_loop_producer = true;
 
         let power_artifact = card_id_by_name_from_r1("Power Artifact")?;
         let power_artifact_profile = cards.get_mut(&power_artifact).ok_or_else(|| {
@@ -809,6 +812,44 @@ impl R4CardDatabase {
         power_artifact_profile.engine = urza_rules::EngineKind::PowerArtifact;
         power_artifact_profile.aura_target = urza_rules::AuraTargetKind::Artifact;
         power_artifact_profile.attached_artifact_activation_reduction = 2;
+
+        let reality_chip = card_id_by_name_from_r1("The Reality Chip")?;
+        let reality_chip_profile = cards.get_mut(&reality_chip).ok_or_else(|| {
+            CatalogError::Invariant("missing R4 Reality Chip profile".to_owned())
+        })?;
+        reality_chip_profile.role = urza_rules::R2CardRole::CreaturePermanent;
+        reality_chip_profile.utility = urza_rules::UtilityKind::RealityChip;
+
+        let ftt = card_id_by_name_from_r1("Fortune Teller's Talent")?;
+        let ftt_profile = cards
+            .get_mut(&ftt)
+            .ok_or_else(|| CatalogError::Invariant("missing R4 FTT profile".to_owned()))?;
+        ftt_profile.role = urza_rules::R2CardRole::EnchantmentPermanent;
+        ftt_profile.utility = urza_rules::UtilityKind::FortuneTellersTalent;
+
+        let cage = card_id_by_name_from_r1("Grafdigger's Cage")?;
+        let cage_profile = cards
+            .get_mut(&cage)
+            .ok_or_else(|| CatalogError::Invariant("missing R4 Cage profile".to_owned()))?;
+        cage_profile.role = urza_rules::R2CardRole::ArtifactPermanent;
+        cage_profile.utility = urza_rules::UtilityKind::GrafdiggersCage;
+
+        let station = card_id_by_name_from_r1("Grinding Station")?;
+        let station_profile = cards
+            .get_mut(&station)
+            .ok_or_else(|| CatalogError::Invariant("missing R4 Station profile".to_owned()))?;
+        station_profile.role = urza_rules::R2CardRole::ArtifactPermanent;
+        station_profile.engine = urza_rules::EngineKind::GrindingStation;
+        station_profile.top_loop_producer = true;
+
+        let golem = card_id_by_name_from_r1("Battered Golem")?;
+        let golem_profile = cards
+            .get_mut(&golem)
+            .ok_or_else(|| CatalogError::Invariant("missing R4 Golem profile".to_owned()))?;
+        golem_profile.role = urza_rules::R2CardRole::CreaturePermanent;
+        golem_profile.engine = urza_rules::EngineKind::BatteredGolem;
+        golem_profile.top_loop_producer = true;
+        golem_profile.skip_normal_untap = true;
 
         Ok(Self { cards })
     }
@@ -937,9 +978,9 @@ pub fn validate_r4_database() -> Result<(), CatalogError> {
         }
     }
 
-    if database.supported_active_cards().len() != 36 {
+    if database.supported_active_cards().len() != 41 {
         return Err(CatalogError::Invariant(
-            "current R4 database must expose exactly 36 active identities".to_owned(),
+            "current R4 database must expose exactly 41 active identities".to_owned(),
         ));
     }
 
@@ -1495,12 +1536,17 @@ mod tests {
         let r3 = R3CardDatabase::load().unwrap();
         let r4 = R4CardDatabase::load().unwrap();
         assert_eq!(r3.supported_active_cards().len(), 32);
-        assert_eq!(r4.supported_active_cards().len(), 36);
+        assert_eq!(r4.supported_active_cards().len(), 41);
 
         let basalt = r4.card_id_by_name("Basalt Monolith").unwrap();
         let grim = r4.card_id_by_name("Grim Monolith").unwrap();
         let gadgeteer = r4.card_id_by_name("Forensic Gadgeteer").unwrap();
         let power_artifact = r4.card_id_by_name("Power Artifact").unwrap();
+        let reality_chip = r4.card_id_by_name("The Reality Chip").unwrap();
+        let ftt = r4.card_id_by_name("Fortune Teller's Talent").unwrap();
+        let cage = r4.card_id_by_name("Grafdigger's Cage").unwrap();
+        let station = r4.card_id_by_name("Grinding Station").unwrap();
+        let golem = r4.card_id_by_name("Battered Golem").unwrap();
 
         let basalt_profile = r4.profile(basalt).unwrap();
         assert_eq!(
@@ -1543,6 +1589,31 @@ mod tests {
             power_artifact_profile.attached_artifact_activation_reduction,
             2
         );
+
+        assert_eq!(
+            r4.profile(reality_chip).unwrap().utility,
+            urza_rules::UtilityKind::RealityChip
+        );
+        assert_eq!(
+            r4.profile(ftt).unwrap().utility,
+            urza_rules::UtilityKind::FortuneTellersTalent
+        );
+        assert_eq!(
+            r4.profile(cage).unwrap().utility,
+            urza_rules::UtilityKind::GrafdiggersCage
+        );
+        assert_eq!(
+            r4.profile(station).unwrap().engine,
+            urza_rules::EngineKind::GrindingStation
+        );
+        assert!(r4.profile(station).unwrap().top_loop_producer);
+        assert_eq!(
+            r4.profile(golem).unwrap().engine,
+            urza_rules::EngineKind::BatteredGolem
+        );
+        assert!(r4.profile(golem).unwrap().top_loop_producer);
+        assert!(r4.profile(golem).unwrap().skip_normal_untap);
+        assert!(r4.profile(gadgeteer).unwrap().top_loop_producer);
 
         assert_eq!(
             r3.profile(basalt).unwrap().role,

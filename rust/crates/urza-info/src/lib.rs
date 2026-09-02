@@ -15,7 +15,7 @@ use urza_core::{
 };
 
 pub const R3_INFORMATION_SCHEMA_VERSION: &str = "information_state_v4_r3";
-pub const INFORMATION_SCHEMA_VERSION: &str = "information_state_v5_r4";
+pub const INFORMATION_SCHEMA_VERSION: &str = "information_state_v6_r4";
 
 #[derive(
     Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
@@ -68,6 +68,7 @@ pub enum ObservedStackKind {
     AuraSpell,
     ControlledTrigger,
     ActivatedAbility,
+    TargetedActivatedAbility,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -307,6 +308,19 @@ pub fn observe(state: &TrueState) -> Result<InformationState, ObservationError> 
                 card: None,
                 source: Some(observe_source(*source, &object_classes)),
                 target: None,
+                ability: Some(*ability),
+                parameter: *parameter,
+            },
+            StackObject::TargetedActivatedAbility {
+                source,
+                ability,
+                target,
+                parameter,
+            } => ObservedStackObject {
+                kind: ObservedStackKind::TargetedActivatedAbility,
+                card: None,
+                source: Some(observe_source(*source, &object_classes)),
+                target: Some(observe_source(*target, &object_classes)),
                 ability: Some(*ability),
                 parameter: *parameter,
             },
@@ -588,6 +602,10 @@ enum ExternalRole {
         ability: AbilityId,
         parameter: Option<u16>,
     },
+    StackAbilityTarget {
+        position: u16,
+        ability: AbilityId,
+    },
     Pending {
         kind: u8,
         numeric_a: u16,
@@ -738,10 +756,13 @@ fn local_signature(permanent: &urza_core::PermanentState) -> LocalSignature {
             PermanentMode::Normal => (0, 0),
             PermanentMode::RealityChipCreature => (1, 0),
             PermanentMode::RealityChipAttached => (2, 0),
-            PermanentMode::UthrosStation => (3, 0),
-            PermanentMode::UthrosCreature => (4, 0),
-            PermanentMode::UrzasSaga => (5, 0),
-            PermanentMode::Other(value) => (6, value),
+            PermanentMode::FortuneTellersTalentLevel1 => (3, 0),
+            PermanentMode::FortuneTellersTalentLevel2 => (4, 0),
+            PermanentMode::FortuneTellersTalentLevel3 => (5, 0),
+            PermanentMode::UthrosStation => (6, 0),
+            PermanentMode::UthrosCreature => (7, 0),
+            PermanentMode::UrzasSaga => (8, 0),
+            PermanentMode::Other(value) => (9, value),
         },
         granted_ability: match permanent.granted_ability {
             None => 0,
@@ -793,6 +814,31 @@ fn external_roles(state: &TrueState) -> BTreeMap<ObjectId, Vec<ExternalRole>> {
                         kind: 2,
                         ability: *ability,
                         parameter: *parameter,
+                    },
+                );
+            }
+            StackObject::TargetedActivatedAbility {
+                source,
+                ability,
+                target,
+                parameter,
+            } => {
+                push_source_role(
+                    &mut roles,
+                    *source,
+                    ExternalRole::Stack {
+                        position,
+                        kind: 3,
+                        ability: *ability,
+                        parameter: *parameter,
+                    },
+                );
+                push_source_role(
+                    &mut roles,
+                    *target,
+                    ExternalRole::StackAbilityTarget {
+                        position,
+                        ability: *ability,
                     },
                 );
             }
@@ -1382,4 +1428,35 @@ mod tests {
         };
         assert_ne!(observe(&a).unwrap(), observe(&b).unwrap());
     }
+
+    #[test]
+    fn targeted_activated_ability_preserves_public_source_and_target() {
+        let state = TrueState {
+            battlefield: BattlefieldZone::new(vec![
+                permanent(10, 1, None),
+                permanent(20, 2, None),
+            ]),
+            stack: vec![StackObject::TargetedActivatedAbility {
+                source: SourceRef {
+                    object_id: Some(ObjectId(10)),
+                    card: CardDefId(1),
+                },
+                ability: urza_core::AbilityId(0x0402),
+                target: SourceRef {
+                    object_id: Some(ObjectId(20)),
+                    card: CardDefId(2),
+                },
+                parameter: None,
+            }],
+            ..TrueState::default()
+        };
+        let observed = observe(&state).unwrap();
+        assert_eq!(
+            observed.stack[0].kind,
+            super::ObservedStackKind::TargetedActivatedAbility
+        );
+        assert_eq!(observed.stack[0].source.unwrap().card, CardDefId(1));
+        assert_eq!(observed.stack[0].target.unwrap().card, CardDefId(2));
+    }
+
 }

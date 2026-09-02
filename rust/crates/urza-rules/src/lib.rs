@@ -20,7 +20,7 @@ use urza_rng::{
 pub const RULES_PHASE: &str = "R4";
 pub const R2_RULES_VERSION: &str = "r2_core_kernel_v2";
 pub const R3_RULES_VERSION: &str = "r3_search_complete_v4";
-pub const RULES_VERSION: &str = "r4_power_artifact_v2";
+pub const RULES_VERSION: &str = "r4_top_access_v3";
 pub const HORIZON_TURN: u8 = 6;
 pub const RNG_EVENT_SEARCH_SHUFFLE: EventType = EventType(0x0301);
 pub const ABILITY_REPURPOSING_BAY_SEARCH: AbilityId = AbilityId(0x0301);
@@ -32,6 +32,10 @@ pub const ABILITY_SAGA_CHAPTER_II: AbilityId = AbilityId(0x0306);
 pub const ABILITY_SAGA_CHAPTER_III: AbilityId = AbilityId(0x0307);
 pub const ABILITY_TEZZERET_MINUS_THREE: AbilityId = AbilityId(0x0308);
 pub const ABILITY_NATIVE_ARTIFACT_UNTAP: AbilityId = AbilityId(0x0401);
+pub const ABILITY_REALITY_CHIP_RECONFIGURE: AbilityId = AbilityId(0x0402);
+pub const ABILITY_REALITY_CHIP_DETACH: AbilityId = AbilityId(0x0403);
+pub const ABILITY_FTT_LEVEL_TWO: AbilityId = AbilityId(0x0404);
+pub const ABILITY_FTT_LEVEL_THREE: AbilityId = AbilityId(0x0405);
 pub const RNG_EVENT_URZA_SPIN_SHUFFLE: EventType = EventType(0x0302);
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -346,6 +350,8 @@ pub enum EngineKind {
     GrimMonolith,
     ForensicGadgeteer,
     PowerArtifact,
+    GrindingStation,
+    BatteredGolem,
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
@@ -355,6 +361,9 @@ pub enum UtilityKind {
     SenseisDiviningTop,
     UrzasSaga,
     TezzeretCruelCaptain,
+    RealityChip,
+    FortuneTellersTalent,
+    GrafdiggersCage,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -383,6 +392,7 @@ pub struct CardProfile {
     pub native_untap_generic: Option<u16>,
     pub artifact_activation_reduction: u16,
     pub attached_artifact_activation_reduction: u16,
+    pub top_loop_producer: bool,
     pub skip_normal_untap: bool,
     pub starting_loyalty: i16,
     pub is_artifact: bool,
@@ -458,6 +468,27 @@ pub enum Action {
     },
     ActivateTezzeretMinusThree {
         source: ObjectId,
+    },
+    ActivateRealityChipReconfigure {
+        source: ObjectId,
+        target: CanonicalObjectId,
+        payment: ManaPayment,
+    },
+    ActivateRealityChipDetach {
+        source: ObjectId,
+        payment: ManaPayment,
+    },
+    ActivateFortuneTellersTalentLevel {
+        source: ObjectId,
+        payment: ManaPayment,
+    },
+    PlayLibraryTopLand {
+        card: CardDefId,
+        entry: LandEntryChoice,
+    },
+    CastLibraryTop {
+        card: CardDefId,
+        payment: ManaPayment,
     },
     PlayUrzaPermission {
         permission_slot: u16,
@@ -611,6 +642,12 @@ pub enum RuleError {
     InvalidPermissionFace,
     #[error("the selected permission card is no longer in exile")]
     PermissionCardNotInExile,
+    #[error("the top card of the library is not legally playable through the active top permission")]
+    LibraryTopPermissionUnavailable,
+    #[error("Grafdigger's Cage prevents casting this spell from the library")]
+    LibraryCastBlockedByCage,
+    #[error("the selected object is not a legal Reality Chip reconfigure target")]
+    InvalidReconfigureTarget,
 }
 
 pub fn apply_action<D: CardDatabase>(
@@ -706,6 +743,29 @@ fn apply_action_internal<D: CardDatabase>(
             activate_tezzeret_minus_three(state, cards, source)?;
             Transition::default()
         }
+        Action::ActivateRealityChipReconfigure {
+            source,
+            target,
+            payment,
+        } => {
+            activate_reality_chip_reconfigure(state, cards, source, target, payment)?;
+            Transition::default()
+        }
+        Action::ActivateRealityChipDetach { source, payment } => {
+            activate_reality_chip_detach(state, cards, source, payment)?;
+            Transition::default()
+        }
+        Action::ActivateFortuneTellersTalentLevel { source, payment } => {
+            activate_fortune_tellers_talent_level(state, cards, source, payment)?;
+            Transition::default()
+        }
+        Action::PlayLibraryTopLand { card, entry } => {
+            play_library_top_land(state, cards, card, entry)?
+        }
+        Action::CastLibraryTop { card, payment } => {
+            cast_library_top(state, cards, card, payment)?;
+            Transition::default()
+        }
         Action::PlayUrzaPermission {
             permission_slot,
             face,
@@ -733,6 +793,7 @@ fn apply_action_internal<D: CardDatabase>(
         Action::ChooseTopOrder { order } => choose_top_order(state, order)?,
         Action::ChooseScry { top, bottom } => choose_scry(state, top, bottom)?,
     };
+    refresh_continuous_top_visibility(state, cards)?;
     state.validate()?;
     Ok(transition)
 }
@@ -944,6 +1005,7 @@ pub fn advance_phase<D: CardDatabase>(
         }
     }
 
+    refresh_continuous_top_visibility(state, cards)?;
     state.validate()?;
     Ok(transition)
 }
@@ -1027,7 +1089,11 @@ pub fn shuffle_library(
 pub enum WinFamily {
     PowerArtifactGrim,
     PowerArtifactBasalt,
+    TopRealityChip,
+    TopFttLevelThree,
+    TopFttLevelTwoProducer,
     BasaltGadgeteer,
+    TopGadgeteerProducer,
 }
 
 impl WinFamily {
@@ -1035,7 +1101,11 @@ impl WinFamily {
         match self {
             Self::PowerArtifactGrim => "Power Artifact + Grim",
             Self::PowerArtifactBasalt => "Power Artifact + Basalt",
+            Self::TopRealityChip => "Top + Reality Chip",
+            Self::TopFttLevelThree => "Top + FTT L3",
+            Self::TopFttLevelTwoProducer => "Top + FTT L2 + producer",
             Self::BasaltGadgeteer => "Basalt + Gadgeteer",
+            Self::TopGadgeteerProducer => "Top + Gadgeteer + producer",
         }
     }
 }
@@ -1097,8 +1167,90 @@ pub fn detect_terminal_win<D: CardDatabase>(
                 .profile(permanent.card)
                 .is_some_and(|profile| profile.engine == EngineKind::BasaltMonolith)
     });
+    if gadgeteer_present && ready_basalt {
+        return Some(WinFamily::BasaltGadgeteer);
+    }
 
-    (gadgeteer_present && ready_basalt).then_some(WinFamily::BasaltGadgeteer)
+    let library_nonempty = !information.library.known_top.is_empty()
+        || !information.library.known_bottom.is_empty()
+        || information
+            .library
+            .remaining_counts
+            .iter()
+            .any(|entry| entry.count > 0);
+    if !library_nonempty {
+        return None;
+    }
+    let cage_present = information.battlefield.iter().any(|permanent| {
+        cards
+            .profile(permanent.card)
+            .is_some_and(|profile| profile.utility == UtilityKind::GrafdiggersCage)
+    });
+    if cage_present {
+        return None;
+    }
+    let ready_top = information.battlefield.iter().any(|permanent| {
+        !permanent.tapped
+            && cards
+                .profile(permanent.card)
+                .is_some_and(|profile| profile.utility == UtilityKind::SenseisDiviningTop)
+    });
+    if !ready_top {
+        return None;
+    }
+
+    let producer_present = information.battlefield.iter().any(|permanent| {
+        cards
+            .profile(permanent.card)
+            .is_some_and(|profile| profile.top_loop_producer)
+    });
+    let chip_attached = information.battlefield.iter().any(|permanent| {
+        cards.profile(permanent.card).is_some_and(|profile| {
+            profile.utility == UtilityKind::RealityChip
+                && permanent.mode == PermanentMode::RealityChipAttached
+                && permanent.attached_to.is_some()
+        })
+    });
+    if chip_attached && producer_present {
+        return Some(WinFamily::TopRealityChip);
+    }
+
+    let ftt_level_three = information.battlefield.iter().any(|permanent| {
+        cards.profile(permanent.card).is_some_and(|profile| {
+            profile.utility == UtilityKind::FortuneTellersTalent
+                && permanent.mode == PermanentMode::FortuneTellersTalentLevel3
+        })
+    });
+    if ftt_level_three && information.spell_cast_this_turn {
+        return Some(WinFamily::TopFttLevelThree);
+    }
+    let ftt_level_two_or_more = information.battlefield.iter().any(|permanent| {
+        cards.profile(permanent.card).is_some_and(|profile| {
+            profile.utility == UtilityKind::FortuneTellersTalent
+                && matches!(
+                    permanent.mode,
+                    PermanentMode::FortuneTellersTalentLevel2
+                        | PermanentMode::FortuneTellersTalentLevel3
+                )
+        })
+    });
+    if ftt_level_two_or_more && information.spell_cast_this_turn && producer_present {
+        return Some(WinFamily::TopFttLevelTwoProducer);
+    }
+
+    let station_or_golem = information.battlefield.iter().any(|permanent| {
+        cards.profile(permanent.card).is_some_and(|profile| {
+            matches!(
+                profile.engine,
+                EngineKind::GrindingStation | EngineKind::BatteredGolem
+            )
+        })
+    });
+    if gadgeteer_present && station_or_golem {
+        return Some(WinFamily::TopGadgeteerProducer);
+    }
+
+    None
 }
 
 pub fn observe_library_search<F>(state: &TrueState, mut eligible: F) -> LibrarySearchObservation
@@ -1152,29 +1304,7 @@ fn play_land<D: CardDatabase>(
     }
 
     let object_id = next_object_id(state)?;
-    let tapped = match profile.land_entry {
-        LandEntryRule::Untapped => {
-            if entry != LandEntryChoice::Default {
-                return Err(RuleError::InvalidLandEntryChoice(card));
-            }
-            false
-        }
-        LandEntryRule::PayLifeOrTapped { life } => match entry {
-            LandEntryChoice::Default => true,
-            LandEntryChoice::PayLife => {
-                let life = u16::from(life);
-                if state.life < life {
-                    return Err(RuleError::InsufficientLife {
-                        required: life,
-                        available: state.life,
-                    });
-                }
-                state.life -= life;
-                false
-            }
-        },
-        LandEntryRule::None => return Err(RuleError::UnsupportedCardMechanic(card)),
-    };
+    let tapped = land_entry_tapped(state, card, profile.land_entry, entry)?;
 
     let removed = state.hand.remove_one(card);
     debug_assert!(removed);
@@ -1199,7 +1329,7 @@ fn play_land<D: CardDatabase>(
             mode: if saga {
                 PermanentMode::UrzasSaga
             } else {
-                PermanentMode::Normal
+                initial_permanent_mode(profile)
             },
             attached_to: None,
             granted_ability: None,
@@ -1457,6 +1587,390 @@ fn activate_tezzeret_minus_three<D: CardDatabase>(
     });
     state.window = Window::Priority;
     Ok(())
+}
+
+fn activate_reality_chip_reconfigure<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: ObjectId,
+    target: CanonicalObjectId,
+    payment: ManaPayment,
+) -> Result<(), RuleError> {
+    ensure_sorcery_window(state)?;
+    let chip = battlefield_permanent(state, source)?.clone();
+    let profile = card_profile(cards, chip.card)?;
+    if profile.utility != UtilityKind::RealityChip {
+        return Err(RuleError::UnsupportedCardMechanic(chip.card));
+    }
+    let target_object = resolve_canonical_object(state, target)
+        .map_err(|error| match error {
+            urza_info::ObservationError::InvalidState(error) => RuleError::InvalidState(error),
+        })?
+        .ok_or(RuleError::MissingCanonicalPermanent(target))?;
+    if target_object == source {
+        return Err(RuleError::InvalidReconfigureTarget);
+    }
+    let target_permanent = battlefield_permanent(state, target_object)?.clone();
+    if !permanent_is_creature(cards, &target_permanent)? {
+        return Err(RuleError::InvalidReconfigureTarget);
+    }
+
+    let mut cost = reduced_artifact_activation_cost(state, cards, source, 2)?;
+    cost.blue = 1;
+    validate_payment(state.mana, payment, cost)?;
+    spend_payment(&mut state.mana, payment);
+    state.stack.push(StackObject::TargetedActivatedAbility {
+        source: SourceRef {
+            object_id: Some(source),
+            card: chip.card,
+        },
+        ability: ABILITY_REALITY_CHIP_RECONFIGURE,
+        target: SourceRef {
+            object_id: Some(target_object),
+            card: target_permanent.card,
+        },
+        parameter: None,
+    });
+    state.window = Window::Priority;
+    Ok(())
+}
+
+fn activate_reality_chip_detach<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: ObjectId,
+    payment: ManaPayment,
+) -> Result<(), RuleError> {
+    ensure_sorcery_window(state)?;
+    let chip = battlefield_permanent(state, source)?.clone();
+    let profile = card_profile(cards, chip.card)?;
+    if profile.utility != UtilityKind::RealityChip
+        || chip.mode != PermanentMode::RealityChipAttached
+        || chip.attached_to.is_none()
+    {
+        return Err(RuleError::UnsupportedCardMechanic(chip.card));
+    }
+
+    let mut cost = reduced_artifact_activation_cost(state, cards, source, 2)?;
+    cost.blue = 1;
+    validate_payment(state.mana, payment, cost)?;
+    spend_payment(&mut state.mana, payment);
+    state.stack.push(StackObject::ActivatedAbility {
+        source: SourceRef {
+            object_id: Some(source),
+            card: chip.card,
+        },
+        ability: ABILITY_REALITY_CHIP_DETACH,
+        parameter: None,
+    });
+    state.window = Window::Priority;
+    Ok(())
+}
+
+fn activate_fortune_tellers_talent_level<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: ObjectId,
+    payment: ManaPayment,
+) -> Result<(), RuleError> {
+    ensure_sorcery_window(state)?;
+    let talent = battlefield_permanent(state, source)?.clone();
+    let profile = card_profile(cards, talent.card)?;
+    if profile.utility != UtilityKind::FortuneTellersTalent {
+        return Err(RuleError::UnsupportedCardMechanic(talent.card));
+    }
+    let (cost, ability) = match talent.mode {
+        PermanentMode::FortuneTellersTalentLevel1 => (
+            ManaCost {
+                blue: 1,
+                generic: 3,
+                ..ManaCost::default()
+            },
+            ABILITY_FTT_LEVEL_TWO,
+        ),
+        PermanentMode::FortuneTellersTalentLevel2 => (
+            ManaCost {
+                blue: 1,
+                generic: 2,
+                ..ManaCost::default()
+            },
+            ABILITY_FTT_LEVEL_THREE,
+        ),
+        _ => return Err(RuleError::UnsupportedCardMechanic(talent.card)),
+    };
+    validate_payment(state.mana, payment, cost)?;
+    spend_payment(&mut state.mana, payment);
+    state.stack.push(StackObject::ActivatedAbility {
+        source: SourceRef {
+            object_id: Some(source),
+            card: talent.card,
+        },
+        ability,
+        parameter: None,
+    });
+    state.window = Window::Priority;
+    Ok(())
+}
+
+fn play_library_top_land<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    card: CardDefId,
+    entry: LandEntryChoice,
+) -> Result<Transition, RuleError> {
+    ensure_sorcery_window(state)?;
+    if !top_play_permission_active(state, cards) {
+        return Err(RuleError::LibraryTopPermissionUnavailable);
+    }
+    if state.land_played_this_turn {
+        return Err(RuleError::LandAlreadyPlayed);
+    }
+    if state.library.cards().first().copied() != Some(card) {
+        return Err(RuleError::LibraryTopPermissionUnavailable);
+    }
+    let profile = card_profile(cards, card)?;
+    if profile.role != R2CardRole::Land {
+        return Err(RuleError::UnsupportedCardMechanic(card));
+    }
+
+    let tapped = land_entry_tapped(state, card, profile.land_entry, entry)?;
+    let object_id = next_object_id(state)?;
+    remove_library_top_without_draw(state)?;
+    let saga = profile.utility == UtilityKind::UrzasSaga;
+    insert_permanent(
+        state,
+        PermanentState {
+            object_id,
+            card,
+            face: profile.battlefield_face,
+            tapped,
+            summoning_sick: false,
+            token: false,
+            counters: if saga {
+                CounterState {
+                    lore: 1,
+                    ..CounterState::default()
+                }
+            } else {
+                CounterState::default()
+            },
+            mode: if saga {
+                PermanentMode::UrzasSaga
+            } else {
+                initial_permanent_mode(profile)
+            },
+            attached_to: None,
+            granted_ability: None,
+        },
+    );
+    if saga {
+        state.stack.push(StackObject::ControlledTrigger {
+            source: SourceRef {
+                object_id: Some(object_id),
+                card,
+            },
+            ability: ABILITY_SAGA_CHAPTER_I,
+        });
+    }
+    state.land_played_this_turn = true;
+    Ok(Transition {
+        observations: vec![RulesObservation::PermanentEntered {
+            card,
+            face: profile.battlefield_face,
+            token: false,
+        }],
+    })
+}
+
+fn cast_library_top<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    card: CardDefId,
+    payment: ManaPayment,
+) -> Result<(), RuleError> {
+    if !top_play_permission_active(state, cards) {
+        return Err(RuleError::LibraryTopPermissionUnavailable);
+    }
+    if library_cast_blocked_by_cage(state, cards) {
+        return Err(RuleError::LibraryCastBlockedByCage);
+    }
+    if state.library.cards().first().copied() != Some(card) {
+        return Err(RuleError::LibraryTopPermissionUnavailable);
+    }
+    let profile = card_profile(cards, card)?;
+    if profile.aura_target != AuraTargetKind::None {
+        return Err(RuleError::UnsupportedCardMechanic(card));
+    }
+    match profile.role {
+        R2CardRole::ArtifactPermanent
+        | R2CardRole::CreaturePermanent
+        | R2CardRole::EnchantmentPermanent
+        | R2CardRole::PlaneswalkerPermanent => ensure_sorcery_window(state)?,
+        R2CardRole::SearchSpell => {
+            let instant = profile
+                .simple_tutor
+                .is_some_and(SimpleTutorKind::instant_speed)
+                || profile.special_search == SpecialSearchKind::Whir;
+            if instant {
+                ensure_priority(state)?;
+                ensure_no_pending_decision(state)?;
+            } else {
+                ensure_sorcery_window(state)?;
+            }
+            if !matches!(
+                profile.special_search,
+                SpecialSearchKind::None | SpecialSearchKind::TransmuteArtifact
+            ) {
+                return Err(RuleError::UnsupportedCardMechanic(card));
+            }
+        }
+        _ => return Err(RuleError::UnsupportedCardMechanic(card)),
+    }
+    let Some(mut cost) = profile.mana_cost else {
+        return Err(RuleError::UnsupportedCardMechanic(card));
+    };
+    let reduction = library_spell_generic_reduction(state, cards)?;
+    cost.generic = cost.generic.saturating_sub(reduction);
+    validate_payment(state.mana, payment, cost)?;
+    let object_id = next_object_id(state)?;
+
+    spend_payment(&mut state.mana, payment);
+    remove_library_top_without_draw(state)?;
+    state.stack.push(StackObject::Spell {
+        object_id,
+        card,
+        x_value: None,
+    });
+    state.spell_cast_this_turn = true;
+    state.window = Window::Priority;
+    Ok(())
+}
+
+fn remove_library_top_without_draw(state: &mut TrueState) -> Result<CardDefId, RuleError> {
+    let old_cards = state.library.cards();
+    let Some(card) = old_cards.first().copied() else {
+        return Err(RuleError::DrawFromEmptyLibrary);
+    };
+    let old_len = old_cards.len();
+    let mut knowledge = state.library.knowledge();
+    if knowledge.known_top > 0 {
+        knowledge.known_top -= 1;
+    } else if usize::from(knowledge.known_bottom) == old_len {
+        knowledge.known_bottom -= 1;
+    }
+    state.library = TrueLibrary::new(old_cards[1..].to_vec(), knowledge)?;
+    Ok(card)
+}
+
+fn top_play_permission_active<D: CardDatabase>(state: &TrueState, cards: &D) -> bool {
+    state.battlefield.permanents().iter().any(|permanent| {
+        let Some(profile) = cards.profile(permanent.card) else {
+            return false;
+        };
+        match profile.utility {
+            UtilityKind::RealityChip => {
+                permanent.mode == PermanentMode::RealityChipAttached
+                    && permanent.attached_to.is_some()
+            }
+            UtilityKind::FortuneTellersTalent => {
+                state.spell_cast_this_turn
+                    && matches!(
+                        permanent.mode,
+                        PermanentMode::FortuneTellersTalentLevel2
+                            | PermanentMode::FortuneTellersTalentLevel3
+                    )
+            }
+            _ => false,
+        }
+    })
+}
+
+fn library_spell_generic_reduction<D: CardDatabase>(
+    state: &TrueState,
+    cards: &D,
+) -> Result<u16, RuleError> {
+    let mut reduction = 0_u16;
+    for permanent in state.battlefield.permanents() {
+        let profile = card_profile(cards, permanent.card)?;
+        if profile.utility == UtilityKind::FortuneTellersTalent
+            && permanent.mode == PermanentMode::FortuneTellersTalentLevel3
+        {
+            reduction = reduction
+                .checked_add(2)
+                .ok_or(RuleError::ArithmeticOverflow)?;
+        }
+    }
+    Ok(reduction)
+}
+
+fn library_cast_blocked_by_cage<D: CardDatabase>(state: &TrueState, cards: &D) -> bool {
+    state.battlefield.permanents().iter().any(|permanent| {
+        cards
+            .profile(permanent.card)
+            .is_some_and(|profile| profile.utility == UtilityKind::GrafdiggersCage)
+    })
+}
+
+fn refresh_continuous_top_visibility<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+) -> Result<(), RuleError> {
+    if state.library.cards().is_empty() {
+        return Ok(());
+    }
+    let can_look = state.battlefield.permanents().iter().any(|permanent| {
+        cards.profile(permanent.card).is_some_and(|profile| {
+            matches!(
+                profile.utility,
+                UtilityKind::RealityChip | UtilityKind::FortuneTellersTalent
+            )
+        })
+    });
+    if can_look && state.library.knowledge().known_top == 0 {
+        let mut knowledge = state.library.knowledge();
+        knowledge.known_top = 1;
+        state.library.set_knowledge(knowledge)?;
+    }
+    Ok(())
+}
+
+fn initial_permanent_mode(profile: CardProfile) -> PermanentMode {
+    match profile.utility {
+        UtilityKind::RealityChip => PermanentMode::RealityChipCreature,
+        UtilityKind::FortuneTellersTalent => PermanentMode::FortuneTellersTalentLevel1,
+        _ => PermanentMode::Normal,
+    }
+}
+
+fn land_entry_tapped(
+    state: &mut TrueState,
+    card: CardDefId,
+    rule: LandEntryRule,
+    entry: LandEntryChoice,
+) -> Result<bool, RuleError> {
+    match rule {
+        LandEntryRule::Untapped => {
+            if entry != LandEntryChoice::Default {
+                return Err(RuleError::InvalidLandEntryChoice(card));
+            }
+            Ok(false)
+        }
+        LandEntryRule::PayLifeOrTapped { life } => match entry {
+            LandEntryChoice::Default => Ok(true),
+            LandEntryChoice::PayLife => {
+                let life = u16::from(life);
+                if state.life < life {
+                    return Err(RuleError::InsufficientLife {
+                        required: life,
+                        available: state.life,
+                    });
+                }
+                state.life -= life;
+                Ok(false)
+            }
+        },
+        LandEntryRule::None => Err(RuleError::UnsupportedCardMechanic(card)),
+    }
 }
 
 fn play_urza_permission<D: CardDatabase>(
@@ -2073,10 +2587,156 @@ fn resolve_top_stack_object<D: CardDatabase>(
             state.window = Window::Priority;
             Ok(Transition::default())
         }
-        StackObject::ControlledTrigger { .. } | StackObject::ActivatedAbility { .. } => {
-            Err(RuleError::UnsupportedStackObject)
+        StackObject::TargetedActivatedAbility {
+            source,
+            ability: ABILITY_REALITY_CHIP_RECONFIGURE,
+            target,
+            ..
+        } => {
+            state.stack.pop();
+            resolve_reality_chip_reconfigure(state, cards, source, target)
         }
+        StackObject::ActivatedAbility {
+            source,
+            ability: ABILITY_REALITY_CHIP_DETACH,
+            ..
+        } => {
+            state.stack.pop();
+            resolve_reality_chip_detach(state, cards, source)
+        }
+        StackObject::ActivatedAbility {
+            source,
+            ability: ABILITY_FTT_LEVEL_TWO,
+            ..
+        } => {
+            state.stack.pop();
+            resolve_ftt_level(state, cards, source, PermanentMode::FortuneTellersTalentLevel2)
+        }
+        StackObject::ActivatedAbility {
+            source,
+            ability: ABILITY_FTT_LEVEL_THREE,
+            ..
+        } => {
+            state.stack.pop();
+            resolve_ftt_level(state, cards, source, PermanentMode::FortuneTellersTalentLevel3)
+        }
+        StackObject::ControlledTrigger { .. }
+        | StackObject::ActivatedAbility { .. }
+        | StackObject::TargetedActivatedAbility { .. } => Err(RuleError::UnsupportedStackObject),
     }
+}
+
+fn resolve_reality_chip_reconfigure<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: SourceRef,
+    target: SourceRef,
+) -> Result<Transition, RuleError> {
+    let Some(source_id) = source.object_id else {
+        state.window = Window::Priority;
+        return Ok(Transition::default());
+    };
+    let Some(target_id) = target.object_id else {
+        state.window = Window::Priority;
+        return Ok(Transition::default());
+    };
+    let Some(chip) = state.battlefield.get(source_id).cloned() else {
+        state.window = Window::Priority;
+        return Ok(Transition::default());
+    };
+    let Some(target_permanent) = state.battlefield.get(target_id).cloned() else {
+        state.window = Window::Priority;
+        return Ok(Transition::default());
+    };
+    if chip.card != source.card
+        || target_permanent.card != target.card
+        || card_profile(cards, chip.card)?.utility != UtilityKind::RealityChip
+        || !permanent_is_creature(cards, &target_permanent)?
+        || source_id == target_id
+    {
+        state.window = Window::Priority;
+        return Ok(Transition::default());
+    }
+
+    let mut permanents = state.battlefield.permanents().to_vec();
+    let live = permanents
+        .iter_mut()
+        .find(|permanent| permanent.object_id == source_id)
+        .ok_or(RuleError::MissingPermanent(source_id))?;
+    live.mode = PermanentMode::RealityChipAttached;
+    live.attached_to = Some(target_id);
+    state.battlefield = BattlefieldZone::new(permanents);
+    state.window = Window::Priority;
+    Ok(Transition::default())
+}
+
+fn resolve_reality_chip_detach<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: SourceRef,
+) -> Result<Transition, RuleError> {
+    let Some(source_id) = source.object_id else {
+        state.window = Window::Priority;
+        return Ok(Transition::default());
+    };
+    let Some(chip) = state.battlefield.get(source_id).cloned() else {
+        state.window = Window::Priority;
+        return Ok(Transition::default());
+    };
+    if chip.card != source.card || card_profile(cards, chip.card)?.utility != UtilityKind::RealityChip {
+        state.window = Window::Priority;
+        return Ok(Transition::default());
+    }
+    let mut permanents = state.battlefield.permanents().to_vec();
+    let live = permanents
+        .iter_mut()
+        .find(|permanent| permanent.object_id == source_id)
+        .ok_or(RuleError::MissingPermanent(source_id))?;
+    live.mode = PermanentMode::RealityChipCreature;
+    live.attached_to = None;
+    state.battlefield = BattlefieldZone::new(permanents);
+    state.window = Window::Priority;
+    Ok(Transition::default())
+}
+
+fn resolve_ftt_level<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: SourceRef,
+    next_mode: PermanentMode,
+) -> Result<Transition, RuleError> {
+    let Some(source_id) = source.object_id else {
+        state.window = Window::Priority;
+        return Ok(Transition::default());
+    };
+    let Some(talent) = state.battlefield.get(source_id).cloned() else {
+        state.window = Window::Priority;
+        return Ok(Transition::default());
+    };
+    if talent.card != source.card
+        || card_profile(cards, talent.card)?.utility != UtilityKind::FortuneTellersTalent
+    {
+        state.window = Window::Priority;
+        return Ok(Transition::default());
+    }
+    let expected = match next_mode {
+        PermanentMode::FortuneTellersTalentLevel2 => PermanentMode::FortuneTellersTalentLevel1,
+        PermanentMode::FortuneTellersTalentLevel3 => PermanentMode::FortuneTellersTalentLevel2,
+        _ => return Err(RuleError::UnsupportedStackObject),
+    };
+    if talent.mode != expected {
+        state.window = Window::Priority;
+        return Ok(Transition::default());
+    }
+    let mut permanents = state.battlefield.permanents().to_vec();
+    let live = permanents
+        .iter_mut()
+        .find(|permanent| permanent.object_id == source_id)
+        .ok_or(RuleError::MissingPermanent(source_id))?;
+    live.mode = next_mode;
+    state.battlefield = BattlefieldZone::new(permanents);
+    state.window = Window::Priority;
+    Ok(Transition::default())
 }
 
 fn resolve_aura_spell<D: CardDatabase>(
@@ -2229,7 +2889,7 @@ fn resolve_spell<D: CardDatabase>(
                 loyalty: profile.starting_loyalty,
                 ..CounterState::default()
             },
-            mode: PermanentMode::Normal,
+            mode: initial_permanent_mode(profile),
             attached_to: None,
             granted_ability: None,
         },
@@ -3147,7 +3807,7 @@ fn put_card_onto_battlefield_with_id<D: CardDatabase>(
                 loyalty: profile.starting_loyalty,
                 ..CounterState::default()
             },
-            mode: PermanentMode::Normal,
+            mode: initial_permanent_mode(profile),
             attached_to: None,
             granted_ability: None,
         },
@@ -3198,6 +3858,19 @@ fn validate_payment(pool: ManaPool, payment: ManaPayment, cost: ManaCost) -> Res
     } else {
         Err(RuleError::InvalidManaPayment)
     }
+}
+
+fn permanent_is_creature<D: CardDatabase>(
+    cards: &D,
+    permanent: &PermanentState,
+) -> Result<bool, RuleError> {
+    let profile = card_profile(cards, permanent.card)?;
+    if profile.utility == UtilityKind::RealityChip
+        && permanent.mode == PermanentMode::RealityChipAttached
+    {
+        return Ok(false);
+    }
+    Ok(profile.is_creature)
 }
 
 fn reduced_artifact_activation_cost<D: CardDatabase>(
@@ -3319,7 +3992,9 @@ fn next_object_id(state: &TrueState) -> Result<ObjectId, RuleError> {
             StackObject::Spell { object_id, .. } | StackObject::AuraSpell { object_id, .. } => {
                 Some(object_id.0)
             }
-            StackObject::ControlledTrigger { .. } | StackObject::ActivatedAbility { .. } => None,
+            StackObject::ControlledTrigger { .. }
+            | StackObject::ActivatedAbility { .. }
+            | StackObject::TargetedActivatedAbility { .. } => None,
         })
         .max();
     let current_max = battlefield_max
@@ -3367,6 +4042,11 @@ mod tests {
     const GRIM: CardDefId = CardDefId(25);
     const GADGETEER: CardDefId = CardDefId(26);
     const POWER_ARTIFACT: CardDefId = CardDefId(27);
+    const REALITY_CHIP: CardDefId = CardDefId(28);
+    const FTT: CardDefId = CardDefId(29);
+    const CAGE: CardDefId = CardDefId(30);
+    const STATION: CardDefId = CardDefId(31);
+    const GOLEM: CardDefId = CardDefId(32);
 
     #[derive(Default)]
     struct TestCards {
@@ -3733,6 +4413,7 @@ mod tests {
                     battlefield_face: CardFace::Front,
                     engine: EngineKind::ForensicGadgeteer,
                     artifact_activation_reduction: 1,
+                    top_loop_producer: true,
                     is_creature: true,
                     ..CardProfile::default()
                 },
@@ -3751,6 +4432,91 @@ mod tests {
                     engine: EngineKind::PowerArtifact,
                     aura_target: AuraTargetKind::Artifact,
                     attached_artifact_activation_reduction: 2,
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                REALITY_CHIP,
+                CardProfile {
+                    card: REALITY_CHIP,
+                    mana_cost: Some(ManaCost {
+                        blue: 1,
+                        generic: 1,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 2,
+                    role: R2CardRole::CreaturePermanent,
+                    battlefield_face: CardFace::Front,
+                    utility: UtilityKind::RealityChip,
+                    is_artifact: true,
+                    is_creature: true,
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                FTT,
+                CardProfile {
+                    card: FTT,
+                    mana_cost: Some(ManaCost {
+                        blue: 1,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 1,
+                    role: R2CardRole::EnchantmentPermanent,
+                    battlefield_face: CardFace::Front,
+                    utility: UtilityKind::FortuneTellersTalent,
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                CAGE,
+                CardProfile {
+                    card: CAGE,
+                    mana_cost: Some(ManaCost {
+                        generic: 1,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 1,
+                    role: R2CardRole::ArtifactPermanent,
+                    battlefield_face: CardFace::Front,
+                    utility: UtilityKind::GrafdiggersCage,
+                    is_artifact: true,
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                STATION,
+                CardProfile {
+                    card: STATION,
+                    mana_cost: Some(ManaCost {
+                        generic: 2,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 2,
+                    role: R2CardRole::ArtifactPermanent,
+                    battlefield_face: CardFace::Front,
+                    engine: EngineKind::GrindingStation,
+                    top_loop_producer: true,
+                    is_artifact: true,
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                GOLEM,
+                CardProfile {
+                    card: GOLEM,
+                    mana_cost: Some(ManaCost {
+                        generic: 3,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 3,
+                    role: R2CardRole::CreaturePermanent,
+                    battlefield_face: CardFace::Front,
+                    engine: EngineKind::BatteredGolem,
+                    top_loop_producer: true,
+                    skip_normal_untap: true,
+                    is_artifact: true,
+                    is_creature: true,
                     ..CardProfile::default()
                 },
             );
@@ -5666,4 +6432,486 @@ mod tests {
             None
         );
     }
+
+    #[test]
+    fn reality_chip_reconfigure_is_targeted_stack_state_and_enables_top_casting() {
+        let cards = TestCards::r4();
+        let mut state = TrueState {
+            turn: 2,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![TOP, ISLAND]),
+            battlefield: BattlefieldZone::new(vec![
+                PermanentState {
+                    object_id: ObjectId(10),
+                    card: REALITY_CHIP,
+                    face: CardFace::Front,
+                    tapped: false,
+                    summoning_sick: true,
+                    token: false,
+                    counters: CounterState::default(),
+                    mode: PermanentMode::RealityChipCreature,
+                    attached_to: None,
+                    granted_ability: None,
+                },
+                PermanentState {
+                    object_id: ObjectId(11),
+                    card: URZA,
+                    face: CardFace::Front,
+                    tapped: false,
+                    summoning_sick: false,
+                    token: false,
+                    counters: CounterState::default(),
+                    mode: PermanentMode::Normal,
+                    attached_to: None,
+                    granted_ability: None,
+                },
+            ]),
+            mana: ManaPool {
+                blue: 1,
+                colorless: 3,
+                ..ManaPool::default()
+            },
+            ..TrueState::default()
+        };
+        let info = urza_info::observe(&state).unwrap();
+        let urza = info
+            .battlefield
+            .iter()
+            .find(|permanent| permanent.card == URZA)
+            .unwrap()
+            .canonical_id;
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateRealityChipReconfigure {
+                source: ObjectId(10),
+                target: urza,
+                payment: ManaPayment {
+                    blue: 1,
+                    colorless: 2,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+        assert_eq!(state.library.knowledge().known_top, 1);
+        assert!(matches!(
+            state.stack.last(),
+            Some(StackObject::TargetedActivatedAbility {
+                ability: ABILITY_REALITY_CHIP_RECONFIGURE,
+                ..
+            })
+        ));
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        let chip = state.battlefield.get(ObjectId(10)).unwrap();
+        assert_eq!(chip.mode, PermanentMode::RealityChipAttached);
+        assert_eq!(chip.attached_to, Some(ObjectId(11)));
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::CastLibraryTop {
+                card: TOP,
+                payment: ManaPayment {
+                    colorless: 1,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+        assert_eq!(state.library.cards(), &[ISLAND]);
+        assert!(matches!(
+            state.stack.last(),
+            Some(StackObject::Spell { card: TOP, .. })
+        ));
+        assert_eq!(state.library.knowledge().known_top, 1);
+    }
+
+    #[test]
+    fn ftt_levels_on_stack_and_level_three_makes_top_free_after_a_spell() {
+        let cards = TestCards::r4();
+        let mut state = TrueState {
+            turn: 3,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![TOP, ISLAND]),
+            battlefield: BattlefieldZone::new(vec![PermanentState {
+                object_id: ObjectId(20),
+                card: FTT,
+                face: CardFace::Front,
+                tapped: false,
+                summoning_sick: false,
+                token: false,
+                counters: CounterState::default(),
+                mode: PermanentMode::FortuneTellersTalentLevel1,
+                attached_to: None,
+                granted_ability: None,
+            }]),
+            mana: ManaPool {
+                blue: 2,
+                colorless: 5,
+                ..ManaPool::default()
+            },
+            ..TrueState::default()
+        };
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateFortuneTellersTalentLevel {
+                source: ObjectId(20),
+                payment: ManaPayment {
+                    blue: 1,
+                    colorless: 3,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            state.battlefield.get(ObjectId(20)).unwrap().mode,
+            PermanentMode::FortuneTellersTalentLevel2
+        );
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateFortuneTellersTalentLevel {
+                source: ObjectId(20),
+                payment: ManaPayment {
+                    blue: 1,
+                    colorless: 2,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            state.battlefield.get(ObjectId(20)).unwrap().mode,
+            PermanentMode::FortuneTellersTalentLevel3
+        );
+        assert_eq!(state.library.knowledge().known_top, 1);
+
+        assert_eq!(
+            apply_action(
+                &mut state,
+                &cards,
+                Action::CastLibraryTop {
+                    card: TOP,
+                    payment: ManaPayment::default(),
+                },
+            ),
+            Err(RuleError::LibraryTopPermissionUnavailable)
+        );
+
+        state.spell_cast_this_turn = true;
+        apply_action(
+            &mut state,
+            &cards,
+            Action::CastLibraryTop {
+                card: TOP,
+                payment: ManaPayment::default(),
+            },
+        )
+        .unwrap();
+        assert!(matches!(
+            state.stack.last(),
+            Some(StackObject::Spell { card: TOP, .. })
+        ));
+    }
+
+    #[test]
+    fn grafdiggers_cage_blocks_library_spell_cast_but_not_continuous_look() {
+        let cards = TestCards::r4();
+        let mut state = TrueState {
+            turn: 3,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![TOP]),
+            battlefield: BattlefieldZone::new(vec![
+                PermanentState {
+                    object_id: ObjectId(20),
+                    card: FTT,
+                    face: CardFace::Front,
+                    tapped: false,
+                    summoning_sick: false,
+                    token: false,
+                    counters: CounterState::default(),
+                    mode: PermanentMode::FortuneTellersTalentLevel3,
+                    attached_to: None,
+                    granted_ability: None,
+                },
+                artifact_permanent(21, CAGE),
+            ]),
+            spell_cast_this_turn: true,
+            ..TrueState::default()
+        };
+        refresh_continuous_top_visibility(&mut state, &cards).unwrap();
+        assert_eq!(state.library.knowledge().known_top, 1);
+        assert_eq!(
+            apply_action(
+                &mut state,
+                &cards,
+                Action::CastLibraryTop {
+                    card: TOP,
+                    payment: ManaPayment::default(),
+                },
+            ),
+            Err(RuleError::LibraryCastBlockedByCage)
+        );
+    }
+
+    #[test]
+    fn top_access_terminal_catalog_matches_chip_ftt_and_gadgeteer_families() {
+        let cards = TestCards::r4();
+        let make = |engine: Vec<PermanentState>, spell_cast_this_turn: bool| {
+            urza_info::observe(&TrueState {
+                turn: 4,
+                phase: Phase::PrecombatMain,
+                window: Window::Priority,
+                library: TrueLibrary::unknown(vec![ISLAND]),
+                battlefield: BattlefieldZone::new(engine),
+                spell_cast_this_turn,
+                ..TrueState::default()
+            })
+            .unwrap()
+        };
+        let urza = PermanentState {
+            object_id: ObjectId(100),
+            card: URZA,
+            face: CardFace::Front,
+            tapped: false,
+            summoning_sick: false,
+            token: false,
+            counters: CounterState::default(),
+            mode: PermanentMode::Normal,
+            attached_to: None,
+            granted_ability: None,
+        };
+        let top = PermanentState {
+            object_id: ObjectId(101),
+            card: TOP,
+            face: CardFace::Front,
+            tapped: false,
+            summoning_sick: false,
+            token: false,
+            counters: CounterState::default(),
+            mode: PermanentMode::Normal,
+            attached_to: None,
+            granted_ability: None,
+        };
+        let producer = artifact_permanent(102, STATION);
+        let gadgeteer = PermanentState {
+            object_id: ObjectId(103),
+            card: GADGETEER,
+            face: CardFace::Front,
+            tapped: false,
+            summoning_sick: false,
+            token: false,
+            counters: CounterState::default(),
+            mode: PermanentMode::Normal,
+            attached_to: None,
+            granted_ability: None,
+        };
+        let chip = PermanentState {
+            object_id: ObjectId(104),
+            card: REALITY_CHIP,
+            face: CardFace::Front,
+            tapped: false,
+            summoning_sick: false,
+            token: false,
+            counters: CounterState::default(),
+            mode: PermanentMode::RealityChipAttached,
+            attached_to: Some(ObjectId(103)),
+            granted_ability: None,
+        };
+        assert_eq!(
+            detect_terminal_win(
+                &make(
+                    vec![
+                        urza.clone(),
+                        top.clone(),
+                        producer.clone(),
+                        gadgeteer.clone(),
+                        chip,
+                    ],
+                    false,
+                ),
+                &cards,
+            ),
+            Some(WinFamily::TopRealityChip)
+        );
+
+        let ftt3 = PermanentState {
+            object_id: ObjectId(105),
+            card: FTT,
+            face: CardFace::Front,
+            tapped: false,
+            summoning_sick: false,
+            token: false,
+            counters: CounterState::default(),
+            mode: PermanentMode::FortuneTellersTalentLevel3,
+            attached_to: None,
+            granted_ability: None,
+        };
+        assert_eq!(
+            detect_terminal_win(
+                &make(vec![urza.clone(), top.clone(), ftt3], true),
+                &cards,
+            ),
+            Some(WinFamily::TopFttLevelThree)
+        );
+
+        let ftt2 = PermanentState {
+            object_id: ObjectId(106),
+            card: FTT,
+            face: CardFace::Front,
+            tapped: false,
+            summoning_sick: false,
+            token: false,
+            counters: CounterState::default(),
+            mode: PermanentMode::FortuneTellersTalentLevel2,
+            attached_to: None,
+            granted_ability: None,
+        };
+        assert_eq!(
+            detect_terminal_win(
+                &make(
+                    vec![urza.clone(), top.clone(), producer.clone(), ftt2],
+                    true,
+                ),
+                &cards,
+            ),
+            Some(WinFamily::TopFttLevelTwoProducer)
+        );
+
+        assert_eq!(
+            detect_terminal_win(
+                &make(
+                    vec![urza.clone(), top.clone(), producer, gadgeteer],
+                    false,
+                ),
+                &cards,
+            ),
+            Some(WinFamily::TopGadgeteerProducer)
+        );
+
+        let cage = artifact_permanent(107, CAGE);
+        assert_eq!(
+            detect_terminal_win(
+                &make(
+                    vec![
+                        urza,
+                        top,
+                        artifact_permanent(108, STATION),
+                        PermanentState {
+                            object_id: ObjectId(109),
+                            card: FTT,
+                            face: CardFace::Front,
+                            tapped: false,
+                            summoning_sick: false,
+                            token: false,
+                            counters: CounterState::default(),
+                            mode: PermanentMode::FortuneTellersTalentLevel2,
+                            attached_to: None,
+                            granted_ability: None,
+                        },
+                        cage,
+                    ],
+                    true,
+                ),
+                &cards,
+            ),
+            None
+        );
+    }
+
+    #[test]
+    fn battered_golem_skips_normal_untap_as_an_intrinsic_primitive() {
+        let cards = TestCards::r4();
+        let mut state = TrueState {
+            turn: 2,
+            phase: Phase::Untap,
+            window: Window::None,
+            battlefield: BattlefieldZone::new(vec![PermanentState {
+                object_id: ObjectId(40),
+                card: GOLEM,
+                face: CardFace::Front,
+                tapped: true,
+                summoning_sick: false,
+                token: false,
+                counters: CounterState::default(),
+                mode: PermanentMode::Normal,
+                attached_to: None,
+                granted_ability: None,
+            }]),
+            ..TrueState::default()
+        };
+        advance_phase(&mut state, &cards).unwrap();
+        assert!(state.battlefield.get(ObjectId(40)).unwrap().tapped);
+    }
+
+
+    #[test]
+    fn chip_top_permission_can_play_a_land_and_cage_does_not_stop_it() {
+        let cards = TestCards::r4();
+        let mut state = TrueState {
+            turn: 3,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![ISLAND]),
+            battlefield: BattlefieldZone::new(vec![
+                PermanentState {
+                    object_id: ObjectId(50),
+                    card: REALITY_CHIP,
+                    face: CardFace::Front,
+                    tapped: false,
+                    summoning_sick: false,
+                    token: false,
+                    counters: CounterState::default(),
+                    mode: PermanentMode::RealityChipAttached,
+                    attached_to: Some(ObjectId(51)),
+                    granted_ability: None,
+                },
+                PermanentState {
+                    object_id: ObjectId(51),
+                    card: URZA,
+                    face: CardFace::Front,
+                    tapped: false,
+                    summoning_sick: false,
+                    token: false,
+                    counters: CounterState::default(),
+                    mode: PermanentMode::Normal,
+                    attached_to: None,
+                    granted_ability: None,
+                },
+                artifact_permanent(52, CAGE),
+            ]),
+            ..TrueState::default()
+        };
+        refresh_continuous_top_visibility(&mut state, &cards).unwrap();
+        let transition = apply_action(
+            &mut state,
+            &cards,
+            Action::PlayLibraryTopLand {
+                card: ISLAND,
+                entry: LandEntryChoice::Default,
+            },
+        )
+        .unwrap();
+        assert!(state.library.cards().is_empty());
+        assert!(state.land_played_this_turn);
+        assert_eq!(
+            transition.observations,
+            vec![RulesObservation::PermanentEntered {
+                card: ISLAND,
+                face: CardFace::Front,
+                token: false,
+            }]
+        );
+    }
+
 }

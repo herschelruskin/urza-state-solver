@@ -66,6 +66,9 @@ pub enum PermanentMode {
     Normal,
     RealityChipCreature,
     RealityChipAttached,
+    FortuneTellersTalentLevel1,
+    FortuneTellersTalentLevel2,
+    FortuneTellersTalentLevel3,
     UthrosStation,
     UthrosCreature,
     UrzasSaga,
@@ -460,6 +463,12 @@ pub enum StackObject {
         ability: AbilityId,
         parameter: Option<u16>,
     },
+    TargetedActivatedAbility {
+        source: SourceRef,
+        ability: AbilityId,
+        target: SourceRef,
+        parameter: Option<u16>,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -574,9 +583,9 @@ impl TrueState {
                 StackObject::Spell { object_id, .. } | StackObject::AuraSpell { object_id, .. } => {
                     *object_id
                 }
-                StackObject::ControlledTrigger { .. } | StackObject::ActivatedAbility { .. } => {
-                    continue;
-                }
+                StackObject::ControlledTrigger { .. }
+                | StackObject::ActivatedAbility { .. }
+                | StackObject::TargetedActivatedAbility { .. } => continue,
             };
             if !exact_objects.insert(object_id) {
                 return Err(StateValidationError::DuplicateObjectId(object_id));
@@ -655,6 +664,11 @@ impl TrueState {
             StackObject::AuraSpell { target, .. } => Some(*target),
             StackObject::ControlledTrigger { source, .. }
             | StackObject::ActivatedAbility { source, .. } => Some(*source),
+            StackObject::TargetedActivatedAbility { source, .. } => Some(*source),
+        });
+        let stack_targets = self.stack.iter().filter_map(|object| match object {
+            StackObject::TargetedActivatedAbility { target, .. } => Some(*target),
+            _ => None,
         });
         let pending = self.pending.source().into_iter();
         let delayed = self.delayed_events.iter().filter_map(|event| match event {
@@ -665,7 +679,11 @@ impl TrueState {
             .urza_permissions
             .iter()
             .map(|permission| permission.source);
-        stack.chain(pending).chain(delayed).chain(permissions)
+        stack
+            .chain(stack_targets)
+            .chain(pending)
+            .chain(delayed)
+            .chain(permissions)
     }
 
     fn validate_attachment_cycles(&self) -> Result<(), StateValidationError> {

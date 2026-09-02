@@ -187,7 +187,7 @@ fn run_r4_audit() {
         .collect();
 
     let report = json!({
-        "phase": "R4-power-artifact",
+        "phase": "R4-top-access",
         "rules_version": RULES_VERSION,
         "model_version": MODEL_VERSION,
         "horizon_turn": HORIZON_TURN,
@@ -197,15 +197,24 @@ fn run_r4_audit() {
             "Basalt Monolith",
             "Grim Monolith",
             "Forensic Gadgeteer",
-            "Power Artifact"
+            "Power Artifact",
+            "The Reality Chip",
+            "Fortune Teller's Talent",
+            "Grafdigger's Cage",
+            "Grinding Station",
+            "Battered Golem"
         ],
         "terminal_families": [
             WinFamily::PowerArtifactGrim.label(),
             WinFamily::PowerArtifactBasalt.label(),
-            WinFamily::BasaltGadgeteer.label()
+            WinFamily::TopRealityChip.label(),
+            WinFamily::TopFttLevelThree.label(),
+            WinFamily::TopFttLevelTwoProducer.label(),
+            WinFamily::BasaltGadgeteer.label(),
+            WinFamily::TopGadgeteerProducer.label()
         ],
-        "terminal_detection_boundary": "public InformationState only; exact attachments preserved; no hidden library order",
-        "scope": "R4 broadened through Power Artifact + Monolith engines; remaining engine cards and terminal families stay in R4"
+        "terminal_detection_boundary": "public InformationState only; exact attachments/modes preserved; Cage blocks library-cast families; no hidden library order",
+        "scope": "R4 broadened through Power Artifact and Top-access engine families; producer trigger execution and remaining terminal families stay in R4"
     });
 
     println!(
