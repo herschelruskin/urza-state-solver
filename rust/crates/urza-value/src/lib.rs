@@ -5,7 +5,8 @@ use std::collections::BTreeMap;
 use thiserror::Error;
 use urza_info::{CardCount, InformationState, ObservedDelayedEvent};
 
-pub const VALUE_KEY_SCHEMA_VERSION: &str = "value_key_v4_r3";
+pub const R3_VALUE_KEY_SCHEMA_VERSION: &str = "value_key_v4_r3";
+pub const VALUE_KEY_SCHEMA_VERSION: &str = "value_key_v5_r4";
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ValueKey(InformationState);
@@ -275,6 +276,7 @@ mod tests {
             kind: ObservedStackKind::Spell,
             card: Some(CardDefId(1)),
             source: None,
+            target: None,
             ability: None,
             parameter: None,
         };
@@ -282,6 +284,7 @@ mod tests {
             kind: ObservedStackKind::Spell,
             card: Some(CardDefId(2)),
             source: None,
+            target: None,
             ability: None,
             parameter: None,
         };
@@ -309,6 +312,7 @@ mod tests {
                 kind: ObservedStackKind::Spell,
                 card: Some(CardDefId(93)),
                 source: None,
+                target: None,
                 ability: None,
                 parameter,
             }],
@@ -319,4 +323,31 @@ mod tests {
             ValueKey::try_from_information(&make(Some(2))).unwrap()
         );
     }
+
+    #[test]
+    fn targeted_aura_stack_identity_is_strategically_future_relevant() {
+        use urza_info::{
+            CanonicalObjectId, ObservedSourceRef, ObservedStackKind, ObservedStackObject,
+        };
+
+        let make = |target_card| InformationState {
+            stack: vec![ObservedStackObject {
+                kind: ObservedStackKind::AuraSpell,
+                card: Some(CardDefId(60)),
+                source: None,
+                target: Some(ObservedSourceRef {
+                    canonical_object: Some(CanonicalObjectId(1)),
+                    card: target_card,
+                }),
+                ability: None,
+                parameter: None,
+            }],
+            ..InformationState::default()
+        };
+        assert_ne!(
+            ValueKey::try_from_information(&make(CardDefId(5))).unwrap(),
+            ValueKey::try_from_information(&make(CardDefId(31))).unwrap()
+        );
+    }
+
 }

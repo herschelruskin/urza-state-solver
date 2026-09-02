@@ -538,8 +538,10 @@ impl R2CardDatabase {
                     special_search: urza_rules::SpecialSearchKind::None,
                     utility: urza_rules::UtilityKind::None,
                     engine: urza_rules::EngineKind::None,
+                    aura_target: urza_rules::AuraTargetKind::None,
                     native_untap_generic: None,
                     artifact_activation_reduction: 0,
+                    attached_artifact_activation_reduction: 0,
                     skip_normal_untap: false,
                     starting_loyalty: 0,
                     is_artifact: card.feature_flags.is_artifact,
@@ -563,8 +565,10 @@ impl R2CardDatabase {
                 special_search: urza_rules::SpecialSearchKind::None,
                 utility: urza_rules::UtilityKind::None,
                 engine: urza_rules::EngineKind::None,
+                aura_target: urza_rules::AuraTargetKind::None,
                 native_untap_generic: None,
                 artifact_activation_reduction: 0,
+                attached_artifact_activation_reduction: 0,
                 skip_normal_untap: false,
                 starting_loyalty: 0,
                 is_artifact: true,
@@ -797,6 +801,15 @@ impl R4CardDatabase {
         gadgeteer_profile.engine = urza_rules::EngineKind::ForensicGadgeteer;
         gadgeteer_profile.artifact_activation_reduction = 1;
 
+        let power_artifact = card_id_by_name_from_r1("Power Artifact")?;
+        let power_artifact_profile = cards.get_mut(&power_artifact).ok_or_else(|| {
+            CatalogError::Invariant("missing R4 Power Artifact profile".to_owned())
+        })?;
+        power_artifact_profile.role = urza_rules::R2CardRole::EnchantmentPermanent;
+        power_artifact_profile.engine = urza_rules::EngineKind::PowerArtifact;
+        power_artifact_profile.aura_target = urza_rules::AuraTargetKind::Artifact;
+        power_artifact_profile.attached_artifact_activation_reduction = 2;
+
         Ok(Self { cards })
     }
 
@@ -924,9 +937,9 @@ pub fn validate_r4_database() -> Result<(), CatalogError> {
         }
     }
 
-    if database.supported_active_cards().len() != 35 {
+    if database.supported_active_cards().len() != 36 {
         return Err(CatalogError::Invariant(
-            "R4-start database must expose exactly 35 active identities".to_owned(),
+            "current R4 database must expose exactly 36 active identities".to_owned(),
         ));
     }
 
@@ -1482,11 +1495,12 @@ mod tests {
         let r3 = R3CardDatabase::load().unwrap();
         let r4 = R4CardDatabase::load().unwrap();
         assert_eq!(r3.supported_active_cards().len(), 32);
-        assert_eq!(r4.supported_active_cards().len(), 35);
+        assert_eq!(r4.supported_active_cards().len(), 36);
 
         let basalt = r4.card_id_by_name("Basalt Monolith").unwrap();
         let grim = r4.card_id_by_name("Grim Monolith").unwrap();
         let gadgeteer = r4.card_id_by_name("Forensic Gadgeteer").unwrap();
+        let power_artifact = r4.card_id_by_name("Power Artifact").unwrap();
 
         let basalt_profile = r4.profile(basalt).unwrap();
         assert_eq!(
@@ -1511,6 +1525,24 @@ mod tests {
             urza_rules::EngineKind::ForensicGadgeteer
         );
         assert_eq!(gadgeteer_profile.artifact_activation_reduction, 1);
+
+        let power_artifact_profile = r4.profile(power_artifact).unwrap();
+        assert_eq!(
+            power_artifact_profile.role,
+            R2CardRole::EnchantmentPermanent
+        );
+        assert_eq!(
+            power_artifact_profile.engine,
+            urza_rules::EngineKind::PowerArtifact
+        );
+        assert_eq!(
+            power_artifact_profile.aura_target,
+            urza_rules::AuraTargetKind::Artifact
+        );
+        assert_eq!(
+            power_artifact_profile.attached_artifact_activation_reduction,
+            2
+        );
 
         assert_eq!(
             r3.profile(basalt).unwrap().role,

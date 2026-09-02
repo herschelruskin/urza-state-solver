@@ -14,7 +14,8 @@ use urza_core::{
     TrueState,
 };
 
-pub const INFORMATION_SCHEMA_VERSION: &str = "information_state_v4_r3";
+pub const R3_INFORMATION_SCHEMA_VERSION: &str = "information_state_v4_r3";
+pub const INFORMATION_SCHEMA_VERSION: &str = "information_state_v5_r4";
 
 #[derive(
     Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
@@ -64,6 +65,7 @@ pub struct ObservedSourceRef {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum ObservedStackKind {
     Spell,
+    AuraSpell,
     ControlledTrigger,
     ActivatedAbility,
 }
@@ -73,6 +75,7 @@ pub struct ObservedStackObject {
     pub kind: ObservedStackKind,
     pub card: Option<CardDefId>,
     pub source: Option<ObservedSourceRef>,
+    pub target: Option<ObservedSourceRef>,
     pub ability: Option<AbilityId>,
     pub parameter: Option<u16>,
 }
@@ -275,13 +278,23 @@ pub fn observe(state: &TrueState) -> Result<InformationState, ObservationError> 
                 kind: ObservedStackKind::Spell,
                 card: Some(*card),
                 source: None,
+                target: None,
                 ability: None,
                 parameter: *x_value,
+            },
+            StackObject::AuraSpell { card, target, .. } => ObservedStackObject {
+                kind: ObservedStackKind::AuraSpell,
+                card: Some(*card),
+                source: None,
+                target: Some(observe_source(*target, &object_classes)),
+                ability: None,
+                parameter: None,
             },
             StackObject::ControlledTrigger { source, ability } => ObservedStackObject {
                 kind: ObservedStackKind::ControlledTrigger,
                 card: None,
                 source: Some(observe_source(*source, &object_classes)),
+                target: None,
                 ability: Some(*ability),
                 parameter: None,
             },
@@ -293,6 +306,7 @@ pub fn observe(state: &TrueState) -> Result<InformationState, ObservationError> 
                 kind: ObservedStackKind::ActivatedAbility,
                 card: None,
                 source: Some(observe_source(*source, &object_classes)),
+                target: None,
                 ability: Some(*ability),
                 parameter: *parameter,
             },
@@ -564,6 +578,10 @@ struct LocalSignature {
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 enum ExternalRole {
+    StackTarget {
+        position: u16,
+        spell: CardDefId,
+    },
     Stack {
         position: u16,
         kind: u8,
@@ -737,25 +755,48 @@ fn external_roles(state: &TrueState) -> BTreeMap<ObjectId, Vec<ExternalRole>> {
     let mut roles = BTreeMap::<ObjectId, Vec<ExternalRole>>::new();
 
     for (position, object) in state.stack.iter().enumerate() {
-        let (source, kind, ability, parameter) = match object {
-            StackObject::Spell { .. } => continue,
-            StackObject::ControlledTrigger { source, ability } => (source, 1, *ability, None),
+        let position = u16::try_from(position).expect("stack depth fits in u16");
+        match object {
+            StackObject::Spell { .. } => {}
+            StackObject::AuraSpell { card, target, .. } => {
+                push_source_role(
+                    &mut roles,
+                    *target,
+                    ExternalRole::StackTarget {
+                        position,
+                        spell: *card,
+                    },
+                );
+            }
+            StackObject::ControlledTrigger { source, ability } => {
+                push_source_role(
+                    &mut roles,
+                    *source,
+                    ExternalRole::Stack {
+                        position,
+                        kind: 1,
+                        ability: *ability,
+                        parameter: None,
+                    },
+                );
+            }
             StackObject::ActivatedAbility {
                 source,
                 ability,
                 parameter,
-            } => (source, 2, *ability, *parameter),
-        };
-        push_source_role(
-            &mut roles,
-            *source,
-            ExternalRole::Stack {
-                position: u16::try_from(position).expect("stack depth fits in u16"),
-                kind,
-                ability,
-                parameter,
-            },
-        );
+            } => {
+                push_source_role(
+                    &mut roles,
+                    *source,
+                    ExternalRole::Stack {
+                        position,
+                        kind: 2,
+                        ability: *ability,
+                        parameter: *parameter,
+                    },
+                );
+            }
+        }
     }
 
     if let Some(source) = state.pending.source() {
@@ -1265,4 +1306,78 @@ mod tests {
         assert_ne!(observe(&front).unwrap(), observe(&back).unwrap());
         assert_eq!(observe(&back).unwrap().battlefield[0].face, CardFace::Back);
     }
+
+    #[test]
+    fn aura_stack_target_is_public_and_raw_id_renaming_invariant() {
+        let a = TrueState {
+            battlefield: BattlefieldZone::new(vec![
+                permanent(10, 1, None),
+                permanent(20, 2, None),
+            ]),
+            stack: vec![StackObject::AuraSpell {
+                object_id: ObjectId(30),
+                card: CardDefId(9),
+                target: SourceRef {
+                    object_id: Some(ObjectId(10)),
+                    card: CardDefId(1),
+                },
+            }],
+            ..TrueState::default()
+        };
+        let b = TrueState {
+            battlefield: BattlefieldZone::new(vec![
+                permanent(700, 2, None),
+                permanent(900, 1, None),
+            ]),
+            stack: vec![StackObject::AuraSpell {
+                object_id: ObjectId(1200),
+                card: CardDefId(9),
+                target: SourceRef {
+                    object_id: Some(ObjectId(900)),
+                    card: CardDefId(1),
+                },
+            }],
+            ..TrueState::default()
+        };
+
+        let observed_a = observe(&a).unwrap();
+        let observed_b = observe(&b).unwrap();
+        assert_eq!(observed_a, observed_b);
+        assert_eq!(observed_a.stack.len(), 1);
+        assert_eq!(observed_a.stack[0].kind, super::ObservedStackKind::AuraSpell);
+        assert_eq!(observed_a.stack[0].target.unwrap().card, CardDefId(1));
+        assert!(observed_a.stack[0].target.unwrap().canonical_object.is_some());
+    }
+
+    #[test]
+    fn aura_stack_target_card_identity_remains_strategically_visible() {
+        let a = TrueState {
+            battlefield: BattlefieldZone::new(vec![
+                permanent(10, 1, None),
+                permanent(20, 2, None),
+            ]),
+            stack: vec![StackObject::AuraSpell {
+                object_id: ObjectId(30),
+                card: CardDefId(9),
+                target: SourceRef {
+                    object_id: Some(ObjectId(10)),
+                    card: CardDefId(1),
+                },
+            }],
+            ..TrueState::default()
+        };
+        let b = TrueState {
+            stack: vec![StackObject::AuraSpell {
+                object_id: ObjectId(30),
+                card: CardDefId(9),
+                target: SourceRef {
+                    object_id: Some(ObjectId(20)),
+                    card: CardDefId(2),
+                },
+            }],
+            ..a.clone()
+        };
+        assert_ne!(observe(&a).unwrap(), observe(&b).unwrap());
+    }
+
 }

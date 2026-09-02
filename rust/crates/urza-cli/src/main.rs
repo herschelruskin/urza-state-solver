@@ -6,7 +6,7 @@ use urza_cards::{
     validate_r4_database,
 };
 use urza_cli::hand25_fixture;
-use urza_core::{MODEL_VERSION, R2_MODEL_VERSION, TrueState};
+use urza_core::{MODEL_VERSION, R2_MODEL_VERSION, R3_MODEL_VERSION, TrueState};
 use urza_rng::RNG_SCHEME_VERSION;
 use urza_rules::{
     HORIZON_TURN, R2_RULES_VERSION, R2CardRole, R3_RULES_VERSION, RULES_VERSION, WinFamily,
@@ -156,7 +156,7 @@ fn run_r3_audit() {
     let report = json!({
         "phase": "R3",
         "rules_version": R3_RULES_VERSION,
-        "model_version": MODEL_VERSION,
+        "model_version": R3_MODEL_VERSION,
         "horizon_turn": HORIZON_TURN,
         "supported_active_card_identities": supported_names.len(),
         "supported_active_names": supported_names,
@@ -187,20 +187,25 @@ fn run_r4_audit() {
         .collect();
 
     let report = json!({
-        "phase": "R4-start",
+        "phase": "R4-power-artifact",
         "rules_version": RULES_VERSION,
         "model_version": MODEL_VERSION,
         "horizon_turn": HORIZON_TURN,
         "supported_active_card_identities": supported_names.len(),
         "supported_active_names": supported_names,
-        "initial_engine_primitives": [
+        "active_engine_primitives": [
             "Basalt Monolith",
             "Grim Monolith",
-            "Forensic Gadgeteer"
+            "Forensic Gadgeteer",
+            "Power Artifact"
         ],
-        "initial_terminal_families": [WinFamily::BasaltGadgeteer.label()],
-        "terminal_detection_boundary": "public InformationState only; no hidden library order",
-        "scope": "R4-start mana-engine and terminal-catalog foundation; broader engine cards and remaining terminal families stay in R4"
+        "terminal_families": [
+            WinFamily::PowerArtifactGrim.label(),
+            WinFamily::PowerArtifactBasalt.label(),
+            WinFamily::BasaltGadgeteer.label()
+        ],
+        "terminal_detection_boundary": "public InformationState only; exact attachments preserved; no hidden library order",
+        "scope": "R4 broadened through Power Artifact + Monolith engines; remaining engine cards and terminal families stay in R4"
     });
 
     println!(

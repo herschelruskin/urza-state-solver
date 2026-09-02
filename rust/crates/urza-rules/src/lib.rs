@@ -20,7 +20,7 @@ use urza_rng::{
 pub const RULES_PHASE: &str = "R4";
 pub const R2_RULES_VERSION: &str = "r2_core_kernel_v2";
 pub const R3_RULES_VERSION: &str = "r3_search_complete_v4";
-pub const RULES_VERSION: &str = "r4_engine_start_v1";
+pub const RULES_VERSION: &str = "r4_power_artifact_v2";
 pub const HORIZON_TURN: u8 = 6;
 pub const RNG_EVENT_SEARCH_SHUFFLE: EventType = EventType(0x0301);
 pub const ABILITY_REPURPOSING_BAY_SEARCH: AbilityId = AbilityId(0x0301);
@@ -254,6 +254,7 @@ pub enum R2CardRole {
     Land,
     ArtifactPermanent,
     CreaturePermanent,
+    EnchantmentPermanent,
     PlaneswalkerPermanent,
     SearchSpell,
     UrzaCommander,
@@ -331,12 +332,20 @@ pub enum SpecialSearchKind {
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
+pub enum AuraTargetKind {
+    #[default]
+    None,
+    Artifact,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
 pub enum EngineKind {
     #[default]
     None,
     BasaltMonolith,
     GrimMonolith,
     ForensicGadgeteer,
+    PowerArtifact,
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
@@ -370,8 +379,10 @@ pub struct CardProfile {
     pub special_search: SpecialSearchKind,
     pub utility: UtilityKind,
     pub engine: EngineKind,
+    pub aura_target: AuraTargetKind,
     pub native_untap_generic: Option<u16>,
     pub artifact_activation_reduction: u16,
+    pub attached_artifact_activation_reduction: u16,
     pub skip_normal_untap: bool,
     pub starting_loyalty: i16,
     pub is_artifact: bool,
@@ -412,6 +423,11 @@ pub enum Action {
         card: CardDefId,
         payment: ManaPayment,
     },
+    CastAuraFromHand {
+        card: CardDefId,
+        target: CanonicalObjectId,
+        payment: ManaPayment,
+    },
     CastWhir {
         card: CardDefId,
         x_value: u16,
@@ -446,6 +462,10 @@ pub enum Action {
     PlayUrzaPermission {
         permission_slot: u16,
         face: CardFace,
+    },
+    PlayUrzaPermissionAura {
+        permission_slot: u16,
+        target: CanonicalObjectId,
     },
     CastCommander {
         payment: ManaPayment,
@@ -541,6 +561,8 @@ pub enum RuleError {
     InsufficientLife { required: u16, available: u16 },
     #[error("object {0:?} is not an artifact")]
     NotArtifact(ObjectId),
+    #[error("observed object {0:?} is not a legal Aura target")]
+    InvalidAuraTarget(CanonicalObjectId),
     #[error("Urza is not on the battlefield")]
     UrzaNotOnBattlefield,
     #[error("mana payment is not legal for the requested cost")]
@@ -634,6 +656,14 @@ fn apply_action_internal<D: CardDatabase>(
             cast_from_hand(state, cards, card, payment)?;
             Transition::default()
         }
+        Action::CastAuraFromHand {
+            card,
+            target,
+            payment,
+        } => {
+            cast_aura_from_hand(state, cards, card, target, payment)?;
+            Transition::default()
+        }
         Action::CastWhir {
             card,
             x_value,
@@ -680,6 +710,10 @@ fn apply_action_internal<D: CardDatabase>(
             permission_slot,
             face,
         } => play_urza_permission(state, cards, permission_slot, face)?,
+        Action::PlayUrzaPermissionAura {
+            permission_slot,
+            target,
+        } => play_urza_permission_aura(state, cards, permission_slot, target)?,
         Action::CastCommander { payment } => {
             cast_commander(state, cards, payment)?;
             Transition::default()
@@ -991,12 +1025,16 @@ pub fn shuffle_library(
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum WinFamily {
+    PowerArtifactGrim,
+    PowerArtifactBasalt,
     BasaltGadgeteer,
 }
 
 impl WinFamily {
     pub fn label(self) -> &'static str {
         match self {
+            Self::PowerArtifactGrim => "Power Artifact + Grim",
+            Self::PowerArtifactBasalt => "Power Artifact + Basalt",
             Self::BasaltGadgeteer => "Basalt + Gadgeteer",
         }
     }
@@ -1019,6 +1057,33 @@ pub fn detect_terminal_win<D: CardDatabase>(
     });
     if !urza_present {
         return None;
+    }
+
+    for aura in &information.battlefield {
+        if cards
+            .profile(aura.card)
+            .is_none_or(|profile| profile.engine != EngineKind::PowerArtifact)
+        {
+            continue;
+        }
+        let Some(target_id) = aura.attached_to else {
+            continue;
+        };
+        let Some(target) = information
+            .battlefield
+            .iter()
+            .find(|permanent| permanent.canonical_id == target_id)
+        else {
+            continue;
+        };
+        if target.tapped {
+            continue;
+        }
+        match cards.profile(target.card).map(|profile| profile.engine) {
+            Some(EngineKind::GrimMonolith) => return Some(WinFamily::PowerArtifactGrim),
+            Some(EngineKind::BasaltMonolith) => return Some(WinFamily::PowerArtifactBasalt),
+            _ => {}
+        }
     }
 
     let gadgeteer_present = information.battlefield.iter().any(|permanent| {
@@ -1484,6 +1549,12 @@ fn play_urza_permission<D: CardDatabase>(
         R2CardRole::ArtifactPermanent
         | R2CardRole::CreaturePermanent
         | R2CardRole::PlaneswalkerPermanent => ensure_sorcery_window(state)?,
+        R2CardRole::EnchantmentPermanent => {
+            if profile.aura_target != AuraTargetKind::None {
+                return Err(RuleError::UnsupportedCardMechanic(permission.card));
+            }
+            ensure_sorcery_window(state)?;
+        },
         R2CardRole::SearchSpell => {
             let instant = profile
                 .simple_tutor
@@ -1513,6 +1584,56 @@ fn play_urza_permission<D: CardDatabase>(
             SpecialSearchKind::Whir | SpecialSearchKind::Reshape
         )
         .then_some(0),
+    });
+    state.spell_cast_this_turn = true;
+    state.window = Window::Priority;
+    consume_permission(state, permission_id);
+    Ok(Transition::default())
+}
+
+fn play_urza_permission_aura<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    permission_slot: u16,
+    target: CanonicalObjectId,
+) -> Result<Transition, RuleError> {
+    let permission_id = resolve_permission_slot(state, permission_slot)
+        .map_err(|error| match error {
+            urza_info::ObservationError::InvalidState(error) => RuleError::InvalidState(error),
+        })?
+        .ok_or(RuleError::MissingPermissionSlot(permission_slot))?;
+    let permission = state
+        .urza_permissions
+        .iter()
+        .find(|permission| permission.permission_id == permission_id)
+        .cloned()
+        .ok_or(RuleError::MissingPermissionSlot(permission_slot))?;
+    if permission.expires_turn < state.turn {
+        return Err(RuleError::MissingPermissionSlot(permission_slot));
+    }
+    if !state.exile.cards().contains(&permission.card) {
+        return Err(RuleError::PermissionCardNotInExile);
+    }
+    let profile = card_profile(cards, permission.card)?;
+    if profile.role != R2CardRole::EnchantmentPermanent
+        || profile.aura_target == AuraTargetKind::None
+    {
+        return Err(RuleError::UnsupportedCardMechanic(permission.card));
+    }
+    ensure_sorcery_window(state)?;
+    let target_object = resolve_aura_target(state, cards, target, profile.aura_target)?;
+    let target_card = battlefield_permanent(state, target_object)?.card;
+    let object_id = next_object_id(state)?;
+
+    let removed = state.exile.remove_one(permission.card);
+    debug_assert!(removed);
+    state.stack.push(StackObject::AuraSpell {
+        object_id,
+        card: permission.card,
+        target: SourceRef {
+            object_id: Some(target_object),
+            card: target_card,
+        },
     });
     state.spell_cast_this_turn = true;
     state.window = Window::Priority;
@@ -1552,10 +1673,77 @@ fn cast_from_hand<D: CardDatabase>(
         | R2CardRole::CreaturePermanent
         | R2CardRole::PlaneswalkerPermanent
         | R2CardRole::UrzaCommander => ensure_sorcery_window(state)?,
+        R2CardRole::EnchantmentPermanent => {
+            if profile.aura_target != AuraTargetKind::None {
+                return Err(RuleError::UnsupportedCardMechanic(card));
+            }
+            ensure_sorcery_window(state)?;
+        }
         _ => return Err(RuleError::UnsupportedCardMechanic(card)),
     }
 
     cast_paid_spell(state, cards, card, payment, None)
+}
+
+fn cast_aura_from_hand<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    card: CardDefId,
+    target: CanonicalObjectId,
+    payment: ManaPayment,
+) -> Result<(), RuleError> {
+    ensure_sorcery_window(state)?;
+    let profile = card_profile(cards, card)?;
+    if profile.role != R2CardRole::EnchantmentPermanent
+        || profile.aura_target == AuraTargetKind::None
+    {
+        return Err(RuleError::UnsupportedCardMechanic(card));
+    }
+    if !state.hand.cards().contains(&card) {
+        return Err(RuleError::CardNotInHand(card));
+    }
+    let target_object = resolve_aura_target(state, cards, target, profile.aura_target)?;
+    let Some(cost) = profile.mana_cost else {
+        return Err(RuleError::UnsupportedCardMechanic(card));
+    };
+    validate_payment(state.mana, payment, cost)?;
+    let object_id = next_object_id(state)?;
+    let target_card = battlefield_permanent(state, target_object)?.card;
+
+    spend_payment(&mut state.mana, payment);
+    let removed = state.hand.remove_one(card);
+    debug_assert!(removed);
+    state.stack.push(StackObject::AuraSpell {
+        object_id,
+        card,
+        target: SourceRef {
+            object_id: Some(target_object),
+            card: target_card,
+        },
+    });
+    state.spell_cast_this_turn = true;
+    state.window = Window::Priority;
+    Ok(())
+}
+
+fn resolve_aura_target<D: CardDatabase>(
+    state: &TrueState,
+    cards: &D,
+    target: CanonicalObjectId,
+    kind: AuraTargetKind,
+) -> Result<ObjectId, RuleError> {
+    let object = resolve_canonical_object(state, target)
+        .map_err(|error| match error {
+            urza_info::ObservationError::InvalidState(error) => RuleError::InvalidState(error),
+        })?
+        .ok_or(RuleError::MissingCanonicalPermanent(target))?;
+    let permanent = battlefield_permanent(state, object)?;
+    let profile = card_profile(cards, permanent.card)?;
+    match kind {
+        AuraTargetKind::None => Err(RuleError::InvalidAuraTarget(target)),
+        AuraTargetKind::Artifact if profile.is_artifact => Ok(object),
+        AuraTargetKind::Artifact => Err(RuleError::InvalidAuraTarget(target)),
+    }
 }
 
 fn cast_whir<D: CardDatabase>(
@@ -1791,6 +1979,11 @@ fn resolve_top_stack_object<D: CardDatabase>(
             card,
             x_value,
         } => resolve_spell(state, cards, object_id, card, x_value),
+        StackObject::AuraSpell {
+            object_id,
+            card,
+            target,
+        } => resolve_aura_spell(state, cards, object_id, card, target),
         StackObject::ActivatedAbility {
             source,
             ability,
@@ -1886,6 +2079,67 @@ fn resolve_top_stack_object<D: CardDatabase>(
     }
 }
 
+fn resolve_aura_spell<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    object_id: ObjectId,
+    card: CardDefId,
+    target: SourceRef,
+) -> Result<Transition, RuleError> {
+    let profile = card_profile(cards, card)?;
+    if profile.role != R2CardRole::EnchantmentPermanent
+        || profile.aura_target == AuraTargetKind::None
+    {
+        return Err(RuleError::UnsupportedCardMechanic(card));
+    }
+
+    state.stack.pop();
+    state.window = Window::Resolving;
+
+    let target_live = target.object_id.and_then(|target_id| {
+        state
+            .battlefield
+            .get(target_id)
+            .filter(|permanent| permanent.card == target.card)
+            .map(|permanent| (target_id, permanent.card))
+    });
+    let Some((target_id, target_card)) = target_live else {
+        state.graveyard.insert(card);
+        state.window = Window::Priority;
+        return Ok(Transition::default());
+    };
+    let target_profile = card_profile(cards, target_card)?;
+    if profile.aura_target == AuraTargetKind::Artifact && !target_profile.is_artifact {
+        state.graveyard.insert(card);
+        state.window = Window::Priority;
+        return Ok(Transition::default());
+    }
+
+    insert_permanent(
+        state,
+        PermanentState {
+            object_id,
+            card,
+            face: profile.battlefield_face,
+            tapped: false,
+            summoning_sick: false,
+            token: false,
+            counters: CounterState::default(),
+            mode: PermanentMode::Normal,
+            attached_to: Some(target_id),
+            granted_ability: None,
+        },
+    );
+    state.window = Window::Priority;
+    Ok(Transition {
+        observations: vec![RulesObservation::PermanentEntered {
+            card,
+            face: profile.battlefield_face,
+            token: false,
+        }],
+    })
+}
+
 fn resolve_spell<D: CardDatabase>(
     state: &mut TrueState,
     cards: &D,
@@ -1898,6 +2152,7 @@ fn resolve_spell<D: CardDatabase>(
         profile.role,
         R2CardRole::ArtifactPermanent
             | R2CardRole::CreaturePermanent
+            | R2CardRole::EnchantmentPermanent
             | R2CardRole::PlaneswalkerPermanent
             | R2CardRole::SearchSpell
             | R2CardRole::UrzaCommander
@@ -2962,6 +3217,11 @@ fn reduced_artifact_activation_cost<D: CardDatabase>(
         reduction = reduction
             .checked_add(profile.artifact_activation_reduction)
             .ok_or(RuleError::ArithmeticOverflow)?;
+        if permanent.attached_to == Some(source) {
+            reduction = reduction
+                .checked_add(profile.attached_artifact_activation_reduction)
+                .ok_or(RuleError::ArithmeticOverflow)?;
+        }
     }
 
     let generic = if reduction == 0 || base_generic == 0 {
@@ -3056,7 +3316,8 @@ fn next_object_id(state: &TrueState) -> Result<ObjectId, RuleError> {
         .stack
         .iter()
         .filter_map(|object| match object {
-            StackObject::Spell { object_id, .. } => Some(object_id.0),
+            StackObject::Spell { object_id, .. }
+            | StackObject::AuraSpell { object_id, .. } => Some(object_id.0),
             StackObject::ControlledTrigger { .. } | StackObject::ActivatedAbility { .. } => None,
         })
         .max();
@@ -3104,6 +3365,7 @@ mod tests {
     const BASALT: CardDefId = CardDefId(24);
     const GRIM: CardDefId = CardDefId(25);
     const GADGETEER: CardDefId = CardDefId(26);
+    const POWER_ARTIFACT: CardDefId = CardDefId(27);
 
     #[derive(Default)]
     struct TestCards {
@@ -3471,6 +3733,23 @@ mod tests {
                     engine: EngineKind::ForensicGadgeteer,
                     artifact_activation_reduction: 1,
                     is_creature: true,
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                POWER_ARTIFACT,
+                CardProfile {
+                    card: POWER_ARTIFACT,
+                    mana_cost: Some(ManaCost {
+                        blue: 2,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 2,
+                    role: R2CardRole::EnchantmentPermanent,
+                    battlefield_face: CardFace::Front,
+                    engine: EngineKind::PowerArtifact,
+                    aura_target: AuraTargetKind::Artifact,
+                    attached_artifact_activation_reduction: 2,
                     ..CardProfile::default()
                 },
             );
@@ -5062,4 +5341,322 @@ mod tests {
         assert_eq!(detect_terminal_win(&make(false, false), &cards), None);
         assert_eq!(detect_terminal_win(&make(true, true), &cards), None);
     }
+
+    #[test]
+    fn power_artifact_locks_artifact_target_on_cast_and_resolves_attached() {
+        let cards = TestCards::r4();
+        let mut state = TrueState {
+            turn: 2,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            hand: CardZone::new(vec![POWER_ARTIFACT]),
+            battlefield: BattlefieldZone::new(vec![artifact_permanent(11, BASALT)]),
+            mana: ManaPool {
+                blue: 2,
+                ..ManaPool::default()
+            },
+            ..TrueState::default()
+        };
+        let info = urza_info::observe(&state).unwrap();
+        let basalt = info
+            .battlefield
+            .iter()
+            .find(|permanent| permanent.card == BASALT)
+            .unwrap()
+            .canonical_id;
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::CastAuraFromHand {
+                card: POWER_ARTIFACT,
+                target: basalt,
+                payment: ManaPayment {
+                    blue: 2,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+        assert!(matches!(
+            state.stack.last(),
+            Some(StackObject::AuraSpell {
+                card: POWER_ARTIFACT,
+                target: SourceRef {
+                    object_id: Some(ObjectId(11)),
+                    card: BASALT,
+                },
+                ..
+            })
+        ));
+
+        let resolution = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            resolution.observations,
+            vec![RulesObservation::PermanentEntered {
+                card: POWER_ARTIFACT,
+                face: CardFace::Front,
+                token: false,
+            }]
+        );
+        let aura = state
+            .battlefield
+            .permanents()
+            .iter()
+            .find(|permanent| permanent.card == POWER_ARTIFACT)
+            .unwrap();
+        assert_eq!(aura.attached_to, Some(ObjectId(11)));
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateManaAbility {
+                source: ObjectId(11),
+            },
+        )
+        .unwrap();
+        assert_eq!(state.mana.colorless, 3);
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateNativeArtifactUntap {
+                source: ObjectId(11),
+                payment: ManaPayment {
+                    colorless: 1,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+        assert_eq!(state.mana.colorless, 2);
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateManaAbility {
+                source: ObjectId(11),
+            },
+        )
+        .unwrap();
+        assert_eq!(state.mana.colorless, 5);
+    }
+
+    #[test]
+    fn power_artifact_reduces_grim_to_two_and_combines_with_gadgeteer_at_one_floor() {
+        let cards = TestCards::r4();
+        let mut state = TrueState {
+            turn: 2,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            battlefield: BattlefieldZone::new(vec![
+                PermanentState {
+                    object_id: ObjectId(10),
+                    card: POWER_ARTIFACT,
+                    face: CardFace::Front,
+                    tapped: false,
+                    summoning_sick: false,
+                    token: false,
+                    counters: CounterState::default(),
+                    mode: PermanentMode::Normal,
+                    attached_to: Some(ObjectId(11)),
+                    granted_ability: None,
+                },
+                artifact_permanent(11, GRIM),
+                PermanentState {
+                    object_id: ObjectId(12),
+                    card: GADGETEER,
+                    face: CardFace::Front,
+                    tapped: false,
+                    summoning_sick: true,
+                    token: false,
+                    counters: CounterState::default(),
+                    mode: PermanentMode::Normal,
+                    attached_to: None,
+                    granted_ability: None,
+                },
+            ]),
+            ..TrueState::default()
+        };
+
+        let grim_cost =
+            reduced_artifact_activation_cost(&state, &cards, ObjectId(11), 4).unwrap();
+        assert_eq!(
+            grim_cost.generic, 1,
+            "Power Artifact plus Gadgeteer cannot reduce below one mana"
+        );
+
+        state.battlefield = BattlefieldZone::new(vec![
+            PermanentState {
+                object_id: ObjectId(10),
+                card: POWER_ARTIFACT,
+                face: CardFace::Front,
+                tapped: false,
+                summoning_sick: false,
+                token: false,
+                counters: CounterState::default(),
+                mode: PermanentMode::Normal,
+                attached_to: Some(ObjectId(11)),
+                granted_ability: None,
+            },
+            artifact_permanent(11, GRIM),
+        ]);
+        let grim_cost =
+            reduced_artifact_activation_cost(&state, &cards, ObjectId(11), 4).unwrap();
+        assert_eq!(grim_cost.generic, 2);
+    }
+
+    #[test]
+    fn power_artifact_aura_fizzles_if_locked_target_is_gone() {
+        let cards = TestCards::r4();
+        let mut state = TrueState {
+            turn: 2,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            stack: vec![StackObject::AuraSpell {
+                object_id: ObjectId(40),
+                card: POWER_ARTIFACT,
+                target: SourceRef {
+                    object_id: Some(ObjectId(99)),
+                    card: BASALT,
+                },
+            }],
+            ..TrueState::default()
+        };
+        let transition = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert!(transition.observations.is_empty());
+        assert!(state.stack.is_empty());
+        assert_eq!(state.graveyard.cards(), &[POWER_ARTIFACT]);
+        assert!(
+            state
+                .battlefield
+                .permanents()
+                .iter()
+                .all(|permanent| permanent.card != POWER_ARTIFACT)
+        );
+    }
+
+    #[test]
+    fn urza_permission_can_cast_power_artifact_with_a_public_locked_target() {
+        let cards = TestCards::r4();
+        let mut state = TrueState {
+            turn: 3,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            battlefield: BattlefieldZone::new(vec![artifact_permanent(11, BASALT)]),
+            exile: CardZone::new(vec![POWER_ARTIFACT]),
+            urza_permissions: vec![urza_core::UrzaPermission {
+                permission_id: urza_core::PermissionId(7),
+                card: POWER_ARTIFACT,
+                expires_turn: 3,
+                free_cast: true,
+                source: SourceRef {
+                    object_id: None,
+                    card: URZA,
+                },
+            }],
+            ..TrueState::default()
+        };
+        let info = urza_info::observe(&state).unwrap();
+        let basalt = info
+            .battlefield
+            .iter()
+            .find(|permanent| permanent.card == BASALT)
+            .unwrap()
+            .canonical_id;
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::PlayUrzaPermissionAura {
+                permission_slot: 0,
+                target: basalt,
+            },
+        )
+        .unwrap();
+        assert!(state.exile.is_empty());
+        assert!(state.urza_permissions.is_empty());
+        assert!(matches!(
+            state.stack.last(),
+            Some(StackObject::AuraSpell {
+                card: POWER_ARTIFACT,
+                ..
+            })
+        ));
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        let aura = state
+            .battlefield
+            .permanents()
+            .iter()
+            .find(|permanent| permanent.card == POWER_ARTIFACT)
+            .unwrap();
+        assert_eq!(aura.attached_to, Some(ObjectId(11)));
+    }
+
+    #[test]
+    fn power_artifact_terminal_families_require_exact_attachment_ready_rock_and_urza() {
+        let cards = TestCards::r4();
+        let make = |rock: CardDefId, attached: bool, tapped: bool, include_urza: bool| {
+            let mut permanents = vec![
+                PermanentState {
+                    object_id: ObjectId(1),
+                    card: rock,
+                    face: CardFace::Front,
+                    tapped,
+                    summoning_sick: false,
+                    token: false,
+                    counters: CounterState::default(),
+                    mode: PermanentMode::Normal,
+                    attached_to: None,
+                    granted_ability: None,
+                },
+                PermanentState {
+                    object_id: ObjectId(2),
+                    card: POWER_ARTIFACT,
+                    face: CardFace::Front,
+                    tapped: false,
+                    summoning_sick: false,
+                    token: false,
+                    counters: CounterState::default(),
+                    mode: PermanentMode::Normal,
+                    attached_to: attached.then_some(ObjectId(1)),
+                    granted_ability: None,
+                },
+            ];
+            if include_urza {
+                permanents.push(PermanentState {
+                    object_id: ObjectId(3),
+                    card: URZA,
+                    face: CardFace::Front,
+                    tapped: false,
+                    summoning_sick: false,
+                    token: false,
+                    counters: CounterState::default(),
+                    mode: PermanentMode::Normal,
+                    attached_to: None,
+                    granted_ability: None,
+                });
+            }
+            urza_info::observe(&TrueState {
+                turn: 4,
+                phase: Phase::PrecombatMain,
+                window: Window::Priority,
+                battlefield: BattlefieldZone::new(permanents),
+                ..TrueState::default()
+            })
+            .unwrap()
+        };
+
+        assert_eq!(
+            detect_terminal_win(&make(GRIM, true, false, true), &cards),
+            Some(WinFamily::PowerArtifactGrim)
+        );
+        assert_eq!(
+            detect_terminal_win(&make(BASALT, true, false, true), &cards),
+            Some(WinFamily::PowerArtifactBasalt)
+        );
+        assert_eq!(detect_terminal_win(&make(BASALT, false, false, true), &cards), None);
+        assert_eq!(detect_terminal_win(&make(BASALT, true, true, true), &cards), None);
+        assert_eq!(detect_terminal_win(&make(BASALT, true, false, false), &cards), None);
+    }
+
 }

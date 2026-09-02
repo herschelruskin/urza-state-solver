@@ -304,8 +304,8 @@
     },
     {
       "card_id": 60,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "RULES_ACTIVE",
+      "reason": "R4 rules-active: targeted Aura cast locks an exact artifact target, resolves as an exact attachment, applies the printed {2} artifact-activation reduction with the one-mana floor, supports Urza free-cast permission targeting, and participates in the accepted Basalt/Grim terminal families"
     },
     {
       "card_id": 61,

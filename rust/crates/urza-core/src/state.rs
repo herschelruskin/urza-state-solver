@@ -446,6 +446,11 @@ pub enum StackObject {
         card: CardDefId,
         x_value: Option<u16>,
     },
+    AuraSpell {
+        object_id: ObjectId,
+        card: CardDefId,
+        target: SourceRef,
+    },
     ControlledTrigger {
         source: SourceRef,
         ability: AbilityId,
@@ -565,11 +570,15 @@ impl TrueState {
 
         let mut exact_objects: BTreeSet<ObjectId> = live.keys().copied().collect();
         for object in &self.stack {
-            let StackObject::Spell { object_id, .. } = object else {
-                continue;
+            let object_id = match object {
+                StackObject::Spell { object_id, .. }
+                | StackObject::AuraSpell { object_id, .. } => *object_id,
+                StackObject::ControlledTrigger { .. } | StackObject::ActivatedAbility { .. } => {
+                    continue;
+                }
             };
-            if !exact_objects.insert(*object_id) {
-                return Err(StateValidationError::DuplicateObjectId(*object_id));
+            if !exact_objects.insert(object_id) {
+                return Err(StateValidationError::DuplicateObjectId(object_id));
             }
         }
 
@@ -642,6 +651,7 @@ impl TrueState {
     fn source_refs(&self) -> impl Iterator<Item = SourceRef> + '_ {
         let stack = self.stack.iter().filter_map(|object| match object {
             StackObject::Spell { .. } => None,
+            StackObject::AuraSpell { target, .. } => Some(*target),
             StackObject::ControlledTrigger { source, .. }
             | StackObject::ActivatedAbility { source, .. } => Some(*source),
         });
