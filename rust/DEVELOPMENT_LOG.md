@@ -243,3 +243,47 @@ Validation:
 
 This is an R4-start checkpoint, not R4 acceptance. Power Artifact, Chip/FTT, Chrome Dome, Station/Golem, Knack/Helix recurrence, and the remainder of the audited terminal catalog stay in R4.
 
+## 2026-09-02 — R4 broadened: Power Artifact and Top-access engine families
+
+Classification: RULE/MODEL/PARITY engine work. No POLICY implementation and no Python gameplay-logic port.
+
+R4 was broadened from the initial Basalt/Grim/Gadgeteer foundation through two connected engine clusters.
+
+Power Artifact:
+- added typed targeted Aura stack state with an exact artifact target locked at cast time;
+- projected that target through canonical InformationState and ValueKey so strategically different targets cannot merge;
+- resolved to an exact attachment or graveyard on an invalid target;
+- applied the attached-only `{2}` activated-ability reduction through the shared one-mana-floor reducer;
+- supported exact targeting when Power Artifact is cast from an Urza permission;
+- added named terminal families Power Artifact + Grim and Power Artifact + Basalt.
+
+Top access:
+- added typed Reality Chip creature/attached modes and stack-based reconfigure/detach with an exact public creature target;
+- added FTT Level 1/2/3 permanent modes and stack-based level progression;
+- added continuous top visibility for Chip/FTT;
+- added explicit library-top land-play and spell-cast primitives;
+- enforced FTT Level 2/3 spell-this-turn permission and Level 3 non-hand generic reduction;
+- added Grafdigger's Cage blocking for library spell casts while retaining land plays;
+- promoted exact producer identities Grinding Station, Battered Golem, and Forensic Gadgeteer without merging their identities;
+- modeled Battered Golem's skipped normal untap while keeping its artifact-ETB trigger deferred;
+- added terminal families Top + Reality Chip, Top + FTT L3, Top + FTT L2 + producer, and Top + Gadgeteer + producer.
+
+Current namespaces:
+- model `urza_model_r4b_2026_09_01`;
+- information `information_state_v6_r4`;
+- ValueKey `value_key_v6_r4`;
+- rules `r4_top_access_v3`.
+
+Current R4 surface:
+- 41 supported active identities;
+- 7 of 13 audited terminal families represented;
+- historical R3 database/audit remains frozen at 32 identities and the accepted R3 namespaces.
+
+Validation:
+- current implementation head: `6578b369ef7c857ef0574ae6d2552a85f90377a4`;
+- GitHub Actions run `33588985108`: PASS;
+- locked dependencies, rustfmt, strict Clippy, benchmark compilation, R0/R1/R2/R3/R4 audits: PASS;
+- workspace/all-target tests: **90 passed, 0 failed**.
+
+This remains an R4 broadening checkpoint, not acceptance. Station/Golem/Gadgeteer trigger execution, broader Cage behavior, Chrome Dome/Vault families, and Knack/Helix recurrence remain in R4.
+
