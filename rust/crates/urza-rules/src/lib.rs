@@ -3904,9 +3904,10 @@ mod tests {
             },
             ..TrueState::default()
         };
+        let cards = TestCards::r2();
         let before = horizon.clone();
         assert_eq!(
-            advance_automatic(&mut horizon),
+            advance_automatic(&mut horizon, &cards),
             Err(RuleError::HorizonReached)
         );
         assert_eq!(horizon, before);
