@@ -1257,10 +1257,10 @@ mod tests {
         assert!(merchant_profile.search_classes.mystical_tutor);
 
         let sol_ring_profile = r3.profile(sol_ring).unwrap();
-        assert_eq!(
-            sol_ring_profile.search_classes,
-            urza_rules::SearchClassFlags::default()
-        );
+        assert!(!sol_ring_profile.search_classes.spellseeker);
+        assert!(!sol_ring_profile.search_classes.merchant_scroll);
+        assert!(!sol_ring_profile.search_classes.mystical_tutor);
+        assert!(sol_ring_profile.search_classes.saga_iii);
     }
 
     #[test]
@@ -1322,6 +1322,7 @@ mod tests {
         let tezzeret = r3.card_id_by_name("Tezzeret, Cruel Captain").unwrap();
         let top = r3.card_id_by_name("Sensei's Divining Top").unwrap();
         let chalice = r3.card_id_by_name("Everflowing Chalice").unwrap();
+        let bay = r3.card_id_by_name("Repurposing Bay").unwrap();
 
         assert_eq!(
             r3.profile(saga).unwrap().utility,
@@ -1335,8 +1336,12 @@ mod tests {
         assert_eq!(r3.profile(tezzeret).unwrap().starting_loyalty, 4);
         assert!(r3.profile(top).unwrap().search_classes.saga_iii);
         assert!(
-            !r3.profile(chalice).unwrap().search_classes.saga_iii,
-            "X-cost artifact has MV0 but is not printed exactly {{0}} or {{1}}"
+            r3.profile(chalice).unwrap().search_classes.saga_iii,
+            "Everflowing Chalice is printed exactly {{0}} and is a legal Saga III target"
+        );
+        assert!(
+            !r3.profile(bay).unwrap().search_classes.saga_iii,
+            "an artifact outside printed {{0}}/{{1}} must not enter the Saga III class"
         );
     }
 }
