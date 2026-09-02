@@ -1022,15 +1022,15 @@ pub fn detect_terminal_win<D: CardDatabase>(
     }
 
     let gadgeteer_present = information.battlefield.iter().any(|permanent| {
-        cards.profile(permanent.card).is_some_and(|profile| {
-            profile.engine == EngineKind::ForensicGadgeteer
-        })
+        cards
+            .profile(permanent.card)
+            .is_some_and(|profile| profile.engine == EngineKind::ForensicGadgeteer)
     });
     let ready_basalt = information.battlefield.iter().any(|permanent| {
         !permanent.tapped
-            && cards.profile(permanent.card).is_some_and(|profile| {
-                profile.engine == EngineKind::BasaltMonolith
-            })
+            && cards
+                .profile(permanent.card)
+                .is_some_and(|profile| profile.engine == EngineKind::BasaltMonolith)
     });
 
     (gadgeteer_present && ready_basalt).then_some(WinFamily::BasaltGadgeteer)
@@ -4994,7 +4994,10 @@ mod tests {
         );
 
         let top_cost = reduced_artifact_activation_cost(&state, &cards, ObjectId(1), 1).unwrap();
-        assert_eq!(top_cost.generic, 1, "reduction cannot cross the one-mana floor");
+        assert_eq!(
+            top_cost.generic, 1,
+            "reduction cannot cross the one-mana floor"
+        );
     }
 
     #[test]
@@ -5058,5 +5061,4 @@ mod tests {
         assert_eq!(detect_terminal_win(&make(false, false), &cards), None);
         assert_eq!(detect_terminal_win(&make(true, true), &cards), None);
     }
-
 }

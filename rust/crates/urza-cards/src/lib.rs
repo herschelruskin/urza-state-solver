@@ -776,11 +776,7 @@ impl R4CardDatabase {
                 urza_rules::EngineKind::BasaltMonolith,
                 3_u16,
             ),
-            (
-                "Grim Monolith",
-                urza_rules::EngineKind::GrimMonolith,
-                4_u16,
-            ),
+            ("Grim Monolith", urza_rules::EngineKind::GrimMonolith, 4_u16),
         ] {
             let card = card_id_by_name_from_r1(name)?;
             let profile = cards
@@ -1493,8 +1489,14 @@ mod tests {
         let gadgeteer = r4.card_id_by_name("Forensic Gadgeteer").unwrap();
 
         let basalt_profile = r4.profile(basalt).unwrap();
-        assert_eq!(basalt_profile.engine, urza_rules::EngineKind::BasaltMonolith);
-        assert_eq!(basalt_profile.mana_ability, urza_rules::ManaAbility::TapForColorless(3));
+        assert_eq!(
+            basalt_profile.engine,
+            urza_rules::EngineKind::BasaltMonolith
+        );
+        assert_eq!(
+            basalt_profile.mana_ability,
+            urza_rules::ManaAbility::TapForColorless(3)
+        );
         assert_eq!(basalt_profile.native_untap_generic, Some(3));
         assert!(basalt_profile.skip_normal_untap);
 
@@ -1516,5 +1518,4 @@ mod tests {
             "R3 historical surface must remain frozen"
         );
     }
-
 }

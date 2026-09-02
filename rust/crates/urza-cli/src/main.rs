@@ -9,7 +9,7 @@ use urza_cli::hand25_fixture;
 use urza_core::{MODEL_VERSION, R2_MODEL_VERSION, TrueState};
 use urza_rng::RNG_SCHEME_VERSION;
 use urza_rules::{
-    HORIZON_TURN, R2_RULES_VERSION, R3_RULES_VERSION, R2CardRole, RULES_VERSION, WinFamily,
+    HORIZON_TURN, R2_RULES_VERSION, R2CardRole, R3_RULES_VERSION, RULES_VERSION, WinFamily,
 };
 
 fn main() {
@@ -208,4 +208,3 @@ fn run_r4_audit() {
         serde_json::to_string_pretty(&report).expect("serializable R4 audit report")
     );
 }
-
