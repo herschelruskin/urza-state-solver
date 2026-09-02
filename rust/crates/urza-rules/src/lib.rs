@@ -4550,7 +4550,7 @@ mod tests {
             search.observations,
             vec![RulesObservation::SearchAvailable {
                 source: SAGA,
-                candidates: vec![ARTIFACT_MV0, TOP],
+                candidates: vec![TOP, ARTIFACT_MV0],
                 may_fail: true,
             }]
         );
@@ -4620,7 +4620,7 @@ mod tests {
             search.observations,
             vec![RulesObservation::SearchAvailable {
                 source: TEZZERET,
-                candidates: vec![ARTIFACT_MV0, TOP],
+                candidates: vec![TOP, ARTIFACT_MV0],
                 may_fail: true,
             }]
         );
