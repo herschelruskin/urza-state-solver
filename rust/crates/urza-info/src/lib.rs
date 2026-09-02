@@ -151,6 +151,8 @@ impl ObservedPendingDecision {
             Self::WhirTarget { .. } => PendingDecisionKind::WhirTarget,
             Self::ReshapeTarget { .. } => PendingDecisionKind::ReshapeTarget,
             Self::BayTarget { .. } => PendingDecisionKind::BayTarget,
+            Self::SagaTarget { .. } => PendingDecisionKind::SagaTarget,
+            Self::TezzeretTarget { .. } => PendingDecisionKind::TezzeretTarget,
             Self::TriggerOrder { .. } => PendingDecisionKind::TriggerOrder,
             Self::ColiseumDiscard { .. } => PendingDecisionKind::ColiseumDiscard,
             Self::CumulativeUpkeepPayment { .. } => PendingDecisionKind::CumulativeUpkeepPayment,
