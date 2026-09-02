@@ -17,9 +17,10 @@ use urza_rng::{
     EventOccurrence, EventType, LogicalEventId, RngCoordinate, RngDomain, RootSeed, WorldId,
 };
 
-pub const RULES_PHASE: &str = "R3";
+pub const RULES_PHASE: &str = "R4";
 pub const R2_RULES_VERSION: &str = "r2_core_kernel_v2";
-pub const RULES_VERSION: &str = "r3_search_complete_v4";
+pub const R3_RULES_VERSION: &str = "r3_search_complete_v4";
+pub const RULES_VERSION: &str = "r4_engine_start_v1";
 pub const HORIZON_TURN: u8 = 6;
 pub const RNG_EVENT_SEARCH_SHUFFLE: EventType = EventType(0x0301);
 pub const ABILITY_REPURPOSING_BAY_SEARCH: AbilityId = AbilityId(0x0301);
@@ -30,6 +31,7 @@ pub const ABILITY_SAGA_CHAPTER_I: AbilityId = AbilityId(0x0305);
 pub const ABILITY_SAGA_CHAPTER_II: AbilityId = AbilityId(0x0306);
 pub const ABILITY_SAGA_CHAPTER_III: AbilityId = AbilityId(0x0307);
 pub const ABILITY_TEZZERET_MINUS_THREE: AbilityId = AbilityId(0x0308);
+pub const ABILITY_NATIVE_ARTIFACT_UNTAP: AbilityId = AbilityId(0x0401);
 pub const RNG_EVENT_URZA_SPIN_SHUFFLE: EventType = EventType(0x0302);
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -329,6 +331,15 @@ pub enum SpecialSearchKind {
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
+pub enum EngineKind {
+    #[default]
+    None,
+    BasaltMonolith,
+    GrimMonolith,
+    ForensicGadgeteer,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
 pub enum UtilityKind {
     #[default]
     None,
@@ -358,6 +369,10 @@ pub struct CardProfile {
     pub simple_tutor: Option<SimpleTutorKind>,
     pub special_search: SpecialSearchKind,
     pub utility: UtilityKind,
+    pub engine: EngineKind,
+    pub native_untap_generic: Option<u16>,
+    pub artifact_activation_reduction: u16,
+    pub skip_normal_untap: bool,
     pub starting_loyalty: i16,
     pub is_artifact: bool,
     pub is_creature: bool,
@@ -385,6 +400,10 @@ pub enum Action {
     },
     ActivateManaAbility {
         source: ObjectId,
+    },
+    ActivateNativeArtifactUntap {
+        source: ObjectId,
+        payment: ManaPayment,
     },
     ActivateUrzaArtifactMana {
         artifact: ObjectId,
@@ -603,6 +622,10 @@ fn apply_action_internal<D: CardDatabase>(
             activate_mana_ability(state, cards, source)?;
             Transition::default()
         }
+        Action::ActivateNativeArtifactUntap { source, payment } => {
+            activate_native_artifact_untap(state, cards, source, payment)?;
+            Transition::default()
+        }
         Action::ActivateUrzaArtifactMana { artifact } => {
             activate_urza_artifact_mana(state, cards, artifact)?;
             Transition::default()
@@ -816,7 +839,10 @@ where
     actions
 }
 
-pub fn advance_phase(state: &mut TrueState) -> Result<Transition, RuleError> {
+pub fn advance_phase<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+) -> Result<Transition, RuleError> {
     state.validate()?;
     ensure_no_pending_decision(state)?;
     if !state.stack.is_empty() {
@@ -840,7 +866,12 @@ pub fn advance_phase(state: &mut TrueState) -> Result<Transition, RuleError> {
 
             let mut permanents = state.battlefield.permanents().to_vec();
             for permanent in &mut permanents {
-                permanent.tapped = false;
+                let skip_normal_untap = cards
+                    .profile(permanent.card)
+                    .is_some_and(|profile| profile.skip_normal_untap);
+                if !skip_normal_untap {
+                    permanent.tapped = false;
+                }
                 permanent.summoning_sick = false;
             }
             state.battlefield = BattlefieldZone::new(permanents);
@@ -883,7 +914,10 @@ pub fn advance_phase(state: &mut TrueState) -> Result<Transition, RuleError> {
     Ok(transition)
 }
 
-pub fn advance_automatic(state: &mut TrueState) -> Result<Transition, RuleError> {
+pub fn advance_automatic<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+) -> Result<Transition, RuleError> {
     state.validate()?;
     ensure_no_pending_decision(state)?;
     if !state.stack.is_empty() {
@@ -894,7 +928,7 @@ pub fn advance_automatic(state: &mut TrueState) -> Result<Transition, RuleError>
     while let (Phase::OpponentCycle, Window::None) | (Phase::Untap, Window::None) =
         (state.phase, state.window)
     {
-        let next = advance_phase(state)?;
+        let next = advance_phase(state, cards)?;
         transition.observations.extend(next.observations);
     }
 
@@ -955,6 +989,53 @@ pub fn shuffle_library(
     Ok(occurrence)
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum WinFamily {
+    BasaltGadgeteer,
+}
+
+impl WinFamily {
+    pub fn label(self) -> &'static str {
+        match self {
+            Self::BasaltGadgeteer => "Basalt + Gadgeteer",
+        }
+    }
+}
+
+pub fn detect_terminal_win<D: CardDatabase>(
+    information: &InformationState,
+    cards: &D,
+) -> Option<WinFamily> {
+    if !information.stack.is_empty()
+        || !matches!(information.pending, ObservedPendingDecision::None)
+    {
+        return None;
+    }
+
+    let urza_present = information.battlefield.iter().any(|permanent| {
+        cards
+            .profile(permanent.card)
+            .is_some_and(|profile| profile.role == R2CardRole::UrzaCommander)
+    });
+    if !urza_present {
+        return None;
+    }
+
+    let gadgeteer_present = information.battlefield.iter().any(|permanent| {
+        cards.profile(permanent.card).is_some_and(|profile| {
+            profile.engine == EngineKind::ForensicGadgeteer
+        })
+    });
+    let ready_basalt = information.battlefield.iter().any(|permanent| {
+        !permanent.tapped
+            && cards.profile(permanent.card).is_some_and(|profile| {
+                profile.engine == EngineKind::BasaltMonolith
+            })
+    });
+
+    (gadgeteer_present && ready_basalt).then_some(WinFamily::BasaltGadgeteer)
+}
+
 pub fn observe_library_search<F>(state: &TrueState, mut eligible: F) -> LibrarySearchObservation
 where
     F: FnMut(CardDefId) -> bool,
@@ -980,7 +1061,7 @@ fn pass_priority<D: CardDatabase>(
     ensure_no_pending_decision(state)?;
 
     if state.stack.is_empty() {
-        return advance_phase(state);
+        return advance_phase(state, cards);
     }
 
     resolve_top_stack_object(state, cards, rng)
@@ -1126,6 +1207,39 @@ fn activate_mana_ability<D: CardDatabase>(
     Ok(())
 }
 
+fn activate_native_artifact_untap<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: ObjectId,
+    payment: ManaPayment,
+) -> Result<(), RuleError> {
+    ensure_priority(state)?;
+    ensure_no_pending_decision(state)?;
+
+    let permanent = battlefield_permanent(state, source)?.clone();
+    let profile = card_profile(cards, permanent.card)?;
+    if !profile.is_artifact {
+        return Err(RuleError::NotArtifact(source));
+    }
+    let base_generic = profile
+        .native_untap_generic
+        .ok_or(RuleError::UnsupportedCardMechanic(permanent.card))?;
+    let cost = reduced_artifact_activation_cost(state, cards, source, base_generic)?;
+    validate_payment(state.mana, payment, cost)?;
+
+    spend_payment(&mut state.mana, payment);
+    state.stack.push(StackObject::ActivatedAbility {
+        source: SourceRef {
+            object_id: Some(source),
+            card: permanent.card,
+        },
+        ability: ABILITY_NATIVE_ARTIFACT_UNTAP,
+        parameter: None,
+    });
+    state.window = Window::Priority;
+    Ok(())
+}
+
 fn activate_urza_artifact_mana<D: CardDatabase>(
     state: &mut TrueState,
     cards: &D,
@@ -1173,10 +1287,7 @@ fn activate_top_look<D: CardDatabase>(
     if profile.utility != UtilityKind::SenseisDiviningTop {
         return Err(RuleError::UnsupportedCardMechanic(card));
     }
-    let cost = ManaCost {
-        generic: 1,
-        ..ManaCost::default()
-    };
+    let cost = reduced_artifact_activation_cost(state, cards, source, 1)?;
     validate_payment(state.mana, payment, cost)?;
     spend_payment(&mut state.mana, payment);
     state.stack.push(StackObject::ActivatedAbility {
@@ -1566,10 +1677,7 @@ fn activate_repurposing_bay<D: CardDatabase>(
         return Err(RuleError::UnsupportedCardMechanic(bay.card));
     }
     let sacrificed = validate_sacrifice_artifact(state, cards, sacrifice)?;
-    let cost = ManaCost {
-        generic: 2,
-        ..ManaCost::default()
-    };
+    let cost = reduced_artifact_activation_cost(state, cards, source, 2)?;
     validate_payment(state.mana, payment, cost)?;
 
     spend_payment(&mut state.mana, payment);
@@ -1754,6 +1862,23 @@ fn resolve_top_stack_object<D: CardDatabase>(
         } => {
             state.stack.pop();
             stage_parameterized_search(state, cards, PendingDecision::TezzeretTarget { source })
+        }
+        StackObject::ActivatedAbility {
+            source,
+            ability: ABILITY_NATIVE_ARTIFACT_UNTAP,
+            ..
+        } => {
+            state.stack.pop();
+            if let Some(object_id) = source.object_id
+                && state
+                    .battlefield
+                    .get(object_id)
+                    .is_some_and(|permanent| permanent.card == source.card)
+            {
+                set_untapped(state, object_id)?;
+            }
+            state.window = Window::Priority;
+            Ok(Transition::default())
         }
         StackObject::ControlledTrigger { .. } | StackObject::ActivatedAbility { .. } => {
             Err(RuleError::UnsupportedStackObject)
@@ -2820,6 +2945,36 @@ fn validate_payment(pool: ManaPool, payment: ManaPayment, cost: ManaCost) -> Res
     }
 }
 
+fn reduced_artifact_activation_cost<D: CardDatabase>(
+    state: &TrueState,
+    cards: &D,
+    source: ObjectId,
+    base_generic: u16,
+) -> Result<ManaCost, RuleError> {
+    let source_permanent = battlefield_permanent(state, source)?;
+    if !card_profile(cards, source_permanent.card)?.is_artifact {
+        return Err(RuleError::NotArtifact(source));
+    }
+
+    let mut reduction = 0_u16;
+    for permanent in state.battlefield.permanents() {
+        let profile = card_profile(cards, permanent.card)?;
+        reduction = reduction
+            .checked_add(profile.artifact_activation_reduction)
+            .ok_or(RuleError::ArithmeticOverflow)?;
+    }
+
+    let generic = if reduction == 0 || base_generic == 0 {
+        base_generic
+    } else {
+        base_generic.saturating_sub(reduction).max(1)
+    };
+    Ok(ManaCost {
+        generic,
+        ..ManaCost::default()
+    })
+}
+
 fn add_blue(pool: &mut ManaPool, amount: u16) -> Result<(), RuleError> {
     pool.blue = pool
         .blue
@@ -2860,6 +3015,18 @@ fn battlefield_permanent(
 }
 
 fn set_tapped(state: &mut TrueState, object_id: ObjectId) -> Result<(), RuleError> {
+    set_permanent_tapped(state, object_id, true)
+}
+
+fn set_untapped(state: &mut TrueState, object_id: ObjectId) -> Result<(), RuleError> {
+    set_permanent_tapped(state, object_id, false)
+}
+
+fn set_permanent_tapped(
+    state: &mut TrueState,
+    object_id: ObjectId,
+    tapped: bool,
+) -> Result<(), RuleError> {
     let mut permanents = state.battlefield.permanents().to_vec();
     let Some(permanent) = permanents
         .iter_mut()
@@ -2867,7 +3034,7 @@ fn set_tapped(state: &mut TrueState, object_id: ObjectId) -> Result<(), RuleErro
     else {
         return Err(RuleError::MissingPermanent(object_id));
     };
-    permanent.tapped = true;
+    permanent.tapped = tapped;
     state.battlefield = BattlefieldZone::new(permanents);
     Ok(())
 }
@@ -2934,6 +3101,9 @@ mod tests {
     const TEZZERET: CardDefId = CardDefId(21);
     const ARTIFACT_MV0: CardDefId = CardDefId(22);
     const ARTIFACT_X_MV0: CardDefId = CardDefId(23);
+    const BASALT: CardDefId = CardDefId(24);
+    const GRIM: CardDefId = CardDefId(25);
+    const GADGETEER: CardDefId = CardDefId(26);
 
     #[derive(Default)]
     struct TestCards {
@@ -3238,6 +3408,69 @@ mod tests {
                     role: R2CardRole::ArtifactPermanent,
                     battlefield_face: CardFace::Front,
                     is_artifact: true,
+                    ..CardProfile::default()
+                },
+            );
+            cards
+        }
+    }
+
+    impl TestCards {
+        fn r4() -> Self {
+            let mut cards = Self::r3();
+            cards.profiles.insert(
+                BASALT,
+                CardProfile {
+                    card: BASALT,
+                    mana_cost: Some(ManaCost {
+                        generic: 3,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 3,
+                    role: R2CardRole::ArtifactPermanent,
+                    battlefield_face: CardFace::Front,
+                    mana_ability: ManaAbility::TapForColorless(3),
+                    engine: EngineKind::BasaltMonolith,
+                    native_untap_generic: Some(3),
+                    skip_normal_untap: true,
+                    is_artifact: true,
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                GRIM,
+                CardProfile {
+                    card: GRIM,
+                    mana_cost: Some(ManaCost {
+                        generic: 2,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 2,
+                    role: R2CardRole::ArtifactPermanent,
+                    battlefield_face: CardFace::Front,
+                    mana_ability: ManaAbility::TapForColorless(3),
+                    engine: EngineKind::GrimMonolith,
+                    native_untap_generic: Some(4),
+                    skip_normal_untap: true,
+                    is_artifact: true,
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                GADGETEER,
+                CardProfile {
+                    card: GADGETEER,
+                    mana_cost: Some(ManaCost {
+                        blue: 1,
+                        generic: 2,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 3,
+                    role: R2CardRole::CreaturePermanent,
+                    battlefield_face: CardFace::Front,
+                    engine: EngineKind::ForensicGadgeteer,
+                    artifact_activation_reduction: 1,
+                    is_creature: true,
                     ..CardProfile::default()
                 },
             );
@@ -3565,7 +3798,7 @@ mod tests {
         assert_eq!(state.phase, Phase::OpponentCycle);
         assert_eq!(state.window, Window::None);
 
-        advance_automatic(&mut state).unwrap();
+        advance_automatic(&mut state, &cards).unwrap();
         assert_eq!(state.turn, 2);
         assert_eq!(state.phase, Phase::Upkeep);
         assert_eq!(state.window, Window::Priority);
@@ -4639,4 +4872,191 @@ mod tests {
         assert!(state.hand.cards().contains(&TOP));
         assert!(!state.library.cards().contains(&TOP));
     }
+
+    #[test]
+    fn r4_monoliths_tap_for_three_skip_normal_untap_and_use_stack_for_native_untap() {
+        let cards = TestCards::r4();
+        let mut state = TrueState {
+            turn: 2,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            battlefield: BattlefieldZone::new(vec![
+                artifact_permanent(1, BASALT),
+                artifact_permanent(2, GRIM),
+                artifact_permanent(3, SOL_RING),
+            ]),
+            ..TrueState::default()
+        };
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateManaAbility {
+                source: ObjectId(1),
+            },
+        )
+        .unwrap();
+        assert_eq!(state.mana.colorless, 3);
+        assert!(state.battlefield.get(ObjectId(1)).unwrap().tapped);
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateNativeArtifactUntap {
+                source: ObjectId(1),
+                payment: ManaPayment {
+                    colorless: 3,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+        assert!(
+            state.battlefield.get(ObjectId(1)).unwrap().tapped,
+            "native untap uses the stack and has not resolved yet"
+        );
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert!(!state.battlefield.get(ObjectId(1)).unwrap().tapped);
+
+        let mut permanents = state.battlefield.permanents().to_vec();
+        for permanent in &mut permanents {
+            permanent.tapped = true;
+        }
+        state.battlefield = BattlefieldZone::new(permanents);
+        state.phase = Phase::Untap;
+        state.window = Window::None;
+        advance_phase(&mut state, &cards).unwrap();
+
+        assert!(state.battlefield.get(ObjectId(1)).unwrap().tapped);
+        assert!(state.battlefield.get(ObjectId(2)).unwrap().tapped);
+        assert!(!state.battlefield.get(ObjectId(3)).unwrap().tapped);
+    }
+
+    #[test]
+    fn forensic_gadgeteer_reduces_artifact_activation_costs_with_one_mana_floor() {
+        let cards = TestCards::r4();
+        let mut state = TrueState {
+            turn: 1,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            battlefield: BattlefieldZone::new(vec![
+                artifact_permanent(1, BASALT),
+                PermanentState {
+                    object_id: ObjectId(2),
+                    card: GADGETEER,
+                    face: CardFace::Front,
+                    tapped: false,
+                    summoning_sick: true,
+                    token: false,
+                    counters: CounterState::default(),
+                    mode: PermanentMode::Normal,
+                    attached_to: None,
+                    granted_ability: None,
+                },
+            ]),
+            ..TrueState::default()
+        };
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateManaAbility {
+                source: ObjectId(1),
+            },
+        )
+        .unwrap();
+        assert_eq!(state.mana.colorless, 3);
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateNativeArtifactUntap {
+                source: ObjectId(1),
+                payment: ManaPayment {
+                    colorless: 2,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+        assert_eq!(state.mana.colorless, 1);
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateManaAbility {
+                source: ObjectId(1),
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            state.mana.colorless, 4,
+            "one Basalt/Gadgeteer cycle nets exactly one colorless"
+        );
+
+        let top_cost = reduced_artifact_activation_cost(&state, &cards, ObjectId(1), 1).unwrap();
+        assert_eq!(top_cost.generic, 1, "reduction cannot cross the one-mana floor");
+    }
+
+    #[test]
+    fn basalt_gadgeteer_terminal_requires_public_ready_engine_and_urza_context() {
+        let cards = TestCards::r4();
+        let make = |include_urza: bool, basalt_tapped: bool| {
+            let mut permanents = vec![
+                PermanentState {
+                    object_id: ObjectId(1),
+                    card: BASALT,
+                    face: CardFace::Front,
+                    tapped: basalt_tapped,
+                    summoning_sick: false,
+                    token: false,
+                    counters: CounterState::default(),
+                    mode: PermanentMode::Normal,
+                    attached_to: None,
+                    granted_ability: None,
+                },
+                PermanentState {
+                    object_id: ObjectId(2),
+                    card: GADGETEER,
+                    face: CardFace::Front,
+                    tapped: false,
+                    summoning_sick: true,
+                    token: false,
+                    counters: CounterState::default(),
+                    mode: PermanentMode::Normal,
+                    attached_to: None,
+                    granted_ability: None,
+                },
+            ];
+            if include_urza {
+                permanents.push(PermanentState {
+                    object_id: ObjectId(3),
+                    card: URZA,
+                    face: CardFace::Front,
+                    tapped: false,
+                    summoning_sick: false,
+                    token: false,
+                    counters: CounterState::default(),
+                    mode: PermanentMode::Normal,
+                    attached_to: None,
+                    granted_ability: None,
+                });
+            }
+            let state = TrueState {
+                turn: 4,
+                phase: Phase::PrecombatMain,
+                window: Window::Priority,
+                battlefield: BattlefieldZone::new(permanents),
+                ..TrueState::default()
+            };
+            urza_info::observe(&state).unwrap()
+        };
+
+        assert_eq!(
+            detect_terminal_win(&make(true, false), &cards),
+            Some(WinFamily::BasaltGadgeteer)
+        );
+        assert_eq!(detect_terminal_win(&make(false, false), &cards), None);
+        assert_eq!(detect_terminal_win(&make(true, true), &cards), None);
+    }
+
 }

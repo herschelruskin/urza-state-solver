@@ -29,8 +29,8 @@
     },
     {
       "card_id": 5,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R4-start primitive: ordinary artifact cast, tap for three colorless, no normal untap, native {3} untap activation, and Forensic Gadgeteer cost reduction with the one-mana floor; broader combo catalog continues in R4"
     },
     {
       "card_id": 6,
@@ -129,8 +129,8 @@
     },
     {
       "card_id": 25,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R4-start primitive: ordinary creature cast plus the static {1} reduction to artifact activated abilities with the audited one-mana floor; artifact-cast trigger remains deferred"
     },
     {
       "card_id": 26,
@@ -159,8 +159,8 @@
     },
     {
       "card_id": 31,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R4-start primitive: ordinary artifact cast, tap for three colorless, no normal untap, native {4} untap activation, and artifact-activation cost reductions with the one-mana floor"
     },
     {
       "card_id": 32,

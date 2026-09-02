@@ -537,6 +537,10 @@ impl R2CardDatabase {
                     simple_tutor: None,
                     special_search: urza_rules::SpecialSearchKind::None,
                     utility: urza_rules::UtilityKind::None,
+                    engine: urza_rules::EngineKind::None,
+                    native_untap_generic: None,
+                    artifact_activation_reduction: 0,
+                    skip_normal_untap: false,
                     starting_loyalty: 0,
                     is_artifact: card.feature_flags.is_artifact,
                     is_creature: card.feature_flags.is_creature,
@@ -558,6 +562,10 @@ impl R2CardDatabase {
                 simple_tutor: None,
                 special_search: urza_rules::SpecialSearchKind::None,
                 utility: urza_rules::UtilityKind::None,
+                engine: urza_rules::EngineKind::None,
+                native_untap_generic: None,
+                artifact_activation_reduction: 0,
+                skip_normal_untap: false,
                 starting_loyalty: 0,
                 is_artifact: true,
                 is_creature: true,
@@ -753,6 +761,87 @@ impl urza_rules::CardDatabase for R3CardDatabase {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct R4CardDatabase {
+    cards: BTreeMap<CardDefId, urza_rules::CardProfile>,
+}
+
+impl R4CardDatabase {
+    pub fn load() -> Result<Self, CatalogError> {
+        let mut cards = R3CardDatabase::load()?.cards;
+
+        for (name, engine, untap_cost) in [
+            (
+                "Basalt Monolith",
+                urza_rules::EngineKind::BasaltMonolith,
+                3_u16,
+            ),
+            (
+                "Grim Monolith",
+                urza_rules::EngineKind::GrimMonolith,
+                4_u16,
+            ),
+        ] {
+            let card = card_id_by_name_from_r1(name)?;
+            let profile = cards
+                .get_mut(&card)
+                .ok_or_else(|| CatalogError::Invariant(format!("missing R4 profile for {name}")))?;
+            profile.role = urza_rules::R2CardRole::ArtifactPermanent;
+            profile.engine = engine;
+            profile.mana_ability = urza_rules::ManaAbility::TapForColorless(3);
+            profile.native_untap_generic = Some(untap_cost);
+            profile.skip_normal_untap = true;
+        }
+
+        let gadgeteer = card_id_by_name_from_r1("Forensic Gadgeteer")?;
+        let gadgeteer_profile = cards.get_mut(&gadgeteer).ok_or_else(|| {
+            CatalogError::Invariant("missing R4 Forensic Gadgeteer profile".to_owned())
+        })?;
+        gadgeteer_profile.role = urza_rules::R2CardRole::CreaturePermanent;
+        gadgeteer_profile.engine = urza_rules::EngineKind::ForensicGadgeteer;
+        gadgeteer_profile.artifact_activation_reduction = 1;
+
+        Ok(Self { cards })
+    }
+
+    pub fn profile(&self, card: CardDefId) -> Option<urza_rules::CardProfile> {
+        self.cards.get(&card).copied()
+    }
+
+    pub fn card_id_by_name(&self, name: &str) -> Result<CardDefId, CatalogError> {
+        card_id_by_name_from_r1(name)
+    }
+
+    pub fn supported_active_cards(&self) -> Vec<CardDefId> {
+        self.cards
+            .iter()
+            .filter_map(|(card, profile)| {
+                (card.0 < URZA_CONSTRUCT_TOKEN_CARD_ID.0
+                    && profile.role != urza_rules::R2CardRole::Unsupported)
+                    .then_some(*card)
+            })
+            .collect()
+    }
+}
+
+impl urza_rules::CardDatabase for R4CardDatabase {
+    fn profile(&self, card: CardDefId) -> Option<urza_rules::CardProfile> {
+        self.profile(card)
+    }
+
+    fn commander_card(&self) -> CardDefId {
+        self.cards
+            .values()
+            .find(|profile| profile.role == urza_rules::R2CardRole::UrzaCommander)
+            .map(|profile| profile.card)
+            .expect("validated R4 database contains Urza")
+    }
+
+    fn urza_construct_token_card(&self) -> CardDefId {
+        URZA_CONSTRUCT_TOKEN_CARD_ID
+    }
+}
+
 fn card_id_by_name_from_r1(name: &str) -> Result<CardDefId, CatalogError> {
     let catalog = load_r1_catalog()?;
     catalog
@@ -781,10 +870,50 @@ pub fn validate_r3_database() -> Result<(), CatalogError> {
             CatalogError::Invariant(format!("missing coverage for {}", card.deck_name))
         })?;
 
+        if profile.role != urza_rules::R2CardRole::Unsupported
+            && !matches!(
+                status,
+                CoverageStatus::PrimitiveActive | CoverageStatus::RulesActive
+            )
+        {
+            return Err(CatalogError::Invariant(format!(
+                "{} has an R3-visible rules primitive but coverage says {:?}",
+                card.deck_name, status
+            )));
+        }
+    }
+
+    if database.supported_active_cards().len() != 32 {
+        return Err(CatalogError::Invariant(
+            "historical R3 database must remain exactly 32 active identities".to_owned(),
+        ));
+    }
+
+    Ok(())
+}
+
+pub fn validate_r4_database() -> Result<(), CatalogError> {
+    let catalog = load_r1_catalog()?;
+    let coverage = load_coverage()?;
+    let database = R4CardDatabase::load()?;
+    let coverage_by_id: BTreeMap<_, _> = coverage
+        .entries
+        .iter()
+        .map(|entry| (entry.card_id, entry.status))
+        .collect();
+
+    for card in &catalog.cards {
+        let profile = database.profile(CardDefId(card.id)).ok_or_else(|| {
+            CatalogError::Invariant(format!("missing R4 profile for {}", card.deck_name))
+        })?;
+        let status = *coverage_by_id.get(&card.id).ok_or_else(|| {
+            CatalogError::Invariant(format!("missing coverage for {}", card.deck_name))
+        })?;
+
         if profile.role == urza_rules::R2CardRole::Unsupported {
             if status != CoverageStatus::IntentionallyUnmodeled {
                 return Err(CatalogError::Invariant(format!(
-                    "{} is unsupported by current R3 slice but coverage says {:?}",
+                    "{} is unsupported by current R4 slice but coverage says {:?}",
                     card.deck_name, status
                 )));
             }
@@ -793,10 +922,16 @@ pub fn validate_r3_database() -> Result<(), CatalogError> {
             CoverageStatus::PrimitiveActive | CoverageStatus::RulesActive
         ) {
             return Err(CatalogError::Invariant(format!(
-                "{} has an R3-visible rules primitive but coverage says {:?}",
+                "{} has an R4-visible rules primitive but coverage says {:?}",
                 card.deck_name, status
             )));
         }
+    }
+
+    if database.supported_active_cards().len() != 35 {
+        return Err(CatalogError::Invariant(
+            "R4-start database must expose exactly 35 active identities".to_owned(),
+        ));
     }
 
     Ok(())
@@ -1105,7 +1240,7 @@ mod tests {
 
         apply_action(&mut state, &cards, Action::PassPriority).unwrap();
         apply_action(&mut state, &cards, Action::PassPriority).unwrap();
-        advance_automatic(&mut state).unwrap();
+        advance_automatic(&mut state, &cards).unwrap();
         assert_eq!(state.turn, 2);
         assert_eq!(state.phase, Phase::Upkeep);
 
@@ -1344,4 +1479,42 @@ mod tests {
             "an artifact outside printed {{0}}/{{1}} must not enter the Saga III class"
         );
     }
+
+    #[test]
+    fn r4_database_activates_monoliths_and_gadgeteer_without_mutating_r3_surface() {
+        validate_r4_database().unwrap();
+        let r3 = R3CardDatabase::load().unwrap();
+        let r4 = R4CardDatabase::load().unwrap();
+        assert_eq!(r3.supported_active_cards().len(), 32);
+        assert_eq!(r4.supported_active_cards().len(), 35);
+
+        let basalt = r4.card_id_by_name("Basalt Monolith").unwrap();
+        let grim = r4.card_id_by_name("Grim Monolith").unwrap();
+        let gadgeteer = r4.card_id_by_name("Forensic Gadgeteer").unwrap();
+
+        let basalt_profile = r4.profile(basalt).unwrap();
+        assert_eq!(basalt_profile.engine, urza_rules::EngineKind::BasaltMonolith);
+        assert_eq!(basalt_profile.mana_ability, urza_rules::ManaAbility::TapForColorless(3));
+        assert_eq!(basalt_profile.native_untap_generic, Some(3));
+        assert!(basalt_profile.skip_normal_untap);
+
+        let grim_profile = r4.profile(grim).unwrap();
+        assert_eq!(grim_profile.engine, urza_rules::EngineKind::GrimMonolith);
+        assert_eq!(grim_profile.native_untap_generic, Some(4));
+        assert!(grim_profile.skip_normal_untap);
+
+        let gadgeteer_profile = r4.profile(gadgeteer).unwrap();
+        assert_eq!(
+            gadgeteer_profile.engine,
+            urza_rules::EngineKind::ForensicGadgeteer
+        );
+        assert_eq!(gadgeteer_profile.artifact_activation_reduction, 1);
+
+        assert_eq!(
+            r3.profile(basalt).unwrap().role,
+            R2CardRole::Unsupported,
+            "R3 historical surface must remain frozen"
+        );
+    }
+
 }

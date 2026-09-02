@@ -1,13 +1,16 @@
 use serde_json::json;
 use urza_cards::{
-    R2CardDatabase, R3CardDatabase, URZA_CONSTRUCT_TOKEN_CARD_ID, catalog_digest_hex, load_catalog,
-    load_coverage, load_r1_catalog, r1_catalog_digest_hex, validate_catalog_and_coverage,
-    validate_r1_catalog, validate_r2_database, validate_r3_database,
+    R2CardDatabase, R3CardDatabase, R4CardDatabase, URZA_CONSTRUCT_TOKEN_CARD_ID,
+    catalog_digest_hex, load_catalog, load_coverage, load_r1_catalog, r1_catalog_digest_hex,
+    validate_catalog_and_coverage, validate_r1_catalog, validate_r2_database, validate_r3_database,
+    validate_r4_database,
 };
 use urza_cli::hand25_fixture;
 use urza_core::{MODEL_VERSION, R2_MODEL_VERSION, TrueState};
 use urza_rng::RNG_SCHEME_VERSION;
-use urza_rules::{HORIZON_TURN, R2_RULES_VERSION, R2CardRole, RULES_VERSION};
+use urza_rules::{
+    HORIZON_TURN, R2_RULES_VERSION, R3_RULES_VERSION, R2CardRole, RULES_VERSION, WinFamily,
+};
 
 fn main() {
     let command = std::env::args().nth(1).unwrap_or_else(|| "help".to_owned());
@@ -16,8 +19,9 @@ fn main() {
         "r1-audit" => run_r1_audit(),
         "r2-audit" => run_r2_audit(),
         "r3-audit" => run_r3_audit(),
+        "r4-audit" => run_r4_audit(),
         _ => {
-            eprintln!("usage: urza-cli <r0-audit|r1-audit|r2-audit|r3-audit>");
+            eprintln!("usage: urza-cli <r0-audit|r1-audit|r2-audit|r3-audit|r4-audit>");
             std::process::exit(2);
         }
     }
@@ -151,7 +155,7 @@ fn run_r3_audit() {
 
     let report = json!({
         "phase": "R3",
-        "rules_version": RULES_VERSION,
+        "rules_version": R3_RULES_VERSION,
         "model_version": MODEL_VERSION,
         "horizon_turn": HORIZON_TURN,
         "supported_active_card_identities": supported_names.len(),
@@ -166,3 +170,42 @@ fn run_r3_audit() {
         serde_json::to_string_pretty(&report).expect("serializable R3 audit report")
     );
 }
+
+fn run_r4_audit() {
+    validate_r4_database().expect("R4 database/coverage invariants");
+    let catalog = load_r1_catalog().expect("embedded R1 catalog");
+    let database = R4CardDatabase::load().expect("R4 card database");
+    let supported_names: Vec<_> = catalog
+        .cards
+        .iter()
+        .filter(|card| {
+            database
+                .profile(urza_core::CardDefId(card.id))
+                .is_some_and(|profile| profile.role != R2CardRole::Unsupported)
+        })
+        .map(|card| card.deck_name.as_str())
+        .collect();
+
+    let report = json!({
+        "phase": "R4-start",
+        "rules_version": RULES_VERSION,
+        "model_version": MODEL_VERSION,
+        "horizon_turn": HORIZON_TURN,
+        "supported_active_card_identities": supported_names.len(),
+        "supported_active_names": supported_names,
+        "initial_engine_primitives": [
+            "Basalt Monolith",
+            "Grim Monolith",
+            "Forensic Gadgeteer"
+        ],
+        "initial_terminal_families": [WinFamily::BasaltGadgeteer.label()],
+        "terminal_detection_boundary": "public InformationState only; no hidden library order",
+        "scope": "R4-start mana-engine and terminal-catalog foundation; broader engine cards and remaining terminal families stay in R4"
+    });
+
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&report).expect("serializable R4 audit report")
+    );
+}
+
