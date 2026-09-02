@@ -150,7 +150,7 @@ fn run_r3_audit() {
         .collect();
 
     let report = json!({
-        "phase": "R3-start",
+        "phase": "R3",
         "rules_version": RULES_VERSION,
         "model_version": MODEL_VERSION,
         "horizon_turn": HORIZON_TURN,
