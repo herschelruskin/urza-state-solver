@@ -1336,7 +1336,7 @@ mod tests {
         assert!(r3.profile(top).unwrap().search_classes.saga_iii);
         assert!(
             !r3.profile(chalice).unwrap().search_classes.saga_iii,
-            "X-cost artifact has MV0 but is not printed exactly {0} or {1}"
+            "X-cost artifact has MV0 but is not printed exactly {{0}} or {{1}}"
         );
     }
 }
