@@ -349,5 +349,4 @@ mod tests {
             ValueKey::try_from_information(&make(CardDefId(31))).unwrap()
         );
     }
-
 }

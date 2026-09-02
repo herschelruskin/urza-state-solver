@@ -1310,10 +1310,7 @@ mod tests {
     #[test]
     fn aura_stack_target_is_public_and_raw_id_renaming_invariant() {
         let a = TrueState {
-            battlefield: BattlefieldZone::new(vec![
-                permanent(10, 1, None),
-                permanent(20, 2, None),
-            ]),
+            battlefield: BattlefieldZone::new(vec![permanent(10, 1, None), permanent(20, 2, None)]),
             stack: vec![StackObject::AuraSpell {
                 object_id: ObjectId(30),
                 card: CardDefId(9),
@@ -1344,9 +1341,18 @@ mod tests {
         let observed_b = observe(&b).unwrap();
         assert_eq!(observed_a, observed_b);
         assert_eq!(observed_a.stack.len(), 1);
-        assert_eq!(observed_a.stack[0].kind, super::ObservedStackKind::AuraSpell);
+        assert_eq!(
+            observed_a.stack[0].kind,
+            super::ObservedStackKind::AuraSpell
+        );
         assert_eq!(observed_a.stack[0].target.unwrap().card, CardDefId(1));
-        assert!(observed_a.stack[0].target.unwrap().canonical_object.is_some());
+        assert!(
+            observed_a.stack[0]
+                .target
+                .unwrap()
+                .canonical_object
+                .is_some()
+        );
     }
 
     #[test]
@@ -1379,5 +1385,4 @@ mod tests {
         };
         assert_ne!(observe(&a).unwrap(), observe(&b).unwrap());
     }
-
 }

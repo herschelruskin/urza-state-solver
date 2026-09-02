@@ -571,8 +571,9 @@ impl TrueState {
         let mut exact_objects: BTreeSet<ObjectId> = live.keys().copied().collect();
         for object in &self.stack {
             let object_id = match object {
-                StackObject::Spell { object_id, .. }
-                | StackObject::AuraSpell { object_id, .. } => *object_id,
+                StackObject::Spell { object_id, .. } | StackObject::AuraSpell { object_id, .. } => {
+                    *object_id
+                }
                 StackObject::ControlledTrigger { .. } | StackObject::ActivatedAbility { .. } => {
                     continue;
                 }

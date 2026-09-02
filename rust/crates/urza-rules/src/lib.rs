@@ -1554,7 +1554,7 @@ fn play_urza_permission<D: CardDatabase>(
                 return Err(RuleError::UnsupportedCardMechanic(permission.card));
             }
             ensure_sorcery_window(state)?;
-        },
+        }
         R2CardRole::SearchSpell => {
             let instant = profile
                 .simple_tutor
@@ -3316,8 +3316,9 @@ fn next_object_id(state: &TrueState) -> Result<ObjectId, RuleError> {
         .stack
         .iter()
         .filter_map(|object| match object {
-            StackObject::Spell { object_id, .. }
-            | StackObject::AuraSpell { object_id, .. } => Some(object_id.0),
+            StackObject::Spell { object_id, .. } | StackObject::AuraSpell { object_id, .. } => {
+                Some(object_id.0)
+            }
             StackObject::ControlledTrigger { .. } | StackObject::ActivatedAbility { .. } => None,
         })
         .max();
@@ -5478,8 +5479,7 @@ mod tests {
             ..TrueState::default()
         };
 
-        let grim_cost =
-            reduced_artifact_activation_cost(&state, &cards, ObjectId(11), 4).unwrap();
+        let grim_cost = reduced_artifact_activation_cost(&state, &cards, ObjectId(11), 4).unwrap();
         assert_eq!(
             grim_cost.generic, 1,
             "Power Artifact plus Gadgeteer cannot reduce below one mana"
@@ -5500,8 +5500,7 @@ mod tests {
             },
             artifact_permanent(11, GRIM),
         ]);
-        let grim_cost =
-            reduced_artifact_activation_cost(&state, &cards, ObjectId(11), 4).unwrap();
+        let grim_cost = reduced_artifact_activation_cost(&state, &cards, ObjectId(11), 4).unwrap();
         assert_eq!(grim_cost.generic, 2);
     }
 
@@ -5654,9 +5653,17 @@ mod tests {
             detect_terminal_win(&make(BASALT, true, false, true), &cards),
             Some(WinFamily::PowerArtifactBasalt)
         );
-        assert_eq!(detect_terminal_win(&make(BASALT, false, false, true), &cards), None);
-        assert_eq!(detect_terminal_win(&make(BASALT, true, true, true), &cards), None);
-        assert_eq!(detect_terminal_win(&make(BASALT, true, false, false), &cards), None);
+        assert_eq!(
+            detect_terminal_win(&make(BASALT, false, false, true), &cards),
+            None
+        );
+        assert_eq!(
+            detect_terminal_win(&make(BASALT, true, true, true), &cards),
+            None
+        );
+        assert_eq!(
+            detect_terminal_win(&make(BASALT, true, false, false), &cards),
+            None
+        );
     }
-
 }
