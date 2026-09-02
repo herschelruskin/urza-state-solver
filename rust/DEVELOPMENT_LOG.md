@@ -214,3 +214,32 @@ Validation:
 - workspace/all-target tests: 56 passed, 0 failed.
 
 This is an R3-start checkpoint, not R3 acceptance. Remaining R3 scope is Whir, Reshape, Transmute, Bay, Saga III, Tezzeret, Top/scry, and Urza spin permission.
+
+## 2026-09-02 — R4 proper started: mana-engine and terminal-catalog foundation
+
+Classification: RULE engine mechanics plus public terminal-catalog infrastructure. No POLICY implementation and no Python gameplay-logic port.
+
+Started from accepted R3 head `83f314546b80e6ac23feb6463b0cdcc2e09ba63d`.
+
+The first coherent R4 slice establishes the engine/terminal architecture with Basalt Monolith, Grim Monolith, and Forensic Gadgeteer:
+
+- added an R4 card-database layer while freezing the historical R3 database at exactly 32 active identities;
+- modeled Basalt/Grim tap-for-three mana, skipped normal untap, and stack-based native untap activations;
+- added shared artifact activated-ability cost reduction with Forensic Gadgeteer's exact one-mana floor;
+- applied that shared reducer to existing artifact activation-cost paths rather than adding per-card special cases;
+- made untap-step handling profile-aware;
+- added a public-InformationState terminal catalog API and the first accepted family, Basalt + Gadgeteer, conservatively requiring Urza context and a ready Basalt;
+- promoted Basalt Monolith, Grim Monolith, and Forensic Gadgeteer to PRIMITIVE_ACTIVE, bringing current R4 coverage to 35 active identities;
+- added `r4-audit` to CI while preserving the frozen R3 audit namespace.
+
+No TrueState/InformationState/ValueKey field changed in this slice. Model/information/value schemas therefore remain the accepted R3 versions; current rules namespace is `r4_engine_start_v1`.
+
+Validation:
+- implementation commit: `d4f7a4033d8cef88c514ee094b9da8d5ca376d4d`;
+- GitHub Actions run `33586517441`: PASS;
+- locked dependencies, rustfmt, strict Clippy, benchmark compilation, and R0/R1/R2/R3/R4 audits: PASS;
+- workspace/all-target tests: 75 passed, 0 failed;
+- R4 audit reports 35 supported active identities and initial terminal family `Basalt + Gadgeteer`.
+
+This is an R4-start checkpoint, not R4 acceptance. Power Artifact, Chip/FTT, Chrome Dome, Station/Golem, Knack/Helix recurrence, and the remainder of the audited terminal catalog stay in R4.
+
