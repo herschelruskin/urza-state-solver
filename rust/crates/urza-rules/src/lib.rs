@@ -3080,6 +3080,7 @@ mod tests {
                             spellseeker: true,
                             merchant_scroll: true,
                             mystical_tutor: true,
+                            ..SearchClassFlags::default()
                         },
                         ..CardProfile::default()
                     },
