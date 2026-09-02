@@ -1358,10 +1358,7 @@ mod tests {
     #[test]
     fn aura_stack_target_card_identity_remains_strategically_visible() {
         let a = TrueState {
-            battlefield: BattlefieldZone::new(vec![
-                permanent(10, 1, None),
-                permanent(20, 2, None),
-            ]),
+            battlefield: BattlefieldZone::new(vec![permanent(10, 1, None), permanent(20, 2, None)]),
             stack: vec![StackObject::AuraSpell {
                 object_id: ObjectId(30),
                 card: CardDefId(9),
