@@ -85,6 +85,16 @@ jobs:
           old = '                    top_loop_producer: false,\n                    skip_normal_untap: false,'
           new = '                    top_loop_producer: false,\n                    floodcaller_untap_eligible: false,\n                    skip_normal_untap: false,'
           text = text.replace(old, new)
+          old = '                aura_target: urza_rules::AuraTargetKind::None,\n                native_untap_generic: None,'
+          new = '                aura_target: urza_rules::AuraTargetKind::None,\n                spell_effect: urza_rules::SpellEffectKind::None,\n                native_untap_generic: None,'
+          if old not in text:
+              raise SystemExit('missing Construct spell_effect profile anchor')
+          text = text.replace(old, new, 1)
+          old = '                top_loop_producer: false,\n                skip_normal_untap: false,'
+          new = '                top_loop_producer: false,\n                floodcaller_untap_eligible: false,\n                skip_normal_untap: false,'
+          if old not in text:
+              raise SystemExit('missing Construct floodcaller profile anchor')
+          text = text.replace(old, new, 1)
           path.write_text(text)
           PY
       - name: Validate Rust workspace
