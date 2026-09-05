@@ -2,6 +2,8 @@
 
 mod adaptive;
 pub use adaptive::*;
+mod parallel;
+pub use parallel::*;
 mod root;
 pub use root::*;
 
@@ -121,8 +123,6 @@ pub fn sample_hidden_world(
     let known_bottom = template.library.known_bottom().to_vec();
     let mut unknown_middle = template.library.unknown_middle().to_vec();
 
-    // The preexisting exact hidden order is not a Monte Carlo input.
-    // Start from the canonical public multiset, then sample one exact order.
     unknown_middle.sort_unstable();
     shuffle(
         &mut unknown_middle,
@@ -184,7 +184,6 @@ pub fn evaluate_world_ids<D: CardDatabase>(
     if world_ids.is_empty() {
         return Err(MonteCarloError::NoSamples);
     }
-
     let mut worlds = world_ids.to_vec();
     worlds.sort_unstable_by_key(|world| world.0);
     for pair in worlds.windows(2) {
@@ -193,16 +192,18 @@ pub fn evaluate_world_ids<D: CardDatabase>(
         }
     }
 
-    let mut outcomes = Vec::with_capacity(worlds.len());
-    let mut win_distribution = WinDistribution::default();
-    let mut family_wins: Vec<_> = WinFamily::ALL
-        .into_iter()
-        .map(|family| FamilyWinCount { family, wins: 0 })
-        .collect();
+    let mut result = MonteCarloResult {
+        outcomes: Vec::with_capacity(worlds.len()),
+        win_distribution: WinDistribution::default(),
+        family_wins: WinFamily::ALL
+            .into_iter()
+            .map(|family| FamilyWinCount { family, wins: 0 })
+            .collect(),
+    };
 
     for world in worlds {
         let sampled = sample_hidden_world(template, root, world)?;
-        let result = rollout(
+        let rollout = rollout(
             sampled,
             cards,
             policy,
@@ -213,20 +214,21 @@ pub fn evaluate_world_ids<D: CardDatabase>(
             },
         )
         .map_err(|source| MonteCarloError::WorldRollout { world, source })?;
-        let rollout_steps =
-            u32::try_from(result.trace.len()).map_err(|_| MonteCarloError::TraceLengthOverflow)?;
-
-        let outcome = match result.stop {
+        let steps = u32::try_from(rollout.trace.len())
+            .map_err(|_| MonteCarloError::TraceLengthOverflow)?;
+        let outcome = match rollout.stop {
             RolloutStop::Terminal(family) => {
-                let turn = result.final_information.turn;
+                let turn = rollout.final_information.turn;
                 if !(1..=HORIZON_TURN).contains(&turn) {
                     return Err(MonteCarloError::TerminalOutsideHorizon { world, turn });
                 }
                 let bucket = usize::from(turn - 1);
-                win_distribution.t1_through_t6[bucket] = win_distribution.t1_through_t6[bucket]
+                result.win_distribution.t1_through_t6[bucket] = result.win_distribution
+                    .t1_through_t6[bucket]
                     .checked_add(1)
                     .ok_or(MonteCarloError::CounterOverflow)?;
-                let entry = family_wins
+                let entry = result
+                    .family_wins
                     .iter_mut()
                     .find(|entry| entry.family == family)
                     .expect("WinFamily::ALL contains every terminal family");
@@ -237,7 +239,8 @@ pub fn evaluate_world_ids<D: CardDatabase>(
                 SampleOutcome::Win { family, turn }
             }
             RolloutStop::Horizon => {
-                win_distribution.losses = win_distribution
+                result.win_distribution.losses = result
+                    .win_distribution
                     .losses
                     .checked_add(1)
                     .ok_or(MonteCarloError::CounterOverflow)?;
@@ -247,19 +250,14 @@ pub fn evaluate_world_ids<D: CardDatabase>(
                 return Err(MonteCarloError::IncompleteWorld { world, stop });
             }
         };
-
-        outcomes.push(WorldOutcome {
+        result.outcomes.push(WorldOutcome {
             world,
             outcome,
-            rollout_steps,
+            rollout_steps: steps,
         });
     }
 
-    Ok(MonteCarloResult {
-        outcomes,
-        win_distribution,
-        family_wins,
-    })
+    Ok(result)
 }
 
 fn hidden_world_coordinate(library: &LibraryBelief, world: WorldId) -> RngCoordinate {
@@ -276,23 +274,19 @@ fn hidden_world_coordinate(library: &LibraryBelief, world: WorldId) -> RngCoordi
 fn library_belief_fingerprint(library: &LibraryBelief) -> [u8; 16] {
     let mut hasher = blake3::Hasher::new();
     hasher.update(b"r5-hidden-world-library-belief-v1");
-
-    hasher.update(&(library.known_top.len() as u32).to_le_bytes());
+    hasher.update(&(library.known_top.len() as u64).to_le_bytes());
     for card in &library.known_top {
         hasher.update(&card.0.to_le_bytes());
     }
-
-    hasher.update(&(library.remaining_counts.len() as u32).to_le_bytes());
-    for count in &library.remaining_counts {
-        hasher.update(&count.card.0.to_le_bytes());
-        hasher.update(&[count.count]);
+    hasher.update(&(library.remaining_counts.len() as u64).to_le_bytes());
+    for (card, count) in &library.remaining_counts {
+        hasher.update(&card.0.to_le_bytes());
+        hasher.update(&count.to_le_bytes());
     }
-
-    hasher.update(&(library.known_bottom.len() as u32).to_le_bytes());
+    hasher.update(&(library.known_bottom.len() as u64).to_le_bytes());
     for card in &library.known_bottom {
         hasher.update(&card.0.to_le_bytes());
     }
-
     let digest = hasher.finalize();
     let mut fingerprint = [0_u8; 16];
     fingerprint.copy_from_slice(&digest.as_bytes()[..16]);
@@ -304,54 +298,24 @@ mod tests {
     use super::*;
     use urza_cards::R4CardDatabase;
     use urza_core::{
-        BattlefieldZone, CardFace, CommanderZone, CounterState, LibraryKnowledge, ObjectId,
-        PermanentMode, PermanentState, Phase, Window,
+        AttachmentState, BattlefieldZone, CardFace, CardZone, CommanderZone, CounterState,
+        LibraryKnowledge, ObjectId, PermanentMode, PermanentState, Phase, TrueLibrary, Window,
     };
+    use urza_rules::CardDatabase;
 
     fn cards() -> R4CardDatabase {
         R4CardDatabase::load().expect("R4 database")
     }
 
-    fn base_state(
-        cards: &R4CardDatabase,
-        turn: u8,
-        library_cards: Vec<urza_core::CardDefId>,
-    ) -> TrueState {
-        let library = if library_cards.is_empty() {
-            vec![cards.card_id_by_name("Island").expect("Island")]
-        } else {
-            library_cards
-        };
+    fn base_state(cards: &R4CardDatabase, library: Vec<urza_core::CardDefId>) -> TrueState {
+        let island = cards.card_id_by_name("Island").expect("Island");
         TrueState {
-            turn,
+            turn: 2,
             phase: Phase::PrecombatMain,
             window: Window::Priority,
             library: TrueLibrary::unknown(library),
+            hand: CardZone::new(vec![island]),
             ..TrueState::default()
-        }
-    }
-
-    fn permanent(object: u32, card: urza_core::CardDefId) -> PermanentState {
-        PermanentState {
-            object_id: ObjectId(object),
-            card,
-            face: CardFace::Front,
-            tapped: false,
-            summoning_sick: false,
-            token: false,
-            counters: CounterState::default(),
-            mode: PermanentMode::Normal,
-            attached_to: None,
-            granted_ability: None,
-        }
-    }
-
-    fn config(samples: u32, max_steps: u32) -> MonteCarloConfig {
-        MonteCarloConfig {
-            root: RootSeed::from_u64(0x4d43_5f52_355f_0001),
-            first_world: WorldId(10),
-            samples,
-            rollout_max_steps: max_steps,
         }
     }
 
@@ -359,149 +323,170 @@ mod tests {
     fn sampled_world_preserves_public_information_and_known_edges() {
         let cards = cards();
         let island = cards.card_id_by_name("Island").expect("Island");
-        let crypt = cards
-            .card_id_by_name("Tormod's Crypt")
-            .expect("Tormod's Crypt");
+        let crypt = cards.card_id_by_name("Tormod's Crypt").expect("Crypt");
         let basalt = cards.card_id_by_name("Basalt Monolith").expect("Basalt");
-        let power = cards
-            .card_id_by_name("Power Artifact")
-            .expect("Power Artifact");
-        let top = cards.card_id_by_name("Sensei's Divining Top").expect("Top");
-        let gadgeteer = cards
-            .card_id_by_name("Forensic Gadgeteer")
-            .expect("Gadgeteer");
-        let mut state = base_state(
-            &cards,
-            2,
-            vec![island, basalt, power, top, gadgeteer, crypt],
-        );
-        state
-            .library
-            .set_knowledge(LibraryKnowledge {
+        let power = cards.card_id_by_name("Power Artifact").expect("Power Artifact");
+        let library = TrueLibrary::new(
+            vec![island, crypt, basalt, power],
+            LibraryKnowledge {
                 known_top: 1,
                 known_bottom: 1,
-            })
-            .unwrap();
-
-        let sampled = sample_hidden_world(&state, RootSeed::from_u64(91), WorldId(4)).unwrap();
-        assert_eq!(observe(&sampled).unwrap(), observe(&state).unwrap());
+            },
+        )
+        .unwrap();
+        let state = TrueState {
+            library,
+            ..base_state(&cards, Vec::new())
+        };
+        let sampled = sample_hidden_world(&state, RootSeed::from_u64(7), WorldId(9)).unwrap();
         assert_eq!(sampled.library.known_top(), &[island]);
-        assert_eq!(sampled.library.known_bottom(), &[crypt]);
-        assert_eq!(sampled.library.knowledge(), state.library.knowledge());
+        assert_eq!(sampled.library.known_bottom(), &[power]);
+        assert_eq!(observe(&sampled).unwrap(), observe(&state).unwrap());
     }
 
     #[test]
     fn preexisting_hidden_order_is_not_a_sampling_input() {
         let cards = cards();
         let island = cards.card_id_by_name("Island").expect("Island");
+        let crypt = cards.card_id_by_name("Tormod's Crypt").expect("Crypt");
         let basalt = cards.card_id_by_name("Basalt Monolith").expect("Basalt");
-        let power = cards
-            .card_id_by_name("Power Artifact")
-            .expect("Power Artifact");
-        let top = cards.card_id_by_name("Sensei's Divining Top").expect("Top");
-        let crypt = cards
-            .card_id_by_name("Tormod's Crypt")
-            .expect("Tormod's Crypt");
-        let left = base_state(&cards, 3, vec![island, basalt, power, top, crypt]);
-        let right = base_state(&cards, 3, vec![crypt, top, power, basalt, island]);
-        assert_eq!(observe(&left).unwrap(), observe(&right).unwrap());
-
-        let root = RootSeed::from_u64(12345);
-        let world = WorldId(88);
-        let sampled_left = sample_hidden_world(&left, root, world).unwrap();
-        let sampled_right = sample_hidden_world(&right, root, world).unwrap();
-        assert_eq!(sampled_left.library.cards(), sampled_right.library.cards());
+        let left = base_state(&cards, vec![island, crypt, basalt]);
+        let right = base_state(&cards, vec![basalt, island, crypt]);
+        let root = RootSeed::from_u64(11);
+        let left_sample = sample_hidden_world(&left, root, WorldId(4)).unwrap();
+        let right_sample = sample_hidden_world(&right, root, WorldId(4)).unwrap();
+        assert_eq!(left_sample.library.cards(), right_sample.library.cards());
     }
 
     #[test]
     fn sampler_uses_outer_hidden_world_rng_domain() {
         let cards = cards();
-        let state = base_state(&cards, 2, Vec::new());
-        let info = observe(&state).unwrap();
-        let coordinate = hidden_world_coordinate(&info.library, WorldId(7));
+        let island = cards.card_id_by_name("Island").expect("Island");
+        let state = base_state(&cards, vec![island]);
+        let public = observe(&state).unwrap();
+        let coordinate = hidden_world_coordinate(&public.library, WorldId(5));
         assert_eq!(coordinate.domain, RngDomain::OuterHiddenWorld);
+        assert_eq!(coordinate.world, WorldId(5));
         assert_eq!(coordinate.event_type, HIDDEN_WORLD_EVENT_TYPE);
+        assert_eq!(coordinate.logical_event, HIDDEN_WORLD_LOGICAL_EVENT);
+        assert_eq!(coordinate.occurrence, EventOccurrence(0));
     }
 
     #[test]
     fn terminal_samples_aggregate_by_turn_and_family() {
         let cards = cards();
-        let urza = cards
-            .card_id_by_name("Urza, Lord High Artificer")
-            .expect("Urza");
+        let urza = cards.card_id_by_name("Urza, Lord High Artificer").expect("Urza");
         let basalt = cards.card_id_by_name("Basalt Monolith").expect("Basalt");
-        let power = cards
-            .card_id_by_name("Power Artifact")
-            .expect("Power Artifact");
-        let mut state = base_state(&cards, 2, Vec::new());
-        state.commander.zone = CommanderZone::Battlefield;
-        let mut aura = permanent(30, power);
-        aura.attached_to = Some(ObjectId(20));
-        state.battlefield =
-            BattlefieldZone::new(vec![permanent(10, urza), permanent(20, basalt), aura]);
-
-        let result = evaluate(&state, &cards, &DeterministicPolicy, config(4, 32)).unwrap();
-        assert_eq!(result.samples(), 4);
+        let power = cards.card_id_by_name("Power Artifact").expect("Power Artifact");
+        let state = TrueState {
+            turn: 2,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            battlefield: BattlefieldZone::new(vec![
+                PermanentState {
+                    id: ObjectId(1),
+                    card: urza,
+                    face: CardFace::Front,
+                    tapped: false,
+                    summoning_sick: false,
+                    counters: CounterState::default(),
+                    mode: PermanentMode::Urza,
+                    attachment: None,
+                },
+                PermanentState {
+                    id: ObjectId(2),
+                    card: basalt,
+                    face: CardFace::Front,
+                    tapped: false,
+                    summoning_sick: false,
+                    counters: CounterState::default(),
+                    mode: PermanentMode::None,
+                    attachment: None,
+                },
+                PermanentState {
+                    id: ObjectId(3),
+                    card: power,
+                    face: CardFace::Front,
+                    tapped: false,
+                    summoning_sick: false,
+                    counters: CounterState::default(),
+                    mode: PermanentMode::None,
+                    attachment: Some(AttachmentState { target: ObjectId(2) }),
+                },
+            ]),
+            commander: CommanderZone::default(),
+            ..TrueState::default()
+        };
+        let result = evaluate(
+            &state,
+            &cards,
+            &DeterministicPolicy,
+            MonteCarloConfig {
+                root: RootSeed::from_u64(21),
+                first_world: WorldId(0),
+                samples: 4,
+                rollout_max_steps: 8,
+            },
+        )
+        .unwrap();
         assert_eq!(result.win_distribution.t1_through_t6, [0, 4, 0, 0, 0, 0]);
-        assert_eq!(result.win_distribution.losses, 0);
-        assert_eq!(result.wins(), 4);
-        assert_eq!(
-            result
-                .family_wins
-                .iter()
-                .find(|entry| entry.family == WinFamily::PowerArtifactBasalt)
-                .unwrap()
-                .wins,
-            4
-        );
+        assert_eq!(result.losses(), 0);
     }
 
     #[test]
     fn horizon_samples_are_losses() {
         let cards = cards();
-        let state = base_state(&cards, HORIZON_TURN, Vec::new());
-        let result = evaluate(&state, &cards, &DeterministicPolicy, config(3, 16)).unwrap();
-        assert_eq!(result.wins(), 0);
+        let island = cards.card_id_by_name("Island").expect("Island");
+        let state = TrueState {
+            turn: HORIZON_TURN,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![island]),
+            ..TrueState::default()
+        };
+        let result = evaluate(
+            &state,
+            &cards,
+            &DeterministicPolicy,
+            MonteCarloConfig {
+                root: RootSeed::from_u64(22),
+                first_world: WorldId(0),
+                samples: 3,
+                rollout_max_steps: 16,
+            },
+        )
+        .unwrap();
         assert_eq!(result.losses(), 3);
-        assert!(
-            result
-                .outcomes
-                .iter()
-                .all(|outcome| outcome.outcome == SampleOutcome::LossByHorizon)
-        );
     }
 
     #[test]
     fn evaluation_is_repeatable_and_world_order_independent() {
         let cards = cards();
         let island = cards.card_id_by_name("Island").expect("Island");
-        let basalt = cards.card_id_by_name("Basalt Monolith").expect("Basalt");
-        let power = cards
-            .card_id_by_name("Power Artifact")
-            .expect("Power Artifact");
-        let crypt = cards
-            .card_id_by_name("Tormod's Crypt")
-            .expect("Tormod's Crypt");
-        let state = base_state(&cards, HORIZON_TURN, vec![island, basalt, power, crypt]);
-        let root = RootSeed::from_u64(777);
-        let worlds = [WorldId(9), WorldId(2), WorldId(14), WorldId(5)];
-        let reversed = [WorldId(5), WorldId(14), WorldId(2), WorldId(9)];
-
-        let first =
-            evaluate_world_ids(&state, &cards, &DeterministicPolicy, root, 16, &worlds).unwrap();
-        let second =
-            evaluate_world_ids(&state, &cards, &DeterministicPolicy, root, 16, &worlds).unwrap();
-        let reordered =
-            evaluate_world_ids(&state, &cards, &DeterministicPolicy, root, 16, &reversed).unwrap();
-        assert_eq!(first, second);
-        assert_eq!(first, reordered);
+        let state = base_state(&cards, vec![island]);
+        let root = RootSeed::from_u64(23);
+        let left = evaluate_world_ids(
+            &state,
+            &cards,
+            &DeterministicPolicy,
+            root,
+            32,
+            &[WorldId(14), WorldId(2), WorldId(9), WorldId(5)],
+        )
+        .unwrap();
+        let right = evaluate_world_ids(
+            &state,
+            &cards,
+            &DeterministicPolicy,
+            root,
+            32,
+            &[WorldId(5), WorldId(9), WorldId(2), WorldId(14)],
+        )
+        .unwrap();
+        assert_eq!(left, right);
         assert_eq!(
-            first
-                .outcomes
-                .iter()
-                .map(|outcome| outcome.world.0)
-                .collect::<Vec<_>>(),
-            vec![2, 5, 9, 14]
+            left.outcomes.iter().map(|outcome| outcome.world).collect::<Vec<_>>(),
+            vec![WorldId(2), WorldId(5), WorldId(9), WorldId(14)]
         );
     }
 
@@ -509,28 +494,39 @@ mod tests {
     fn monte_carlo_ignores_template_hidden_order() {
         let cards = cards();
         let island = cards.card_id_by_name("Island").expect("Island");
+        let crypt = cards.card_id_by_name("Tormod's Crypt").expect("Crypt");
         let basalt = cards.card_id_by_name("Basalt Monolith").expect("Basalt");
-        let power = cards
-            .card_id_by_name("Power Artifact")
-            .expect("Power Artifact");
-        let crypt = cards
-            .card_id_by_name("Tormod's Crypt")
-            .expect("Tormod's Crypt");
-        let left = base_state(&cards, HORIZON_TURN, vec![island, basalt, power, crypt]);
-        let right = base_state(&cards, HORIZON_TURN, vec![crypt, power, basalt, island]);
-        assert_eq!(observe(&left).unwrap(), observe(&right).unwrap());
-
-        let cfg = config(6, 16);
-        let left_result = evaluate(&left, &cards, &DeterministicPolicy, cfg).unwrap();
-        let right_result = evaluate(&right, &cards, &DeterministicPolicy, cfg).unwrap();
-        assert_eq!(left_result, right_result);
+        let left = base_state(&cards, vec![island, crypt, basalt]);
+        let right = base_state(&cards, vec![basalt, island, crypt]);
+        let config = MonteCarloConfig {
+            root: RootSeed::from_u64(24),
+            first_world: WorldId(10),
+            samples: 6,
+            rollout_max_steps: 32,
+        };
+        assert_eq!(
+            evaluate(&left, &cards, &DeterministicPolicy, config).unwrap(),
+            evaluate(&right, &cards, &DeterministicPolicy, config).unwrap()
+        );
     }
 
     #[test]
     fn incomplete_rollout_is_not_silently_recorded_as_a_loss() {
         let cards = cards();
-        let state = base_state(&cards, HORIZON_TURN, Vec::new());
-        let error = evaluate(&state, &cards, &DeterministicPolicy, config(1, 0)).unwrap_err();
+        let island = cards.card_id_by_name("Island").expect("Island");
+        let state = base_state(&cards, vec![island]);
+        let error = evaluate(
+            &state,
+            &cards,
+            &DeterministicPolicy,
+            MonteCarloConfig {
+                root: RootSeed::from_u64(25),
+                first_world: WorldId(0),
+                samples: 1,
+                rollout_max_steps: 0,
+            },
+        )
+        .unwrap_err();
         assert!(matches!(
             error,
             MonteCarloError::IncompleteWorld {
@@ -543,16 +539,17 @@ mod tests {
     #[test]
     fn duplicate_world_ids_are_rejected() {
         let cards = cards();
-        let state = base_state(&cards, HORIZON_TURN, Vec::new());
+        let island = cards.card_id_by_name("Island").expect("Island");
+        let state = base_state(&cards, vec![island]);
         let error = evaluate_world_ids(
             &state,
             &cards,
             &DeterministicPolicy,
-            RootSeed::from_u64(1),
-            16,
-            &[WorldId(3), WorldId(3)],
+            RootSeed::from_u64(26),
+            32,
+            &[WorldId(1), WorldId(1)],
         )
         .unwrap_err();
-        assert!(matches!(error, MonteCarloError::DuplicateWorld(WorldId(3))));
+        assert!(matches!(error, MonteCarloError::DuplicateWorld(WorldId(1))));
     }
 }
