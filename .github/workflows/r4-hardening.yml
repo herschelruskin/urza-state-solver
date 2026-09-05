@@ -18,6 +18,49 @@ jobs:
         with:
           ref: rust-engine-rebuild
           fetch-depth: 0
+      - name: Repair acceptance fixture mutation
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("rust/scripts/r4_terminal_hardening.py")
+          text = path.read_text()
+          text = text.replace(
+              "    let mut state = match family {",
+              "    let state = match family {",
+              1,
+          )
+          old = (
+              "        let mut without_urza = snapshot(&cards, family, 100 * index as u32);\n"
+              "        remove_card(&mut without_urza, urza);\n"
+              "        without_urza.commander.zone = CommanderZone::CommandZone;\n"
+              "        assert_eq!(detected(&without_urza, &cards), None, \"{family:?} without Urza\");"
+          )
+          new = (
+              "        let mut without_urza = snapshot(&cards, family, 100 * index as u32);\n"
+              "        let urza_object = without_urza\n"
+              "            .battlefield\n"
+              "            .permanents()\n"
+              "            .iter()\n"
+              "            .find(|permanent| permanent.card == urza)\n"
+              "            .unwrap()\n"
+              "            .object_id;\n"
+              "        remove_card(&mut without_urza, urza);\n"
+              "        rewrite_battlefield(&mut without_urza, |permanent| {\n"
+              "            if permanent.attached_to == Some(urza_object) {\n"
+              "                permanent.attached_to = None;\n"
+              "                if permanent.mode == PermanentMode::RealityChipAttached {\n"
+              "                    permanent.mode = PermanentMode::RealityChipCreature;\n"
+              "                }\n"
+              "            }\n"
+              "        });\n"
+              "        without_urza.commander.zone = CommanderZone::CommandZone;\n"
+              "        assert_eq!(detected(&without_urza, &cards), None, \"{family:?} without Urza\");"
+          )
+          if old not in text:
+              raise SystemExit("missing universal missing-Urza fixture anchor")
+          path.write_text(text.replace(old, new, 1))
+          PY
       - name: Apply terminal acceptance patch
         run: python3 rust/scripts/r4_terminal_hardening.py
       - name: Refresh lockfile for test-only path dependency
