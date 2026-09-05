@@ -40,6 +40,10 @@ jobs:
           )
 
           legality_anchor = '    actions.retain(|action| action_is_legal(state, cards, action));'
+          first = text.find(legality_anchor)
+          second = text.find(legality_anchor, first + len(legality_anchor)) if first >= 0 else -1
+          if second < 0:
+              raise SystemExit('second ordinary legality anchor not found')
           viability = '''    actions.retain(|action| {
               let transmute_cast = match action {
                   Action::CastFromHand { card, .. } | Action::CastLibraryTop { card, .. } => cards
@@ -58,9 +62,7 @@ jobs:
               !transmute_cast || !artifact_classes.is_empty()
           });
           '''
-          if legality_anchor not in text:
-              raise SystemExit('ordinary legality anchor not found')
-          text = text.replace(legality_anchor, viability + legality_anchor, 1)
+          text = text[:second] + viability + text[second:]
 
           test_anchor = '    #[test]\n    fn transmute_difference_pending_keeps_mana_abilities_in_contingent_set() {'
           test = '''    #[test]
