@@ -12,10 +12,10 @@ use urza_policy_bridge::CandidateBridge;
 use urza_rng::{RootSeed, WorldId};
 
 const SAMPLES: u32 = 8;
-const ROLLOUT_MAX_STEPS: u32 = 2048;
+const ROLLOUT_MAX_STEPS: u32 = 4096;
 const FIRST_WORLD: WorldId = WorldId(0x5000);
 const ROOT_SEED_U64: u64 = 0x5235_5045_5246_0001;
-const ENVIRONMENT_VERSION: &str = "r5_perf_probe_v1";
+const ENVIRONMENT_VERSION: &str = "r5_perf_probe_v2";
 
 struct ProbeCase {
     name: &'static str,
