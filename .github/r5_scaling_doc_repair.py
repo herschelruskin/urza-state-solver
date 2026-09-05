@@ -1,0 +1,37 @@
+from pathlib import Path
+
+log = Path("rust/DEVELOPMENT_LOG.md")
+text = log.read_text()
+bad = "- Production acceptance run  passed the complete scheduler-scaling gate; permanent foundation validation follows on the finalized docs head."
+good = "- Production acceptance run `33951783273` passed the complete scheduler-scaling gate; permanent foundation validation follows on the finalized docs head.\n- Validated production closure commit: `ffcf8e0d98001bef7230d3c53cf038923b8609f8`; formatting-only hygiene run `33952039708` produced commit `364f028ced5b829ccd4b9c72a635d6a693376ceb`."
+if bad not in text:
+    raise SystemExit("malformed development-log anchor missing")
+log.write_text(text.replace(bad, good, 1))
+
+checkpoint = Path("rust/R5_PARALLEL_SCALING_CHECKPOINT.md")
+text = checkpoint.read_text()
+if "## Production scaling evidence" in text:
+    raise SystemExit("production scaling evidence already recorded")
+text += """
+
+## Production scaling evidence
+
+Dedicated production acceptance run `33951783273` executed the retained release probe on a runner reporting `available_parallelism = 4`. Every parallel measurement asserted exact equality with the corresponding serial `RootActionComparison` before timing was emitted.
+
+Four-worker speedups were:
+
+| Fixture | 32 worlds | 64 worlds | 256 worlds |
+| --- | ---: | ---: | ---: |
+| opening combo, 3 roots | 2.57x | 2.56x | 2.57x |
+| tutor-heavy, 14 roots | 2.76x | 2.78x | 2.77x |
+| artifact-heavy, 19 roots | 2.55x | 2.52x | 2.53x |
+
+Two-worker speedups stayed between 1.96x and 2.00x. Requesting eight workers produced no material improvement over four on this four-way runner, supporting the existing `available_parallelism()` default rather than oversubscription.
+
+The 256-world production timings were approximately 727 ms serial / 283 ms at four workers for the 3-root fixture, 5.64 s / 2.03 s for the 14-root fixture, and 12.07 s / 4.76 s for the 19-root fixture.
+
+The opening fixture required skipping three typed incomplete worlds while constructing its benchmark-only 256-world set; tutor and artifact fixtures skipped none. This does not change production evaluation: `StepLimit` and `NoCandidate` remain typed incomplete errors, never losses.
+
+Validated production closure commit: `ffcf8e0d98001bef7230d3c53cf038923b8609f8`. Formatting-only closure hygiene run `33952039708` produced `364f028ced5b829ccd4b9c72a635d6a693376ceb`; it confirmed rustfmt changed only the retained scaling probe and re-ran locked metadata, focused Clippy, and focused parallel tests successfully.
+"""
+checkpoint.write_text(text)
