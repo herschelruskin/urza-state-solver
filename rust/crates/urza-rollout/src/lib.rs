@@ -73,6 +73,8 @@ pub enum RolloutError {
     MissingResolvedAction(ActionToken),
     #[error("rollout trace exceeded u32 step indexing")]
     StepIndexOverflow,
+    #[error("rollout logical event id overflow")]
+    LogicalEventOverflow,
     #[error("replay trace step {position} declares index {declared}")]
     ReplayStepIndexMismatch { position: u32, declared: u32 },
     #[error("replay stopped before trace step {index}: {stop:?}")]
@@ -100,6 +102,16 @@ pub fn rollout<D: CardDatabase>(
     cards: &D,
     policy: &DeterministicPolicy,
     config: RolloutConfig,
+) -> Result<RolloutResult, RolloutError> {
+    rollout_with_logical_event_offset(initial, cards, policy, config, 0)
+}
+
+pub fn rollout_with_logical_event_offset<D: CardDatabase>(
+    initial: TrueState,
+    cards: &D,
+    policy: &DeterministicPolicy,
+    config: RolloutConfig,
+    logical_event_offset: u64,
 ) -> Result<RolloutResult, RolloutError> {
     let mut state = initial;
     let mut trace = Vec::new();
@@ -137,7 +149,13 @@ pub fn rollout<D: CardDatabase>(
             key: selected.key,
         });
 
-        execute(&mut state, cards, action, config, index)?;
+        execute(
+            &mut state,
+            cards,
+            action,
+            config,
+            logical_event_id(logical_event_offset, index)?,
+        )?;
     }
 }
 
@@ -192,7 +210,13 @@ pub fn replay_trace<D: CardDatabase>(
         let action = bridge
             .resolved_action(candidate.token)
             .ok_or(RolloutError::MissingResolvedAction(candidate.token))?;
-        execute(&mut state, cards, action, config, index)?;
+        execute(
+            &mut state,
+            cards,
+            action,
+            config,
+            LogicalEventId(u64::from(index)),
+        )?;
     }
 
     Ok(state)
@@ -232,12 +256,19 @@ fn needs_automatic_advance(state: &TrueState) -> bool {
         )
 }
 
+fn logical_event_id(offset: u64, index: u32) -> Result<LogicalEventId, RolloutError> {
+    offset
+        .checked_add(u64::from(index))
+        .map(LogicalEventId)
+        .ok_or(RolloutError::LogicalEventOverflow)
+}
+
 fn execute<D: CardDatabase>(
     state: &mut TrueState,
     cards: &D,
     action: urza_rules::Action,
     config: RolloutConfig,
-    index: u32,
+    logical_event: LogicalEventId,
 ) -> Result<(), RolloutError> {
     apply_action_with_rng(
         state,
@@ -246,7 +277,7 @@ fn execute<D: CardDatabase>(
         GameRngContext {
             root: config.root,
             world: config.world,
-            logical_event: LogicalEventId(u64::from(index)),
+            logical_event,
         },
     )?;
     Ok(())

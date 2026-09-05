@@ -343,3 +343,9 @@ POLICY/ENGINE-SEQUENCING checkpoint. Added isolated `urza-rollout` over the acce
 ## R5 hidden-world Monte Carlo
 
 Added fixed-budget outer hidden-world sampling and Monte Carlo root-state evaluation in `urza-mc`. Sampling canonicalizes the unknown library middle before `OuterHiddenWorld` shuffling so preexisting secret order cannot leak into samples, preserves known library edges, and verifies public-information equality after sampling. Each world is evaluated only through accepted deterministic rollout; terminal outcomes aggregate by T1-T6/family, horizon is the only modeled loss, and incomplete rollout stops remain errors. World IDs are explicit, unique sample identities and evaluation order is canonicalized. R4 namespaces remain frozen. Root-action comparison/value integration is next.
+
+## 2026-09-05 — R5 common-world root-action value integration
+
+Classification: VALUE/POLICY evaluation architecture. No R4 rules/card broadening and no Python gameplay/policy port.
+
+Added fixed-budget root-action comparison in `urza-mc`. Every legal public root candidate is evaluated on the same canonical hidden-world `WorldId` set, remapped to each sampled world's exact execution action through `CandidateBridge`, then continued through deterministic rollout. Forced root actions use logical event 0 and continuation begins at logical event 1. Added exact `WinByHorizonScore`: total wins first, then T1-T6 exact-turn wins; exact ties use the smallest public semantic root key. Incomplete rollout stops remain errors. Namespace: `r5_root_action_value_v1`; frozen R4 and earlier R5 namespaces unchanged. Adaptive confidence/caching/performance remain deferred until after this fixed-budget reference contract.

@@ -10,6 +10,7 @@ thiserror.workspace = true
 urza-core = { path = "../urza-core" }
 urza-info = { path = "../urza-info" }
 urza-policy = { path = "../urza-policy" }
+urza-policy-bridge = { path = "../urza-policy-bridge" }
 urza-rng = { path = "../urza-rng" }
 urza-rollout = { path = "../urza-rollout" }
 urza-rules = { path = "../urza-rules" }

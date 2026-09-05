@@ -9,7 +9,7 @@ use urza_cards::{
 use urza_cli::hand25_fixture;
 use urza_core::{MODEL_VERSION, R2_MODEL_VERSION, R3_MODEL_VERSION, TrueState};
 use urza_info::INFORMATION_SCHEMA_VERSION;
-use urza_mc::MONTE_CARLO_VERSION;
+use urza_mc::{MONTE_CARLO_VERSION, ROOT_ACTION_EVAL_VERSION};
 use urza_policy::{POLICY_PHASE, POLICY_VERSION};
 use urza_policy_bridge::{
     CANDIDATE_BRIDGE_VERSION, CONTINGENT_ACTION_FAMILY_COUNT, ORDINARY_ACTION_FAMILY_COUNT,
@@ -231,12 +231,13 @@ fn run_r5_audit() {
     validate_r4_database().expect("accepted R4 database remains frozen for R5");
 
     let report = json!({
-        "phase": "R5-hidden-world-monte-carlo",
+        "phase": "R5-root-action-value",
         "policy_phase": POLICY_PHASE,
         "policy_version": POLICY_VERSION,
         "candidate_bridge_version": CANDIDATE_BRIDGE_VERSION,
         "rollout_version": ROLLOUT_VERSION,
         "monte_carlo_version": MONTE_CARLO_VERSION,
+        "root_action_eval_version": ROOT_ACTION_EVAL_VERSION,
         "rules_version": RULES_VERSION,
         "model_version": MODEL_VERSION,
         "information_schema_version": INFORMATION_SCHEMA_VERSION,
@@ -249,9 +250,12 @@ fn run_r5_audit() {
         "hidden_world_contract": "the exact template supplies execution scaffolding, but its unknown library order is discarded: the unknown middle is canonicalized as a public multiset and shuffled with an OuterHiddenWorld coordinate derived from public library belief plus WorldId",
         "monte_carlo_contract": "fixed world identities are evaluated independently, outcomes are returned in canonical WorldId order, terminal wins aggregate by T1-T6 and WinFamily, and only a true T6 horizon is counted as a loss",
         "rng_contract": "outer hidden-world sampling uses the OuterHiddenWorld domain; game randomness inside each rollout uses the existing Game domain with the same explicit root and sampled WorldId",
-        "completion_contract": "StepLimit and NoCandidate are incomplete evaluations and fail the Monte Carlo call rather than being silently recorded as losses",
-        "current_scope": "fixed-budget hidden-world sampling and deterministic Monte Carlo root-state evaluation complete over the frozen R4/R5 bridge+rollout surface",
-        "next_r5_work": "audit and build root-action comparison/value integration on common sampled worlds before any adaptive-confidence or performance broadening",
+        "completion_contract": "StepLimit and NoCandidate are incomplete evaluations and fail either Monte Carlo or root-action comparison rather than being silently recorded as losses",
+        "root_action_contract": "every legal public root candidate is forced on the same canonical sampled WorldId set; each sampled world remaps the public class+PolicyPublicKey to its exact execution Action before branching",
+        "value_contract": "fixed-budget WinByHorizon ranking maximizes total terminal wins first, then exact-turn wins lexicographically T1 through T6; exact value ties keep the smallest public root semantic key",
+        "root_rng_contract": "the forced root action uses Game logical event 0 and deterministic continuation begins at logical event 1, matching normal rollout sequencing without coordinate reuse",
+        "current_scope": "fixed-budget common-world root-action comparison and deterministic WinByHorizon value selection complete over the frozen R4/R5 candidate, rollout, and hidden-world surfaces",
+        "next_r5_work": "add adaptive-confidence stopping, value/result caching, and performance instrumentation only after preserving the common-world and public-semantic comparison contract",
     });
 
     println!(

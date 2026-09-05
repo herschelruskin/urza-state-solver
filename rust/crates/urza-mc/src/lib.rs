@@ -1,5 +1,8 @@
 #![forbid(unsafe_code)]
 
+mod root;
+pub use root::*;
+
 use thiserror::Error;
 use urza_core::{TrueLibrary, TrueState};
 use urza_info::{LibraryBelief, ObservationError, observe};

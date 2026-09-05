@@ -133,14 +133,63 @@ impl WinDistribution {
     }
 }
 
+/// Exact fixed-budget score for the R5 `WinByHorizon` objective.
+///
+/// Root actions are compared on the same sampled worlds. The primary
+/// objective is therefore total wins by the horizon; when total wins
+/// tie, earlier exact-turn wins are preferred lexicographically from
+/// T1 through T6. No floating-point estimate enters deterministic
+/// action identity or tie-breaking.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct WinByHorizonScore {
+    pub total_wins: u64,
+    pub exact_turn_wins: [u32; 6],
+}
+
+impl From<&WinDistribution> for WinByHorizonScore {
+    fn from(distribution: &WinDistribution) -> Self {
+        Self {
+            total_wins: distribution
+                .t1_through_t6
+                .iter()
+                .map(|wins| u64::from(*wins))
+                .sum(),
+            exact_turn_wins: distribution.t1_through_t6,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{ValueKey, ValueKeyError};
+    use super::{ValueKey, ValueKeyError, WinByHorizonScore, WinDistribution};
     use urza_info::CardDefId;
     use urza_info::{
         CanonicalObjectId, CardCount, InformationState, LibraryBelief, ObservedDelayedEvent,
         ObservedPermission, ObservedSourceRef,
     };
+
+    #[test]
+    fn fixed_budget_score_maximizes_total_wins_then_earlier_turns() {
+        let more_total = WinDistribution {
+            t1_through_t6: [0, 3, 0, 0, 0, 0],
+            losses: 1,
+        };
+        let fewer_but_earlier = WinDistribution {
+            t1_through_t6: [2, 0, 0, 0, 0, 0],
+            losses: 2,
+        };
+        assert!(WinByHorizonScore::from(&more_total) > WinByHorizonScore::from(&fewer_but_earlier));
+
+        let earlier_tie = WinDistribution {
+            t1_through_t6: [1, 2, 0, 0, 0, 0],
+            losses: 1,
+        };
+        let later_tie = WinDistribution {
+            t1_through_t6: [0, 3, 0, 0, 0, 0],
+            losses: 1,
+        };
+        assert!(WinByHorizonScore::from(&earlier_tie) > WinByHorizonScore::from(&later_tie));
+    }
 
     #[test]
     fn strategic_key_ignores_unordered_zone_and_count_container_order() {
