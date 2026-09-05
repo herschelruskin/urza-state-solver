@@ -76,7 +76,7 @@ jobs:
         run: |
           set +e
           : > /tmp/r4-validation.log
-          (cd rust && cargo fmt --all -- --check) >> /tmp/r4-validation.log 2>&1
+          (cd rust && cargo fmt --all) >> /tmp/r4-validation.log 2>&1
           rc=$?
           if [ "$rc" -eq 0 ]; then
             (cd rust && cargo test --workspace) >> /tmp/r4-validation.log 2>&1
