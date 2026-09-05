@@ -323,3 +323,11 @@ R4 acceptance deliberately does not convert the remaining 48 unsupported active 
 
 Validation: the closure commit is produced only after locked dependency metadata, rustfmt, strict all-target/all-feature Clippy, workspace/all-target tests, benchmark compilation, and R0-R4 audit commands all pass in the dedicated closure workflow. The ordinary Rust foundation workflow is then expected to revalidate the committed result.
 
+
+## 2026-09-05 — R5 deterministic policy start
+
+Classification: POLICY architecture. No rules/card broadening and no Python gameplay-logic port.
+
+R5 begins from the accepted R4 closure with a deterministic one-step policy kernel in `urza-policy`. The policy crate remains isolated from `urza-core` and `urza-rules`, receives `InformationState` plus public candidate records only, enforces that pending contingent decisions cannot be bypassed, and selects independently of candidate enumeration order. Public semantic identity is compared before opaque bridge tokens so execution numbering is not strategic state.
+
+Policy namespace: `r5_deterministic_start_v1`. R4 rules/model/information/value namespaces remain frozen. Ordinary-action candidate generation, multi-step rollout sequencing, and Monte Carlo integration remain the next R5 work rather than being silently approximated in this checkpoint.

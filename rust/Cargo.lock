@@ -540,6 +540,7 @@ dependencies = [
  "urza-cards",
  "urza-core",
  "urza-info",
+ "urza-policy",
  "urza-rng",
  "urza-rules",
  "urza-value",
@@ -585,6 +586,7 @@ dependencies = [
 name = "urza-policy"
 version = "0.1.0"
 dependencies = [
+ "thiserror",
  "urza-info",
 ]
 

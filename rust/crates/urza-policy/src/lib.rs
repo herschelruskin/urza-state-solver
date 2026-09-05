@@ -58,11 +58,7 @@ pub struct PolicyCandidate {
 }
 
 impl PolicyCandidate {
-    pub const fn new(
-        token: ActionToken,
-        class: PolicyActionClass,
-        key: PolicyPublicKey,
-    ) -> Self {
+    pub const fn new(token: ActionToken, class: PolicyActionClass, key: PolicyPublicKey) -> Self {
         Self { token, class, key }
     }
 }
@@ -108,7 +104,9 @@ impl DeterministicPolicy {
 
         let selected = candidates
             .iter()
-            .filter(|candidate| !pending || candidate.class == PolicyActionClass::ContingentDecision)
+            .filter(|candidate| {
+                !pending || candidate.class == PolicyActionClass::ContingentDecision
+            })
             .min_by_key(|candidate| semantic_rank(**candidate));
 
         Ok(selected.map(|candidate| candidate.token))
@@ -126,11 +124,7 @@ fn validate_candidate_tokens(candidates: &[PolicyCandidate]) -> Result<(), Polic
 }
 
 fn semantic_rank(candidate: PolicyCandidate) -> (u8, PolicyPublicKey, ActionToken) {
-    (
-        class_rank(candidate.class),
-        candidate.key,
-        candidate.token,
-    )
+    (class_rank(candidate.class), candidate.key, candidate.token)
 }
 
 const fn class_rank(class: PolicyActionClass) -> u8 {
@@ -149,12 +143,7 @@ mod tests {
     use super::*;
     use urza_info::{ObservedPendingDecision, ObservedSourceRef};
 
-    fn candidate(
-        token: u16,
-        class: PolicyActionClass,
-        card: u16,
-        source: u16,
-    ) -> PolicyCandidate {
+    fn candidate(token: u16, class: PolicyActionClass, card: u16, source: u16) -> PolicyCandidate {
         PolicyCandidate::new(
             ActionToken(token),
             class,
@@ -215,7 +204,9 @@ mod tests {
         let ordinary = candidate(1, PolicyActionClass::CastSpell, 2, 0);
 
         assert_eq!(
-            policy.choose(&information, &[ordinary, contingent]).unwrap(),
+            policy
+                .choose(&information, &[ordinary, contingent])
+                .unwrap(),
             Some(ActionToken(5))
         );
         assert_eq!(
