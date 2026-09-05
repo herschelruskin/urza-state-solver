@@ -10,8 +10,8 @@ use urza_cli::hand25_fixture;
 use urza_core::{MODEL_VERSION, R2_MODEL_VERSION, R3_MODEL_VERSION, TrueState};
 use urza_info::INFORMATION_SCHEMA_VERSION;
 use urza_mc::{
-    ADAPTIVE_ROOT_EVAL_VERSION, MONTE_CARLO_VERSION, ROOT_ACTION_EVAL_VERSION,
-    ROOT_WORLD_CACHE_VERSION,
+    ADAPTIVE_ROOT_EVAL_VERSION, MONTE_CARLO_VERSION, PARALLEL_ROOT_EVAL_VERSION,
+    ROOT_ACTION_EVAL_VERSION, ROOT_WORLD_CACHE_VERSION,
 };
 use urza_policy::{POLICY_PHASE, POLICY_VERSION};
 use urza_policy_bridge::{
@@ -234,7 +234,7 @@ fn run_r5_audit() {
     validate_r4_database().expect("accepted R4 database remains frozen for R5");
 
     let report = json!({
-        "phase": "R5-adaptive-cache-performance",
+        "phase": "R5-parallel-root-world",
         "policy_phase": POLICY_PHASE,
         "policy_version": POLICY_VERSION,
         "candidate_bridge_version": CANDIDATE_BRIDGE_VERSION,
@@ -243,6 +243,7 @@ fn run_r5_audit() {
         "root_action_eval_version": ROOT_ACTION_EVAL_VERSION,
         "adaptive_root_eval_version": ADAPTIVE_ROOT_EVAL_VERSION,
         "root_world_cache_version": ROOT_WORLD_CACHE_VERSION,
+        "parallel_root_eval_version": PARALLEL_ROOT_EVAL_VERSION,
         "rules_version": RULES_VERSION,
         "model_version": MODEL_VERSION,
         "information_schema_version": INFORMATION_SCHEMA_VERSION,
@@ -260,10 +261,11 @@ fn run_r5_audit() {
         "value_contract": "fixed-budget WinByHorizon ranking maximizes total terminal wins first, then exact-turn wins lexicographically T1 through T6; exact value ties keep the smallest public root semantic key",
         "root_rng_contract": "the forced root action uses Game logical event 0 and deterministic continuation begins at logical event 1, matching normal rollout sequencing without coordinate reuse",
         "adaptive_contract": "adaptive evaluation consumes common WorldIds in canonical batches and stops early only when the complete configured fixed-budget root ranking is mathematically unable to change under any remaining outcomes; this is exact finite-budget certification rather than a probabilistic confidence interval",
-        "cache_contract": "root-world outcomes are keyed by canonical ValueKey, complete EvaluationNamespace, RootSeed, public RootActionKey, WorldId, and cache schema version; namespace validation covers linked rules/model/policy/value/RNG plus information/MC sampling and bridge/rollout/root continuation identities",
-        "instrumentation_contract": "deterministic counters report worlds, root-world requests, cache hits/misses, actual rollouts, and executed/avoided rollout steps; instrumentation does not participate in value ranking or cache identity",
-        "current_scope": "fixed-budget root evaluation remains the correctness oracle; exact adaptive ranking certification, in-memory root-world caching, and deterministic performance counters are complete around that reference contract",
-        "next_r5_work": "benchmark representative hands and consider parallel root/world execution or optional statistical stopping only if they preserve fixed-budget parity, common-world pairing, and cache namespace safety",
+        "cache_contract": "root-world outcomes are keyed by canonical ValueKey, complete EvaluationNamespace, RootSeed, public RootActionKey, WorldId, and cache schema version; serial and parallel schedulers intentionally share the same cache identity because scheduling is non-semantic",
+        "parallel_contract": "parallel workers evaluate independent prepared root/world jobs only; workers never mutate the cache or aggregate values, RNG coordinates contain no thread identity, and completed outcomes are sorted and aggregated in canonical world/root order so worker scheduling cannot change exact results",
+        "instrumentation_contract": "deterministic counters report worlds, root-world requests, cache hits/misses, actual rollouts, and executed/avoided rollout steps; serial and parallel adaptive paths preserve the same counters and instrumentation does not participate in value ranking or cache identity",
+        "current_scope": "fixed-budget serial root evaluation remains the correctness oracle; exact adaptive ranking certification, shared root-world caching, deterministic cycle escape, and deterministic parallel root/world execution are complete around it",
+        "next_r5_work": "measure scaling across representative and larger sample budgets, then tune worker granularity or add optional statistical stopping only if serial parity, common-world pairing, RNG identity, and cache namespace safety remain exact",
     });
 
     println!(
