@@ -73,4 +73,7 @@ Python gameplay/policy logic remains out of scope.
 
 ## Validation
 
-Validated by the dedicated R5 adaptive/cache acceptance workflow. The exact run and closure commit are recorded by the follow-up branch commit after this gate is green.
+- validated implementation/closure commit: `ec130073863fff5f6217326acecb5915d75f657d` (`Close R5 adaptive cache checkpoint`);
+- dedicated acceptance run: `33945344087`, job `101250297895`, PASS;
+- locked dependency graph, rustfmt, strict all-target/all-feature Clippy, full workspace tests, benchmark compilation, and cumulative R0-R5 audits all passed;
+- the temporary acceptance workflow and patch helper were removed before the closure commit.
