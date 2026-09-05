@@ -70,3 +70,7 @@ No frozen R4 namespace changes are made.
 Benchmark representative full-hand states using deterministic counters and wall-clock harnesses outside semantic results. Parallel world/root execution or an optional statistical confidence mode may be considered only after demonstrating parity with this exact adaptive/fixed reference and preserving common-world pairing and cache namespace safety.
 
 Python gameplay/policy logic remains out of scope.
+
+## Validation
+
+Validated by the dedicated R5 adaptive/cache acceptance workflow. The exact run and closure commit are recorded by the follow-up branch commit after this gate is green.

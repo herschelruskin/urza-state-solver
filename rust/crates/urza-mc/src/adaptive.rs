@@ -195,15 +195,11 @@ pub fn compare_root_actions_adaptive<D: CardDatabase, C: RootOutcomeCache>(
 
     let mut worlds = Vec::with_capacity(config.max_samples as usize);
     for offset in 0..config.max_samples {
-        let world = config
-            .first_world
-            .0
-            .checked_add(u64::from(offset))
-            .ok_or_else(|| {
-                AdaptiveRootError::RootAction(RootActionError::MonteCarlo(
-                    MonteCarloError::WorldIdOverflow,
-                ))
-            })?;
+        let world = config.first_world.0.checked_add(u64::from(offset)).ok_or(
+            AdaptiveRootError::RootAction(RootActionError::MonteCarlo(
+                MonteCarloError::WorldIdOverflow,
+            )),
+        )?;
         worlds.push(WorldId(world));
     }
 
@@ -252,7 +248,8 @@ pub fn compare_root_actions_adaptive_world_ids<D: CardDatabase, C: RootOutcomeCa
         return Err(AdaptiveRootError::InvalidMaximumSamples);
     }
 
-    let template_bridge = CandidateBridge::build(template, cards)?;
+    let template_bridge =
+        CandidateBridge::build(template, cards).map_err(RootActionError::Bridge)?;
     if let Some(family) = detect_terminal_win(template_bridge.information(), cards) {
         return Err(RootActionError::AlreadyTerminal(family).into());
     }
@@ -321,9 +318,11 @@ pub fn compare_root_actions_adaptive_world_ids<D: CardDatabase, C: RootOutcomeCa
             }
 
             if !missing.is_empty() {
-                let sampled = sample_hidden_world(template, root, *world)?;
+                let sampled = sample_hidden_world(template, root, *world)
+                    .map_err(RootActionError::MonteCarlo)?;
                 stats.sampled_worlds = stats.sampled_worlds.saturating_add(1);
-                let sampled_bridge = CandidateBridge::build(&sampled, cards)?;
+                let sampled_bridge =
+                    CandidateBridge::build(&sampled, cards).map_err(RootActionError::Bridge)?;
                 if public_root_actions(&sampled_bridge) != roots {
                     return Err(RootActionError::CandidateSetDrift { world: *world }.into());
                 }
@@ -557,14 +556,9 @@ mod tests {
         )
         .unwrap();
         let mut cache = NoopRootOutcomeCache;
-        let adaptive = compare_root_actions_adaptive(
-            &state,
-            &cards,
-            &DeterministicPolicy,
-            &cfg,
-            &mut cache,
-        )
-        .unwrap();
+        let adaptive =
+            compare_root_actions_adaptive(&state, &cards, &DeterministicPolicy, &cfg, &mut cache)
+                .unwrap();
         assert_eq!(adaptive.stop_reason, AdaptiveStopReason::MaxSamples);
         assert_eq!(adaptive.comparison, fixed);
     }
@@ -577,25 +571,15 @@ mod tests {
         let state = state_with_land_choice(&cards, vec![island, crypt]);
         let cfg = config(3, "test-goldfish-v1");
         let mut cache = InMemoryRootOutcomeCache::default();
-        let first = compare_root_actions_adaptive(
-            &state,
-            &cards,
-            &DeterministicPolicy,
-            &cfg,
-            &mut cache,
-        )
-        .unwrap();
+        let first =
+            compare_root_actions_adaptive(&state, &cards, &DeterministicPolicy, &cfg, &mut cache)
+                .unwrap();
         assert!(first.stats.cache_misses > 0);
         assert!(first.stats.root_world_rollouts > 0);
 
-        let second = compare_root_actions_adaptive(
-            &state,
-            &cards,
-            &DeterministicPolicy,
-            &cfg,
-            &mut cache,
-        )
-        .unwrap();
+        let second =
+            compare_root_actions_adaptive(&state, &cards, &DeterministicPolicy, &cfg, &mut cache)
+                .unwrap();
         assert_eq!(first.comparison, second.comparison);
         assert_eq!(second.stats.cache_misses, 0);
         assert_eq!(second.stats.root_world_rollouts, 0);
@@ -617,22 +601,12 @@ mod tests {
         );
         let cfg = config(3, "test-goldfish-v1");
         let mut cache = InMemoryRootOutcomeCache::default();
-        let left_result = compare_root_actions_adaptive(
-            &left,
-            &cards,
-            &DeterministicPolicy,
-            &cfg,
-            &mut cache,
-        )
-        .unwrap();
-        let right_result = compare_root_actions_adaptive(
-            &right,
-            &cards,
-            &DeterministicPolicy,
-            &cfg,
-            &mut cache,
-        )
-        .unwrap();
+        let left_result =
+            compare_root_actions_adaptive(&left, &cards, &DeterministicPolicy, &cfg, &mut cache)
+                .unwrap();
+        let right_result =
+            compare_root_actions_adaptive(&right, &cards, &DeterministicPolicy, &cfg, &mut cache)
+                .unwrap();
         assert_eq!(left_result.comparison, right_result.comparison);
         assert_eq!(right_result.stats.cache_misses, 0);
         assert_eq!(right_result.stats.sampled_worlds, 0);
@@ -645,14 +619,8 @@ mod tests {
         let state = state_with_land_choice(&cards, vec![island]);
         let cfg = config(2, "env-a");
         let mut cache = InMemoryRootOutcomeCache::default();
-        compare_root_actions_adaptive(
-            &state,
-            &cards,
-            &DeterministicPolicy,
-            &cfg,
-            &mut cache,
-        )
-        .unwrap();
+        compare_root_actions_adaptive(&state, &cards, &DeterministicPolicy, &cfg, &mut cache)
+            .unwrap();
 
         let mut changed_namespace = config(2, "env-b");
         let result = compare_root_actions_adaptive(
@@ -754,14 +722,9 @@ mod tests {
         let mut cfg = config(2, "test-goldfish-v1");
         cfg.evaluation_namespace.policy_version = "wrong-policy".to_owned();
         let mut cache = InMemoryRootOutcomeCache::default();
-        let error = compare_root_actions_adaptive(
-            &state,
-            &cards,
-            &DeterministicPolicy,
-            &cfg,
-            &mut cache,
-        )
-        .unwrap_err();
+        let error =
+            compare_root_actions_adaptive(&state, &cards, &DeterministicPolicy, &cfg, &mut cache)
+                .unwrap_err();
         assert!(matches!(
             error,
             AdaptiveRootError::NamespaceMismatch("policy_version")

@@ -162,39 +162,17 @@ pub fn compare_root_actions_world_ids<D: CardDatabase>(
         }
 
         for evaluation in &mut evaluations {
-            let action = resolve_root_action(&sampled_bridge, &evaluation.action, *world)?;
-            let mut branch = sampled.clone();
-            apply_action_with_rng(
-                &mut branch,
-                cards,
-                action,
-                GameRngContext {
-                    root,
-                    world: *world,
-                    logical_event: LogicalEventId(0),
-                },
-            )
-            .map_err(|source| RootActionError::RootActionApply {
-                world: *world,
-                source,
-            })?;
-
-            let continuation = rollout_with_logical_event_offset(
-                branch,
+            let outcome = evaluate_sampled_root_world(
+                &sampled,
+                &sampled_bridge,
                 cards,
                 continuation_policy,
-                RolloutConfig {
-                    root,
-                    world: *world,
-                    max_steps: rollout_max_steps - 1,
-                },
-                1,
-            )
-            .map_err(|source| RootActionError::WorldRollout {
-                world: *world,
-                source,
-            })?;
-            record_world(&mut evaluation.result, *world, continuation)?;
+                root,
+                rollout_max_steps,
+                *world,
+                &evaluation.action,
+            )?;
+            record_outcome(&mut evaluation.result, outcome)?;
         }
     }
 
@@ -221,7 +199,7 @@ pub fn compare_root_actions_world_ids<D: CardDatabase>(
     })
 }
 
-fn canonical_worlds(world_ids: &[WorldId]) -> Result<Vec<WorldId>, RootActionError> {
+pub(crate) fn canonical_worlds(world_ids: &[WorldId]) -> Result<Vec<WorldId>, RootActionError> {
     if world_ids.is_empty() {
         return Err(MonteCarloError::NoSamples.into());
     }
@@ -235,7 +213,7 @@ fn canonical_worlds(world_ids: &[WorldId]) -> Result<Vec<WorldId>, RootActionErr
     Ok(worlds)
 }
 
-fn public_root_actions(bridge: &CandidateBridge) -> Vec<RootActionKey> {
+pub(crate) fn public_root_actions(bridge: &CandidateBridge) -> Vec<RootActionKey> {
     let mut roots: Vec<_> = bridge
         .candidates()
         .iter()
@@ -278,7 +256,47 @@ fn resolve_root_action(
     })
 }
 
-fn empty_result() -> MonteCarloResult {
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn evaluate_sampled_root_world<D: CardDatabase>(
+    sampled: &TrueState,
+    sampled_bridge: &CandidateBridge,
+    cards: &D,
+    continuation_policy: &DeterministicPolicy,
+    root: RootSeed,
+    rollout_max_steps: u32,
+    world: WorldId,
+    root_action: &RootActionKey,
+) -> Result<WorldOutcome, RootActionError> {
+    let action = resolve_root_action(sampled_bridge, root_action, world)?;
+    let mut branch = sampled.clone();
+    apply_action_with_rng(
+        &mut branch,
+        cards,
+        action,
+        GameRngContext {
+            root,
+            world,
+            logical_event: LogicalEventId(0),
+        },
+    )
+    .map_err(|source| RootActionError::RootActionApply { world, source })?;
+
+    let continuation = rollout_with_logical_event_offset(
+        branch,
+        cards,
+        continuation_policy,
+        RolloutConfig {
+            root,
+            world,
+            max_steps: rollout_max_steps - 1,
+        },
+        1,
+    )
+    .map_err(|source| RootActionError::WorldRollout { world, source })?;
+    world_outcome(world, continuation)
+}
+
+pub(crate) fn empty_result() -> MonteCarloResult {
     MonteCarloResult {
         outcomes: Vec::new(),
         win_distribution: WinDistribution::default(),
@@ -289,22 +307,17 @@ fn empty_result() -> MonteCarloResult {
     }
 }
 
-fn record_world(
+pub(crate) fn record_outcome(
     aggregate: &mut MonteCarloResult,
-    world: WorldId,
-    result: RolloutResult,
+    outcome: WorldOutcome,
 ) -> Result<(), RootActionError> {
-    let continuation_steps =
-        u32::try_from(result.trace.len()).map_err(|_| RootActionError::TraceLengthOverflow)?;
-    let rollout_steps = continuation_steps
-        .checked_add(1)
-        .ok_or(RootActionError::TraceLengthOverflow)?;
-
-    let outcome = match result.stop {
-        RolloutStop::Terminal(family) => {
-            let turn = result.final_information.turn;
+    match outcome.outcome {
+        SampleOutcome::Win { family, turn } => {
             if !(1..=HORIZON_TURN).contains(&turn) {
-                return Err(RootActionError::TerminalOutsideHorizon { world, turn });
+                return Err(RootActionError::TerminalOutsideHorizon {
+                    world: outcome.world,
+                    turn,
+                });
             }
             let bucket = usize::from(turn - 1);
             aggregate.win_distribution.t1_through_t6[bucket] =
@@ -320,27 +333,45 @@ fn record_world(
                 .wins
                 .checked_add(1)
                 .ok_or(RootActionError::CounterOverflow)?;
-            SampleOutcome::Win { family, turn }
         }
-        RolloutStop::Horizon => {
+        SampleOutcome::LossByHorizon => {
             aggregate.win_distribution.losses = aggregate
                 .win_distribution
                 .losses
                 .checked_add(1)
                 .ok_or(RootActionError::CounterOverflow)?;
-            SampleOutcome::LossByHorizon
         }
+    }
+    aggregate.outcomes.push(outcome);
+    Ok(())
+}
+
+fn world_outcome(world: WorldId, result: RolloutResult) -> Result<WorldOutcome, RootActionError> {
+    let continuation_steps =
+        u32::try_from(result.trace.len()).map_err(|_| RootActionError::TraceLengthOverflow)?;
+    let rollout_steps = continuation_steps
+        .checked_add(1)
+        .ok_or(RootActionError::TraceLengthOverflow)?;
+
+    let outcome = match result.stop {
+        RolloutStop::Terminal(family) => {
+            let turn = result.final_information.turn;
+            if !(1..=HORIZON_TURN).contains(&turn) {
+                return Err(RootActionError::TerminalOutsideHorizon { world, turn });
+            }
+            SampleOutcome::Win { family, turn }
+        }
+        RolloutStop::Horizon => SampleOutcome::LossByHorizon,
         stop @ (RolloutStop::StepLimit | RolloutStop::NoCandidate) => {
             return Err(RootActionError::IncompleteWorld { world, stop });
         }
     };
 
-    aggregate.outcomes.push(WorldOutcome {
+    Ok(WorldOutcome {
         world,
         outcome,
         rollout_steps,
-    });
-    Ok(())
+    })
 }
 
 #[cfg(test)]

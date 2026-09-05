@@ -1,5 +1,7 @@
 #![forbid(unsafe_code)]
 
+mod adaptive;
+pub use adaptive::*;
 mod root;
 pub use root::*;
 

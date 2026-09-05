@@ -349,3 +349,14 @@ Added fixed-budget outer hidden-world sampling and Monte Carlo root-state evalua
 Classification: VALUE/POLICY evaluation architecture. No R4 rules/card broadening and no Python gameplay/policy port.
 
 Added fixed-budget root-action comparison in `urza-mc`. Every legal public root candidate is evaluated on the same canonical hidden-world `WorldId` set, remapped to each sampled world's exact execution action through `CandidateBridge`, then continued through deterministic rollout. Forced root actions use logical event 0 and continuation begins at logical event 1. Added exact `WinByHorizonScore`: total wins first, then T1-T6 exact-turn wins; exact ties use the smallest public semantic root key. Incomplete rollout stops remain errors. Namespace: `r5_root_action_value_v1`; frozen R4 and earlier R5 namespaces unchanged. Adaptive confidence/caching/performance remain deferred until after this fixed-budget reference contract.
+
+
+## 2026-09-05 — R5 exact adaptive evaluation, cache, and instrumentation
+
+- Kept fixed-budget common-world root-action comparison as the reference correctness path.
+- Added exact finite-budget adaptive ranking certification. Early stopping is permitted only when the complete final configured-budget ranking cannot change even under maximally favorable remaining outcomes for every trailing root.
+- Added a validated `EvaluationNamespace` builder for the linked R4/R5 rules/model/information/policy/value/RNG/sampling/bridge/rollout/root stack plus caller-supplied catalog digest and environment identity.
+- Added an in-memory per-root/per-world outcome cache keyed by public `ValueKey`, full evaluation namespace, root seed, semantic root action, world identity, and cache schema version.
+- Added deterministic performance counters for sampling, root-world work, cache behavior, and rollout steps executed/avoided. Metrics are observational only.
+- Refactored fixed and adaptive evaluation to share the same sampled-root execution and outcome aggregation path; no second gameplay implementation was introduced.
+- Added parity/cache/hidden-order/namespace/certification acceptance tests. Python gameplay/policy logic remains out of scope.
