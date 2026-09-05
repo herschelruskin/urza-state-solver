@@ -1,0 +1,58 @@
+name: R5 parallel scaling hygiene
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - '.github/workflows/r5-parallel-scaling-hygiene.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  hygiene:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: rust-engine-rebuild
+          fetch-depth: 0
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/rust/target/
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+          components: rustfmt, clippy
+      - name: Format retained scaling probe
+        run: cargo fmt --all
+      - name: Verify formatting scope
+        working-directory: .
+        run: |
+          changed="$(git diff --name-only -- rust ':!rust/target/**')"
+          if [ "$changed" != "rust/crates/urza-mc/examples/r5_scaling_probe.rs" ]; then
+            echo "unexpected formatted paths:"
+            printf '%s\n' "$changed"
+            exit 1
+          fi
+      - name: Format check
+        run: cargo fmt --all -- --check
+      - name: Locked dependency graph
+        run: cargo metadata --locked --format-version 1 > /dev/null
+      - name: Focused Clippy
+        run: cargo clippy -p urza-mc --all-targets --all-features --locked -- -D warnings
+      - name: Focused parallel tests
+        run: cargo test -p urza-mc --locked parallel::tests
+      - name: Commit formatting repair and remove helper workflow
+        working-directory: .
+        run: |
+          rm -f .github/workflows/r5-parallel-scaling-hygiene.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add rust/crates/urza-mc/examples/r5_scaling_probe.rs .github/workflows/r5-parallel-scaling-hygiene.yml
+          git commit -m 'Finalize R5 scaling probe formatting'
+          git push origin HEAD:rust-engine-rebuild
