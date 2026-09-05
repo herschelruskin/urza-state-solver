@@ -22,61 +22,98 @@ jobs:
         with:
           toolchain: 1.89.0
           components: rustfmt, clippy
-      - name: Patch dead-end pending candidate guard
+      - name: Patch Transmute staged-choice viability
         run: |
           python3 - <<'PY'
           from pathlib import Path
 
           path = Path('rust/crates/urza-policy-bridge/src/lib.rs')
           text = path.read_text()
-          old = '''fn action_is_legal<D: CardDatabase>(state: &TrueState, cards: &D, action: &Action) -> bool {
-              let mut trial = state.clone();
-              apply_action_with_rng(
-                  &mut trial,
-                  cards,
-                  action.clone(),
-                  GameRngContext {
-                      root: RootSeed::from_u64(0x5235_4252_4944_4745),
-                      world: WorldId(0),
-                      logical_event: LogicalEventId(0),
-                  },
-              )
-              .is_ok()
-          }
+
+          text = text.replace(
+              'pub const CANDIDATE_BRIDGE_VERSION: &str = "r5_public_candidate_bridge_v1";',
+              'pub const CANDIDATE_BRIDGE_VERSION: &str = "r5_public_candidate_bridge_v2";',
+              1,
+          )
+
+          old = '''    let artifact_classes: Vec<_> = classes
+              .iter()
+              .filter(|class| {
+                  cards
+                      .profile(class.card)
+                      .is_some_and(|profile| profile.is_artifact)
+              })
+              .collect();
           '''
-          new = '''fn action_is_legal<D: CardDatabase>(state: &TrueState, cards: &D, action: &Action) -> bool {
-              let mut trial = state.clone();
-              if apply_action_with_rng(
-                  &mut trial,
-                  cards,
-                  action.clone(),
-                  GameRngContext {
-                      root: RootSeed::from_u64(0x5235_4252_4944_4745),
-                      world: WorldId(0),
-                      logical_event: LogicalEventId(0),
-                  },
-              )
-              .is_err()
-              {
-                  return false;
-              }
-
-              let Ok(information) = observe(&trial) else {
-                  return false;
-              };
-              if information.pending.kind() == PendingDecisionKind::None {
-                  return true;
-              }
-
-              // A root action is not usable by the R5 policy surface if it
-              // immediately enters a public contingent decision for which the
-              // accepted bridge has no choice. This is intentionally a bridge
-              // viability check, not a second rules legality implementation.
-              !legal_contingent_actions(&information, cards).is_empty()
-          }
+          new = old + '''    let has_artifact_sacrifice = !artifact_classes.is_empty();
           '''
           if old not in text:
-              raise SystemExit('action_is_legal block not found')
+              raise SystemExit('artifact class block not found')
+          text = text.replace(old, new, 1)
+
+          old = '''            for payment in &payments {
+                      actions.push(Action::CastFromHand {
+                          card,
+                          payment: *payment,
+                      });
+          '''
+          new = '''            for payment in &payments {
+                      if profile.special_search != SpecialSearchKind::TransmuteArtifact
+                          || has_artifact_sacrifice
+                      {
+                          actions.push(Action::CastFromHand {
+                              card,
+                              payment: *payment,
+                          });
+                      }
+          '''
+          if old not in text:
+              raise SystemExit('hand cast block not found')
+          text = text.replace(old, new, 1)
+
+          old = '''        if let Some(cost) = profile.mana_cost {
+                  for payment in enumerate_payments(information.mana, cost) {
+                      actions.push(Action::CastLibraryTop { card, payment });
+                  }
+              }
+          '''
+          new = '''        if let Some(cost) = profile.mana_cost
+                  && (profile.special_search != SpecialSearchKind::TransmuteArtifact
+                      || has_artifact_sacrifice)
+              {
+                  for payment in enumerate_payments(information.mana, cost) {
+                      actions.push(Action::CastLibraryTop { card, payment });
+                  }
+              }
+          '''
+          if old not in text:
+              raise SystemExit('library-top cast block not found')
+          text = text.replace(old, new, 1)
+
+          old = '''    for permission in &information.urza_permissions {
+              for face in [CardFace::Front, CardFace::Back] {
+                  actions.push(Action::PlayUrzaPermission {
+                      permission_slot: permission.permission_slot,
+                      face,
+                  });
+              }
+          '''
+          new = '''    for permission in &information.urza_permissions {
+              let permission_has_required_followup = cards.profile(permission.card).is_none_or(|profile| {
+                  profile.special_search != SpecialSearchKind::TransmuteArtifact
+                      || has_artifact_sacrifice
+              });
+              if permission_has_required_followup {
+                  for face in [CardFace::Front, CardFace::Back] {
+                      actions.push(Action::PlayUrzaPermission {
+                          permission_slot: permission.permission_slot,
+                          face,
+                      });
+                  }
+              }
+          '''
+          if old not in text:
+              raise SystemExit('permission cast block not found')
           text = text.replace(old, new, 1)
 
           needle = '''    #[test]
@@ -133,11 +170,14 @@ jobs:
             echo "=== R5_REPAIRED_PERF_PROBE_RUN_${run} ==="
             ./target/release/examples/r5_perf_probe
           done
+      - name: Full workspace tests
+        working-directory: rust
+        run: cargo test --workspace --all-features --locked
       - name: Commit bridge repair and remove temporary repair workflow
         run: |
           rm .github/workflows/r5-perf-repair.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add rust/crates/urza-policy-bridge/src/lib.rs .github/workflows/r5-perf-repair.yml
-          git commit -m 'Reject dead-end R5 pending roots'
+          git commit -m 'Reject dead-end Transmute candidates'
           git push origin HEAD:rust-engine-rebuild
