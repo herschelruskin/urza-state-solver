@@ -70,6 +70,13 @@ jobs:
           new = old.replace('    state.spell_cast_this_turn = true;', '    queue_cast_triggers(state, cards, permission.card);\n    state.spell_cast_this_turn = true;')
           text = text.replace(old, new, 1)
           path.write_text(text)
+          path = Path('rust/crates/urza-core/src/state.rs')
+          text = path.read_text()
+          old = '                StackObject::ControlledTrigger { .. }\n                | StackObject::ActivatedAbility { .. }\n                | StackObject::TargetedActivatedAbility { .. } => continue,'
+          new = '                StackObject::ControlledTrigger { .. }\n                | StackObject::TargetedControlledTrigger { .. }\n                | StackObject::ActivatedAbility { .. }\n                | StackObject::TargetedActivatedAbility { .. } => continue,'
+          if old not in text:
+              raise SystemExit('missing exact-object targeted trigger validation anchor')
+          path.write_text(text.replace(old, new, 1))
           PY
       - name: Validate Rust workspace
         shell: bash
