@@ -3,63 +3,63 @@ info: latest update on 2025-08-07 for version 1.89.0 (29483883e 2025-08-04)
 info: downloading 5 components
     Updating crates.io index
  Downloading crates ...
+  Downloaded arrayvec v0.7.8
+  Downloaded anstyle v1.0.14
+  Downloaded cast v0.3.0
   Downloaded arrayref v0.3.9
   Downloaded autocfg v1.5.1
-  Downloaded half v2.7.1
-  Downloaded arrayvec v0.7.8
-  Downloaded shlex v2.0.1
-  Downloaded either v1.18.0
-  Downloaded walkdir v2.5.0
-  Downloaded zerocopy-derive v0.8.56
-  Downloaded tinytemplate v1.2.1
-  Downloaded zerocopy v0.8.56
-  Downloaded ciborium v0.2.2
-  Downloaded unicode-ident v1.0.24
-  Downloaded thiserror v2.0.16
-  Downloaded serde v1.0.219
-  Downloaded serde_derive v1.0.219
-  Downloaded syn v2.0.119
-  Downloaded itertools v0.13.0
-  Downloaded plotters v0.3.7
-  Downloaded rayon-core v1.13.0
-  Downloaded serde_json v1.0.142
-  Downloaded regex v1.13.1
-  Downloaded memchr v2.8.3
-  Downloaded clap v4.6.6
-  Downloaded ryu v1.0.23
-  Downloaded criterion v0.7.0
-  Downloaded rayon v1.12.0
-  Downloaded regex-syntax v0.8.11
-  Downloaded clap_builder v4.6.6
-  Downloaded proc-macro2 v1.0.107
-  Downloaded criterion-plot v0.6.0
-  Downloaded quote v1.0.47
-  Downloaded crossbeam-epoch v0.9.20
-  Downloaded crossbeam-deque v0.8.7
-  Downloaded constant_time_eq v0.3.1
-  Downloaded same-file v1.0.6
-  Downloaded plotters-backend v0.3.7
-  Downloaded num-traits v0.2.19
-  Downloaded find-msvc-tools v0.1.11
-  Downloaded clap_lex v1.1.0
-  Downloaded ciborium-io v0.2.2
-  Downloaded ciborium-ll v0.2.2
-  Downloaded regex-automata v0.4.18
-  Downloaded blake3 v1.8.2
-  Downloaded thiserror-impl v2.0.16
-  Downloaded plotters-svg v0.3.7
-  Downloaded oorandom v11.1.5
-  Downloaded cc v1.4.4
-  Downloaded itoa v1.0.18
-  Downloaded crossbeam-utils v0.8.22
-  Downloaded cfg-if v1.0.4
-  Downloaded cast v0.3.0
-  Downloaded anstyle v1.0.14
   Downloaded anes v0.1.6
+  Downloaded crossbeam-deque v0.8.7
+  Downloaded unicode-ident v1.0.24
+  Downloaded plotters-svg v0.3.7
+  Downloaded ciborium-io v0.2.2
+  Downloaded cfg-if v1.0.4
+  Downloaded rayon-core v1.13.0
+  Downloaded same-file v1.0.6
+  Downloaded clap_lex v1.1.0
+  Downloaded blake3 v1.8.2
+  Downloaded cc v1.4.4
+  Downloaded plotters-backend v0.3.7
+  Downloaded itoa v1.0.18
+  Downloaded criterion-plot v0.6.0
+  Downloaded tinytemplate v1.2.1
+  Downloaded ciborium-ll v0.2.2
+  Downloaded thiserror-impl v2.0.16
+  Downloaded thiserror v2.0.16
+  Downloaded walkdir v2.5.0
+  Downloaded either v1.18.0
+  Downloaded zerocopy-derive v0.8.56
+  Downloaded crossbeam-epoch v0.9.20
+  Downloaded num-traits v0.2.19
+  Downloaded serde_derive v1.0.219
+  Downloaded ryu v1.0.23
+  Downloaded clap v4.6.6
+  Downloaded memchr v2.8.3
   Downloaded aho-corasick v1.1.5
+  Downloaded itertools v0.13.0
+  Downloaded serde_json v1.0.142
+  Downloaded plotters v0.3.7
+  Downloaded clap_builder v4.6.6
+  Downloaded rayon v1.12.0
+  Downloaded regex v1.13.1
+  Downloaded criterion v0.7.0
+  Downloaded syn v2.0.119
+  Downloaded zerocopy v0.8.56
+  Downloaded serde v1.0.219
+  Downloaded proc-macro2 v1.0.107
+  Downloaded regex-syntax v0.8.11
+  Downloaded half v2.7.1
+  Downloaded find-msvc-tools v0.1.11
+  Downloaded ciborium v0.2.2
+  Downloaded quote v1.0.47
+  Downloaded crossbeam-utils v0.8.22
+  Downloaded shlex v2.0.1
+  Downloaded oorandom v11.1.5
+  Downloaded constant_time_eq v0.3.1
+  Downloaded regex-automata v0.4.18
    Compiling proc-macro2 v1.0.107
-   Compiling unicode-ident v1.0.24
    Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.24
    Compiling serde v1.0.219
    Compiling thiserror v2.0.16
    Compiling cfg-if v1.0.4
@@ -67,13 +67,13 @@ info: downloading 5 components
    Compiling shlex v2.0.1
    Compiling arrayvec v0.7.8
    Compiling cc v1.4.4
-   Compiling arrayref v0.3.9
    Compiling constant_time_eq v0.3.1
+   Compiling arrayref v0.3.9
    Compiling serde_json v1.0.142
-   Compiling ryu v1.0.23
    Compiling memchr v2.8.3
    Compiling itoa v1.0.18
    Compiling syn v2.0.119
+   Compiling ryu v1.0.23
    Compiling crossbeam-utils v0.8.22
    Compiling crossbeam-epoch v0.9.20
    Compiling zerocopy v0.8.56
@@ -81,48 +81,46 @@ info: downloading 5 components
    Compiling blake3 v1.8.2
    Compiling crossbeam-deque v0.8.7
    Compiling num-traits v0.2.19
-   Compiling either v1.18.0
    Compiling rayon-core v1.13.0
+   Compiling either v1.18.0
+   Compiling plotters-backend v0.3.7
    Compiling clap_lex v1.1.0
    Compiling ciborium-io v0.2.2
    Compiling anstyle v1.0.14
-   Compiling plotters-backend v0.3.7
    Compiling regex-syntax v0.8.11
-   Compiling plotters-svg v0.3.7
    Compiling clap_builder v4.6.6
+   Compiling urza-rng v0.1.0 (/home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-rng)
+   Compiling regex-automata v0.4.18
    Compiling serde_derive v1.0.219
    Compiling thiserror-impl v2.0.16
-   Compiling urza-rng v0.1.0 (/home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-rng)
    Compiling zerocopy-derive v0.8.56
-   Compiling regex-automata v0.4.18
+   Compiling plotters-svg v0.3.7
    Compiling itertools v0.13.0
    Compiling same-file v1.0.6
    Compiling cast v0.3.0
    Compiling walkdir v2.5.0
-   Compiling rayon v1.12.0
+   Compiling plotters v0.3.7
    Compiling criterion-plot v0.6.0
+   Compiling rayon v1.12.0
+   Compiling regex v1.13.1
+   Compiling clap v4.6.6
+   Compiling oorandom v11.1.5
+   Compiling anes v0.1.6
    Compiling urza-core v0.1.0 (/home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-core)
-error[E0004]: non-exhaustive patterns: `&StackObject::TargetedControlledTrigger { .. }` not covered
-   --> crates/urza-core/src/state.rs:611:35
+   Compiling tinytemplate v1.2.1
+   Compiling urza-info v0.1.0 (/home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-info)
+   Compiling half v2.7.1
+   Compiling ciborium-ll v0.2.2
+   Compiling ciborium v0.2.2
+   Compiling urza-rules v0.1.0 (/home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-rules)
+   Compiling urza-value v0.1.0 (/home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-value)
+   Compiling urza-cards v0.1.0 (/home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-cards)
+error[E0063]: missing fields `floodcaller_untap_eligible` and `spell_effect` in initializer of `CardProfile`
+   --> crates/urza-cards/src/lib.rs:559:13
     |
-611 |             let object_id = match object {
-    |                                   ^^^^^^ pattern `&StackObject::TargetedControlledTrigger { .. }` not covered
-    |
-note: `StackObject` defined here
-   --> crates/urza-core/src/state.rs:465:10
-    |
-465 | pub enum StackObject {
-    |          ^^^^^^^^^^^
-...
-485 |     TargetedControlledTrigger {
-    |     ------------------------- not covered
-    = note: the matched value is of type `&StackObject`
-help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern or an explicit pattern as shown
-    |
-617 ~                 | StackObject::TargetedActivatedAbility { .. } => continue,
-618 ~                 &StackObject::TargetedControlledTrigger { .. } => todo!(),
-    |
+559 |             urza_rules::CardProfile {
+    |             ^^^^^^^^^^^^^^^^^^^^^^^ missing `floodcaller_untap_eligible` and `spell_effect`
 
-For more information about this error, try `rustc --explain E0004`.
-error: could not compile `urza-core` (lib) due to 1 previous error
+For more information about this error, try `rustc --explain E0063`.
+error: could not compile `urza-cards` (lib) due to 1 previous error
 warning: build failed, waiting for other jobs to finish...
