@@ -65,11 +65,22 @@ Connect sampled hidden worlds and Monte Carlo root evaluation to this determinis
 
 Python gameplay/policy logic remains out of scope.
 
-
 ## V2 deterministic cycle escape
 
 The rollout now keeps execution-local history of exact decision states and semantic actions already executed from them. If an identical exact decision state recurs and the previously selected ordinary non-pass action consumed no game RNG, that action is suppressed only at that recurring state and the unchanged deterministic policy selects the next-ranked legal public candidate. Pass-priority and contingent decisions are never suppressed. Exact recurrence is valid whether the stack is empty or contains unresolved objects: the complete stack is already part of `TrueState`, so an identical full state plus an RNG-free ordinary action is a deterministic recurrence. This specifically prevents mana/untap loops from starving an underlying spell of resolution. Rejected candidates do not consume a trace index or logical RNG event. This converts proven deterministic voluntary loops such as Basalt Monolith tap -> pay 3 to untap -> resolve -> repeat into a canonical exit through pass priority without changing R4 rules legality or policy visibility.
 
 The guard keys recurrence on exact `TrueState` only within one sampled world, but stores blocked choices by public `(PolicyActionClass, PolicyPublicKey)` semantics. Raw `ObjectId` renaming therefore cannot change the public trace. Actions that advance `rng_occurrence_cursor` are not blocked on recurrence, so genuinely stochastic retries remain eligible under their later logical-event coordinates.
 
-Rollout namespace is now `r5_deterministic_rollout_v2`; cache continuation identity therefore invalidates v1 outcomes automatically. Validation run: GitHub Actions `33948188923`.
+Rollout namespace is now `r5_deterministic_rollout_v2`; cache continuation identity therefore invalidates v1 outcomes automatically.
+
+## V2 validation closure
+
+Validated cycle-repair implementation commit: `9a589641cb65f9b9beb1f6a64ff1b2a96c2d5951` (`Escape deterministic R5 rollout cycles`). Dedicated repair/benchmark run: GitHub Actions `33948188923`, result PASS. The gate passed strict workspace/all-target/all-feature Clippy, the minimal Basalt cycle regression, the nonempty-stack Basalt cycle regression, raw-`ObjectId` cycle invariance, full workspace tests, benchmark compilation, cumulative R0-R5 audits, and three complete release performance-matrix runs. Temporary diagnostic and repair workflows/helpers were removed in the validated commit.
+
+The three-run median release timings on the hosted 4-vCPU runner were:
+
+- opening combo state, 3 roots / 24 root-world requests / 1,115 rollout steps: fixed 24.540 ms, adaptive cold 24.502 ms, warm cache 0.058 ms, normal adaptive 24.625 ms;
+- tutor state, 14 roots / 112 root-world requests / 4,850 rollout steps: fixed 219.850 ms, adaptive cold 222.049 ms, warm cache 0.282 ms, normal adaptive 220.736 ms;
+- artifact state, 19 roots / 152 root-world requests / 13,121 rollout steps: fixed 498.263 ms, adaptive cold 505.074 ms, warm cache 0.349 ms, normal adaptive 498.425 ms.
+
+All three representative states consumed the full configured eight-world budget (`MaxSamples`) in this probe, so the timings isolate cache/execution cost rather than early-stop savings. Warm-cache runs executed zero root-world rollouts in every case, confirming that root/world continuation execution—not cache lookup or aggregation—is the dominant cold-path cost after deterministic cycle repair.
