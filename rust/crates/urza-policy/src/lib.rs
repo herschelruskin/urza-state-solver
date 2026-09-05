@@ -5,25 +5,23 @@ use std::collections::BTreeSet;
 use thiserror::Error;
 use urza_info::{CanonicalObjectId, CardDefId, InformationState, PendingDecisionKind};
 
-/// R5 begins the deterministic policy layer on top of the frozen R4
+/// R5 deterministic policy layer on top of the frozen R4
 /// rules/information/value contract.
 pub const POLICY_PHASE: &str = "R5";
-pub const POLICY_VERSION: &str = "r5_deterministic_start_v1";
+pub const POLICY_VERSION: &str = "r5_candidate_contract_v2";
 
 /// Opaque decision-local handle supplied by the execution bridge.
 ///
-/// The token is deliberately not part of the semantic policy key. It is used
-/// only as a final deterministic tie-break between otherwise equivalent public
-/// candidates and to map the selected public choice back to an execution
-/// action outside this crate.
+/// The token is deliberately not part of the semantic policy key. It maps the
+/// selected public choice back to an execution action outside this crate.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ActionToken(pub u16);
 
 /// Coarse public action class used by the baseline deterministic R5 selector.
 ///
-/// This is POLICY metadata, not rules legality. The rules/execution bridge is
-/// responsible for supplying only legal candidates and for classifying mana
-/// abilities separately from other activated abilities.
+/// This is policy metadata, not rules legality. The execution bridge supplies
+/// only legal candidates and may classify a mana activation as contingent when
+/// rules explicitly allow that mana ability while paying a pending cost.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum PolicyActionClass {
     ContingentDecision,
@@ -38,19 +36,24 @@ pub enum PolicyActionClass {
 ///
 /// Every field is public information. Canonical object identifiers are
 /// structural observation identifiers from `urza-info`, never execution
-/// `ObjectId`s. Additional action-specific public distinctions can be encoded
-/// in `parameter` and `secondary` without exposing hidden state.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+/// `ObjectId`s. `detail` is an exact, collision-free sequence of additional
+/// public u16 fields used for payments, ordered card choices, and source
+/// multisets that cannot be represented by the fixed scalar slots.
+#[derive(Debug, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct PolicyPublicKey {
+    /// Bridge-defined public action-kind code. Different execution action
+    /// families must use different codes even when their other fields match.
+    pub kind: u16,
     pub card: Option<CardDefId>,
     pub source: Option<CanonicalObjectId>,
     pub target: Option<CanonicalObjectId>,
     pub parameter: Option<u16>,
     pub secondary: u16,
+    pub detail: Vec<u16>,
 }
 
 /// One legal, policy-visible candidate supplied by the execution bridge.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct PolicyCandidate {
     pub token: ActionToken,
     pub class: PolicyActionClass,
@@ -58,7 +61,7 @@ pub struct PolicyCandidate {
 }
 
 impl PolicyCandidate {
-    pub const fn new(token: ActionToken, class: PolicyActionClass, key: PolicyPublicKey) -> Self {
+    pub fn new(token: ActionToken, class: PolicyActionClass, key: PolicyPublicKey) -> Self {
         Self { token, class, key }
     }
 }
@@ -73,12 +76,11 @@ pub enum PolicyError {
     MissingContingentCandidate,
 }
 
-/// Deterministic R5-start selector.
+/// Deterministic R5 selector.
 ///
-/// This is intentionally a small policy kernel rather than the final rollout
-/// strategy. It guarantees deterministic selection from public information,
-/// prevents ordinary actions from skipping a pending rules decision, and uses
-/// a stable semantic order independent of candidate enumeration order.
+/// The policy consumes only public information and public candidate metadata.
+/// It guarantees stable selection independent of candidate enumeration order
+/// and prevents ordinary actions from skipping a pending rules decision.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct DeterministicPolicy;
 
@@ -107,7 +109,7 @@ impl DeterministicPolicy {
             .filter(|candidate| {
                 !pending || candidate.class == PolicyActionClass::ContingentDecision
             })
-            .min_by_key(|candidate| semantic_rank(**candidate));
+            .min_by(|left, right| semantic_rank(left).cmp(&semantic_rank(right)));
 
         Ok(selected.map(|candidate| candidate.token))
     }
@@ -123,8 +125,12 @@ fn validate_candidate_tokens(candidates: &[PolicyCandidate]) -> Result<(), Polic
     Ok(())
 }
 
-fn semantic_rank(candidate: PolicyCandidate) -> (u8, PolicyPublicKey, ActionToken) {
-    (class_rank(candidate.class), candidate.key, candidate.token)
+fn semantic_rank(candidate: &PolicyCandidate) -> (u8, &PolicyPublicKey, ActionToken) {
+    (
+        class_rank(candidate.class),
+        &candidate.key,
+        candidate.token,
+    )
 }
 
 const fn class_rank(class: PolicyActionClass) -> u8 {
@@ -163,7 +169,9 @@ mod tests {
         let b = candidate(2, PolicyActionClass::PlayLand, 40, 5);
         let c = candidate(7, PolicyActionClass::PassPriority, 0, 0);
 
-        let forward = policy.choose(&information, &[a, b, c]).unwrap();
+        let forward = policy
+            .choose(&information, &[a.clone(), b.clone(), c.clone()])
+            .unwrap();
         let reversed = policy.choose(&information, &[c, b, a]).unwrap();
 
         assert_eq!(forward, Some(ActionToken(2)));
@@ -189,6 +197,21 @@ mod tests {
     }
 
     #[test]
+    fn variable_detail_is_part_of_public_semantic_identity() {
+        let information = InformationState::default();
+        let policy = DeterministicPolicy;
+        let mut later = candidate(1, PolicyActionClass::CastSpell, 10, 0);
+        later.key.detail = vec![1, 0, 0, 0, 0, 0];
+        let mut earlier = candidate(9, PolicyActionClass::CastSpell, 10, 0);
+        earlier.key.detail = vec![0, 0, 0, 0, 0, 1];
+
+        assert_eq!(
+            policy.choose(&information, &[later, earlier]).unwrap(),
+            Some(ActionToken(9))
+        );
+    }
+
+    #[test]
     fn pending_public_decision_cannot_be_skipped_by_ordinary_actions() {
         let information = InformationState {
             pending: ObservedPendingDecision::ProducerUntapChoice {
@@ -205,7 +228,7 @@ mod tests {
 
         assert_eq!(
             policy
-                .choose(&information, &[ordinary, contingent])
+                .choose(&information, &[ordinary.clone(), contingent])
                 .unwrap(),
             Some(ActionToken(5))
         );
