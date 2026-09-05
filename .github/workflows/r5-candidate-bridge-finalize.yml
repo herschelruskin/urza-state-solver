@@ -128,6 +128,7 @@ jobs:
               raise SystemExit('run_r5_audit block not found')
           main.write_text(text.replace(old, new, 1))
           PY
+          sed -i 's/use urza_rules::{CardDatabase, apply_action};/use urza_rules::apply_action;/' rust/crates/urza-policy-bridge/src/lib.rs
       - name: Refresh lockfile
         working-directory: rust
         run: cargo check --workspace
