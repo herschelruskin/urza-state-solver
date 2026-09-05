@@ -667,11 +667,7 @@ fn shuffled_main_deck(
     cards
 }
 
-fn opening_coordinate(
-    deck: &CommanderDeck,
-    world: WorldId,
-    stage: MulliganStage,
-) -> RngCoordinate {
+fn opening_coordinate(deck: &CommanderDeck, world: WorldId, stage: MulliganStage) -> RngCoordinate {
     RngCoordinate {
         domain: RngDomain::Game,
         world,
@@ -779,12 +775,9 @@ mod tests {
 
     #[test]
     fn keep_path_never_generates_or_observes_the_next_seven() {
-        let state = MulliganState::at_stage(
-            MulliganStage::Five,
-            vec![0_u8, 1, 2, 3, 4, 5, 6],
-            pregame(),
-        )
-        .unwrap();
+        let state =
+            MulliganState::at_stage(MulliganStage::Five, vec![0_u8, 1, 2, 3, 4, 5, 6], pregame())
+                .unwrap();
         let generator_called = Cell::new(false);
 
         let resolution = state
@@ -973,11 +966,7 @@ mod tests {
             .keep(&[6, 2, 4])
             .unwrap();
         assert!(kept.hand.windows(2).all(|pair| pair[0] <= pair[1]));
-        assert!(
-            kept.known_bottom
-                .windows(2)
-                .all(|pair| pair[0] <= pair[1])
-        );
+        assert!(kept.known_bottom.windows(2).all(|pair| pair[0] <= pair[1]));
         let bridge = bridge_kept_hand(&kept, &deck, root(), world).unwrap();
         assert_eq!(
             bridge.true_state().library.known_bottom(),
