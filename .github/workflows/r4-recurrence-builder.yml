@@ -77,6 +77,15 @@ jobs:
           if old not in text:
               raise SystemExit('missing exact-object targeted trigger validation anchor')
           path.write_text(text.replace(old, new, 1))
+          path = Path('rust/crates/urza-cards/src/lib.rs')
+          text = path.read_text()
+          old = '                    aura_target: urza_rules::AuraTargetKind::None,\n                    native_untap_generic: None,'
+          new = '                    aura_target: urza_rules::AuraTargetKind::None,\n                    spell_effect: urza_rules::SpellEffectKind::None,\n                    native_untap_generic: None,'
+          text = text.replace(old, new)
+          old = '                    top_loop_producer: false,\n                    skip_normal_untap: false,'
+          new = '                    top_loop_producer: false,\n                    floodcaller_untap_eligible: false,\n                    skip_normal_untap: false,'
+          text = text.replace(old, new)
+          path.write_text(text)
           PY
       - name: Validate Rust workspace
         shell: bash
