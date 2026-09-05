@@ -24,11 +24,14 @@ jobs:
           components: rustfmt, clippy
       - name: Apply adaptive integration
         run: python3 .github/r5_adaptive_patch.py
-      - name: Repair adaptive error boundary
+      - name: Repair adaptive integration surface
         run: |
           sed -i 's#let template_bridge = CandidateBridge::build(template, cards)?;#let template_bridge = CandidateBridge::build(template, cards).map_err(RootActionError::Bridge)?;#' rust/crates/urza-mc/src/adaptive.rs
           sed -i 's#let sampled = sample_hidden_world(template, root, \*world)?;#let sampled = sample_hidden_world(template, root, *world).map_err(RootActionError::MonteCarlo)?;#' rust/crates/urza-mc/src/adaptive.rs
           sed -i 's#let sampled_bridge = CandidateBridge::build(&sampled, cards)?;#let sampled_bridge = CandidateBridge::build(\&sampled, cards).map_err(RootActionError::Bridge)?;#' rust/crates/urza-mc/src/adaptive.rs
+          sed -i '/^mod adaptive;$/a pub use adaptive::*;' rust/crates/urza-mc/src/lib.rs
+          perl -0pi -e 's/\.ok_or_else\(\|\| \{\n\s*AdaptiveRootError::RootAction\(RootActionError::MonteCarlo\(\n\s*MonteCarloError::WorldIdOverflow,\n\s*\)\)\n\s*\}\)\?;/.ok_or(AdaptiveRootError::RootAction(RootActionError::MonteCarlo(\n                MonteCarloError::WorldIdOverflow,\n            )))?;/s' rust/crates/urza-mc/src/adaptive.rs
+          sed -i '/^pub(crate) fn evaluate_sampled_root_world/i #[allow(clippy::too_many_arguments)]' rust/crates/urza-mc/src/root.rs
       - name: Refresh lockfile
         working-directory: rust
         run: cargo generate-lockfile
