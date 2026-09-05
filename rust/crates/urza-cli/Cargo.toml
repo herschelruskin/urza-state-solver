@@ -11,6 +11,7 @@ urza-cards = { path = "../urza-cards" }
 urza-core = { path = "../urza-core" }
 urza-info = { path = "../urza-info" }
 urza-policy = { path = "../urza-policy" }
+urza-policy-bridge = { path = "../urza-policy-bridge" }
 urza-rng = { path = "../urza-rng" }
 urza-rules = { path = "../urza-rules" }
 urza-value = { path = "../urza-value" }
