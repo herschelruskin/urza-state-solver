@@ -70,17 +70,65 @@ jobs:
               'summoning_sick: false,\n            token: true,\n            counters:',
               1,
           )
+          permission_spell = '''    state.stack.push(StackObject::Spell {
+        object_id,
+        card: permission.card,
+        x_value: matches!(
+            profile.special_search,
+            SpecialSearchKind::Whir | SpecialSearchKind::Reshape
+        )
+        .then_some(0),
+    });
+    state.spell_cast_this_turn = true;'''
+          permission_spell_new = permission_spell.replace(
+              '    state.spell_cast_this_turn = true;',
+              '    queue_cast_triggers(state, cards, permission.card);\n    state.spell_cast_this_turn = true;',
+          )
+          if permission_spell in text:
+              text = text.replace(permission_spell, permission_spell_new, 1)
+          permission_aura = '''    state.stack.push(StackObject::AuraSpell {
+        object_id,
+        card: permission.card,
+        target: SourceRef {
+            object_id: Some(target_object),
+            card: target_card,
+        },
+    });
+    state.spell_cast_this_turn = true;'''
+          permission_aura_new = permission_aura.replace(
+              '    state.spell_cast_this_turn = true;',
+              '    queue_cast_triggers(state, cards, permission.card);\n    state.spell_cast_this_turn = true;',
+          )
+          if permission_aura in text:
+              text = text.replace(permission_aura, permission_aura_new, 1)
           path.write_text(text)
           PY
-      - name: Format
-        working-directory: rust
-        run: cargo fmt --all
-      - name: Test workspace
-        working-directory: rust
-        run: cargo test --workspace
-      - name: Strict clippy
-        working-directory: rust
-        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Validate Rust workspace
+        shell: bash
+        run: |
+          set +e
+          : > /tmp/r4-validation.log
+          (cd rust && cargo fmt --all -- --check) >> /tmp/r4-validation.log 2>&1
+          rc=$?
+          if [ "$rc" -eq 0 ]; then
+            (cd rust && cargo test --workspace) >> /tmp/r4-validation.log 2>&1
+            rc=$?
+          fi
+          if [ "$rc" -eq 0 ]; then
+            (cd rust && cargo clippy --workspace --all-targets -- -D warnings) >> /tmp/r4-validation.log 2>&1
+            rc=$?
+          fi
+          set -e
+          cat /tmp/r4-validation.log
+          if [ "$rc" -ne 0 ]; then
+            cp /tmp/r4-validation.log .github/r4_builder_error.txt
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add .github/r4_builder_error.txt
+            git commit -m "Record R4 validation failure"
+            git push origin HEAD:rust-engine-rebuild
+            exit "$rc"
+          fi
       - name: Commit validated recurrence slice
         shell: bash
         run: |
