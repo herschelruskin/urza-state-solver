@@ -67,14 +67,22 @@ Acceptance requires:
 
 ## Performance probe
 
-`urza-mc/examples/r5_perf_probe.rs` now compares serial vs parallel fixed-budget and adaptive cold-cache execution on the same three representative seven-card states used by the cycle-repair profiling pass. It also rechecks warm-cache behavior and normal adaptive execution. The probe reports the runner's `available_parallelism`, serial/parallel wall clock, speedup, and the existing deterministic rollout/cache counters.
+`urza-mc/examples/r5_perf_probe.rs` compares serial vs parallel fixed-budget and adaptive cold-cache execution on the same three representative seven-card states used by the cycle-repair profiling pass. It also rechecks warm-cache behavior and normal adaptive execution. The probe reports the runner's `available_parallelism`, serial/parallel wall clock, speedup, and the existing deterministic rollout/cache counters.
+
+The accepted GitHub runner exposed four workers. Across three release runs with eight common sampled worlds, fixed-budget medians were:
+
+- opening combo, 3 roots / 24 root-world jobs: `24.418 ms` serial -> `11.973 ms` parallel, about `2.04x`;
+- tutor-heavy, 14 roots / 112 root-world jobs: `218.728 ms` serial -> `89.183 ms` parallel, about `2.45x`;
+- artifact-heavy, 19 roots / 152 root-world jobs: `495.559 ms` serial -> `220.194 ms` parallel, about `2.25x`.
+
+Adaptive cold-cache scaling was comparable (about `2.02x`, `2.46x`, and `2.24x` respectively). Warm-cache evaluation remained sub-millisecond and executed zero root-world rollouts, confirming that parallelism targets the expensive execution work rather than cache/aggregation overhead. The eight-world normal adaptive probes all reached `MaxSamples`; no statistical or heuristic stopping behavior was added in this checkpoint.
 
 The performance numbers are evidence for scheduling decisions only. Wall-clock timing does not participate in engine semantics, value ranking, cache identity, or acceptance parity.
 
 ## Validation
 
-Validation pending the dedicated `R5 parallel root-world acceptance` gate and the permanent Rust foundation workflow on the finalized branch head.
+Validated implementation closure: `ffe20db970ab3a31423e2eded837b0be3f33a9ec` (`Close R5 parallel root-world checkpoint`). Dedicated acceptance run: GitHub Actions `33949117962`, job `101260435609`, result PASS. The gate passed formatting, locked dependency metadata, strict all-target/all-feature Clippy, six dedicated serial/parallel parity regressions, full workspace tests, benchmark compilation, three release performance probes, and cumulative R0-R5 audits.
+
+The closure removed the temporary parallel workflow and patch helper. Its commit contains only the intended R5 source/documentation changes plus those two temporary-file deletions; generated `rust/target` artifacts were not staged. A normal user-authored documentation follow-up triggers the permanent Rust foundation gate on the finalized tree.
 
 Python gameplay/policy logic remains out of scope.
-
-Dedicated acceptance run: GitHub Actions 33949117962, result PASS. The gate passed formatting, locked dependency metadata, strict all-target/all-feature Clippy, dedicated serial/parallel parity regressions, full workspace tests, benchmark compilation, three release performance probes, and cumulative R0-R5 audits.
