@@ -1,0 +1,143 @@
+name: R5 performance blocker repair
+
+on:
+  push:
+    branches:
+      - rust-engine-rebuild
+    paths:
+      - .github/workflows/r5-perf-repair.yml
+
+permissions:
+  contents: write
+
+jobs:
+  repair-and-probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: rust-engine-rebuild
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+          components: rustfmt, clippy
+      - name: Patch dead-end pending candidate guard
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('rust/crates/urza-policy-bridge/src/lib.rs')
+          text = path.read_text()
+          old = '''fn action_is_legal<D: CardDatabase>(state: &TrueState, cards: &D, action: &Action) -> bool {
+              let mut trial = state.clone();
+              apply_action_with_rng(
+                  &mut trial,
+                  cards,
+                  action.clone(),
+                  GameRngContext {
+                      root: RootSeed::from_u64(0x5235_4252_4944_4745),
+                      world: WorldId(0),
+                      logical_event: LogicalEventId(0),
+                  },
+              )
+              .is_ok()
+          }
+          '''
+          new = '''fn action_is_legal<D: CardDatabase>(state: &TrueState, cards: &D, action: &Action) -> bool {
+              let mut trial = state.clone();
+              if apply_action_with_rng(
+                  &mut trial,
+                  cards,
+                  action.clone(),
+                  GameRngContext {
+                      root: RootSeed::from_u64(0x5235_4252_4944_4745),
+                      world: WorldId(0),
+                      logical_event: LogicalEventId(0),
+                  },
+              )
+              .is_err()
+              {
+                  return false;
+              }
+
+              let Ok(information) = observe(&trial) else {
+                  return false;
+              };
+              if information.pending.kind() == PendingDecisionKind::None {
+                  return true;
+              }
+
+              // A root action is not usable by the R5 policy surface if it
+              // immediately enters a public contingent decision for which the
+              // accepted bridge has no choice. This is intentionally a bridge
+              // viability check, not a second rules legality implementation.
+              !legal_contingent_actions(&information, cards).is_empty()
+          }
+          '''
+          if old not in text:
+              raise SystemExit('action_is_legal block not found')
+          text = text.replace(old, new, 1)
+
+          needle = '''    #[test]
+              fn transmute_difference_pending_keeps_mana_abilities_in_contingent_set() {
+          '''
+          test = '''    #[test]
+              fn transmute_without_a_sacrifice_is_not_exposed_as_a_dead_end_root() {
+                  let cards = R4CardDatabase::load().unwrap();
+                  let transmute = cards.card_id_by_name("Transmute Artifact").unwrap();
+                  let sol_ring = cards.card_id_by_name("Sol Ring").unwrap();
+                  let mut state = priority_state();
+                  state.hand = CardZone::new(vec![transmute]);
+                  state.mana = ManaPool {
+                      blue: 2,
+                      ..ManaPool::default()
+                  };
+
+                  let dead_end_bridge = CandidateBridge::build(&state, &cards).unwrap();
+                  assert!(!dead_end_bridge.candidates().iter().any(|candidate| matches!(
+                      dead_end_bridge.resolve(candidate.token),
+                      Some(Action::CastFromHand { card, .. }) if *card == transmute
+                  )));
+
+                  state.battlefield = BattlefieldZone::new(vec![permanent(12, sol_ring)]);
+                  let live_bridge = CandidateBridge::build(&state, &cards).unwrap();
+                  assert!(live_bridge.candidates().iter().any(|candidate| matches!(
+                      live_bridge.resolve(candidate.token),
+                      Some(Action::CastFromHand { card, .. }) if *card == transmute
+                  )));
+              }
+
+          '''
+          if needle not in text:
+              raise SystemExit('test insertion point not found')
+          text = text.replace(needle, test + needle, 1)
+          path.write_text(text)
+          PY
+      - name: Format
+        working-directory: rust
+        run: cargo fmt --all
+      - name: Strict bridge Clippy
+        working-directory: rust
+        run: cargo clippy -p urza-policy-bridge --all-targets --locked -- -D warnings
+      - name: Bridge tests
+        working-directory: rust
+        run: cargo test -p urza-policy-bridge --locked
+      - name: Build release performance probe
+        working-directory: rust
+        run: cargo build -p urza-mc --example r5_perf_probe --release --locked
+      - name: Run repaired performance probe three times
+        working-directory: rust
+        run: |
+          for run in 1 2 3; do
+            echo "=== R5_REPAIRED_PERF_PROBE_RUN_${run} ==="
+            ./target/release/examples/r5_perf_probe
+          done
+      - name: Commit bridge repair and remove temporary repair workflow
+        run: |
+          rm .github/workflows/r5-perf-repair.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add rust/crates/urza-policy-bridge/src/lib.rs .github/workflows/r5-perf-repair.yml
+          git commit -m 'Reject dead-end R5 pending roots'
+          git push origin HEAD:rust-engine-rebuild
