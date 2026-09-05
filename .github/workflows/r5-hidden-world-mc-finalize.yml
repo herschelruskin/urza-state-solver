@@ -1,0 +1,864 @@
+name: R5 hidden-world Monte Carlo finalize
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - ".github/workflows/r5-hidden-world-mc-finalize.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: rust-engine-rebuild
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+          components: rustfmt, clippy
+
+      - name: Build hidden-world Monte Carlo layer
+        run: |
+          cat > rust/crates/urza-mc/Cargo.toml <<'EOF'
+          [package]
+          name = "urza-mc"
+          version.workspace = true
+          edition.workspace = true
+          rust-version.workspace = true
+
+          [dependencies]
+          blake3.workspace = true
+          thiserror.workspace = true
+          urza-core = { path = "../urza-core" }
+          urza-info = { path = "../urza-info" }
+          urza-policy = { path = "../urza-policy" }
+          urza-rng = { path = "../urza-rng" }
+          urza-rollout = { path = "../urza-rollout" }
+          urza-rules = { path = "../urza-rules" }
+          urza-value = { path = "../urza-value" }
+
+          [dev-dependencies]
+          urza-cards = { path = "../urza-cards" }
+          EOF
+
+          cat > rust/crates/urza-mc/src/lib.rs <<'EOF'
+          #![forbid(unsafe_code)]
+
+          use thiserror::Error;
+          use urza_core::{LibraryKnowledge, TrueLibrary, TrueState};
+          use urza_info::{InformationState, LibraryBelief, ObservationError, observe};
+          use urza_policy::DeterministicPolicy;
+          use urza_rng::{
+              EventOccurrence, EventType, LogicalEventId, RngCoordinate, RngDomain, RootSeed,
+              WorldId, shuffle,
+          };
+          use urza_rollout::{RolloutConfig, RolloutError, RolloutStop, rollout};
+          use urza_rules::{CardDatabase, HORIZON_TURN, WinFamily};
+          use urza_value::WinDistribution;
+
+          pub const MONTE_CARLO_VERSION: &str = "r5_hidden_world_mc_v1";
+          pub const HIDDEN_WORLD_EVENT_TYPE: EventType = EventType(0x0501);
+          const HIDDEN_WORLD_LOGICAL_EVENT: LogicalEventId = LogicalEventId(0);
+
+          #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+          pub struct MonteCarloConfig {
+              pub root: RootSeed,
+              pub first_world: WorldId,
+              pub samples: u32,
+              pub rollout_max_steps: u32,
+          }
+
+          impl Default for MonteCarloConfig {
+              fn default() -> Self {
+                  Self {
+                      root: RootSeed::from_u64(0x5235_4d4f_4e54_4501),
+                      first_world: WorldId(0),
+                      samples: 256,
+                      rollout_max_steps: urza_rollout::DEFAULT_MAX_STEPS,
+                  }
+              }
+          }
+
+          #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+          pub enum SampleOutcome {
+              Win { family: WinFamily, turn: u8 },
+              LossByHorizon,
+          }
+
+          #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+          pub struct WorldOutcome {
+              pub world: WorldId,
+              pub outcome: SampleOutcome,
+              pub rollout_steps: u32,
+          }
+
+          #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+          pub struct FamilyWinCount {
+              pub family: WinFamily,
+              pub wins: u32,
+          }
+
+          #[derive(Debug, Clone, PartialEq, Eq)]
+          pub struct MonteCarloResult {
+              pub outcomes: Vec<WorldOutcome>,
+              pub win_distribution: WinDistribution,
+              pub family_wins: Vec<FamilyWinCount>,
+          }
+
+          impl MonteCarloResult {
+              pub fn samples(&self) -> usize {
+                  self.outcomes.len()
+              }
+
+              pub fn wins(&self) -> u32 {
+                  self.win_distribution.wins()
+              }
+
+              pub fn losses(&self) -> u32 {
+                  self.win_distribution.losses
+              }
+          }
+
+          #[derive(Debug, Error)]
+          pub enum MonteCarloError {
+              #[error(transparent)]
+              Observation(#[from] ObservationError),
+              #[error("Monte Carlo evaluation requires at least one sampled world")]
+              NoSamples,
+              #[error("sampled world id range overflowed u64")]
+              WorldIdOverflow,
+              #[error("sampled world id {0:?} appears more than once")]
+              DuplicateWorld(WorldId),
+              #[error("hidden-world sampling changed public information for world {0:?}")]
+              PublicStateDrift(WorldId),
+              #[error("rollout failed for sampled world {world:?}: {source}")]
+              WorldRollout {
+                  world: WorldId,
+                  #[source]
+                  source: RolloutError,
+              },
+              #[error("sampled world {world:?} stopped incompletely at {stop:?}")]
+              IncompleteWorld { world: WorldId, stop: RolloutStop },
+              #[error("sampled world {world:?} reached a terminal win on out-of-horizon turn {turn}")]
+              TerminalOutsideHorizon { world: WorldId, turn: u8 },
+              #[error("rollout trace length exceeded u32")]
+              TraceLengthOverflow,
+              #[error("Monte Carlo aggregate counter overflow")]
+              CounterOverflow,
+              #[error("sampled library reconstruction was invalid: {0}")]
+              InvalidSampledLibrary(#[from] urza_core::StateValidationError),
+          }
+
+          pub fn sample_hidden_world(
+              template: &TrueState,
+              root: RootSeed,
+              world: WorldId,
+          ) -> Result<TrueState, MonteCarloError> {
+              let public = observe(template)?;
+              let knowledge = template.library.knowledge();
+              let known_top = template.library.known_top().to_vec();
+              let known_bottom = template.library.known_bottom().to_vec();
+              let mut unknown_middle = template.library.unknown_middle().to_vec();
+
+              // The preexisting exact hidden order is not a Monte Carlo input.
+              // Start from the canonical public multiset, then sample one exact order.
+              unknown_middle.sort_unstable();
+              shuffle(
+                  &mut unknown_middle,
+                  root,
+                  hidden_world_coordinate(&public.library, world),
+              );
+
+              let mut cards = Vec::with_capacity(template.library.cards().len());
+              cards.extend(known_top);
+              cards.extend(unknown_middle);
+              cards.extend(known_bottom);
+
+              let mut sampled = template.clone();
+              sampled.library = TrueLibrary::new(cards, knowledge)?;
+              if observe(&sampled)? != public {
+                  return Err(MonteCarloError::PublicStateDrift(world));
+              }
+              Ok(sampled)
+          }
+
+          pub fn evaluate<D: CardDatabase>(
+              template: &TrueState,
+              cards: &D,
+              policy: &DeterministicPolicy,
+              config: MonteCarloConfig,
+          ) -> Result<MonteCarloResult, MonteCarloError> {
+              if config.samples == 0 {
+                  return Err(MonteCarloError::NoSamples);
+              }
+
+              let mut worlds = Vec::with_capacity(config.samples as usize);
+              for offset in 0..config.samples {
+                  let world = config
+                      .first_world
+                      .0
+                      .checked_add(u64::from(offset))
+                      .ok_or(MonteCarloError::WorldIdOverflow)?;
+                  worlds.push(WorldId(world));
+              }
+
+              evaluate_world_ids(
+                  template,
+                  cards,
+                  policy,
+                  config.root,
+                  config.rollout_max_steps,
+                  &worlds,
+              )
+          }
+
+          pub fn evaluate_world_ids<D: CardDatabase>(
+              template: &TrueState,
+              cards: &D,
+              policy: &DeterministicPolicy,
+              root: RootSeed,
+              rollout_max_steps: u32,
+              world_ids: &[WorldId],
+          ) -> Result<MonteCarloResult, MonteCarloError> {
+              if world_ids.is_empty() {
+                  return Err(MonteCarloError::NoSamples);
+              }
+
+              let mut worlds = world_ids.to_vec();
+              worlds.sort_unstable_by_key(|world| world.0);
+              for pair in worlds.windows(2) {
+                  if pair[0] == pair[1] {
+                      return Err(MonteCarloError::DuplicateWorld(pair[0]));
+                  }
+              }
+
+              let mut outcomes = Vec::with_capacity(worlds.len());
+              let mut win_distribution = WinDistribution::default();
+              let mut family_wins: Vec<_> = WinFamily::ALL
+                  .into_iter()
+                  .map(|family| FamilyWinCount { family, wins: 0 })
+                  .collect();
+
+              for world in worlds {
+                  let sampled = sample_hidden_world(template, root, world)?;
+                  let result = rollout(
+                      sampled,
+                      cards,
+                      policy,
+                      RolloutConfig {
+                          root,
+                          world,
+                          max_steps: rollout_max_steps,
+                      },
+                  )
+                  .map_err(|source| MonteCarloError::WorldRollout { world, source })?;
+                  let rollout_steps = u32::try_from(result.trace.len())
+                      .map_err(|_| MonteCarloError::TraceLengthOverflow)?;
+
+                  let outcome = match result.stop {
+                      RolloutStop::Terminal(family) => {
+                          let turn = result.final_information.turn;
+                          if !(1..=HORIZON_TURN).contains(&turn) {
+                              return Err(MonteCarloError::TerminalOutsideHorizon { world, turn });
+                          }
+                          let bucket = usize::from(turn - 1);
+                          win_distribution.t1_through_t6[bucket] = win_distribution.t1_through_t6
+                              [bucket]
+                              .checked_add(1)
+                              .ok_or(MonteCarloError::CounterOverflow)?;
+                          let entry = family_wins
+                              .iter_mut()
+                              .find(|entry| entry.family == family)
+                              .expect("WinFamily::ALL contains every terminal family");
+                          entry.wins = entry
+                              .wins
+                              .checked_add(1)
+                              .ok_or(MonteCarloError::CounterOverflow)?;
+                          SampleOutcome::Win { family, turn }
+                      }
+                      RolloutStop::Horizon => {
+                          win_distribution.losses = win_distribution
+                              .losses
+                              .checked_add(1)
+                              .ok_or(MonteCarloError::CounterOverflow)?;
+                          SampleOutcome::LossByHorizon
+                      }
+                      stop @ (RolloutStop::StepLimit | RolloutStop::NoCandidate) => {
+                          return Err(MonteCarloError::IncompleteWorld { world, stop });
+                      }
+                  };
+
+                  outcomes.push(WorldOutcome {
+                      world,
+                      outcome,
+                      rollout_steps,
+                  });
+              }
+
+              Ok(MonteCarloResult {
+                  outcomes,
+                  win_distribution,
+                  family_wins,
+              })
+          }
+
+          fn hidden_world_coordinate(library: &LibraryBelief, world: WorldId) -> RngCoordinate {
+              RngCoordinate {
+                  domain: RngDomain::OuterHiddenWorld,
+                  world,
+                  event_type: HIDDEN_WORLD_EVENT_TYPE,
+                  logical_event: HIDDEN_WORLD_LOGICAL_EVENT,
+                  occurrence: EventOccurrence(0),
+                  concrete_fingerprint: library_belief_fingerprint(library),
+              }
+          }
+
+          fn library_belief_fingerprint(library: &LibraryBelief) -> [u8; 16] {
+              let mut hasher = blake3::Hasher::new();
+              hasher.update(b"r5-hidden-world-library-belief-v1");
+
+              hasher.update(&(library.known_top.len() as u32).to_le_bytes());
+              for card in &library.known_top {
+                  hasher.update(&card.0.to_le_bytes());
+              }
+
+              hasher.update(&(library.remaining_counts.len() as u32).to_le_bytes());
+              for count in &library.remaining_counts {
+                  hasher.update(&count.card.0.to_le_bytes());
+                  hasher.update(&[count.count]);
+              }
+
+              hasher.update(&(library.known_bottom.len() as u32).to_le_bytes());
+              for card in &library.known_bottom {
+                  hasher.update(&card.0.to_le_bytes());
+              }
+
+              let digest = hasher.finalize();
+              let mut fingerprint = [0_u8; 16];
+              fingerprint.copy_from_slice(&digest.as_bytes()[..16]);
+              fingerprint
+          }
+
+          #[cfg(test)]
+          mod tests {
+              use super::*;
+              use urza_cards::R4CardDatabase;
+              use urza_core::{
+                  BattlefieldZone, CardFace, CommanderZone, CounterState, ObjectId,
+                  PermanentMode, PermanentState, Phase, Window,
+              };
+
+              fn cards() -> R4CardDatabase {
+                  R4CardDatabase::load().expect("R4 database")
+              }
+
+              fn base_state(
+                  cards: &R4CardDatabase,
+                  turn: u8,
+                  library_cards: Vec<urza_core::CardDefId>,
+              ) -> TrueState {
+                  let library = if library_cards.is_empty() {
+                      vec![cards.card_id_by_name("Island").expect("Island")]
+                  } else {
+                      library_cards
+                  };
+                  TrueState {
+                      turn,
+                      phase: Phase::PrecombatMain,
+                      window: Window::Priority,
+                      library: TrueLibrary::unknown(library),
+                      ..TrueState::default()
+                  }
+              }
+
+              fn permanent(object: u32, card: urza_core::CardDefId) -> PermanentState {
+                  PermanentState {
+                      object_id: ObjectId(object),
+                      card,
+                      face: CardFace::Front,
+                      tapped: false,
+                      summoning_sick: false,
+                      token: false,
+                      counters: CounterState::default(),
+                      mode: PermanentMode::Normal,
+                      attached_to: None,
+                      granted_ability: None,
+                  }
+              }
+
+              fn config(samples: u32, max_steps: u32) -> MonteCarloConfig {
+                  MonteCarloConfig {
+                      root: RootSeed::from_u64(0x4d43_5f52_355f_0001),
+                      first_world: WorldId(10),
+                      samples,
+                      rollout_max_steps: max_steps,
+                  }
+              }
+
+              #[test]
+              fn sampled_world_preserves_public_information_and_known_edges() {
+                  let cards = cards();
+                  let island = cards.card_id_by_name("Island").expect("Island");
+                  let crypt = cards
+                      .card_id_by_name("Tormod's Crypt")
+                      .expect("Tormod's Crypt");
+                  let basalt = cards.card_id_by_name("Basalt Monolith").expect("Basalt");
+                  let power = cards
+                      .card_id_by_name("Power Artifact")
+                      .expect("Power Artifact");
+                  let top = cards
+                      .card_id_by_name("Sensei's Divining Top")
+                      .expect("Top");
+                  let gadgeteer = cards
+                      .card_id_by_name("Forensic Gadgeteer")
+                      .expect("Gadgeteer");
+                  let mut state = base_state(
+                      &cards,
+                      2,
+                      vec![island, basalt, power, top, gadgeteer, crypt],
+                  );
+                  state
+                      .library
+                      .set_knowledge(LibraryKnowledge {
+                          known_top: 1,
+                          known_bottom: 1,
+                      })
+                      .unwrap();
+
+                  let sampled = sample_hidden_world(
+                      &state,
+                      RootSeed::from_u64(91),
+                      WorldId(4),
+                  )
+                  .unwrap();
+                  assert_eq!(observe(&sampled).unwrap(), observe(&state).unwrap());
+                  assert_eq!(sampled.library.known_top(), &[island]);
+                  assert_eq!(sampled.library.known_bottom(), &[crypt]);
+                  assert_eq!(sampled.library.knowledge(), state.library.knowledge());
+              }
+
+              #[test]
+              fn preexisting_hidden_order_is_not_a_sampling_input() {
+                  let cards = cards();
+                  let island = cards.card_id_by_name("Island").expect("Island");
+                  let basalt = cards.card_id_by_name("Basalt Monolith").expect("Basalt");
+                  let power = cards
+                      .card_id_by_name("Power Artifact")
+                      .expect("Power Artifact");
+                  let top = cards
+                      .card_id_by_name("Sensei's Divining Top")
+                      .expect("Top");
+                  let crypt = cards
+                      .card_id_by_name("Tormod's Crypt")
+                      .expect("Tormod's Crypt");
+                  let left = base_state(&cards, 3, vec![island, basalt, power, top, crypt]);
+                  let right = base_state(&cards, 3, vec![crypt, top, power, basalt, island]);
+                  assert_eq!(observe(&left).unwrap(), observe(&right).unwrap());
+
+                  let root = RootSeed::from_u64(12345);
+                  let world = WorldId(88);
+                  let sampled_left = sample_hidden_world(&left, root, world).unwrap();
+                  let sampled_right = sample_hidden_world(&right, root, world).unwrap();
+                  assert_eq!(sampled_left.library.cards(), sampled_right.library.cards());
+              }
+
+              #[test]
+              fn sampler_uses_outer_hidden_world_rng_domain() {
+                  let cards = cards();
+                  let state = base_state(&cards, 2, Vec::new());
+                  let info = observe(&state).unwrap();
+                  let coordinate = hidden_world_coordinate(&info.library, WorldId(7));
+                  assert_eq!(coordinate.domain, RngDomain::OuterHiddenWorld);
+                  assert_eq!(coordinate.event_type, HIDDEN_WORLD_EVENT_TYPE);
+              }
+
+              #[test]
+              fn terminal_samples_aggregate_by_turn_and_family() {
+                  let cards = cards();
+                  let urza = cards
+                      .card_id_by_name("Urza, Lord High Artificer")
+                      .expect("Urza");
+                  let basalt = cards.card_id_by_name("Basalt Monolith").expect("Basalt");
+                  let power = cards
+                      .card_id_by_name("Power Artifact")
+                      .expect("Power Artifact");
+                  let mut state = base_state(&cards, 2, Vec::new());
+                  state.commander.zone = CommanderZone::Battlefield;
+                  let mut aura = permanent(30, power);
+                  aura.attached_to = Some(ObjectId(20));
+                  state.battlefield = BattlefieldZone::new(vec![
+                      permanent(10, urza),
+                      permanent(20, basalt),
+                      aura,
+                  ]);
+
+                  let result = evaluate(
+                      &state,
+                      &cards,
+                      &DeterministicPolicy,
+                      config(4, 32),
+                  )
+                  .unwrap();
+                  assert_eq!(result.samples(), 4);
+                  assert_eq!(result.win_distribution.t1_through_t6, [0, 4, 0, 0, 0, 0]);
+                  assert_eq!(result.win_distribution.losses, 0);
+                  assert_eq!(result.wins(), 4);
+                  assert_eq!(
+                      result
+                          .family_wins
+                          .iter()
+                          .find(|entry| entry.family == WinFamily::PowerArtifactBasalt)
+                          .unwrap()
+                          .wins,
+                      4
+                  );
+              }
+
+              #[test]
+              fn horizon_samples_are_losses() {
+                  let cards = cards();
+                  let state = base_state(&cards, HORIZON_TURN, Vec::new());
+                  let result = evaluate(
+                      &state,
+                      &cards,
+                      &DeterministicPolicy,
+                      config(3, 16),
+                  )
+                  .unwrap();
+                  assert_eq!(result.wins(), 0);
+                  assert_eq!(result.losses(), 3);
+                  assert!(
+                      result
+                          .outcomes
+                          .iter()
+                          .all(|outcome| outcome.outcome == SampleOutcome::LossByHorizon)
+                  );
+              }
+
+              #[test]
+              fn evaluation_is_repeatable_and_world_order_independent() {
+                  let cards = cards();
+                  let island = cards.card_id_by_name("Island").expect("Island");
+                  let basalt = cards.card_id_by_name("Basalt Monolith").expect("Basalt");
+                  let power = cards
+                      .card_id_by_name("Power Artifact")
+                      .expect("Power Artifact");
+                  let crypt = cards
+                      .card_id_by_name("Tormod's Crypt")
+                      .expect("Tormod's Crypt");
+                  let state = base_state(
+                      &cards,
+                      HORIZON_TURN,
+                      vec![island, basalt, power, crypt],
+                  );
+                  let root = RootSeed::from_u64(777);
+                  let worlds = [WorldId(9), WorldId(2), WorldId(14), WorldId(5)];
+                  let reversed = [WorldId(5), WorldId(14), WorldId(2), WorldId(9)];
+
+                  let first = evaluate_world_ids(
+                      &state,
+                      &cards,
+                      &DeterministicPolicy,
+                      root,
+                      16,
+                      &worlds,
+                  )
+                  .unwrap();
+                  let second = evaluate_world_ids(
+                      &state,
+                      &cards,
+                      &DeterministicPolicy,
+                      root,
+                      16,
+                      &worlds,
+                  )
+                  .unwrap();
+                  let reordered = evaluate_world_ids(
+                      &state,
+                      &cards,
+                      &DeterministicPolicy,
+                      root,
+                      16,
+                      &reversed,
+                  )
+                  .unwrap();
+                  assert_eq!(first, second);
+                  assert_eq!(first, reordered);
+                  assert_eq!(
+                      first.outcomes.iter().map(|outcome| outcome.world.0).collect::<Vec<_>>(),
+                      vec![2, 5, 9, 14]
+                  );
+              }
+
+              #[test]
+              fn monte_carlo_ignores_template_hidden_order() {
+                  let cards = cards();
+                  let island = cards.card_id_by_name("Island").expect("Island");
+                  let basalt = cards.card_id_by_name("Basalt Monolith").expect("Basalt");
+                  let power = cards
+                      .card_id_by_name("Power Artifact")
+                      .expect("Power Artifact");
+                  let crypt = cards
+                      .card_id_by_name("Tormod's Crypt")
+                      .expect("Tormod's Crypt");
+                  let left = base_state(
+                      &cards,
+                      HORIZON_TURN,
+                      vec![island, basalt, power, crypt],
+                  );
+                  let right = base_state(
+                      &cards,
+                      HORIZON_TURN,
+                      vec![crypt, power, basalt, island],
+                  );
+                  assert_eq!(observe(&left).unwrap(), observe(&right).unwrap());
+
+                  let cfg = config(6, 16);
+                  let left_result = evaluate(&left, &cards, &DeterministicPolicy, cfg).unwrap();
+                  let right_result = evaluate(&right, &cards, &DeterministicPolicy, cfg).unwrap();
+                  assert_eq!(left_result, right_result);
+              }
+
+              #[test]
+              fn incomplete_rollout_is_not_silently_recorded_as_a_loss() {
+                  let cards = cards();
+                  let state = base_state(&cards, HORIZON_TURN, Vec::new());
+                  let error = evaluate(
+                      &state,
+                      &cards,
+                      &DeterministicPolicy,
+                      config(1, 0),
+                  )
+                  .unwrap_err();
+                  assert!(matches!(
+                      error,
+                      MonteCarloError::IncompleteWorld {
+                          stop: RolloutStop::StepLimit,
+                          ..
+                      }
+                  ));
+              }
+
+              #[test]
+              fn duplicate_world_ids_are_rejected() {
+                  let cards = cards();
+                  let state = base_state(&cards, HORIZON_TURN, Vec::new());
+                  let error = evaluate_world_ids(
+                      &state,
+                      &cards,
+                      &DeterministicPolicy,
+                      RootSeed::from_u64(1),
+                      16,
+                      &[WorldId(3), WorldId(3)],
+                  )
+                  .unwrap_err();
+                  assert!(matches!(error, MonteCarloError::DuplicateWorld(WorldId(3))));
+              }
+          }
+          EOF
+
+      - name: Patch CLI audit
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          cargo = Path('rust/crates/urza-cli/Cargo.toml')
+          text = cargo.read_text()
+          needle = 'urza-info = { path = "../urza-info" }\n'
+          if 'urza-mc = { path = "../urza-mc" }' not in text:
+              text = text.replace(needle, needle + 'urza-mc = { path = "../urza-mc" }\n', 1)
+          cargo.write_text(text)
+
+          main = Path('rust/crates/urza-cli/src/main.rs')
+          text = main.read_text()
+          text = text.replace(
+              'use urza_info::INFORMATION_SCHEMA_VERSION;\n',
+              'use urza_info::INFORMATION_SCHEMA_VERSION;\nuse urza_mc::MONTE_CARLO_VERSION;\n',
+              1,
+          )
+          old = '''fn run_r5_audit() {
+              validate_r4_database().expect("accepted R4 database remains frozen for R5");
+
+              let report = json!({
+                  "phase": "R5-deterministic-rollout",
+                  "policy_phase": POLICY_PHASE,
+                  "policy_version": POLICY_VERSION,
+                  "candidate_bridge_version": CANDIDATE_BRIDGE_VERSION,
+                  "rollout_version": ROLLOUT_VERSION,
+                  "rules_version": RULES_VERSION,
+                  "model_version": MODEL_VERSION,
+                  "information_schema_version": INFORMATION_SCHEMA_VERSION,
+                  "value_key_schema_version": VALUE_KEY_SCHEMA_VERSION,
+                  "ordinary_action_families": ORDINARY_ACTION_FAMILY_COUNT,
+                  "contingent_action_families": CONTINGENT_ACTION_FAMILY_COUNT,
+                  "policy_input_boundary": "urza-policy still consumes only InformationState plus public PolicyCandidate records; execution sequencing lives outside the policy crate",
+                  "bridge_contract": "all accepted R4 Action families remain collision-free public candidates with exact opaque-token round trip",
+                  "rollout_contract": "each policy step rebuilds CandidateBridge from the current execution state, selects from public semantics, resolves one exact Action, applies it, and repeats until terminal win, T6 horizon, explicit step limit, or no-candidate boundary",
+                  "automatic_transition_contract": "automatic phase advancement runs only in OpponentCycle/Untap Window::None with empty stack and no pending decision; contingent choices cannot be bypassed",
+                  "rng_contract": "game RNG root/world are explicit rollout inputs and logical event id equals the public step index; replay uses the recorded public semantic action trace, never raw ObjectId provenance",
+                  "replay_contract": "recorded semantic traces replay by class plus exact PolicyPublicKey and reject decision-point or candidate drift",
+                  "current_scope": "deterministic multi-step R5 rollout sequencing complete over CandidateBridge; urza-mc remains untouched",
+                  "next_r5_work": "connect sampled hidden worlds and Monte Carlo root evaluation to the accepted deterministic rollout boundary",
+              });
+
+              println!(
+                  "{}",
+                  serde_json::to_string_pretty(&report).expect("serializable R5 audit report")
+              );
+          }
+          '''
+          new = '''fn run_r5_audit() {
+              validate_r4_database().expect("accepted R4 database remains frozen for R5");
+
+              let report = json!({
+                  "phase": "R5-hidden-world-monte-carlo",
+                  "policy_phase": POLICY_PHASE,
+                  "policy_version": POLICY_VERSION,
+                  "candidate_bridge_version": CANDIDATE_BRIDGE_VERSION,
+                  "rollout_version": ROLLOUT_VERSION,
+                  "monte_carlo_version": MONTE_CARLO_VERSION,
+                  "rules_version": RULES_VERSION,
+                  "model_version": MODEL_VERSION,
+                  "information_schema_version": INFORMATION_SCHEMA_VERSION,
+                  "value_key_schema_version": VALUE_KEY_SCHEMA_VERSION,
+                  "ordinary_action_families": ORDINARY_ACTION_FAMILY_COUNT,
+                  "contingent_action_families": CONTINGENT_ACTION_FAMILY_COUNT,
+                  "policy_input_boundary": "urza-policy still consumes only InformationState plus public PolicyCandidate records; hidden-world sampling and exact execution remain outside the policy crate",
+                  "bridge_contract": "all accepted R4 Action families remain collision-free public candidates with exact opaque-token round trip",
+                  "rollout_contract": "each sampled exact world is evaluated only through the accepted deterministic urza-rollout driver",
+                  "hidden_world_contract": "the exact template supplies execution scaffolding, but its unknown library order is discarded: the unknown middle is canonicalized as a public multiset and shuffled with an OuterHiddenWorld coordinate derived from public library belief plus WorldId",
+                  "monte_carlo_contract": "fixed world identities are evaluated independently, outcomes are returned in canonical WorldId order, terminal wins aggregate by T1-T6 and WinFamily, and only a true T6 horizon is counted as a loss",
+                  "rng_contract": "outer hidden-world sampling uses the OuterHiddenWorld domain; game randomness inside each rollout uses the existing Game domain with the same explicit root and sampled WorldId",
+                  "completion_contract": "StepLimit and NoCandidate are incomplete evaluations and fail the Monte Carlo call rather than being silently recorded as losses",
+                  "current_scope": "fixed-budget hidden-world sampling and deterministic Monte Carlo root-state evaluation complete over the frozen R4/R5 bridge+rollout surface",
+                  "next_r5_work": "audit and build root-action comparison/value integration on common sampled worlds before any adaptive-confidence or performance broadening",
+              });
+
+              println!(
+                  "{}",
+                  serde_json::to_string_pretty(&report).expect("serializable R5 audit report")
+              );
+          }
+          '''
+          if old not in text:
+              raise SystemExit('current run_r5_audit block not found')
+          main.write_text(text.replace(old, new, 1))
+          PY
+
+      - name: Refresh lockfile
+        working-directory: rust
+        run: cargo check --workspace
+      - name: Format
+        working-directory: rust
+        run: cargo fmt --all
+      - name: Locked dependency graph
+        working-directory: rust
+        run: cargo metadata --locked --format-version 1 --no-deps > /dev/null
+      - name: Strict clippy
+        working-directory: rust
+        run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
+      - name: Workspace tests
+        working-directory: rust
+        run: cargo test --locked --workspace --all-targets
+      - name: Bench compile
+        working-directory: rust
+        run: cargo check --locked --workspace --benches
+      - name: R0 through R5 audits
+        working-directory: rust
+        run: |
+          cargo run --locked -p urza-cli -- r0-audit >/dev/null
+          cargo run --locked -p urza-cli -- r1-audit >/dev/null
+          cargo run --locked -p urza-cli -- r2-audit >/dev/null
+          cargo run --locked -p urza-cli -- r3-audit >/dev/null
+          cargo run --locked -p urza-cli -- r4-audit >/dev/null
+          cargo run --locked -p urza-cli -- r5-audit
+
+      - name: Record hidden-world Monte Carlo checkpoint
+        run: |
+          cat > rust/R5_MONTE_CARLO_CHECKPOINT.md <<'EOF'
+          # R5 hidden-world Monte Carlo checkpoint
+
+          ## Scope
+
+          This checkpoint adds fixed-budget hidden-world sampling and Monte Carlo root-state evaluation on top of the accepted deterministic rollout API. It does not broaden R4 rules/card coverage and does not add a second gameplay or policy implementation.
+
+          ## Architecture boundary
+
+          `urza-mc` is an outer evaluator. It samples exact hidden library worlds, delegates every sampled world to `urza-rollout`, and aggregates completed outcomes. `urza-policy` remains public-state-only; `urza-policy-bridge` remains the sole action-enumeration/canonicalization boundary.
+
+          ## Hidden-world sampling
+
+          The caller supplies a valid exact `TrueState` as execution scaffolding. Sampling observes that state, preserves known top and known bottom cards exactly, discards the preexisting order of the unknown middle, sorts the unknown middle into its public multiset, and shuffles that canonical multiset.
+
+          The sampling RNG coordinate uses domain `OuterHiddenWorld`, a dedicated R5 hidden-library event type, the explicit `WorldId`, occurrence zero, and a concrete fingerprint derived only from the public `LibraryBelief`. Therefore two exact templates with the same public information but different unknown library order produce the same sampled exact library for the same root/world coordinate.
+
+          Each sampled state is re-observed and must equal the template `InformationState`; any public drift is an error.
+
+          ## Monte Carlo evaluation
+
+          `MonteCarloConfig` supplies `RootSeed`, the first `WorldId`, sample count, and deterministic rollout step bound. World IDs are semantic sample identities. The evaluator also accepts an explicit set of world IDs, rejects duplicates, canonicalizes execution order by numeric `WorldId`, and returns per-world outcomes in that same order.
+
+          Each exact sampled world is evaluated through `urza-rollout` using the same root and that sampled `WorldId`. Game randomness remains in the existing `Game` RNG domain while outer world sampling remains in `OuterHiddenWorld`.
+
+          Completed terminal samples are accumulated into `WinDistribution::t1_through_t6` and a stable 13-family win table. A true R4 T6 horizon is accumulated as a loss. `StepLimit` and `NoCandidate` are incomplete evaluations and fail the Monte Carlo call instead of silently becoming losses.
+
+          ## Acceptance
+
+          Acceptance fixtures prove:
+
+          - sampled worlds preserve the complete public `InformationState` and exact known top/bottom edges;
+          - preexisting unknown library order cannot affect a sampled world;
+          - the sampler uses the `OuterHiddenWorld` RNG domain;
+          - repeated evaluation with the same root/world set is bit-for-bit deterministic;
+          - world enumeration order is not semantic and results are returned in canonical WorldId order;
+          - Monte Carlo results are invariant to hidden-order-equivalent exact templates;
+          - terminal samples aggregate by exact turn and `WinFamily`;
+          - horizon samples aggregate as losses;
+          - incomplete rollouts are rejected rather than counted as losses;
+          - duplicate sample identities are rejected;
+          - strict Clippy, full workspace tests, benchmark compilation, and cumulative R0-R5 audits pass.
+
+          ## Namespaces
+
+          - rules: `r4_acceptance_v6`;
+          - model: `urza_model_r4c_2026_09_04`;
+          - information: `information_state_v7_r4`;
+          - ValueKey: `value_key_v7_r4`;
+          - policy: `r5_candidate_contract_v2`;
+          - candidate bridge: `r5_public_candidate_bridge_v1`;
+          - rollout: `r5_deterministic_rollout_v1`;
+          - Monte Carlo: `r5_hidden_world_mc_v1`.
+
+          No frozen R4 namespace changes are made in this block.
+
+          ## Next R5 block
+
+          Build audited root-action comparison/value integration using common sampled `WorldId`s across candidate roots. Adaptive confidence, caching, and performance policy should come only after that comparison contract is deterministic and replayable.
+
+          Python gameplay/policy logic remains out of scope.
+          EOF
+
+          cat >> rust/DEVELOPMENT_LOG.md <<'EOF'
+
+          ## R5 hidden-world Monte Carlo
+
+          Added fixed-budget outer hidden-world sampling and Monte Carlo root-state evaluation in `urza-mc`. Sampling canonicalizes the unknown library middle before `OuterHiddenWorld` shuffling so preexisting secret order cannot leak into samples, preserves known library edges, and verifies public-information equality after sampling. Each world is evaluated only through accepted deterministic rollout; terminal outcomes aggregate by T1-T6/family, horizon is the only modeled loss, and incomplete rollout stops remain errors. World IDs are explicit, unique sample identities and evaluation order is canonicalized. R4 namespaces remain frozen. Root-action comparison/value integration is next.
+          EOF
+
+      - name: Remove temporary Monte Carlo workflow
+        run: git rm .github/workflows/r5-hidden-world-mc-finalize.yml
+
+      - name: Commit validated hidden-world Monte Carlo
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add rust .github/workflows
+          git commit -m 'Build R5 hidden-world Monte Carlo evaluation'
+          git push origin HEAD:rust-engine-rebuild
