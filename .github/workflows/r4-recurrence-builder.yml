@@ -60,6 +60,8 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import json
+          import subprocess
           path = Path('rust/crates/urza-rules/src/lib.rs')
           text = path.read_text()
           text = text.replace('summoning_sick: profile.is_creature,\n            token: true,\n            counters:', 'summoning_sick: false,\n            token: true,\n            counters:', 1)
@@ -96,6 +98,27 @@ jobs:
               raise SystemExit('missing Construct floodcaller profile anchor')
           text = text.replace(old, new, 1)
           path.write_text(text)
+
+          original = json.loads(subprocess.check_output(['git', 'show', 'HEAD:rust/data/card_coverage.r0.json'], text=True))
+          catalog = json.loads(Path('rust/data/card_catalog.r1.json').read_text())
+          name_to_id = {card['deck_name']: card['id'] for card in catalog['cards']}
+          updates = {
+              'Banishing Knack': ('RULES_ACTIVE', 'R4 recurrence rules-active: exact-creature targeted spell grants the temporary tap-to-bounce ability until end of turn; granted activation and expiry are modeled.'),
+              'Battered Golem': ('RULES_ACTIVE', 'R4 recurrence rules-active: skips normal untap and resolves its artifact-entry may-untap trigger; accepted by Chrome Dome and Knack/Helix recurrence proofs.'),
+              'Chrome Dome': ('RULES_ACTIVE', 'R4 recurrence rules-active: reduction-aware activation copies another artifact as a fresh hasty token with exact per-object next-end-step sacrifice tracking.'),
+              'Forensic Gadgeteer': ('RULES_ACTIVE', 'R4 recurrence rules-active: applies the artifact activation reduction and emits a mandatory investigate trigger on artifact casts; resolution creates a Clue through the common artifact-entry path.'),
+              'Grinding Station': ('RULES_ACTIVE', 'R4 recurrence rules-active: tap-and-sacrifice activation mills the goldfish opponent and artifact entry emits its may-untap trigger on the real stack.'),
+              'Mana Vault': ('PRIMITIVE_ACTIVE', 'R4 recurrence primitive: tap for three colorless, skips normal untap, and participates in the Chrome Dome/Power Artifact/Gadgeteer terminal proof; upkeep untap and draw-step damage remain deferred.'),
+              'Retraction Helix': ('RULES_ACTIVE', 'R4 recurrence rules-active: exact-creature targeted spell grants the temporary tap-to-bounce ability until end of turn; granted activation and expiry are modeled.'),
+              'Sewer-veillance Cam': ('RULES_ACTIVE', 'R4 recurrence rules-active: modeled entry and leave events emit an exact target-then-may-tap-or-untap trigger used by the Knack/Helix recurrence family; sacrifice-draw remains deferred.'),
+              'Valley Floodcaller': ('RULES_ACTIVE', 'R4 recurrence rules-active: noncreature casts emit its untap trigger; resolution untaps active eligible creature types in the current deck slice; flash and combat sizing remain deferred.'),
+          }
+          by_id = {entry['card_id']: entry for entry in original['entries']}
+          for name, (status, reason) in updates.items():
+              cid = name_to_id[name]
+              by_id[cid]['status'] = status
+              by_id[cid]['reason'] = reason
+          Path('rust/data/card_coverage.r0.json').write_text(json.dumps(original, indent=2) + '\n')
           PY
       - name: Validate Rust workspace
         shell: bash
