@@ -58,6 +58,9 @@ The checkpoint requires:
 - semantic public identity outranks opaque token numbering;
 - full locked workspace formatting, Clippy, tests, benchmark compilation, and R0-R5 audits are green.
 
+Validated R5-start implementation commit: `39d06a960ce21a0b58b39835ffce61410895ae88`.
+Dedicated acceptance workflow run: `33941762035` (attempt 2): **PASS**.
+
 ## Next R5 block
 
 Build the public ordinary-action candidate bridge across the accepted R4 action surface. The bridge must canonicalize execution objects into public candidate identity without reducing legal strategic capability. After that, add deterministic multi-step rollout sequencing and only then connect `urza-mc` to sampled-world evaluation.
