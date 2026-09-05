@@ -90,7 +90,6 @@ Dedicated acceptance and permanent foundation run identifiers are recorded after
 
 Dedicated production acceptance run: GitHub Actions 33951783273, result PASS. The gate passed Rust 1.89 formatting, locked dependency metadata, strict workspace all-target/all-feature Clippy, four repeated parallel parity suites, full workspace tests, benchmark compilation, the release 32/64/256-world scaling matrix, and cumulative R0-R5 audits.
 
-
 ## Production scaling evidence
 
 Dedicated production acceptance run `33951783273` executed the retained release probe on a runner reporting `available_parallelism = 4`. Every parallel measurement asserted exact equality with the corresponding serial `RootActionComparison` before timing was emitted.
@@ -110,3 +109,5 @@ The 256-world production timings were approximately 727 ms serial / 283 ms at fo
 The opening fixture required skipping three typed incomplete worlds while constructing its benchmark-only 256-world set; tutor and artifact fixtures skipped none. This does not change production evaluation: `StepLimit` and `NoCandidate` remain typed incomplete errors, never losses.
 
 Validated production closure commit: `ffcf8e0d98001bef7230d3c53cf038923b8609f8`. Formatting-only closure hygiene run `33952039708` produced `364f028ced5b829ccd4b9c72a635d6a693376ceb`; it confirmed rustfmt changed only the retained scaling probe and re-ran locked metadata, focused Clippy, and focused parallel tests successfully.
+
+Final closure-metadata commit: `83c6255ea4f3c0d7f8ad024cc2c1affb892536d3`. The permanent Rust foundation workflow is triggered from the finalized docs head created by this follow-up commit.
