@@ -53,3 +53,6 @@ jobs:
       - name: R4 engine/win audit
         working-directory: rust
         run: cargo run --locked -p urza-cli -- r4-audit
+      - name: R5 policy audit
+        working-directory: rust
+        run: cargo run --locked -p urza-cli -- r5-audit
