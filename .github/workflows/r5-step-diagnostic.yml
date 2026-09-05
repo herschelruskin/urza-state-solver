@@ -1,0 +1,194 @@
+name: R5 rollout step diagnostic
+
+on:
+  push:
+    branches:
+      - rust-engine-rebuild
+    paths:
+      - .github/workflows/r5-step-diagnostic.yml
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+      - name: Materialize diagnostic example
+        run: |
+          cat > rust/crates/urza-mc/examples/r5_step_diag.rs <<'RS'
+          use urza_cards::{R4CardDatabase, load_r1_catalog};
+          use urza_core::{CardDefId, CardZone, ManaPool, Phase, TrueLibrary, TrueState, Window};
+          use urza_mc::sample_hidden_world;
+          use urza_policy::{DeterministicPolicy, PolicyCandidate};
+          use urza_policy_bridge::CandidateBridge;
+          use urza_rng::{LogicalEventId, RootSeed, WorldId};
+          use urza_rollout::{RolloutConfig, RolloutResult, RolloutStop, rollout_with_logical_event_offset};
+          use urza_rules::{GameRngContext, apply_action_with_rng};
+
+          const WORLD: WorldId = WorldId(20487);
+          const ROOT_SEED_U64: u64 = 0x5235_5045_5246_0001;
+
+          fn main() -> Result<(), Box<dyn std::error::Error>> {
+              let cards = R4CardDatabase::load()?;
+              let policy = DeterministicPolicy;
+              let template = build_tutor_state(&cards)?;
+              let root = RootSeed::from_u64(ROOT_SEED_U64);
+              let sampled = sample_hidden_world(&template, root, WORLD)?;
+              let bridge = CandidateBridge::build(&sampled, &cards)?;
+              let mut candidates = bridge.candidates().to_vec();
+              candidates.sort_by(|left, right| {
+                  (left.class, &left.key, left.token).cmp(&(right.class, &right.key, right.token))
+              });
+
+              println!("diagnostic_world={:?} roots={}", WORLD, candidates.len());
+              for (index, candidate) in candidates.iter().enumerate() {
+                  let result = run_root(&sampled, &bridge, candidate, &cards, &policy, 4096, root)?;
+                  println!(
+                      "root_index={} class={:?} key={:?} stop={:?} continuation_steps={}",
+                      index,
+                      candidate.class,
+                      candidate.key,
+                      result.stop,
+                      result.trace.len()
+                  );
+                  if result.stop == RolloutStop::StepLimit {
+                      diagnose_suffix("budget4096", &result);
+                      let long = run_root(&sampled, &bridge, candidate, &cards, &policy, 8192, root)?;
+                      println!(
+                          "same_root_budget8192 stop={:?} continuation_steps={}",
+                          long.stop,
+                          long.trace.len()
+                      );
+                      diagnose_suffix("budget8192", &long);
+                      break;
+                  }
+              }
+              Ok(())
+          }
+
+          fn run_root(
+              sampled: &TrueState,
+              bridge: &CandidateBridge,
+              candidate: &PolicyCandidate,
+              cards: &R4CardDatabase,
+              policy: &DeterministicPolicy,
+              total_budget: u32,
+              root: RootSeed,
+          ) -> Result<RolloutResult, Box<dyn std::error::Error>> {
+              let action = bridge
+                  .resolved_action(candidate.token)
+                  .ok_or("missing exact root action")?;
+              let mut branch = sampled.clone();
+              apply_action_with_rng(
+                  &mut branch,
+                  cards,
+                  action,
+                  GameRngContext {
+                      root,
+                      world: WORLD,
+                      logical_event: LogicalEventId(0),
+                  },
+              )?;
+              Ok(rollout_with_logical_event_offset(
+                  branch,
+                  cards,
+                  policy,
+                  RolloutConfig {
+                      root,
+                      world: WORLD,
+                      max_steps: total_budget - 1,
+                  },
+                  1,
+              )?)
+          }
+
+          fn diagnose_suffix(label: &str, result: &RolloutResult) {
+              let trace = &result.trace;
+              let mut found = None;
+              for period in 1..=128usize {
+                  let needed = period * 4;
+                  if trace.len() < needed {
+                      break;
+                  }
+                  let end = trace.len();
+                  let a = &trace[end - period..end];
+                  let b = &trace[end - period * 2..end - period];
+                  let c = &trace[end - period * 3..end - period * 2];
+                  let d = &trace[end - period * 4..end - period * 3];
+                  if a == b && b == c && c == d {
+                      found = Some(period);
+                      break;
+                  }
+              }
+              println!("{} repeated_suffix_period={:?}", label, found);
+              if let Some(period) = found {
+                  let start = trace.len() - period;
+                  for step in &trace[start..] {
+                      println!(
+                          "{} repeat_step turn={} phase={:?} window={:?} class={:?} key={:?}",
+                          label, step.turn, step.phase, step.window, step.class, step.key
+                      );
+                  }
+              } else {
+                  let start = trace.len().saturating_sub(16);
+                  for step in &trace[start..] {
+                      println!(
+                          "{} tail_step turn={} phase={:?} window={:?} class={:?} key={:?}",
+                          label, step.turn, step.phase, step.window, step.class, step.key
+                      );
+                  }
+              }
+          }
+
+          fn build_tutor_state(cards: &R4CardDatabase) -> Result<TrueState, Box<dyn std::error::Error>> {
+              let catalog = load_r1_catalog()?;
+              let mut library = Vec::new();
+              for card in catalog.cards.iter().filter(|card| !card.commander) {
+                  for _ in 0..card.deck_count {
+                      library.push(CardDefId(card.id));
+                  }
+              }
+              let names = [
+                  "Island",
+                  "Whir of Invention",
+                  "Reshape",
+                  "Transmute Artifact",
+                  "Spellseeker",
+                  "Mystical Tutor",
+                  "Merchant Scroll",
+              ];
+              let mut hand = Vec::new();
+              for name in names {
+                  let card = cards.card_id_by_name(name)?;
+                  let index = library
+                      .iter()
+                      .position(|candidate| *candidate == card)
+                      .ok_or("benchmark card absent")?;
+                  library.remove(index);
+                  hand.push(card);
+              }
+              let state = TrueState {
+                  turn: 1,
+                  phase: Phase::PrecombatMain,
+                  window: Window::Priority,
+                  library: TrueLibrary::unknown(library),
+                  hand: CardZone::new(hand),
+                  mana: ManaPool {
+                      blue: 3,
+                      colorless: 3,
+                      ..ManaPool::default()
+                  },
+                  ..TrueState::default()
+              };
+              state.validate()?;
+              Ok(state)
+          }
+          RS
+      - name: Run release diagnostic
+        working-directory: rust
+        run: cargo run -p urza-mc --example r5_step_diag --release --locked
