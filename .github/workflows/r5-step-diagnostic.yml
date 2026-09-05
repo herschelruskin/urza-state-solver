@@ -18,67 +18,15 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.89.0
-      - name: Apply candidate rollout v2 guard in diagnostic workspace
-        run: python3 .github/r5_cycle_patch.py
-      - name: Instrument first rollout decisions
+      - name: Materialize exact-state comparison
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('rust/crates/urza-rollout/src/lib.rs')
-          s = p.read_text()
-          a = '        let bridge = CandidateBridge::build(&state, cards)?;\n        let rejected = deterministic_attempts.get(&state);\n'
-          b = '''        let bridge = CandidateBridge::build(&state, cards)?;
-        if trace.len() < 30 {
-            eprintln!(
-                "CYCLEDBG pre step={} turn={} phase={:?} window={:?} mana={:?} stack={:?} pending={:?} commander={:?} hand={:?} graveyard={:?} spell_cast={} attempts={:?}",
-                trace.len(), state.turn, state.phase, state.window, state.mana, state.stack,
-                state.pending, state.commander, state.hand.cards(), state.graveyard.cards(),
-                state.spell_cast_this_turn, deterministic_attempts.get(&state)
-            );
-        }
-        let rejected = deterministic_attempts.get(&state);
-'''
-          if a not in s:
-              raise SystemExit('debug pre anchor missing')
-          s = s.replace(a, b, 1)
-          a = '''        let Some(token) = policy.choose(bridge.information(), &available)? else {
-            return finish(state, RolloutStop::NoCandidate, trace);
-        };
-'''
-          b = '''        if trace.len() < 30 {
-            eprintln!("CYCLEDBG available step={} {:?}", trace.len(), available.iter().map(|candidate| (candidate.class, candidate.key.clone())).collect::<Vec<_>>());
-        }
-        let Some(token) = policy.choose(bridge.information(), &available)? else {
-            return finish(state, RolloutStop::NoCandidate, trace);
-        };
-'''
-          if a not in s:
-              raise SystemExit('debug available anchor missing')
-          s = s.replace(a, b, 1)
-          a = '''        if state.rng_occurrence_cursor == rng_cursor_before
-            && decision_state.stack.is_empty()
-'''
-          b = '''        if trace.len() <= 30 {
-            eprintln!("CYCLEDBG post step={} selected={:?} key={:?} mana={:?} stack={:?} pending={:?} rng_before={} rng_after={}", trace.len() - 1, selected_class, selected_semantics.1, state.mana, state.stack, state.pending, rng_cursor_before, state.rng_occurrence_cursor);
-        }
-        if state.rng_occurrence_cursor == rng_cursor_before
-            && decision_state.stack.is_empty()
-'''
-          if a not in s:
-              raise SystemExit('debug post anchor missing')
-          s = s.replace(a, b, 1)
-          p.write_text(s)
-          PY
-      - name: Materialize artifact diagnostic example
-        run: |
-          cat > rust/crates/urza-mc/examples/r5_artifact_step_diag.rs <<'RS'
+          cat > rust/crates/urza-mc/examples/r5_artifact_state_diag.rs <<'RS'
           use urza_cards::{R4CardDatabase, load_r1_catalog};
           use urza_core::{CardDefId, CardZone, ManaPool, Phase, TrueLibrary, TrueState, Window};
           use urza_mc::sample_hidden_world;
-          use urza_policy::{DeterministicPolicy, PolicyCandidate};
+          use urza_policy::DeterministicPolicy;
           use urza_policy_bridge::CandidateBridge;
           use urza_rng::{LogicalEventId, RootSeed, WorldId};
-          use urza_rollout::{RolloutConfig, RolloutResult, RolloutStop, rollout_with_logical_event_offset};
           use urza_rules::{GameRngContext, apply_action_with_rng};
 
           const WORLD: WorldId = WorldId(20480);
@@ -87,45 +35,86 @@ jobs:
           fn main() -> Result<(), Box<dyn std::error::Error>> {
               let cards = R4CardDatabase::load()?;
               let policy = DeterministicPolicy;
-              let template = build_artifact_state(&cards)?;
               let root = RootSeed::from_u64(ROOT_SEED_U64);
+              let template = build_artifact_state(&cards)?;
               let sampled = sample_hidden_world(&template, root, WORLD)?;
               let bridge = CandidateBridge::build(&sampled, &cards)?;
-              let mut candidates = bridge.candidates().to_vec();
-              candidates.sort_by(|left, right| {
+              let mut roots = bridge.candidates().to_vec();
+              roots.sort_by(|left, right| {
                   (left.class, &left.key, left.token).cmp(&(right.class, &right.key, right.token))
               });
-              let candidate = &candidates[0];
-              println!("diagnostic_world={:?} roots={} root_class={:?} root_key={:?}", WORLD, candidates.len(), candidate.class, candidate.key);
-              let result = run_root(&sampled, &bridge, candidate, &cards, &policy, 64, root)?;
-              println!("stop={:?} steps={} final_mana={:?} final_stack={:?}", result.stop, result.trace.len(), result.final_state.mana, result.final_state.stack);
-              Ok(())
-          }
-
-          fn run_root(
-              sampled: &TrueState,
-              bridge: &CandidateBridge,
-              candidate: &PolicyCandidate,
-              cards: &R4CardDatabase,
-              policy: &DeterministicPolicy,
-              total_budget: u32,
-              root: RootSeed,
-          ) -> Result<RolloutResult, Box<dyn std::error::Error>> {
-              let action = bridge.resolved_action(candidate.token).ok_or("missing exact root action")?;
-              let mut branch = sampled.clone();
+              let root_candidate = &roots[0];
+              println!("root class={:?} key={:?}", root_candidate.class, root_candidate.key);
+              let root_action = bridge.resolved_action(root_candidate.token).ok_or("missing root")?;
+              let mut state = sampled.clone();
               apply_action_with_rng(
-                  &mut branch,
-                  cards,
-                  action,
+                  &mut state,
+                  &cards,
+                  root_action,
                   GameRngContext { root, world: WORLD, logical_event: LogicalEventId(0) },
               )?;
-              Ok(rollout_with_logical_event_offset(
-                  branch,
-                  cards,
-                  policy,
-                  RolloutConfig { root, world: WORLD, max_steps: total_budget - 1 },
-                  1,
-              )?)
+
+              let mut snapshot: Option<TrueState> = None;
+              for step in 1_u64..=14 {
+                  let bridge = CandidateBridge::build(&state, &cards)?;
+                  let token = policy.choose(bridge.information(), bridge.candidates())?.ok_or("no candidate")?;
+                  let selected = bridge.candidates().iter().find(|candidate| candidate.token == token).ok_or("missing selected")?;
+                  let action = bridge.resolved_action(token).ok_or("missing action")?;
+                  println!(
+                      "pre step={} mana={:?} stack={:?} pending={:?} battlefield={:?} hand={:?} choice_class={:?} choice_key={:?} action={:?}",
+                      step,
+                      state.mana,
+                      state.stack,
+                      state.pending,
+                      state.battlefield.permanents(),
+                      state.hand,
+                      selected.class,
+                      selected.key,
+                      action,
+                  );
+
+                  if snapshot.is_none() && state.stack.is_empty() && !state.battlefield.is_empty() {
+                      println!("CAPTURE step={} mana={:?}", step, state.mana);
+                      snapshot = Some(state.clone());
+                  }
+
+                  apply_action_with_rng(
+                      &mut state,
+                      &cards,
+                      action,
+                      GameRngContext { root, world: WORLD, logical_event: LogicalEventId(step) },
+                  )?;
+
+                  if let Some(first) = &snapshot {
+                      if state.stack.is_empty() && !state.battlefield.is_empty() {
+                          println!("COMPARE after_step={} exact_equal={} mana_now={:?} mana_first={:?}", step, state == *first, state.mana, first.mana);
+                          if state != *first {
+                              println!(
+                                  "DIFF turn={} phase={} window={} life={} library={} hand={} battlefield={} graveyard={} exile={} mana={} land={} commander={} stack={} pending={} delayed={} permissions={} spell_cast={} rng_cursor={}",
+                                  state.turn == first.turn,
+                                  state.phase == first.phase,
+                                  state.window == first.window,
+                                  state.life == first.life,
+                                  state.library == first.library,
+                                  state.hand == first.hand,
+                                  state.battlefield == first.battlefield,
+                                  state.graveyard == first.graveyard,
+                                  state.exile == first.exile,
+                                  state.mana == first.mana,
+                                  state.land_played_this_turn == first.land_played_this_turn,
+                                  state.commander == first.commander,
+                                  state.stack == first.stack,
+                                  state.pending == first.pending,
+                                  state.delayed_events == first.delayed_events,
+                                  state.urza_permissions == first.urza_permissions,
+                                  state.spell_cast_this_turn == first.spell_cast_this_turn,
+                                  state.rng_occurrence_cursor == first.rng_occurrence_cursor,
+                              );
+                          }
+                      }
+                  }
+              }
+              Ok(())
           }
 
           fn build_artifact_state(cards: &R4CardDatabase) -> Result<TrueState, Box<dyn std::error::Error>> {
@@ -137,8 +126,13 @@ jobs:
                   }
               }
               let names = [
-                  "Mana Vault", "Sol Ring", "Grim Monolith", "Basalt Monolith",
-                  "Voltaic Key", "Sensei's Divining Top", "Grinding Station",
+                  "Mana Vault",
+                  "Sol Ring",
+                  "Grim Monolith",
+                  "Basalt Monolith",
+                  "Voltaic Key",
+                  "Sensei's Divining Top",
+                  "Grinding Station",
               ];
               let mut hand = Vec::new();
               for name in names {
@@ -160,6 +154,6 @@ jobs:
               Ok(state)
           }
           RS
-      - name: Run release diagnostic
+      - name: Run exact-state comparison
         working-directory: rust
-        run: cargo run -p urza-mc --example r5_artifact_step_diag --release --locked
+        run: cargo run -p urza-mc --example r5_artifact_state_diag --release --locked
