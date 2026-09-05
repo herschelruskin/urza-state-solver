@@ -331,3 +331,7 @@ Classification: POLICY architecture. No rules/card broadening and no Python game
 R5 begins from the accepted R4 closure with a deterministic one-step policy kernel in `urza-policy`. The policy crate remains isolated from `urza-core` and `urza-rules`, receives `InformationState` plus public candidate records only, enforces that pending contingent decisions cannot be bypassed, and selects independently of candidate enumeration order. Public semantic identity is compared before opaque bridge tokens so execution numbering is not strategic state.
 
 Policy namespace: `r5_deterministic_start_v1`. R4 rules/model/information/value namespaces remain frozen. Ordinary-action candidate generation, multi-step rollout sequencing, and Monte Carlo integration remain the next R5 work rather than being silently approximated in this checkpoint.
+
+## R5 candidate bridge
+
+Added the isolated `urza-policy-bridge` execution layer over the frozen R4 action surface. The bridge canonicalizes exact legal actions into public collision-free policy candidates, preserves all public payment/target/X/ordered-choice distinctions, deduplicates raw-object-equivalent choices, and round-trips opaque tokens to exact execution actions. Transmute difference-payment mana continuations are explicitly retained. R4 rules/model/info/value namespaces remain frozen; deterministic multi-step rollout is next.

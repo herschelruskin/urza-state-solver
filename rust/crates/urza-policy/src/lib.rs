@@ -126,11 +126,7 @@ fn validate_candidate_tokens(candidates: &[PolicyCandidate]) -> Result<(), Polic
 }
 
 fn semantic_rank(candidate: &PolicyCandidate) -> (u8, &PolicyPublicKey, ActionToken) {
-    (
-        class_rank(candidate.class),
-        &candidate.key,
-        candidate.token,
-    )
+    (class_rank(candidate.class), &candidate.key, candidate.token)
 }
 
 const fn class_rank(class: PolicyActionClass) -> u8 {

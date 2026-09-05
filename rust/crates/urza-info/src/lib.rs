@@ -681,15 +681,26 @@ struct RefinementSignature {
     incoming_attachment_classes: Vec<u16>,
 }
 
+pub fn resolve_canonical_objects(
+    state: &TrueState,
+    canonical: CanonicalObjectId,
+) -> Result<Vec<ObjectId>, ObservationError> {
+    state.validate()?;
+    let mut objects: Vec<_> = canonical_object_classes(state)
+        .into_iter()
+        .filter_map(|(object, class)| (class == canonical).then_some(object))
+        .collect();
+    objects.sort_unstable();
+    Ok(objects)
+}
+
 pub fn resolve_canonical_object(
     state: &TrueState,
     canonical: CanonicalObjectId,
 ) -> Result<Option<ObjectId>, ObservationError> {
-    state.validate()?;
-    Ok(canonical_object_classes(state)
+    Ok(resolve_canonical_objects(state, canonical)?
         .into_iter()
-        .filter_map(|(object, class)| (class == canonical).then_some(object))
-        .min())
+        .next())
 }
 
 fn canonical_object_classes(state: &TrueState) -> BTreeMap<ObjectId, CanonicalObjectId> {

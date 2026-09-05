@@ -107,13 +107,7 @@ impl CandidateBridge {
         let mut semantic = BTreeMap::<(PolicyActionClass, PolicyPublicKey), Action>::new();
         for action in actions {
             let class = classify_action(&action, &information, cards, pending)?;
-            let key = public_key_for_action(
-                &action,
-                state,
-                &information,
-                cards,
-                &object_classes,
-            )?;
+            let key = public_key_for_action(&action, state, &information, cards, &object_classes)?;
             semantic.entry((class, key)).or_insert(action);
         }
 
@@ -520,7 +514,10 @@ fn generate_whir_actions<D: CardDatabase>(
         })
         .collect();
     let selections = improvise_selections(&improvise_classes);
-    let eligible_count: usize = improvise_classes.iter().map(|class| class.objects.len()).sum();
+    let eligible_count: usize = improvise_classes
+        .iter()
+        .map(|class| class.objects.len())
+        .sum();
     let max_x = u16::try_from(
         u32::from(pool_total_u16(information.mana))
             .saturating_add(u32::try_from(eligible_count).unwrap_or(u32::MAX))
@@ -633,9 +630,7 @@ fn classify_action<D: CardDatabase>(
 
     Ok(match action {
         Action::PassPriority => PolicyActionClass::PassPriority,
-        Action::PlayLand { .. } | Action::PlayLibraryTopLand { .. } => {
-            PolicyActionClass::PlayLand
-        }
+        Action::PlayLand { .. } | Action::PlayLibraryTopLand { .. } => PolicyActionClass::PlayLand,
         Action::ActivateManaAbility { .. } | Action::ActivateUrzaArtifactMana { .. } => {
             PolicyActionClass::ProduceMana
         }
@@ -797,9 +792,7 @@ fn public_key_for_action<D: CardDatabase>(
                 canonical_sources.push(canonical_for_object(object_classes, *source)?.0);
             }
             canonical_sources.sort_unstable();
-            detail.push(
-                u16::try_from(canonical_sources.len()).unwrap_or(u16::MAX),
-            );
+            detail.push(u16::try_from(canonical_sources.len()).unwrap_or(u16::MAX));
             detail.extend(canonical_sources);
             spell_key(KIND_CAST_WHIR, *card, None, Some(*x_value), detail)
         }
@@ -841,13 +834,9 @@ fn public_key_for_action<D: CardDatabase>(
             object_classes,
             payment_detail(*payment),
         )?,
-        Action::ActivateTopDraw { source } => source_key(
-            KIND_TOP_DRAW,
-            *source,
-            state,
-            object_classes,
-            Vec::new(),
-        )?,
+        Action::ActivateTopDraw { source } => {
+            source_key(KIND_TOP_DRAW, *source, state, object_classes, Vec::new())?
+        }
         Action::ActivateUrzaSpin { source, payment } => source_key(
             KIND_URZA_SPIN,
             *source,
@@ -1106,7 +1095,7 @@ mod tests {
         PermanentMode, PermanentState, Phase, SourceRef, TrueLibrary, Window,
     };
     use urza_policy::DeterministicPolicy;
-    use urza_rules::{CardDatabase, apply_action};
+    use urza_rules::apply_action;
 
     fn permanent(object: u32, card: CardDefId) -> PermanentState {
         PermanentState {
@@ -1159,7 +1148,9 @@ mod tests {
         let payments: BTreeSet<_> = cast_tokens
             .iter()
             .filter_map(|token| match bridge.resolve(*token) {
-                Some(Action::CastFromHand { payment, .. }) => Some((payment.blue, payment.colorless)),
+                Some(Action::CastFromHand { payment, .. }) => {
+                    Some((payment.blue, payment.colorless))
+                }
                 _ => None,
             })
             .collect();
@@ -1225,10 +1216,8 @@ mod tests {
         let mana_vault = cards.card_id_by_name("Mana Vault").unwrap();
         let mut state = priority_state();
         state.hand = CardZone::new(vec![whir]);
-        state.battlefield = BattlefieldZone::new(vec![
-            permanent(11, sol_ring),
-            permanent(29, mana_vault),
-        ]);
+        state.battlefield =
+            BattlefieldZone::new(vec![permanent(11, sol_ring), permanent(29, mana_vault)]);
         state.mana = ManaPool {
             blue: 3,
             ..ManaPool::default()
@@ -1298,9 +1287,12 @@ mod tests {
         };
 
         let bridge = CandidateBridge::build(&state, &cards).unwrap();
-        assert!(bridge.candidates().iter().all(|candidate| {
-            candidate.class == PolicyActionClass::ContingentDecision
-        }));
+        assert!(
+            bridge
+                .candidates()
+                .iter()
+                .all(|candidate| { candidate.class == PolicyActionClass::ContingentDecision })
+        );
         assert!(bridge.candidates().iter().any(|candidate| matches!(
             bridge.resolve(candidate.token),
             Some(Action::ActivateManaAbility { .. })
@@ -1321,6 +1313,9 @@ mod tests {
     fn real_r4_database_still_exposes_only_accepted_profiles_to_bridge() {
         let cards = R4CardDatabase::load().unwrap();
         let chrome = cards.card_id_by_name("Chrome Dome").unwrap();
-        assert_eq!(cards.profile(chrome).unwrap().engine, EngineKind::ChromeDome);
+        assert_eq!(
+            cards.profile(chrome).unwrap().engine,
+            EngineKind::ChromeDome
+        );
     }
 }

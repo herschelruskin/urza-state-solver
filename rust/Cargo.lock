@@ -541,6 +541,7 @@ dependencies = [
  "urza-core",
  "urza-info",
  "urza-policy",
+ "urza-policy-bridge",
  "urza-rng",
  "urza-rules",
  "urza-value",
@@ -588,6 +589,19 @@ version = "0.1.0"
 dependencies = [
  "thiserror",
  "urza-info",
+]
+
+[[package]]
+name = "urza-policy-bridge"
+version = "0.1.0"
+dependencies = [
+ "thiserror",
+ "urza-cards",
+ "urza-core",
+ "urza-info",
+ "urza-policy",
+ "urza-rng",
+ "urza-rules",
 ]
 
 [[package]]
