@@ -26,71 +26,68 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
 
           path = Path('rust/crates/urza-policy-bridge/src/lib.rs')
           text = path.read_text()
 
+          old_version = 'pub const CANDIDATE_BRIDGE_VERSION: &str = "r5_public_candidate_bridge_v1";'
+          if old_version not in text:
+              raise SystemExit('bridge version anchor not found')
           text = text.replace(
-              'pub const CANDIDATE_BRIDGE_VERSION: &str = "r5_public_candidate_bridge_v1";',
+              old_version,
               'pub const CANDIDATE_BRIDGE_VERSION: &str = "r5_public_candidate_bridge_v2";',
               1,
           )
 
-          old = '''    let artifact_classes: Vec<_> = classes
-              .iter()
-              .filter(|class| {
-                  cards
-                      .profile(class.card)
-                      .is_some_and(|profile| profile.is_artifact)
-              })
-              .collect();
-          '''
-          new = old + '''    let has_artifact_sacrifice = !artifact_classes.is_empty();
-          '''
-          if old not in text:
-              raise SystemExit('artifact class block not found')
-          text = text.replace(old, new, 1)
+          anchor = '        .collect();\n    let creature_targets: Vec<_> = classes'
+          if anchor not in text:
+              raise SystemExit('artifact/creature anchor not found')
+          text = text.replace(
+              anchor,
+              '        .collect();\n    let has_artifact_sacrifice = !artifact_classes.is_empty();\n    let creature_targets: Vec<_> = classes',
+              1,
+          )
 
-          old = '''            for payment in &payments {
-                      actions.push(Action::CastFromHand {
-                          card,
-                          payment: *payment,
-                      });
-          '''
-          new = '''            for payment in &payments {
-                      if profile.special_search != SpecialSearchKind::TransmuteArtifact
-                          || has_artifact_sacrifice
-                      {
-                          actions.push(Action::CastFromHand {
-                              card,
-                              payment: *payment,
-                          });
-                      }
-          '''
-          if old not in text:
-              raise SystemExit('hand cast block not found')
-          text = text.replace(old, new, 1)
+          hand_pattern = re.compile(
+              r'(            for payment in &payments \{\n)'
+              r'(                actions\.push\(Action::CastFromHand \{\n'
+              r'                    card,\n'
+              r'                    payment: \*payment,\n'
+              r'                \}\);\n)'
+          )
+          replacement = (
+              r'\1'
+              '                if profile.special_search != SpecialSearchKind::TransmuteArtifact\n'
+              '                    || has_artifact_sacrifice\n'
+              '                {\n'
+              r'\2'
+              '                }\n'
+          )
+          text, count = hand_pattern.subn(replacement, text, count=1)
+          if count != 1:
+              raise SystemExit(f'hand cast replacement count={count}')
 
-          old = '''        if let Some(cost) = profile.mana_cost {
-                  for payment in enumerate_payments(information.mana, cost) {
-                      actions.push(Action::CastLibraryTop { card, payment });
-                  }
+          top_old = '''        if let Some(cost) = profile.mana_cost {
+              for payment in enumerate_payments(information.mana, cost) {
+                  actions.push(Action::CastLibraryTop { card, payment });
               }
+          }
           '''
-          new = '''        if let Some(cost) = profile.mana_cost
-                  && (profile.special_search != SpecialSearchKind::TransmuteArtifact
-                      || has_artifact_sacrifice)
-              {
-                  for payment in enumerate_payments(information.mana, cost) {
-                      actions.push(Action::CastLibraryTop { card, payment });
-                  }
+          top_new = '''        if let Some(cost) = profile.mana_cost
+              && (profile.special_search != SpecialSearchKind::TransmuteArtifact
+                  || has_artifact_sacrifice)
+          {
+              for payment in enumerate_payments(information.mana, cost) {
+                  actions.push(Action::CastLibraryTop { card, payment });
               }
+          }
           '''
-          if old not in text:
-              raise SystemExit('library-top cast block not found')
-          text = text.replace(old, new, 1)
+          if top_old not in text:
+              raise SystemExit('library-top anchor not found')
+          text = text.replace(top_old, top_new, 1)
 
-          old = '''    for permission in &information.urza_permissions {
+          permission_old = '''    for permission in &information.urza_permissions {
               for face in [CardFace::Front, CardFace::Back] {
                   actions.push(Action::PlayUrzaPermission {
                       permission_slot: permission.permission_slot,
@@ -98,7 +95,7 @@ jobs:
                   });
               }
           '''
-          new = '''    for permission in &information.urza_permissions {
+          permission_new = '''    for permission in &information.urza_permissions {
               let permission_has_required_followup = cards.profile(permission.card).is_none_or(|profile| {
                   profile.special_search != SpecialSearchKind::TransmuteArtifact
                       || has_artifact_sacrifice
@@ -112,43 +109,41 @@ jobs:
                   }
               }
           '''
-          if old not in text:
-              raise SystemExit('permission cast block not found')
-          text = text.replace(old, new, 1)
+          if permission_old not in text:
+              raise SystemExit('permission anchor not found')
+          text = text.replace(permission_old, permission_new, 1)
 
-          needle = '''    #[test]
-              fn transmute_difference_pending_keeps_mana_abilities_in_contingent_set() {
-          '''
+          test_anchor = '    #[test]\n    fn transmute_difference_pending_keeps_mana_abilities_in_contingent_set() {'
           test = '''    #[test]
-              fn transmute_without_a_sacrifice_is_not_exposed_as_a_dead_end_root() {
-                  let cards = R4CardDatabase::load().unwrap();
-                  let transmute = cards.card_id_by_name("Transmute Artifact").unwrap();
-                  let sol_ring = cards.card_id_by_name("Sol Ring").unwrap();
-                  let mut state = priority_state();
-                  state.hand = CardZone::new(vec![transmute]);
-                  state.mana = ManaPool {
-                      blue: 2,
-                      ..ManaPool::default()
-                  };
+          fn transmute_without_a_sacrifice_is_not_exposed_as_a_dead_end_root() {
+              let cards = R4CardDatabase::load().unwrap();
+              let transmute = cards.card_id_by_name("Transmute Artifact").unwrap();
+              let sol_ring = cards.card_id_by_name("Sol Ring").unwrap();
+              let mut state = priority_state();
+              state.hand = CardZone::new(vec![transmute]);
+              state.mana = ManaPool {
+                  blue: 2,
+                  ..ManaPool::default()
+              };
 
-                  let dead_end_bridge = CandidateBridge::build(&state, &cards).unwrap();
-                  assert!(!dead_end_bridge.candidates().iter().any(|candidate| matches!(
-                      dead_end_bridge.resolve(candidate.token),
-                      Some(Action::CastFromHand { card, .. }) if *card == transmute
-                  )));
+              let dead_end_bridge = CandidateBridge::build(&state, &cards).unwrap();
+              assert!(!dead_end_bridge.candidates().iter().any(|candidate| matches!(
+                  dead_end_bridge.resolve(candidate.token),
+                  Some(Action::CastFromHand { card, .. }) if *card == transmute
+              )));
 
-                  state.battlefield = BattlefieldZone::new(vec![permanent(12, sol_ring)]);
-                  let live_bridge = CandidateBridge::build(&state, &cards).unwrap();
-                  assert!(live_bridge.candidates().iter().any(|candidate| matches!(
-                      live_bridge.resolve(candidate.token),
-                      Some(Action::CastFromHand { card, .. }) if *card == transmute
-                  )));
-              }
+              state.battlefield = BattlefieldZone::new(vec![permanent(12, sol_ring)]);
+              let live_bridge = CandidateBridge::build(&state, &cards).unwrap();
+              assert!(live_bridge.candidates().iter().any(|candidate| matches!(
+                  live_bridge.resolve(candidate.token),
+                  Some(Action::CastFromHand { card, .. }) if *card == transmute
+              )));
+          }
 
           '''
-          if needle not in text:
-              raise SystemExit('test insertion point not found')
-          text = text.replace(needle, test + needle, 1)
+          if test_anchor not in text:
+              raise SystemExit('test anchor not found')
+          text = text.replace(test_anchor, test + test_anchor, 1)
           path.write_text(text)
           PY
       - name: Format
