@@ -162,7 +162,8 @@ fn select_complete_worlds(
         if offset >= MAX_SCAN_ATTEMPTS {
             return Err(format!(
                 "only found {} complete worlds after {} attempts",
-                worlds.len(), MAX_SCAN_ATTEMPTS
+                worlds.len(),
+                MAX_SCAN_ATTEMPTS
             )
             .into());
         }
