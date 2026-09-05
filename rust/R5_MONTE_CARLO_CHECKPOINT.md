@@ -28,6 +28,8 @@ Completed terminal samples are accumulated into `WinDistribution::t1_through_t6`
 
 Acceptance fixtures prove public-state preservation, exact known library edges, preexisting-hidden-order noninterference, `OuterHiddenWorld` domain separation, same-root/world repeatability, world-order independence, hidden-order-equivalent Monte Carlo invariance, exact turn/family aggregation, horizon-loss aggregation, incomplete-stop rejection, and duplicate-world rejection. The full Rust quality gate also requires strict Clippy, workspace tests, benchmark compilation, and cumulative R0-R5 audits.
 
+Validated closure commit: `db64a98e085128d882833a8704664d9969c82f0c` (`Close R5 hidden-world Monte Carlo checkpoint`). Dedicated validation run: GitHub Actions `33943692139`, result PASS. Locked dependency metadata, formatting, strict all-target/all-feature Clippy, full workspace tests, benchmark compilation, and cumulative R0-R5 audits all passed. The temporary Monte Carlo workflows removed themselves in the validated closure commit.
+
 ## Namespaces
 
 - rules: `r4_acceptance_v6`;
