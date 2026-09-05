@@ -24,6 +24,8 @@ Each root candidate receives a complete `MonteCarloResult` over the same canonic
 
 Acceptance covers the fixed-budget value ordering, identical common worlds for every root, canonical world-order independence, hidden-template-order invariance, public candidate-set equality across sampled worlds, semantic root remapping, already-terminal rejection, positive root+continuation step budgeting, strict Clippy, full workspace tests, benchmark compilation, and cumulative R0-R5 audits.
 
+Validated implementation commit: `bcef58b0cb7ad95a58219120e8c6233a62156ab0` (`Close R5 root-action value checkpoint`). Dedicated acceptance run: GitHub Actions `33944160341`, result PASS. The gate passed locked dependency metadata, formatting, strict all-target/all-feature Clippy, full workspace tests, benchmark compilation, and cumulative R0-R5 audits. The temporary acceptance workflow removed itself in the validated commit.
+
 ## Namespaces
 
 - rules: `r4_acceptance_v6`;
