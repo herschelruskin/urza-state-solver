@@ -186,8 +186,11 @@ fn run_r4_audit() {
         .map(|card| card.deck_name.as_str())
         .collect();
 
+    let terminal_families: Vec<_> = WinFamily::ALL.into_iter().map(WinFamily::label).collect();
+    let terminal_family_count = terminal_families.len();
+
     let report = json!({
-        "phase": "R4-top-access",
+        "phase": "R4-terminal-acceptance",
         "rules_version": RULES_VERSION,
         "model_version": MODEL_VERSION,
         "horizon_turn": HORIZON_TURN,
@@ -202,19 +205,18 @@ fn run_r4_audit() {
             "Fortune Teller's Talent",
             "Grafdigger's Cage",
             "Grinding Station",
-            "Battered Golem"
+            "Battered Golem",
+            "Chrome Dome",
+            "Mana Vault",
+            "Banishing Knack",
+            "Retraction Helix",
+            "Valley Floodcaller",
+            "Sewer-veillance Cam"
         ],
-        "terminal_families": [
-            WinFamily::PowerArtifactGrim.label(),
-            WinFamily::PowerArtifactBasalt.label(),
-            WinFamily::TopRealityChip.label(),
-            WinFamily::TopFttLevelThree.label(),
-            WinFamily::TopFttLevelTwoProducer.label(),
-            WinFamily::BasaltGadgeteer.label(),
-            WinFamily::TopGadgeteerProducer.label()
-        ],
-        "terminal_detection_boundary": "public InformationState only; exact attachments/modes preserved; Cage blocks library-cast families; no hidden library order",
-        "scope": "R4 broadened through Power Artifact and Top-access engine families; producer trigger execution and remaining terminal families stay in R4"
+        "terminal_family_count": terminal_family_count,
+        "terminal_families": terminal_families,
+        "terminal_detection_boundary": "public InformationState only; exact attachments/modes/grants preserved; stack and pending decisions block terminal recognition; Cage blocks library-cast families; hidden library order and raw ObjectId identity are irrelevant",
+        "scope": "R4 terminal-family acceptance hardened across all 13 audited families; remaining deferred card text is outside these accepted terminal witnesses"
     });
 
     println!(

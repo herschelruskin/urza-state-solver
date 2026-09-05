@@ -11,3 +11,6 @@ serde_json.workspace = true
 thiserror.workspace = true
 urza-core = { path = "../urza-core" }
 urza-rules = { path = "../urza-rules" }
+
+[dev-dependencies]
+urza-info = { path = "../urza-info" }

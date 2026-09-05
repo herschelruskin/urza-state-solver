@@ -20,7 +20,7 @@ use urza_rng::{
 pub const RULES_PHASE: &str = "R4";
 pub const R2_RULES_VERSION: &str = "r2_core_kernel_v2";
 pub const R3_RULES_VERSION: &str = "r3_search_complete_v4";
-pub const RULES_VERSION: &str = "r4_recurrence_v4";
+pub const RULES_VERSION: &str = "r4_terminal_acceptance_v5";
 pub const HORIZON_TURN: u8 = 6;
 pub const RNG_EVENT_SEARCH_SHUFFLE: EventType = EventType(0x0301);
 pub const ABILITY_REPURPOSING_BAY_SEARCH: AbilityId = AbilityId(0x0301);
@@ -1256,6 +1256,22 @@ pub enum WinFamily {
 }
 
 impl WinFamily {
+    pub const ALL: [Self; 13] = [
+        Self::PowerArtifactGrim,
+        Self::PowerArtifactBasalt,
+        Self::TopRealityChip,
+        Self::TopFttLevelThree,
+        Self::TopFttLevelTwoProducer,
+        Self::BasaltGadgeteer,
+        Self::TopGadgeteerProducer,
+        Self::ChromeDomeGrindingStation,
+        Self::ChromeDomeBatteredGolem,
+        Self::ChromeDomePaGadgeteerManaVault,
+        Self::KnackHelixValleyFloodcaller,
+        Self::KnackHelixBatteredGolem,
+        Self::KnackHelixCam,
+    ];
+
     pub fn label(self) -> &'static str {
         match self {
             Self::PowerArtifactGrim => "Power Artifact + Grim",
@@ -1354,6 +1370,11 @@ pub fn detect_terminal_win<D: CardDatabase>(
             permanent.granted_ability == Some(urza_core::GrantedAbility::KnackBounceUntilEndOfTurn)
                 && !permanent.tapped
                 && !permanent.summoning_sick
+                && cards.profile(permanent.card).is_some_and(|profile| {
+                    profile.is_creature
+                        && !(profile.utility == UtilityKind::RealityChip
+                            && permanent.mode == PermanentMode::RealityChipAttached)
+                })
         })
         .collect();
     let ready_cam = information.battlefield.iter().any(|permanent| {

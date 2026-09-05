@@ -526,6 +526,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "urza-core",
+ "urza-info",
  "urza-rules",
 ]
 

@@ -287,3 +287,21 @@ Validation:
 
 This remains an R4 broadening checkpoint, not acceptance. Station/Golem/Gadgeteer trigger execution, broader Cage behavior, Chrome Dome/Vault families, and Knack/Helix recurrence remain in R4.
 
+
+## 2026-09-04 — R4 terminal-family acceptance hardening
+
+Classification: RULE/MODEL acceptance hardening plus PARITY/real-catalog witnesses. No POLICY implementation and no Python gameplay-logic port.
+
+This pass closes the terminal-family acceptance surface without broadening into unrelated card text:
+
+- centralizes the audited 13-family registry in `WinFamily::ALL`, eliminating the stale seven-family CLI audit list;
+- hardens Knack/Helix + Cam recognition so the temporary grant must still be on a creature permanent, including Reality Chip's attached noncreature mode;
+- adds real R4-catalog positive snapshots for all 13 terminal families;
+- adds one-factor near-miss rejection for every family, plus universal Urza-presence and unresolved-stack rejection;
+- verifies terminal recognition is invariant to raw ObjectId renaming and, for Top families, hidden library permutation;
+- verifies Grafdigger's Cage blocks every Top/library-cast terminal family;
+- adds executable final-step witnesses for all 13 families using the actual rules transitions: Power Artifact attachment, Reality Chip reconfigure, FTT cast enablement, Basalt untap, Top/Gadgeteer producer execution, Chrome mana/Vault enablement, and Knack/Helix targeted-grant resolution;
+- updates `r4-audit` to report all 13 families and the full current recurrence primitive set from the single registry.
+
+Acceptance boundary: these witnesses validate the terminal-family contracts and the modeled recurrence mechanisms they depend on. Deferred card text already called out by R4 coverage (for example Mana Vault upkeep/damage, Cam sacrifice-draw, and Floodcaller combat sizing) remains outside this terminal-family gate rather than being approximated.
+
