@@ -335,3 +335,7 @@ Policy namespace: `r5_deterministic_start_v1`. R4 rules/model/information/value 
 ## R5 candidate bridge
 
 Added the isolated `urza-policy-bridge` execution layer over the frozen R4 action surface. The bridge canonicalizes exact legal actions into public collision-free policy candidates, preserves all public payment/target/X/ordered-choice distinctions, deduplicates raw-object-equivalent choices, and round-trips opaque tokens to exact execution actions. Transmute difference-payment mana continuations are explicitly retained. R4 rules/model/info/value namespaces remain frozen; deterministic multi-step rollout is next.
+
+## R5 deterministic multi-step rollout
+
+POLICY/ENGINE-SEQUENCING checkpoint. Added isolated `urza-rollout` over the accepted R5 candidate bridge. Each step performs terminal/automatic-window handling, rebuilds public candidates, selects deterministically, resolves to an exact Rust `Action`, applies explicit root/world/logical-event RNG context, and repeats. Added public semantic trace replay with decision-point drift rejection, same-seed randomized-search replay coverage, raw-ObjectId-renaming invariance, stack continuation, and horizon termination. R4 rules/model/information/value namespaces remain frozen and `urza-mc` is still untouched.

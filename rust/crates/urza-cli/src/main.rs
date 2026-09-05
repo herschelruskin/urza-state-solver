@@ -14,6 +14,7 @@ use urza_policy_bridge::{
     CANDIDATE_BRIDGE_VERSION, CONTINGENT_ACTION_FAMILY_COUNT, ORDINARY_ACTION_FAMILY_COUNT,
 };
 use urza_rng::RNG_SCHEME_VERSION;
+use urza_rollout::ROLLOUT_VERSION;
 use urza_rules::{
     HORIZON_TURN, R2_RULES_VERSION, R2CardRole, R3_RULES_VERSION, RULES_VERSION, WinFamily,
 };
@@ -229,22 +230,25 @@ fn run_r5_audit() {
     validate_r4_database().expect("accepted R4 database remains frozen for R5");
 
     let report = json!({
-        "phase": "R5-candidate-bridge",
+        "phase": "R5-deterministic-rollout",
         "policy_phase": POLICY_PHASE,
         "policy_version": POLICY_VERSION,
         "candidate_bridge_version": CANDIDATE_BRIDGE_VERSION,
+        "rollout_version": ROLLOUT_VERSION,
         "rules_version": RULES_VERSION,
         "model_version": MODEL_VERSION,
         "information_schema_version": INFORMATION_SCHEMA_VERSION,
         "value_key_schema_version": VALUE_KEY_SCHEMA_VERSION,
         "ordinary_action_families": ORDINARY_ACTION_FAMILY_COUNT,
         "contingent_action_families": CONTINGENT_ACTION_FAMILY_COUNT,
-        "policy_input_boundary": "urza-policy still consumes only InformationState plus public PolicyCandidate records; execution-state and urza-rules dependencies live in the separate urza-policy-bridge crate",
-        "bridge_contract": "all accepted R4 Action families are mapped to collision-free public semantic keys and opaque decision-local tokens; selected tokens round-trip to exact execution Actions",
-        "selection_contract": "pending contingent decisions are mandatory; Transmute Artifact difference-payment preserves legal mana activations inside the contingent set; otherwise action class and exact public semantic key determine the choice",
-        "hidden_information_contract": "ordinary candidates are derived from InformationState-visible zones and canonical object classes; unknown library order and raw ObjectId numbering cannot affect public candidate identity",
-        "current_scope": "R5 public candidate bridge complete over the frozen R4 action surface",
-        "next_r5_work": "build deterministic multi-step rollout sequencing over CandidateBridge, then connect sampled-world Monte Carlo evaluation",
+        "policy_input_boundary": "urza-policy still consumes only InformationState plus public PolicyCandidate records; execution sequencing lives outside the policy crate",
+        "bridge_contract": "all accepted R4 Action families remain collision-free public candidates with exact opaque-token round trip",
+        "rollout_contract": "each policy step rebuilds CandidateBridge from the current execution state, selects from public semantics, resolves one exact Action, applies it, and repeats until terminal win, T6 horizon, explicit step limit, or no-candidate boundary",
+        "automatic_transition_contract": "automatic phase advancement runs only in OpponentCycle/Untap Window::None with empty stack and no pending decision; contingent choices cannot be bypassed",
+        "rng_contract": "game RNG root/world are explicit rollout inputs and logical event id equals the public step index; replay uses the recorded public semantic action trace, never raw ObjectId provenance",
+        "replay_contract": "recorded semantic traces replay by class plus exact PolicyPublicKey and reject decision-point or candidate drift",
+        "current_scope": "deterministic multi-step R5 rollout sequencing complete over CandidateBridge; urza-mc remains untouched",
+        "next_r5_work": "connect sampled hidden worlds and Monte Carlo root evaluation to the accepted deterministic rollout boundary",
     });
 
     println!(

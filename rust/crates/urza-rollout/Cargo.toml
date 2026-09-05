@@ -1,0 +1,17 @@
+[package]
+name = "urza-rollout"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+thiserror.workspace = true
+urza-core = { path = "../urza-core" }
+urza-info = { path = "../urza-info" }
+urza-policy = { path = "../urza-policy" }
+urza-policy-bridge = { path = "../urza-policy-bridge" }
+urza-rng = { path = "../urza-rng" }
+urza-rules = { path = "../urza-rules" }
+
+[dev-dependencies]
+urza-cards = { path = "../urza-cards" }

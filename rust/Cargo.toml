@@ -7,6 +7,7 @@ members = [
     "crates/urza-rng",
     "crates/urza-policy",
     "crates/urza-policy-bridge",
+    "crates/urza-rollout",
     "crates/urza-value",
     "crates/urza-mc",
     "crates/urza-mulligan",

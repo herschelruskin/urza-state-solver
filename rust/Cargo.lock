@@ -543,6 +543,7 @@ dependencies = [
  "urza-policy",
  "urza-policy-bridge",
  "urza-rng",
+ "urza-rollout",
  "urza-rules",
  "urza-value",
 ]
@@ -609,6 +610,20 @@ name = "urza-rng"
 version = "0.1.0"
 dependencies = [
  "blake3",
+]
+
+[[package]]
+name = "urza-rollout"
+version = "0.1.0"
+dependencies = [
+ "thiserror",
+ "urza-cards",
+ "urza-core",
+ "urza-info",
+ "urza-policy",
+ "urza-policy-bridge",
+ "urza-rng",
+ "urza-rules",
 ]
 
 [[package]]
