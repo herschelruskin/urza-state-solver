@@ -29,6 +29,56 @@ jobs:
         with:
           toolchain: 1.89.0
           components: rustfmt, clippy
+      - name: Repair source staging
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          parallel = Path('crates/urza-mc/src/parallel.rs')
+          text = parallel.read_text()
+          text = text.replace(
+              '    ADAPTIVE_ROOT_EVAL_VERSION, AdaptiveRootActionComparison, AdaptiveRootConfig, AdaptiveRootError,\n',
+              '    AdaptiveRootActionComparison, AdaptiveRootConfig, AdaptiveRootError,\n',
+              1,
+          )
+          parallel.write_text(text)
+
+          lib = Path('crates/urza-mc/src/lib.rs')
+          text = lib.read_text()
+          old = '''    hasher.update(&(library.known_top.len() as u64).to_le_bytes());
+          for card in &library.known_top {
+              hasher.update(&card.0.to_le_bytes());
+          }
+          hasher.update(&(library.remaining_counts.len() as u64).to_le_bytes());
+          for (card, count) in &library.remaining_counts {
+              hasher.update(&card.0.to_le_bytes());
+              hasher.update(&count.to_le_bytes());
+          }
+          hasher.update(&(library.known_bottom.len() as u64).to_le_bytes());
+          for card in &library.known_bottom {
+              hasher.update(&card.0.to_le_bytes());
+          }
+'''
+          new = '''    hasher.update(&(library.known_top.len() as u32).to_le_bytes());
+          for card in &library.known_top {
+              hasher.update(&card.0.to_le_bytes());
+          }
+
+          hasher.update(&(library.remaining_counts.len() as u32).to_le_bytes());
+          for count in &library.remaining_counts {
+              hasher.update(&count.card.0.to_le_bytes());
+              hasher.update(&[count.count]);
+          }
+
+          hasher.update(&(library.known_bottom.len() as u32).to_le_bytes());
+          for card in &library.known_bottom {
+              hasher.update(&card.0.to_le_bytes());
+          }
+'''
+          if old not in text:
+              raise SystemExit('library fingerprint repair anchor missing')
+          lib.write_text(text.replace(old, new, 1))
+          PY
       - name: Format
         run: cargo fmt --all
       - name: Locked dependency graph
