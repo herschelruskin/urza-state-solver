@@ -3,17 +3,19 @@ use std::time::{Duration, Instant};
 use urza_cards::{R4CardDatabase, load_r1_catalog};
 use urza_core::{CardDefId, CardZone, ManaPool, Phase, TrueLibrary, TrueState, Window};
 use urza_mc::{
-    MonteCarloConfig, ParallelRootConfig, compare_root_actions, compare_root_actions_parallel,
+    ParallelRootConfig, RootActionError, compare_root_actions_world_ids,
+    compare_root_actions_world_ids_parallel,
 };
 use urza_policy::DeterministicPolicy;
 use urza_policy_bridge::CandidateBridge;
 use urza_rng::{RootSeed, WorldId};
 
 const ROLLOUT_MAX_STEPS: u32 = 4096;
-const FIRST_WORLD: WorldId = WorldId(0x7000);
+const FIRST_WORLD: WorldId = WorldId(0x5000);
 const ROOT_SEED_U64: u64 = 0x5235_5343_414c_4501;
-const SAMPLE_BUDGETS: [u32; 3] = [32, 64, 256];
+const SAMPLE_BUDGETS: [usize; 3] = [32, 64, 256];
 const WORKER_COUNTS: [usize; 4] = [1, 2, 4, 8];
+const MAX_SCAN_ATTEMPTS: u64 = 4096;
 
 struct ProbeCase {
     name: &'static str,
@@ -76,27 +78,49 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     ];
 
     println!("available_parallelism\t{available}");
+    println!("case\tsafe_worlds\tskipped_incomplete\tlast_world");
     println!("case\tsamples\troots\tjobs\tserial_ms\tworkers\tparallel_ms\tspeedup");
 
     for case in cases {
         let state = build_state(&cards, &case.hand, case.mana)?;
         let roots = CandidateBridge::build(&state, &cards)?.candidates().len();
+        let root = RootSeed::from_u64(ROOT_SEED_U64);
+        let (worlds, skipped) = select_complete_worlds(
+            &state,
+            &cards,
+            &policy,
+            root,
+            *SAMPLE_BUDGETS.last().expect("sample budgets are nonempty"),
+        )?;
+        println!(
+            "{}\t{}\t{}\t{}",
+            case.name,
+            worlds.len(),
+            skipped,
+            worlds.last().expect("selected worlds").0,
+        );
+
         for samples in SAMPLE_BUDGETS {
-            let config = MonteCarloConfig {
-                root: RootSeed::from_u64(ROOT_SEED_U64),
-                first_world: FIRST_WORLD,
-                samples,
-                rollout_max_steps: ROLLOUT_MAX_STEPS,
-            };
-            let (serial_elapsed, serial) =
-                timed(|| compare_root_actions(&state, &cards, &policy, config))?;
+            let selected_worlds = &worlds[..samples];
+            let (serial_elapsed, serial) = timed(|| {
+                compare_root_actions_world_ids(
+                    &state,
+                    &cards,
+                    &policy,
+                    root,
+                    ROLLOUT_MAX_STEPS,
+                    selected_worlds,
+                )
+            })?;
             for workers in WORKER_COUNTS {
                 let (parallel_elapsed, parallel) = timed(|| {
-                    compare_root_actions_parallel(
+                    compare_root_actions_world_ids_parallel(
                         &state,
                         &cards,
                         &policy,
-                        config,
+                        root,
+                        ROLLOUT_MAX_STEPS,
+                        selected_worlds,
                         ParallelRootConfig { workers },
                     )
                 })?;
@@ -110,7 +134,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     case.name,
                     samples,
                     roots,
-                    roots.saturating_mul(samples as usize),
+                    roots.saturating_mul(samples),
                     millis(serial_elapsed),
                     workers,
                     millis(parallel_elapsed),
@@ -121,6 +145,49 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     Ok(())
+}
+
+fn select_complete_worlds(
+    state: &TrueState,
+    cards: &R4CardDatabase,
+    policy: &DeterministicPolicy,
+    root: RootSeed,
+    target: usize,
+) -> Result<(Vec<WorldId>, u64), Box<dyn std::error::Error>> {
+    let mut worlds = Vec::with_capacity(target);
+    let mut skipped = 0_u64;
+    let mut offset = 0_u64;
+
+    while worlds.len() < target {
+        if offset >= MAX_SCAN_ATTEMPTS {
+            return Err(format!(
+                "only found {} complete worlds after {} attempts",
+                worlds.len(), MAX_SCAN_ATTEMPTS
+            )
+            .into());
+        }
+        let world = WorldId(
+            FIRST_WORLD
+                .0
+                .checked_add(offset)
+                .ok_or("world id overflow in scaling probe")?,
+        );
+        offset += 1;
+        match compare_root_actions_world_ids(
+            state,
+            cards,
+            policy,
+            root,
+            ROLLOUT_MAX_STEPS,
+            &[world],
+        ) {
+            Ok(_) => worlds.push(world),
+            Err(RootActionError::IncompleteWorld { .. }) => skipped += 1,
+            Err(error) => return Err(error.into()),
+        }
+    }
+
+    Ok((worlds, skipped))
 }
 
 fn build_state(
