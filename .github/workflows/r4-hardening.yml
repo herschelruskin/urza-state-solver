@@ -5,6 +5,7 @@ on:
     branches: [rust-engine-rebuild]
     paths:
       - .github/workflows/r4-hardening.yml
+      - rust/scripts/r4_terminal_hardening.py
 
 permissions:
   contents: write
@@ -17,23 +18,23 @@ jobs:
         with:
           ref: rust-engine-rebuild
           fetch-depth: 0
-      - name: Run terminal acceptance hardening script
-        shell: bash
-        run: |
-          test -f /tmp/never || true
-          if [ ! -f rust/scripts/r4_terminal_hardening.py ]; then
-            echo 'hardening script not yet installed' >&2
-            exit 2
-          fi
-          python3 rust/scripts/r4_terminal_hardening.py
-      - name: Format and validate
-        shell: bash
-        run: |
-          set -e
-          cd rust
-          cargo fmt --all
-          cargo test --workspace
-          cargo clippy --workspace --all-targets -- -D warnings
+      - name: Apply terminal acceptance patch
+        run: python3 rust/scripts/r4_terminal_hardening.py
+      - name: Refresh lockfile for test-only path dependency
+        working-directory: rust
+        run: cargo metadata --format-version 1 > /dev/null
+      - name: Format
+        working-directory: rust
+        run: cargo fmt --all
+      - name: Test workspace locked
+        working-directory: rust
+        run: cargo test --workspace --locked
+      - name: Strict clippy locked
+        working-directory: rust
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: R4 audit
+        working-directory: rust
+        run: cargo run -p urza-cli --locked -- r4-audit
       - name: Commit validated hardening
         shell: bash
         run: |
