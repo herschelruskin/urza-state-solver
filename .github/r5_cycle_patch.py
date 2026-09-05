@@ -2,6 +2,11 @@ from pathlib import Path
 import os
 import textwrap
 
+
+def code_block(body: str, spaces: int) -> str:
+    return textwrap.indent(textwrap.dedent(body), ' ' * spaces)
+
+
 ROLLOUT = Path('rust/crates/urza-rollout/src/lib.rs')
 text = ROLLOUT.read_text()
 
@@ -23,122 +28,135 @@ text = text.replace(old_version, new_version, 1)
 init_anchor = '    let mut state = initial;\n    let mut trace = Vec::new();\n\n    loop {'
 if init_anchor not in text:
     raise SystemExit('rollout loop init anchor missing')
-text = text.replace(
-    init_anchor,
-    textwrap.dedent('''\
-        let mut state = initial;
-        let mut trace = Vec::new();
-        let mut deterministic_attempts: HashMap<
-            TrueState,
-            BTreeSet<(PolicyActionClass, PolicyPublicKey)>,
-        > = HashMap::new();
+init_replacement = code_block(
+    '''
+    let mut state = initial;
+    let mut trace = Vec::new();
+    let mut deterministic_attempts: HashMap<
+        TrueState,
+        BTreeSet<(PolicyActionClass, PolicyPublicKey)>,
+    > = HashMap::new();
 
-        loop {'''),
-    1,
+    loop {''',
+    4,
 )
+text = text.replace(init_anchor, init_replacement, 1)
 
-choose_anchor = textwrap.dedent('''\
-        let bridge = CandidateBridge::build(&state, cards)?;
-        let Some(token) = policy.choose(bridge.information(), bridge.candidates())? else {
-            return finish(state, RolloutStop::NoCandidate, trace);
-        };
-''')
+choose_anchor = code_block(
+    '''
+    let bridge = CandidateBridge::build(&state, cards)?;
+    let Some(token) = policy.choose(bridge.information(), bridge.candidates())? else {
+        return finish(state, RolloutStop::NoCandidate, trace);
+    };
+    ''',
+    8,
+)
 if choose_anchor not in text:
     raise SystemExit('rollout choose anchor missing')
-text = text.replace(
-    choose_anchor,
-    textwrap.dedent('''\
-        let bridge = CandidateBridge::build(&state, cards)?;
-        let rejected = deterministic_attempts.get(&state);
-        let available: Vec<_> = bridge
-            .candidates()
-            .iter()
-            .filter(|candidate| {
-                !rejected.is_some_and(|attempts| {
-                    attempts.contains(&(candidate.class, candidate.key.clone()))
-                })
+choose_replacement = code_block(
+    '''
+    let bridge = CandidateBridge::build(&state, cards)?;
+    let rejected = deterministic_attempts.get(&state);
+    let available: Vec<_> = bridge
+        .candidates()
+        .iter()
+        .filter(|candidate| {
+            !rejected.is_some_and(|attempts| {
+                attempts.contains(&(candidate.class, candidate.key.clone()))
             })
-            .cloned()
-            .collect();
-        let Some(token) = policy.choose(bridge.information(), &available)? else {
-            return finish(state, RolloutStop::NoCandidate, trace);
-        };
-'''),
-    1,
+        })
+        .cloned()
+        .collect();
+    let Some(token) = policy.choose(bridge.information(), &available)? else {
+        return finish(state, RolloutStop::NoCandidate, trace);
+    };
+    ''',
+    8,
 )
+text = text.replace(choose_anchor, choose_replacement, 1)
 
-pre_trace_anchor = textwrap.dedent('''\
-        let index = u32::try_from(trace.len()).map_err(|_| RolloutError::StepIndexOverflow)?;
+pre_trace_anchor = code_block(
+    '''
+    let index = u32::try_from(trace.len()).map_err(|_| RolloutError::StepIndexOverflow)?;
 
-        trace.push(RolloutStep {
-''')
+    trace.push(RolloutStep {
+    ''',
+    8,
+)
 if pre_trace_anchor not in text:
     raise SystemExit('pre-trace anchor missing')
-text = text.replace(
-    pre_trace_anchor,
-    textwrap.dedent('''\
-        let index = u32::try_from(trace.len()).map_err(|_| RolloutError::StepIndexOverflow)?;
-        let selected_class = selected.class;
-        let selected_semantics = (selected_class, selected.key.clone());
-        let decision_state = state.clone();
-        let rng_cursor_before = state.rng_occurrence_cursor;
+pre_trace_replacement = code_block(
+    '''
+    let index = u32::try_from(trace.len()).map_err(|_| RolloutError::StepIndexOverflow)?;
+    let selected_class = selected.class;
+    let selected_semantics = (selected_class, selected.key.clone());
+    let decision_state = state.clone();
+    let rng_cursor_before = state.rng_occurrence_cursor;
 
-        trace.push(RolloutStep {
-'''),
-    1,
+    trace.push(RolloutStep {
+    ''',
+    8,
 )
+text = text.replace(pre_trace_anchor, pre_trace_replacement, 1)
 
-execute_anchor = textwrap.dedent('''\
-        execute(
-            &mut state,
-            cards,
-            action,
-            config,
-            logical_event_id(logical_event_offset, index)?,
-        )?;
-''')
+execute_anchor = code_block(
+    '''
+    execute(
+        &mut state,
+        cards,
+        action,
+        config,
+        logical_event_id(logical_event_offset, index)?,
+    )?;
+    ''',
+    8,
+)
 if execute_anchor not in text:
     raise SystemExit('rollout execute anchor missing')
-text = text.replace(
-    execute_anchor,
-    textwrap.dedent('''\
-        execute(
-            &mut state,
-            cards,
-            action,
-            config,
-            logical_event_id(logical_event_offset, index)?,
-        )?;
+execute_replacement = code_block(
+    '''
+    execute(
+        &mut state,
+        cards,
+        action,
+        config,
+        logical_event_id(logical_event_offset, index)?,
+    )?;
 
-        // If the exact same decision state is encountered again, replaying an
-        // already-executed non-random ordinary action would deterministically
-        // reproduce the same trajectory. Suppress only that semantic action
-        // on recurrence so the memoryless policy can choose its next-ranked
-        // legal exit. Pass and contingent decisions are never suppressed.
-        if state.rng_occurrence_cursor == rng_cursor_before
-            && decision_state.stack.is_empty()
-            && matches!(decision_state.pending, PendingDecision::None)
-            && !matches!(
-                selected_class,
-                PolicyActionClass::PassPriority | PolicyActionClass::ContingentDecision
-            )
-        {
-            deterministic_attempts
-                .entry(decision_state)
-                .or_default()
-                .insert(selected_semantics);
-        }
-'''),
-    1,
+    // If the exact same decision state is encountered again, replaying an
+    // already-executed non-random ordinary action would deterministically
+    // reproduce the same trajectory. Suppress only that semantic action
+    // on recurrence so the memoryless policy can choose its next-ranked
+    // legal exit. Pass and contingent decisions are never suppressed.
+    if state.rng_occurrence_cursor == rng_cursor_before
+        && decision_state.stack.is_empty()
+        && matches!(decision_state.pending, PendingDecision::None)
+        && !matches!(
+            selected_class,
+            PolicyActionClass::PassPriority | PolicyActionClass::ContingentDecision
+        )
+    {
+        deterministic_attempts
+            .entry(decision_state)
+            .or_default()
+            .insert(selected_semantics);
+    }
+    ''',
+    8,
 )
+text = text.replace(execute_anchor, execute_replacement, 1)
 
-test_anchor = textwrap.dedent('''\
+test_anchor = code_block(
+    '''
     #[test]
     fn same_seed_and_world_replay_random_search_exactly() {
-''')
+    ''',
+    4,
+)
 if test_anchor not in text:
     raise SystemExit('rollout test anchor missing')
-tests = textwrap.dedent('''\
+tests = code_block(
+    '''
     #[test]
     fn deterministic_basalt_tap_untap_cycle_escapes_to_pass() {
         let cards = cards();
@@ -183,7 +201,9 @@ tests = textwrap.dedent('''\
         assert_eq!(left_result.final_information, right_result.final_information);
     }
 
-''')
+    ''',
+    4,
+)
 text = text.replace(test_anchor, tests + test_anchor, 1)
 ROLLOUT.write_text(text)
 
