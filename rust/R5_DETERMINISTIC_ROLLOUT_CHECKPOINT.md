@@ -45,6 +45,8 @@ Acceptance covers:
 - explicit replay rejection when a recorded public action key drifts;
 - strict Clippy, full workspace tests, benchmark compilation, and cumulative R0-R5 audits.
 
+Validated implementation commit: `fcaa22bff246da3cbf91dab7118a9f9bcd9f2641` (`Build R5 deterministic multi-step rollout`). Dedicated acceptance run: GitHub Actions `33943111284`, result PASS. The gate passed locked dependency metadata, formatting, strict all-target/all-feature Clippy, full workspace tests, benchmark compilation, and cumulative R0-R5 audits. The temporary rollout workflow removed itself in the validated commit.
+
 ## Namespaces
 
 - rules: `r4_acceptance_v6`;
