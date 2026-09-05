@@ -375,3 +375,15 @@ Added fixed-budget root-action comparison in `urza-mc`. Every legal public root 
 ## R5 parallel root/world evaluation
 
 Added deterministic scoped-thread execution for independent sampled root/world jobs while retaining serial fixed-budget evaluation as the correctness oracle. Parallel workers never mutate caches or aggregate values; completed outcomes are canonically reordered before scoring. Serial and parallel adaptive paths share cache identity and deterministic counters. Acceptance includes one/multi/oversubscribed-worker parity, world-order and hidden-order invariance, cross-scheduler cache reuse, zero-worker rejection, and representative release performance probes. Namespace: r5_parallel_root_world_v1. Dedicated validation run: 33949117962.
+
+
+## 2026-09-05 — R5 parallel scaling and scheduler granularity
+
+- Classification: `PERFORMANCE/SCHEDULING`; no rules, card, policy, value, RNG, hidden-world, cache-identity, or incomplete-world semantic change.
+- Measured the accepted static-chunk scheduler at 32/64/256 complete worlds across 1/2/4/8 requested workers on 3-, 14-, and 19-root fixtures. Two-worker scaling was nearly ideal while four-worker scaling plateaued around 2.2x-2.5x on a four-way runner.
+- Replaced large contiguous worker slices with a scoped-thread atomic one-job claim queue. Exact attempts are re-sorted by canonical job index before either errors or outcomes are interpreted, so scheduling cannot change value results or typed-error precedence.
+- Bumped only the parallel evaluator namespace to `r5_parallel_root_world_v2`; root/world cache identity remains unchanged because scheduler choice is intentionally non-semantic.
+- Dynamic scheduling measured roughly 2.4x-2.8x four-worker speedup on the larger benchmark matrix, with the strongest stable gains on the 14- and 19-root workloads. Default workers remain `available_parallelism()`.
+- The scaling fixture skips typed incomplete worlds only while selecting benchmark WorldIds; production evaluators retain strict `StepLimit`/`NoCandidate` failure semantics.
+- Staging evidence: static baseline run `33951225114`; dynamic experiment run `33951419805`.
+- Production acceptance run  passed the complete scheduler-scaling gate; permanent foundation validation follows on the finalized docs head.

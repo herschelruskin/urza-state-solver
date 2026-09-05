@@ -1,23 +1,4 @@
-from pathlib import Path
-
-cli = Path("rust/crates/urza-cli/src/main.rs")
-text = cli.read_text()
-replacements = {
-    '"phase": "R5-parallel-root-world",': '"phase": "R5-parallel-scaling",',
-    '"parallel_contract": "parallel workers evaluate independent prepared root/world jobs only; workers never mutate the cache or aggregate values, RNG coordinates contain no thread identity, and completed outcomes are sorted and aggregated in canonical world/root order so worker scheduling cannot change exact results",': '"parallel_contract": "parallel workers dynamically claim independent prepared root/world jobs from a non-semantic atomic queue; workers never mutate the cache or aggregate values, RNG coordinates contain no thread identity, and both outcomes and typed failures are interpreted only after canonical job-index ordering so worker scheduling cannot change exact results or error precedence",',
-    '"current_scope": "fixed-budget serial root evaluation remains the correctness oracle; exact adaptive ranking certification, shared root-world caching, deterministic cycle escape, and deterministic parallel root/world execution are complete around it",': '"current_scope": "fixed-budget serial root evaluation remains the correctness oracle; exact adaptive ranking certification, shared root-world caching, deterministic cycle escape, and load-balanced deterministic parallel root/world execution are complete around it",',
-    '"next_r5_work": "measure scaling across representative and larger sample budgets, then tune worker granularity or add optional statistical stopping only if serial parity, common-world pairing, RNG identity, and cache namespace safety remain exact",': '"next_r5_work": "measure on larger core counts and production-sized workloads, then decide whether optional statistical stopping is worth adding only if serial parity, common-world pairing, RNG identity, strict incomplete semantics, and cache namespace safety remain exact",',
-}
-for old, new in replacements.items():
-    if old not in text:
-        raise SystemExit(f"CLI audit anchor missing: {old[:80]}")
-    text = text.replace(old, new, 1)
-cli.write_text(text)
-
-checkpoint = Path("rust/R5_PARALLEL_SCALING_CHECKPOINT.md")
-if checkpoint.exists():
-    raise SystemExit("R5 parallel scaling checkpoint already exists")
-checkpoint.write_text("""# R5 parallel scaling and scheduler-granularity checkpoint
+# R5 parallel scaling and scheduler-granularity checkpoint
 
 ## Scope
 
@@ -106,22 +87,5 @@ The production closure requires:
 - no Python gameplay/policy port.
 
 Dedicated acceptance and permanent foundation run identifiers are recorded after validation.
-""")
 
-log = Path("rust/DEVELOPMENT_LOG.md")
-log_text = log.read_text()
-marker = "## 2026-09-05 — R5 parallel scaling and scheduler granularity"
-if marker in log_text:
-    raise SystemExit("development log scaling entry already exists")
-log.write_text(log_text + """
-
-## 2026-09-05 — R5 parallel scaling and scheduler granularity
-
-- Classification: `PERFORMANCE/SCHEDULING`; no rules, card, policy, value, RNG, hidden-world, cache-identity, or incomplete-world semantic change.
-- Measured the accepted static-chunk scheduler at 32/64/256 complete worlds across 1/2/4/8 requested workers on 3-, 14-, and 19-root fixtures. Two-worker scaling was nearly ideal while four-worker scaling plateaued around 2.2x-2.5x on a four-way runner.
-- Replaced large contiguous worker slices with a scoped-thread atomic one-job claim queue. Exact attempts are re-sorted by canonical job index before either errors or outcomes are interpreted, so scheduling cannot change value results or typed-error precedence.
-- Bumped only the parallel evaluator namespace to `r5_parallel_root_world_v2`; root/world cache identity remains unchanged because scheduler choice is intentionally non-semantic.
-- Dynamic scheduling measured roughly 2.4x-2.8x four-worker speedup on the larger benchmark matrix, with the strongest stable gains on the 14- and 19-root workloads. Default workers remain `available_parallelism()`.
-- The scaling fixture skips typed incomplete worlds only while selecting benchmark WorldIds; production evaluators retain strict `StepLimit`/`NoCandidate` failure semantics.
-- Staging evidence: static baseline run `33951225114`; dynamic experiment run `33951419805`.
-""")
+Dedicated production acceptance run: GitHub Actions 33951783273, result PASS. The gate passed Rust 1.89 formatting, locked dependency metadata, strict workspace all-target/all-feature Clippy, four repeated parallel parity suites, full workspace tests, benchmark compilation, the release 32/64/256-world scaling matrix, and cumulative R0-R5 audits.

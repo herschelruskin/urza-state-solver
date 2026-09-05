@@ -234,7 +234,7 @@ fn run_r5_audit() {
     validate_r4_database().expect("accepted R4 database remains frozen for R5");
 
     let report = json!({
-        "phase": "R5-parallel-root-world",
+        "phase": "R5-parallel-scaling",
         "policy_phase": POLICY_PHASE,
         "policy_version": POLICY_VERSION,
         "candidate_bridge_version": CANDIDATE_BRIDGE_VERSION,
@@ -262,10 +262,10 @@ fn run_r5_audit() {
         "root_rng_contract": "the forced root action uses Game logical event 0 and deterministic continuation begins at logical event 1, matching normal rollout sequencing without coordinate reuse",
         "adaptive_contract": "adaptive evaluation consumes common WorldIds in canonical batches and stops early only when the complete configured fixed-budget root ranking is mathematically unable to change under any remaining outcomes; this is exact finite-budget certification rather than a probabilistic confidence interval",
         "cache_contract": "root-world outcomes are keyed by canonical ValueKey, complete EvaluationNamespace, RootSeed, public RootActionKey, WorldId, and cache schema version; serial and parallel schedulers intentionally share the same cache identity because scheduling is non-semantic",
-        "parallel_contract": "parallel workers evaluate independent prepared root/world jobs only; workers never mutate the cache or aggregate values, RNG coordinates contain no thread identity, and completed outcomes are sorted and aggregated in canonical world/root order so worker scheduling cannot change exact results",
+        "parallel_contract": "parallel workers dynamically claim independent prepared root/world jobs from a non-semantic atomic queue; workers never mutate the cache or aggregate values, RNG coordinates contain no thread identity, and both outcomes and typed failures are interpreted only after canonical job-index ordering so worker scheduling cannot change exact results or error precedence",
         "instrumentation_contract": "deterministic counters report worlds, root-world requests, cache hits/misses, actual rollouts, and executed/avoided rollout steps; serial and parallel adaptive paths preserve the same counters and instrumentation does not participate in value ranking or cache identity",
-        "current_scope": "fixed-budget serial root evaluation remains the correctness oracle; exact adaptive ranking certification, shared root-world caching, deterministic cycle escape, and deterministic parallel root/world execution are complete around it",
-        "next_r5_work": "measure scaling across representative and larger sample budgets, then tune worker granularity or add optional statistical stopping only if serial parity, common-world pairing, RNG identity, and cache namespace safety remain exact",
+        "current_scope": "fixed-budget serial root evaluation remains the correctness oracle; exact adaptive ranking certification, shared root-world caching, deterministic cycle escape, and load-balanced deterministic parallel root/world execution are complete around it",
+        "next_r5_work": "measure on larger core counts and production-sized workloads, then decide whether optional statistical stopping is worth adding only if serial parity, common-world pairing, RNG identity, strict incomplete semantics, and cache namespace safety remain exact",
     });
 
     println!(
