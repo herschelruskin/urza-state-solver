@@ -1,0 +1,37 @@
+name: R5 performance probe
+
+on:
+  push:
+    branches:
+      - rust-engine-rebuild
+    paths:
+      - rust/crates/urza-mc/examples/r5_perf_probe.rs
+      - .github/workflows/r5-perf-probe.yml
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+      - name: Runner profile
+        run: |
+          uname -a
+          nproc
+          lscpu | grep -E 'Model name|CPU\(s\)|Thread|Core|Socket' || true
+          rustc --version --verbose
+      - name: Build release performance probe
+        working-directory: rust
+        run: cargo build -p urza-mc --example r5_perf_probe --release --locked
+      - name: Run performance probe three times
+        working-directory: rust
+        run: |
+          for run in 1 2 3; do
+            echo "=== R5_PERF_PROBE_RUN_${run} ==="
+            ./target/release/examples/r5_perf_probe
+          done
