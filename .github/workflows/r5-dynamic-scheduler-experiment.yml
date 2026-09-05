@@ -1,0 +1,52 @@
+name: R5 dynamic scheduler experiment
+
+on:
+  push:
+    branches: [r5-parallel-scaling-staging]
+    paths:
+      - '.github/r5_dynamic_scheduler_patch.py'
+      - '.github/workflows/r5-dynamic-scheduler-experiment.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  dynamic-scheduler:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: r5-parallel-scaling-staging
+          fetch-depth: 0
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /*
+            !/rust/target/
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+          components: rustfmt, clippy
+      - name: Apply dynamic scheduler patch
+        working-directory: .
+        run: python3 .github/r5_dynamic_scheduler_patch.py
+      - name: Format
+        run: cargo fmt --all
+      - name: Focused parallel tests
+        run: cargo test -p urza-mc --locked parallel::tests -- --nocapture
+      - name: Strict urza-mc Clippy
+        run: cargo clippy -p urza-mc --all-targets --all-features --locked -- -D warnings
+      - name: Build release scaling probe
+        run: cargo build -p urza-mc --example r5_scaling_probe --release --locked
+      - name: Run dynamic scaling matrix
+        run: ./target/release/examples/r5_scaling_probe
+      - name: Commit successful experiment
+        working-directory: .
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add rust/crates/urza-mc/src/parallel.rs
+          git commit -m 'Tune R5 parallel scheduler granularity'
+          git push origin HEAD:r5-parallel-scaling-staging
