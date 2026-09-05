@@ -52,13 +52,7 @@ jobs:
           cargo run -p urza-cli --locked -- r4-audit
           cargo run -p urza-cli --locked -- r5-audit
       - name: Mark dedicated validation
-        run: |
-          cat >> rust/R5_ADAPTIVE_CACHE_CHECKPOINT.md <<'EOF'
-
-## Validation
-
-Validated by the dedicated R5 adaptive/cache acceptance workflow. The exact run and closure commit are recorded by the follow-up branch commit after this gate is green.
-EOF
+        run: printf '\n## Validation\n\nValidated by the dedicated R5 adaptive/cache acceptance workflow. The exact run and closure commit are recorded by the follow-up branch commit after this gate is green.\n' >> rust/R5_ADAPTIVE_CACHE_CHECKPOINT.md
       - name: Remove temporary acceptance files
         run: |
           rm .github/workflows/r5-adaptive-cache-finalize.yml
