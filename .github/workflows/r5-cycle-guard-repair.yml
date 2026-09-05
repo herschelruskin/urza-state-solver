@@ -1,4 +1,5 @@
 name: R5 deterministic cycle guard repair
+# stack-aware exact recurrence v2
 
 on:
   push:
