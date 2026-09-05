@@ -3,117 +3,110 @@ info: latest update on 2025-08-07 for version 1.89.0 (29483883e 2025-08-04)
 info: downloading 5 components
     Updating crates.io index
  Downloading crates ...
-  Downloaded arrayvec v0.7.8
-  Downloaded anstyle v1.0.14
-  Downloaded cast v0.3.0
-  Downloaded arrayref v0.3.9
-  Downloaded autocfg v1.5.1
-  Downloaded anes v0.1.6
-  Downloaded crossbeam-deque v0.8.7
-  Downloaded unicode-ident v1.0.24
-  Downloaded plotters-svg v0.3.7
-  Downloaded ciborium-io v0.2.2
-  Downloaded cfg-if v1.0.4
-  Downloaded rayon-core v1.13.0
-  Downloaded same-file v1.0.6
   Downloaded clap_lex v1.1.0
-  Downloaded blake3 v1.8.2
-  Downloaded cc v1.4.4
-  Downloaded plotters-backend v0.3.7
   Downloaded itoa v1.0.18
-  Downloaded criterion-plot v0.6.0
-  Downloaded tinytemplate v1.2.1
-  Downloaded ciborium-ll v0.2.2
-  Downloaded thiserror-impl v2.0.16
-  Downloaded thiserror v2.0.16
-  Downloaded walkdir v2.5.0
-  Downloaded either v1.18.0
-  Downloaded zerocopy-derive v0.8.56
-  Downloaded crossbeam-epoch v0.9.20
-  Downloaded num-traits v0.2.19
   Downloaded serde_derive v1.0.219
-  Downloaded ryu v1.0.23
+  Downloaded criterion-plot v0.6.0
+  Downloaded cast v0.3.0
+  Downloaded ciborium-io v0.2.2
+  Downloaded autocfg v1.5.1
   Downloaded clap v4.6.6
-  Downloaded memchr v2.8.3
+  Downloaded zerocopy v0.8.56
+  Downloaded anstyle v1.0.14
+  Downloaded walkdir v2.5.0
+  Downloaded shlex v2.0.1
+  Downloaded same-file v1.0.6
+  Downloaded constant_time_eq v0.3.1
+  Downloaded tinytemplate v1.2.1
+  Downloaded oorandom v11.1.5
+  Downloaded thiserror v2.0.16
+  Downloaded unicode-ident v1.0.24
+  Downloaded zerocopy-derive v0.8.56
   Downloaded aho-corasick v1.1.5
-  Downloaded itertools v0.13.0
+  Downloaded memchr v2.8.3
+  Downloaded serde v1.0.219
   Downloaded serde_json v1.0.142
-  Downloaded plotters v0.3.7
-  Downloaded clap_builder v4.6.6
   Downloaded rayon v1.12.0
   Downloaded regex v1.13.1
+  Downloaded clap_builder v4.6.6
+  Downloaded plotters v0.3.7
+  Downloaded itertools v0.13.0
+  Downloaded blake3 v1.8.2
   Downloaded criterion v0.7.0
-  Downloaded syn v2.0.119
-  Downloaded zerocopy v0.8.56
-  Downloaded serde v1.0.219
   Downloaded proc-macro2 v1.0.107
+  Downloaded syn v2.0.119
+  Downloaded crossbeam-utils v0.8.22
+  Downloaded rayon-core v1.13.0
   Downloaded regex-syntax v0.8.11
   Downloaded half v2.7.1
   Downloaded find-msvc-tools v0.1.11
+  Downloaded crossbeam-epoch v0.9.20
+  Downloaded ryu v1.0.23
+  Downloaded num-traits v0.2.19
+  Downloaded either v1.18.0
+  Downloaded crossbeam-deque v0.8.7
+  Downloaded ciborium-ll v0.2.2
   Downloaded ciborium v0.2.2
-  Downloaded quote v1.0.47
-  Downloaded crossbeam-utils v0.8.22
-  Downloaded shlex v2.0.1
-  Downloaded oorandom v11.1.5
-  Downloaded constant_time_eq v0.3.1
+  Downloaded cfg-if v1.0.4
+  Downloaded cc v1.4.4
+  Downloaded plotters-backend v0.3.7
   Downloaded regex-automata v0.4.18
+  Downloaded arrayvec v0.7.8
+  Downloaded anes v0.1.6
+  Downloaded thiserror-impl v2.0.16
+  Downloaded quote v1.0.47
+  Downloaded plotters-svg v0.3.7
+  Downloaded arrayref v0.3.9
    Compiling proc-macro2 v1.0.107
    Compiling quote v1.0.47
    Compiling unicode-ident v1.0.24
    Compiling serde v1.0.219
    Compiling thiserror v2.0.16
    Compiling cfg-if v1.0.4
-   Compiling find-msvc-tools v0.1.11
    Compiling shlex v2.0.1
-   Compiling arrayvec v0.7.8
-   Compiling cc v1.4.4
+   Compiling find-msvc-tools v0.1.11
    Compiling constant_time_eq v0.3.1
    Compiling arrayref v0.3.9
+   Compiling arrayvec v0.7.8
    Compiling serde_json v1.0.142
+   Compiling cc v1.4.4
    Compiling memchr v2.8.3
+   Compiling ryu v1.0.23
    Compiling itoa v1.0.18
    Compiling syn v2.0.119
-   Compiling ryu v1.0.23
    Compiling crossbeam-utils v0.8.22
    Compiling crossbeam-epoch v0.9.20
    Compiling zerocopy v0.8.56
+   Compiling crossbeam-deque v0.8.7
    Compiling autocfg v1.5.1
    Compiling blake3 v1.8.2
-   Compiling crossbeam-deque v0.8.7
    Compiling num-traits v0.2.19
    Compiling rayon-core v1.13.0
    Compiling either v1.18.0
-   Compiling plotters-backend v0.3.7
    Compiling clap_lex v1.1.0
    Compiling ciborium-io v0.2.2
-   Compiling anstyle v1.0.14
    Compiling regex-syntax v0.8.11
+   Compiling plotters-backend v0.3.7
+   Compiling anstyle v1.0.14
    Compiling clap_builder v4.6.6
-   Compiling urza-rng v0.1.0 (/home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-rng)
-   Compiling regex-automata v0.4.18
    Compiling serde_derive v1.0.219
    Compiling thiserror-impl v2.0.16
    Compiling zerocopy-derive v0.8.56
+   Compiling regex-automata v0.4.18
    Compiling plotters-svg v0.3.7
-   Compiling itertools v0.13.0
-   Compiling same-file v1.0.6
-   Compiling cast v0.3.0
-   Compiling walkdir v2.5.0
-   Compiling plotters v0.3.7
-   Compiling criterion-plot v0.6.0
-   Compiling rayon v1.12.0
-   Compiling regex v1.13.1
-   Compiling clap v4.6.6
-   Compiling oorandom v11.1.5
-   Compiling anes v0.1.6
    Compiling urza-core v0.1.0 (/home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-core)
-   Compiling tinytemplate v1.2.1
+   Compiling itertools v0.13.0
    Compiling urza-info v0.1.0 (/home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-info)
+   Compiling urza-rng v0.1.0 (/home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-rng)
    Compiling half v2.7.1
+   Compiling cast v0.3.0
    Compiling ciborium-ll v0.2.2
+   Compiling same-file v1.0.6
+   Compiling walkdir v2.5.0
    Compiling ciborium v0.2.2
    Compiling urza-rules v0.1.0 (/home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-rules)
    Compiling urza-value v0.1.0 (/home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-value)
+   Compiling plotters v0.3.7
    Compiling urza-cards v0.1.0 (/home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-cards)
 error[E0063]: missing fields `floodcaller_untap_eligible` and `spell_effect` in initializer of `CardProfile`
    --> crates/urza-cards/src/lib.rs:559:13
