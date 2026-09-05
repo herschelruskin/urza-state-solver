@@ -480,6 +480,7 @@ fn parse_decklist(input: &str) -> Result<BTreeMap<String, u8>, CatalogError> {
 }
 
 pub const URZA_CONSTRUCT_TOKEN_CARD_ID: CardDefId = CardDefId(95);
+pub const CLUE_TOKEN_CARD_ID: CardDefId = CardDefId(96);
 
 #[derive(Debug, Clone)]
 pub struct R2CardDatabase {
@@ -539,10 +540,12 @@ impl R2CardDatabase {
                     utility: urza_rules::UtilityKind::None,
                     engine: urza_rules::EngineKind::None,
                     aura_target: urza_rules::AuraTargetKind::None,
+                    spell_effect: urza_rules::SpellEffectKind::None,
                     native_untap_generic: None,
                     artifact_activation_reduction: 0,
                     attached_artifact_activation_reduction: 0,
                     top_loop_producer: false,
+                    floodcaller_untap_eligible: false,
                     skip_normal_untap: false,
                     starting_loyalty: 0,
                     is_artifact: card.feature_flags.is_artifact,
@@ -567,10 +570,12 @@ impl R2CardDatabase {
                 utility: urza_rules::UtilityKind::None,
                 engine: urza_rules::EngineKind::None,
                 aura_target: urza_rules::AuraTargetKind::None,
+                spell_effect: urza_rules::SpellEffectKind::None,
                 native_untap_generic: None,
                 artifact_activation_reduction: 0,
                 attached_artifact_activation_reduction: 0,
                 top_loop_producer: false,
+                floodcaller_untap_eligible: false,
                 skip_normal_untap: false,
                 starting_loyalty: 0,
                 is_artifact: true,
@@ -851,6 +856,59 @@ impl R4CardDatabase {
         golem_profile.top_loop_producer = true;
         golem_profile.skip_normal_untap = true;
 
+        let chrome = card_id_by_name_from_r1("Chrome Dome")?;
+        let chrome_profile = cards
+            .get_mut(&chrome)
+            .ok_or_else(|| CatalogError::Invariant("missing R4 Chrome Dome profile".to_owned()))?;
+        chrome_profile.role = urza_rules::R2CardRole::CreaturePermanent;
+        chrome_profile.engine = urza_rules::EngineKind::ChromeDome;
+
+        let vault = card_id_by_name_from_r1("Mana Vault")?;
+        let vault_profile = cards
+            .get_mut(&vault)
+            .ok_or_else(|| CatalogError::Invariant("missing R4 Mana Vault profile".to_owned()))?;
+        vault_profile.role = urza_rules::R2CardRole::ArtifactPermanent;
+        vault_profile.engine = urza_rules::EngineKind::ManaVault;
+        vault_profile.mana_ability = urza_rules::ManaAbility::TapForColorless(3);
+        vault_profile.skip_normal_untap = true;
+
+        for name in ["Banishing Knack", "Retraction Helix"] {
+            let card = card_id_by_name_from_r1(name)?;
+            let profile = cards
+                .get_mut(&card)
+                .ok_or_else(|| CatalogError::Invariant(format!("missing R4 profile for {name}")))?;
+            profile.role = urza_rules::R2CardRole::TargetedEffectSpell;
+            profile.spell_effect = urza_rules::SpellEffectKind::KnackBounceGrant;
+        }
+
+        let floodcaller = card_id_by_name_from_r1("Valley Floodcaller")?;
+        let floodcaller_profile = cards.get_mut(&floodcaller).ok_or_else(|| {
+            CatalogError::Invariant("missing R4 Valley Floodcaller profile".to_owned())
+        })?;
+        floodcaller_profile.role = urza_rules::R2CardRole::CreaturePermanent;
+        floodcaller_profile.engine = urza_rules::EngineKind::ValleyFloodcaller;
+        floodcaller_profile.floodcaller_untap_eligible = true;
+
+        let cam = card_id_by_name_from_r1("Sewer-veillance Cam")?;
+        let cam_profile = cards
+            .get_mut(&cam)
+            .ok_or_else(|| CatalogError::Invariant("missing R4 Cam profile".to_owned()))?;
+        cam_profile.role = urza_rules::R2CardRole::ArtifactPermanent;
+        cam_profile.utility = urza_rules::UtilityKind::SewerVeillanceCam;
+
+        cards.insert(
+            CLUE_TOKEN_CARD_ID,
+            urza_rules::CardProfile {
+                card: CLUE_TOKEN_CARD_ID,
+                mana_cost: None,
+                mana_value: 0,
+                role: urza_rules::R2CardRole::ArtifactPermanent,
+                battlefield_face: CardFace::Front,
+                is_artifact: true,
+                ..urza_rules::CardProfile::default()
+            },
+        );
+
         Ok(Self { cards })
     }
 
@@ -889,6 +947,10 @@ impl urza_rules::CardDatabase for R4CardDatabase {
 
     fn urza_construct_token_card(&self) -> CardDefId {
         URZA_CONSTRUCT_TOKEN_CARD_ID
+    }
+
+    fn clue_token_card(&self) -> Option<CardDefId> {
+        Some(CLUE_TOKEN_CARD_ID)
     }
 }
 
@@ -978,9 +1040,9 @@ pub fn validate_r4_database() -> Result<(), CatalogError> {
         }
     }
 
-    if database.supported_active_cards().len() != 41 {
+    if database.supported_active_cards().len() != 47 {
         return Err(CatalogError::Invariant(
-            "current R4 database must expose exactly 41 active identities".to_owned(),
+            "current R4 database must expose exactly 47 active identities".to_owned(),
         ));
     }
 
@@ -1536,7 +1598,7 @@ mod tests {
         let r3 = R3CardDatabase::load().unwrap();
         let r4 = R4CardDatabase::load().unwrap();
         assert_eq!(r3.supported_active_cards().len(), 32);
-        assert_eq!(r4.supported_active_cards().len(), 41);
+        assert_eq!(r4.supported_active_cards().len(), 47);
 
         let basalt = r4.card_id_by_name("Basalt Monolith").unwrap();
         let grim = r4.card_id_by_name("Grim Monolith").unwrap();

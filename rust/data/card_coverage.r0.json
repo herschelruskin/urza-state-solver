@@ -24,8 +24,8 @@
     },
     {
       "card_id": 4,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "RULES_ACTIVE",
+      "reason": "R4 recurrence rules-active: exact-creature targeted spell grants the temporary tap-to-bounce ability until end of turn; granted activation and expiry are modeled."
     },
     {
       "card_id": 5,
@@ -34,8 +34,8 @@
     },
     {
       "card_id": 6,
-      "status": "PRIMITIVE_ACTIVE",
-      "reason": "R4 terminal prerequisite: ordinary artifact-creature cast, does not untap during normal untap step, and exact producer identity for accepted Top/Chip/FTT/Gadgeteer loop proofs; artifact-ETB untap trigger execution remains in R4"
+      "status": "RULES_ACTIVE",
+      "reason": "R4 recurrence rules-active: skips normal untap and resolves its artifact-entry may-untap trigger; accepted by Chrome Dome and Knack/Helix recurrence proofs."
     },
     {
       "card_id": 7,
@@ -49,8 +49,8 @@
     },
     {
       "card_id": 9,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "RULES_ACTIVE",
+      "reason": "R4 recurrence rules-active: reduction-aware activation copies another artifact as a fresh hasty token with exact per-object next-end-step sacrifice tracking."
     },
     {
       "card_id": 10,
@@ -129,8 +129,8 @@
     },
     {
       "card_id": 25,
-      "status": "PRIMITIVE_ACTIVE",
-      "reason": "R4-start primitive: ordinary creature cast plus the static {1} reduction to artifact activated abilities with the audited one-mana floor; artifact-cast trigger remains deferred"
+      "status": "RULES_ACTIVE",
+      "reason": "R4 recurrence rules-active: applies the artifact activation reduction and emits a mandatory investigate trigger on artifact casts; resolution creates a Clue through the common artifact-entry path."
     },
     {
       "card_id": 26,
@@ -164,8 +164,8 @@
     },
     {
       "card_id": 32,
-      "status": "PRIMITIVE_ACTIVE",
-      "reason": "R4 terminal prerequisite: ordinary artifact cast and exact producer identity for accepted Top/Chip/FTT/Gadgeteer loop proofs; native mill and artifact-ETB untap trigger execution remain in R4"
+      "status": "RULES_ACTIVE",
+      "reason": "R4 recurrence rules-active: tap-and-sacrifice activation mills the goldfish opponent and artifact entry emits its may-untap trigger on the real stack."
     },
     {
       "card_id": 33,
@@ -209,8 +209,8 @@
     },
     {
       "card_id": 41,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "R4 recurrence primitive: tap for three colorless, skips normal untap, and participates in the Chrome Dome/Power Artifact/Gadgeteer terminal proof; upkeep untap and draw-step damage remain deferred."
     },
     {
       "card_id": 42,
@@ -329,8 +329,8 @@
     },
     {
       "card_id": 65,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "RULES_ACTIVE",
+      "reason": "R4 recurrence rules-active: exact-creature targeted spell grants the temporary tap-to-bounce ability until end of turn; granted activation and expiry are modeled."
     },
     {
       "card_id": 66,
@@ -374,8 +374,8 @@
     },
     {
       "card_id": 74,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "RULES_ACTIVE",
+      "reason": "R4 recurrence rules-active: modeled entry and leave events emit an exact target-then-may-tap-or-untap trigger used by the Knack/Helix recurrence family; sacrifice-draw remains deferred."
     },
     {
       "card_id": 75,
@@ -440,7 +440,7 @@
     {
       "card_id": 87,
       "status": "PRIMITIVE_ACTIVE",
-      "reason": "R3 primitive active: explicit lore/chapter I–III sequencing, chapter I grants colorless mana, chapter II creates the shared Construct token, and chapter III stages an exact printed-{0}/{1} artifact search before final-chapter sacrifice after the search finishes"
+      "reason": "R3 primitive active: explicit lore/chapter I\u2013III sequencing, chapter I grants colorless mana, chapter II creates the shared Construct token, and chapter III stages an exact printed-{0}/{1} artifact search before final-chapter sacrifice after the search finishes"
     },
     {
       "card_id": 88,
@@ -449,8 +449,8 @@
     },
     {
       "card_id": 89,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "RULES_ACTIVE",
+      "reason": "R4 recurrence rules-active: noncreature casts emit its untap trigger; resolution untaps active eligible creature types in the current deck slice; flash and combat sizing remain deferred."
     },
     {
       "card_id": 90,

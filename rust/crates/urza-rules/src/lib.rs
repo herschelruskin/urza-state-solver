@@ -20,7 +20,7 @@ use urza_rng::{
 pub const RULES_PHASE: &str = "R4";
 pub const R2_RULES_VERSION: &str = "r2_core_kernel_v2";
 pub const R3_RULES_VERSION: &str = "r3_search_complete_v4";
-pub const RULES_VERSION: &str = "r4_top_access_v3";
+pub const RULES_VERSION: &str = "r4_recurrence_v4";
 pub const HORIZON_TURN: u8 = 6;
 pub const RNG_EVENT_SEARCH_SHUFFLE: EventType = EventType(0x0301);
 pub const ABILITY_REPURPOSING_BAY_SEARCH: AbilityId = AbilityId(0x0301);
@@ -36,6 +36,14 @@ pub const ABILITY_REALITY_CHIP_RECONFIGURE: AbilityId = AbilityId(0x0402);
 pub const ABILITY_REALITY_CHIP_DETACH: AbilityId = AbilityId(0x0403);
 pub const ABILITY_FTT_LEVEL_TWO: AbilityId = AbilityId(0x0404);
 pub const ABILITY_FTT_LEVEL_THREE: AbilityId = AbilityId(0x0405);
+pub const ABILITY_GRINDING_STATION_MILL: AbilityId = AbilityId(0x0406);
+pub const ABILITY_ARTIFACT_ENTRY_UNTAP: AbilityId = AbilityId(0x0407);
+pub const ABILITY_GADGETEER_INVESTIGATE: AbilityId = AbilityId(0x0408);
+pub const ABILITY_CHROME_DOME_COPY: AbilityId = AbilityId(0x0409);
+pub const ABILITY_CHROME_DOME_SACRIFICE: AbilityId = AbilityId(0x040a);
+pub const ABILITY_FLOODCALLER_UNTAP: AbilityId = AbilityId(0x040b);
+pub const ABILITY_CAM_TAP_UNTAP: AbilityId = AbilityId(0x040c);
+pub const ABILITY_KNACK_BOUNCE: AbilityId = AbilityId(0x040d);
 pub const RNG_EVENT_URZA_SPIN_SHUFFLE: EventType = EventType(0x0302);
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -261,6 +269,7 @@ pub enum R2CardRole {
     EnchantmentPermanent,
     PlaneswalkerPermanent,
     SearchSpell,
+    TargetedEffectSpell,
     UrzaCommander,
     UrzaConstructToken,
 }
@@ -343,6 +352,13 @@ pub enum AuraTargetKind {
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
+pub enum SpellEffectKind {
+    #[default]
+    None,
+    KnackBounceGrant,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
 pub enum EngineKind {
     #[default]
     None,
@@ -352,6 +368,9 @@ pub enum EngineKind {
     PowerArtifact,
     GrindingStation,
     BatteredGolem,
+    ChromeDome,
+    ManaVault,
+    ValleyFloodcaller,
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
@@ -364,6 +383,7 @@ pub enum UtilityKind {
     RealityChip,
     FortuneTellersTalent,
     GrafdiggersCage,
+    SewerVeillanceCam,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -389,10 +409,12 @@ pub struct CardProfile {
     pub utility: UtilityKind,
     pub engine: EngineKind,
     pub aura_target: AuraTargetKind,
+    pub spell_effect: SpellEffectKind,
     pub native_untap_generic: Option<u16>,
     pub artifact_activation_reduction: u16,
     pub attached_artifact_activation_reduction: u16,
     pub top_loop_producer: bool,
+    pub floodcaller_untap_eligible: bool,
     pub skip_normal_untap: bool,
     pub starting_loyalty: i16,
     pub is_artifact: bool,
@@ -403,6 +425,9 @@ pub trait CardDatabase {
     fn profile(&self, card: CardDefId) -> Option<CardProfile>;
     fn commander_card(&self) -> CardDefId;
     fn urza_construct_token_card(&self) -> CardDefId;
+    fn clue_token_card(&self) -> Option<CardDefId> {
+        None
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -410,6 +435,13 @@ pub struct GameRngContext {
     pub root: RootSeed,
     pub world: WorldId,
     pub logical_event: LogicalEventId,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum CamEffectChoice {
+    Decline,
+    Tap,
+    Untap,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -429,11 +461,29 @@ pub enum Action {
     ActivateUrzaArtifactMana {
         artifact: ObjectId,
     },
+    ActivateGrindingStation {
+        source: ObjectId,
+        sacrifice: CanonicalObjectId,
+    },
+    ActivateChromeDome {
+        source: ObjectId,
+        target: CanonicalObjectId,
+        payment: ManaPayment,
+    },
+    ActivateGrantedKnackBounce {
+        source: ObjectId,
+        target: CanonicalObjectId,
+    },
     CastFromHand {
         card: CardDefId,
         payment: ManaPayment,
     },
     CastAuraFromHand {
+        card: CardDefId,
+        target: CanonicalObjectId,
+        payment: ManaPayment,
+    },
+    CastTargetedFromHand {
         card: CardDefId,
         target: CanonicalObjectId,
         payment: ManaPayment,
@@ -517,6 +567,15 @@ pub enum Action {
         top: Vec<CardDefId>,
         bottom: Vec<CardDefId>,
     },
+    ChooseProducerUntap {
+        untap: bool,
+    },
+    ChooseCamTarget {
+        target: CanonicalObjectId,
+    },
+    ChooseCamEffect {
+        choice: CamEffectChoice,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -547,6 +606,9 @@ pub enum RulesObservation {
     },
     UrzaCardExiled {
         card: CardDefId,
+    },
+    OpponentMilled {
+        cards: u8,
     },
 }
 
@@ -650,6 +712,12 @@ pub enum RuleError {
     LibraryCastBlockedByCage,
     #[error("the selected object is not a legal Reality Chip reconfigure target")]
     InvalidReconfigureTarget,
+    #[error("the selected object is not a legal permanent target")]
+    InvalidPermanentTarget,
+    #[error("object {0:?} is summoning sick for a granted tap ability")]
+    SummoningSick(ObjectId),
+    #[error("object {0:?} has an incoming attachment; bounce interaction is deferred")]
+    AttachedBounceDeferred(ObjectId),
 }
 
 pub fn apply_action<D: CardDatabase>(
@@ -691,6 +759,22 @@ fn apply_action_internal<D: CardDatabase>(
             activate_urza_artifact_mana(state, cards, artifact)?;
             Transition::default()
         }
+        Action::ActivateGrindingStation { source, sacrifice } => {
+            activate_grinding_station(state, cards, source, sacrifice)?;
+            Transition::default()
+        }
+        Action::ActivateChromeDome {
+            source,
+            target,
+            payment,
+        } => {
+            activate_chrome_dome(state, cards, source, target, payment)?;
+            Transition::default()
+        }
+        Action::ActivateGrantedKnackBounce { source, target } => {
+            activate_granted_knack_bounce(state, cards, source, target)?;
+            Transition::default()
+        }
         Action::CastFromHand { card, payment } => {
             cast_from_hand(state, cards, card, payment)?;
             Transition::default()
@@ -701,6 +785,14 @@ fn apply_action_internal<D: CardDatabase>(
             payment,
         } => {
             cast_aura_from_hand(state, cards, card, target, payment)?;
+            Transition::default()
+        }
+        Action::CastTargetedFromHand {
+            card,
+            target,
+            payment,
+        } => {
+            cast_targeted_from_hand(state, cards, card, target, payment)?;
             Transition::default()
         }
         Action::CastWhir {
@@ -794,6 +886,9 @@ fn apply_action_internal<D: CardDatabase>(
         }
         Action::ChooseTopOrder { order } => choose_top_order(state, order)?,
         Action::ChooseScry { top, bottom } => choose_scry(state, top, bottom)?,
+        Action::ChooseProducerUntap { untap } => choose_producer_untap(state, untap)?,
+        Action::ChooseCamTarget { target } => choose_cam_target(state, cards, target)?,
+        Action::ChooseCamEffect { choice } => choose_cam_effect(state, choice)?,
     };
     refresh_continuous_top_visibility(state, cards)?;
     state.validate()?;
@@ -886,6 +981,60 @@ pub fn legal_contingent_actions<D: CardDatabase>(
             .into_iter()
             .map(|order| Action::ChooseTopOrder { order })
             .collect(),
+        ObservedPendingDecision::ProducerUntapChoice { .. } => vec![
+            Action::ChooseProducerUntap { untap: true },
+            Action::ChooseProducerUntap { untap: false },
+        ],
+        ObservedPendingDecision::CamTarget { .. } => {
+            let mut seen = BTreeSet::new();
+            information
+                .battlefield
+                .iter()
+                .filter(|permanent| {
+                    cards
+                        .profile(permanent.card)
+                        .is_some_and(|profile| profile.is_creature)
+                })
+                .filter_map(|permanent| {
+                    seen.insert(permanent.canonical_id)
+                        .then_some(Action::ChooseCamTarget {
+                            target: permanent.canonical_id,
+                        })
+                })
+                .collect()
+        }
+        ObservedPendingDecision::CamEffect { target, .. } => {
+            let tapped = target
+                .canonical_object
+                .and_then(|target_id| {
+                    information
+                        .battlefield
+                        .iter()
+                        .find(|permanent| permanent.canonical_id == target_id)
+                })
+                .map(|permanent| permanent.tapped);
+            match tapped {
+                Some(true) => vec![
+                    Action::ChooseCamEffect {
+                        choice: CamEffectChoice::Untap,
+                    },
+                    Action::ChooseCamEffect {
+                        choice: CamEffectChoice::Decline,
+                    },
+                ],
+                Some(false) => vec![
+                    Action::ChooseCamEffect {
+                        choice: CamEffectChoice::Tap,
+                    },
+                    Action::ChooseCamEffect {
+                        choice: CamEffectChoice::Decline,
+                    },
+                ],
+                None => vec![Action::ChooseCamEffect {
+                    choice: CamEffectChoice::Decline,
+                }],
+            }
+        }
         ObservedPendingDecision::ScryChoice { looked_at, .. } => {
             let mut actions = Vec::new();
             for order in unique_permutations(looked_at) {
@@ -990,9 +1139,11 @@ pub fn advance_phase<D: CardDatabase>(
         }
         Phase::PrecombatMain => {
             state.phase = Phase::EndStep;
+            queue_due_chrome_end_step_triggers(state);
             state.window = Window::Priority;
         }
         Phase::EndStep => {
+            clear_end_of_turn_knack_grants(state);
             expire_urza_permissions(state);
             state.phase = Phase::OpponentCycle;
             state.window = Window::None;
@@ -1096,6 +1247,12 @@ pub enum WinFamily {
     TopFttLevelTwoProducer,
     BasaltGadgeteer,
     TopGadgeteerProducer,
+    ChromeDomeGrindingStation,
+    ChromeDomeBatteredGolem,
+    ChromeDomePaGadgeteerManaVault,
+    KnackHelixValleyFloodcaller,
+    KnackHelixBatteredGolem,
+    KnackHelixCam,
 }
 
 impl WinFamily {
@@ -1108,6 +1265,12 @@ impl WinFamily {
             Self::TopFttLevelTwoProducer => "Top + FTT L2 + producer",
             Self::BasaltGadgeteer => "Basalt + Gadgeteer",
             Self::TopGadgeteerProducer => "Top + Gadgeteer + producer",
+            Self::ChromeDomeGrindingStation => "Chrome Dome + Grinding Station",
+            Self::ChromeDomeBatteredGolem => "Chrome Dome + Battered Golem",
+            Self::ChromeDomePaGadgeteerManaVault => "Chrome Dome + PA + Gadgeteer + Mana Vault",
+            Self::KnackHelixValleyFloodcaller => "Knack/Helix + Valley Floodcaller",
+            Self::KnackHelixBatteredGolem => "Knack/Helix + Battered Golem",
+            Self::KnackHelixCam => "Knack/Helix + Cam",
         }
     }
 }
@@ -1129,6 +1292,119 @@ pub fn detect_terminal_win<D: CardDatabase>(
     });
     if !urza_present {
         return None;
+    }
+
+    let chrome_permanents: Vec<_> = information
+        .battlefield
+        .iter()
+        .filter(|permanent| {
+            cards
+                .profile(permanent.card)
+                .is_some_and(|profile| profile.engine == EngineKind::ChromeDome)
+        })
+        .collect();
+    for chrome in &chrome_permanents {
+        let effective_cost = public_artifact_activation_generic_cost(information, cards, chrome, 5);
+        let mana_total = public_mana_total(information.mana);
+        let ready_station = information.battlefield.iter().any(|permanent| {
+            !permanent.tapped
+                && cards
+                    .profile(permanent.card)
+                    .is_some_and(|profile| profile.engine == EngineKind::GrindingStation)
+        });
+        if ready_station && mana_total >= u32::from(effective_cost) {
+            return Some(WinFamily::ChromeDomeGrindingStation);
+        }
+        let ready_golem = information.battlefield.iter().any(|permanent| {
+            !permanent.tapped
+                && cards
+                    .profile(permanent.card)
+                    .is_some_and(|profile| profile.engine == EngineKind::BatteredGolem)
+        });
+        if ready_golem && mana_total >= u32::from(effective_cost) {
+            return Some(WinFamily::ChromeDomeBatteredGolem);
+        }
+
+        let gadgeteer = information.battlefield.iter().any(|permanent| {
+            cards
+                .profile(permanent.card)
+                .is_some_and(|profile| profile.engine == EngineKind::ForensicGadgeteer)
+        });
+        let ready_vault = information.battlefield.iter().any(|permanent| {
+            !permanent.tapped
+                && cards
+                    .profile(permanent.card)
+                    .is_some_and(|profile| profile.engine == EngineKind::ManaVault)
+        });
+        let power_artifact_attached = information.battlefield.iter().any(|permanent| {
+            cards.profile(permanent.card).is_some_and(|profile| {
+                profile.engine == EngineKind::PowerArtifact
+                    && permanent.attached_to == Some(chrome.canonical_id)
+            })
+        });
+        if gadgeteer && ready_vault && power_artifact_attached && effective_cost <= 2 {
+            return Some(WinFamily::ChromeDomePaGadgeteerManaVault);
+        }
+    }
+
+    let ready_granted: Vec<_> = information
+        .battlefield
+        .iter()
+        .filter(|permanent| {
+            permanent.granted_ability == Some(urza_core::GrantedAbility::KnackBounceUntilEndOfTurn)
+                && !permanent.tapped
+                && !permanent.summoning_sick
+        })
+        .collect();
+    let ready_cam = information.battlefield.iter().any(|permanent| {
+        !permanent.tapped
+            && cards
+                .profile(permanent.card)
+                .is_some_and(|profile| profile.utility == UtilityKind::SewerVeillanceCam)
+    });
+    if ready_cam && !ready_granted.is_empty() {
+        return Some(WinFamily::KnackHelixCam);
+    }
+
+    for granted in &ready_granted {
+        let Some(granted_profile) = cards.profile(granted.card) else {
+            continue;
+        };
+        let source_is_floodcaller = granted_profile.engine == EngineKind::ValleyFloodcaller;
+        let source_is_golem = granted_profile.engine == EngineKind::BatteredGolem;
+        if !source_is_floodcaller && !source_is_golem {
+            continue;
+        }
+        let replay = information
+            .hand
+            .iter()
+            .filter_map(|card| cards.profile(*card))
+            .find(|profile| {
+                profile.is_artifact
+                    && (!source_is_floodcaller || !profile.is_creature)
+                    && profile
+                        .mana_cost
+                        .is_some_and(|cost| cost.required_total() <= 1)
+            });
+        let Some(replay) = replay else {
+            continue;
+        };
+        let positive = replay
+            .mana_cost
+            .is_some_and(|cost| cost.required_total() == 0);
+        let distinct_producer = information.battlefield.iter().any(|permanent| {
+            permanent.canonical_id != granted.canonical_id
+                && cards
+                    .profile(permanent.card)
+                    .is_some_and(|profile| profile.top_loop_producer)
+        });
+        if positive || distinct_producer {
+            return Some(if source_is_floodcaller {
+                WinFamily::KnackHelixValleyFloodcaller
+            } else {
+                WinFamily::KnackHelixBatteredGolem
+            });
+        }
     }
 
     for aura in &information.battlefield {
@@ -1255,6 +1531,43 @@ pub fn detect_terminal_win<D: CardDatabase>(
     None
 }
 
+fn public_mana_total(pool: ManaPool) -> u32 {
+    [
+        pool.white,
+        pool.blue,
+        pool.black,
+        pool.red,
+        pool.green,
+        pool.colorless,
+    ]
+    .into_iter()
+    .map(u32::from)
+    .sum()
+}
+
+fn public_artifact_activation_generic_cost<D: CardDatabase>(
+    information: &InformationState,
+    cards: &D,
+    source: &urza_info::ObservedPermanent,
+    base_generic: u16,
+) -> u16 {
+    let mut reduction = 0_u16;
+    for permanent in &information.battlefield {
+        if let Some(profile) = cards.profile(permanent.card) {
+            reduction = reduction.saturating_add(profile.artifact_activation_reduction);
+            if permanent.attached_to == Some(source.canonical_id) {
+                reduction =
+                    reduction.saturating_add(profile.attached_artifact_activation_reduction);
+            }
+        }
+    }
+    if reduction == 0 || base_generic == 0 {
+        base_generic
+    } else {
+        base_generic.saturating_sub(reduction).max(1)
+    }
+}
+
 pub fn observe_library_search<F>(state: &TrueState, mut eligible: F) -> LibrarySearchObservation
 where
     F: FnMut(CardDefId) -> bool,
@@ -1313,6 +1626,7 @@ fn play_land<D: CardDatabase>(
     let saga = profile.utility == UtilityKind::UrzasSaga;
     insert_permanent(
         state,
+        cards,
         PermanentState {
             object_id,
             card,
@@ -1468,6 +1782,139 @@ fn activate_urza_artifact_mana<D: CardDatabase>(
         .ok_or(RuleError::ArithmeticOverflow)?;
     set_tapped(state, artifact)?;
     state.mana.blue = blue;
+    Ok(())
+}
+
+fn activate_grinding_station<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: ObjectId,
+    sacrifice: CanonicalObjectId,
+) -> Result<(), RuleError> {
+    ensure_priority(state)?;
+    ensure_no_pending_decision(state)?;
+    let station = battlefield_permanent(state, source)?.clone();
+    if station.tapped {
+        return Err(RuleError::PermanentTapped(source));
+    }
+    if card_profile(cards, station.card)?.engine != EngineKind::GrindingStation {
+        return Err(RuleError::UnsupportedCardMechanic(station.card));
+    }
+    let sacrifice_id = resolve_canonical_object(state, sacrifice)
+        .map_err(|error| match error {
+            urza_info::ObservationError::InvalidState(error) => RuleError::InvalidState(error),
+        })?
+        .ok_or(RuleError::MissingCanonicalPermanent(sacrifice))?;
+    validate_sacrifice_artifact(state, cards, sacrifice_id)?;
+    set_tapped(state, source)?;
+    sacrifice_artifact(state, sacrifice_id)?;
+    state.stack.push(StackObject::ActivatedAbility {
+        source: SourceRef {
+            object_id: Some(source),
+            card: station.card,
+        },
+        ability: ABILITY_GRINDING_STATION_MILL,
+        parameter: None,
+    });
+    state.window = Window::Priority;
+    Ok(())
+}
+
+fn activate_chrome_dome<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: ObjectId,
+    target: CanonicalObjectId,
+    payment: ManaPayment,
+) -> Result<(), RuleError> {
+    ensure_priority(state)?;
+    ensure_no_pending_decision(state)?;
+    let dome = battlefield_permanent(state, source)?.clone();
+    if card_profile(cards, dome.card)?.engine != EngineKind::ChromeDome {
+        return Err(RuleError::UnsupportedCardMechanic(dome.card));
+    }
+    let target_id = resolve_canonical_object(state, target)
+        .map_err(|error| match error {
+            urza_info::ObservationError::InvalidState(error) => RuleError::InvalidState(error),
+        })?
+        .ok_or(RuleError::MissingCanonicalPermanent(target))?;
+    if target_id == source {
+        return Err(RuleError::InvalidPermanentTarget);
+    }
+    let target_permanent = battlefield_permanent(state, target_id)?.clone();
+    if !card_profile(cards, target_permanent.card)?.is_artifact {
+        return Err(RuleError::InvalidPermanentTarget);
+    }
+    let cost = reduced_artifact_activation_cost(state, cards, source, 5)?;
+    validate_payment(state.mana, payment, cost)?;
+    spend_payment(&mut state.mana, payment);
+    state.stack.push(StackObject::TargetedActivatedAbility {
+        source: SourceRef {
+            object_id: Some(source),
+            card: dome.card,
+        },
+        ability: ABILITY_CHROME_DOME_COPY,
+        target: SourceRef {
+            object_id: Some(target_id),
+            card: target_permanent.card,
+        },
+        parameter: None,
+    });
+    state.window = Window::Priority;
+    Ok(())
+}
+
+fn activate_granted_knack_bounce<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: ObjectId,
+    target: CanonicalObjectId,
+) -> Result<(), RuleError> {
+    ensure_priority(state)?;
+    ensure_no_pending_decision(state)?;
+    let creature = battlefield_permanent(state, source)?.clone();
+    if creature.granted_ability != Some(urza_core::GrantedAbility::KnackBounceUntilEndOfTurn)
+        || !permanent_is_creature(cards, &creature)?
+    {
+        return Err(RuleError::UnsupportedCardMechanic(creature.card));
+    }
+    if creature.tapped {
+        return Err(RuleError::PermanentTapped(source));
+    }
+    if creature.summoning_sick {
+        return Err(RuleError::SummoningSick(source));
+    }
+    let target_id = resolve_canonical_object(state, target)
+        .map_err(|error| match error {
+            urza_info::ObservationError::InvalidState(error) => RuleError::InvalidState(error),
+        })?
+        .ok_or(RuleError::MissingCanonicalPermanent(target))?;
+    let target_permanent = battlefield_permanent(state, target_id)?.clone();
+    if card_profile(cards, target_permanent.card)?.role == R2CardRole::Land {
+        return Err(RuleError::InvalidPermanentTarget);
+    }
+    if state
+        .battlefield
+        .permanents()
+        .iter()
+        .any(|permanent| permanent.attached_to == Some(target_id))
+    {
+        return Err(RuleError::AttachedBounceDeferred(target_id));
+    }
+    set_tapped(state, source)?;
+    state.stack.push(StackObject::TargetedActivatedAbility {
+        source: SourceRef {
+            object_id: Some(source),
+            card: creature.card,
+        },
+        ability: ABILITY_KNACK_BOUNCE,
+        target: SourceRef {
+            object_id: Some(target_id),
+            card: target_permanent.card,
+        },
+        parameter: None,
+    });
+    state.window = Window::Priority;
     Ok(())
 }
 
@@ -1741,6 +2188,7 @@ fn play_library_top_land<D: CardDatabase>(
     let saga = profile.utility == UtilityKind::UrzasSaga;
     insert_permanent(
         state,
+        cards,
         PermanentState {
             object_id,
             card,
@@ -1843,6 +2291,7 @@ fn cast_library_top<D: CardDatabase>(
         card,
         x_value: None,
     });
+    queue_cast_triggers(state, cards, card);
     state.spell_cast_this_turn = true;
     state.window = Window::Priority;
     Ok(())
@@ -2014,6 +2463,7 @@ fn play_urza_permission<D: CardDatabase>(
         let saga = profile.utility == UtilityKind::UrzasSaga;
         insert_permanent(
             state,
+            cards,
             PermanentState {
                 object_id,
                 card: permission.card,
@@ -2101,6 +2551,7 @@ fn play_urza_permission<D: CardDatabase>(
         )
         .then_some(0),
     });
+    queue_cast_triggers(state, cards, permission.card);
     state.spell_cast_this_turn = true;
     state.window = Window::Priority;
     consume_permission(state, permission_id);
@@ -2151,6 +2602,7 @@ fn play_urza_permission_aura<D: CardDatabase>(
             card: target_card,
         },
     });
+    queue_cast_triggers(state, cards, permission.card);
     state.spell_cast_this_turn = true;
     state.window = Window::Priority;
     consume_permission(state, permission_id);
@@ -2237,6 +2689,56 @@ fn cast_aura_from_hand<D: CardDatabase>(
             card: target_card,
         },
     });
+    queue_cast_triggers(state, cards, card);
+    state.spell_cast_this_turn = true;
+    state.window = Window::Priority;
+    Ok(())
+}
+
+fn cast_targeted_from_hand<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    card: CardDefId,
+    target: CanonicalObjectId,
+    payment: ManaPayment,
+) -> Result<(), RuleError> {
+    ensure_priority(state)?;
+    ensure_no_pending_decision(state)?;
+    let profile = card_profile(cards, card)?;
+    if profile.role != R2CardRole::TargetedEffectSpell
+        || profile.spell_effect != SpellEffectKind::KnackBounceGrant
+    {
+        return Err(RuleError::UnsupportedCardMechanic(card));
+    }
+    if !state.hand.cards().contains(&card) {
+        return Err(RuleError::CardNotInHand(card));
+    }
+    let target_id = resolve_canonical_object(state, target)
+        .map_err(|error| match error {
+            urza_info::ObservationError::InvalidState(error) => RuleError::InvalidState(error),
+        })?
+        .ok_or(RuleError::MissingCanonicalPermanent(target))?;
+    let target_permanent = battlefield_permanent(state, target_id)?.clone();
+    if !permanent_is_creature(cards, &target_permanent)? {
+        return Err(RuleError::InvalidPermanentTarget);
+    }
+    let cost = profile
+        .mana_cost
+        .ok_or(RuleError::UnsupportedCardMechanic(card))?;
+    validate_payment(state.mana, payment, cost)?;
+    let object_id = next_object_id(state)?;
+    spend_payment(&mut state.mana, payment);
+    let removed = state.hand.remove_one(card);
+    debug_assert!(removed);
+    state.stack.push(StackObject::TargetedSpell {
+        object_id,
+        card,
+        target: SourceRef {
+            object_id: Some(target_id),
+            card: target_permanent.card,
+        },
+    });
+    queue_cast_triggers(state, cards, card);
     state.spell_cast_this_turn = true;
     state.window = Window::Priority;
     Ok(())
@@ -2315,6 +2817,7 @@ fn cast_whir<D: CardDatabase>(
         card,
         x_value: Some(x_value),
     });
+    queue_cast_triggers(state, cards, card);
     state.spell_cast_this_turn = true;
     state.window = Window::Priority;
     Ok(())
@@ -2356,6 +2859,7 @@ fn cast_reshape<D: CardDatabase>(
         card,
         x_value: Some(x_value),
     });
+    queue_cast_triggers(state, cards, card);
     state.spell_cast_this_turn = true;
     state.window = Window::Priority;
     Ok(())
@@ -2428,6 +2932,7 @@ fn cast_paid_spell<D: CardDatabase>(
         card,
         x_value,
     });
+    queue_cast_triggers(state, cards, card);
     state.spell_cast_this_turn = true;
     state.window = Window::Priority;
     if card == cards.commander_card() {
@@ -2500,6 +3005,11 @@ fn resolve_top_stack_object<D: CardDatabase>(
             card,
             target,
         } => resolve_aura_spell(state, cards, object_id, card, target),
+        StackObject::TargetedSpell {
+            object_id,
+            card,
+            target,
+        } => resolve_targeted_spell(state, cards, object_id, card, target),
         StackObject::ActivatedAbility {
             source,
             ability,
@@ -2632,7 +3142,78 @@ fn resolve_top_stack_object<D: CardDatabase>(
                 PermanentMode::FortuneTellersTalentLevel3,
             )
         }
+        StackObject::ActivatedAbility {
+            ability: ABILITY_GRINDING_STATION_MILL,
+            ..
+        } => {
+            state.stack.pop();
+            state.window = Window::Priority;
+            Ok(Transition {
+                observations: vec![RulesObservation::OpponentMilled { cards: 3 }],
+            })
+        }
+        StackObject::ControlledTrigger {
+            source,
+            ability: ABILITY_ARTIFACT_ENTRY_UNTAP,
+        } => {
+            state.stack.pop();
+            resolve_artifact_entry_untap(state, source)
+        }
+        StackObject::ControlledTrigger {
+            source,
+            ability: ABILITY_GADGETEER_INVESTIGATE,
+        } => {
+            state.stack.pop();
+            resolve_gadgeteer_investigate(state, cards, source)
+        }
+        StackObject::ControlledTrigger {
+            source,
+            ability: ABILITY_FLOODCALLER_UNTAP,
+        } => {
+            state.stack.pop();
+            resolve_floodcaller_untap(state, cards, source)
+        }
+        StackObject::ControlledTrigger {
+            source,
+            ability: ABILITY_CAM_TAP_UNTAP,
+        } => {
+            state.stack.pop();
+            stage_cam_target(state, cards, source)
+        }
+        StackObject::TargetedControlledTrigger {
+            source,
+            ability: ABILITY_CAM_TAP_UNTAP,
+            target,
+        } => {
+            state.stack.pop();
+            stage_cam_effect(state, source, target)
+        }
+        StackObject::TargetedActivatedAbility {
+            source,
+            ability: ABILITY_CHROME_DOME_COPY,
+            target,
+            ..
+        } => {
+            state.stack.pop();
+            resolve_chrome_dome_copy(state, cards, source, target)
+        }
+        StackObject::ControlledTrigger {
+            source,
+            ability: ABILITY_CHROME_DOME_SACRIFICE,
+        } => {
+            state.stack.pop();
+            resolve_chrome_dome_sacrifice(state, cards, source)
+        }
+        StackObject::TargetedActivatedAbility {
+            ability: ABILITY_KNACK_BOUNCE,
+            target,
+            ..
+        } => {
+            state.stack.pop();
+            resolve_knack_bounce(state, cards, target)
+        }
         StackObject::ControlledTrigger { .. }
+        | StackObject::TargetedControlledTrigger { .. }
         | StackObject::ActivatedAbility { .. }
         | StackObject::TargetedActivatedAbility { .. } => Err(RuleError::UnsupportedStackObject),
     }
@@ -2753,6 +3334,351 @@ fn resolve_ftt_level<D: CardDatabase>(
     Ok(Transition::default())
 }
 
+fn resolve_targeted_spell<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    _object_id: ObjectId,
+    card: CardDefId,
+    target: SourceRef,
+) -> Result<Transition, RuleError> {
+    let profile = card_profile(cards, card)?;
+    if profile.role != R2CardRole::TargetedEffectSpell
+        || profile.spell_effect != SpellEffectKind::KnackBounceGrant
+    {
+        return Err(RuleError::UnsupportedCardMechanic(card));
+    }
+    state.stack.pop();
+    state.graveyard.insert(card);
+    if let Some(target_id) = target.object_id
+        && state
+            .battlefield
+            .get(target_id)
+            .is_some_and(|permanent| permanent.card == target.card)
+    {
+        let mut permanents = state.battlefield.permanents().to_vec();
+        if let Some(permanent) = permanents
+            .iter_mut()
+            .find(|permanent| permanent.object_id == target_id)
+        {
+            permanent.granted_ability = Some(urza_core::GrantedAbility::KnackBounceUntilEndOfTurn);
+        }
+        state.battlefield = BattlefieldZone::new(permanents);
+    }
+    state.window = Window::Priority;
+    Ok(Transition::default())
+}
+
+fn resolve_artifact_entry_untap(
+    state: &mut TrueState,
+    source: SourceRef,
+) -> Result<Transition, RuleError> {
+    let live_tapped = source.object_id.is_some_and(|object_id| {
+        state
+            .battlefield
+            .get(object_id)
+            .is_some_and(|permanent| permanent.card == source.card && permanent.tapped)
+    });
+    if live_tapped {
+        state.pending = PendingDecision::ProducerUntapChoice { source };
+        state.window = Window::PostObservation;
+    } else {
+        state.window = Window::Priority;
+    }
+    Ok(Transition::default())
+}
+
+fn choose_producer_untap(state: &mut TrueState, untap: bool) -> Result<Transition, RuleError> {
+    if state.window != Window::PostObservation {
+        return Err(RuleError::SearchDecisionMismatch);
+    }
+    let PendingDecision::ProducerUntapChoice { source } = state.pending.clone() else {
+        return Err(RuleError::SearchDecisionMismatch);
+    };
+    if untap
+        && let Some(object_id) = source.object_id
+        && state
+            .battlefield
+            .get(object_id)
+            .is_some_and(|permanent| permanent.card == source.card)
+    {
+        set_untapped(state, object_id)?;
+    }
+    state.pending = PendingDecision::None;
+    state.window = Window::Priority;
+    Ok(Transition::default())
+}
+
+fn resolve_gadgeteer_investigate<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    _source: SourceRef,
+) -> Result<Transition, RuleError> {
+    let clue = cards
+        .clue_token_card()
+        .ok_or(RuleError::UnsupportedStackObject)?;
+    let profile = card_profile(cards, clue)?;
+    let object_id = next_object_id(state)?;
+    insert_permanent(
+        state,
+        cards,
+        PermanentState {
+            object_id,
+            card: clue,
+            face: profile.battlefield_face,
+            tapped: false,
+            summoning_sick: false,
+            token: true,
+            counters: CounterState::default(),
+            mode: PermanentMode::Normal,
+            attached_to: None,
+            granted_ability: None,
+        },
+    );
+    state.window = Window::Priority;
+    Ok(Transition {
+        observations: vec![RulesObservation::PermanentEntered {
+            card: clue,
+            face: profile.battlefield_face,
+            token: true,
+        }],
+    })
+}
+
+fn resolve_floodcaller_untap<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    _source: SourceRef,
+) -> Result<Transition, RuleError> {
+    let mut permanents = state.battlefield.permanents().to_vec();
+    for permanent in &mut permanents {
+        if cards
+            .profile(permanent.card)
+            .is_some_and(|profile| profile.floodcaller_untap_eligible)
+        {
+            permanent.tapped = false;
+        }
+    }
+    state.battlefield = BattlefieldZone::new(permanents);
+    state.window = Window::Priority;
+    Ok(Transition::default())
+}
+
+fn stage_cam_target<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: SourceRef,
+) -> Result<Transition, RuleError> {
+    let has_creature = state.battlefield.permanents().iter().any(|permanent| {
+        cards
+            .profile(permanent.card)
+            .is_some_and(|profile| profile.is_creature)
+    });
+    if has_creature {
+        state.pending = PendingDecision::CamTarget { source };
+        state.window = Window::PostObservation;
+    } else {
+        state.window = Window::Priority;
+    }
+    Ok(Transition::default())
+}
+
+fn choose_cam_target<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    target: CanonicalObjectId,
+) -> Result<Transition, RuleError> {
+    if state.window != Window::PostObservation {
+        return Err(RuleError::SearchDecisionMismatch);
+    }
+    let PendingDecision::CamTarget { source } = state.pending.clone() else {
+        return Err(RuleError::SearchDecisionMismatch);
+    };
+    let target_id = resolve_canonical_object(state, target)
+        .map_err(|error| match error {
+            urza_info::ObservationError::InvalidState(error) => RuleError::InvalidState(error),
+        })?
+        .ok_or(RuleError::MissingCanonicalPermanent(target))?;
+    let permanent = battlefield_permanent(state, target_id)?.clone();
+    if !permanent_is_creature(cards, &permanent)? {
+        return Err(RuleError::InvalidPermanentTarget);
+    }
+    state.pending = PendingDecision::None;
+    state.stack.push(StackObject::TargetedControlledTrigger {
+        source,
+        ability: ABILITY_CAM_TAP_UNTAP,
+        target: SourceRef {
+            object_id: Some(target_id),
+            card: permanent.card,
+        },
+    });
+    state.window = Window::Priority;
+    Ok(Transition::default())
+}
+
+fn stage_cam_effect(
+    state: &mut TrueState,
+    source: SourceRef,
+    target: SourceRef,
+) -> Result<Transition, RuleError> {
+    state.pending = PendingDecision::CamEffect { source, target };
+    state.window = Window::PostObservation;
+    Ok(Transition::default())
+}
+
+fn choose_cam_effect(
+    state: &mut TrueState,
+    choice: CamEffectChoice,
+) -> Result<Transition, RuleError> {
+    if state.window != Window::PostObservation {
+        return Err(RuleError::SearchDecisionMismatch);
+    }
+    let PendingDecision::CamEffect { target, .. } = state.pending.clone() else {
+        return Err(RuleError::SearchDecisionMismatch);
+    };
+    if let Some(object_id) = target.object_id
+        && state
+            .battlefield
+            .get(object_id)
+            .is_some_and(|permanent| permanent.card == target.card)
+    {
+        match choice {
+            CamEffectChoice::Decline => {}
+            CamEffectChoice::Tap => set_tapped(state, object_id)?,
+            CamEffectChoice::Untap => set_untapped(state, object_id)?,
+        }
+    }
+    state.pending = PendingDecision::None;
+    state.window = Window::Priority;
+    Ok(Transition::default())
+}
+
+fn resolve_chrome_dome_copy<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    _source: SourceRef,
+    target: SourceRef,
+) -> Result<Transition, RuleError> {
+    let Some(target_id) = target.object_id else {
+        state.window = Window::Priority;
+        return Ok(Transition::default());
+    };
+    let Some(target_permanent) = state.battlefield.get(target_id).cloned() else {
+        state.window = Window::Priority;
+        return Ok(Transition::default());
+    };
+    if target_permanent.card != target.card || !card_profile(cards, target.card)?.is_artifact {
+        state.window = Window::Priority;
+        return Ok(Transition::default());
+    }
+    let profile = card_profile(cards, target.card)?;
+    let object_id = next_object_id(state)?;
+    insert_permanent(
+        state,
+        cards,
+        PermanentState {
+            object_id,
+            card: target.card,
+            face: profile.battlefield_face,
+            tapped: false,
+            summoning_sick: profile.is_creature,
+            token: true,
+            counters: CounterState {
+                loyalty: profile.starting_loyalty,
+                ..CounterState::default()
+            },
+            mode: initial_permanent_mode(profile),
+            attached_to: None,
+            granted_ability: None,
+        },
+    );
+    let due_turn = if state.phase == Phase::EndStep {
+        state
+            .turn
+            .checked_add(1)
+            .ok_or(RuleError::ArithmeticOverflow)?
+    } else {
+        state.turn
+    };
+    state
+        .delayed_events
+        .push(DelayedEvent::ChromeCopySacrifice {
+            object: object_id,
+            card: target.card,
+            due_turn,
+        });
+    state.window = Window::Priority;
+    Ok(Transition {
+        observations: vec![RulesObservation::PermanentEntered {
+            card: target.card,
+            face: profile.battlefield_face,
+            token: true,
+        }],
+    })
+}
+
+fn resolve_chrome_dome_sacrifice<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: SourceRef,
+) -> Result<Transition, RuleError> {
+    if let Some(object_id) = source.object_id
+        && state
+            .battlefield
+            .get(object_id)
+            .is_some_and(|permanent| permanent.card == source.card)
+    {
+        let was_cam = cards
+            .profile(source.card)
+            .is_some_and(|profile| profile.utility == UtilityKind::SewerVeillanceCam);
+        sacrifice_artifact(state, object_id)?;
+        if was_cam {
+            queue_cam_leave_trigger(state, source.card);
+        }
+    }
+    state.window = Window::Priority;
+    Ok(Transition::default())
+}
+
+fn resolve_knack_bounce<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    target: SourceRef,
+) -> Result<Transition, RuleError> {
+    let Some(object_id) = target.object_id else {
+        state.window = Window::Priority;
+        return Ok(Transition::default());
+    };
+    let Some(permanent) = state.battlefield.get(object_id).cloned() else {
+        state.window = Window::Priority;
+        return Ok(Transition::default());
+    };
+    if permanent.card != target.card {
+        state.window = Window::Priority;
+        return Ok(Transition::default());
+    }
+    let was_cam = cards
+        .profile(permanent.card)
+        .is_some_and(|profile| profile.utility == UtilityKind::SewerVeillanceCam);
+    let mut permanents = state.battlefield.permanents().to_vec();
+    let index = permanents
+        .iter()
+        .position(|candidate| candidate.object_id == object_id)
+        .ok_or(RuleError::MissingPermanent(object_id))?;
+    let removed = permanents.remove(index);
+    state.battlefield = BattlefieldZone::new(permanents);
+    state.delayed_events.retain(|event| {
+        !matches!(event, DelayedEvent::ChromeCopySacrifice { object, .. } if *object == object_id)
+    });
+    if !removed.token {
+        state.hand.insert(removed.card);
+    }
+    if was_cam {
+        queue_cam_leave_trigger(state, removed.card);
+    }
+    state.window = Window::Priority;
+    Ok(Transition::default())
+}
+
 fn resolve_aura_spell<D: CardDatabase>(
     state: &mut TrueState,
     cards: &D,
@@ -2791,6 +3717,7 @@ fn resolve_aura_spell<D: CardDatabase>(
 
     insert_permanent(
         state,
+        cards,
         PermanentState {
             object_id,
             card,
@@ -2892,6 +3819,7 @@ fn resolve_spell<D: CardDatabase>(
     state.window = Window::Resolving;
     insert_permanent(
         state,
+        cards,
         PermanentState {
             object_id,
             card,
@@ -2919,6 +3847,7 @@ fn resolve_spell<D: CardDatabase>(
         state.commander.zone = CommanderZone::Battlefield;
         insert_permanent(
             state,
+            cards,
             PermanentState {
                 object_id: construct_id,
                 card: construct_card,
@@ -3018,6 +3947,7 @@ fn resolve_saga_chapter_ii<D: CardDatabase>(
     let object_id = next_object_id(state)?;
     insert_permanent(
         state,
+        cards,
         PermanentState {
             object_id,
             card: construct,
@@ -3810,6 +4740,7 @@ fn put_card_onto_battlefield_with_id<D: CardDatabase>(
     let profile = card_profile(cards, card)?;
     insert_permanent(
         state,
+        cards,
         PermanentState {
             object_id,
             card,
@@ -3986,9 +4917,119 @@ fn set_permanent_tapped(
     Ok(())
 }
 
-fn insert_permanent(state: &mut TrueState, permanent: PermanentState) {
+fn insert_permanent<D: CardDatabase>(state: &mut TrueState, cards: &D, permanent: PermanentState) {
+    let entered = permanent.clone();
     let mut permanents = state.battlefield.permanents().to_vec();
     permanents.push(permanent);
+    state.battlefield = BattlefieldZone::new(permanents);
+
+    let Some(entered_profile) = cards.profile(entered.card) else {
+        return;
+    };
+    if entered_profile.is_artifact {
+        let mut triggers = Vec::new();
+        for producer in state.battlefield.permanents() {
+            let Some(profile) = cards.profile(producer.card) else {
+                continue;
+            };
+            if matches!(
+                profile.engine,
+                EngineKind::GrindingStation | EngineKind::BatteredGolem
+            ) {
+                triggers.push(StackObject::ControlledTrigger {
+                    source: SourceRef {
+                        object_id: Some(producer.object_id),
+                        card: producer.card,
+                    },
+                    ability: ABILITY_ARTIFACT_ENTRY_UNTAP,
+                });
+            }
+        }
+        state.stack.extend(triggers);
+    }
+    if entered_profile.utility == UtilityKind::SewerVeillanceCam {
+        state.stack.push(StackObject::ControlledTrigger {
+            source: SourceRef {
+                object_id: Some(entered.object_id),
+                card: entered.card,
+            },
+            ability: ABILITY_CAM_TAP_UNTAP,
+        });
+    }
+}
+
+fn queue_cast_triggers<D: CardDatabase>(state: &mut TrueState, cards: &D, card: CardDefId) {
+    let Some(cast_profile) = cards.profile(card) else {
+        return;
+    };
+    let mut triggers = Vec::new();
+    for permanent in state.battlefield.permanents() {
+        let Some(profile) = cards.profile(permanent.card) else {
+            continue;
+        };
+        if cast_profile.is_artifact && profile.engine == EngineKind::ForensicGadgeteer {
+            triggers.push(StackObject::ControlledTrigger {
+                source: SourceRef {
+                    object_id: Some(permanent.object_id),
+                    card: permanent.card,
+                },
+                ability: ABILITY_GADGETEER_INVESTIGATE,
+            });
+        }
+        if !cast_profile.is_creature && profile.engine == EngineKind::ValleyFloodcaller {
+            triggers.push(StackObject::ControlledTrigger {
+                source: SourceRef {
+                    object_id: Some(permanent.object_id),
+                    card: permanent.card,
+                },
+                ability: ABILITY_FLOODCALLER_UNTAP,
+            });
+        }
+    }
+    state.stack.extend(triggers);
+}
+
+fn queue_cam_leave_trigger(state: &mut TrueState, card: CardDefId) {
+    state.stack.push(StackObject::ControlledTrigger {
+        source: SourceRef {
+            object_id: None,
+            card,
+        },
+        ability: ABILITY_CAM_TAP_UNTAP,
+    });
+}
+
+fn queue_due_chrome_end_step_triggers(state: &mut TrueState) {
+    let mut due = Vec::new();
+    state.delayed_events.retain(|event| match event {
+        DelayedEvent::ChromeCopySacrifice {
+            object,
+            card,
+            due_turn,
+        } if *due_turn <= state.turn => {
+            due.push((*object, *card));
+            false
+        }
+        _ => true,
+    });
+    for (object, card) in due {
+        state.stack.push(StackObject::ControlledTrigger {
+            source: SourceRef {
+                object_id: Some(object),
+                card,
+            },
+            ability: ABILITY_CHROME_DOME_SACRIFICE,
+        });
+    }
+}
+
+fn clear_end_of_turn_knack_grants(state: &mut TrueState) {
+    let mut permanents = state.battlefield.permanents().to_vec();
+    for permanent in &mut permanents {
+        if permanent.granted_ability == Some(urza_core::GrantedAbility::KnackBounceUntilEndOfTurn) {
+            permanent.granted_ability = None;
+        }
+    }
     state.battlefield = BattlefieldZone::new(permanents);
 }
 
@@ -4003,10 +5044,11 @@ fn next_object_id(state: &TrueState) -> Result<ObjectId, RuleError> {
         .stack
         .iter()
         .filter_map(|object| match object {
-            StackObject::Spell { object_id, .. } | StackObject::AuraSpell { object_id, .. } => {
-                Some(object_id.0)
-            }
+            StackObject::Spell { object_id, .. }
+            | StackObject::AuraSpell { object_id, .. }
+            | StackObject::TargetedSpell { object_id, .. } => Some(object_id.0),
             StackObject::ControlledTrigger { .. }
+            | StackObject::TargetedControlledTrigger { .. }
             | StackObject::ActivatedAbility { .. }
             | StackObject::TargetedActivatedAbility { .. } => None,
         })
@@ -4061,6 +5103,13 @@ mod tests {
     const CAGE: CardDefId = CardDefId(30);
     const STATION: CardDefId = CardDefId(31);
     const GOLEM: CardDefId = CardDefId(32);
+    const CHROME: CardDefId = CardDefId(33);
+    const VAULT: CardDefId = CardDefId(34);
+    const KNACK: CardDefId = CardDefId(35);
+    const HELIX: CardDefId = CardDefId(36);
+    const FLOODCALLER: CardDefId = CardDefId(37);
+    const CAM: CardDefId = CardDefId(38);
+    const CLUE: CardDefId = CardDefId(39);
 
     #[derive(Default)]
     struct TestCards {
@@ -4534,6 +5583,101 @@ mod tests {
                     ..CardProfile::default()
                 },
             );
+            cards.profiles.insert(
+                CHROME,
+                CardProfile {
+                    card: CHROME,
+                    mana_cost: Some(ManaCost {
+                        generic: 2,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 2,
+                    role: R2CardRole::CreaturePermanent,
+                    battlefield_face: CardFace::Front,
+                    engine: EngineKind::ChromeDome,
+                    is_artifact: true,
+                    is_creature: true,
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                VAULT,
+                CardProfile {
+                    card: VAULT,
+                    mana_cost: Some(ManaCost {
+                        generic: 1,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 1,
+                    role: R2CardRole::ArtifactPermanent,
+                    battlefield_face: CardFace::Front,
+                    mana_ability: ManaAbility::TapForColorless(3),
+                    engine: EngineKind::ManaVault,
+                    skip_normal_untap: true,
+                    is_artifact: true,
+                    ..CardProfile::default()
+                },
+            );
+            for card in [KNACK, HELIX] {
+                cards.profiles.insert(
+                    card,
+                    CardProfile {
+                        card,
+                        mana_cost: Some(ManaCost {
+                            blue: 1,
+                            ..ManaCost::default()
+                        }),
+                        mana_value: 1,
+                        role: R2CardRole::TargetedEffectSpell,
+                        spell_effect: SpellEffectKind::KnackBounceGrant,
+                        ..CardProfile::default()
+                    },
+                );
+            }
+            cards.profiles.insert(
+                FLOODCALLER,
+                CardProfile {
+                    card: FLOODCALLER,
+                    mana_cost: Some(ManaCost {
+                        blue: 1,
+                        generic: 2,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 3,
+                    role: R2CardRole::CreaturePermanent,
+                    battlefield_face: CardFace::Front,
+                    engine: EngineKind::ValleyFloodcaller,
+                    floodcaller_untap_eligible: true,
+                    is_creature: true,
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                CAM,
+                CardProfile {
+                    card: CAM,
+                    mana_cost: Some(ManaCost {
+                        blue: 1,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 1,
+                    role: R2CardRole::ArtifactPermanent,
+                    battlefield_face: CardFace::Front,
+                    utility: UtilityKind::SewerVeillanceCam,
+                    is_artifact: true,
+                    ..CardProfile::default()
+                },
+            );
+            cards.profiles.insert(
+                CLUE,
+                CardProfile {
+                    card: CLUE,
+                    role: R2CardRole::ArtifactPermanent,
+                    battlefield_face: CardFace::Front,
+                    is_artifact: true,
+                    ..CardProfile::default()
+                },
+            );
             cards
         }
     }
@@ -4549,6 +5693,10 @@ mod tests {
 
         fn urza_construct_token_card(&self) -> CardDefId {
             CONSTRUCT
+        }
+
+        fn clue_token_card(&self) -> Option<CardDefId> {
+            Some(CLUE)
         }
     }
 
@@ -6919,5 +8067,326 @@ mod tests {
                 token: false,
             }]
         );
+    }
+
+    fn test_perm(object: u32, card: CardDefId, tapped: bool) -> PermanentState {
+        PermanentState {
+            object_id: ObjectId(object),
+            card,
+            face: CardFace::Front,
+            tapped,
+            summoning_sick: false,
+            token: false,
+            counters: CounterState::default(),
+            mode: PermanentMode::Normal,
+            attached_to: None,
+            granted_ability: None,
+        }
+    }
+
+    #[test]
+    fn r4_artifact_entry_and_gadgeteer_cast_triggers_execute_on_stack() {
+        let cards = TestCards::r4();
+        let mut state = TrueState {
+            turn: 2,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            battlefield: BattlefieldZone::new(vec![
+                test_perm(1, STATION, true),
+                test_perm(2, GOLEM, true),
+                test_perm(3, GADGETEER, false),
+            ]),
+            ..TrueState::default()
+        };
+        insert_permanent(
+            &mut state,
+            &cards,
+            PermanentState {
+                object_id: ObjectId(4),
+                card: ARTIFACT_MV0,
+                face: CardFace::Front,
+                tapped: false,
+                summoning_sick: false,
+                token: false,
+                counters: CounterState::default(),
+                mode: PermanentMode::Normal,
+                attached_to: None,
+                granted_ability: None,
+            },
+        );
+        assert_eq!(state.stack.len(), 2);
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        let info = urza_info::observe(&state).unwrap();
+        assert_eq!(
+            legal_contingent_actions(&info, &cards),
+            vec![
+                Action::ChooseProducerUntap { untap: true },
+                Action::ChooseProducerUntap { untap: false },
+            ]
+        );
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ChooseProducerUntap { untap: true },
+        )
+        .unwrap();
+        assert!(
+            state
+                .battlefield
+                .permanents()
+                .iter()
+                .any(|p| { matches!(p.card, STATION | GOLEM) && !p.tapped })
+        );
+
+        let mut cast_state = TrueState {
+            turn: 2,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            hand: CardZone::new(vec![ARTIFACT_MV0]),
+            battlefield: BattlefieldZone::new(vec![test_perm(1, GADGETEER, false)]),
+            ..TrueState::default()
+        };
+        apply_action(
+            &mut cast_state,
+            &cards,
+            Action::CastFromHand {
+                card: ARTIFACT_MV0,
+                payment: ManaPayment::default(),
+            },
+        )
+        .unwrap();
+        assert!(matches!(
+            cast_state.stack.last(),
+            Some(StackObject::ControlledTrigger {
+                ability: ABILITY_GADGETEER_INVESTIGATE,
+                ..
+            })
+        ));
+        let transition = apply_action(&mut cast_state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            transition.observations,
+            vec![RulesObservation::PermanentEntered {
+                card: CLUE,
+                face: CardFace::Front,
+                token: true,
+            }]
+        );
+    }
+
+    #[test]
+    fn r4_grinding_station_activation_commits_cost_and_mills_goldfish_opponent() {
+        let cards = TestCards::r4();
+        let state_battlefield = BattlefieldZone::new(vec![
+            test_perm(1, STATION, false),
+            test_perm(2, ARTIFACT_MV0, false),
+        ]);
+        let mut state = TrueState {
+            turn: 2,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            battlefield: state_battlefield,
+            ..TrueState::default()
+        };
+        let info = urza_info::observe(&state).unwrap();
+        let sacrifice = info
+            .battlefield
+            .iter()
+            .find(|permanent| permanent.card == ARTIFACT_MV0)
+            .unwrap()
+            .canonical_id;
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateGrindingStation {
+                source: ObjectId(1),
+                sacrifice,
+            },
+        )
+        .unwrap();
+        assert!(state.graveyard.cards().contains(&ARTIFACT_MV0));
+        assert!(state.battlefield.get(ObjectId(1)).unwrap().tapped);
+        let resolved = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            resolved.observations,
+            vec![RulesObservation::OpponentMilled { cards: 3 }]
+        );
+    }
+
+    #[test]
+    fn r4_chrome_dome_reductions_copy_vault_and_delayed_sacrifice_are_exact() {
+        let cards = TestCards::r4();
+        let mut pa = test_perm(4, POWER_ARTIFACT, false);
+        pa.attached_to = Some(ObjectId(1));
+        let mut state = TrueState {
+            turn: 2,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            battlefield: BattlefieldZone::new(vec![
+                test_perm(1, CHROME, false),
+                test_perm(2, VAULT, false),
+                test_perm(3, GADGETEER, false),
+                pa,
+            ]),
+            ..TrueState::default()
+        };
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateManaAbility {
+                source: ObjectId(2),
+            },
+        )
+        .unwrap();
+        let info = urza_info::observe(&state).unwrap();
+        let target = info
+            .battlefield
+            .iter()
+            .find(|permanent| permanent.card == VAULT)
+            .unwrap()
+            .canonical_id;
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateChromeDome {
+                source: ObjectId(1),
+                target,
+                payment: ManaPayment {
+                    colorless: 2,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+        let transition = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            transition.observations,
+            vec![RulesObservation::PermanentEntered {
+                card: VAULT,
+                face: CardFace::Front,
+                token: true,
+            }]
+        );
+        let copy = state
+            .battlefield
+            .permanents()
+            .iter()
+            .find(|permanent| permanent.card == VAULT && permanent.token)
+            .unwrap()
+            .object_id;
+        assert!(state.delayed_events.iter().any(|event| matches!(
+        event,
+        DelayedEvent::ChromeCopySacrifice { object, due_turn: 2, .. } if *object == copy
+              )));
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateManaAbility { source: copy },
+        )
+        .unwrap();
+        assert_eq!(state.mana.colorless, 4);
+    }
+
+    #[test]
+    fn r4_knack_floodcaller_and_cam_recurrence_execution_preserves_exact_grant() {
+        let cards = TestCards::r4();
+        let mut state = TrueState {
+            turn: 2,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            hand: CardZone::new(vec![KNACK, ARTIFACT_MV0]),
+            mana: ManaPool {
+                blue: 1,
+                ..ManaPool::default()
+            },
+            battlefield: BattlefieldZone::new(vec![test_perm(1, FLOODCALLER, false)]),
+            ..TrueState::default()
+        };
+        let target = urza_info::observe(&state).unwrap().battlefield[0].canonical_id;
+        apply_action(
+            &mut state,
+            &cards,
+            Action::CastTargetedFromHand {
+                card: KNACK,
+                target,
+                payment: ManaPayment {
+                    blue: 1,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+        // Floodcaller trigger sits above Knack; resolve it, then the spell.
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            state.battlefield.get(ObjectId(1)).unwrap().granted_ability,
+            Some(urza_core::GrantedAbility::KnackBounceUntilEndOfTurn)
+        );
+
+        // Cam LTB from the granted bounce untaps the exact granted creature.
+        insert_permanent(
+            &mut state,
+            &cards,
+            PermanentState {
+                object_id: ObjectId(2),
+                card: CAM,
+                face: CardFace::Front,
+                tapped: false,
+                summoning_sick: false,
+                token: false,
+                counters: CounterState::default(),
+                mode: PermanentMode::Normal,
+                attached_to: None,
+                granted_ability: None,
+            },
+        );
+        // Resolve Cam ETB without changing Floodcaller.
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        let cam_target =
+            legal_contingent_actions(&urza_info::observe(&state).unwrap(), &cards)[0].clone();
+        apply_action(&mut state, &cards, cam_target).unwrap();
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ChooseCamEffect {
+                choice: CamEffectChoice::Decline,
+            },
+        )
+        .unwrap();
+        let cam_canonical = urza_info::observe(&state)
+            .unwrap()
+            .battlefield
+            .iter()
+            .find(|permanent| permanent.card == CAM)
+            .unwrap()
+            .canonical_id;
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateGrantedKnackBounce {
+                source: ObjectId(1),
+                target: cam_canonical,
+            },
+        )
+        .unwrap();
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert!(state.hand.cards().contains(&CAM));
+        assert!(state.battlefield.get(ObjectId(1)).unwrap().tapped);
+        // Resolve Cam LTB staging -> choose target -> resolve -> untap.
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        let action =
+            legal_contingent_actions(&urza_info::observe(&state).unwrap(), &cards)[0].clone();
+        apply_action(&mut state, &cards, action).unwrap();
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ChooseCamEffect {
+                choice: CamEffectChoice::Untap,
+            },
+        )
+        .unwrap();
+        assert!(!state.battlefield.get(ObjectId(1)).unwrap().tapped);
     }
 }

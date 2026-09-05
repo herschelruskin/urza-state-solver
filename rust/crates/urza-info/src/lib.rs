@@ -15,7 +15,7 @@ use urza_core::{
 };
 
 pub const R3_INFORMATION_SCHEMA_VERSION: &str = "information_state_v4_r3";
-pub const INFORMATION_SCHEMA_VERSION: &str = "information_state_v6_r4";
+pub const INFORMATION_SCHEMA_VERSION: &str = "information_state_v7_r4";
 
 #[derive(
     Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize,
@@ -66,7 +66,9 @@ pub struct ObservedSourceRef {
 pub enum ObservedStackKind {
     Spell,
     AuraSpell,
+    TargetedSpell,
     ControlledTrigger,
+    TargetedControlledTrigger,
     ActivatedAbility,
     TargetedActivatedAbility,
 }
@@ -125,6 +127,16 @@ pub enum ObservedPendingDecision {
     TezzeretTarget {
         source: ObservedSourceRef,
     },
+    ProducerUntapChoice {
+        source: ObservedSourceRef,
+    },
+    CamTarget {
+        source: ObservedSourceRef,
+    },
+    CamEffect {
+        source: ObservedSourceRef,
+        target: ObservedSourceRef,
+    },
     TriggerOrder {
         source: ObservedSourceRef,
         trigger_count: u8,
@@ -157,6 +169,9 @@ impl ObservedPendingDecision {
             Self::BayTarget { .. } => PendingDecisionKind::BayTarget,
             Self::SagaTarget { .. } => PendingDecisionKind::SagaTarget,
             Self::TezzeretTarget { .. } => PendingDecisionKind::TezzeretTarget,
+            Self::ProducerUntapChoice { .. } => PendingDecisionKind::ProducerUntapChoice,
+            Self::CamTarget { .. } => PendingDecisionKind::CamTarget,
+            Self::CamEffect { .. } => PendingDecisionKind::CamEffect,
             Self::TriggerOrder { .. } => PendingDecisionKind::TriggerOrder,
             Self::ColiseumDiscard { .. } => PendingDecisionKind::ColiseumDiscard,
             Self::CumulativeUpkeepPayment { .. } => PendingDecisionKind::CumulativeUpkeepPayment,
@@ -291,11 +306,31 @@ pub fn observe(state: &TrueState) -> Result<InformationState, ObservationError> 
                 ability: None,
                 parameter: None,
             },
+            StackObject::TargetedSpell { card, target, .. } => ObservedStackObject {
+                kind: ObservedStackKind::TargetedSpell,
+                card: Some(*card),
+                source: None,
+                target: Some(observe_source(*target, &object_classes)),
+                ability: None,
+                parameter: None,
+            },
             StackObject::ControlledTrigger { source, ability } => ObservedStackObject {
                 kind: ObservedStackKind::ControlledTrigger,
                 card: None,
                 source: Some(observe_source(*source, &object_classes)),
                 target: None,
+                ability: Some(*ability),
+                parameter: None,
+            },
+            StackObject::TargetedControlledTrigger {
+                source,
+                ability,
+                target,
+            } => ObservedStackObject {
+                kind: ObservedStackKind::TargetedControlledTrigger,
+                card: None,
+                source: Some(observe_source(*source, &object_classes)),
+                target: Some(observe_source(*target, &object_classes)),
                 ability: Some(*ability),
                 parameter: None,
             },
@@ -477,6 +512,18 @@ fn observe_pending(
         },
         PendingDecision::TezzeretTarget { source } => ObservedPendingDecision::TezzeretTarget {
             source: observe_source(*source, object_classes),
+        },
+        PendingDecision::ProducerUntapChoice { source } => {
+            ObservedPendingDecision::ProducerUntapChoice {
+                source: observe_source(*source, object_classes),
+            }
+        }
+        PendingDecision::CamTarget { source } => ObservedPendingDecision::CamTarget {
+            source: observe_source(*source, object_classes),
+        },
+        PendingDecision::CamEffect { source, target } => ObservedPendingDecision::CamEffect {
+            source: observe_source(*source, object_classes),
+            target: observe_source(*target, object_classes),
         },
         PendingDecision::TriggerOrder {
             source,
@@ -779,7 +826,8 @@ fn external_roles(state: &TrueState) -> BTreeMap<ObjectId, Vec<ExternalRole>> {
         let position = u16::try_from(position).expect("stack depth fits in u16");
         match object {
             StackObject::Spell { .. } => {}
-            StackObject::AuraSpell { card, target, .. } => {
+            StackObject::AuraSpell { card, target, .. }
+            | StackObject::TargetedSpell { card, target, .. } => {
                 push_source_role(
                     &mut roles,
                     *target,
@@ -798,6 +846,30 @@ fn external_roles(state: &TrueState) -> BTreeMap<ObjectId, Vec<ExternalRole>> {
                         kind: 1,
                         ability: *ability,
                         parameter: None,
+                    },
+                );
+            }
+            StackObject::TargetedControlledTrigger {
+                source,
+                ability,
+                target,
+            } => {
+                push_source_role(
+                    &mut roles,
+                    *source,
+                    ExternalRole::Stack {
+                        position,
+                        kind: 4,
+                        ability: *ability,
+                        parameter: None,
+                    },
+                );
+                push_source_role(
+                    &mut roles,
+                    *target,
+                    ExternalRole::StackAbilityTarget {
+                        position,
+                        ability: *ability,
                     },
                 );
             }
@@ -923,6 +995,9 @@ fn pending_role(pending: &PendingDecision) -> ExternalRole {
         } => (9, *sacrificed_mana_value, 0, Vec::new()),
         PendingDecision::SagaTarget { .. } => (10, 0, 0, Vec::new()),
         PendingDecision::TezzeretTarget { .. } => (11, 0, 0, Vec::new()),
+        PendingDecision::ProducerUntapChoice { .. } => (15, 0, 0, Vec::new()),
+        PendingDecision::CamTarget { .. } => (16, 0, 0, Vec::new()),
+        PendingDecision::CamEffect { target, .. } => (17, target.card.0, 0, Vec::new()),
         PendingDecision::TriggerOrder { trigger_count, .. } => {
             (12, u16::from(*trigger_count), 0, Vec::new())
         }

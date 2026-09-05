@@ -328,6 +328,9 @@ pub enum PendingDecisionKind {
     BayTarget,
     SagaTarget,
     TezzeretTarget,
+    ProducerUntapChoice,
+    CamTarget,
+    CamEffect,
     TriggerOrder,
     ColiseumDiscard,
     CumulativeUpkeepPayment,
@@ -377,6 +380,16 @@ pub enum PendingDecision {
     TezzeretTarget {
         source: SourceRef,
     },
+    ProducerUntapChoice {
+        source: SourceRef,
+    },
+    CamTarget {
+        source: SourceRef,
+    },
+    CamEffect {
+        source: SourceRef,
+        target: SourceRef,
+    },
     TriggerOrder {
         source: SourceRef,
         trigger_count: u8,
@@ -415,6 +428,9 @@ impl PendingDecision {
             Self::BayTarget { .. } => PendingDecisionKind::BayTarget,
             Self::SagaTarget { .. } => PendingDecisionKind::SagaTarget,
             Self::TezzeretTarget { .. } => PendingDecisionKind::TezzeretTarget,
+            Self::ProducerUntapChoice { .. } => PendingDecisionKind::ProducerUntapChoice,
+            Self::CamTarget { .. } => PendingDecisionKind::CamTarget,
+            Self::CamEffect { .. } => PendingDecisionKind::CamEffect,
             Self::TriggerOrder { .. } => PendingDecisionKind::TriggerOrder,
             Self::ColiseumDiscard { .. } => PendingDecisionKind::ColiseumDiscard,
             Self::CumulativeUpkeepPayment { .. } => PendingDecisionKind::CumulativeUpkeepPayment,
@@ -435,6 +451,9 @@ impl PendingDecision {
             | Self::BayTarget { source, .. }
             | Self::SagaTarget { source }
             | Self::TezzeretTarget { source }
+            | Self::ProducerUntapChoice { source }
+            | Self::CamTarget { source }
+            | Self::CamEffect { source, .. }
             | Self::TriggerOrder { source, .. }
             | Self::ColiseumDiscard { source, .. }
             | Self::CumulativeUpkeepPayment { source, .. } => Some(*source),
@@ -454,9 +473,19 @@ pub enum StackObject {
         card: CardDefId,
         target: SourceRef,
     },
+    TargetedSpell {
+        object_id: ObjectId,
+        card: CardDefId,
+        target: SourceRef,
+    },
     ControlledTrigger {
         source: SourceRef,
         ability: AbilityId,
+    },
+    TargetedControlledTrigger {
+        source: SourceRef,
+        ability: AbilityId,
+        target: SourceRef,
     },
     ActivatedAbility {
         source: SourceRef,
@@ -580,10 +609,11 @@ impl TrueState {
         let mut exact_objects: BTreeSet<ObjectId> = live.keys().copied().collect();
         for object in &self.stack {
             let object_id = match object {
-                StackObject::Spell { object_id, .. } | StackObject::AuraSpell { object_id, .. } => {
-                    *object_id
-                }
+                StackObject::Spell { object_id, .. }
+                | StackObject::AuraSpell { object_id, .. }
+                | StackObject::TargetedSpell { object_id, .. } => *object_id,
                 StackObject::ControlledTrigger { .. }
+                | StackObject::TargetedControlledTrigger { .. }
                 | StackObject::ActivatedAbility { .. }
                 | StackObject::TargetedActivatedAbility { .. } => continue,
             };
@@ -661,13 +691,17 @@ impl TrueState {
     fn source_refs(&self) -> impl Iterator<Item = SourceRef> + '_ {
         let stack = self.stack.iter().filter_map(|object| match object {
             StackObject::Spell { .. } => None,
-            StackObject::AuraSpell { target, .. } => Some(*target),
+            StackObject::AuraSpell { target, .. } | StackObject::TargetedSpell { target, .. } => {
+                Some(*target)
+            }
             StackObject::ControlledTrigger { source, .. }
-            | StackObject::ActivatedAbility { source, .. } => Some(*source),
-            StackObject::TargetedActivatedAbility { source, .. } => Some(*source),
+            | StackObject::TargetedControlledTrigger { source, .. }
+            | StackObject::ActivatedAbility { source, .. }
+            | StackObject::TargetedActivatedAbility { source, .. } => Some(*source),
         });
         let stack_targets = self.stack.iter().filter_map(|object| match object {
-            StackObject::TargetedActivatedAbility { target, .. } => Some(*target),
+            StackObject::TargetedControlledTrigger { target, .. }
+            | StackObject::TargetedActivatedAbility { target, .. } => Some(*target),
             _ => None,
         });
         let pending = self.pending.source().into_iter();

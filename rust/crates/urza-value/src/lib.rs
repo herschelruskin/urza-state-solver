@@ -6,7 +6,7 @@ use thiserror::Error;
 use urza_info::{CardCount, InformationState, ObservedDelayedEvent};
 
 pub const R3_VALUE_KEY_SCHEMA_VERSION: &str = "value_key_v4_r3";
-pub const VALUE_KEY_SCHEMA_VERSION: &str = "value_key_v6_r4";
+pub const VALUE_KEY_SCHEMA_VERSION: &str = "value_key_v7_r4";
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ValueKey(InformationState);
