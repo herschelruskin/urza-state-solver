@@ -5,6 +5,7 @@ on:
     branches: [rust-engine-rebuild]
     paths:
       - 'rust/crates/urza-mc/**'
+      - '.github/r5_parallel_fix.py'
       - '.github/workflows/r5-parallel-acceptance.yml'
 
 permissions:
@@ -30,55 +31,8 @@ jobs:
           toolchain: 1.89.0
           components: rustfmt, clippy
       - name: Repair source staging
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          parallel = Path('crates/urza-mc/src/parallel.rs')
-          text = parallel.read_text()
-          text = text.replace(
-              '    ADAPTIVE_ROOT_EVAL_VERSION, AdaptiveRootActionComparison, AdaptiveRootConfig, AdaptiveRootError,\n',
-              '    AdaptiveRootActionComparison, AdaptiveRootConfig, AdaptiveRootError,\n',
-              1,
-          )
-          parallel.write_text(text)
-
-          lib = Path('crates/urza-mc/src/lib.rs')
-          text = lib.read_text()
-          old = '''    hasher.update(&(library.known_top.len() as u64).to_le_bytes());
-          for card in &library.known_top {
-              hasher.update(&card.0.to_le_bytes());
-          }
-          hasher.update(&(library.remaining_counts.len() as u64).to_le_bytes());
-          for (card, count) in &library.remaining_counts {
-              hasher.update(&card.0.to_le_bytes());
-              hasher.update(&count.to_le_bytes());
-          }
-          hasher.update(&(library.known_bottom.len() as u64).to_le_bytes());
-          for card in &library.known_bottom {
-              hasher.update(&card.0.to_le_bytes());
-          }
-'''
-          new = '''    hasher.update(&(library.known_top.len() as u32).to_le_bytes());
-          for card in &library.known_top {
-              hasher.update(&card.0.to_le_bytes());
-          }
-
-          hasher.update(&(library.remaining_counts.len() as u32).to_le_bytes());
-          for count in &library.remaining_counts {
-              hasher.update(&count.card.0.to_le_bytes());
-              hasher.update(&[count.count]);
-          }
-
-          hasher.update(&(library.known_bottom.len() as u32).to_le_bytes());
-          for card in &library.known_bottom {
-              hasher.update(&card.0.to_le_bytes());
-          }
-'''
-          if old not in text:
-              raise SystemExit('library fingerprint repair anchor missing')
-          lib.write_text(text.replace(old, new, 1))
-          PY
+        working-directory: .
+        run: python3 .github/r5_parallel_fix.py
       - name: Format
         run: cargo fmt --all
       - name: Locked dependency graph
@@ -121,9 +75,10 @@ jobs:
           Added deterministic scoped-thread execution for independent sampled root/world jobs while retaining serial fixed-budget evaluation as the correctness oracle. Parallel workers never mutate caches or aggregate values; completed outcomes are canonically reordered before scoring. Serial and parallel adaptive paths share cache identity and deterministic counters. Acceptance includes one/multi/oversubscribed-worker parity, world-order and hidden-order invariance, cross-scheduler cache reuse, zero-worker rejection, and representative release performance probes. Namespace: r5_parallel_root_world_v1. Dedicated validation run: ${GITHUB_RUN_ID}.
           EOF
           rm -f .github/workflows/r5-parallel-acceptance.yml
+          rm -f .github/r5_parallel_fix.py
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add rust/crates/urza-mc rust/crates/urza-cli/src/main.rs rust/R5_PARALLEL_ROOT_WORLD_CHECKPOINT.md rust/DEVELOPMENT_LOG.md .github/workflows/r5-parallel-acceptance.yml
+          git add rust/crates/urza-mc rust/crates/urza-cli/src/main.rs rust/R5_PARALLEL_ROOT_WORLD_CHECKPOINT.md rust/DEVELOPMENT_LOG.md .github/workflows/r5-parallel-acceptance.yml .github/r5_parallel_fix.py
           git status --short
           git commit -m 'Close R5 parallel root-world checkpoint'
           git push origin HEAD:rust-engine-rebuild
