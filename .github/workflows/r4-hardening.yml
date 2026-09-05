@@ -1,1 +1,45 @@
-name: placeholder
+name: R4 terminal hardening
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - .github/workflows/r4-hardening.yml
+
+permissions:
+  contents: write
+
+jobs:
+  harden:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: rust-engine-rebuild
+          fetch-depth: 0
+      - name: Run terminal acceptance hardening script
+        shell: bash
+        run: |
+          test -f /tmp/never || true
+          if [ ! -f rust/scripts/r4_terminal_hardening.py ]; then
+            echo 'hardening script not yet installed' >&2
+            exit 2
+          fi
+          python3 rust/scripts/r4_terminal_hardening.py
+      - name: Format and validate
+        shell: bash
+        run: |
+          set -e
+          cd rust
+          cargo fmt --all
+          cargo test --workspace
+          cargo clippy --workspace --all-targets -- -D warnings
+      - name: Commit validated hardening
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f .github/workflows/r4-hardening.yml rust/scripts/r4_terminal_hardening.py
+          git add rust
+          git commit -m "Harden R4 terminal family acceptance"
+          git push origin HEAD:rust-engine-rebuild
