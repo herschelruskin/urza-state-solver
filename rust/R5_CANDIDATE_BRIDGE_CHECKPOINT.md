@@ -41,6 +41,8 @@ During `Transmute Artifact` difference payment, mana abilities that are legal wh
 
 Acceptance requires raw-ObjectId renaming invariance, hidden-library permutation invariance, exact payment/X/improvise preservation, canonical deduplication of equivalent source objects, pending Transmute mana continuation, full token round-trip, strict Clippy, workspace tests, benchmark compilation, and cumulative R0-R5 audits.
 
+Validated candidate-bridge implementation commit: `4f3a44e61b8de95abcccd32466f38a0b50b112cf` (`Checkpoint R5 public candidate bridge`). Dedicated acceptance run: GitHub Actions `33942639248`, result PASS. Locked dependency metadata, formatting, strict all-target/all-feature Clippy, workspace tests, benchmark compilation, and R0-R5 audits all passed. Temporary inspection/finalizer workflows were removed by the checkpoint commit.
+
 ## Next R5 block
 
 Build deterministic multi-step rollout sequencing using `CandidateBridge` at every public decision point. Only after rollout determinism and replayability are accepted should `urza-mc` begin sampled-world evaluation.
