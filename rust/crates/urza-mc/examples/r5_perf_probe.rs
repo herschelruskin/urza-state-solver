@@ -1,10 +1,12 @@
+use std::thread;
 use std::time::{Duration, Instant};
 
 use urza_cards::{R4CardDatabase, load_r1_catalog, r1_catalog_digest_hex};
 use urza_core::{CardDefId, CardZone, ManaPool, Phase, TrueLibrary, TrueState, Window};
 use urza_mc::{
     AdaptiveRootConfig, AdaptiveSearchStats, InMemoryRootOutcomeCache, MonteCarloConfig,
-    NoopRootOutcomeCache, compare_root_actions, compare_root_actions_adaptive,
+    NoopRootOutcomeCache, ParallelRootConfig, compare_root_actions, compare_root_actions_adaptive,
+    compare_root_actions_adaptive_parallel, compare_root_actions_parallel,
     current_r5_evaluation_namespace,
 };
 use urza_policy::DeterministicPolicy;
@@ -15,7 +17,7 @@ const SAMPLES: u32 = 8;
 const ROLLOUT_MAX_STEPS: u32 = 4096;
 const FIRST_WORLD: WorldId = WorldId(0x5000);
 const ROOT_SEED_U64: u64 = 0x5235_5045_5246_0001;
-const ENVIRONMENT_VERSION: &str = "r5_perf_probe_v2";
+const ENVIRONMENT_VERSION: &str = "r5_perf_probe_v3_parallel";
 
 struct ProbeCase {
     name: &'static str,
@@ -27,6 +29,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cards = R4CardDatabase::load()?;
     let catalog_digest = r1_catalog_digest_hex();
     let policy = DeterministicPolicy;
+    let workers = thread::available_parallelism().map_or(1, usize::from);
+    let parallel = ParallelRootConfig { workers };
 
     let cases = [
         ProbeCase {
@@ -78,8 +82,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         },
     ];
 
+    println!("parallel_workers\t{workers}");
     println!(
-        "case\troots\tfixed_ms\tadaptive_cold_ms\tadaptive_warm_ms\tadaptive_normal_ms\tnormal_used_samples\tnormal_stop\trequests\trollouts\trollout_steps\twarm_hits\twarm_rollouts\twarm_avoided_steps"
+        "case\troots\tfixed_serial_ms\tfixed_parallel_ms\tfixed_speedup\tadaptive_serial_cold_ms\tadaptive_parallel_cold_ms\tadaptive_speedup\tadaptive_parallel_warm_ms\tadaptive_parallel_normal_ms\tnormal_used_samples\tnormal_stop\trequests\trollouts\trollout_steps\twarm_hits\twarm_rollouts\twarm_avoided_steps"
     );
 
     for case in cases {
@@ -93,8 +98,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             samples: SAMPLES,
             rollout_max_steps: ROLLOUT_MAX_STEPS,
         };
-        let (fixed_elapsed, fixed) =
+        let (fixed_serial_elapsed, fixed_serial) =
             timed(|| compare_root_actions(&state, &cards, &policy, fixed_config))?;
+        let (fixed_parallel_elapsed, fixed_parallel) = timed(|| {
+            compare_root_actions_parallel(&state, &cards, &policy, fixed_config, parallel)
+        })?;
+        assert_eq!(
+            fixed_parallel, fixed_serial,
+            "fixed serial/parallel parity for {}",
+            case.name
+        );
 
         let full_adaptive_config = AdaptiveRootConfig {
             root,
@@ -109,46 +122,57 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 ROLLOUT_MAX_STEPS,
             ),
         };
-        let mut cache = InMemoryRootOutcomeCache::default();
-        let (cold_elapsed, cold) = timed(|| {
+        let mut serial_cache = NoopRootOutcomeCache;
+        let (adaptive_serial_elapsed, adaptive_serial) = timed(|| {
             compare_root_actions_adaptive(
                 &state,
                 &cards,
                 &policy,
                 &full_adaptive_config,
-                &mut cache,
+                &mut serial_cache,
             )
         })?;
         assert_eq!(
-            cold.comparison, fixed,
-            "full adaptive parity for {}",
+            adaptive_serial.comparison, fixed_serial,
+            "serial adaptive parity for {}",
+            case.name
+        );
+
+        let mut parallel_cache = InMemoryRootOutcomeCache::default();
+        let (adaptive_parallel_elapsed, adaptive_parallel) = timed(|| {
+            compare_root_actions_adaptive_parallel(
+                &state,
+                &cards,
+                &policy,
+                &full_adaptive_config,
+                parallel,
+                &mut parallel_cache,
+            )
+        })?;
+        assert_eq!(
+            adaptive_parallel.comparison, fixed_serial,
+            "parallel adaptive parity for {}",
+            case.name
+        );
+        assert_eq!(
+            adaptive_parallel.stats, adaptive_serial.stats,
+            "parallel instrumentation parity for {}",
             case.name
         );
 
         let (warm_elapsed, warm) = timed(|| {
-            compare_root_actions_adaptive(
+            compare_root_actions_adaptive_parallel(
                 &state,
                 &cards,
                 &policy,
                 &full_adaptive_config,
-                &mut cache,
+                parallel,
+                &mut parallel_cache,
             )
         })?;
-        assert_eq!(
-            warm.comparison, fixed,
-            "warm cache parity for {}",
-            case.name
-        );
-        assert_eq!(
-            warm.stats.cache_misses, 0,
-            "warm cache miss for {}",
-            case.name
-        );
-        assert_eq!(
-            warm.stats.root_world_rollouts, 0,
-            "warm rollout for {}",
-            case.name
-        );
+        assert_eq!(warm.comparison, fixed_serial, "warm cache parity for {}", case.name);
+        assert_eq!(warm.stats.cache_misses, 0, "warm cache miss for {}", case.name);
+        assert_eq!(warm.stats.root_world_rollouts, 0, "warm rollout for {}", case.name);
 
         let normal_config = AdaptiveRootConfig {
             min_samples: 2,
@@ -157,19 +181,28 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         };
         let mut noop = NoopRootOutcomeCache;
         let (normal_elapsed, normal) = timed(|| {
-            compare_root_actions_adaptive(&state, &cards, &policy, &normal_config, &mut noop)
+            compare_root_actions_adaptive_parallel(
+                &state,
+                &cards,
+                &policy,
+                &normal_config,
+                parallel,
+                &mut noop,
+            )
         })?;
 
         print_row(
             case.name,
             roots,
-            fixed_elapsed,
-            cold_elapsed,
+            fixed_serial_elapsed,
+            fixed_parallel_elapsed,
+            adaptive_serial_elapsed,
+            adaptive_parallel_elapsed,
             warm_elapsed,
             normal_elapsed,
             normal.used_samples(),
             &format!("{:?}", normal.stop_reason),
-            &cold.stats,
+            &adaptive_parallel.stats,
             &warm.stats,
         );
     }
@@ -224,8 +257,10 @@ fn timed<T, E>(f: impl FnOnce() -> Result<T, E>) -> Result<(Duration, T), E> {
 fn print_row(
     name: &str,
     roots: usize,
-    fixed: Duration,
-    cold: Duration,
+    fixed_serial: Duration,
+    fixed_parallel: Duration,
+    adaptive_serial: Duration,
+    adaptive_parallel: Duration,
     warm: Duration,
     normal: Duration,
     normal_used_samples: usize,
@@ -234,11 +269,15 @@ fn print_row(
     warm_stats: &AdaptiveSearchStats,
 ) {
     println!(
-        "{}\t{}\t{:.3}\t{:.3}\t{:.3}\t{:.3}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+        "{}\t{}\t{:.3}\t{:.3}\t{:.2}\t{:.3}\t{:.3}\t{:.2}\t{:.3}\t{:.3}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
         name,
         roots,
-        millis(fixed),
-        millis(cold),
+        millis(fixed_serial),
+        millis(fixed_parallel),
+        speedup(fixed_serial, fixed_parallel),
+        millis(adaptive_serial),
+        millis(adaptive_parallel),
+        speedup(adaptive_serial, adaptive_parallel),
         millis(warm),
         millis(normal),
         normal_used_samples,
@@ -254,4 +293,8 @@ fn print_row(
 
 fn millis(duration: Duration) -> f64 {
     duration.as_secs_f64() * 1000.0
+}
+
+fn speedup(serial: Duration, parallel: Duration) -> f64 {
+    serial.as_secs_f64() / parallel.as_secs_f64()
 }
