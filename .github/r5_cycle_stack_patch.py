@@ -2,12 +2,12 @@ from pathlib import Path
 
 rollout = Path('rust/crates/urza-rollout/src/lib.rs')
 text = rollout.read_text()
-old = '''    if state.rng_occurrence_cursor == rng_cursor_before
-        && decision_state.stack.is_empty()
-        && matches!(decision_state.pending, PendingDecision::None)
+old = '''        if state.rng_occurrence_cursor == rng_cursor_before
+            && decision_state.stack.is_empty()
+            && matches!(decision_state.pending, PendingDecision::None)
 '''
-new = '''    if state.rng_occurrence_cursor == rng_cursor_before
-        && matches!(decision_state.pending, PendingDecision::None)
+new = '''        if state.rng_occurrence_cursor == rng_cursor_before
+            && matches!(decision_state.pending, PendingDecision::None)
 '''
 if old not in text:
     raise SystemExit('stack-restriction anchor missing')
