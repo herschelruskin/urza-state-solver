@@ -76,4 +76,6 @@ Python gameplay/policy logic remains out of scope.
 - validated implementation/closure commit: `ec130073863fff5f6217326acecb5915d75f657d` (`Close R5 adaptive cache checkpoint`);
 - dedicated acceptance run: `33945344087`, job `101250297895`, PASS;
 - locked dependency graph, rustfmt, strict all-target/all-feature Clippy, full workspace tests, benchmark compilation, and cumulative R0-R5 audits all passed;
-- the temporary acceptance workflow and patch helper were removed before the closure commit.
+- the temporary acceptance workflow and patch helper were removed before the closure commit;
+- generated Cargo `rust/target` artifacts accidentally captured by the acceptance commit were restored to the exact pre-gate tree by cleanup run `33945520052`, job `101250765593`, PASS, producing cleanup commit `808378898289c03be184823bf614204b03548353`;
+- net diff from the prior accepted R5 head contains only the seven intended semantic/documentation files and no `rust/target` changes.
