@@ -18,7 +18,7 @@ use urza_rules::{
     apply_action_with_rng, enumerate_payments, legal_contingent_actions,
 };
 
-pub const CANDIDATE_BRIDGE_VERSION: &str = "r5_public_candidate_bridge_v1";
+pub const CANDIDATE_BRIDGE_VERSION: &str = "r5_public_candidate_bridge_v2";
 pub const ORDINARY_ACTION_FAMILY_COUNT: usize = 26;
 pub const CONTINGENT_ACTION_FAMILY_COUNT: usize = 8;
 
@@ -468,6 +468,27 @@ fn generate_ordinary_actions<D: CardDatabase>(
         actions.push(Action::CastCommander { payment: *payment });
     }
 
+    actions.retain(|action| {
+        let transmute_cast = match action {
+            Action::CastFromHand { card, .. } | Action::CastLibraryTop { card, .. } => {
+                cards.profile(*card).is_some_and(|profile| {
+                    profile.special_search == SpecialSearchKind::TransmuteArtifact
+                })
+            }
+            Action::PlayUrzaPermission {
+                permission_slot, ..
+            } => information
+                .urza_permissions
+                .iter()
+                .find(|permission| permission.permission_slot == *permission_slot)
+                .and_then(|permission| cards.profile(permission.card))
+                .is_some_and(|profile| {
+                    profile.special_search == SpecialSearchKind::TransmuteArtifact
+                }),
+            _ => false,
+        };
+        !transmute_cast || !artifact_classes.is_empty()
+    });
     actions.retain(|action| action_is_legal(state, cards, action));
     actions
 }
@@ -1266,6 +1287,37 @@ mod tests {
             })
             .collect();
         assert_eq!(mana_actions.len(), 1);
+    }
+
+    #[test]
+    fn transmute_without_a_sacrifice_is_not_exposed_as_a_dead_end_root() {
+        let cards = R4CardDatabase::load().unwrap();
+        let transmute = cards.card_id_by_name("Transmute Artifact").unwrap();
+        let sol_ring = cards.card_id_by_name("Sol Ring").unwrap();
+        let mut state = priority_state();
+        state.hand = CardZone::new(vec![transmute]);
+        state.mana = ManaPool {
+            blue: 2,
+            ..ManaPool::default()
+        };
+
+        let dead_end_bridge = CandidateBridge::build(&state, &cards).unwrap();
+        assert!(
+            !dead_end_bridge
+                .candidates()
+                .iter()
+                .any(|candidate| matches!(
+                    dead_end_bridge.resolve(candidate.token),
+                    Some(Action::CastFromHand { card, .. }) if *card == transmute
+                ))
+        );
+
+        state.battlefield = BattlefieldZone::new(vec![permanent(12, sol_ring)]);
+        let live_bridge = CandidateBridge::build(&state, &cards).unwrap();
+        assert!(live_bridge.candidates().iter().any(|candidate| matches!(
+            live_bridge.resolve(candidate.token),
+            Some(Action::CastFromHand { card, .. }) if *card == transmute
+        )));
     }
 
     #[test]
