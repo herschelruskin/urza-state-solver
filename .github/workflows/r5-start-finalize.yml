@@ -1,0 +1,146 @@
+name: R5 start finalize
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - ".github/workflows/r5-start-finalize.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: rust-engine-rebuild
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+          components: rustfmt, clippy
+      - name: Refresh lockfile
+        working-directory: rust
+        run: cargo check --workspace
+      - name: Format
+        working-directory: rust
+        run: cargo fmt --all
+      - name: Locked dependency graph
+        working-directory: rust
+        run: cargo metadata --locked --format-version 1 --no-deps > /dev/null
+      - name: Strict clippy
+        working-directory: rust
+        run: cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
+      - name: Workspace tests
+        working-directory: rust
+        run: cargo test --locked --workspace --all-targets
+      - name: Bench compile
+        working-directory: rust
+        run: cargo check --locked --workspace --benches
+      - name: R0 through R5 audits
+        working-directory: rust
+        run: |
+          cargo run --locked -p urza-cli -- r0-audit
+          cargo run --locked -p urza-cli -- r1-audit
+          cargo run --locked -p urza-cli -- r2-audit
+          cargo run --locked -p urza-cli -- r3-audit
+          cargo run --locked -p urza-cli -- r4-audit
+          cargo run --locked -p urza-cli -- r5-audit
+      - name: Record R5 start checkpoint
+        run: |
+          cat > rust/R5_START_CHECKPOINT.md <<'EOF'
+          # R5 start checkpoint
+
+          ## Scope
+
+          R5 starts from the fully accepted R4 closure and begins the deterministic POLICY layer. R4 rules, model, information, value, coverage, and 13-family terminal contracts remain frozen.
+
+          This first R5 slice is deliberately narrow: it establishes the deterministic one-step selection kernel before ordinary-action enumeration, multi-step rollout, or Monte Carlo estimation are added.
+
+          ## Policy boundary
+
+          `urza-policy` continues to depend on `urza-info`, not `urza-core` or `urza-rules`.
+
+          The policy receives only:
+
+          - an `InformationState`;
+          - a public legal-candidate set supplied by an external execution bridge.
+
+          It cannot inspect `TrueState`, unknown library order, physical `ObjectId`s, execution RNG provenance, or rules implementation details.
+
+          ## Deterministic candidate contract
+
+          The R5-start kernel introduces:
+
+          - decision-local opaque `ActionToken`s for bridge round-tripping;
+          - `PolicyActionClass` for public semantic action categories;
+          - `PolicyPublicKey` using only card identity and canonical observed object references;
+          - `PolicyCandidate` as the policy-visible legal choice record;
+          - `DeterministicPolicy` as the initial stable selector.
+
+          Pending contingent rules decisions are mandatory: if `InformationState` says a decision is pending, ordinary candidates cannot bypass it. Candidate enumeration order cannot change the selected action. Semantic public keys are compared before opaque action tokens, so execution numbering is not strategy.
+
+          The baseline class order is intentionally simple and auditable: contingent decision, land play, mana production, spell cast, other activation, pass priority. It is infrastructure for deterministic rollout work, not a claim of final gameplay strength.
+
+          ## Frozen inputs
+
+          R5 starts with the accepted R4 namespaces unchanged:
+
+          - rules: `r4_acceptance_v6`;
+          - model: `urza_model_r4c_2026_09_04`;
+          - information: `information_state_v7_r4`;
+          - ValueKey: `value_key_v7_r4`.
+
+          R5 policy namespace:
+
+          - policy: `r5_deterministic_start_v1`.
+
+          No rules/card coverage was broadened in this slice.
+
+          ## Acceptance for this checkpoint
+
+          The checkpoint requires:
+
+          - policy has no direct `urza-core` or `urza-rules` dependency;
+          - duplicate action tokens are rejected;
+          - pending decisions cannot be skipped;
+          - contingent candidates without a pending decision are rejected;
+          - input candidate ordering cannot affect selection;
+          - semantic public identity outranks opaque token numbering;
+          - full locked workspace formatting, Clippy, tests, benchmark compilation, and R0-R5 audits are green.
+
+          ## Next R5 block
+
+          Build the public ordinary-action candidate bridge across the accepted R4 action surface. The bridge must canonicalize execution objects into public candidate identity without reducing legal strategic capability. After that, add deterministic multi-step rollout sequencing and only then connect `urza-mc` to sampled-world evaluation.
+
+          Do not port Python gameplay logic or old Python policy structure. Python remains parity/fixture evidence only.
+          EOF
+
+          if ! grep -q "R5 deterministic policy start" rust/DEVELOPMENT_LOG.md; then
+            cat >> rust/DEVELOPMENT_LOG.md <<'EOF'
+
+          ## 2026-09-05 — R5 deterministic policy start
+
+          Classification: POLICY architecture. No rules/card broadening and no Python gameplay-logic port.
+
+          R5 begins from the accepted R4 closure with a deterministic one-step policy kernel in `urza-policy`. The policy crate remains isolated from `urza-core` and `urza-rules`, receives `InformationState` plus public candidate records only, enforces that pending contingent decisions cannot be bypassed, and selects independently of candidate enumeration order. Public semantic identity is compared before opaque bridge tokens so execution numbering is not strategic state.
+
+          Policy namespace: `r5_deterministic_start_v1`. R4 rules/model/information/value namespaces remain frozen. Ordinary-action candidate generation, multi-step rollout sequencing, and Monte Carlo integration remain the next R5 work rather than being silently approximated in this checkpoint.
+          EOF
+          fi
+      - name: Commit validated R5 start
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add rust/Cargo.lock rust/R5_START_CHECKPOINT.md rust/DEVELOPMENT_LOG.md rust/crates/urza-policy/src/lib.rs rust/crates/urza-policy/Cargo.toml rust/crates/urza-policy/tests/dependency_boundary.rs rust/crates/urza-cli/Cargo.toml rust/crates/urza-cli/src/main.rs .github/workflows/rust-r0.yml
+          git rm .github/workflows/r5-start-finalize.yml
+          if git diff --cached --quiet; then
+            echo "No checkpoint changes to commit"
+          else
+            git commit -m "Checkpoint R5 deterministic policy start"
+            git push origin HEAD:rust-engine-rebuild
+          fi
