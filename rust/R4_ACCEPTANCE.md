@@ -2,7 +2,7 @@
 
 ## Status
 
-R4 is accepted and closed once the validation gate below is green. This milestone freezes the rules-engine surface needed before deterministic R5 policy work begins; it does **not** claim that all 95 active card identities have complete Oracle text implemented.
+R4 is **accepted and closed**. The dedicated closure gate passed in full and produced commit `bdeb737c81dac4a8b81ccdc03680609b4d2e796c` (`Close R4 acceptance gate`). This milestone freezes the rules-engine surface needed before deterministic R5 policy work begins; it does **not** claim that all 95 active card identities have complete Oracle text implemented.
 
 ## Accepted surface
 
@@ -76,7 +76,9 @@ Examples deliberately outside this R4 gate include Mana Vault upkeep/draw-step d
 
 ## Acceptance validation
 
-The closure gate is:
+The closure gate was validated by GitHub Actions run `33941259406`. Every substantive step passed: the final R4 integration suite, locked dependency metadata, format check, strict all-target/all-feature Clippy, workspace/all-target tests, benchmark compilation, and the R0 through R4 audit commands.
+
+The persistent foundation gate uses the same command surface:
 
 ```text
 cargo metadata --locked --format-version 1 --no-deps
@@ -91,4 +93,4 @@ cargo run --locked -p urza-cli -- r3-audit
 cargo run --locked -p urza-cli -- r4-audit
 ```
 
-R5 must start from a commit for which all of these commands pass. R5 may consume the accepted typed rules/information/value surface, but must not weaken hidden-information boundaries or reintroduce Python gameplay implementation structures.
+R5 must start from this accepted R4 surface. R5 may consume the accepted typed rules/information/value surface, but must not weaken hidden-information boundaries or reintroduce Python gameplay implementation structures.
