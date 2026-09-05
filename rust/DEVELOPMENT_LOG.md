@@ -386,4 +386,5 @@ Added deterministic scoped-thread execution for independent sampled root/world j
 - Dynamic scheduling measured roughly 2.4x-2.8x four-worker speedup on the larger benchmark matrix, with the strongest stable gains on the 14- and 19-root workloads. Default workers remain `available_parallelism()`.
 - The scaling fixture skips typed incomplete worlds only while selecting benchmark WorldIds; production evaluators retain strict `StepLimit`/`NoCandidate` failure semantics.
 - Staging evidence: static baseline run `33951225114`; dynamic experiment run `33951419805`.
-- Production acceptance run  passed the complete scheduler-scaling gate; permanent foundation validation follows on the finalized docs head.
+- Production acceptance run `33951783273` passed the complete scheduler-scaling gate; permanent foundation validation follows on the finalized docs head.
+- Validated production closure commit: `ffcf8e0d98001bef7230d3c53cf038923b8609f8`; formatting-only hygiene run `33952039708` produced commit `364f028ced5b829ccd4b9c72a635d6a693376ceb`.
