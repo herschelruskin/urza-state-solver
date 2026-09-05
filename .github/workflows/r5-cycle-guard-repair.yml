@@ -1,5 +1,4 @@
 name: R5 deterministic cycle guard repair
-# corrected patch anchors
 
 on:
   push:
@@ -24,8 +23,10 @@ jobs:
           toolchain: 1.89.0
           components: rustfmt, clippy
 
-      - name: Patch rollout and checkpoint docs
-        run: python3 .github/r5_cycle_patch.py
+      - name: Patch exact-state cycle guard
+        run: |
+          python3 .github/r5_cycle_patch.py
+          python3 .github/r5_cycle_stack_patch.py
 
       - name: Format
         working-directory: rust
@@ -38,6 +39,10 @@ jobs:
       - name: Basalt cycle regression
         working-directory: rust
         run: cargo test -p urza-rollout --locked deterministic_basalt_tap_untap_cycle_escapes_to_pass
+
+      - name: Underlying stack cycle regression
+        working-directory: rust
+        run: cargo test -p urza-rollout --locked deterministic_cycle_guard_escapes_with_underlying_stack_object
 
       - name: Raw ObjectId cycle invariance regression
         working-directory: rust
@@ -79,6 +84,7 @@ jobs:
           rm -f .github/workflows/r5-step-diagnostic.yml
           rm -f .github/workflows/r5-cycle-guard-repair.yml
           rm -f .github/r5_cycle_patch.py
+          rm -f .github/r5_cycle_stack_patch.py
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add rust/crates rust/R5_*CHECKPOINT.md rust/DEVELOPMENT_LOG.md .github
