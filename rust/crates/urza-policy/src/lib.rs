@@ -201,12 +201,14 @@ mod tests {
 
     #[test]
     fn pending_public_decision_cannot_be_skipped_by_ordinary_actions() {
-        let mut information = InformationState::default();
-        information.pending = ObservedPendingDecision::ProducerUntapChoice {
-            source: ObservedSourceRef {
-                canonical_object: Some(CanonicalObjectId(4)),
-                card: CardDefId(32),
+        let information = InformationState {
+            pending: ObservedPendingDecision::ProducerUntapChoice {
+                source: ObservedSourceRef {
+                    canonical_object: Some(CanonicalObjectId(4)),
+                    card: CardDefId(32),
+                },
             },
+            ..InformationState::default()
         };
         let policy = DeterministicPolicy;
         let contingent = candidate(5, PolicyActionClass::ContingentDecision, 32, 4);
