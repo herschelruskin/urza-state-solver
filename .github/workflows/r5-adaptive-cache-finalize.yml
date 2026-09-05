@@ -28,7 +28,7 @@ jobs:
         run: |
           sed -i 's#let template_bridge = CandidateBridge::build(template, cards)?;#let template_bridge = CandidateBridge::build(template, cards).map_err(RootActionError::Bridge)?;#' rust/crates/urza-mc/src/adaptive.rs
           sed -i 's#let sampled = sample_hidden_world(template, root, \*world)?;#let sampled = sample_hidden_world(template, root, *world).map_err(RootActionError::MonteCarlo)?;#' rust/crates/urza-mc/src/adaptive.rs
-          sed -i 's#let sampled_bridge = CandidateBridge::build(&sampled, cards)?;#let sampled_bridge = CandidateBridge::build(&sampled, cards).map_err(RootActionError::Bridge)?;#' rust/crates/urza-mc/src/adaptive.rs
+          sed -i 's#let sampled_bridge = CandidateBridge::build(&sampled, cards)?;#let sampled_bridge = CandidateBridge::build(\&sampled, cards).map_err(RootActionError::Bridge)?;#' rust/crates/urza-mc/src/adaptive.rs
       - name: Refresh lockfile
         working-directory: rust
         run: cargo generate-lockfile
