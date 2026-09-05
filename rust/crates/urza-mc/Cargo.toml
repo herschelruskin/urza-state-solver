@@ -5,5 +5,15 @@ edition.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+blake3.workspace = true
+thiserror.workspace = true
+urza-core = { path = "../urza-core" }
+urza-info = { path = "../urza-info" }
+urza-policy = { path = "../urza-policy" }
 urza-rng = { path = "../urza-rng" }
+urza-rollout = { path = "../urza-rollout" }
+urza-rules = { path = "../urza-rules" }
 urza-value = { path = "../urza-value" }
+
+[dev-dependencies]
+urza-cards = { path = "../urza-cards" }
