@@ -1,5 +1,7 @@
 #![forbid(unsafe_code)]
 
+use std::collections::{BTreeSet, HashMap};
+
 use thiserror::Error;
 use urza_core::{PendingDecision, Phase, TrueState, Window};
 use urza_info::{InformationState, ObservationError, observe};
@@ -13,7 +15,7 @@ use urza_rules::{
     detect_terminal_win,
 };
 
-pub const ROLLOUT_VERSION: &str = "r5_deterministic_rollout_v1";
+pub const ROLLOUT_VERSION: &str = "r5_deterministic_rollout_v2";
 pub const DEFAULT_MAX_STEPS: u32 = 4096;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -115,6 +117,10 @@ pub fn rollout_with_logical_event_offset<D: CardDatabase>(
 ) -> Result<RolloutResult, RolloutError> {
     let mut state = initial;
     let mut trace = Vec::new();
+    let mut deterministic_attempts: HashMap<
+        TrueState,
+        BTreeSet<(PolicyActionClass, PolicyPublicKey)>,
+    > = HashMap::new();
 
     loop {
         if let Some(stop) = prepare_for_policy(&mut state, cards)? {
@@ -126,7 +132,18 @@ pub fn rollout_with_logical_event_offset<D: CardDatabase>(
         }
 
         let bridge = CandidateBridge::build(&state, cards)?;
-        let Some(token) = policy.choose(bridge.information(), bridge.candidates())? else {
+        let rejected = deterministic_attempts.get(&state);
+        let available: Vec<_> = bridge
+            .candidates()
+            .iter()
+            .filter(|candidate| {
+                !rejected.is_some_and(|attempts| {
+                    attempts.contains(&(candidate.class, candidate.key.clone()))
+                })
+            })
+            .cloned()
+            .collect();
+        let Some(token) = policy.choose(bridge.information(), &available)? else {
             return finish(state, RolloutStop::NoCandidate, trace);
         };
         let selected = bridge
@@ -139,6 +156,10 @@ pub fn rollout_with_logical_event_offset<D: CardDatabase>(
             .resolved_action(token)
             .ok_or(RolloutError::MissingResolvedAction(token))?;
         let index = u32::try_from(trace.len()).map_err(|_| RolloutError::StepIndexOverflow)?;
+        let selected_class = selected.class;
+        let selected_semantics = (selected_class, selected.key.clone());
+        let decision_state = state.clone();
+        let rng_cursor_before = state.rng_occurrence_cursor;
 
         trace.push(RolloutStep {
             index,
@@ -156,6 +177,24 @@ pub fn rollout_with_logical_event_offset<D: CardDatabase>(
             config,
             logical_event_id(logical_event_offset, index)?,
         )?;
+
+        // If the exact same decision state is encountered again, replaying an
+        // already-executed non-random ordinary action would deterministically
+        // reproduce the same trajectory. Suppress only that semantic action
+        // on recurrence so the memoryless policy can choose its next-ranked
+        // legal exit. Pass and contingent decisions are never suppressed.
+        if state.rng_occurrence_cursor == rng_cursor_before
+            && matches!(decision_state.pending, PendingDecision::None)
+            && !matches!(
+                selected_class,
+                PolicyActionClass::PassPriority | PolicyActionClass::ContingentDecision
+            )
+        {
+            deterministic_attempts
+                .entry(decision_state)
+                .or_default()
+                .insert(selected_semantics);
+        }
     }
 }
 
@@ -411,6 +450,106 @@ mod tests {
                 .permanents()
                 .iter()
                 .any(|permanent| permanent.card == crypt)
+        );
+    }
+
+    #[test]
+    fn deterministic_basalt_tap_untap_cycle_escapes_to_pass() {
+        let cards = cards();
+        let basalt = cards.card_id_by_name("Basalt Monolith").expect("Basalt");
+        let mut state = base_state(&cards, urza_rules::HORIZON_TURN);
+        state.battlefield = BattlefieldZone::new(vec![permanent(20, basalt)]);
+
+        let result = rollout(state, &cards, &DeterministicPolicy, config(32)).unwrap();
+
+        assert_eq!(result.stop, RolloutStop::Horizon);
+        assert!(
+            result.trace.len() < 16,
+            "cycle guard should avoid the step cap"
+        );
+        assert_eq!(result.trace[0].class, PolicyActionClass::ProduceMana);
+        assert!(
+            result
+                .trace
+                .iter()
+                .any(|step| step.class == PolicyActionClass::ActivateAbility)
+        );
+        assert!(
+            result
+                .trace
+                .iter()
+                .any(|step| step.class == PolicyActionClass::PassPriority)
+        );
+    }
+
+    #[test]
+    fn deterministic_cycle_guard_preserves_raw_object_id_invariance() {
+        let cards = cards();
+        let basalt = cards.card_id_by_name("Basalt Monolith").expect("Basalt");
+        let mut left = base_state(&cards, urza_rules::HORIZON_TURN);
+        left.battlefield = BattlefieldZone::new(vec![permanent(20, basalt)]);
+        let mut right = base_state(&cards, urza_rules::HORIZON_TURN);
+        right.battlefield = BattlefieldZone::new(vec![permanent(20_020, basalt)]);
+
+        let left_result = rollout(left, &cards, &DeterministicPolicy, config(32)).unwrap();
+        let right_result = rollout(right, &cards, &DeterministicPolicy, config(32)).unwrap();
+
+        assert_eq!(left_result.stop, RolloutStop::Horizon);
+        assert_eq!(left_result.stop, right_result.stop);
+        assert_eq!(left_result.trace, right_result.trace);
+        assert_eq!(
+            left_result.final_information,
+            right_result.final_information
+        );
+    }
+
+    #[test]
+    fn deterministic_cycle_guard_escapes_with_underlying_stack_object() {
+        let cards = cards();
+        let basalt = cards.card_id_by_name("Basalt Monolith").expect("Basalt");
+        let crypt = cards
+            .card_id_by_name("Tormod's Crypt")
+            .expect("Tormod's Crypt");
+        let mut state = base_state(&cards, urza_rules::HORIZON_TURN);
+        state.battlefield = BattlefieldZone::new(vec![permanent(20, basalt)]);
+        state.stack.push(StackObject::Spell {
+            object_id: ObjectId(900),
+            card: crypt,
+            x_value: None,
+        });
+
+        let result = rollout(state, &cards, &DeterministicPolicy, config(32)).unwrap();
+
+        assert_eq!(result.stop, RolloutStop::Horizon);
+        assert!(
+            result.trace.len() < 16,
+            "stacked cycle should exit before the step cap"
+        );
+        assert!(
+            result
+                .final_state
+                .battlefield
+                .permanents()
+                .iter()
+                .any(|permanent| permanent.card == crypt)
+        );
+        assert!(
+            result
+                .trace
+                .iter()
+                .any(|step| step.class == PolicyActionClass::ProduceMana)
+        );
+        assert!(
+            result
+                .trace
+                .iter()
+                .any(|step| step.class == PolicyActionClass::ActivateAbility)
+        );
+        assert!(
+            result
+                .trace
+                .iter()
+                .any(|step| step.class == PolicyActionClass::PassPriority)
         );
     }
 

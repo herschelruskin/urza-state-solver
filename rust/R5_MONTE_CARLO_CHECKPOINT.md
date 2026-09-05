@@ -37,8 +37,8 @@ Validated closure commit: `db64a98e085128d882833a8704664d9969c82f0c` (`Close R5 
 - information: `information_state_v7_r4`;
 - ValueKey: `value_key_v7_r4`;
 - policy: `r5_candidate_contract_v2`;
-- candidate bridge: `r5_public_candidate_bridge_v1`;
-- rollout: `r5_deterministic_rollout_v1`;
+- candidate bridge: `r5_public_candidate_bridge_v2`;
+- rollout: `r5_deterministic_rollout_v2`;
 - Monte Carlo: `r5_hidden_world_mc_v1`.
 
 No frozen R4 namespace changes are made in this block.

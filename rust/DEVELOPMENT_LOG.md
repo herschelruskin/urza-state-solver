@@ -360,3 +360,14 @@ Added fixed-budget root-action comparison in `urza-mc`. Every legal public root 
 - Added deterministic performance counters for sampling, root-world work, cache behavior, and rollout steps executed/avoided. Metrics are observational only.
 - Refactored fixed and adaptive evaluation to share the same sampled-root execution and outcome aggregation path; no second gameplay implementation was introduced.
 - Added parity/cache/hidden-order/namespace/certification acceptance tests. Python gameplay/policy logic remains out of scope.
+
+
+## R5 deterministic rollout cycle guard
+
+- Classification: `ENGINE-SEQUENCING/PERFORMANCE-CORRECTNESS`.
+- Profiling exposed a deterministic Basalt Monolith tap / native untap / pass-resolution loop that reached both 4,096 and 8,192 step caps in sampled world 20487 under one CastCommander root.
+- `urza-rollout` now remembers exact repeated decision states and suppresses only previously executed ordinary non-pass semantic actions that consumed no game RNG. The next public policy-ranked legal candidate becomes the canonical loop exit; pass and contingent choices are never suppressed.
+- Rejected retries consume neither trace indexes nor logical RNG event IDs. Stochastic actions are not suppressed because a changed `rng_occurrence_cursor` prevents them from entering the deterministic-attempt set.
+- Added direct Basalt-cycle escape, nonempty-stack Basalt-cycle escape, and raw-ObjectId-renaming invariance regressions. The nonempty-stack fixture covers the artifact benchmark failure where a Basalt mana/untap loop repeatedly sat above an unresolved artifact spell.
+- Rollout namespace bumped to `r5_deterministic_rollout_v2`; linked R5 checkpoint namespace references updated.
+- Full strict Clippy, workspace tests, bench compilation, cumulative R0-R5 audits, and representative release performance matrix must pass in GitHub Actions `33948188923` before this helper's changes are committed.

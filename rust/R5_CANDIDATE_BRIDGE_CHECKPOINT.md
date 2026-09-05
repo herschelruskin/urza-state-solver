@@ -35,7 +35,7 @@ During `Transmute Artifact` difference payment, mana abilities that are legal wh
 - information: `information_state_v7_r4`;
 - ValueKey: `value_key_v7_r4`;
 - policy: `r5_candidate_contract_v2`;
-- candidate bridge: `r5_public_candidate_bridge_v1`.
+- candidate bridge: `r5_public_candidate_bridge_v2`.
 
 ## Acceptance
 
@@ -48,3 +48,8 @@ Validated candidate-bridge implementation commit: `4f3a44e61b8de95abcccd32466f38
 Build deterministic multi-step rollout sequencing using `CandidateBridge` at every public decision point. Only after rollout determinism and replayability are accepted should `urza-mc` begin sampled-world evaluation.
 
 Python gameplay/policy logic remains out of scope.
+
+
+## V2 staged-choice viability repair
+
+Candidate bridge v2 rejects a `Transmute Artifact` cast candidate when the public battlefield contains no artifact that can satisfy the mandatory staged sacrifice choice. Rules legality remains authoritative; this is a public candidate viability condition preventing a root from entering an accepted pending decision with zero contingent candidates. A Transmute cast remains exposed when at least one public artifact sacrifice exists. Validation of the repair completed in GitHub Actions `33946481397`; implementation commit `60030a84c7ddae37c5d97e8fd83ba39dad13e79a`.

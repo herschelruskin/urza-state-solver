@@ -54,8 +54,8 @@ Validated implementation commit: `fcaa22bff246da3cbf91dab7118a9f9bcd9f2641` (`Bu
 - information: `information_state_v7_r4`;
 - ValueKey: `value_key_v7_r4`;
 - policy: `r5_candidate_contract_v2`;
-- candidate bridge: `r5_public_candidate_bridge_v1`;
-- rollout: `r5_deterministic_rollout_v1`.
+- candidate bridge: `r5_public_candidate_bridge_v2`;
+- rollout: `r5_deterministic_rollout_v2`.
 
 No frozen R4 namespace changes in this block.
 
@@ -64,3 +64,12 @@ No frozen R4 namespace changes in this block.
 Connect sampled hidden worlds and Monte Carlo root evaluation to this deterministic rollout API. `urza-mc` remains unchanged until this checkpoint passes.
 
 Python gameplay/policy logic remains out of scope.
+
+
+## V2 deterministic cycle escape
+
+The rollout now keeps execution-local history of exact decision states and semantic actions already executed from them. If an identical exact decision state recurs and the previously selected ordinary non-pass action consumed no game RNG, that action is suppressed only at that recurring state and the unchanged deterministic policy selects the next-ranked legal public candidate. Pass-priority and contingent decisions are never suppressed. Exact recurrence is valid whether the stack is empty or contains unresolved objects: the complete stack is already part of `TrueState`, so an identical full state plus an RNG-free ordinary action is a deterministic recurrence. This specifically prevents mana/untap loops from starving an underlying spell of resolution. Rejected candidates do not consume a trace index or logical RNG event. This converts proven deterministic voluntary loops such as Basalt Monolith tap -> pay 3 to untap -> resolve -> repeat into a canonical exit through pass priority without changing R4 rules legality or policy visibility.
+
+The guard keys recurrence on exact `TrueState` only within one sampled world, but stores blocked choices by public `(PolicyActionClass, PolicyPublicKey)` semantics. Raw `ObjectId` renaming therefore cannot change the public trace. Actions that advance `rng_occurrence_cursor` are not blocked on recurrence, so genuinely stochastic retries remain eligible under their later logical-event coordinates.
+
+Rollout namespace is now `r5_deterministic_rollout_v2`; cache continuation identity therefore invalidates v1 outcomes automatically. Validation run: GitHub Actions `33948188923`.

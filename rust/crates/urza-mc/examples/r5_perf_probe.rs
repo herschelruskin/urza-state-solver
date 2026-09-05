@@ -93,7 +93,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             samples: SAMPLES,
             rollout_max_steps: ROLLOUT_MAX_STEPS,
         };
-        let (fixed_elapsed, fixed) = timed(|| compare_root_actions(&state, &cards, &policy, fixed_config))?;
+        let (fixed_elapsed, fixed) =
+            timed(|| compare_root_actions(&state, &cards, &policy, fixed_config))?;
 
         let full_adaptive_config = AdaptiveRootConfig {
             root,
@@ -118,7 +119,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 &mut cache,
             )
         })?;
-        assert_eq!(cold.comparison, fixed, "full adaptive parity for {}", case.name);
+        assert_eq!(
+            cold.comparison, fixed,
+            "full adaptive parity for {}",
+            case.name
+        );
 
         let (warm_elapsed, warm) = timed(|| {
             compare_root_actions_adaptive(
@@ -129,9 +134,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 &mut cache,
             )
         })?;
-        assert_eq!(warm.comparison, fixed, "warm cache parity for {}", case.name);
-        assert_eq!(warm.stats.cache_misses, 0, "warm cache miss for {}", case.name);
-        assert_eq!(warm.stats.root_world_rollouts, 0, "warm rollout for {}", case.name);
+        assert_eq!(
+            warm.comparison, fixed,
+            "warm cache parity for {}",
+            case.name
+        );
+        assert_eq!(
+            warm.stats.cache_misses, 0,
+            "warm cache miss for {}",
+            case.name
+        );
+        assert_eq!(
+            warm.stats.root_world_rollouts, 0,
+            "warm rollout for {}",
+            case.name
+        );
 
         let normal_config = AdaptiveRootConfig {
             min_samples: 2,
