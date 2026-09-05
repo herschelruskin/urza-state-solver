@@ -26,7 +26,6 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re
 
           path = Path('rust/crates/urza-policy-bridge/src/lib.rs')
           text = path.read_text()
@@ -40,78 +39,28 @@ jobs:
               1,
           )
 
-          anchor = '        .collect();\n    let creature_targets: Vec<_> = classes'
-          if anchor not in text:
-              raise SystemExit('artifact/creature anchor not found')
-          text = text.replace(
-              anchor,
-              '        .collect();\n    let has_artifact_sacrifice = !artifact_classes.is_empty();\n    let creature_targets: Vec<_> = classes',
-              1,
-          )
-
-          hand_pattern = re.compile(
-              r'(            for payment in &payments \{\n)'
-              r'(                actions\.push\(Action::CastFromHand \{\n'
-              r'                    card,\n'
-              r'                    payment: \*payment,\n'
-              r'                \}\);\n)'
-          )
-          replacement = (
-              r'\1'
-              '                if profile.special_search != SpecialSearchKind::TransmuteArtifact\n'
-              '                    || has_artifact_sacrifice\n'
-              '                {\n'
-              r'\2'
-              '                }\n'
-          )
-          text, count = hand_pattern.subn(replacement, text, count=1)
-          if count != 1:
-              raise SystemExit(f'hand cast replacement count={count}')
-
-          top_old = '''        if let Some(cost) = profile.mana_cost {
-              for payment in enumerate_payments(information.mana, cost) {
-                  actions.push(Action::CastLibraryTop { card, payment });
-              }
-          }
+          legality_anchor = '    actions.retain(|action| action_is_legal(state, cards, action));'
+          viability = '''    actions.retain(|action| {
+              let transmute_cast = match action {
+                  Action::CastFromHand { card, .. } | Action::CastLibraryTop { card, .. } => cards
+                      .profile(*card)
+                      .is_some_and(|profile| profile.special_search == SpecialSearchKind::TransmuteArtifact),
+                  Action::PlayUrzaPermission {
+                      permission_slot, ..
+                  } => information
+                      .urza_permissions
+                      .iter()
+                      .find(|permission| permission.permission_slot == *permission_slot)
+                      .and_then(|permission| cards.profile(permission.card))
+                      .is_some_and(|profile| profile.special_search == SpecialSearchKind::TransmuteArtifact),
+                  _ => false,
+              };
+              !transmute_cast || !artifact_classes.is_empty()
+          });
           '''
-          top_new = '''        if let Some(cost) = profile.mana_cost
-              && (profile.special_search != SpecialSearchKind::TransmuteArtifact
-                  || has_artifact_sacrifice)
-          {
-              for payment in enumerate_payments(information.mana, cost) {
-                  actions.push(Action::CastLibraryTop { card, payment });
-              }
-          }
-          '''
-          if top_old not in text:
-              raise SystemExit('library-top anchor not found')
-          text = text.replace(top_old, top_new, 1)
-
-          permission_old = '''    for permission in &information.urza_permissions {
-              for face in [CardFace::Front, CardFace::Back] {
-                  actions.push(Action::PlayUrzaPermission {
-                      permission_slot: permission.permission_slot,
-                      face,
-                  });
-              }
-          '''
-          permission_new = '''    for permission in &information.urza_permissions {
-              let permission_has_required_followup = cards.profile(permission.card).is_none_or(|profile| {
-                  profile.special_search != SpecialSearchKind::TransmuteArtifact
-                      || has_artifact_sacrifice
-              });
-              if permission_has_required_followup {
-                  for face in [CardFace::Front, CardFace::Back] {
-                      actions.push(Action::PlayUrzaPermission {
-                          permission_slot: permission.permission_slot,
-                          face,
-                      });
-                  }
-              }
-          '''
-          if permission_old not in text:
-              raise SystemExit('permission anchor not found')
-          text = text.replace(permission_old, permission_new, 1)
+          if legality_anchor not in text:
+              raise SystemExit('ordinary legality anchor not found')
+          text = text.replace(legality_anchor, viability + legality_anchor, 1)
 
           test_anchor = '    #[test]\n    fn transmute_difference_pending_keeps_mana_abilities_in_contingent_set() {'
           test = '''    #[test]
