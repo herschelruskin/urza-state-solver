@@ -9,6 +9,7 @@ use urza_cards::{
 use urza_cli::hand25_fixture;
 use urza_core::{MODEL_VERSION, R2_MODEL_VERSION, R3_MODEL_VERSION, TrueState};
 use urza_info::INFORMATION_SCHEMA_VERSION;
+use urza_mc::MONTE_CARLO_VERSION;
 use urza_policy::{POLICY_PHASE, POLICY_VERSION};
 use urza_policy_bridge::{
     CANDIDATE_BRIDGE_VERSION, CONTINGENT_ACTION_FAMILY_COUNT, ORDINARY_ACTION_FAMILY_COUNT,
@@ -230,25 +231,27 @@ fn run_r5_audit() {
     validate_r4_database().expect("accepted R4 database remains frozen for R5");
 
     let report = json!({
-        "phase": "R5-deterministic-rollout",
+        "phase": "R5-hidden-world-monte-carlo",
         "policy_phase": POLICY_PHASE,
         "policy_version": POLICY_VERSION,
         "candidate_bridge_version": CANDIDATE_BRIDGE_VERSION,
         "rollout_version": ROLLOUT_VERSION,
+        "monte_carlo_version": MONTE_CARLO_VERSION,
         "rules_version": RULES_VERSION,
         "model_version": MODEL_VERSION,
         "information_schema_version": INFORMATION_SCHEMA_VERSION,
         "value_key_schema_version": VALUE_KEY_SCHEMA_VERSION,
         "ordinary_action_families": ORDINARY_ACTION_FAMILY_COUNT,
         "contingent_action_families": CONTINGENT_ACTION_FAMILY_COUNT,
-        "policy_input_boundary": "urza-policy still consumes only InformationState plus public PolicyCandidate records; execution sequencing lives outside the policy crate",
+        "policy_input_boundary": "urza-policy still consumes only InformationState plus public PolicyCandidate records; hidden-world sampling and exact execution remain outside the policy crate",
         "bridge_contract": "all accepted R4 Action families remain collision-free public candidates with exact opaque-token round trip",
-        "rollout_contract": "each policy step rebuilds CandidateBridge from the current execution state, selects from public semantics, resolves one exact Action, applies it, and repeats until terminal win, T6 horizon, explicit step limit, or no-candidate boundary",
-        "automatic_transition_contract": "automatic phase advancement runs only in OpponentCycle/Untap Window::None with empty stack and no pending decision; contingent choices cannot be bypassed",
-        "rng_contract": "game RNG root/world are explicit rollout inputs and logical event id equals the public step index; replay uses the recorded public semantic action trace, never raw ObjectId provenance",
-        "replay_contract": "recorded semantic traces replay by class plus exact PolicyPublicKey and reject decision-point or candidate drift",
-        "current_scope": "deterministic multi-step R5 rollout sequencing complete over CandidateBridge; urza-mc remains untouched",
-        "next_r5_work": "connect sampled hidden worlds and Monte Carlo root evaluation to the accepted deterministic rollout boundary",
+        "rollout_contract": "each sampled exact world is evaluated only through the accepted deterministic urza-rollout driver",
+        "hidden_world_contract": "the exact template supplies execution scaffolding, but its unknown library order is discarded: the unknown middle is canonicalized as a public multiset and shuffled with an OuterHiddenWorld coordinate derived from public library belief plus WorldId",
+        "monte_carlo_contract": "fixed world identities are evaluated independently, outcomes are returned in canonical WorldId order, terminal wins aggregate by T1-T6 and WinFamily, and only a true T6 horizon is counted as a loss",
+        "rng_contract": "outer hidden-world sampling uses the OuterHiddenWorld domain; game randomness inside each rollout uses the existing Game domain with the same explicit root and sampled WorldId",
+        "completion_contract": "StepLimit and NoCandidate are incomplete evaluations and fail the Monte Carlo call rather than being silently recorded as losses",
+        "current_scope": "fixed-budget hidden-world sampling and deterministic Monte Carlo root-state evaluation complete over the frozen R4/R5 bridge+rollout surface",
+        "next_r5_work": "audit and build root-action comparison/value integration on common sampled worlds before any adaptive-confidence or performance broadening",
     });
 
     println!(

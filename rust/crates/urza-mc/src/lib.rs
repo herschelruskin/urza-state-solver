@@ -361,9 +361,7 @@ mod tests {
         let power = cards
             .card_id_by_name("Power Artifact")
             .expect("Power Artifact");
-        let top = cards
-            .card_id_by_name("Sensei's Divining Top")
-            .expect("Top");
+        let top = cards.card_id_by_name("Sensei's Divining Top").expect("Top");
         let gadgeteer = cards
             .card_id_by_name("Forensic Gadgeteer")
             .expect("Gadgeteer");
@@ -395,9 +393,7 @@ mod tests {
         let power = cards
             .card_id_by_name("Power Artifact")
             .expect("Power Artifact");
-        let top = cards
-            .card_id_by_name("Sensei's Divining Top")
-            .expect("Top");
+        let top = cards.card_id_by_name("Sensei's Divining Top").expect("Top");
         let crypt = cards
             .card_id_by_name("Tormod's Crypt")
             .expect("Tormod's Crypt");
@@ -436,11 +432,8 @@ mod tests {
         state.commander.zone = CommanderZone::Battlefield;
         let mut aura = permanent(30, power);
         aura.attached_to = Some(ObjectId(20));
-        state.battlefield = BattlefieldZone::new(vec![
-            permanent(10, urza),
-            permanent(20, basalt),
-            aura,
-        ]);
+        state.battlefield =
+            BattlefieldZone::new(vec![permanent(10, urza), permanent(20, basalt), aura]);
 
         let result = evaluate(&state, &cards, &DeterministicPolicy, config(4, 32)).unwrap();
         assert_eq!(result.samples(), 4);
@@ -484,42 +477,17 @@ mod tests {
         let crypt = cards
             .card_id_by_name("Tormod's Crypt")
             .expect("Tormod's Crypt");
-        let state = base_state(
-            &cards,
-            HORIZON_TURN,
-            vec![island, basalt, power, crypt],
-        );
+        let state = base_state(&cards, HORIZON_TURN, vec![island, basalt, power, crypt]);
         let root = RootSeed::from_u64(777);
         let worlds = [WorldId(9), WorldId(2), WorldId(14), WorldId(5)];
         let reversed = [WorldId(5), WorldId(14), WorldId(2), WorldId(9)];
 
-        let first = evaluate_world_ids(
-            &state,
-            &cards,
-            &DeterministicPolicy,
-            root,
-            16,
-            &worlds,
-        )
-        .unwrap();
-        let second = evaluate_world_ids(
-            &state,
-            &cards,
-            &DeterministicPolicy,
-            root,
-            16,
-            &worlds,
-        )
-        .unwrap();
-        let reordered = evaluate_world_ids(
-            &state,
-            &cards,
-            &DeterministicPolicy,
-            root,
-            16,
-            &reversed,
-        )
-        .unwrap();
+        let first =
+            evaluate_world_ids(&state, &cards, &DeterministicPolicy, root, 16, &worlds).unwrap();
+        let second =
+            evaluate_world_ids(&state, &cards, &DeterministicPolicy, root, 16, &worlds).unwrap();
+        let reordered =
+            evaluate_world_ids(&state, &cards, &DeterministicPolicy, root, 16, &reversed).unwrap();
         assert_eq!(first, second);
         assert_eq!(first, reordered);
         assert_eq!(
@@ -543,16 +511,8 @@ mod tests {
         let crypt = cards
             .card_id_by_name("Tormod's Crypt")
             .expect("Tormod's Crypt");
-        let left = base_state(
-            &cards,
-            HORIZON_TURN,
-            vec![island, basalt, power, crypt],
-        );
-        let right = base_state(
-            &cards,
-            HORIZON_TURN,
-            vec![crypt, power, basalt, island],
-        );
+        let left = base_state(&cards, HORIZON_TURN, vec![island, basalt, power, crypt]);
+        let right = base_state(&cards, HORIZON_TURN, vec![crypt, power, basalt, island]);
         assert_eq!(observe(&left).unwrap(), observe(&right).unwrap());
 
         let cfg = config(6, 16);
@@ -588,9 +548,6 @@ mod tests {
             &[WorldId(3), WorldId(3)],
         )
         .unwrap_err();
-        assert!(matches!(
-            error,
-            MonteCarloError::DuplicateWorld(WorldId(3))
-        ));
+        assert!(matches!(error, MonteCarloError::DuplicateWorld(WorldId(3))));
     }
 }

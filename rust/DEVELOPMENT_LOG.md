@@ -339,3 +339,7 @@ Added the isolated `urza-policy-bridge` execution layer over the frozen R4 actio
 ## R5 deterministic multi-step rollout
 
 POLICY/ENGINE-SEQUENCING checkpoint. Added isolated `urza-rollout` over the accepted R5 candidate bridge. Each step performs terminal/automatic-window handling, rebuilds public candidates, selects deterministically, resolves to an exact Rust `Action`, applies explicit root/world/logical-event RNG context, and repeats. Added public semantic trace replay with decision-point drift rejection, same-seed randomized-search replay coverage, raw-ObjectId-renaming invariance, stack continuation, and horizon termination. R4 rules/model/information/value namespaces remain frozen and `urza-mc` is still untouched.
+
+## R5 hidden-world Monte Carlo
+
+Added fixed-budget outer hidden-world sampling and Monte Carlo root-state evaluation in `urza-mc`. Sampling canonicalizes the unknown library middle before `OuterHiddenWorld` shuffling so preexisting secret order cannot leak into samples, preserves known library edges, and verifies public-information equality after sampling. Each world is evaluated only through accepted deterministic rollout; terminal outcomes aggregate by T1-T6/family, horizon is the only modeled loss, and incomplete rollout stops remain errors. World IDs are explicit, unique sample identities and evaluation order is canonicalized. R4 namespaces remain frozen. Root-action comparison/value integration is next.
