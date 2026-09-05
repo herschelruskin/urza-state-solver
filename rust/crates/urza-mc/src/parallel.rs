@@ -13,16 +13,17 @@ use urza_value::{
 };
 
 use crate::adaptive::{
-    ADAPTIVE_ROOT_EVAL_VERSION, AdaptiveRootActionComparison, AdaptiveRootConfig, AdaptiveRootError,
-    AdaptiveSearchStats, AdaptiveStopReason, ROOT_WORLD_CACHE_VERSION, RootOutcomeCache,
-    RootWorldCacheKey,
+    AdaptiveRootActionComparison, AdaptiveRootConfig, AdaptiveRootError, AdaptiveSearchStats,
+    AdaptiveStopReason, ROOT_WORLD_CACHE_VERSION, RootOutcomeCache, RootWorldCacheKey,
 };
 use crate::root::{
     ROOT_ACTION_EVAL_VERSION, RootActionComparison, RootActionError, RootActionEvaluation,
     RootActionKey, canonical_worlds, empty_result, evaluate_sampled_root_world,
     public_root_actions, record_outcome,
 };
-use crate::{MONTE_CARLO_VERSION, MonteCarloConfig, MonteCarloError, WorldOutcome, sample_hidden_world};
+use crate::{
+    MONTE_CARLO_VERSION, MonteCarloConfig, MonteCarloError, WorldOutcome, sample_hidden_world,
+};
 
 pub const PARALLEL_ROOT_EVAL_VERSION: &str = "r5_parallel_root_world_v1";
 
@@ -69,11 +70,9 @@ pub fn compare_root_actions_parallel<D: CardDatabase + Sync>(
     }
     let mut worlds = Vec::with_capacity(config.samples as usize);
     for offset in 0..config.samples {
-        let value = config
-            .first_world
-            .0
-            .checked_add(u64::from(offset))
-            .ok_or(RootActionError::MonteCarlo(MonteCarloError::WorldIdOverflow))?;
+        let value = config.first_world.0.checked_add(u64::from(offset)).ok_or(
+            RootActionError::MonteCarlo(MonteCarloError::WorldIdOverflow),
+        )?;
         worlds.push(WorldId(value));
     }
     compare_root_actions_world_ids_parallel(
@@ -103,7 +102,8 @@ pub fn compare_root_actions_world_ids_parallel<D: CardDatabase + Sync>(
     }
 
     let worlds = canonical_worlds(world_ids)?;
-    let template_bridge = CandidateBridge::build(template, cards).map_err(RootActionError::Bridge)?;
+    let template_bridge =
+        CandidateBridge::build(template, cards).map_err(RootActionError::Bridge)?;
     if let Some(family) = detect_terminal_win(template_bridge.information(), cards) {
         return Err(RootActionError::AlreadyTerminal(family).into());
     }
@@ -157,10 +157,7 @@ pub fn compare_root_actions_world_ids_parallel<D: CardDatabase + Sync>(
     })
 }
 
-pub fn compare_root_actions_adaptive_parallel<
-    D: CardDatabase + Sync,
-    C: RootOutcomeCache,
->(
+pub fn compare_root_actions_adaptive_parallel<D: CardDatabase + Sync, C: RootOutcomeCache>(
     template: &TrueState,
     cards: &D,
     continuation_policy: &DeterministicPolicy,
@@ -238,7 +235,8 @@ pub fn compare_root_actions_adaptive_world_ids_parallel<
         return Err(AdaptiveRootError::InvalidMaximumSamples.into());
     }
 
-    let template_bridge = CandidateBridge::build(template, cards).map_err(RootActionError::Bridge)?;
+    let template_bridge =
+        CandidateBridge::build(template, cards).map_err(RootActionError::Bridge)?;
     if let Some(family) = detect_terminal_win(template_bridge.information(), cards) {
         return Err(RootActionError::AlreadyTerminal(family).into());
     }
@@ -318,8 +316,10 @@ pub fn compare_root_actions_adaptive_world_ids_parallel<
                 continue;
             }
             let world = batch[world_index];
-            let sampled = sample_hidden_world(template, root, world).map_err(RootActionError::MonteCarlo)?;
-            let bridge = CandidateBridge::build(&sampled, cards).map_err(RootActionError::Bridge)?;
+            let sampled =
+                sample_hidden_world(template, root, world).map_err(RootActionError::MonteCarlo)?;
+            let bridge =
+                CandidateBridge::build(&sampled, cards).map_err(RootActionError::Bridge)?;
             if public_root_actions(&bridge) != roots {
                 return Err(RootActionError::CandidateSetDrift { world }.into());
             }
@@ -496,7 +496,9 @@ fn evaluate_jobs_parallel<D: CardDatabase + Sync>(
 
         let mut completed = Vec::with_capacity(jobs.len());
         for handle in handles {
-            let mut worker = handle.join().map_err(|_| ParallelRootError::WorkerPanic)??;
+            let mut worker = handle
+                .join()
+                .map_err(|_| ParallelRootError::WorkerPanic)??;
             completed.append(&mut worker);
         }
         completed.sort_unstable_by_key(|(world_index, root_index, _)| (*world_index, *root_index));
@@ -575,8 +577,14 @@ fn validate_namespace(
     );
     require!(namespace.objective == Objective::WinByHorizon, "objective");
     require!(namespace.horizon == HORIZON_TURN, "horizon");
-    require!(!namespace.environment_version.is_empty(), "environment_version");
-    require!(namespace.rng_scheme_version == RNG_SCHEME_VERSION, "rng_scheme_version");
+    require!(
+        !namespace.environment_version.is_empty(),
+        "environment_version"
+    );
+    require!(
+        namespace.rng_scheme_version == RNG_SCHEME_VERSION,
+        "rng_scheme_version"
+    );
     require!(
         namespace.sample_namespace == format!("{INFORMATION_SCHEMA_VERSION}|{MONTE_CARLO_VERSION}"),
         "sample_namespace"
@@ -644,15 +652,9 @@ mod tests {
         let state = state_with_land_choice(&cards, vec![island, crypt]);
         let worlds = [WorldId(3), WorldId(8), WorldId(13)];
         let root = RootSeed::from_u64(101);
-        let serial = compare_root_actions_world_ids(
-            &state,
-            &cards,
-            &DeterministicPolicy,
-            root,
-            12,
-            &worlds,
-        )
-        .unwrap();
+        let serial =
+            compare_root_actions_world_ids(&state, &cards, &DeterministicPolicy, root, 12, &worlds)
+                .unwrap();
 
         for workers in [1, 2, 4, 32] {
             let parallel = compare_root_actions_world_ids_parallel(
@@ -791,7 +793,10 @@ mod tests {
         assert_eq!(parallel.stats.cache_misses, 0);
         assert_eq!(parallel.stats.root_world_rollouts, 0);
         assert_eq!(parallel.stats.sampled_worlds, 0);
-        assert_eq!(parallel.stats.cache_hits, parallel.stats.root_world_requests);
+        assert_eq!(
+            parallel.stats.cache_hits,
+            parallel.stats.root_world_requests
+        );
     }
 
     #[test]

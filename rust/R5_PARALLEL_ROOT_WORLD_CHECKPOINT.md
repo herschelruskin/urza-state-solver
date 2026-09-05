@@ -76,3 +76,5 @@ The performance numbers are evidence for scheduling decisions only. Wall-clock t
 Validation pending the dedicated `R5 parallel root-world acceptance` gate and the permanent Rust foundation workflow on the finalized branch head.
 
 Python gameplay/policy logic remains out of scope.
+
+Dedicated acceptance run: GitHub Actions 33949117962, result PASS. The gate passed formatting, locked dependency metadata, strict all-target/all-feature Clippy, dedicated serial/parallel parity regressions, full workspace tests, benchmark compilation, three release performance probes, and cumulative R0-R5 audits.

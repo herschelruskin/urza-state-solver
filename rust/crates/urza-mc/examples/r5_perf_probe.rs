@@ -170,9 +170,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 &mut parallel_cache,
             )
         })?;
-        assert_eq!(warm.comparison, fixed_serial, "warm cache parity for {}", case.name);
-        assert_eq!(warm.stats.cache_misses, 0, "warm cache miss for {}", case.name);
-        assert_eq!(warm.stats.root_world_rollouts, 0, "warm rollout for {}", case.name);
+        assert_eq!(
+            warm.comparison, fixed_serial,
+            "warm cache parity for {}",
+            case.name
+        );
+        assert_eq!(
+            warm.stats.cache_misses, 0,
+            "warm cache miss for {}",
+            case.name
+        );
+        assert_eq!(
+            warm.stats.root_world_rollouts, 0,
+            "warm rollout for {}",
+            case.name
+        );
 
         let normal_config = AdaptiveRootConfig {
             min_samples: 2,

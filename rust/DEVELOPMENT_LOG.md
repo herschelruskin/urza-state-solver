@@ -371,3 +371,7 @@ Added fixed-budget root-action comparison in `urza-mc`. Every legal public root 
 - Added direct Basalt-cycle escape, nonempty-stack Basalt-cycle escape, and raw-ObjectId-renaming invariance regressions. The nonempty-stack fixture covers the artifact benchmark failure where a Basalt mana/untap loop repeatedly sat above an unresolved artifact spell.
 - Rollout namespace bumped to `r5_deterministic_rollout_v2`; linked R5 checkpoint namespace references updated.
 - Full strict Clippy, workspace tests, bench compilation, cumulative R0-R5 audits, and representative release performance matrix must pass in GitHub Actions `33948188923` before this helper's changes are committed.
+
+## R5 parallel root/world evaluation
+
+Added deterministic scoped-thread execution for independent sampled root/world jobs while retaining serial fixed-budget evaluation as the correctness oracle. Parallel workers never mutate caches or aggregate values; completed outcomes are canonically reordered before scoring. Serial and parallel adaptive paths share cache identity and deterministic counters. Acceptance includes one/multi/oversubscribed-worker parity, world-order and hidden-order invariance, cross-scheduler cache reuse, zero-worker rejection, and representative release performance probes. Namespace: r5_parallel_root_world_v1. Dedicated validation run: 33949117962.
