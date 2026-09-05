@@ -10,6 +10,7 @@ serde_json.workspace = true
 urza-cards = { path = "../urza-cards" }
 urza-core = { path = "../urza-core" }
 urza-info = { path = "../urza-info" }
+urza-mc = { path = "../urza-mc" }
 urza-policy = { path = "../urza-policy" }
 urza-policy-bridge = { path = "../urza-policy-bridge" }
 urza-rng = { path = "../urza-rng" }
