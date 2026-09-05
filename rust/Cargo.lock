@@ -602,6 +602,9 @@ name = "urza-mulligan"
 version = "0.1.0"
 dependencies = [
  "urza-cards",
+ "urza-core",
+ "urza-info",
+ "urza-rng",
  "urza-value",
 ]
 

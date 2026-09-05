@@ -6,4 +6,7 @@ rust-version.workspace = true
 
 [dependencies]
 urza-cards = { path = "../urza-cards" }
+urza-core = { path = "../urza-core" }
+urza-info = { path = "../urza-info" }
+urza-rng = { path = "../urza-rng" }
 urza-value = { path = "../urza-value" }
