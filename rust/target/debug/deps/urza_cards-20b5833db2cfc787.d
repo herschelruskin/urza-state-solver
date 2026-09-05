@@ -1,0 +1,14 @@
+/home/runner/work/urza-state-solver/urza-state-solver/rust/target/debug/deps/urza_cards-20b5833db2cfc787.d: crates/urza-cards/src/lib.rs /home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-cards/../../data/card_catalog.r0.json /home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-cards/../../data/card_catalog.r1.json /home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-cards/../../data/card_coverage.r0.json /home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-cards/../../../decklist.txt Cargo.toml
+
+/home/runner/work/urza-state-solver/urza-state-solver/rust/target/debug/deps/liburza_cards-20b5833db2cfc787.rmeta: crates/urza-cards/src/lib.rs /home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-cards/../../data/card_catalog.r0.json /home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-cards/../../data/card_catalog.r1.json /home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-cards/../../data/card_coverage.r0.json /home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-cards/../../../decklist.txt Cargo.toml
+
+crates/urza-cards/src/lib.rs:
+/home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-cards/../../data/card_catalog.r0.json:
+/home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-cards/../../data/card_catalog.r1.json:
+/home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-cards/../../data/card_coverage.r0.json:
+/home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-cards/../../../decklist.txt:
+Cargo.toml:
+
+# env-dep:CARGO_MANIFEST_DIR=/home/runner/work/urza-state-solver/urza-state-solver/rust/crates/urza-cards
+# env-dep:CLIPPY_ARGS=-D__CLIPPY_HACKERY__warnings__CLIPPY_HACKERY__
+# env-dep:CLIPPY_CONF_DIR

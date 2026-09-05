@@ -528,6 +528,7 @@ dependencies = [
  "urza-core",
  "urza-info",
  "urza-rules",
+ "urza-value",
 ]
 
 [[package]]
@@ -538,8 +539,10 @@ dependencies = [
  "serde_json",
  "urza-cards",
  "urza-core",
+ "urza-info",
  "urza-rng",
  "urza-rules",
+ "urza-value",
 ]
 
 [[package]]

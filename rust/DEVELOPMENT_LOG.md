@@ -305,3 +305,21 @@ This pass closes the terminal-family acceptance surface without broadening into 
 
 Acceptance boundary: these witnesses validate the terminal-family contracts and the modeled recurrence mechanisms they depend on. Deferred card text already called out by R4 coverage (for example Mana Vault upkeep/damage, Cam sacrifice-draw, and Floodcaller combat sizing) remains outside this terminal-family gate rather than being approximated.
 
+## 2026-09-04 — R4 final acceptance closed
+
+Classification: RULE/MODEL acceptance audit plus real-catalog PARITY witnesses. No POLICY implementation and no Python gameplay-logic port.
+
+The final broader R4 pass closes the milestone around the already implemented engine/recurrence surface rather than adding unrelated card breadth:
+
+- freezes R4 as exactly 47 active identities, an exact 15-card extension over the frozen 32-identity R3 surface;
+- strengthens `validate_r4_database` so R4 validation is cumulative over R1/R2/R3 and rejects identity-set substitution even when the total active count remains 47;
+- requires every R4-only active identity to retain an R4-specific coverage reason;
+- freezes the final rules namespace at `r4_acceptance_v6` while retaining the already-required R4c model / v7 information / v7 ValueKey schemas;
+- extends the R4 audit to report the information and ValueKey namespaces, exact R4-only identity list, terminal count, policy boundary, and explicitly unmodeled remainder;
+- adds final integration acceptance for exact R3->R4 registry extension, recurrence-state propagation through InformationState/ValueKey, hidden-order noninterference, and actual public contingent-choice reachability for Top, producer may-untap, and Cam target/effect decisions;
+- records the full R4 acceptance boundary in `R4_ACCEPTANCE.md` and marks R5 deterministic policy/rollout work as the next milestone.
+
+R4 acceptance deliberately does not convert the remaining 48 unsupported active identities into vanilla approximations, and does not claim full text for `PRIMITIVE_ACTIVE` cards whose coverage reason still names deferred behavior.
+
+Validation: the closure commit is produced only after locked dependency metadata, rustfmt, strict all-target/all-feature Clippy, workspace/all-target tests, benchmark compilation, and R0-R4 audit commands all pass in the dedicated closure workflow. The ordinary Rust foundation workflow is then expected to revalidate the committed result.
+

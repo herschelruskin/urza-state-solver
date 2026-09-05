@@ -9,5 +9,7 @@ serde.workspace = true
 serde_json.workspace = true
 urza-cards = { path = "../urza-cards" }
 urza-core = { path = "../urza-core" }
+urza-info = { path = "../urza-info" }
 urza-rng = { path = "../urza-rng" }
 urza-rules = { path = "../urza-rules" }
+urza-value = { path = "../urza-value" }

@@ -1,16 +1,19 @@
 use serde_json::json;
 use urza_cards::{
-    R2CardDatabase, R3CardDatabase, R4CardDatabase, URZA_CONSTRUCT_TOKEN_CARD_ID,
-    catalog_digest_hex, load_catalog, load_coverage, load_r1_catalog, r1_catalog_digest_hex,
-    validate_catalog_and_coverage, validate_r1_catalog, validate_r2_database, validate_r3_database,
-    validate_r4_database,
+    R2CardDatabase, R3_ACCEPTED_ACTIVE_IDENTITY_COUNT, R3CardDatabase,
+    R4_ACCEPTED_ACTIVE_IDENTITY_COUNT, R4_ONLY_ACTIVE_NAMES, R4CardDatabase,
+    URZA_CONSTRUCT_TOKEN_CARD_ID, catalog_digest_hex, load_catalog, load_coverage, load_r1_catalog,
+    r1_catalog_digest_hex, validate_catalog_and_coverage, validate_r1_catalog,
+    validate_r2_database, validate_r3_database, validate_r4_database,
 };
 use urza_cli::hand25_fixture;
 use urza_core::{MODEL_VERSION, R2_MODEL_VERSION, R3_MODEL_VERSION, TrueState};
+use urza_info::INFORMATION_SCHEMA_VERSION;
 use urza_rng::RNG_SCHEME_VERSION;
 use urza_rules::{
     HORIZON_TURN, R2_RULES_VERSION, R2CardRole, R3_RULES_VERSION, RULES_VERSION, WinFamily,
 };
+use urza_value::VALUE_KEY_SCHEMA_VERSION;
 
 fn main() {
     let command = std::env::args().nth(1).unwrap_or_else(|| "help".to_owned());
@@ -188,35 +191,27 @@ fn run_r4_audit() {
 
     let terminal_families: Vec<_> = WinFamily::ALL.into_iter().map(WinFamily::label).collect();
     let terminal_family_count = terminal_families.len();
+    let intentionally_unmodeled_active_identities = catalog.cards.len() - supported_names.len();
 
     let report = json!({
-        "phase": "R4-terminal-acceptance",
+        "phase": "R4-accepted",
         "rules_version": RULES_VERSION,
         "model_version": MODEL_VERSION,
+        "information_schema_version": INFORMATION_SCHEMA_VERSION,
+        "value_key_schema_version": VALUE_KEY_SCHEMA_VERSION,
         "horizon_turn": HORIZON_TURN,
-        "supported_active_card_identities": supported_names.len(),
+        "accepted_r3_active_card_identities": R3_ACCEPTED_ACTIVE_IDENTITY_COUNT,
+        "accepted_r4_active_card_identities": R4_ACCEPTED_ACTIVE_IDENTITY_COUNT,
+        "r4_only_active_card_identities": R4_ONLY_ACTIVE_NAMES.len(),
+        "r4_only_active_names": R4_ONLY_ACTIVE_NAMES,
+        "intentionally_unmodeled_active_identities": intentionally_unmodeled_active_identities,
         "supported_active_names": supported_names,
-        "active_engine_primitives": [
-            "Basalt Monolith",
-            "Grim Monolith",
-            "Forensic Gadgeteer",
-            "Power Artifact",
-            "The Reality Chip",
-            "Fortune Teller's Talent",
-            "Grafdigger's Cage",
-            "Grinding Station",
-            "Battered Golem",
-            "Chrome Dome",
-            "Mana Vault",
-            "Banishing Knack",
-            "Retraction Helix",
-            "Valley Floodcaller",
-            "Sewer-veillance Cam"
-        ],
         "terminal_family_count": terminal_family_count,
         "terminal_families": terminal_families,
         "terminal_detection_boundary": "public InformationState only; exact attachments/modes/grants preserved; stack and pending decisions block terminal recognition; Cage blocks library-cast families; hidden library order and raw ObjectId identity are irrelevant",
-        "scope": "R4 terminal-family acceptance hardened across all 13 audited families; remaining deferred card text is outside these accepted terminal witnesses"
+        "policy_boundary": "R4 exposes typed execution actions and public contingent choices; ordinary action enumeration/ranking and rollout policy remain R5 work",
+        "deferred_boundary": "unsupported active identities remain explicitly INTENTIONALLY_UNMODELED and active primitive cards may retain coverage-listed deferred text; R4 acceptance does not approximate those mechanics",
+        "scope": "R4 engine/rules acceptance closed: exact 15-card extension over frozen R3, 47 active identities total, 13 terminal families, and frozen R4 model/information/value namespaces"
     });
 
     println!(

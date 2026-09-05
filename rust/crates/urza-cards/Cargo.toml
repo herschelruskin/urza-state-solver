@@ -14,3 +14,4 @@ urza-rules = { path = "../urza-rules" }
 
 [dev-dependencies]
 urza-info = { path = "../urza-info" }
+urza-value = { path = "../urza-value" }

@@ -27,6 +27,25 @@ pub const R0_CATALOG_DIGEST_BLAKE3: &str =
     "2ef2f7dd52b72af46d24a0183096803ef9fb9d65524b9e77f7d87da4e2809f21";
 pub const R1_CATALOG_DIGEST_BLAKE3: &str =
     "4b39c7db7bfd2c6f68d7a49efa515cdffb2c6a9716022bc0b21eeec56754a983";
+pub const R3_ACCEPTED_ACTIVE_IDENTITY_COUNT: usize = 32;
+pub const R4_ACCEPTED_ACTIVE_IDENTITY_COUNT: usize = 47;
+pub const R4_ONLY_ACTIVE_NAMES: [&str; 15] = [
+    "Basalt Monolith",
+    "Grim Monolith",
+    "Forensic Gadgeteer",
+    "Power Artifact",
+    "The Reality Chip",
+    "Fortune Teller's Talent",
+    "Grafdigger's Cage",
+    "Grinding Station",
+    "Battered Golem",
+    "Chrome Dome",
+    "Mana Vault",
+    "Banishing Knack",
+    "Retraction Helix",
+    "Valley Floodcaller",
+    "Sewer-veillance Cam",
+];
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
 pub struct CardCatalog {
@@ -995,16 +1014,23 @@ pub fn validate_r3_database() -> Result<(), CatalogError> {
         }
     }
 
-    if database.supported_active_cards().len() != 32 {
-        return Err(CatalogError::Invariant(
-            "historical R3 database must remain exactly 32 active identities".to_owned(),
-        ));
+    if database.supported_active_cards().len() != R3_ACCEPTED_ACTIVE_IDENTITY_COUNT {
+        return Err(CatalogError::Invariant(format!(
+            "historical R3 database must remain exactly {R3_ACCEPTED_ACTIVE_IDENTITY_COUNT} active identities"
+        )));
     }
 
     Ok(())
 }
 
 pub fn validate_r4_database() -> Result<(), CatalogError> {
+    // R4 acceptance is cumulative: its audit must fail if an earlier accepted
+    // catalog/database contract has drifted even when the standalone R4 count
+    // would otherwise still look plausible.
+    validate_r1_catalog()?;
+    validate_r2_database()?;
+    validate_r3_database()?;
+
     let catalog = load_r1_catalog()?;
     let coverage = load_coverage()?;
     let database = R4CardDatabase::load()?;
@@ -1040,10 +1066,46 @@ pub fn validate_r4_database() -> Result<(), CatalogError> {
         }
     }
 
-    if database.supported_active_cards().len() != 47 {
+    let r4_supported: BTreeSet<_> = database.supported_active_cards().into_iter().collect();
+    if r4_supported.len() != R4_ACCEPTED_ACTIVE_IDENTITY_COUNT {
+        return Err(CatalogError::Invariant(format!(
+            "accepted R4 database must expose exactly {R4_ACCEPTED_ACTIVE_IDENTITY_COUNT} active identities"
+        )));
+    }
+
+    let r3_database = R3CardDatabase::load()?;
+    let r3_supported: BTreeSet<_> = r3_database.supported_active_cards().into_iter().collect();
+    if !r3_supported.is_subset(&r4_supported) {
         return Err(CatalogError::Invariant(
-            "current R4 database must expose exactly 47 active identities".to_owned(),
+            "accepted R4 database must be a strict extension of the frozen R3 surface".to_owned(),
         ));
+    }
+
+    let actual_r4_only: BTreeSet<_> = r4_supported.difference(&r3_supported).copied().collect();
+    let mut expected_r4_only = BTreeSet::new();
+    for name in R4_ONLY_ACTIVE_NAMES {
+        let card = card_id_by_name_from_r1(name)?;
+        expected_r4_only.insert(card);
+        let coverage_entry = coverage
+            .entries
+            .iter()
+            .find(|entry| entry.card_id == card.0)
+            .ok_or_else(|| CatalogError::Invariant(format!("missing R4 coverage for {name}")))?;
+        if !coverage_entry
+            .reason
+            .as_deref()
+            .unwrap_or_default()
+            .contains("R4")
+        {
+            return Err(CatalogError::Invariant(format!(
+                "accepted R4-only card {name} must carry an R4-specific coverage reason"
+            )));
+        }
+    }
+    if actual_r4_only != expected_r4_only {
+        return Err(CatalogError::Invariant(format!(
+            "R4-only active identity set drift: expected {expected_r4_only:?}, got {actual_r4_only:?}"
+        )));
     }
 
     Ok(())
