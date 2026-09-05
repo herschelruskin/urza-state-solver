@@ -9,6 +9,7 @@ use urza_cards::{
 use urza_cli::hand25_fixture;
 use urza_core::{MODEL_VERSION, R2_MODEL_VERSION, R3_MODEL_VERSION, TrueState};
 use urza_info::INFORMATION_SCHEMA_VERSION;
+use urza_policy::{POLICY_PHASE, POLICY_VERSION};
 use urza_rng::RNG_SCHEME_VERSION;
 use urza_rules::{
     HORIZON_TURN, R2_RULES_VERSION, R2CardRole, R3_RULES_VERSION, RULES_VERSION, WinFamily,
@@ -23,8 +24,9 @@ fn main() {
         "r2-audit" => run_r2_audit(),
         "r3-audit" => run_r3_audit(),
         "r4-audit" => run_r4_audit(),
+        "r5-audit" => run_r5_audit(),
         _ => {
-            eprintln!("usage: urza-cli <r0-audit|r1-audit|r2-audit|r3-audit|r4-audit>");
+            eprintln!("usage: urza-cli <r0-audit|r1-audit|r2-audit|r3-audit|r4-audit|r5-audit>");
             std::process::exit(2);
         }
     }
@@ -217,5 +219,29 @@ fn run_r4_audit() {
     println!(
         "{}",
         serde_json::to_string_pretty(&report).expect("serializable R4 audit report")
+    );
+}
+
+fn run_r5_audit() {
+    validate_r4_database().expect("accepted R4 database remains frozen for R5");
+
+    let report = json!({
+        "phase": "R5-start",
+        "policy_phase": POLICY_PHASE,
+        "policy_version": POLICY_VERSION,
+        "rules_version": RULES_VERSION,
+        "model_version": MODEL_VERSION,
+        "information_schema_version": INFORMATION_SCHEMA_VERSION,
+        "value_key_schema_version": VALUE_KEY_SCHEMA_VERSION,
+        "policy_input_boundary": "InformationState plus a public legal-candidate set; urza-policy has no direct dependency on urza-core/TrueState",
+        "selection_contract": "pending contingent decisions are mandatory; otherwise action class then public semantic key determine the choice; opaque execution token is only the final tie-break",
+        "hidden_information_contract": "unknown library order and raw execution ObjectId identity are unavailable to the policy crate",
+        "current_scope": "deterministic one-step policy selection kernel only",
+        "next_r5_work": "build the public ordinary-action candidate bridge over the accepted R4 execution actions, then deterministic rollout sequencing and Monte Carlo integration",
+    });
+
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&report).expect("serializable R5 audit report")
     );
 }
