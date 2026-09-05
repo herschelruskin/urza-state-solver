@@ -1,3 +1,4 @@
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::thread;
 
 use thiserror::Error;
@@ -25,7 +26,7 @@ use crate::{
     MONTE_CARLO_VERSION, MonteCarloConfig, MonteCarloError, WorldOutcome, sample_hidden_world,
 };
 
-pub const PARALLEL_ROOT_EVAL_VERSION: &str = "r5_parallel_root_world_v1";
+pub const PARALLEL_ROOT_EVAL_VERSION: &str = "r5_parallel_root_world_v2";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct ParallelRootConfig {
@@ -469,14 +470,20 @@ fn evaluate_jobs_parallel<D: CardDatabase + Sync>(
         return Ok(Vec::new());
     }
     let active_workers = workers.min(jobs.len());
-    let chunk_size = jobs.len().div_ceil(active_workers);
+    let next_job = AtomicUsize::new(0);
 
     thread::scope(|scope| {
-        let mut handles = Vec::new();
-        for chunk in jobs.chunks(chunk_size) {
+        let mut handles = Vec::with_capacity(active_workers);
+        for _ in 0..active_workers {
+            let next_job = &next_job;
             handles.push(scope.spawn(move || {
-                let mut completed = Vec::with_capacity(chunk.len());
-                for &(world_index, root_index) in chunk {
+                let mut attempted = Vec::with_capacity(jobs.len().div_ceil(active_workers));
+                loop {
+                    let job_index = next_job.fetch_add(1, Ordering::Relaxed);
+                    if job_index >= jobs.len() {
+                        break;
+                    }
+                    let (world_index, root_index) = jobs[job_index];
                     let world = &prepared[world_index];
                     let outcome = evaluate_sampled_root_world(
                         &world.sampled,
@@ -487,21 +494,25 @@ fn evaluate_jobs_parallel<D: CardDatabase + Sync>(
                         rollout_max_steps,
                         world.world,
                         &roots[root_index],
-                    )?;
-                    completed.push((world_index, root_index, outcome));
+                    );
+                    attempted.push((job_index, outcome));
                 }
-                Ok::<_, RootActionError>(completed)
+                attempted
             }));
         }
 
-        let mut completed = Vec::with_capacity(jobs.len());
+        let mut attempted = Vec::with_capacity(jobs.len());
         for handle in handles {
-            let mut worker = handle
-                .join()
-                .map_err(|_| ParallelRootError::WorkerPanic)??;
-            completed.append(&mut worker);
+            let mut worker = handle.join().map_err(|_| ParallelRootError::WorkerPanic)?;
+            attempted.append(&mut worker);
         }
-        completed.sort_unstable_by_key(|(world_index, root_index, _)| (*world_index, *root_index));
+        attempted.sort_unstable_by_key(|(job_index, _)| *job_index);
+
+        let mut completed = Vec::with_capacity(jobs.len());
+        for (job_index, outcome) in attempted {
+            let (world_index, root_index) = jobs[job_index];
+            completed.push((world_index, root_index, outcome?));
+        }
         Ok(completed)
     })
 }
