@@ -49,22 +49,15 @@ fn run() -> Result<(), Box<dyn Error>> {
     println!("R7_TOP_CHIP_PATH_TRACE\tv2");
     println!(
         "TRACE_BUDGET\tcase={}\tcase_index={}\tworld={}\tcandidate_cap={}\tleaf_steps={}",
-        CASE_NAME,
-        index,
-        world.0,
-        R7_SIGNAL_BOUNDARY_TEACHER_CANDIDATES,
-        DEFAULT_MAX_STEPS
+        CASE_NAME, index, world.0, R7_SIGNAL_BOUNDARY_TEACHER_CANDIDATES, DEFAULT_MAX_STEPS
     );
-    println!(
-        "PATH_PLAN\tcast-gadgeteer -> pass/resolve-gadgeteer -> cast-top -> frozen-r5-leaf"
-    );
+    println!("PATH_PLAN\tcast-gadgeteer -> pass/resolve-gadgeteer -> cast-top -> frozen-r5-leaf");
 
     let (bridge, retained) = snapshot("root", &state, &cards)?;
     let Some(cast_gadgeteer) = retained
         .iter()
         .find(|candidate| {
-            candidate.class == PolicyActionClass::CastSpell
-                && candidate.key.card == Some(gadgeteer)
+            candidate.class == PolicyActionClass::CastSpell && candidate.key.card == Some(gadgeteer)
         })
         .cloned()
     else {
@@ -168,10 +161,8 @@ fn snapshot(
     cards: &R4CardDatabase,
 ) -> Result<(CandidateBridge, Vec<PolicyCandidate>), Box<dyn Error>> {
     let bridge = CandidateBridge::build(state, cards)?;
-    let retained = retain_bounded_candidates(
-        bridge.candidates(),
-        R7_SIGNAL_BOUNDARY_TEACHER_CANDIDATES,
-    );
+    let retained =
+        retain_bounded_candidates(bridge.candidates(), R7_SIGNAL_BOUNDARY_TEACHER_CANDIDATES);
     let mut full_classes = BTreeMap::<PolicyActionClass, usize>::new();
     let mut retained_classes = BTreeMap::<PolicyActionClass, usize>::new();
     for candidate in bridge.candidates() {
