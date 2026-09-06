@@ -10,8 +10,8 @@ use urza_mulligan::{
     R7_SIGNAL_BOUNDARY_R5_SAMPLES, R7_SIGNAL_BOUNDARY_STATE_VERSION,
     R7_SIGNAL_BOUNDARY_TEACHER_CANDIDATES, R7_SIGNAL_BOUNDARY_TEACHER_ROOT_SEED,
     R7_SIGNAL_BOUNDARY_TEACHER_SAMPLES, R7_SIGNAL_BOUNDARY_TEACHER_STEPS,
-    R7_SIGNAL_BOUNDARY_VERSION, TeacherSearchConfig, TeacherSearchError, build_signal_boundary_cases,
-    evaluate_teacher,
+    R7_SIGNAL_BOUNDARY_VERSION, TeacherSearchConfig, TeacherSearchError,
+    build_signal_boundary_cases, evaluate_teacher,
 };
 use urza_policy::DeterministicPolicy;
 use urza_rng::{RootSeed, WorldId};
@@ -161,16 +161,19 @@ fn teacher_probe(
         },
     ) {
         Ok(result) => Ok(TeacherProbe {
-            value: format!("{}/{}", result.score.total_wins, result.stats.sampled_worlds),
+            value: format!(
+                "{}/{}",
+                result.score.total_wins, result.stats.sampled_worlds
+            ),
             status: String::from("complete"),
             groups: result.stats.public_groups_evaluated.to_string(),
             actions: result.stats.public_actions_evaluated.to_string(),
             truncated: result.stats.truncated_public_groups.to_string(),
             incomplete_branches: result.stats.incomplete_candidate_branches.to_string(),
         }),
-        Err(TeacherSearchError::IncompleteLeaf { stop, .. }) => Ok(incomplete_teacher_probe(format!(
-            "incomplete-leaf:{stop:?}"
-        ))),
+        Err(TeacherSearchError::IncompleteLeaf { stop, .. }) => Ok(incomplete_teacher_probe(
+            format!("incomplete-leaf:{stop:?}"),
+        )),
         Err(TeacherSearchError::AllCandidateBranchesIncomplete { candidate_count }) => Ok(
             incomplete_teacher_probe(format!("incomplete:all-candidates:{candidate_count}")),
         ),
