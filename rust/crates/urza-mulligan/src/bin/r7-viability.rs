@@ -61,12 +61,8 @@ fn run() -> Result<(), Box<dyn Error>> {
         // decision point rather than at the pre-policy opening state.
         let mut first_decision = bridge.true_state().clone();
         advance_automatic(&mut first_decision, &cards)?;
-        let roots = compare_root_actions(
-            &first_decision,
-            &cards,
-            &policy,
-            config.evaluation.rollout,
-        )?;
+        let roots =
+            compare_root_actions(&first_decision, &cards, &policy, config.evaluation.rollout)?;
         let winning_root_actions = roots
             .evaluations
             .iter()
