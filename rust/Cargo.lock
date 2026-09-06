@@ -606,7 +606,9 @@ dependencies = [
  "urza-info",
  "urza-mc",
  "urza-policy",
+ "urza-policy-bridge",
  "urza-rng",
+ "urza-rollout",
  "urza-rules",
  "urza-value",
 ]
