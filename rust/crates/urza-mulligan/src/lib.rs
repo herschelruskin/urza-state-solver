@@ -6,7 +6,7 @@
 // in mutable ambient context merely to satisfy an argument-count heuristic.
 #[cfg(test)]
 mod acceptance;
-mod corpus;
+mod corpus_dataset;
 #[allow(clippy::too_many_arguments)]
 mod decision;
 mod engine;
@@ -16,7 +16,7 @@ mod interpretation;
 mod report;
 mod trace;
 
-pub use corpus::*;
+pub use corpus_dataset::*;
 pub use decision::*;
 pub use engine::*;
 pub use interpretation::*;
