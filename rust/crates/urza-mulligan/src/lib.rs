@@ -11,10 +11,12 @@ mod decision;
 mod engine;
 #[cfg(test)]
 mod future_invariance;
+mod interpretation;
 mod report;
 mod trace;
 
 pub use decision::*;
 pub use engine::*;
+pub use interpretation::*;
 pub use report::*;
 pub use trace::*;
