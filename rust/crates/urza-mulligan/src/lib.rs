@@ -7,6 +7,8 @@
 #[allow(clippy::too_many_arguments)]
 mod decision;
 mod engine;
+mod report;
 
 pub use decision::*;
 pub use engine::*;
+pub use report::*;
