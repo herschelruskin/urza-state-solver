@@ -101,7 +101,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     for (sample, annotation) in survey.annotated.entries() {
         let record = source
             .corpus
-            .get(sample)
+            .get(*sample)
             .ok_or_else(|| format!("missing source corpus record for {sample:?}"))?;
         let kept_names = card_names(&interpretation, &annotation.kept_hand)?;
         let source_action = match &annotation.source_recommended_action {
