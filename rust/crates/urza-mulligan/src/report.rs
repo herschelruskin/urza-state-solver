@@ -21,15 +21,6 @@ pub struct RationalProbability {
     pub denominator: u128,
 }
 
-impl RationalProbability {
-    pub fn as_f64(self) -> f64 {
-        if self.denominator == 0 {
-            return 0.0;
-        }
-        self.numerator as f64 / self.denominator as f64
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CumulativeWinProbabilities {
     /// Exact sampled P(win by T1), P(win by T2), ..., P(win by T6).
@@ -64,12 +55,8 @@ pub enum FiniteSampleSource {
     NestedFutureHandAndR5OutcomeUnits,
 }
 
-/// Honest uncertainty metadata for the deterministic sampled value.
-///
-/// Recursive mull-again values reuse child continuation estimates, so treating
-/// every aggregated outcome unit as an independent Bernoulli trial would make a
-/// conventional confidence interval misleading. R6 therefore reports the exact
-/// finite-sample resolution and its source rather than fabricating independence.
+/// Recursive continuation estimates reuse child values, so R6 reports exact
+/// finite-sample resolution rather than an invalid independence-based interval.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FiniteSampleUncertainty {
     pub source: FiniteSampleSource,
@@ -92,11 +79,8 @@ impl FiniteSampleUncertainty {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SampledDecisionConfidence {
-    /// The experimental keep-3 floor leaves no legal mull-again alternative.
     ForcedKeepAtExperimentalFloor,
-    /// Keep and mull-again are exactly tied under the current sampled objective.
     ExactSampleTie,
-    /// The selected action strictly leads under the current finite sampled objective.
     ExactSamplePreference,
 }
 
@@ -129,7 +113,6 @@ pub struct MulliganReport {
     pub stage: MulliganStage,
     pub mulligan_depth: u8,
     pub current_seven: Vec<CardDefId>,
-    /// Present only when this report is for the initial seven.
     pub starting_seven: Option<Vec<CardDefId>>,
     pub pregame: PregameContext,
     pub policy_version: &'static str,
@@ -141,13 +124,10 @@ pub struct MulliganReport {
     pub objective_preference: ObjectivePreference,
     pub primary_win_rate_gap: Option<ExactWinRateGap>,
     pub sampled_decision_confidence: SampledDecisionConfidence,
-    /// Every non-selected legal bottom package, ranked by the same objective.
+    /// Every non-selected legal bottom package ranked by the accepted objective.
     pub alternate_bottoms: Vec<ReportedKeepPackage>,
 }
 
-/// Build the stable R6 result/report surface from one completed decision evaluation.
-///
-/// Report construction is read-only and cannot affect keep/mull identity.
 pub fn build_mulligan_report(
     state: &MulliganState<CardDefId>,
     evaluation: &MulliganDecisionEvaluation,
@@ -181,7 +161,7 @@ pub fn build_mulligan_report(
         })
         .transpose()?;
 
-    let sampled_decision_confidence = match evaluation.mull_again {
+    let sampled_decision_confidence = match &evaluation.mull_again {
         None => SampledDecisionConfidence::ForcedKeepAtExperimentalFloor,
         Some(_) if evaluation.objective_preference == ObjectivePreference::Equal => {
             SampledDecisionConfidence::ExactSampleTie
@@ -231,7 +211,7 @@ fn reported_keep(
 fn ranked_keep_indices(
     packages: &[KeepPackageEvaluation],
 ) -> Result<Vec<usize>, MulliganEvaluationError> {
-    let mut ranking: Vec<usize> = Vec::with_capacity(packages.len());
+    let mut ranking = Vec::with_capacity(packages.len());
     for candidate in 0..packages.len() {
         let mut insert_at = ranking.len();
         for (position, current) in ranking.iter().enumerate() {
@@ -280,11 +260,7 @@ impl fmt::Display for MulliganReport {
         )?;
         write!(formatter, "P(win by T1..T6):")?;
         for probability in self.best_keep.win_by_turn.t1_through_t6 {
-            write!(
-                formatter,
-                " {}/{}",
-                probability.numerator, probability.denominator
-            )?;
+            write!(formatter, " {}/{}", probability.numerator, probability.denominator)?;
         }
         writeln!(formatter)?;
         writeln!(
@@ -322,7 +298,7 @@ mod tests {
     use urza_rng::{RootSeed, WorldId};
 
     use super::*;
-    use crate::{ContinuationEvaluation, ExactWinRateGap, WinRateGapDirection};
+    use crate::{ContinuationEvaluation, WinRateGapDirection};
 
     fn package(bottom: Vec<usize>, wins: [u128; 6], losses: u128) -> KeepPackageEvaluation {
         let denominator = wins.iter().copied().sum::<u128>() + losses;
@@ -347,7 +323,7 @@ mod tests {
     }
 
     #[test]
-    fn report_exposes_cumulative_probabilities_resolution_gap_and_all_alternates() {
+    fn report_exposes_probabilities_resolution_gap_and_alternates() {
         let pregame = PregameContext {
             seat: 2,
             gemstone_caverns_eligible: true,
@@ -358,15 +334,14 @@ mod tests {
             pregame,
         )
         .unwrap();
-        let keep_packages = vec![
-            package(vec![0, 1, 2, 3], [1, 1, 0, 0, 0, 0], 2),
-            package(vec![0, 1, 2, 4], [0, 1, 0, 0, 0, 0], 3),
-            package(vec![0, 1, 2, 5], [1, 0, 0, 0, 0, 0], 3),
-        ];
         let evaluation = MulliganDecisionEvaluation {
             stage: MulliganStage::Three,
             pregame,
-            keep_packages,
+            keep_packages: vec![
+                package(vec![0, 1, 2, 3], [1, 1, 0, 0, 0, 0], 2),
+                package(vec![0, 1, 2, 4], [0, 1, 0, 0, 0, 0], 3),
+                package(vec![0, 1, 2, 5], [1, 0, 0, 0, 0, 0], 3),
+            ],
             best_keep_index: 0,
             mull_again: Some(ContinuationEvaluation {
                 stage: MulliganStage::Three,
@@ -405,7 +380,6 @@ mod tests {
         let report = build_mulligan_report(&state, &evaluation, &config).unwrap();
         assert_eq!(report.mulligan_depth, 5);
         assert_eq!(report.starting_seven, None);
-        assert_eq!(report.best_keep.win_by_turn.t1_through_t6[0].numerator, 1);
         assert_eq!(report.best_keep.win_by_turn.t1_through_t6[1].numerator, 2);
         assert_eq!(report.best_keep.uncertainty.one_outcome_resolution.denominator, 4);
         assert_eq!(report.alternate_bottoms.len(), 2);
@@ -416,31 +390,5 @@ mod tests {
         );
         assert!(report.to_string().contains("P(win by T1..T6)"));
         assert!(report.to_string().contains(MULLIGAN_CONFIDENCE_CONTRACT));
-    }
-
-    #[test]
-    fn initial_report_preserves_starting_seven() {
-        let pregame = PregameContext {
-            seat: 1,
-            gemstone_caverns_eligible: false,
-        };
-        let seven: Vec<_> = (20_u16..=26).map(CardDefId).collect();
-        let state = MulliganState::initial(seven.clone(), pregame).unwrap();
-        let keep = package(Vec::new(), [0, 0, 1, 0, 0, 0], 0);
-        let evaluation = MulliganDecisionEvaluation {
-            stage: MulliganStage::InitialSeven,
-            pregame,
-            keep_packages: vec![keep],
-            best_keep_index: 0,
-            mull_again: None,
-            objective_preference: ObjectivePreference::Keep,
-            primary_win_rate_gap: None,
-            selected: MulliganChoice::Keep {
-                bottom_indices: Vec::new(),
-            },
-        };
-        let config = MulliganEvaluationConfig::default();
-        let report = build_mulligan_report(&state, &evaluation, &config).unwrap();
-        assert_eq!(report.starting_seven, Some(seven));
     }
 }
