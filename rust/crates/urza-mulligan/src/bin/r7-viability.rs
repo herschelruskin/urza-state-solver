@@ -4,7 +4,7 @@ use urza_cards::R4CardDatabase;
 use urza_mc::{compare_root_actions, evaluate};
 use urza_policy::DeterministicPolicy;
 use urza_rng::WorldId;
-use urza_rules::advance_automatic;
+use urza_rules::{Action, advance_automatic, apply_action};
 
 use urza_mulligan::{
     InterpretationCatalog, bridge_kept_hand, load_commander_deck, r7_teacher_generation_config,
@@ -27,7 +27,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     let policy = DeterministicPolicy;
     let config = r7_teacher_generation_config();
 
-    println!("R7_VIABILITY\tr7_teacher_policy_viability_v1");
+    println!("R7_VIABILITY\tr7_teacher_policy_viability_v2");
     println!("PROFILE\t{}", config.profile_version);
     println!("ROLLOUT_SAMPLES\t{}", config.evaluation.rollout.samples);
 
@@ -55,14 +55,15 @@ fn run() -> Result<(), Box<dyn Error>> {
             config.evaluation.rollout,
         )?;
 
-        // R6 keeps begin at T1 Untap / Window::None. The ordinary R5 rollout
-        // performs this automatic transition before consulting policy, so the
-        // root-action diagnostic must compare actions at the same first public
-        // decision point rather than at the pre-policy opening state.
-        let mut first_decision = bridge.true_state().clone();
-        advance_automatic(&mut first_decision, &cards)?;
-        let roots =
-            compare_root_actions(&first_decision, &cards, &policy, config.evaluation.rollout)?;
+        // R6 keeps begin at T1 Untap / Window::None. Normal rollout advances
+        // automatically to Upkeep priority; passing there performs the turn
+        // draw, and a second pass reaches Precombat Main. Compare root actions
+        // at that first strategically meaningful main-phase decision point.
+        let mut first_main = bridge.true_state().clone();
+        advance_automatic(&mut first_main, &cards)?;
+        apply_action(&mut first_main, &cards, Action::PassPriority)?;
+        apply_action(&mut first_main, &cards, Action::PassPriority)?;
+        let roots = compare_root_actions(&first_main, &cards, &policy, config.evaluation.rollout)?;
         let winning_root_actions = roots
             .evaluations
             .iter()
