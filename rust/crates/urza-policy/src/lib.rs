@@ -8,7 +8,7 @@ use urza_info::{CanonicalObjectId, CardDefId, InformationState, PendingDecisionK
 /// R5 deterministic policy layer on top of the frozen R4
 /// rules/information/value contract.
 pub const POLICY_PHASE: &str = "R5";
-pub const POLICY_VERSION: &str = "r5_candidate_contract_v2";
+pub const POLICY_VERSION: &str = "r5_candidate_contract_v3";
 
 /// Opaque decision-local handle supplied by the execution bridge.
 ///
@@ -79,8 +79,9 @@ pub enum PolicyError {
 /// Deterministic R5 selector.
 ///
 /// The policy consumes only public information and public candidate metadata.
-/// It guarantees stable selection independent of candidate enumeration order
-/// and prevents ordinary actions from skipping a pending rules decision.
+/// It guarantees stable selection independent of candidate enumeration order,
+/// prevents ordinary actions from skipping a pending rules decision, and drains
+/// an already-nonempty public stack before adding more optional actions.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct DeterministicPolicy;
 
@@ -93,6 +94,7 @@ impl DeterministicPolicy {
         validate_candidate_tokens(candidates)?;
 
         let pending = information.pending.kind() != PendingDecisionKind::None;
+        let drain_stack = !pending && !information.stack.is_empty();
         let has_contingent = candidates
             .iter()
             .any(|candidate| candidate.class == PolicyActionClass::ContingentDecision);
@@ -109,7 +111,9 @@ impl DeterministicPolicy {
             .filter(|candidate| {
                 !pending || candidate.class == PolicyActionClass::ContingentDecision
             })
-            .min_by(|left, right| semantic_rank(left).cmp(&semantic_rank(right)));
+            .min_by(|left, right| {
+                semantic_rank(left, drain_stack).cmp(&semantic_rank(right, drain_stack))
+            });
 
         Ok(selected.map(|candidate| candidate.token))
     }
@@ -125,18 +129,36 @@ fn validate_candidate_tokens(candidates: &[PolicyCandidate]) -> Result<(), Polic
     Ok(())
 }
 
-fn semantic_rank(candidate: &PolicyCandidate) -> (u8, &PolicyPublicKey, ActionToken) {
-    (class_rank(candidate.class), &candidate.key, candidate.token)
+fn semantic_rank(
+    candidate: &PolicyCandidate,
+    drain_stack: bool,
+) -> (u8, &PolicyPublicKey, ActionToken) {
+    (
+        class_rank(candidate.class, drain_stack),
+        &candidate.key,
+        candidate.token,
+    )
 }
 
-const fn class_rank(class: PolicyActionClass) -> u8 {
-    match class {
-        PolicyActionClass::ContingentDecision => 0,
-        PolicyActionClass::PlayLand => 1,
-        PolicyActionClass::ProduceMana => 2,
-        PolicyActionClass::CastSpell => 3,
-        PolicyActionClass::ActivateAbility => 4,
-        PolicyActionClass::PassPriority => 5,
+const fn class_rank(class: PolicyActionClass, drain_stack: bool) -> u8 {
+    if drain_stack {
+        match class {
+            PolicyActionClass::ContingentDecision => 0,
+            PolicyActionClass::PassPriority => 1,
+            PolicyActionClass::PlayLand => 2,
+            PolicyActionClass::ProduceMana => 3,
+            PolicyActionClass::CastSpell => 4,
+            PolicyActionClass::ActivateAbility => 5,
+        }
+    } else {
+        match class {
+            PolicyActionClass::ContingentDecision => 0,
+            PolicyActionClass::PlayLand => 1,
+            PolicyActionClass::ProduceMana => 2,
+            PolicyActionClass::CastSpell => 3,
+            PolicyActionClass::ActivateAbility => 4,
+            PolicyActionClass::PassPriority => 5,
+        }
     }
 }
 
@@ -171,6 +193,39 @@ mod tests {
         let reversed = policy.choose(&information, &[c, b, a]).unwrap();
 
         assert_eq!(forward, Some(ActionToken(2)));
+        assert_eq!(forward, reversed);
+    }
+
+    #[test]
+    fn nonempty_stack_prefers_pass_before_optional_actions() {
+        let information = InformationState {
+            stack: vec![urza_info::ObservedStackObject {
+                kind: urza_info::ObservedStackKind::ActivatedAbility,
+                card: None,
+                source: None,
+                target: None,
+                ability: None,
+                parameter: None,
+            }],
+            ..InformationState::default()
+        };
+        let policy = DeterministicPolicy;
+        let mana = candidate(2, PolicyActionClass::ProduceMana, 10, 1);
+        let spell = candidate(3, PolicyActionClass::CastSpell, 20, 2);
+        let activation = candidate(4, PolicyActionClass::ActivateAbility, 30, 3);
+        let pass = candidate(9, PolicyActionClass::PassPriority, 0, 0);
+
+        let forward = policy
+            .choose(
+                &information,
+                &[mana.clone(), spell.clone(), activation.clone(), pass.clone()],
+            )
+            .unwrap();
+        let reversed = policy
+            .choose(&information, &[pass, activation, spell, mana])
+            .unwrap();
+
+        assert_eq!(forward, Some(ActionToken(9)));
         assert_eq!(forward, reversed);
     }
 
