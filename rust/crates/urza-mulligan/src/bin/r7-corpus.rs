@@ -4,11 +4,12 @@ use std::fmt::Write as _;
 use urza_mulligan::{
     DISTANCE_AXIS_NAMES, InterpretationCatalog, MulliganChoice, MulliganStage, build_corpus_review,
     feature_axis_ranges_with_names, generate_evaluated_hand_corpus, normalize_hand_features,
-    r7_pilot_generation_config, r7_smoke_generation_config,
+    r7_pilot_generation_config, r7_smoke_generation_config, r7_teacher_generation_config,
 };
 
 const REVIEW_RADII: [u32; 7] = [0, 300, 600, 900, 1_200, 1_800, 2_400];
-const SELECTED_REVIEW_RADIUS: u32 = 900;
+const DEFAULT_REVIEW_RADIUS: u32 = 900;
+const TEACHER_REVIEW_RADIUS: u32 = 600;
 const TOP_CARD_LIMIT: usize = 8;
 
 fn main() {
@@ -22,10 +23,16 @@ fn run() -> Result<(), Box<dyn Error>> {
     let profile = std::env::args()
         .nth(1)
         .unwrap_or_else(|| "smoke".to_owned());
-    let config = match profile.as_str() {
-        "smoke" => r7_smoke_generation_config(),
-        "pilot" => r7_pilot_generation_config(),
-        _ => return Err(format!("usage: r7-corpus [smoke|pilot], got {profile:?}").into()),
+    let (config, selected_review_radius) = match profile.as_str() {
+        "smoke" => (r7_smoke_generation_config(), DEFAULT_REVIEW_RADIUS),
+        "pilot" => (r7_pilot_generation_config(), DEFAULT_REVIEW_RADIUS),
+        "teacher" => (r7_teacher_generation_config(), TEACHER_REVIEW_RADIUS),
+        _ => {
+            return Err(format!(
+                "usage: r7-corpus [smoke|pilot|teacher], got {profile:?}"
+            )
+            .into());
+        }
     };
 
     let generated = generate_evaluated_hand_corpus(&config)?;
@@ -34,7 +41,7 @@ fn run() -> Result<(), Box<dyn Error>> {
         &generated.corpus,
         &interpretation,
         &REVIEW_RADII,
-        SELECTED_REVIEW_RADIUS,
+        selected_review_radius,
         TOP_CARD_LIMIT,
     )?;
 

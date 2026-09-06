@@ -16,6 +16,7 @@ mod engine;
 mod future_invariance;
 mod interpretation;
 mod report;
+mod teacher_corpus;
 mod trace;
 
 pub use corpus_dataset::*;
@@ -25,4 +26,5 @@ pub use decision::*;
 pub use engine::*;
 pub use interpretation::*;
 pub use report::*;
+pub use teacher_corpus::*;
 pub use trace::*;

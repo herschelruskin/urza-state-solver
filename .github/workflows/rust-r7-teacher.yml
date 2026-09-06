@@ -1,0 +1,62 @@
+name: R7 teacher corpus
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - "rust/crates/urza-mulligan/**"
+      - "decklist.txt"
+      - ".github/workflows/rust-r7-teacher.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  teacher:
+    if: contains(github.event.head_commit.message, '[r7-teacher]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+      - name: Locked teacher build
+        working-directory: rust
+        run: cargo check --locked -p urza-mulligan --bin r7-corpus
+      - name: Generate material R7 teacher corpus
+        working-directory: rust
+        run: |
+          printf 'REPOSITORY_SHA\t%s\n' "$GITHUB_SHA" > ../r7-teacher-corpus.tsv
+          printf 'REPOSITORY_DIRTY\tfalse\n' >> ../r7-teacher-corpus.tsv
+          printf 'GENERATION_WORKERS\t1\n' >> ../r7-teacher-corpus.tsv
+          printf 'BUDGET_CLASS\tmaterially_higher_teacher_v1\n' >> ../r7-teacher-corpus.tsv
+          cargo run --locked -p urza-mulligan --bin r7-corpus -- teacher | tee -a ../r7-teacher-corpus.tsv
+      - name: Reject degenerate teacher corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -F $'PROFILE\tr7_teacher_256_worlds_16x8_v1' r7-teacher-corpus.tsv
+          grep -F $'WORLD_COUNT\t256' r7-teacher-corpus.tsv
+          stats="$(grep -m1 '^STATS' r7-teacher-corpus.tsv)"
+          worlds="$(printf '%s\n' "$stats" | grep -oE 'worlds=[0-9]+' | cut -d= -f2)"
+          decisions="$(printf '%s\n' "$stats" | grep -oE 'decisions=[0-9]+' | cut -d= -f2)"
+          keeps="$(printf '%s\n' "$stats" | grep -oE 'keep=[0-9]+' | cut -d= -f2)"
+          mulls="$(printf '%s\n' "$stats" | grep -oE 'mull=[0-9]+' | cut -d= -f2)"
+          test "$worlds" -eq 256
+          test "$keeps" -eq 256
+          test "$mulls" -ge 1
+          test "$decisions" -gt "$worlds"
+          grep -Eq '^STAGE_POPULATIONS.*(FreeSeven|Six|Five|Four|Three):[1-9][0-9]*' r7-teacher-corpus.tsv
+          grep -Eq '^RECORD.*action=MULLIGAN' r7-teacher-corpus.tsv
+          grep -Eq '^RECORD.*best_keep=[1-9][0-9]*/16' r7-teacher-corpus.tsv
+      - name: Teacher corpus summary
+        if: always()
+        run: grep -E '^(PROFILE|WORLD_COUNT|R5_ROLLOUT|R6_CONTINUATION|STATS|STAGE_POPULATIONS|RADIUS|SELECTED_RADIUS)' r7-teacher-corpus.tsv || true
+      - name: Upload R7 teacher corpus
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r7-teacher-corpus-${{ github.sha }}
+          path: r7-teacher-corpus.tsv
+          if-no-files-found: error
