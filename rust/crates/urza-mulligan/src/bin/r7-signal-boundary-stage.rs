@@ -6,12 +6,11 @@ use std::time::Instant;
 use urza_cards::R4CardDatabase;
 use urza_mc::{MonteCarloConfig, MonteCarloError, evaluate};
 use urza_mulligan::{
-    R7_SIGNAL_BOUNDARY_FIRST_WORLD, R7_SIGNAL_BOUNDARY_R5_ROOT_SEED,
-    R7_SIGNAL_BOUNDARY_R5_SAMPLES, R7_SIGNAL_BOUNDARY_STATE_VERSION,
-    R7_SIGNAL_BOUNDARY_TEACHER_CANDIDATES, R7_SIGNAL_BOUNDARY_TEACHER_ROOT_SEED,
-    R7_SIGNAL_BOUNDARY_TEACHER_SAMPLES, R7_SIGNAL_BOUNDARY_TEACHER_STEPS,
-    R7_SIGNAL_BOUNDARY_VERSION, TeacherSearchConfig, TeacherSearchError,
-    build_signal_boundary_cases, evaluate_teacher,
+    R7_SIGNAL_BOUNDARY_FIRST_WORLD, R7_SIGNAL_BOUNDARY_R5_ROOT_SEED, R7_SIGNAL_BOUNDARY_R5_SAMPLES,
+    R7_SIGNAL_BOUNDARY_STATE_VERSION, R7_SIGNAL_BOUNDARY_TEACHER_CANDIDATES,
+    R7_SIGNAL_BOUNDARY_TEACHER_ROOT_SEED, R7_SIGNAL_BOUNDARY_TEACHER_SAMPLES,
+    R7_SIGNAL_BOUNDARY_TEACHER_STEPS, R7_SIGNAL_BOUNDARY_VERSION, TeacherSearchConfig,
+    TeacherSearchError, build_signal_boundary_cases, evaluate_teacher,
 };
 use urza_policy::DeterministicPolicy;
 use urza_rng::{RootSeed, WorldId};
