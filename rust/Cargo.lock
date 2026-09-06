@@ -604,7 +604,10 @@ dependencies = [
  "urza-cards",
  "urza-core",
  "urza-info",
+ "urza-mc",
+ "urza-policy",
  "urza-rng",
+ "urza-rules",
  "urza-value",
 ]
 
