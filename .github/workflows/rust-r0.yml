@@ -59,3 +59,12 @@ jobs:
       - name: R6 mulligan acceptance audit
         working-directory: rust
         run: cargo run --locked -p urza-mulligan --bin r6-audit
+      - name: R7 pilot corpus generation
+        working-directory: rust
+        run: cargo run --locked -p urza-mulligan --bin r7-corpus -- pilot | tee ../r7-pilot-corpus.tsv
+      - name: Upload R7 pilot corpus
+        uses: actions/upload-artifact@v4
+        with:
+          name: r7-pilot-corpus-${{ github.sha }}
+          path: r7-pilot-corpus.tsv
+          if-no-files-found: error

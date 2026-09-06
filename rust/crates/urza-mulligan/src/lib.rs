@@ -7,6 +7,8 @@
 #[cfg(test)]
 mod acceptance;
 mod corpus_dataset;
+mod corpus_generation;
+mod corpus_review;
 #[allow(clippy::too_many_arguments)]
 mod decision;
 mod engine;
@@ -17,6 +19,8 @@ mod report;
 mod trace;
 
 pub use corpus_dataset::*;
+pub use corpus_generation::*;
+pub use corpus_review::*;
 pub use decision::*;
 pub use engine::*;
 pub use interpretation::*;
