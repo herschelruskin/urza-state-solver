@@ -1,5 +1,7 @@
 use std::env;
 use std::error::Error;
+use std::io::{self, Write};
+use std::time::{Duration, Instant};
 
 use urza_cards::R4CardDatabase;
 use urza_core::TrueState;
@@ -58,6 +60,24 @@ fn run() -> Result<(), Box<dyn Error>> {
     let entry_terminal = detect_terminal_win(&information, &cards);
     let policy = DeterministicPolicy;
 
+    println!("R7_SIGNAL_BOUNDARY\t{}", R7_SIGNAL_BOUNDARY_VERSION);
+    println!("STATE_VERSION\t{}", R7_SIGNAL_BOUNDARY_STATE_VERSION);
+    println!("BOUNDARY\t{}", R7_SIGNAL_BOUNDARY_BOUNDARY);
+    println!(
+        "BUDGET\tcase={}\tcase_index={}\tworld={}\tr5_samples={}\tteacher_samples={}\tteacher_steps={}\tteacher_candidates={}\tteacher_depths=0,1,2",
+        case.case_name,
+        index,
+        world.0,
+        R7_SIGNAL_BOUNDARY_R5_SAMPLES,
+        R7_SIGNAL_BOUNDARY_TEACHER_SAMPLES,
+        R7_SIGNAL_BOUNDARY_TEACHER_STEPS,
+        R7_SIGNAL_BOUNDARY_TEACHER_CANDIDATES
+    );
+    io::stdout().flush()?;
+
+    let run_started = Instant::now();
+    let r5_started = Instant::now();
+    print_stage_start(case.case_name, "r5", run_started.elapsed())?;
     let (r5_value, r5_status) = match evaluate(
         &case.state,
         &cards,
@@ -78,10 +98,18 @@ fn run() -> Result<(), Box<dyn Error>> {
         }
         Err(error) => return Err(Box::new(error)),
     };
+    print_stage_done(
+        case.case_name,
+        "r5",
+        &r5_value,
+        &r5_status,
+        r5_started.elapsed(),
+        run_started.elapsed(),
+    )?;
 
-    let d0 = teacher_probe(&case.state, &cards, world, 0)?;
-    let d1 = teacher_probe(&case.state, &cards, world, 1)?;
-    let d2 = teacher_probe(&case.state, &cards, world, 2)?;
+    let d0 = timed_teacher_probe(&case.state, &cards, world, 0, case.case_name, &run_started)?;
+    let d1 = timed_teacher_probe(&case.state, &cards, world, 1, case.case_name, &run_started)?;
+    let d2 = timed_teacher_probe(&case.state, &cards, world, 2, case.case_name, &run_started)?;
 
     let unsupported = u32::try_from(
         case.involved_cards
@@ -94,19 +122,6 @@ fn run() -> Result<(), Box<dyn Error>> {
             .count(),
     )?;
 
-    println!("R7_SIGNAL_BOUNDARY\t{}", R7_SIGNAL_BOUNDARY_VERSION);
-    println!("STATE_VERSION\t{}", R7_SIGNAL_BOUNDARY_STATE_VERSION);
-    println!("BOUNDARY\t{}", R7_SIGNAL_BOUNDARY_BOUNDARY);
-    println!(
-        "BUDGET\tcase={}\tcase_index={}\tworld={}\tr5_samples={}\tteacher_samples={}\tteacher_steps={}\tteacher_candidates={}\tteacher_depths=0,1,2",
-        case.case_name,
-        index,
-        world.0,
-        R7_SIGNAL_BOUNDARY_R5_SAMPLES,
-        R7_SIGNAL_BOUNDARY_TEACHER_SAMPLES,
-        R7_SIGNAL_BOUNDARY_TEACHER_STEPS,
-        R7_SIGNAL_BOUNDARY_TEACHER_CANDIDATES
-    );
     println!(
         "BOUNDARY_ROW\tcase={}\tfamily={}\ttier={}\tentry_terminal={}\tunsupported={}\thand={}\tbattlefield={}\tstack={}\tr5={}\tr5_status={}\tteacher_d0={}\td0_status={}\tteacher_d1={}\td1_status={}\tteacher_d2={}\td2_status={}\td0_groups={}\td1_groups={}\td2_groups={}\td0_actions={}\td1_actions={}\td2_actions={}\td0_truncated={}\td1_truncated={}\td2_truncated={}\td0_incomplete={}\td1_incomplete={}\td2_incomplete={}",
         case.case_name,
@@ -138,7 +153,59 @@ fn run() -> Result<(), Box<dyn Error>> {
         d1.incomplete_branches,
         d2.incomplete_branches
     );
+    io::stdout().flush()?;
     Ok(())
+}
+
+fn timed_teacher_probe(
+    state: &TrueState,
+    cards: &R4CardDatabase,
+    world: WorldId,
+    depth: u8,
+    case_name: &str,
+    run_started: &Instant,
+) -> Result<TeacherProbe, Box<dyn Error>> {
+    let stage = format!("d{depth}");
+    let stage_started = Instant::now();
+    print_stage_start(case_name, &stage, run_started.elapsed())?;
+    let probe = teacher_probe(state, cards, world, depth)?;
+    print_stage_done(
+        case_name,
+        &stage,
+        &probe.value,
+        &probe.status,
+        stage_started.elapsed(),
+        run_started.elapsed(),
+    )?;
+    Ok(probe)
+}
+
+fn print_stage_start(
+    case_name: &str,
+    stage: &str,
+    total_elapsed: Duration,
+) -> Result<(), io::Error> {
+    println!(
+        "BOUNDARY_STAGE\tcase={case_name}\tstage={stage}\tphase=start\ttotal_elapsed_ms={}",
+        total_elapsed.as_millis()
+    );
+    io::stdout().flush()
+}
+
+fn print_stage_done(
+    case_name: &str,
+    stage: &str,
+    value: &str,
+    status: &str,
+    stage_elapsed: Duration,
+    total_elapsed: Duration,
+) -> Result<(), io::Error> {
+    println!(
+        "BOUNDARY_STAGE\tcase={case_name}\tstage={stage}\tphase=done\tvalue={value}\tstatus={status}\tstage_elapsed_ms={}\ttotal_elapsed_ms={}",
+        stage_elapsed.as_millis(),
+        total_elapsed.as_millis()
+    );
+    io::stdout().flush()
 }
 
 fn teacher_probe(
