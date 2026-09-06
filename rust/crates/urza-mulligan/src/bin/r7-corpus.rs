@@ -28,10 +28,7 @@ fn run() -> Result<(), Box<dyn Error>> {
         "pilot" => (r7_pilot_generation_config(), DEFAULT_REVIEW_RADIUS),
         "teacher" => (r7_teacher_generation_config(), TEACHER_REVIEW_RADIUS),
         _ => {
-            return Err(format!(
-                "usage: r7-corpus [smoke|pilot|teacher], got {profile:?}"
-            )
-            .into());
+            return Err(format!("usage: r7-corpus [smoke|pilot|teacher], got {profile:?}").into());
         }
     };
 
