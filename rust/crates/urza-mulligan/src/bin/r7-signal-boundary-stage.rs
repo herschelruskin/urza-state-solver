@@ -35,14 +35,14 @@ fn main() {
 fn run() -> Result<(), Box<dyn Error>> {
     let mut args = env::args().skip(1);
     let case_name = args.next().ok_or_else(|| {
-        io::Error::other("usage: r7-signal-boundary-stage <case-name> <r5|d0|d1|d2>")
+        io::Error::other("usage: r7-signal-boundary-stage <case-name> <r5|d0|d1|d2|d3|d4>")
     })?;
     let stage = args.next().ok_or_else(|| {
-        io::Error::other("usage: r7-signal-boundary-stage <case-name> <r5|d0|d1|d2>")
+        io::Error::other("usage: r7-signal-boundary-stage <case-name> <r5|d0|d1|d2|d3|d4>")
     })?;
     if args.next().is_some() {
         return Err(Box::new(io::Error::other(
-            "usage: r7-signal-boundary-stage <case-name> <r5|d0|d1|d2>",
+            "usage: r7-signal-boundary-stage <case-name> <r5|d0|d1|d2|d3|d4>",
         )));
     }
 
@@ -116,7 +116,7 @@ fn run() -> Result<(), Box<dyn Error>> {
                 started.elapsed().as_millis()
             );
         }
-        "d0" | "d1" | "d2" => {
+        "d0" | "d1" | "d2" | "d3" | "d4" => {
             let depth = stage
                 .strip_prefix('d')
                 .ok_or_else(|| io::Error::other(format!("unknown stage: {stage}")))?
@@ -137,7 +137,7 @@ fn run() -> Result<(), Box<dyn Error>> {
         }
         _ => {
             return Err(Box::new(io::Error::other(format!(
-                "unknown stage {stage}; expected r5, d0, d1, or d2"
+                "unknown stage {stage}; expected r5, d0, d1, d2, d3, or d4"
             ))));
         }
     }
