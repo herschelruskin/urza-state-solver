@@ -104,12 +104,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     }
 
     let mut semantic_counts: Vec<_> = semantic_counts.into_iter().collect();
-    semantic_counts.sort_by(|left, right| {
-        right
-            .1
-            .cmp(&left.1)
-            .then_with(|| left.0.cmp(&right.0))
-    });
+    semantic_counts.sort_by(|left, right| right.1.cmp(&left.1).then_with(|| left.0.cmp(&right.0)));
     for (rank, (semantic, count)) in semantic_counts
         .into_iter()
         .take(TOP_SEMANTIC_KEYS)
@@ -147,7 +142,10 @@ fn run() -> Result<(), Box<dyn Error>> {
             permanent.mode
         );
     }
-    println!("TRACE_FINAL_HAND\tcards={:?}", result.final_state.hand.cards());
+    println!(
+        "TRACE_FINAL_HAND\tcards={:?}",
+        result.final_state.hand.cards()
+    );
 
     Ok(())
 }
