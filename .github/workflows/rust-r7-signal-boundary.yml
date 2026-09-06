@@ -1,0 +1,39 @@
+name: R7 signal-boundary diagnostic
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - "rust/**"
+      - "decklist.txt"
+      - ".github/workflows/rust-r7-signal-boundary.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  signal-boundary:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, '[r7-boundary]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+      - name: Locked dependency graph
+        working-directory: rust
+        run: cargo metadata --locked --format-version 1 --no-deps > /dev/null
+      - name: Generate R7 signal-boundary diagnostic
+        working-directory: rust
+        run: |
+          printf 'REPOSITORY_SHA\t%s\n' "$GITHUB_SHA" > ../r7-signal-boundary.tsv
+          printf 'REPOSITORY_DIRTY\tfalse\n' >> ../r7-signal-boundary.tsv
+          cargo run --locked -p urza-mulligan --bin r7-signal-boundary | tee -a ../r7-signal-boundary.tsv
+      - name: Upload R7 signal-boundary diagnostic
+        uses: actions/upload-artifact@v4
+        with:
+          name: r7-signal-boundary-${{ github.sha }}
+          path: r7-signal-boundary.tsv
+          if-no-files-found: error
