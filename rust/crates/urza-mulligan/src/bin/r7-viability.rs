@@ -104,7 +104,7 @@ fn run() -> Result<(), Box<dyn Error>> {
             best_root_wins,
             roots.worlds.len(),
             teacher.score.total_wins,
-            teacher.win_distribution.samples(),
+            teacher.stats.sampled_worlds,
             teacher.stats.public_groups_evaluated,
             teacher.stats.public_actions_evaluated,
             teacher.stats.forced_public_steps,
