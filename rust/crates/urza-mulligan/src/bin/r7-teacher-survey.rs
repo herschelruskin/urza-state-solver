@@ -2,8 +2,7 @@ use std::error::Error;
 
 use urza_mulligan::{
     InterpretationCatalog, MulliganChoice, MulliganStage, TeacherKeepResolution,
-    TeacherKeepUnresolved, run_r7_teacher_sidecar_survey,
-    r7_teacher_sidecar_survey_search_config,
+    TeacherKeepUnresolved, r7_teacher_sidecar_survey_search_config, run_r7_teacher_sidecar_survey,
 };
 
 fn main() {
@@ -132,8 +131,10 @@ fn run() -> Result<(), Box<dyn Error>> {
                 mull_value,
                 result.score.total_wins,
                 result.stats.sampled_worlds,
-                matches!(annotation.source_recommended_action, MulliganChoice::Mulligan)
-                    && result.score.total_wins > 0,
+                matches!(
+                    annotation.source_recommended_action,
+                    MulliganChoice::Mulligan
+                ) && result.score.total_wins > 0,
                 result.stats.public_groups_evaluated,
                 result.stats.public_actions_evaluated,
                 result.stats.forced_public_steps,
