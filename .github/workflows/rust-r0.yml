@@ -61,7 +61,11 @@ jobs:
         run: cargo run --locked -p urza-mulligan --bin r6-audit
       - name: R7 pilot corpus generation
         working-directory: rust
-        run: cargo run --locked -p urza-mulligan --bin r7-corpus -- pilot | tee ../r7-pilot-corpus.tsv
+        run: |
+          printf 'REPOSITORY_SHA\t%s\n' "$GITHUB_SHA" > ../r7-pilot-corpus.tsv
+          printf 'REPOSITORY_DIRTY\tfalse\n' >> ../r7-pilot-corpus.tsv
+          printf 'GENERATION_WORKERS\t1\n' >> ../r7-pilot-corpus.tsv
+          cargo run --locked -p urza-mulligan --bin r7-corpus -- pilot | tee -a ../r7-pilot-corpus.tsv
       - name: Upload R7 pilot corpus
         uses: actions/upload-artifact@v4
         with:
