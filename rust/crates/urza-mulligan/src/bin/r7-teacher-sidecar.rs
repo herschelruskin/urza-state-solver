@@ -1,10 +1,9 @@
 use std::error::Error;
 
 use urza_mulligan::{
-    R7_TEACHER_KEEP_ANNOTATION_BOUNDARY, R7_TEACHER_KEEP_ANNOTATION_VERSION,
-    TeacherKeepResolution, TeacherKeepUnresolved, annotate_r6_keep_packages,
-    generate_evaluated_hand_corpus, r7_smoke_generation_config,
-    r7_teacher_sidecar_smoke_search_config,
+    R7_TEACHER_KEEP_ANNOTATION_BOUNDARY, R7_TEACHER_KEEP_ANNOTATION_VERSION, TeacherKeepResolution,
+    TeacherKeepUnresolved, annotate_r6_keep_packages, generate_evaluated_hand_corpus,
+    r7_smoke_generation_config, r7_teacher_sidecar_smoke_search_config,
 };
 
 fn main() {
