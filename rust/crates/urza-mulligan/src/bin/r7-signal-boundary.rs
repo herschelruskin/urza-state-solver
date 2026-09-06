@@ -3,8 +3,7 @@ use std::error::Error;
 use urza_mulligan::{
     R7_SIGNAL_BOUNDARY_FIRST_WORLD, R7_SIGNAL_BOUNDARY_R5_SAMPLES,
     R7_SIGNAL_BOUNDARY_TEACHER_CANDIDATES, R7_SIGNAL_BOUNDARY_TEACHER_SAMPLES,
-    R7_SIGNAL_BOUNDARY_TEACHER_STEPS, SignalBoundaryProbe, SignalBoundaryTier,
-    run_signal_boundary,
+    R7_SIGNAL_BOUNDARY_TEACHER_STEPS, SignalBoundaryProbe, SignalBoundaryTier, run_signal_boundary,
 };
 use urza_rules::WinFamily;
 
@@ -32,13 +31,13 @@ fn run() -> Result<(), Box<dyn Error>> {
     for probe in &report.probes {
         let d0 = probe
             .teacher_at_depth(0)
-            .ok_or("missing teacher depth-zero probe")?;
+            .ok_or_else(|| std::io::Error::other("missing teacher depth-zero probe"))?;
         let d1 = probe
             .teacher_at_depth(1)
-            .ok_or("missing teacher depth-one probe")?;
+            .ok_or_else(|| std::io::Error::other("missing teacher depth-one probe"))?;
         let d2 = probe
             .teacher_at_depth(2)
-            .ok_or("missing teacher depth-two probe")?;
+            .ok_or_else(|| std::io::Error::other("missing teacher depth-two probe"))?;
         println!(
             "BOUNDARY_ROW\tcase={}\tfamily={}\ttier={}\tentry_terminal={}\tunsupported={}\thand={}\tbattlefield={}\tstack={}\tr5={}/{}\tteacher_d0={}/{}\tteacher_d1={}/{}\tteacher_d2={}/{}\td0_groups={}\td1_groups={}\td2_groups={}\td0_actions={}\td1_actions={}\td2_actions={}\td0_truncated={}\td1_truncated={}\td2_truncated={}\td0_incomplete={}\td1_incomplete={}\td2_incomplete={}",
             probe.case_name,
@@ -131,7 +130,10 @@ fn signal_pattern(probes: &[&SignalBoundaryProbe], channel: ProbeChannel) -> Str
             probes
                 .iter()
                 .find(|probe| probe.tier == tier)
-                .map_or('?', |probe| if has_signal(probe, channel) { '+' } else { '0' })
+                .map_or(
+                    '?',
+                    |probe| if has_signal(probe, channel) { '+' } else { '0' },
+                )
         })
         .collect()
 }
