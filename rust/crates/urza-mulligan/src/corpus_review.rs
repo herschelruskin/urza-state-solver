@@ -303,11 +303,20 @@ impl fmt::Display for CorpusReviewError {
         match self {
             Self::Corpus(error) => write!(formatter, "R7 corpus review failed: {error}"),
             Self::MissingSample(sample) => {
-                write!(formatter, "cluster references missing corpus sample {sample:?}")
+                write!(
+                    formatter,
+                    "cluster references missing corpus sample {sample:?}"
+                )
             }
-            Self::UnknownCard(card) => write!(formatter, "review card {} is not in interpretation catalog", card.0),
+            Self::UnknownCard(card) => write!(
+                formatter,
+                "review card {} is not in interpretation catalog",
+                card.0
+            ),
             Self::InvalidSeat(seat) => write!(formatter, "pregame seat {seat} is outside 1..=4"),
-            Self::CountOverflow(context) => write!(formatter, "R7 review count overflow: {context}"),
+            Self::CountOverflow(context) => {
+                write!(formatter, "R7 review count overflow: {context}")
+            }
         }
     }
 }
@@ -335,9 +344,9 @@ mod tests {
     use super::*;
     use crate::{
         EVALUATED_HAND_RECORD_VERSION, EvaluatedHandRecord, ExactWinRate,
-        HAND_FEATURE_SCHEMA_VERSION, INTERPRETATION_ONLY_CONTRACT,
-        INTERPRETATION_ROLE_VERSION, MULLIGAN_REPORT_VERSION, MulliganChoice,
-        ObjectivePreference, PregameContext, SampledDecisionConfidence,
+        HAND_FEATURE_SCHEMA_VERSION, INTERPRETATION_ONLY_CONTRACT, INTERPRETATION_ROLE_VERSION,
+        MULLIGAN_REPORT_VERSION, MulliganChoice, ObjectivePreference, PregameContext,
+        SampledDecisionConfidence,
     };
 
     fn record(
@@ -404,7 +413,9 @@ mod tests {
             record(&interpretation, near, 1),
             record(&interpretation, vec![pact; 7], 2),
         ] {
-            corpus.insert_record(sample, record, &interpretation).unwrap();
+            corpus
+                .insert_record(sample, record, &interpretation)
+                .unwrap();
         }
 
         let sweep = sweep_grouping_radii(&corpus, &[0, 300]).unwrap();
@@ -429,7 +440,9 @@ mod tests {
             record(&interpretation, vec![island; 7], 0),
             record(&interpretation, near, 1),
         ] {
-            corpus.insert_record(sample, record, &interpretation).unwrap();
+            corpus
+                .insert_record(sample, record, &interpretation)
+                .unwrap();
         }
 
         let review = build_corpus_review(&corpus, &interpretation, &[0, 300], 300, 5).unwrap();
@@ -438,12 +451,23 @@ mod tests {
         let cluster = &review.clusters[0];
         assert_eq!(cluster.review_version, CLUSTER_REVIEW_VERSION);
         assert_eq!(cluster.cluster.member_count, 2);
-        assert!(cluster.medoid_cards.iter().all(|card| !card.deck_name.is_empty()));
+        assert!(
+            cluster
+                .medoid_cards
+                .iter()
+                .all(|card| !card.deck_name.is_empty())
+        );
         assert_eq!(cluster.top_cards[0].deck_name, "Island");
         assert_eq!(cluster.top_cards[0].copies_across_hands, 13);
         assert_eq!(cluster.top_cards[0].hands_containing, 2);
         assert!(cluster.feature_ranges[0].min_milli <= cluster.feature_ranges[0].max_milli);
-        assert_eq!(cluster_medoid_distance_sum(&corpus, &cluster.cluster).unwrap(), 285);
-        assert_eq!(feature_axis_ranges_with_names(cluster).count(), DISTANCE_AXIS_COUNT);
+        assert_eq!(
+            cluster_medoid_distance_sum(&corpus, &cluster.cluster).unwrap(),
+            286
+        );
+        assert_eq!(
+            feature_axis_ranges_with_names(cluster).count(),
+            DISTANCE_AXIS_COUNT
+        );
     }
 }

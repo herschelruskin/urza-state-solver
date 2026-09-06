@@ -2,9 +2,9 @@ use std::error::Error;
 use std::fmt::Write as _;
 
 use urza_mulligan::{
-    DISTANCE_AXIS_NAMES, InterpretationCatalog, MulliganChoice, MulliganStage,
-    build_corpus_review, feature_axis_ranges_with_names, generate_evaluated_hand_corpus,
-    normalize_hand_features, r7_pilot_generation_config, r7_smoke_generation_config,
+    DISTANCE_AXIS_NAMES, InterpretationCatalog, MulliganChoice, MulliganStage, build_corpus_review,
+    feature_axis_ranges_with_names, generate_evaluated_hand_corpus, normalize_hand_features,
+    r7_pilot_generation_config, r7_smoke_generation_config,
 };
 
 const REVIEW_RADII: [u32; 7] = [0, 300, 600, 900, 1_200, 1_800, 2_400];
@@ -19,7 +19,9 @@ fn main() {
 }
 
 fn run() -> Result<(), Box<dyn Error>> {
-    let profile = std::env::args().nth(1).unwrap_or_else(|| "smoke".to_owned());
+    let profile = std::env::args()
+        .nth(1)
+        .unwrap_or_else(|| "smoke".to_owned());
     let config = match profile.as_str() {
         "smoke" => r7_smoke_generation_config(),
         "pilot" => r7_pilot_generation_config(),
@@ -42,11 +44,23 @@ fn run() -> Result<(), Box<dyn Error>> {
     println!("DECK_VERSION\t{}", generated.provenance.deck_version);
     println!("RNG_SCHEME\t{}", generated.provenance.rng_scheme_version);
     println!("POLICY_VERSION\t{}", generated.provenance.policy_version);
-    println!("DECISION_VERSION\t{}", generated.provenance.decision_version);
-    println!("OBJECTIVE_VERSION\t{}", generated.provenance.objective_version);
+    println!(
+        "DECISION_VERSION\t{}",
+        generated.provenance.decision_version
+    );
+    println!(
+        "OBJECTIVE_VERSION\t{}",
+        generated.provenance.objective_version
+    );
     println!("HORIZON\t{}", generated.provenance.horizon);
-    println!("KEEP_FLOOR\t{}", generated.provenance.experimental_keep_floor);
-    println!("OPENING_ROOT\t{}", root_hex(generated.provenance.opening_root.0));
+    println!(
+        "KEEP_FLOOR\t{}",
+        generated.provenance.experimental_keep_floor
+    );
+    println!(
+        "OPENING_ROOT\t{}",
+        root_hex(generated.provenance.opening_root.0)
+    );
     println!("FIRST_WORLD\t{}", generated.provenance.first_world.0);
     println!("WORLD_COUNT\t{}", generated.provenance.world_count);
     println!(
@@ -192,7 +206,11 @@ fn card_names(
 }
 
 fn join_escaped(values: &[String]) -> String {
-    values.iter().map(|value| escape(value)).collect::<Vec<_>>().join("|")
+    values
+        .iter()
+        .map(|value| escape(value))
+        .collect::<Vec<_>>()
+        .join("|")
 }
 
 fn join_usize(values: &[usize]) -> String {

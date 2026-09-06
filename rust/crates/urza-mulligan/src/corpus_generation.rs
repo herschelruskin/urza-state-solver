@@ -7,12 +7,12 @@ use urza_rng::{RNG_SCHEME_VERSION, RootSeed, WorldId};
 use urza_rules::HORIZON_TURN;
 
 use crate::{
-    DEFAULT_MULLIGAN_ENVIRONMENT_VERSION, EVALUATED_HAND_CORPUS_VERSION,
-    EvaluatedHandCorpus, EvaluatedHandSampleId, EXPERIMENTAL_KEEP_FLOOR,
-    InterpretationCatalog, MULLIGAN_DECISION_VERSION, MULLIGAN_OBJECTIVE_VERSION,
-    MulliganChoice, MulliganDecisionCache, MulliganError, MulliganEvaluationConfig,
-    MulliganEvaluationError, MulliganStage, OpeningError, build_mulligan_report,
-    evaluate_mulligan_decision, load_commander_deck, start_mulligan_game, take_mulligan,
+    DEFAULT_MULLIGAN_ENVIRONMENT_VERSION, EVALUATED_HAND_CORPUS_VERSION, EXPERIMENTAL_KEEP_FLOOR,
+    EvaluatedHandCorpus, EvaluatedHandSampleId, InterpretationCatalog, MULLIGAN_DECISION_VERSION,
+    MULLIGAN_OBJECTIVE_VERSION, MulliganChoice, MulliganDecisionCache, MulliganError,
+    MulliganEvaluationConfig, MulliganEvaluationError, MulliganStage, OpeningError,
+    build_mulligan_report, evaluate_mulligan_decision, load_commander_deck, start_mulligan_game,
+    take_mulligan,
 };
 
 pub const CORPUS_GENERATOR_VERSION: &str = "r7_sequential_r6_corpus_v1";
@@ -230,12 +230,16 @@ pub enum CorpusGenerationError {
 impl fmt::Display for CorpusGenerationError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::InvalidConfig(message) => write!(formatter, "invalid R7 corpus config: {message}"),
+            Self::InvalidConfig(message) => {
+                write!(formatter, "invalid R7 corpus config: {message}")
+            }
             Self::WorldRangeOverflow => write!(formatter, "R7 corpus world range overflowed u64"),
             Self::Setup(message) => write!(formatter, "R7 corpus setup failed: {message}"),
             Self::Opening(error) => write!(formatter, "R7 corpus opening failed: {error}"),
             Self::Evaluation(error) => write!(formatter, "R7 corpus R6 evaluation failed: {error}"),
-            Self::Mulligan(error) => write!(formatter, "R7 corpus mulligan transition failed: {error}"),
+            Self::Mulligan(error) => {
+                write!(formatter, "R7 corpus mulligan transition failed: {error}")
+            }
             Self::Corpus(error) => write!(formatter, "R7 corpus insertion failed: {error}"),
         }
     }
@@ -298,7 +302,10 @@ mod tests {
             generated.stats.keep_decisions + generated.stats.mulligan_decisions,
             generated.stats.evaluated_decisions
         );
-        assert_eq!(generated.provenance.generator_version, CORPUS_GENERATOR_VERSION);
+        assert_eq!(
+            generated.provenance.generator_version,
+            CORPUS_GENERATOR_VERSION
+        );
         assert_eq!(generated.provenance.policy_version, POLICY_VERSION);
 
         for (sample, record) in generated.corpus.entries() {
@@ -306,7 +313,12 @@ mod tests {
             assert_eq!(record.stage, sample.stage);
             assert_eq!(
                 record.current_seven,
-                draw_fresh_seven(&deck, config.opening_root, sample.opening_world, sample.stage)
+                draw_fresh_seven(
+                    &deck,
+                    config.opening_root,
+                    sample.opening_world,
+                    sample.stage
+                )
             );
         }
     }
