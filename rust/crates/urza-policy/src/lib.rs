@@ -218,7 +218,12 @@ mod tests {
         let forward = policy
             .choose(
                 &information,
-                &[mana.clone(), spell.clone(), activation.clone(), pass.clone()],
+                &[
+                    mana.clone(),
+                    spell.clone(),
+                    activation.clone(),
+                    pass.clone(),
+                ],
             )
             .unwrap();
         let reversed = policy
