@@ -22,8 +22,7 @@ pub const R7_SIGNAL_BOUNDARY_R5_SAMPLES: u32 = 1;
 pub const R7_SIGNAL_BOUNDARY_TEACHER_SAMPLES: u32 = 1;
 pub const R7_SIGNAL_BOUNDARY_TEACHER_STEPS: u16 = 12;
 pub const R7_SIGNAL_BOUNDARY_TEACHER_CANDIDATES: usize = 12;
-pub const R7_SIGNAL_BOUNDARY_BOUNDARY: &str =
-    "R7 signal-boundary states are synthetic, public diagnostic states ordered from an already \
+pub const R7_SIGNAL_BOUNDARY_BOUNDARY: &str = "R7 signal-boundary states are synthetic, public diagnostic states ordered from an already \
      recognized R4 terminal witness backward through stack resolution and one/two hand choices. \
      They are not claimed to be naturally reached opening states. R5 and the bounded R7 teacher \
      evaluate the same state independently with fixed finite budgets. The first zero after a \
@@ -169,10 +168,8 @@ pub fn build_signal_boundary_cases(
     ));
 
     let mut terminal = base_state(island);
-    terminal.battlefield = BattlefieldZone::new(vec![
-        permanent(20, basalt),
-        permanent(30, gadgeteer),
-    ]);
+    terminal.battlefield =
+        BattlefieldZone::new(vec![permanent(20, basalt), permanent(30, gadgeteer)]);
     cases.push(case(
         "basalt-gadgeteer-terminal",
         WinFamily::BasaltGadgeteer,
@@ -453,9 +450,17 @@ impl fmt::Display for SignalBoundaryError {
             Self::Setup(message) => write!(formatter, "R7 signal boundary setup failed: {message}"),
             Self::WorldOverflow => write!(formatter, "R7 signal boundary world id overflow"),
             Self::CountOverflow => write!(formatter, "R7 signal boundary count exceeded u32"),
-            Self::Observation(error) => write!(formatter, "R7 signal boundary observation failed: {error}"),
-            Self::MonteCarlo(error) => write!(formatter, "R7 signal boundary R5 evaluation failed: {error}"),
-            Self::Teacher(error) => write!(formatter, "R7 signal boundary teacher evaluation failed: {error}"),
+            Self::Observation(error) => {
+                write!(formatter, "R7 signal boundary observation failed: {error}")
+            }
+            Self::MonteCarlo(error) => write!(
+                formatter,
+                "R7 signal boundary R5 evaluation failed: {error}"
+            ),
+            Self::Teacher(error) => write!(
+                formatter,
+                "R7 signal boundary teacher evaluation failed: {error}"
+            ),
         }
     }
 }
