@@ -19,6 +19,7 @@ mod report;
 mod teacher_annotations;
 mod teacher_corpus;
 mod teacher_search;
+mod teacher_survey;
 mod trace;
 
 pub use corpus_dataset::*;
@@ -31,4 +32,5 @@ pub use report::*;
 pub use teacher_annotations::*;
 pub use teacher_corpus::*;
 pub use teacher_search::*;
+pub use teacher_survey::*;
 pub use trace::*;
