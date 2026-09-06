@@ -8,9 +8,7 @@ use urza_mc::{MonteCarloError, sample_hidden_world};
 use urza_policy::{DeterministicPolicy, PolicyActionClass, PolicyPublicKey};
 use urza_policy_bridge::{BridgeError, CandidateBridge};
 use urza_rng::{LogicalEventId, RootSeed, WorldId};
-use urza_rollout::{
-    RolloutConfig, RolloutError, RolloutStop, rollout_with_logical_event_offset,
-};
+use urza_rollout::{RolloutConfig, RolloutError, RolloutStop, rollout_with_logical_event_offset};
 use urza_rules::{
     CardDatabase, GameRngContext, HORIZON_TURN, RuleError, advance_automatic,
     apply_action_with_rng, detect_terminal_win,
@@ -19,8 +17,7 @@ use urza_value::{WinByHorizonScore, WinDistribution};
 
 pub const R7_TEACHER_SEARCH_VERSION: &str = "r7_public_belief_bounded_search_v1";
 pub const R7_TEACHER_POLICY_VERSION: &str = "r7_teacher_public_belief_v1";
-pub const R7_TEACHER_SEARCH_BOUNDARY: &str =
-    "R7 teacher search samples exact hidden worlds only to estimate public action values; every \
+pub const R7_TEACHER_SEARCH_BOUNDARY: &str = "R7 teacher search samples exact hidden worlds only to estimate public action values; every \
      teacher action is selected once per shared InformationState and is then applied uniformly to \
      every sampled world with that observation. Hidden-world identity, exact unknown library order, \
      interpretation roles, archetype features, and R7 grouping labels never participate in action \
@@ -138,13 +135,23 @@ pub enum TeacherSearchError {
 impl fmt::Display for TeacherSearchError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::InvalidConfig(message) => write!(formatter, "invalid R7 teacher config: {message}"),
-            Self::WorldIdOverflow => write!(formatter, "R7 teacher sampled-world range overflowed u64"),
+            Self::InvalidConfig(message) => {
+                write!(formatter, "invalid R7 teacher config: {message}")
+            }
+            Self::WorldIdOverflow => {
+                write!(formatter, "R7 teacher sampled-world range overflowed u64")
+            }
             Self::LogicalEventOverflow => {
-                write!(formatter, "R7 teacher logical-event coordinate overflowed u64")
+                write!(
+                    formatter,
+                    "R7 teacher logical-event coordinate overflowed u64"
+                )
             }
             Self::CounterOverflow(context) => {
-                write!(formatter, "R7 teacher aggregate counter overflow: {context}")
+                write!(
+                    formatter,
+                    "R7 teacher aggregate counter overflow: {context}"
+                )
             }
             Self::CandidateSetDrift(world) => write!(
                 formatter,
@@ -162,7 +169,10 @@ impl fmt::Display for TeacherSearchError {
                 formatter,
                 "sampled world {world:?} reached incomplete frozen-R5 leaf stop {stop:?}"
             ),
-            Self::MonteCarlo(error) => write!(formatter, "R7 teacher hidden-world sampling failed: {error}"),
+            Self::MonteCarlo(error) => write!(
+                formatter,
+                "R7 teacher hidden-world sampling failed: {error}"
+            ),
             Self::Observation(error) => write!(formatter, "R7 teacher observation failed: {error}"),
             Self::Bridge(error) => write!(formatter, "R7 teacher candidate bridge failed: {error}"),
             Self::Rules(error) => write!(formatter, "R7 teacher rules execution failed: {error}"),
@@ -268,11 +278,8 @@ pub fn evaluate_teacher<D: CardDatabase>(
             ..TeacherSearchStats::default()
         },
     };
-    let win_distribution = evaluator.evaluate_partition(
-        worlds,
-        config.max_choice_depth,
-        config.max_teacher_steps,
-    )?;
+    let win_distribution =
+        evaluator.evaluate_partition(worlds, config.max_choice_depth, config.max_teacher_steps)?;
     let score = WinByHorizonScore::from(&win_distribution);
 
     Ok(TeacherSearchResult {
@@ -338,10 +345,7 @@ impl<D: CardDatabase> TeacherEvaluator<'_, D> {
         Ok(aggregate)
     }
 
-    fn prepare_world(
-        &self,
-        world: &mut TeacherWorld,
-    ) -> Result<PreparedWorld, TeacherSearchError> {
+    fn prepare_world(&self, world: &mut TeacherWorld) -> Result<PreparedWorld, TeacherSearchError> {
         let information = observe(&world.state)?;
         if detect_terminal_win(&information, self.cards).is_some() {
             return Ok(PreparedWorld::Terminal(information.turn));
@@ -398,10 +402,8 @@ impl<D: CardDatabase> TeacherEvaluator<'_, D> {
             return self.evaluate_leaf(group.worlds);
         }
 
-        let candidates = retain_bounded_candidates(
-            &full_candidates,
-            self.config.max_candidates_per_group,
-        );
+        let candidates =
+            retain_bounded_candidates(&full_candidates, self.config.max_candidates_per_group);
         if candidates.len() < full_candidates.len() {
             self.stats.truncated_public_groups =
                 self.stats.truncated_public_groups.saturating_add(1);
@@ -432,9 +434,7 @@ impl<D: CardDatabase> TeacherEvaluator<'_, D> {
             }
         }
 
-        Ok(best
-            .expect("non-empty retained candidate set")
-            .1)
+        Ok(best.expect("non-empty retained candidate set").1)
     }
 
     fn shared_public_candidates(
@@ -461,7 +461,9 @@ impl<D: CardDatabase> TeacherEvaluator<'_, D> {
             let candidate = bridge
                 .candidates()
                 .iter()
-                .find(|candidate| candidate.class == selected.class && candidate.key == selected.key)
+                .find(|candidate| {
+                    candidate.class == selected.class && candidate.key == selected.key
+                })
                 .ok_or(TeacherSearchError::MissingPublicAction(world.world))?;
             let action = bridge
                 .resolved_action(candidate.token)
@@ -639,14 +641,13 @@ fn add_distribution(
     target: &mut WinDistribution,
     source: &WinDistribution,
 ) -> Result<(), TeacherSearchError> {
-    for (target_turn, source_turn) in target
-        .t1_through_t6
-        .iter_mut()
-        .zip(source.t1_through_t6)
-    {
-        *target_turn = target_turn
-            .checked_add(source_turn)
-            .ok_or(TeacherSearchError::CounterOverflow("aggregated exact-turn wins"))?;
+    for (target_turn, source_turn) in target.t1_through_t6.iter_mut().zip(source.t1_through_t6) {
+        *target_turn =
+            target_turn
+                .checked_add(source_turn)
+                .ok_or(TeacherSearchError::CounterOverflow(
+                    "aggregated exact-turn wins",
+                ))?;
     }
     target.losses = target
         .losses
@@ -664,8 +665,8 @@ mod tests {
     use super::*;
     use urza_cards::R4CardDatabase;
     use urza_core::{
-        BattlefieldZone, CardFace, CardZone, CommanderState, CommanderZone, CounterState,
-        ManaPool, ObjectId, PermanentMode, PermanentState, TrueLibrary,
+        BattlefieldZone, CardFace, CardZone, CommanderState, CommanderZone, CounterState, ManaPool,
+        ObjectId, PermanentMode, PermanentState, TrueLibrary,
     };
 
     fn permanent(object: u32, card: urza_core::CardDefId) -> PermanentState {
@@ -697,10 +698,7 @@ mod tests {
             window: Window::Priority,
             library: TrueLibrary::unknown(vec![island]),
             hand: CardZone::new(vec![power]),
-            battlefield: BattlefieldZone::new(vec![
-                permanent(1, urza),
-                permanent(2, basalt),
-            ]),
+            battlefield: BattlefieldZone::new(vec![permanent(1, urza), permanent(2, basalt)]),
             mana: ManaPool {
                 blue: 2,
                 ..ManaPool::default()
