@@ -8,6 +8,8 @@
 mod decision;
 mod engine;
 mod report;
+#[cfg(test)]
+mod acceptance;
 
 pub use decision::*;
 pub use engine::*;
