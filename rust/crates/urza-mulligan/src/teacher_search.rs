@@ -15,14 +15,17 @@ use urza_rules::{
 };
 use urza_value::{WinByHorizonScore, WinDistribution};
 
-pub const R7_TEACHER_SEARCH_VERSION: &str = "r7_public_belief_bounded_search_v1";
-pub const R7_TEACHER_POLICY_VERSION: &str = "r7_teacher_public_belief_v1";
+pub const R7_TEACHER_SEARCH_VERSION: &str = "r7_public_belief_bounded_search_v2";
+pub const R7_TEACHER_POLICY_VERSION: &str = "r7_teacher_public_belief_v2";
 pub const R7_TEACHER_SEARCH_BOUNDARY: &str = "R7 teacher search samples exact hidden worlds only to estimate public action values; every \
      teacher action is selected once per shared InformationState and is then applied uniformly to \
      every sampled world with that observation. Hidden-world identity, exact unknown library order, \
      interpretation roles, archetype features, and R7 grouping labels never participate in action \
      identity. Search depth, total teacher steps, and retained candidates are explicitly bounded; \
-     leaves fall back to the frozen R5 deterministic public policy. R5 and R6 behavior is unchanged.";
+     leaves fall back to the frozen R5 deterministic public policy. An incomplete leaf is never \
+     scored as a loss: an unresolved candidate subtree is excluded only when another candidate at \
+     the same public decision has a complete finite value, while an all-incomplete decision fails \
+     explicitly. R5 and R6 behavior is unchanged.";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TeacherSearchConfig {
@@ -99,6 +102,7 @@ pub struct TeacherSearchStats {
     pub public_actions_evaluated: u64,
     pub forced_public_steps: u64,
     pub truncated_public_groups: u64,
+    pub incomplete_candidate_branches: u64,
     pub leaf_rollouts: u64,
     pub observation_splits: u64,
     pub max_full_candidate_count: u32,
@@ -125,6 +129,7 @@ pub enum TeacherSearchError {
     MissingPublicAction(WorldId),
     TerminalOutsideHorizon { world: WorldId, turn: u8 },
     IncompleteLeaf { world: WorldId, stop: RolloutStop },
+    AllCandidateBranchesIncomplete { candidate_count: usize },
     MonteCarlo(MonteCarloError),
     Observation(ObservationError),
     Bridge(BridgeError),
@@ -168,6 +173,10 @@ impl fmt::Display for TeacherSearchError {
             Self::IncompleteLeaf { world, stop } => write!(
                 formatter,
                 "sampled world {world:?} reached incomplete frozen-R5 leaf stop {stop:?}"
+            ),
+            Self::AllCandidateBranchesIncomplete { candidate_count } => write!(
+                formatter,
+                "all {candidate_count} retained R7 teacher candidates were incomplete at one public decision"
             ),
             Self::MonteCarlo(error) => write!(
                 formatter,
@@ -413,12 +422,21 @@ impl<D: CardDatabase> TeacherEvaluator<'_, D> {
             .max_retained_candidate_count
             .max(saturating_u32(candidates.len()));
 
+        let candidate_count = candidates.len();
         let mut best: Option<(TeacherPublicAction, WinDistribution, WinByHorizonScore)> = None;
         for candidate in candidates {
             self.stats.public_actions_evaluated =
                 self.stats.public_actions_evaluated.saturating_add(1);
             let children = self.apply_public_action(group.worlds.clone(), &candidate)?;
-            let value = self.evaluate_partition(children, choices_left - 1, steps_left - 1)?;
+            let value = match self.evaluate_partition(children, choices_left - 1, steps_left - 1) {
+                Ok(value) => value,
+                Err(error) if is_incomplete_subtree(&error) => {
+                    self.stats.incomplete_candidate_branches =
+                        self.stats.incomplete_candidate_branches.saturating_add(1);
+                    continue;
+                }
+                Err(error) => return Err(error),
+            };
             let score = WinByHorizonScore::from(&value);
 
             let replace = match &best {
@@ -434,7 +452,10 @@ impl<D: CardDatabase> TeacherEvaluator<'_, D> {
             }
         }
 
-        Ok(best.expect("non-empty retained candidate set").1)
+        match best {
+            Some((_, value, _)) => Ok(value),
+            None => Err(TeacherSearchError::AllCandidateBranchesIncomplete { candidate_count }),
+        }
     }
 
     fn shared_public_candidates(
@@ -519,6 +540,14 @@ impl<D: CardDatabase> TeacherEvaluator<'_, D> {
         }
         Ok(aggregate)
     }
+}
+
+fn is_incomplete_subtree(error: &TeacherSearchError) -> bool {
+    matches!(
+        error,
+        TeacherSearchError::IncompleteLeaf { .. }
+            | TeacherSearchError::AllCandidateBranchesIncomplete { .. }
+    )
 }
 
 fn public_candidates<D: CardDatabase>(
@@ -665,11 +694,11 @@ mod tests {
     use super::*;
     use urza_cards::R4CardDatabase;
     use urza_core::{
-        BattlefieldZone, CardFace, CardZone, CommanderState, CommanderZone, CounterState, ManaPool,
-        ObjectId, PermanentMode, PermanentState, TrueLibrary,
+        BattlefieldZone, CardDefId, CardFace, CardZone, CommanderState, CommanderZone,
+        CounterState, ManaPool, ObjectId, PermanentMode, PermanentState, TrueLibrary,
     };
 
-    fn permanent(object: u32, card: urza_core::CardDefId) -> PermanentState {
+    fn permanent(object: u32, card: CardDefId) -> PermanentState {
         PermanentState {
             object_id: ObjectId(object),
             card,
@@ -684,19 +713,19 @@ mod tests {
         }
     }
 
-    #[test]
-    fn bounded_teacher_recovers_real_power_artifact_basalt_witness() {
-        let cards = R4CardDatabase::load().expect("R4 database");
+    fn power_artifact_basalt_state(
+        cards: &R4CardDatabase,
+        library_cards: Vec<CardDefId>,
+    ) -> TrueState {
         let urza = cards.card_id_by_name("Urza, Lord High Artificer").unwrap();
         let basalt = cards.card_id_by_name("Basalt Monolith").unwrap();
         let power = cards.card_id_by_name("Power Artifact").unwrap();
-        let island = cards.card_id_by_name("Island").unwrap();
 
-        let state = TrueState {
+        TrueState {
             turn: 2,
             phase: Phase::PrecombatMain,
             window: Window::Priority,
-            library: TrueLibrary::unknown(vec![island]),
+            library: TrueLibrary::unknown(library_cards),
             hand: CardZone::new(vec![power]),
             battlefield: BattlefieldZone::new(vec![permanent(1, urza), permanent(2, basalt)]),
             mana: ManaPool {
@@ -708,7 +737,14 @@ mod tests {
                 command_zone_casts: 1,
             },
             ..TrueState::default()
-        };
+        }
+    }
+
+    #[test]
+    fn bounded_teacher_recovers_real_power_artifact_basalt_witness() {
+        let cards = R4CardDatabase::load().expect("R4 database");
+        let island = cards.card_id_by_name("Island").unwrap();
+        let state = power_artifact_basalt_state(&cards, vec![island]);
 
         let result = evaluate_teacher(
             &state,
@@ -720,7 +756,7 @@ mod tests {
                 max_choice_depth: 2,
                 max_teacher_steps: 4,
                 max_candidates_per_group: 12,
-                leaf_rollout_max_steps: 4096,
+                leaf_rollout_max_steps: 128,
             },
         )
         .expect("bounded teacher witness");
@@ -731,6 +767,7 @@ mod tests {
         assert_eq!(result.win_distribution.losses, 0);
         assert_eq!(result.score.total_wins, 1);
         assert!(result.stats.public_actions_evaluated >= 2);
+        assert!(result.stats.incomplete_candidate_branches > 0);
     }
 
     #[test]
@@ -738,27 +775,18 @@ mod tests {
         let cards = R4CardDatabase::load().expect("R4 database");
         let island = cards.card_id_by_name("Island").unwrap();
         let sol_ring = cards.card_id_by_name("Sol Ring").unwrap();
-        let basalt = cards.card_id_by_name("Basalt Monolith").unwrap();
+        let mana_vault = cards.card_id_by_name("Mana Vault").unwrap();
 
-        let left = TrueState {
-            turn: 1,
-            phase: Phase::PrecombatMain,
-            window: Window::Priority,
-            library: TrueLibrary::unknown(vec![island, sol_ring, basalt]),
-            ..TrueState::default()
-        };
-        let right = TrueState {
-            library: TrueLibrary::unknown(vec![basalt, island, sol_ring]),
-            ..left.clone()
-        };
+        let left = power_artifact_basalt_state(&cards, vec![island, sol_ring, mana_vault]);
+        let right = power_artifact_basalt_state(&cards, vec![mana_vault, island, sol_ring]);
         let config = TeacherSearchConfig {
             root: RootSeed::from_u64(0x5237_494e_5641_5201),
             first_world: WorldId(900),
             samples: 2,
-            max_choice_depth: 1,
-            max_teacher_steps: 3,
-            max_candidates_per_group: 8,
-            leaf_rollout_max_steps: 4096,
+            max_choice_depth: 2,
+            max_teacher_steps: 4,
+            max_candidates_per_group: 12,
+            leaf_rollout_max_steps: 128,
         };
 
         let left_result = evaluate_teacher(&left, &cards, config).unwrap();
