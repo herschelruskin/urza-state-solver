@@ -1,0 +1,40 @@
+name: R7 Top Chip path trace
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - "rust/**"
+      - ".github/workflows/rust-r7-top-chip-trace.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  top-chip-path-trace:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, '[r7-top-chip]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+      - name: Locked dependency graph
+        working-directory: rust
+        run: cargo metadata --locked --format-version 1 --no-deps > /dev/null
+      - name: Trace retained Top Chip winning path
+        working-directory: rust
+        run: |
+          set -o pipefail
+          output="../r7-top-chip-path-trace.tsv"
+          printf 'REPOSITORY_SHA\t%s\n' "$GITHUB_SHA" > "$output"
+          printf 'REPOSITORY_DIRTY\tfalse\n' >> "$output"
+          cargo run --locked -p urza-mulligan --bin r7-top-chip-path-trace | tee -a "$output"
+      - name: Upload Top Chip path trace
+        uses: actions/upload-artifact@v4
+        with:
+          name: r7-top-chip-path-trace-${{ github.sha }}
+          path: r7-top-chip-path-trace.tsv
+          if-no-files-found: error
