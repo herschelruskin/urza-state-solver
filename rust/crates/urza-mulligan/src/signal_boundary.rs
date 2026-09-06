@@ -2,8 +2,9 @@ use std::fmt;
 
 use urza_cards::R4CardDatabase;
 use urza_core::{
-    BattlefieldZone, CardDefId, CardFace, CardZone, CounterState, ManaPool, ObjectId,
-    PermanentMode, PermanentState, Phase, SourceRef, StackObject, TrueLibrary, TrueState, Window,
+    BattlefieldZone, CardDefId, CardFace, CardZone, CommanderState, CommanderZone, CounterState,
+    ManaPool, ObjectId, PermanentMode, PermanentState, Phase, SourceRef, StackObject, TrueLibrary,
+    TrueState, Window,
 };
 use urza_info::{ObservationError, observe};
 use urza_mc::{MonteCarloConfig, MonteCarloError, evaluate};
@@ -107,6 +108,7 @@ pub fn build_signal_boundary_cases(
     cards: &R4CardDatabase,
 ) -> Result<Vec<SignalBoundaryCase>, SignalBoundaryError> {
     let island = card(cards, "Island")?;
+    let urza = card(cards, "Urza, Lord High Artificer")?;
     let power_artifact = card(cards, "Power Artifact")?;
     let basalt = card(cards, "Basalt Monolith")?;
     let gadgeteer = card(cards, "Forensic Gadgeteer")?;
@@ -116,20 +118,20 @@ pub fn build_signal_boundary_cases(
 
     let mut cases = Vec::with_capacity(12);
 
-    let mut terminal = base_state(island);
+    let mut terminal = base_state(island, urza);
     let mut aura = permanent(30, power_artifact);
     aura.attached_to = Some(ObjectId(20));
-    terminal.battlefield = BattlefieldZone::new(vec![permanent(20, basalt), aura]);
+    terminal.battlefield = with_urza(urza, vec![permanent(20, basalt), aura]);
     cases.push(case(
         "pa-basalt-terminal",
         WinFamily::PowerArtifactBasalt,
         SignalBoundaryTier::TerminalWitness,
         terminal,
-        vec![power_artifact, basalt],
+        vec![urza, power_artifact, basalt],
     ));
 
-    let mut stack = base_state(island);
-    stack.battlefield = BattlefieldZone::new(vec![permanent(20, basalt)]);
+    let mut stack = base_state(island, urza);
+    stack.battlefield = with_urza(urza, vec![permanent(20, basalt)]);
     stack.stack.push(StackObject::AuraSpell {
         object_id: ObjectId(900),
         card: power_artifact,
@@ -143,43 +145,45 @@ pub fn build_signal_boundary_cases(
         WinFamily::PowerArtifactBasalt,
         SignalBoundaryTier::StackResolution,
         stack,
-        vec![power_artifact, basalt],
+        vec![urza, power_artifact, basalt],
     ));
 
-    let mut one_hand = base_state(island);
-    one_hand.battlefield = BattlefieldZone::new(vec![permanent(20, basalt)]);
+    let mut one_hand = base_state(island, urza);
+    one_hand.battlefield = with_urza(urza, vec![permanent(20, basalt)]);
     one_hand.hand = CardZone::new(vec![power_artifact]);
     cases.push(case(
         "pa-basalt-one-hand",
         WinFamily::PowerArtifactBasalt,
         SignalBoundaryTier::OneCardInHand,
         one_hand,
-        vec![power_artifact, basalt],
+        vec![urza, power_artifact, basalt],
     ));
 
-    let mut two_hand = base_state(island);
+    let mut two_hand = base_state(island, urza);
     two_hand.hand = CardZone::new(vec![power_artifact, basalt]);
     cases.push(case(
         "pa-basalt-two-hand",
         WinFamily::PowerArtifactBasalt,
         SignalBoundaryTier::TwoCardsInHand,
         two_hand,
-        vec![power_artifact, basalt],
+        vec![urza, power_artifact, basalt],
     ));
 
-    let mut terminal = base_state(island);
-    terminal.battlefield =
-        BattlefieldZone::new(vec![permanent(20, basalt), permanent(30, gadgeteer)]);
+    let mut terminal = base_state(island, urza);
+    terminal.battlefield = with_urza(
+        urza,
+        vec![permanent(20, basalt), permanent(30, gadgeteer)],
+    );
     cases.push(case(
         "basalt-gadgeteer-terminal",
         WinFamily::BasaltGadgeteer,
         SignalBoundaryTier::TerminalWitness,
         terminal,
-        vec![basalt, gadgeteer],
+        vec![urza, basalt, gadgeteer],
     ));
 
-    let mut stack = base_state(island);
-    stack.battlefield = BattlefieldZone::new(vec![permanent(20, basalt)]);
+    let mut stack = base_state(island, urza);
+    stack.battlefield = with_urza(urza, vec![permanent(20, basalt)]);
     stack.stack.push(StackObject::Spell {
         object_id: ObjectId(900),
         card: gadgeteer,
@@ -190,31 +194,31 @@ pub fn build_signal_boundary_cases(
         WinFamily::BasaltGadgeteer,
         SignalBoundaryTier::StackResolution,
         stack,
-        vec![basalt, gadgeteer],
+        vec![urza, basalt, gadgeteer],
     ));
 
-    let mut one_hand = base_state(island);
-    one_hand.battlefield = BattlefieldZone::new(vec![permanent(20, basalt)]);
+    let mut one_hand = base_state(island, urza);
+    one_hand.battlefield = with_urza(urza, vec![permanent(20, basalt)]);
     one_hand.hand = CardZone::new(vec![gadgeteer]);
     cases.push(case(
         "basalt-gadgeteer-one-hand",
         WinFamily::BasaltGadgeteer,
         SignalBoundaryTier::OneCardInHand,
         one_hand,
-        vec![basalt, gadgeteer],
+        vec![urza, basalt, gadgeteer],
     ));
 
-    let mut two_hand = base_state(island);
+    let mut two_hand = base_state(island, urza);
     two_hand.hand = CardZone::new(vec![basalt, gadgeteer]);
     cases.push(case(
         "basalt-gadgeteer-two-hand",
         WinFamily::BasaltGadgeteer,
         SignalBoundaryTier::TwoCardsInHand,
         two_hand,
-        vec![basalt, gadgeteer],
+        vec![urza, basalt, gadgeteer],
     ));
 
-    let mut terminal = top_chip_base(island, top, reality_chip, floodcaller);
+    let mut terminal = top_chip_base(island, urza, top, reality_chip, floodcaller);
     let mut permanents = terminal.battlefield.permanents().to_vec();
     permanents.push(permanent(40, gadgeteer));
     terminal.battlefield = BattlefieldZone::new(permanents);
@@ -223,10 +227,10 @@ pub fn build_signal_boundary_cases(
         WinFamily::TopRealityChip,
         SignalBoundaryTier::TerminalWitness,
         terminal,
-        vec![top, reality_chip, floodcaller, gadgeteer],
+        vec![urza, top, reality_chip, floodcaller, gadgeteer],
     ));
 
-    let mut stack = top_chip_base(island, top, reality_chip, floodcaller);
+    let mut stack = top_chip_base(island, urza, top, reality_chip, floodcaller);
     stack.stack.push(StackObject::Spell {
         object_id: ObjectId(900),
         card: gadgeteer,
@@ -237,27 +241,27 @@ pub fn build_signal_boundary_cases(
         WinFamily::TopRealityChip,
         SignalBoundaryTier::StackResolution,
         stack,
-        vec![top, reality_chip, floodcaller, gadgeteer],
+        vec![urza, top, reality_chip, floodcaller, gadgeteer],
     ));
 
-    let mut one_hand = top_chip_base(island, top, reality_chip, floodcaller);
+    let mut one_hand = top_chip_base(island, urza, top, reality_chip, floodcaller);
     one_hand.hand = CardZone::new(vec![gadgeteer]);
     cases.push(case(
         "top-chip-one-hand",
         WinFamily::TopRealityChip,
         SignalBoundaryTier::OneCardInHand,
         one_hand,
-        vec![top, reality_chip, floodcaller, gadgeteer],
+        vec![urza, top, reality_chip, floodcaller, gadgeteer],
     ));
 
-    let mut two_hand = chip_attached_base(island, reality_chip, floodcaller);
+    let mut two_hand = chip_attached_base(island, urza, reality_chip, floodcaller);
     two_hand.hand = CardZone::new(vec![top, gadgeteer]);
     cases.push(case(
         "top-chip-two-hand",
         WinFamily::TopRealityChip,
         SignalBoundaryTier::TwoCardsInHand,
         two_hand,
-        vec![top, reality_chip, floodcaller, gadgeteer],
+        vec![urza, top, reality_chip, floodcaller, gadgeteer],
     ));
 
     Ok(cases)
@@ -271,6 +275,9 @@ pub fn run_signal_boundary() -> Result<SignalBoundaryReport, SignalBoundaryError
     let mut probes = Vec::with_capacity(cases.len());
 
     for (index, case) in cases.into_iter().enumerate() {
+        case.state.validate().map_err(|error| {
+            SignalBoundaryError::Setup(format!("{} is invalid: {error}", case.case_name))
+        })?;
         let world_offset = u64::try_from(index).map_err(|_| SignalBoundaryError::WorldOverflow)?;
         let world = WorldId(
             R7_SIGNAL_BOUNDARY_FIRST_WORLD
@@ -374,20 +381,30 @@ fn card(cards: &R4CardDatabase, name: &'static str) -> Result<CardDefId, SignalB
     })
 }
 
-fn base_state(island: CardDefId) -> TrueState {
+fn base_state(island: CardDefId, urza: CardDefId) -> TrueState {
     TrueState {
         turn: 2,
         phase: Phase::PrecombatMain,
         window: Window::Priority,
         life: 40,
         library: TrueLibrary::unknown(vec![island]),
+        battlefield: with_urza(urza, Vec::new()),
         mana: ManaPool {
             blue: 12,
             colorless: 12,
             ..ManaPool::default()
         },
+        commander: CommanderState {
+            zone: CommanderZone::Battlefield,
+            command_zone_casts: 1,
+        },
         ..TrueState::default()
     }
+}
+
+fn with_urza(urza: CardDefId, mut permanents: Vec<PermanentState>) -> BattlefieldZone {
+    permanents.push(permanent(1, urza));
+    BattlefieldZone::new(permanents)
 }
 
 fn permanent(object: u32, card: CardDefId) -> PermanentState {
@@ -407,25 +424,27 @@ fn permanent(object: u32, card: CardDefId) -> PermanentState {
 
 fn chip_attached_base(
     island: CardDefId,
+    urza: CardDefId,
     reality_chip: CardDefId,
     floodcaller: CardDefId,
 ) -> TrueState {
-    let mut state = base_state(island);
+    let mut state = base_state(island, urza);
     let floodcaller_permanent = permanent(10, floodcaller);
     let mut chip = permanent(30, reality_chip);
     chip.mode = PermanentMode::RealityChipAttached;
     chip.attached_to = Some(floodcaller_permanent.object_id);
-    state.battlefield = BattlefieldZone::new(vec![floodcaller_permanent, chip]);
+    state.battlefield = with_urza(urza, vec![floodcaller_permanent, chip]);
     state
 }
 
 fn top_chip_base(
     island: CardDefId,
+    urza: CardDefId,
     top: CardDefId,
     reality_chip: CardDefId,
     floodcaller: CardDefId,
 ) -> TrueState {
-    let mut state = chip_attached_base(island, reality_chip, floodcaller);
+    let mut state = chip_attached_base(island, urza, reality_chip, floodcaller);
     let mut permanents = state.battlefield.permanents().to_vec();
     permanents.push(permanent(20, top));
     state.battlefield = BattlefieldZone::new(permanents);
@@ -520,6 +539,7 @@ mod tests {
         let cards = R4CardDatabase::load().expect("R4 database");
         let cases = build_signal_boundary_cases(&cards).expect("diagnostic cases");
         for case in cases {
+            case.state.validate().expect("valid diagnostic state");
             let information = observe(&case.state).expect("observable state");
             let detected = detect_terminal_win(&information, &cards);
             if case.tier == SignalBoundaryTier::TerminalWitness {
