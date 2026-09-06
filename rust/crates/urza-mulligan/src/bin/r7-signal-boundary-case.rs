@@ -2,18 +2,30 @@ use std::env;
 use std::error::Error;
 
 use urza_cards::R4CardDatabase;
+use urza_core::TrueState;
 use urza_info::observe;
-use urza_mc::{MonteCarloConfig, evaluate};
+use urza_mc::{MonteCarloConfig, MonteCarloError, evaluate};
 use urza_mulligan::{
     R7_SIGNAL_BOUNDARY_BOUNDARY, R7_SIGNAL_BOUNDARY_FIRST_WORLD, R7_SIGNAL_BOUNDARY_R5_ROOT_SEED,
     R7_SIGNAL_BOUNDARY_R5_SAMPLES, R7_SIGNAL_BOUNDARY_STATE_VERSION,
     R7_SIGNAL_BOUNDARY_TEACHER_CANDIDATES, R7_SIGNAL_BOUNDARY_TEACHER_ROOT_SEED,
     R7_SIGNAL_BOUNDARY_TEACHER_SAMPLES, R7_SIGNAL_BOUNDARY_TEACHER_STEPS,
-    R7_SIGNAL_BOUNDARY_VERSION, TeacherSearchConfig, build_signal_boundary_cases, evaluate_teacher,
+    R7_SIGNAL_BOUNDARY_VERSION, TeacherSearchConfig, TeacherSearchError, build_signal_boundary_cases,
+    evaluate_teacher,
 };
 use urza_policy::DeterministicPolicy;
 use urza_rng::{RootSeed, WorldId};
 use urza_rules::{R2CardRole, WinFamily, detect_terminal_win};
+
+#[derive(Debug)]
+struct TeacherProbe {
+    value: String,
+    status: String,
+    groups: String,
+    actions: String,
+    truncated: String,
+    incomplete_branches: String,
+}
 
 fn main() {
     if let Err(error) = run() {
@@ -45,7 +57,8 @@ fn run() -> Result<(), Box<dyn Error>> {
     let information = observe(&case.state)?;
     let entry_terminal = detect_terminal_win(&information, &cards);
     let policy = DeterministicPolicy;
-    let r5 = evaluate(
+
+    let (r5_value, r5_status) = match evaluate(
         &case.state,
         &cards,
         &policy,
@@ -55,31 +68,21 @@ fn run() -> Result<(), Box<dyn Error>> {
             samples: R7_SIGNAL_BOUNDARY_R5_SAMPLES,
             rollout_max_steps: urza_rollout::DEFAULT_MAX_STEPS,
         },
-    )?;
+    ) {
+        Ok(result) => (
+            format!("{}/{}", result.wins(), result.samples()),
+            String::from("complete"),
+        ),
+        Err(MonteCarloError::IncompleteWorld { stop, .. }) => {
+            (String::from("NA"), format!("incomplete:{stop:?}"))
+        }
+        Err(error) => return Err(Box::new(error)),
+    };
 
-    let mut teacher = Vec::with_capacity(3);
-    for depth in [0_u8, 1, 2] {
-        teacher.push((
-            depth,
-            evaluate_teacher(
-                &case.state,
-                &cards,
-                TeacherSearchConfig {
-                    root: RootSeed::from_u64(R7_SIGNAL_BOUNDARY_TEACHER_ROOT_SEED),
-                    first_world: world,
-                    samples: R7_SIGNAL_BOUNDARY_TEACHER_SAMPLES,
-                    max_choice_depth: depth,
-                    max_teacher_steps: R7_SIGNAL_BOUNDARY_TEACHER_STEPS,
-                    max_candidates_per_group: R7_SIGNAL_BOUNDARY_TEACHER_CANDIDATES,
-                    leaf_rollout_max_steps: urza_rollout::DEFAULT_MAX_STEPS,
-                },
-            )?,
-        ));
-    }
+    let d0 = teacher_probe(&case.state, &cards, world, 0)?;
+    let d1 = teacher_probe(&case.state, &cards, world, 1)?;
+    let d2 = teacher_probe(&case.state, &cards, world, 2)?;
 
-    let d0 = &teacher[0].1;
-    let d1 = &teacher[1].1;
-    let d2 = &teacher[2].1;
     let unsupported = u32::try_from(
         case.involved_cards
             .iter()
@@ -105,7 +108,7 @@ fn run() -> Result<(), Box<dyn Error>> {
         R7_SIGNAL_BOUNDARY_TEACHER_CANDIDATES
     );
     println!(
-        "BOUNDARY_ROW\tcase={}\tfamily={}\ttier={}\tentry_terminal={}\tunsupported={}\thand={}\tbattlefield={}\tstack={}\tr5={}/{}\tteacher_d0={}/{}\tteacher_d1={}/{}\tteacher_d2={}/{}\td0_groups={}\td1_groups={}\td2_groups={}\td0_actions={}\td1_actions={}\td2_actions={}\td0_truncated={}\td1_truncated={}\td2_truncated={}\td0_incomplete={}\td1_incomplete={}\td2_incomplete={}",
+        "BOUNDARY_ROW\tcase={}\tfamily={}\ttier={}\tentry_terminal={}\tunsupported={}\thand={}\tbattlefield={}\tstack={}\tr5={}\tr5_status={}\tteacher_d0={}\td0_status={}\tteacher_d1={}\td1_status={}\tteacher_d2={}\td2_status={}\td0_groups={}\td1_groups={}\td2_groups={}\td0_actions={}\td1_actions={}\td2_actions={}\td0_truncated={}\td1_truncated={}\td2_truncated={}\td0_incomplete={}\td1_incomplete={}\td2_incomplete={}",
         case.case_name,
         case.family.label(),
         case.tier.label(),
@@ -114,26 +117,74 @@ fn run() -> Result<(), Box<dyn Error>> {
         case.state.hand.len(),
         case.state.battlefield.len(),
         case.state.stack.len(),
-        r5.wins(),
-        r5.samples(),
-        d0.score.total_wins,
-        d0.stats.sampled_worlds,
-        d1.score.total_wins,
-        d1.stats.sampled_worlds,
-        d2.score.total_wins,
-        d2.stats.sampled_worlds,
-        d0.stats.public_groups_evaluated,
-        d1.stats.public_groups_evaluated,
-        d2.stats.public_groups_evaluated,
-        d0.stats.public_actions_evaluated,
-        d1.stats.public_actions_evaluated,
-        d2.stats.public_actions_evaluated,
-        d0.stats.truncated_public_groups,
-        d1.stats.truncated_public_groups,
-        d2.stats.truncated_public_groups,
-        d0.stats.incomplete_candidate_branches,
-        d1.stats.incomplete_candidate_branches,
-        d2.stats.incomplete_candidate_branches
+        r5_value,
+        r5_status,
+        d0.value,
+        d0.status,
+        d1.value,
+        d1.status,
+        d2.value,
+        d2.status,
+        d0.groups,
+        d1.groups,
+        d2.groups,
+        d0.actions,
+        d1.actions,
+        d2.actions,
+        d0.truncated,
+        d1.truncated,
+        d2.truncated,
+        d0.incomplete_branches,
+        d1.incomplete_branches,
+        d2.incomplete_branches
     );
     Ok(())
+}
+
+fn teacher_probe(
+    state: &TrueState,
+    cards: &R4CardDatabase,
+    world: WorldId,
+    depth: u8,
+) -> Result<TeacherProbe, Box<dyn Error>> {
+    match evaluate_teacher(
+        state,
+        cards,
+        TeacherSearchConfig {
+            root: RootSeed::from_u64(R7_SIGNAL_BOUNDARY_TEACHER_ROOT_SEED),
+            first_world: world,
+            samples: R7_SIGNAL_BOUNDARY_TEACHER_SAMPLES,
+            max_choice_depth: depth,
+            max_teacher_steps: R7_SIGNAL_BOUNDARY_TEACHER_STEPS,
+            max_candidates_per_group: R7_SIGNAL_BOUNDARY_TEACHER_CANDIDATES,
+            leaf_rollout_max_steps: urza_rollout::DEFAULT_MAX_STEPS,
+        },
+    ) {
+        Ok(result) => Ok(TeacherProbe {
+            value: format!("{}/{}", result.score.total_wins, result.stats.sampled_worlds),
+            status: String::from("complete"),
+            groups: result.stats.public_groups_evaluated.to_string(),
+            actions: result.stats.public_actions_evaluated.to_string(),
+            truncated: result.stats.truncated_public_groups.to_string(),
+            incomplete_branches: result.stats.incomplete_candidate_branches.to_string(),
+        }),
+        Err(TeacherSearchError::IncompleteLeaf { stop, .. }) => Ok(incomplete_teacher_probe(format!(
+            "incomplete-leaf:{stop:?}"
+        ))),
+        Err(TeacherSearchError::AllCandidateBranchesIncomplete { candidate_count }) => Ok(
+            incomplete_teacher_probe(format!("incomplete:all-candidates:{candidate_count}")),
+        ),
+        Err(error) => Err(Box::new(error)),
+    }
+}
+
+fn incomplete_teacher_probe(status: String) -> TeacherProbe {
+    TeacherProbe {
+        value: String::from("NA"),
+        status,
+        groups: String::from("NA"),
+        actions: String::from("NA"),
+        truncated: String::from("NA"),
+        incomplete_branches: String::from("NA"),
+    }
 }
