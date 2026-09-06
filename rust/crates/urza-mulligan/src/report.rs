@@ -146,20 +146,22 @@ pub fn build_mulligan_report(
     let mull_again = evaluation
         .mull_again
         .as_ref()
-        .map(|continuation| {
-            Ok(ReportedContinuation {
-                stage: continuation.stage,
-                sampled_hands: continuation.sampled_hands,
-                keep_decisions: continuation.keep_decisions,
-                mulligan_decisions: continuation.mulligan_decisions,
-                exact_value: continuation.value.clone(),
-                win_by_turn: CumulativeWinProbabilities::from_value(&continuation.value)?,
-                uncertainty: FiniteSampleUncertainty::new(
-                    FiniteSampleSource::NestedFutureHandAndR5OutcomeUnits,
-                    continuation.value.denominator,
-                ),
-            })
-        })
+        .map(
+            |continuation| -> Result<ReportedContinuation, MulliganEvaluationError> {
+                Ok(ReportedContinuation {
+                    stage: continuation.stage,
+                    sampled_hands: continuation.sampled_hands,
+                    keep_decisions: continuation.keep_decisions,
+                    mulligan_decisions: continuation.mulligan_decisions,
+                    exact_value: continuation.value.clone(),
+                    win_by_turn: CumulativeWinProbabilities::from_value(&continuation.value)?,
+                    uncertainty: FiniteSampleUncertainty::new(
+                        FiniteSampleSource::NestedFutureHandAndR5OutcomeUnits,
+                        continuation.value.denominator,
+                    ),
+                })
+            },
+        )
         .transpose()?;
 
     let sampled_decision_confidence = match &evaluation.mull_again {
@@ -212,7 +214,7 @@ fn reported_keep(
 fn ranked_keep_indices(
     packages: &[KeepPackageEvaluation],
 ) -> Result<Vec<usize>, MulliganEvaluationError> {
-    let mut ranking = Vec::with_capacity(packages.len());
+    let mut ranking: Vec<usize> = Vec::with_capacity(packages.len());
     for candidate in 0..packages.len() {
         let mut insert_at = ranking.len();
         for (position, current) in ranking.iter().enumerate() {
