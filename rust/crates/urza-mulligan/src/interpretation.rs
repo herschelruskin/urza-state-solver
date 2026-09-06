@@ -150,7 +150,8 @@ impl InterpretationCatalog {
             features.recognized_search_source_count += u16::from(roles.recognized_search_source);
             features.recognized_engine_piece_count += u16::from(roles.recognized_engine_piece);
             features.recognized_utility_piece_count += u16::from(roles.recognized_utility_piece);
-            features.recognized_targeted_effect_count += u16::from(roles.recognized_targeted_effect);
+            features.recognized_targeted_effect_count +=
+                u16::from(roles.recognized_targeted_effect);
             features.r4_rules_supported_count += u16::from(roles.r4_rules_supported);
         }
         features.unmodeled_by_r4_count = features
