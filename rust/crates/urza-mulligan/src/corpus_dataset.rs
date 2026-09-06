@@ -184,10 +184,7 @@ impl EvaluatedHandCorpus {
         let actual_configuration = EvaluatedHandCorpusConfiguration::from_record(&record);
         if let Some(expected) = &self.configuration {
             if expected != &actual_configuration {
-                return Err(CorpusError::IncompatibleConfiguration {
-                    expected: expected.clone(),
-                    actual: actual_configuration,
-                });
+                return Err(CorpusError::IncompatibleConfiguration);
             }
         } else {
             self.configuration = Some(actual_configuration);
@@ -521,10 +518,7 @@ pub enum CorpusError {
         actual: usize,
     },
     FeatureDrift(&'static str),
-    IncompatibleConfiguration {
-        expected: EvaluatedHandCorpusConfiguration,
-        actual: EvaluatedHandCorpusConfiguration,
-    },
+    IncompatibleConfiguration,
     EmptyFeatureVector,
     InvalidCoverageCounts,
     InvalidFeatureCount {
@@ -571,7 +565,7 @@ impl fmt::Display for CorpusError {
                     "stored {which} features do not match card identities"
                 )
             }
-            Self::IncompatibleConfiguration { .. } => {
+            Self::IncompatibleConfiguration => {
                 write!(
                     formatter,
                     "corpus records must share one evaluation configuration"
@@ -744,10 +738,10 @@ mod tests {
             WorldId(5),
             MulliganStage::InitialSeven,
         );
-        assert!(matches!(
+        assert_eq!(
             corpus.insert_record(other_sample, second, &interpretation),
-            Err(CorpusError::IncompatibleConfiguration { .. })
-        ));
+            Err(CorpusError::IncompatibleConfiguration)
+        );
     }
 
     #[test]
