@@ -6,9 +6,9 @@ use urza_core::CardDefId;
 
 use crate::{
     CorpusError, DISTANCE_AXIS_COUNT, DISTANCE_AXIS_NAMES, EvaluatedHandCorpus,
-    EvaluatedHandSampleId, FeatureDistance, InterpretationCatalog, MulliganStage,
-    NormalizedHandFeatures, UnlabeledClusterSummary, UnlabeledGroupingConfig,
-    hand_feature_distance, normalize_hand_features,
+    EvaluatedHandSampleId, InterpretationCatalog, MulliganStage, NormalizedHandFeatures,
+    UnlabeledClusterSummary, UnlabeledGroupingConfig, hand_feature_distance,
+    normalize_hand_features,
 };
 
 pub const RADIUS_SWEEP_VERSION: &str = "r7_radius_sweep_v1";
