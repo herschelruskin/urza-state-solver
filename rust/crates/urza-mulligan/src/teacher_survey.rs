@@ -15,8 +15,7 @@ pub const R7_TEACHER_SIDECAR_SURVEY_PROFILE_VERSION: &str =
     "r7_teacher_sidecar_survey_16w_r6_16x8_teacher_1x2_v1";
 pub const R7_TEACHER_SIDECAR_SURVEY_FIRST_WORLD: WorldId = WorldId(500_080);
 pub const R7_TEACHER_SIDECAR_SURVEY_WORLD_COUNT: u32 = 16;
-pub const R7_TEACHER_SIDECAR_SURVEY_BOUNDARY: &str =
-    "The R7 teacher sidecar survey is diagnostic evidence only. Its source corpus is a fixed \
+pub const R7_TEACHER_SIDECAR_SURVEY_BOUNDARY: &str = "The R7 teacher sidecar survey is diagnostic evidence only. Its source corpus is a fixed \
      16-world slice of the accepted high-budget R6 teacher profile, while the bounded R7 teacher \
      evaluates only each source record's already-selected best keep package. A positive teacher \
      value on an R6 MULL record is a keep-side disagreement candidate, not a teacher mulligan \
@@ -86,10 +85,8 @@ pub fn r7_teacher_sidecar_survey_search_config() -> TeacherSearchConfig {
 
 pub fn run_r7_teacher_sidecar_survey() -> Result<TeacherSidecarSurvey, TeacherSurveyError> {
     let generated = generate_evaluated_hand_corpus(&r7_teacher_sidecar_survey_generation_config())?;
-    let annotated = annotate_r6_keep_packages(
-        &generated.corpus,
-        r7_teacher_sidecar_survey_search_config(),
-    )?;
+    let annotated =
+        annotate_r6_keep_packages(&generated.corpus, r7_teacher_sidecar_survey_search_config())?;
     if generated.corpus.len() != annotated.len() {
         return Err(TeacherSurveyError::RecordCountDrift {
             source: generated.corpus.len(),
@@ -118,7 +115,10 @@ pub fn summarize_teacher_sidecar(
             1,
             "stage records",
         )?;
-        let source_keep = matches!(annotation.source_recommended_action, MulliganChoice::Keep { .. });
+        let source_keep = matches!(
+            annotation.source_recommended_action,
+            MulliganChoice::Keep { .. }
+        );
         if source_keep {
             checked_add_u32(&mut stats.source_keep_records, 1, "source keep records")?;
         } else {
@@ -278,8 +278,12 @@ pub enum TeacherSurveyError {
 impl fmt::Display for TeacherSurveyError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Generation(error) => write!(formatter, "R7 teacher survey generation failed: {error}"),
-            Self::Annotation(error) => write!(formatter, "R7 teacher survey annotation failed: {error}"),
+            Self::Generation(error) => {
+                write!(formatter, "R7 teacher survey generation failed: {error}")
+            }
+            Self::Annotation(error) => {
+                write!(formatter, "R7 teacher survey annotation failed: {error}")
+            }
             Self::RecordCountDrift { source, annotated } => write!(
                 formatter,
                 "R7 teacher survey record count drifted: source={source}, annotated={annotated}"
@@ -325,13 +329,19 @@ mod tests {
         let full = r7_teacher_generation_config();
         let survey = r7_teacher_sidecar_survey_generation_config();
 
-        assert_eq!(survey.profile_version, R7_TEACHER_SIDECAR_SURVEY_PROFILE_VERSION);
+        assert_eq!(
+            survey.profile_version,
+            R7_TEACHER_SIDECAR_SURVEY_PROFILE_VERSION
+        );
         assert_ne!(survey.profile_version, R7_TEACHER_PROFILE_VERSION);
         assert_eq!(survey.opening_root, full.opening_root);
         assert_eq!(survey.first_world, WorldId(500_080));
         assert_eq!(survey.world_count, 16);
         assert_eq!(survey.evaluation, full.evaluation);
-        assert_eq!(survey.evaluation.rollout.samples, R7_TEACHER_ROLLOUT_SAMPLES);
+        assert_eq!(
+            survey.evaluation.rollout.samples,
+            R7_TEACHER_ROLLOUT_SAMPLES
+        );
         assert_eq!(
             survey.evaluation.future_hand_samples,
             R7_TEACHER_FUTURE_HAND_SAMPLES
