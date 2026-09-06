@@ -59,6 +59,9 @@ jobs:
       - name: R6 mulligan acceptance audit
         working-directory: rust
         run: cargo run --locked -p urza-mulligan --bin r6-audit
+      - name: R7 teacher viability probe
+        working-directory: rust
+        run: cargo run --locked -p urza-mulligan --bin r7-viability
       - name: R7 pilot corpus generation
         working-directory: rust
         run: |
