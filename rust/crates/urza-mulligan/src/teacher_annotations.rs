@@ -9,12 +9,12 @@ use urza_rollout::RolloutStop;
 
 use crate::{
     EvaluatedHandCorpus, EvaluatedHandSampleId, KeptHand, OpeningError, TeacherSearchConfig,
-    TeacherSearchError, TeacherSearchResult, bridge_kept_hand, evaluate_teacher, load_commander_deck,
+    TeacherSearchError, TeacherSearchResult, bridge_kept_hand, evaluate_teacher,
+    load_commander_deck,
 };
 
 pub const R7_TEACHER_KEEP_ANNOTATION_VERSION: &str = "r7_teacher_keep_annotation_v1";
-pub const R7_TEACHER_KEEP_ANNOTATION_BOUNDARY: &str =
-    "R7 teacher annotations are a read-only sidecar over already-evaluated R6 corpus records. \
+pub const R7_TEACHER_KEEP_ANNOTATION_BOUNDARY: &str = "R7 teacher annotations are a read-only sidecar over already-evaluated R6 corpus records. \
      For each record they evaluate only the R6-selected best keep package under the bounded public-\
      belief teacher. They do not re-rank London bottoms, evaluate the mull-again continuation, alter \
      the recorded R6 KEEP/MULL recommendation, feed interpretation features into gameplay, or \
@@ -116,8 +116,9 @@ pub fn annotate_r6_keep_packages(
     }
 
     let deck = load_commander_deck()?;
-    let cards = R4CardDatabase::load()
-        .map_err(|error| TeacherAnnotationError::Setup(format!("R4 card database failed: {error}")))?;
+    let cards = R4CardDatabase::load().map_err(|error| {
+        TeacherAnnotationError::Setup(format!("R4 card database failed: {error}"))
+    })?;
     let mut annotations = BTreeMap::new();
     let mut stats = TeacherAnnotationStats::default();
 
@@ -295,19 +296,32 @@ pub enum TeacherAnnotationError {
 impl fmt::Display for TeacherAnnotationError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::InvalidConfig(message) => write!(formatter, "invalid R7 teacher sidecar config: {message}"),
-            Self::WorldRangeOverflow => write!(formatter, "R7 teacher sidecar world range overflowed u64"),
-            Self::CounterOverflow => write!(formatter, "R7 teacher sidecar aggregate counter overflowed"),
+            Self::InvalidConfig(message) => {
+                write!(formatter, "invalid R7 teacher sidecar config: {message}")
+            }
+            Self::WorldRangeOverflow => {
+                write!(formatter, "R7 teacher sidecar world range overflowed u64")
+            }
+            Self::CounterOverflow => {
+                write!(formatter, "R7 teacher sidecar aggregate counter overflowed")
+            }
             Self::Setup(message) => write!(formatter, "R7 teacher sidecar setup failed: {message}"),
             Self::InvalidKeepPackage { sample, message } => write!(
                 formatter,
                 "R7 teacher sidecar invalid keep package for {sample:?}: {message}"
             ),
-            Self::UnexpectedIncompleteLeafStop { sample, world, stop } => write!(
+            Self::UnexpectedIncompleteLeafStop {
+                sample,
+                world,
+                stop,
+            } => write!(
                 formatter,
                 "R7 teacher sidecar saw unexpected incomplete stop {stop:?} for {sample:?} in {world:?}"
             ),
-            Self::Opening(error) => write!(formatter, "R7 teacher sidecar opening bridge failed: {error}"),
+            Self::Opening(error) => write!(
+                formatter,
+                "R7 teacher sidecar opening bridge failed: {error}"
+            ),
             Self::Search { sample, error } => write!(
                 formatter,
                 "R7 teacher sidecar search failed for {sample:?}: {error}"
@@ -346,7 +360,10 @@ mod tests {
         let current = vec![island, sol_ring, island, basalt, island, sol_ring, island];
         let keep = vec![island, sol_ring, island, basalt, island, sol_ring];
 
-        assert_eq!(derive_known_bottom(&current, &keep, 1).unwrap(), vec![island]);
+        assert_eq!(
+            derive_known_bottom(&current, &keep, 1).unwrap(),
+            vec![island]
+        );
     }
 
     #[test]
@@ -380,7 +397,10 @@ mod tests {
         assert_eq!(before, after);
 
         let (_, annotation) = first.entries().next().unwrap();
-        assert_eq!(annotation.annotation_version, R7_TEACHER_KEEP_ANNOTATION_VERSION);
+        assert_eq!(
+            annotation.annotation_version,
+            R7_TEACHER_KEEP_ANNOTATION_VERSION
+        );
         assert_eq!(annotation.search_config.first_world, base.first_world);
     }
 
@@ -391,8 +411,17 @@ mod tests {
             first_world: WorldId(1_000),
             ..r7_teacher_sidecar_smoke_search_config()
         };
-        assert_eq!(search_config_for_ordinal(base, 0).unwrap().first_world, WorldId(1_000));
-        assert_eq!(search_config_for_ordinal(base, 1).unwrap().first_world, WorldId(1_003));
-        assert_eq!(search_config_for_ordinal(base, 7).unwrap().first_world, WorldId(1_021));
+        assert_eq!(
+            search_config_for_ordinal(base, 0).unwrap().first_world,
+            WorldId(1_000)
+        );
+        assert_eq!(
+            search_config_for_ordinal(base, 1).unwrap().first_world,
+            WorldId(1_003)
+        );
+        assert_eq!(
+            search_config_for_ordinal(base, 7).unwrap().first_world,
+            WorldId(1_021)
+        );
     }
 }
