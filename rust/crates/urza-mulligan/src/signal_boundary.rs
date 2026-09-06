@@ -170,10 +170,7 @@ pub fn build_signal_boundary_cases(
     ));
 
     let mut terminal = base_state(island, urza);
-    terminal.battlefield = with_urza(
-        urza,
-        vec![permanent(20, basalt), permanent(30, gadgeteer)],
-    );
+    terminal.battlefield = with_urza(urza, vec![permanent(20, basalt), permanent(30, gadgeteer)]);
     cases.push(case(
         "basalt-gadgeteer-terminal",
         WinFamily::BasaltGadgeteer,
