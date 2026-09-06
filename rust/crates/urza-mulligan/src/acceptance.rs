@@ -30,8 +30,8 @@ mod tests {
     fn average_pair(left: &ExactWinRate, right: &ExactWinRate) -> ExactWinRate {
         assert_eq!(left.denominator, right.denominator);
         let mut turns = [0_u128; 6];
-        for index in 0..turns.len() {
-            turns[index] = left.t1_through_t6[index] + right.t1_through_t6[index];
+        for (index, turn) in turns.iter_mut().enumerate() {
+            *turn = left.t1_through_t6[index] + right.t1_through_t6[index];
         }
         ExactWinRate {
             denominator: left.denominator * 2,
