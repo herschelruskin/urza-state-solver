@@ -8,9 +8,13 @@
 mod decision;
 mod engine;
 mod report;
+mod trace;
 #[cfg(test)]
 mod acceptance;
+#[cfg(test)]
+mod future_invariance;
 
 pub use decision::*;
 pub use engine::*;
 pub use report::*;
+pub use trace::*;
