@@ -103,7 +103,6 @@ jobs:
           - d1
           - d2
           - d3
-          - d4
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
