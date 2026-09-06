@@ -55,3 +55,41 @@ jobs:
           name: r7-signal-boundary-${{ matrix.case }}-${{ github.sha }}
           path: r7-signal-boundary-${{ matrix.case }}.tsv
           if-no-files-found: error
+
+  pa-stage-localization:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, '[r7-boundary]')
+    strategy:
+      fail-fast: false
+      matrix:
+        case:
+          - pa-basalt-stack
+          - pa-basalt-two-hand
+        stage:
+          - r5
+          - d0
+          - d1
+          - d2
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+      - name: Locked dependency graph
+        working-directory: rust
+        run: cargo metadata --locked --format-version 1 --no-deps > /dev/null
+      - name: Generate isolated PA boundary stage
+        working-directory: rust
+        run: |
+          set -o pipefail
+          output="../r7-signal-boundary-stage-${{ matrix.case }}-${{ matrix.stage }}.tsv"
+          printf 'REPOSITORY_SHA\t%s\n' "$GITHUB_SHA" > "$output"
+          printf 'REPOSITORY_DIRTY\tfalse\n' >> "$output"
+          cargo run --locked -p urza-mulligan --bin r7-signal-boundary-stage -- "${{ matrix.case }}" "${{ matrix.stage }}" | tee -a "$output"
+      - name: Upload isolated PA boundary stage
+        uses: actions/upload-artifact@v4
+        with:
+          name: r7-signal-boundary-stage-${{ matrix.case }}-${{ matrix.stage }}-${{ github.sha }}
+          path: r7-signal-boundary-stage-${{ matrix.case }}-${{ matrix.stage }}.tsv
+          if-no-files-found: error
