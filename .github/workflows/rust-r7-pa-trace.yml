@@ -1,0 +1,40 @@
+name: R7 PA frozen-R5 trace
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - "rust/**"
+      - ".github/workflows/rust-r7-pa-trace.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pa-r5-trace:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, '[r7-trace]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+      - name: Locked dependency graph
+        working-directory: rust
+        run: cargo metadata --locked --format-version 1 --no-deps > /dev/null
+      - name: Trace frozen R5 on PA two-hand boundary
+        working-directory: rust
+        run: |
+          set -o pipefail
+          output="../r7-pa-r5-trace.tsv"
+          printf 'REPOSITORY_SHA\t%s\n' "$GITHUB_SHA" > "$output"
+          printf 'REPOSITORY_DIRTY\tfalse\n' >> "$output"
+          cargo run --locked -p urza-mulligan --bin r7-pa-r5-trace | tee -a "$output"
+      - name: Upload frozen-R5 trace
+        uses: actions/upload-artifact@v4
+        with:
+          name: r7-pa-r5-trace-${{ github.sha }}
+          path: r7-pa-r5-trace.tsv
+          if-no-files-found: error
