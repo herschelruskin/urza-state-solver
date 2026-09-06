@@ -4,6 +4,7 @@ use urza_cards::R4CardDatabase;
 use urza_mc::{compare_root_actions, evaluate};
 use urza_policy::DeterministicPolicy;
 use urza_rng::WorldId;
+use urza_rules::advance_automatic;
 
 use urza_mulligan::{
     InterpretationCatalog, bridge_kept_hand, load_commander_deck, r7_teacher_generation_config,
@@ -53,8 +54,15 @@ fn run() -> Result<(), Box<dyn Error>> {
             &policy,
             config.evaluation.rollout,
         )?;
+
+        // R6 keeps begin at T1 Untap / Window::None. The ordinary R5 rollout
+        // performs this automatic transition before consulting policy, so the
+        // root-action diagnostic must compare actions at the same first public
+        // decision point rather than at the pre-policy opening state.
+        let mut first_decision = bridge.true_state().clone();
+        advance_automatic(&mut first_decision, &cards)?;
         let roots = compare_root_actions(
-            bridge.true_state(),
+            &first_decision,
             &cards,
             &policy,
             config.evaluation.rollout,
