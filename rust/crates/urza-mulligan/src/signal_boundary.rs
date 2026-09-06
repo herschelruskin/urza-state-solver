@@ -9,14 +9,14 @@ use urza_info::{ObservationError, observe};
 use urza_mc::{MonteCarloConfig, MonteCarloError, evaluate};
 use urza_policy::DeterministicPolicy;
 use urza_rng::{RootSeed, WorldId};
-use urza_rules::{CardDatabase, R2CardRole, WinFamily, detect_terminal_win};
+use urza_rules::{R2CardRole, WinFamily, detect_terminal_win};
 
 use crate::{TeacherSearchConfig, TeacherSearchError, TeacherSearchResult, evaluate_teacher};
 
 pub const R7_SIGNAL_BOUNDARY_VERSION: &str = "r7_signal_boundary_v1";
 pub const R7_SIGNAL_BOUNDARY_STATE_VERSION: &str = "r7_three_family_four_tier_states_v1";
-pub const R7_SIGNAL_BOUNDARY_R5_ROOT: RootSeed = RootSeed::from_u64(0x5237_424f_554e_0001);
-pub const R7_SIGNAL_BOUNDARY_TEACHER_ROOT: RootSeed = RootSeed::from_u64(0x5237_424f_554e_0002);
+pub const R7_SIGNAL_BOUNDARY_R5_ROOT_SEED: u64 = 0x5237_424f_554e_0001;
+pub const R7_SIGNAL_BOUNDARY_TEACHER_ROOT_SEED: u64 = 0x5237_424f_554e_0002;
 pub const R7_SIGNAL_BOUNDARY_FIRST_WORLD: WorldId = WorldId(940_000);
 pub const R7_SIGNAL_BOUNDARY_R5_SAMPLES: u32 = 1;
 pub const R7_SIGNAL_BOUNDARY_TEACHER_SAMPLES: u32 = 1;
@@ -285,7 +285,7 @@ pub fn run_signal_boundary() -> Result<SignalBoundaryReport, SignalBoundaryError
             &cards,
             &policy,
             MonteCarloConfig {
-                root: R7_SIGNAL_BOUNDARY_R5_ROOT,
+                root: RootSeed::from_u64(R7_SIGNAL_BOUNDARY_R5_ROOT_SEED),
                 first_world: world,
                 samples: R7_SIGNAL_BOUNDARY_R5_SAMPLES,
                 rollout_max_steps: urza_rollout::DEFAULT_MAX_STEPS,
@@ -298,7 +298,7 @@ pub fn run_signal_boundary() -> Result<SignalBoundaryReport, SignalBoundaryError
                 &case.state,
                 &cards,
                 TeacherSearchConfig {
-                    root: R7_SIGNAL_BOUNDARY_TEACHER_ROOT,
+                    root: RootSeed::from_u64(R7_SIGNAL_BOUNDARY_TEACHER_ROOT_SEED),
                     first_world: world,
                     samples: R7_SIGNAL_BOUNDARY_TEACHER_SAMPLES,
                     max_choice_depth: depth,
@@ -369,9 +369,9 @@ fn case(
 }
 
 fn card(cards: &R4CardDatabase, name: &'static str) -> Result<CardDefId, SignalBoundaryError> {
-    cards
-        .card_id_by_name(name)
-        .ok_or(SignalBoundaryError::MissingCard(name))
+    cards.card_id_by_name(name).map_err(|error| {
+        SignalBoundaryError::Setup(format!("R4 card lookup for {name} failed: {error}"))
+    })
 }
 
 fn base_state(island: CardDefId) -> TrueState {
@@ -434,7 +434,6 @@ fn top_chip_base(
 
 #[derive(Debug)]
 pub enum SignalBoundaryError {
-    MissingCard(&'static str),
     Setup(String),
     WorldOverflow,
     CountOverflow,
@@ -446,7 +445,6 @@ pub enum SignalBoundaryError {
 impl fmt::Display for SignalBoundaryError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::MissingCard(name) => write!(formatter, "R7 signal boundary missing card {name}"),
             Self::Setup(message) => write!(formatter, "R7 signal boundary setup failed: {message}"),
             Self::WorldOverflow => write!(formatter, "R7 signal boundary world id overflow"),
             Self::CountOverflow => write!(formatter, "R7 signal boundary count exceeded u32"),
