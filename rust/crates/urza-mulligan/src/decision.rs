@@ -11,8 +11,8 @@ use urza_rules::HORIZON_TURN;
 use urza_value::WinDistribution;
 
 use crate::{
-    BottomSubset, CommanderDeck, KeptHand, MulliganError, MulliganStage, MulliganState, OpeningError,
-    PregameContext, bridge_kept_hand, draw_fresh_seven, enumerate_bottom_subsets,
+    BottomSubset, CommanderDeck, KeptHand, MulliganError, MulliganStage, MulliganState,
+    OpeningError, PregameContext, bridge_kept_hand, draw_fresh_seven, enumerate_bottom_subsets,
 };
 
 pub const MULLIGAN_DECISION_VERSION: &str = "r6_keep_vs_mull_dp_v1";
@@ -141,11 +141,12 @@ impl ExactWinRate {
         let factor = denominator / self.denominator;
         let mut turns = [0_u128; 6];
         for (target, source) in turns.iter_mut().zip(self.t1_through_t6) {
-            *target = source
-                .checked_mul(factor)
-                .ok_or(MulliganEvaluationError::ArithmeticOverflow(
-                    "scaled exact-turn wins",
-                ))?;
+            *target =
+                source
+                    .checked_mul(factor)
+                    .ok_or(MulliganEvaluationError::ArithmeticOverflow(
+                        "scaled exact-turn wins",
+                    ))?;
         }
         let losses = self
             .losses
@@ -187,24 +188,15 @@ impl ExactWinRateGap {
         keep: &ExactWinRate,
         mulligan: &ExactWinRate,
     ) -> Result<Self, MulliganEvaluationError> {
-        let keep_cross = keep
-            .total_wins()?
-            .checked_mul(mulligan.denominator)
-            .ok_or(MulliganEvaluationError::ArithmeticOverflow(
-                "keep win-rate cross product",
-            ))?;
-        let mulligan_cross = mulligan
-            .total_wins()?
-            .checked_mul(keep.denominator)
-            .ok_or(MulliganEvaluationError::ArithmeticOverflow(
-                "mulligan win-rate cross product",
-            ))?;
-        let denominator = keep
-            .denominator
-            .checked_mul(mulligan.denominator)
-            .ok_or(MulliganEvaluationError::ArithmeticOverflow(
-                "win-rate gap denominator",
-            ))?;
+        let keep_cross = keep.total_wins()?.checked_mul(mulligan.denominator).ok_or(
+            MulliganEvaluationError::ArithmeticOverflow("keep win-rate cross product"),
+        )?;
+        let mulligan_cross = mulligan.total_wins()?.checked_mul(keep.denominator).ok_or(
+            MulliganEvaluationError::ArithmeticOverflow("mulligan win-rate cross product"),
+        )?;
+        let denominator = keep.denominator.checked_mul(mulligan.denominator).ok_or(
+            MulliganEvaluationError::ArithmeticOverflow("win-rate gap denominator"),
+        )?;
 
         let (direction, numerator) = match keep_cross.cmp(&mulligan_cross) {
             Ordering::Greater => (WinRateGapDirection::KeepHigher, keep_cross - mulligan_cross),
@@ -353,12 +345,17 @@ impl fmt::Display for MulliganEvaluationError {
             Self::MonteCarlo(error) => {
                 write!(formatter, "R5 continuation evaluation failed: {error}")
             }
-            Self::NoKeepPackages => write!(formatter, "mulligan stage exposed no legal keep package"),
+            Self::NoKeepPackages => {
+                write!(formatter, "mulligan stage exposed no legal keep package")
+            }
             Self::FutureWorldOverflow => {
                 write!(formatter, "future-hand world id range overflowed u64")
             }
             Self::ArithmeticOverflow(context) => {
-                write!(formatter, "exact mulligan value arithmetic overflow: {context}")
+                write!(
+                    formatter,
+                    "exact mulligan value arithmetic overflow: {context}"
+                )
             }
             Self::IncompatibleDenominator { source, target } => write!(
                 formatter,
@@ -480,8 +477,15 @@ pub fn evaluate_mulligan_decision(
     )?;
     let best_keep_index = best_keep_index(&keep_packages)?;
     let best_keep = &keep_packages[best_keep_index];
-    let mull_again =
-        evaluate_mull_again(state.stage(), state.pregame(), deck, cards, policy, config, cache)?;
+    let mull_again = evaluate_mull_again(
+        state.stage(),
+        state.pregame(),
+        deck,
+        cards,
+        policy,
+        config,
+        cache,
+    )?;
 
     let (objective_preference, primary_win_rate_gap, selected) = match &mull_again {
         None => (
@@ -657,17 +661,16 @@ fn evaluate_continuation(
         };
         let scaled = selected.scaled_to(per_hand_denominator)?;
         for (total, value) in turn_totals.iter_mut().zip(scaled.t1_through_t6) {
-            *total = total
-                .checked_add(value)
-                .ok_or(MulliganEvaluationError::ArithmeticOverflow(
-                    "continuation exact-turn aggregate",
-                ))?;
+            *total =
+                total
+                    .checked_add(value)
+                    .ok_or(MulliganEvaluationError::ArithmeticOverflow(
+                        "continuation exact-turn aggregate",
+                    ))?;
         }
-        loss_total = loss_total
-            .checked_add(scaled.losses)
-            .ok_or(MulliganEvaluationError::ArithmeticOverflow(
-                "continuation loss aggregate",
-            ))?;
+        loss_total = loss_total.checked_add(scaled.losses).ok_or(
+            MulliganEvaluationError::ArithmeticOverflow("continuation loss aggregate"),
+        )?;
     }
 
     let denominator = per_hand_denominator
@@ -680,12 +683,9 @@ fn evaluate_continuation(
         t1_through_t6: turn_totals,
         losses: loss_total,
     };
-    let represented = value
-        .total_wins()?
-        .checked_add(value.losses)
-        .ok_or(MulliganEvaluationError::ArithmeticOverflow(
-            "continuation represented outcomes",
-        ))?;
+    let represented = value.total_wins()?.checked_add(value.losses).ok_or(
+        MulliganEvaluationError::ArithmeticOverflow("continuation represented outcomes"),
+    )?;
     if represented != value.denominator {
         return Err(MulliganEvaluationError::ArithmeticOverflow(
             "continuation outcome accounting drift",
@@ -742,16 +742,12 @@ fn compare_fraction(
     right_numerator: u128,
     right_denominator: u128,
 ) -> Result<Ordering, MulliganEvaluationError> {
-    let left = left_numerator
-        .checked_mul(right_denominator)
-        .ok_or(MulliganEvaluationError::ArithmeticOverflow(
-            "fraction comparison left cross product",
-        ))?;
-    let right = right_numerator
-        .checked_mul(left_denominator)
-        .ok_or(MulliganEvaluationError::ArithmeticOverflow(
-            "fraction comparison right cross product",
-        ))?;
+    let left = left_numerator.checked_mul(right_denominator).ok_or(
+        MulliganEvaluationError::ArithmeticOverflow("fraction comparison left cross product"),
+    )?;
+    let right = right_numerator.checked_mul(left_denominator).ok_or(
+        MulliganEvaluationError::ArithmeticOverflow("fraction comparison right cross product"),
+    )?;
     Ok(left.cmp(&right))
 }
 
@@ -835,16 +831,9 @@ mod tests {
         let root = RootSeed::from_u64(0x5236_5445_5354_0001);
         let world = WorldId(41);
         let state = start_mulligan_game(&deck, root, world).unwrap();
-        let packages = evaluate_keep_packages(
-            &state,
-            &deck,
-            root,
-            world,
-            &cards,
-            &policy,
-            &tiny_config(),
-        )
-        .unwrap();
+        let packages =
+            evaluate_keep_packages(&state, &deck, root, world, &cards, &policy, &tiny_config())
+                .unwrap();
 
         assert_eq!(packages.len(), 1);
         assert!(packages[0].bottom_indices.is_empty());
