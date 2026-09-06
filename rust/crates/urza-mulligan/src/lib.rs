@@ -4,15 +4,15 @@
 // visible mulligan state to the accepted deck, R5 evaluator, policy, RNG sample,
 // and continuation cache. Keep that boundary explicit rather than hiding inputs
 // in mutable ambient context merely to satisfy an argument-count heuristic.
+#[cfg(test)]
+mod acceptance;
 #[allow(clippy::too_many_arguments)]
 mod decision;
 mod engine;
-mod report;
-mod trace;
-#[cfg(test)]
-mod acceptance;
 #[cfg(test)]
 mod future_invariance;
+mod report;
+mod trace;
 
 pub use decision::*;
 pub use engine::*;

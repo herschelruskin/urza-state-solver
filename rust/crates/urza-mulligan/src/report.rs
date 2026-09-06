@@ -135,7 +135,8 @@ pub fn build_mulligan_report(
 ) -> Result<MulliganReport, MulliganEvaluationError> {
     let ranking = ranked_keep_indices(&evaluation.keep_packages)?;
     let best_keep = reported_keep(evaluation.best_keep())?;
-    let mut alternate_bottoms = Vec::with_capacity(evaluation.keep_packages.len().saturating_sub(1));
+    let mut alternate_bottoms =
+        Vec::with_capacity(evaluation.keep_packages.len().saturating_sub(1));
     for index in ranking {
         if index != evaluation.best_keep_index {
             alternate_bottoms.push(reported_keep(&evaluation.keep_packages[index])?);
@@ -260,7 +261,11 @@ impl fmt::Display for MulliganReport {
         )?;
         write!(formatter, "P(win by T1..T6):")?;
         for probability in self.best_keep.win_by_turn.t1_through_t6 {
-            write!(formatter, " {}/{}", probability.numerator, probability.denominator)?;
+            write!(
+                formatter,
+                " {}/{}",
+                probability.numerator, probability.denominator
+            )?;
         }
         writeln!(formatter)?;
         writeln!(
@@ -381,7 +386,14 @@ mod tests {
         assert_eq!(report.mulligan_depth, 5);
         assert_eq!(report.starting_seven, None);
         assert_eq!(report.best_keep.win_by_turn.t1_through_t6[1].numerator, 2);
-        assert_eq!(report.best_keep.uncertainty.one_outcome_resolution.denominator, 4);
+        assert_eq!(
+            report
+                .best_keep
+                .uncertainty
+                .one_outcome_resolution
+                .denominator,
+            4
+        );
         assert_eq!(report.alternate_bottoms.len(), 2);
         assert_eq!(report.alternate_bottoms[0].bottom_indices, vec![0, 1, 2, 5]);
         assert_eq!(

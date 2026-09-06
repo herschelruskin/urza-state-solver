@@ -79,12 +79,8 @@ mod tests {
         let mut package_values = Vec::new();
         for offset in 0..2_u64 {
             let world = WorldId(config.first_future_world.0 + offset);
-            let seven = draw_fresh_seven(
-                &deck,
-                config.continuation_root,
-                world,
-                MulliganStage::Three,
-            );
+            let seven =
+                draw_fresh_seven(&deck, config.continuation_root, world, MulliganStage::Three);
             let state = MulliganState::at_stage(MulliganStage::Three, seven, pregame).unwrap();
             let packages = evaluate_keep_packages(
                 &state,

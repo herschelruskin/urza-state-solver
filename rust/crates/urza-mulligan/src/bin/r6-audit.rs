@@ -46,10 +46,15 @@ fn main() {
     println!("commander_plus_main_deck=1+{}", deck.main_deck().len());
     println!("bottom_subset_counts={subset_counts:?}");
     println!("experimental_keep_floor={EXPERIMENTAL_KEEP_FLOOR}");
-    println!("fixed_seed_generated_fresh_sevens={}", trace.generated_fresh_sevens);
+    println!(
+        "fixed_seed_generated_fresh_sevens={}",
+        trace.generated_fresh_sevens
+    );
     println!("fixed_seed_kept_stage={:?}", trace.kept.stage);
     println!("confidence_contract={MULLIGAN_CONFIDENCE_CONTRACT}");
     println!("future_invariance=covered_by_r6_acceptance_tests");
     println!("brute_force_dp_oracle=covered_by_r6_acceptance_tests");
-    println!("scope=sequential London mulligan policy/value/report acceptance only; no new R4 rules/card mechanics and no Python gameplay-policy port");
+    println!(
+        "scope=sequential London mulligan policy/value/report acceptance only; no new R4 rules/card mechanics and no Python gameplay-policy port"
+    );
 }
