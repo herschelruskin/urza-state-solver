@@ -238,7 +238,7 @@ struct PublicWorldGroup {
 }
 
 enum PreparedWorld {
-    Active(InformationState),
+    Active(Box<InformationState>),
     Terminal(u8),
     Horizon,
 }
@@ -318,12 +318,12 @@ impl<D: CardDatabase> TeacherEvaluator<'_, D> {
                 PreparedWorld::Active(information) => {
                     if let Some(group) = groups
                         .iter_mut()
-                        .find(|group| group.information == information)
+                        .find(|group| group.information == *information)
                     {
                         group.worlds.push(world);
                     } else {
                         groups.push(PublicWorldGroup {
-                            information,
+                            information: *information,
                             worlds: vec![world],
                         });
                     }
@@ -362,10 +362,10 @@ impl<D: CardDatabase> TeacherEvaluator<'_, D> {
             if detect_terminal_win(&information, self.cards).is_some() {
                 return Ok(PreparedWorld::Terminal(information.turn));
             }
-            return Ok(PreparedWorld::Active(information));
+            return Ok(PreparedWorld::Active(Box::new(information)));
         }
 
-        Ok(PreparedWorld::Active(information))
+        Ok(PreparedWorld::Active(Box::new(information)))
     }
 
     fn evaluate_group(
