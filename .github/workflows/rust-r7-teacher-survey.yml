@@ -1,0 +1,39 @@
+name: R7 teacher sidecar survey
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - "rust/**"
+      - "decklist.txt"
+      - ".github/workflows/rust-r7-teacher-survey.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  survey:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, '[r7-survey]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+      - name: Locked dependency graph
+        working-directory: rust
+        run: cargo metadata --locked --format-version 1 --no-deps > /dev/null
+      - name: Generate bounded teacher sidecar survey
+        working-directory: rust
+        run: |
+          printf 'REPOSITORY_SHA\t%s\n' "$GITHUB_SHA" > ../r7-teacher-sidecar-survey.tsv
+          printf 'REPOSITORY_DIRTY\tfalse\n' >> ../r7-teacher-sidecar-survey.tsv
+          cargo run --locked -p urza-mulligan --bin r7-teacher-survey | tee -a ../r7-teacher-sidecar-survey.tsv
+      - name: Upload teacher sidecar survey
+        uses: actions/upload-artifact@v4
+        with:
+          name: r7-teacher-sidecar-survey-${{ github.sha }}
+          path: r7-teacher-sidecar-survey.tsv
+          if-no-files-found: error
