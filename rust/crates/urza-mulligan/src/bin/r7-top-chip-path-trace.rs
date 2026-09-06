@@ -12,9 +12,7 @@ use urza_mulligan::{
 use urza_policy::{DeterministicPolicy, PolicyActionClass, PolicyCandidate};
 use urza_policy_bridge::CandidateBridge;
 use urza_rng::{LogicalEventId, RootSeed, WorldId};
-use urza_rollout::{
-    DEFAULT_MAX_STEPS, RolloutConfig, rollout_with_logical_event_offset,
-};
+use urza_rollout::{DEFAULT_MAX_STEPS, RolloutConfig, rollout_with_logical_event_offset};
 use urza_rules::{GameRngContext, apply_action_with_rng, detect_terminal_win};
 
 const CASE_NAME: &str = "top-chip-two-hand";
@@ -48,7 +46,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     let mut state = sample_hidden_world(&case.state, root, world)?;
     let mut logical_event = 0_u64;
 
-    println!("R7_TOP_CHIP_PATH_TRACE\tv1");
+    println!("R7_TOP_CHIP_PATH_TRACE\tv2");
     println!(
         "TRACE_BUDGET\tcase={}\tcase_index={}\tworld={}\tcandidate_cap={}\tleaf_steps={}",
         CASE_NAME,
@@ -57,8 +55,54 @@ fn run() -> Result<(), Box<dyn Error>> {
         R7_SIGNAL_BOUNDARY_TEACHER_CANDIDATES,
         DEFAULT_MAX_STEPS
     );
+    println!(
+        "PATH_PLAN\tcast-gadgeteer -> pass/resolve-gadgeteer -> cast-top -> frozen-r5-leaf"
+    );
 
     let (bridge, retained) = snapshot("root", &state, &cards)?;
+    let Some(cast_gadgeteer) = retained
+        .iter()
+        .find(|candidate| {
+            candidate.class == PolicyActionClass::CastSpell
+                && candidate.key.card == Some(gadgeteer)
+        })
+        .cloned()
+    else {
+        println!("PATH_RESULT\tstatus=missing-retained-cast-gadgeteer-at-root");
+        return Ok(());
+    };
+    apply_selected(
+        "cast-gadgeteer",
+        &mut state,
+        &cards,
+        root,
+        world,
+        &mut logical_event,
+        &bridge,
+        &cast_gadgeteer,
+    )?;
+
+    let (bridge, retained) = snapshot("after-cast-gadgeteer", &state, &cards)?;
+    let Some(pass) = retained
+        .iter()
+        .find(|candidate| candidate.class == PolicyActionClass::PassPriority)
+        .cloned()
+    else {
+        println!("PATH_RESULT\tstatus=missing-retained-pass-after-gadgeteer");
+        return Ok(());
+    };
+    apply_selected(
+        "pass-resolve-gadgeteer",
+        &mut state,
+        &cards,
+        root,
+        world,
+        &mut logical_event,
+        &bridge,
+        &pass,
+    )?;
+
+    let (bridge, retained) = snapshot("after-resolve-gadgeteer", &state, &cards)?;
     let Some(cast_top) = retained
         .iter()
         .find(|candidate| {
@@ -78,49 +122,6 @@ fn run() -> Result<(), Box<dyn Error>> {
         &mut logical_event,
         &bridge,
         &cast_top,
-    )?;
-
-    let (bridge, retained) = snapshot("after-cast-top", &state, &cards)?;
-    let Some(pass) = retained
-        .iter()
-        .find(|candidate| candidate.class == PolicyActionClass::PassPriority)
-        .cloned()
-    else {
-        println!("PATH_RESULT\tstatus=missing-retained-pass-after-top");
-        return Ok(());
-    };
-    apply_selected(
-        "pass-resolve-top",
-        &mut state,
-        &cards,
-        root,
-        world,
-        &mut logical_event,
-        &bridge,
-        &pass,
-    )?;
-
-    let (bridge, retained) = snapshot("after-resolve-top", &state, &cards)?;
-    let Some(cast_gadgeteer) = retained
-        .iter()
-        .find(|candidate| {
-            candidate.class == PolicyActionClass::CastSpell
-                && candidate.key.card == Some(gadgeteer)
-        })
-        .cloned()
-    else {
-        println!("PATH_RESULT\tstatus=missing-retained-cast-gadgeteer");
-        return Ok(());
-    };
-    apply_selected(
-        "cast-gadgeteer",
-        &mut state,
-        &cards,
-        root,
-        world,
-        &mut logical_event,
-        &bridge,
-        &cast_gadgeteer,
     )?;
 
     let before_leaf = CandidateBridge::build(&state, &cards)?;
