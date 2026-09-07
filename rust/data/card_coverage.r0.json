@@ -444,8 +444,8 @@
     },
     {
       "card_id": 88,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "Post-R7 second-pass Uthros primitive: normal artifact cast, sorcery-speed station by tapping another untapped creature, charge counters from current modeled power with the official leave-before-resolution LKI fallback, and the 3+ artifact-cast draw-then-charge trigger are modeled. The 12+ creature/flying/power striation and otherwise unmodeled temporary/static power modifiers remain deferred."
     },
     {
       "card_id": 89,

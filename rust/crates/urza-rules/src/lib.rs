@@ -21,7 +21,7 @@ pub const RULES_PHASE: &str = "R4";
 pub const R2_RULES_VERSION: &str = "r2_core_kernel_v2";
 pub const R3_RULES_VERSION: &str = "r3_search_complete_v4";
 pub const RULES_VERSION: &str = "r4_acceptance_v6";
-pub const POST_R7_RULES_VERSION: &str = "post_r7_card_advantage_v1_ring";
+pub const POST_R7_RULES_VERSION: &str = "post_r7_card_advantage_v2_uthros";
 pub const HORIZON_TURN: u8 = 6;
 pub const RNG_EVENT_SEARCH_SHUFFLE: EventType = EventType(0x0301);
 pub const ABILITY_REPURPOSING_BAY_SEARCH: AbilityId = AbilityId(0x0301);
@@ -47,6 +47,8 @@ pub const ABILITY_CAM_TAP_UNTAP: AbilityId = AbilityId(0x040c);
 pub const ABILITY_KNACK_BOUNCE: AbilityId = AbilityId(0x040d);
 pub const ABILITY_ONE_RING_DRAW: AbilityId = AbilityId(0x040e);
 pub const ABILITY_ONE_RING_UPKEEP: AbilityId = AbilityId(0x040f);
+pub const ABILITY_UTHROS_STATION: AbilityId = AbilityId(0x0410);
+pub const ABILITY_UTHROS_ARTIFACT_DRAW: AbilityId = AbilityId(0x0411);
 pub const RNG_EVENT_URZA_SPIN_SHUFFLE: EventType = EventType(0x0302);
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -386,6 +388,7 @@ pub enum UtilityKind {
     RealityChip,
     FortuneTellersTalent,
     TheOneRing,
+    UthrosResearchCraft,
     GrafdiggersCage,
     SewerVeillanceCam,
 }
@@ -430,6 +433,13 @@ pub trait CardDatabase {
     fn commander_card(&self) -> CardDefId;
     fn urza_construct_token_card(&self) -> CardDefId;
     fn clue_token_card(&self) -> Option<CardDefId> {
+        None
+    }
+
+    /// Printed/base power data is kept outside CardProfile so frozen R4
+    /// profile construction remains untouched. Post-R7 mechanics that
+    /// genuinely need power may opt into this public card-data surface.
+    fn printed_power(&self, _card: CardDefId) -> Option<i16> {
         None
     }
 }
@@ -518,6 +528,10 @@ pub enum Action {
     },
     ActivateOneRingDraw {
         source: ObjectId,
+    },
+    ActivateUthrosStation {
+        source: ObjectId,
+        creature: CanonicalObjectId,
     },
     ActivateUrzaSpin {
         source: ObjectId,
@@ -838,6 +852,10 @@ fn apply_action_internal<D: CardDatabase>(
         }
         Action::ActivateOneRingDraw { source } => {
             activate_one_ring_draw(state, cards, source)?;
+            Transition::default()
+        }
+        Action::ActivateUthrosStation { source, creature } => {
+            activate_uthros_station(state, cards, source, creature)?;
             Transition::default()
         }
         Action::ActivateUrzaSpin { source, payment } => {
@@ -2038,6 +2056,54 @@ fn activate_one_ring_draw<D: CardDatabase>(
     Ok(())
 }
 
+fn activate_uthros_station<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: ObjectId,
+    creature: CanonicalObjectId,
+) -> Result<(), RuleError> {
+    ensure_sorcery_window(state)?;
+    let craft = battlefield_permanent(state, source)?.clone();
+    if card_profile(cards, craft.card)?.utility != UtilityKind::UthrosResearchCraft {
+        return Err(RuleError::UnsupportedCardMechanic(craft.card));
+    }
+    let creature_id = resolve_canonical_object(state, creature)
+        .map_err(|error| match error {
+            urza_info::ObservationError::InvalidState(error) => RuleError::InvalidState(error),
+        })?
+        .ok_or(RuleError::MissingCanonicalPermanent(creature))?;
+    if creature_id == source {
+        return Err(RuleError::InvalidPermanentTarget);
+    }
+    let tapped_creature = battlefield_permanent(state, creature_id)?.clone();
+    if !permanent_is_creature(cards, &tapped_creature)? {
+        return Err(RuleError::InvalidPermanentTarget);
+    }
+    if tapped_creature.tapped {
+        return Err(RuleError::PermanentTapped(creature_id));
+    }
+    let power_snapshot = current_creature_power(state, cards, &tapped_creature)?.max(0);
+    let power_snapshot =
+        u16::try_from(power_snapshot).map_err(|_| RuleError::ArithmeticOverflow)?;
+    set_tapped(state, creature_id)?;
+    state.stack.push(StackObject::TargetedActivatedAbility {
+        source: SourceRef {
+            object_id: Some(source),
+            card: craft.card,
+        },
+        ability: ABILITY_UTHROS_STATION,
+        target: SourceRef {
+            object_id: Some(creature_id),
+            card: tapped_creature.card,
+        },
+        // Station reads power on resolution. This snapshot is used only if the
+        // tapped creature leaves first, matching the official LKI rule for station.
+        parameter: Some(power_snapshot),
+    });
+    state.window = Window::Priority;
+    Ok(())
+}
+
 fn activate_urza_spin<D: CardDatabase>(
     state: &mut TrueState,
     cards: &D,
@@ -2453,6 +2519,7 @@ fn initial_permanent_mode(profile: CardProfile) -> PermanentMode {
     match profile.utility {
         UtilityKind::RealityChip => PermanentMode::RealityChipCreature,
         UtilityKind::FortuneTellersTalent => PermanentMode::FortuneTellersTalentLevel1,
+        UtilityKind::UthrosResearchCraft => PermanentMode::UthrosStation,
         _ => PermanentMode::Normal,
     }
 }
@@ -3124,6 +3191,22 @@ fn resolve_top_stack_object<D: CardDatabase>(
             state.stack.pop();
             resolve_one_ring_upkeep(state, cards, source, parameter)
         }
+        StackObject::TargetedActivatedAbility {
+            source,
+            ability: ABILITY_UTHROS_STATION,
+            target,
+            parameter,
+        } => {
+            state.stack.pop();
+            resolve_uthros_station(state, cards, source, target, parameter)
+        }
+        StackObject::ControlledTrigger {
+            source,
+            ability: ABILITY_UTHROS_ARTIFACT_DRAW,
+        } => {
+            state.stack.pop();
+            resolve_uthros_artifact_draw(state, cards, source)
+        }
         StackObject::ActivatedAbility {
             source,
             ability: ABILITY_URZA_SPIN,
@@ -3355,6 +3438,80 @@ fn resolve_one_ring_upkeep<D: CardDatabase>(
     state.life = state.life.saturating_sub(burden);
     state.window = Window::Priority;
     Ok(Transition::default())
+}
+
+fn resolve_uthros_station<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: SourceRef,
+    target: SourceRef,
+    snapshot: Option<u16>,
+) -> Result<Transition, RuleError> {
+    let power = if let Some(target_id) = target.object_id
+        && let Some(permanent) = state.battlefield.get(target_id).cloned()
+        && permanent.card == target.card
+        && permanent_is_creature(cards, &permanent)?
+    {
+        current_creature_power(state, cards, &permanent)?.max(0)
+    } else {
+        i16::try_from(snapshot.unwrap_or(0)).map_err(|_| RuleError::ArithmeticOverflow)?
+    };
+    let counters = u16::try_from(power).map_err(|_| RuleError::ArithmeticOverflow)?;
+
+    if let Some(source_id) = source.object_id
+        && let Some(permanent) = state.battlefield.get(source_id).cloned()
+        && permanent.card == source.card
+        && card_profile(cards, permanent.card)?.utility == UtilityKind::UthrosResearchCraft
+    {
+        let next = permanent
+            .counters
+            .charge
+            .checked_add(counters)
+            .ok_or(RuleError::ArithmeticOverflow)?;
+        let mut permanents = state.battlefield.permanents().to_vec();
+        let live = permanents
+            .iter_mut()
+            .find(|candidate| candidate.object_id == source_id)
+            .ok_or(RuleError::MissingPermanent(source_id))?;
+        live.counters.charge = next;
+        state.battlefield = BattlefieldZone::new(permanents);
+    }
+    state.window = Window::Priority;
+    Ok(Transition::default())
+}
+
+fn resolve_uthros_artifact_draw<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: SourceRef,
+) -> Result<Transition, RuleError> {
+    let drawn = draw_cards(state, 1)?;
+    if let Some(source_id) = source.object_id
+        && let Some(permanent) = state.battlefield.get(source_id).cloned()
+        && permanent.card == source.card
+        && card_profile(cards, permanent.card)?.utility == UtilityKind::UthrosResearchCraft
+    {
+        let next = permanent
+            .counters
+            .charge
+            .checked_add(1)
+            .ok_or(RuleError::ArithmeticOverflow)?;
+        let mut permanents = state.battlefield.permanents().to_vec();
+        let live = permanents
+            .iter_mut()
+            .find(|candidate| candidate.object_id == source_id)
+            .ok_or(RuleError::MissingPermanent(source_id))?;
+        live.counters.charge = next;
+        state.battlefield = BattlefieldZone::new(permanents);
+    }
+    state.window = Window::Priority;
+    Ok(Transition {
+        observations: if drawn.is_empty() {
+            Vec::new()
+        } else {
+            vec![RulesObservation::CardsDrawn(drawn)]
+        },
+    })
 }
 
 fn resolve_reality_chip_reconfigure<D: CardDatabase>(
@@ -5001,6 +5158,37 @@ fn permanent_is_creature<D: CardDatabase>(
     Ok(profile.is_creature)
 }
 
+fn current_creature_power<D: CardDatabase>(
+    state: &TrueState,
+    cards: &D,
+    permanent: &PermanentState,
+) -> Result<i16, RuleError> {
+    if !permanent_is_creature(cards, permanent)? {
+        return Err(RuleError::InvalidPermanentTarget);
+    }
+    let base = if permanent.card == cards.urza_construct_token_card() {
+        let artifacts = state
+            .battlefield
+            .permanents()
+            .iter()
+            .filter(|candidate| {
+                cards
+                    .profile(candidate.card)
+                    .is_some_and(|profile| profile.is_artifact)
+            })
+            .count();
+        i16::try_from(artifacts).map_err(|_| RuleError::ArithmeticOverflow)?
+    } else {
+        cards
+            .printed_power(permanent.card)
+            .ok_or(RuleError::UnsupportedCardMechanic(permanent.card))?
+    };
+    let counters = i16::try_from(permanent.counters.plus_one_plus_one)
+        .map_err(|_| RuleError::ArithmeticOverflow)?;
+    base.checked_add(counters)
+        .ok_or(RuleError::ArithmeticOverflow)
+}
+
 fn reduced_artifact_activation_cost<D: CardDatabase>(
     state: &TrueState,
     cards: &D,
@@ -5157,6 +5345,18 @@ fn queue_cast_triggers<D: CardDatabase>(state: &mut TrueState, cards: &D, card: 
                     card: permanent.card,
                 },
                 ability: ABILITY_GADGETEER_INVESTIGATE,
+            });
+        }
+        if cast_profile.is_artifact
+            && profile.utility == UtilityKind::UthrosResearchCraft
+            && permanent.counters.charge >= 3
+        {
+            triggers.push(StackObject::ControlledTrigger {
+                source: SourceRef {
+                    object_id: Some(permanent.object_id),
+                    card: permanent.card,
+                },
+                ability: ABILITY_UTHROS_ARTIFACT_DRAW,
             });
         }
         if !cast_profile.is_creature && profile.engine == EngineKind::ValleyFloodcaller {
@@ -8886,5 +9086,257 @@ mod post_r7_one_ring_tests {
             draw.observations,
             vec![RulesObservation::CardsDrawn(vec![DRAW_A])]
         );
+    }
+}
+
+#[cfg(test)]
+mod post_r7_uthros_tests {
+    use std::collections::BTreeMap;
+
+    use super::*;
+    use urza_core::CardZone;
+
+    const UTHROS: CardDefId = CardDefId(520);
+    const CREATURE: CardDefId = CardDefId(521);
+    const ARTIFACT: CardDefId = CardDefId(522);
+    const DRAW_A: CardDefId = CardDefId(523);
+    const DRAW_B: CardDefId = CardDefId(524);
+    const URZA_DUMMY: CardDefId = CardDefId(525);
+    const CONSTRUCT: CardDefId = CardDefId(526);
+
+    #[derive(Default)]
+    struct UthrosCards {
+        profiles: BTreeMap<CardDefId, CardProfile>,
+    }
+
+    impl UthrosCards {
+        fn new() -> Self {
+            let mut profiles = BTreeMap::new();
+            profiles.insert(
+                UTHROS,
+                CardProfile {
+                    card: UTHROS,
+                    mana_cost: Some(ManaCost {
+                        generic: 2,
+                        blue: 1,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 3,
+                    role: R2CardRole::ArtifactPermanent,
+                    battlefield_face: CardFace::Front,
+                    utility: UtilityKind::UthrosResearchCraft,
+                    is_artifact: true,
+                    ..CardProfile::default()
+                },
+            );
+            profiles.insert(
+                CREATURE,
+                CardProfile {
+                    card: CREATURE,
+                    role: R2CardRole::CreaturePermanent,
+                    battlefield_face: CardFace::Front,
+                    is_creature: true,
+                    ..CardProfile::default()
+                },
+            );
+            profiles.insert(
+                ARTIFACT,
+                CardProfile {
+                    card: ARTIFACT,
+                    mana_cost: Some(ManaCost::default()),
+                    mana_value: 0,
+                    role: R2CardRole::ArtifactPermanent,
+                    battlefield_face: CardFace::Front,
+                    is_artifact: true,
+                    ..CardProfile::default()
+                },
+            );
+            profiles.insert(
+                CONSTRUCT,
+                CardProfile {
+                    card: CONSTRUCT,
+                    role: R2CardRole::UrzaConstructToken,
+                    battlefield_face: CardFace::Front,
+                    is_artifact: true,
+                    is_creature: true,
+                    ..CardProfile::default()
+                },
+            );
+            Self { profiles }
+        }
+    }
+
+    impl CardDatabase for UthrosCards {
+        fn profile(&self, card: CardDefId) -> Option<CardProfile> {
+            self.profiles.get(&card).copied()
+        }
+
+        fn commander_card(&self) -> CardDefId {
+            URZA_DUMMY
+        }
+
+        fn urza_construct_token_card(&self) -> CardDefId {
+            CONSTRUCT
+        }
+
+        fn printed_power(&self, card: CardDefId) -> Option<i16> {
+            (card == CREATURE).then_some(3)
+        }
+    }
+
+    fn permanent(object: u32, card: CardDefId) -> PermanentState {
+        PermanentState {
+            object_id: ObjectId(object),
+            card,
+            face: CardFace::Front,
+            tapped: false,
+            summoning_sick: false,
+            token: false,
+            counters: CounterState::default(),
+            mode: if card == UTHROS {
+                PermanentMode::UthrosStation
+            } else {
+                PermanentMode::Normal
+            },
+            attached_to: None,
+            granted_ability: None,
+        }
+    }
+
+    #[test]
+    fn uthros_station_taps_another_creature_and_adds_power_on_resolution() {
+        let cards = UthrosCards::new();
+        let mut state = TrueState {
+            turn: 2,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            battlefield: BattlefieldZone::new(vec![permanent(1, UTHROS), permanent(2, CREATURE)]),
+            ..TrueState::default()
+        };
+        let creature = urza_info::observe(&state)
+            .unwrap()
+            .battlefield
+            .iter()
+            .find(|permanent| permanent.card == CREATURE)
+            .unwrap()
+            .canonical_id;
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateUthrosStation {
+                source: ObjectId(1),
+                creature,
+            },
+        )
+        .unwrap();
+        assert!(state.battlefield.get(ObjectId(2)).unwrap().tapped);
+        assert_eq!(
+            state.battlefield.get(ObjectId(1)).unwrap().counters.charge,
+            0
+        );
+        assert!(matches!(
+            state.stack.last(),
+            Some(StackObject::TargetedActivatedAbility {
+                ability: ABILITY_UTHROS_STATION,
+                parameter: Some(3),
+                ..
+            })
+        ));
+
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            state.battlefield.get(ObjectId(1)).unwrap().counters.charge,
+            3
+        );
+    }
+
+    #[test]
+    fn uthros_three_plus_artifact_cast_draws_then_adds_charge_before_spell_resolves() {
+        let cards = UthrosCards::new();
+        let mut uthros = permanent(1, UTHROS);
+        uthros.counters.charge = 3;
+        let mut state = TrueState {
+            turn: 2,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![DRAW_A, DRAW_B]),
+            hand: CardZone::new(vec![ARTIFACT]),
+            battlefield: BattlefieldZone::new(vec![uthros]),
+            ..TrueState::default()
+        };
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::CastFromHand {
+                card: ARTIFACT,
+                payment: ManaPayment::default(),
+            },
+        )
+        .unwrap();
+        assert_eq!(state.stack.len(), 2);
+        assert!(matches!(
+            state.stack.last(),
+            Some(StackObject::ControlledTrigger {
+                ability: ABILITY_UTHROS_ARTIFACT_DRAW,
+                ..
+            })
+        ));
+
+        let draw = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            draw.observations,
+            vec![RulesObservation::CardsDrawn(vec![DRAW_A])]
+        );
+        assert_eq!(state.hand.cards(), &[DRAW_A]);
+        assert_eq!(
+            state.battlefield.get(ObjectId(1)).unwrap().counters.charge,
+            4
+        );
+        assert_eq!(
+            state.stack.len(),
+            1,
+            "artifact spell remains below Uthros trigger"
+        );
+
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert!(
+            state
+                .battlefield
+                .permanents()
+                .iter()
+                .any(|permanent| permanent.card == ARTIFACT)
+        );
+    }
+
+    #[test]
+    fn uthros_below_three_does_not_trigger_on_artifact_cast() {
+        let cards = UthrosCards::new();
+        let mut uthros = permanent(1, UTHROS);
+        uthros.counters.charge = 2;
+        let mut state = TrueState {
+            turn: 2,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![DRAW_A]),
+            hand: CardZone::new(vec![ARTIFACT]),
+            battlefield: BattlefieldZone::new(vec![uthros]),
+            ..TrueState::default()
+        };
+        apply_action(
+            &mut state,
+            &cards,
+            Action::CastFromHand {
+                card: ARTIFACT,
+                payment: ManaPayment::default(),
+            },
+        )
+        .unwrap();
+        assert_eq!(state.stack.len(), 1);
+        assert!(matches!(
+            state.stack.last(),
+            Some(StackObject::Spell { .. })
+        ));
     }
 }

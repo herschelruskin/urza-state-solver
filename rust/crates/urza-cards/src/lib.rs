@@ -29,8 +29,8 @@ pub const R1_CATALOG_DIGEST_BLAKE3: &str =
     "4b39c7db7bfd2c6f68d7a49efa515cdffb2c6a9716022bc0b21eeec56754a983";
 pub const R3_ACCEPTED_ACTIVE_IDENTITY_COUNT: usize = 32;
 pub const R4_ACCEPTED_ACTIVE_IDENTITY_COUNT: usize = 47;
-pub const POST_R7_ACCEPTED_ACTIVE_IDENTITY_COUNT: usize = 48;
-pub const POST_R7_CARD_DATABASE_VERSION: &str = "post_r7_card_advantage_v1_ring";
+pub const POST_R7_ACCEPTED_ACTIVE_IDENTITY_COUNT: usize = 49;
+pub const POST_R7_CARD_DATABASE_VERSION: &str = "post_r7_card_advantage_v2_uthros";
 pub const R4_ONLY_ACTIVE_NAMES: [&str; 15] = [
     "Basalt Monolith",
     "Grim Monolith",
@@ -978,6 +978,7 @@ impl urza_rules::CardDatabase for R4CardDatabase {
 #[derive(Debug, Clone)]
 pub struct PostR7CardDatabase {
     cards: BTreeMap<CardDefId, urza_rules::CardProfile>,
+    printed_powers: BTreeMap<CardDefId, i16>,
 }
 
 pub type CurrentCardDatabase = PostR7CardDatabase;
@@ -992,7 +993,39 @@ impl PostR7CardDatabase {
         profile.role = urza_rules::R2CardRole::ArtifactPermanent;
         profile.utility = urza_rules::UtilityKind::TheOneRing;
         profile.is_artifact = true;
-        Ok(Self { cards })
+
+        let uthros = card_id_by_name_from_r1("Uthros Research Craft")?;
+        let uthros_profile = cards.get_mut(&uthros).ok_or_else(|| {
+            CatalogError::Invariant("missing post-R7 Uthros Research Craft profile".to_owned())
+        })?;
+        uthros_profile.role = urza_rules::R2CardRole::ArtifactPermanent;
+        uthros_profile.utility = urza_rules::UtilityKind::UthrosResearchCraft;
+        uthros_profile.is_artifact = true;
+
+        // Public printed powers used by Station. Keeping this table in the
+        // current database avoids mutating the frozen R1 metadata schema/digest.
+        // Dynamic Construct power is computed by urza-rules instead.
+        let mut printed_powers = BTreeMap::new();
+        for (name, power) in [
+            ("Artificer's Assistant", 1_i16),
+            ("Battered Golem", 3),
+            ("Chrome Dome", 1),
+            ("Faerie Mastermind", 2),
+            ("Forensic Gadgeteer", 2),
+            ("Hope of Ghirapur", 1),
+            ("Hydroelectric Specimen", 1),
+            ("Spellseeker", 1),
+            ("Spellskite", 0),
+            ("The Reality Chip", 0),
+            ("Urza, Lord High Artificer", 1),
+            ("Valley Floodcaller", 2),
+        ] {
+            printed_powers.insert(card_id_by_name_from_r1(name)?, power);
+        }
+        Ok(Self {
+            cards,
+            printed_powers,
+        })
     }
 
     pub fn profile(&self, card: CardDefId) -> Option<urza_rules::CardProfile> {
@@ -1012,6 +1045,10 @@ impl PostR7CardDatabase {
                     .then_some(*card)
             })
             .collect()
+    }
+
+    pub fn printed_power(&self, card: CardDefId) -> Option<i16> {
+        self.printed_powers.get(&card).copied()
     }
 }
 
@@ -1034,6 +1071,10 @@ impl urza_rules::CardDatabase for PostR7CardDatabase {
 
     fn clue_token_card(&self) -> Option<CardDefId> {
         Some(CLUE_TOKEN_CARD_ID)
+    }
+
+    fn printed_power(&self, card: CardDefId) -> Option<i16> {
+        self.printed_power(card)
     }
 }
 
@@ -1190,9 +1231,10 @@ pub fn validate_post_r7_database() -> Result<(), CatalogError> {
     }
     let added: BTreeSet<_> = supported.difference(&r4_supported).copied().collect();
     let ring = card_id_by_name_from_r1("The One Ring")?;
-    if added != BTreeSet::from([ring]) {
+    let uthros = card_id_by_name_from_r1("Uthros Research Craft")?;
+    if added != BTreeSet::from([ring, uthros]) {
         return Err(CatalogError::Invariant(format!(
-            "first post-R7 slice must add only The One Ring, got {added:?}"
+            "post-R7 card-advantage surface must add exactly Ring and Uthros, got {added:?}"
         )));
     }
     let ring_coverage = coverage
@@ -1206,6 +1248,19 @@ pub fn validate_post_r7_database() -> Result<(), CatalogError> {
     ) {
         return Err(CatalogError::Invariant(
             "The One Ring must be active in post-R7 coverage".to_owned(),
+        ));
+    }
+    let uthros_coverage = coverage
+        .entries
+        .iter()
+        .find(|entry| entry.card_id == uthros.0)
+        .ok_or_else(|| CatalogError::Invariant("missing Uthros coverage entry".to_owned()))?;
+    if !matches!(
+        uthros_coverage.status,
+        CoverageStatus::PrimitiveActive | CoverageStatus::RulesActive
+    ) {
+        return Err(CatalogError::Invariant(
+            "Uthros Research Craft must be active in post-R7 coverage".to_owned(),
         ));
     }
     Ok(())
@@ -1852,12 +1907,12 @@ mod post_r7_database_tests {
     use super::*;
 
     #[test]
-    fn post_r7_database_extends_frozen_r4_with_only_the_one_ring() {
+    fn post_r7_database_extends_frozen_r4_with_ring_and_uthros() {
         validate_post_r7_database().unwrap();
         let r4 = R4CardDatabase::load().unwrap();
         let current = PostR7CardDatabase::load().unwrap();
         assert_eq!(r4.supported_active_cards().len(), 47);
-        assert_eq!(current.supported_active_cards().len(), 48);
+        assert_eq!(current.supported_active_cards().len(), 49);
         let ring = current.card_id_by_name("The One Ring").unwrap();
         assert_eq!(
             r4.profile(ring).unwrap().role,
@@ -1868,5 +1923,24 @@ mod post_r7_database_tests {
         assert_eq!(profile.utility, urza_rules::UtilityKind::TheOneRing);
         assert!(profile.is_artifact);
         assert_eq!(profile.mana_value, 4);
+
+        let uthros = current.card_id_by_name("Uthros Research Craft").unwrap();
+        assert_eq!(
+            r4.profile(uthros).unwrap().role,
+            urza_rules::R2CardRole::Unsupported
+        );
+        let uthros_profile = current.profile(uthros).unwrap();
+        assert_eq!(
+            uthros_profile.role,
+            urza_rules::R2CardRole::ArtifactPermanent
+        );
+        assert_eq!(
+            uthros_profile.utility,
+            urza_rules::UtilityKind::UthrosResearchCraft
+        );
+        assert!(uthros_profile.is_artifact);
+        assert_eq!(uthros_profile.mana_value, 3);
+        let gadgeteer = current.card_id_by_name("Forensic Gadgeteer").unwrap();
+        assert_eq!(current.printed_power(gadgeteer), Some(2));
     }
 }

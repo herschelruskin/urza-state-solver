@@ -18,8 +18,8 @@ use urza_rules::{
     apply_action_with_rng, enumerate_payments, legal_contingent_actions,
 };
 
-pub const CANDIDATE_BRIDGE_VERSION: &str = "post_r7_public_candidate_bridge_v1_ring";
-pub const ORDINARY_ACTION_FAMILY_COUNT: usize = 27;
+pub const CANDIDATE_BRIDGE_VERSION: &str = "post_r7_public_candidate_bridge_v2_uthros";
+pub const ORDINARY_ACTION_FAMILY_COUNT: usize = 28;
 pub const CONTINGENT_ACTION_FAMILY_COUNT: usize = 8;
 
 const KIND_PASS_PRIORITY: u16 = 1;
@@ -57,6 +57,7 @@ const KIND_CHOOSE_PRODUCER_UNTAP: u16 = 32;
 const KIND_CHOOSE_CAM_TARGET: u16 = 33;
 const KIND_CHOOSE_CAM_EFFECT: u16 = 34;
 const KIND_ONE_RING_DRAW: u16 = 35;
+const KIND_UTHROS_STATION: u16 = 36;
 
 #[derive(Debug, Error)]
 pub enum BridgeError {
@@ -422,6 +423,14 @@ fn generate_ordinary_actions<D: CardDatabase>(
                     source: representative,
                 });
             }
+            UtilityKind::UthrosResearchCraft => {
+                for creature in &creature_targets {
+                    actions.push(Action::ActivateUthrosStation {
+                        source: representative,
+                        creature: *creature,
+                    });
+                }
+            }
             _ => {}
         }
 
@@ -703,7 +712,8 @@ fn classify_action<D: CardDatabase>(
         | Action::ActivateRealityChipReconfigure { .. }
         | Action::ActivateRealityChipDetach { .. }
         | Action::ActivateFortuneTellersTalentLevel { .. }
-        | Action::ActivateOneRingDraw { .. } => PolicyActionClass::ActivateAbility,
+        | Action::ActivateOneRingDraw { .. }
+        | Action::ActivateUthrosStation { .. } => PolicyActionClass::ActivateAbility,
         Action::ChooseTransmuteSacrifice { .. }
         | Action::ChooseSearchTarget { .. }
         | Action::PayTransmuteDifference { .. }
@@ -924,6 +934,17 @@ fn public_key_for_action<D: CardDatabase>(
             object_classes,
             Vec::new(),
         )?,
+        Action::ActivateUthrosStation { source, creature } => {
+            let mut out = source_key(
+                KIND_UTHROS_STATION,
+                *source,
+                state,
+                object_classes,
+                Vec::new(),
+            )?;
+            out.target = Some(*creature);
+            out
+        }
         Action::PlayLibraryTopLand { card, entry } => PolicyPublicKey {
             kind: KIND_PLAY_LIBRARY_TOP_LAND,
             card: Some(*card),
@@ -1416,7 +1437,7 @@ mod tests {
 
     #[test]
     fn bridge_surface_counts_match_the_exhaustive_action_mapping() {
-        assert_eq!(ORDINARY_ACTION_FAMILY_COUNT, 27);
+        assert_eq!(ORDINARY_ACTION_FAMILY_COUNT, 28);
         assert_eq!(CONTINGENT_ACTION_FAMILY_COUNT, 8);
     }
 
@@ -1446,6 +1467,44 @@ mod tests {
                 .candidates()
                 .iter()
                 .all(|candidate| candidate.key.kind != KIND_ONE_RING_DRAW)
+        );
+    }
+
+    #[test]
+    fn post_r7_uthros_station_is_exposed_for_an_untapped_creature() {
+        let cards = PostR7CardDatabase::load().unwrap();
+        let uthros = cards.card_id_by_name("Uthros Research Craft").unwrap();
+        let gadgeteer = cards.card_id_by_name("Forensic Gadgeteer").unwrap();
+        let mut state = priority_state();
+        state.battlefield =
+            BattlefieldZone::new(vec![permanent(7, uthros), permanent(8, gadgeteer)]);
+
+        let bridge = CandidateBridge::build(&state, &cards).unwrap();
+        let actions = bridge
+            .candidates()
+            .iter()
+            .filter(|candidate| candidate.key.kind == KIND_UTHROS_STATION)
+            .collect::<Vec<_>>();
+        assert_eq!(actions.len(), 1);
+        assert_eq!(actions[0].class, PolicyActionClass::ActivateAbility);
+        assert!(matches!(
+            bridge.resolve(actions[0].token),
+            Some(Action::ActivateUthrosStation { .. })
+        ));
+
+        let mut permanents = state.battlefield.permanents().to_vec();
+        permanents
+            .iter_mut()
+            .find(|permanent| permanent.card == gadgeteer)
+            .unwrap()
+            .tapped = true;
+        state.battlefield = BattlefieldZone::new(permanents);
+        let tapped_bridge = CandidateBridge::build(&state, &cards).unwrap();
+        assert!(
+            tapped_bridge
+                .candidates()
+                .iter()
+                .all(|candidate| candidate.key.kind != KIND_UTHROS_STATION)
         );
     }
 
