@@ -6,6 +6,8 @@ on:
       - rust-engine-rebuild
     paths:
       - rust/crates/urza-mulligan/src/bin/post-r7-positive-natural-search.rs
+      - rust/crates/urza-rollout/src/lib.rs
+      - rust/crates/urza-rollout/src/liveness.rs
       - .github/workflows/post-r7-positive-natural-search.yml
   workflow_dispatch:
 
