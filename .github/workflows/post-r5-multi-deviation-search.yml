@@ -33,7 +33,7 @@ jobs:
         run: |
           set -o pipefail
           cargo run --release --locked -p urza-mulligan --bin post-r5-multi-deviation-search -- \
-            ${{ matrix.opening_offset }} 245312 64 2 \
+            ${{ matrix.opening_offset }} 245376 64 2 \
             | tee ../two-deviation-${{ matrix.opening_offset }}.tsv
       - uses: actions/upload-artifact@v4
         if: always()
