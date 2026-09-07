@@ -18,19 +18,24 @@ jobs:
       - uses: dtolnay/rust-toolchain@1.89
         with:
           components: rustfmt
+      - name: Repair Rust 1.89 constness
+        shell: bash
+        run: |
+          set -euo pipefail
+          sed -i 's/^const fn search_target_rank(/fn search_target_rank(/' rust/crates/urza-policy/src/lib.rs
       - name: Format workspace
         working-directory: rust
         run: cargo fmt --all
-      - name: Commit formatting if needed
+      - name: Commit repair if needed
         shell: bash
         run: |
           set -euo pipefail
           if git diff --quiet; then
-            echo "No formatting changes needed"
+            echo "No repair changes needed"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add rust
-          git commit -m "[R7] Apply rustfmt after policy diagnostics"
+          git commit -m "[R7] Fix policy constness and keep workspace formatted"
           git push
