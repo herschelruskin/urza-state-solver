@@ -3,9 +3,7 @@
 use std::collections::BTreeSet;
 
 use thiserror::Error;
-use urza_info::{
-    CanonicalObjectId, CardDefId, InformationState, PendingDecisionKind, Phase,
-};
+use urza_info::{CanonicalObjectId, CardDefId, InformationState, PendingDecisionKind, Phase};
 
 /// R5 deterministic policy layer on top of the frozen R4
 /// rules/information/value contract.
@@ -164,10 +162,7 @@ fn semantic_rank(
     )
 }
 
-const fn search_target_rank(
-    candidate: &PolicyCandidate,
-    prefer_real_search_target: bool,
-) -> u8 {
+const fn search_target_rank(candidate: &PolicyCandidate, prefer_real_search_target: bool) -> u8 {
     if prefer_real_search_target
         && candidate.class == PolicyActionClass::ContingentDecision
         && candidate.key.card.is_none()

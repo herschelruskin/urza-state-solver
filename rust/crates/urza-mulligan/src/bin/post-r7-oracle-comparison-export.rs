@@ -149,7 +149,8 @@ fn run() -> Result<(), Box<dyn Error>> {
             step.key.detail,
         );
 
-        let mut decision_state = replay_trace(exact.clone(), &cards, config, &baseline.trace[..position])?;
+        let mut decision_state =
+            replay_trace(exact.clone(), &cards, config, &baseline.trace[..position])?;
         if let Some(stop) = prepare_for_decision(&mut decision_state, &cards)? {
             return Err(Box::new(io::Error::other(format!(
                 "comparison replay stopped at decision {} before expected action: {stop:?}",
@@ -320,6 +321,9 @@ fn card_name(
 
 fn parse_u64(value: Option<String>, name: &str) -> Result<u64, Box<dyn Error>> {
     let text = value.ok_or_else(|| io::Error::other(format!("missing {name}")))?;
-    text.parse::<u64>()
-        .map_err(|error| Box::new(io::Error::other(format!("invalid {name} {text:?}: {error}"))) as _)
+    text.parse::<u64>().map_err(|error| {
+        Box::new(io::Error::other(format!(
+            "invalid {name} {text:?}: {error}"
+        ))) as _
+    })
 }

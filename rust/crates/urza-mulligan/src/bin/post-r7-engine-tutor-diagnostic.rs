@@ -106,9 +106,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     println!("ENGINE_TUTOR_DIAGNOSTIC\t{DIAGNOSTIC_VERSION}");
     println!(
         "SOURCE\topening_offset={opening_offset}\topening_world={}\thidden_start={hidden_start}\thidden_count={hidden_count}\tseat={}\tcaverns={}",
-        opening_world.0,
-        kept.pregame.seat,
-        kept.pregame.gemstone_caverns_eligible,
+        opening_world.0, kept.pregame.seat, kept.pregame.gemstone_caverns_eligible,
     );
     println!(
         "OPENING_HAND\t{}",
@@ -135,7 +133,10 @@ fn run() -> Result<(), Box<dyn Error>> {
         if matches!(baseline.stop, RolloutStop::Terminal(_)) {
             terminal_worlds = terminal_worlds.saturating_add(1);
         }
-        if matches!(baseline.stop, RolloutStop::StepLimit | RolloutStop::NoCandidate) {
+        if matches!(
+            baseline.stop,
+            RolloutStop::StepLimit | RolloutStop::NoCandidate
+        ) {
             return Err(Box::new(io::Error::other(format!(
                 "baseline hidden world {} stopped incompletely at {:?}",
                 hidden_world.0, baseline.stop
@@ -156,18 +157,14 @@ fn run() -> Result<(), Box<dyn Error>> {
             let information = bridge.information();
 
             for engine in ENGINES {
-                let visible = information
-                    .hand
-                    .iter()
-                    .any(|card| card_name(&interpretation, *card).is_ok_and(|name| name == engine))
-                    || information.battlefield.iter().any(|permanent| {
+                let visible =
+                    information.hand.iter().any(|card| {
+                        card_name(&interpretation, *card).is_ok_and(|name| name == engine)
+                    }) || information.battlefield.iter().any(|permanent| {
                         card_name(&interpretation, permanent.card).is_ok_and(|name| name == engine)
-                    })
-                    || information
-                        .library
-                        .known_top
-                        .iter()
-                        .any(|card| card_name(&interpretation, *card).is_ok_and(|name| name == engine));
+                    }) || information.library.known_top.iter().any(|card| {
+                        card_name(&interpretation, *card).is_ok_and(|name| name == engine)
+                    });
                 if visible {
                     engine_stats
                         .get_mut(engine)
@@ -364,6 +361,9 @@ fn card_name(
 
 fn parse_u64(value: Option<String>, name: &str) -> Result<u64, Box<dyn Error>> {
     let text = value.ok_or_else(|| io::Error::other(format!("missing {name}")))?;
-    text.parse::<u64>()
-        .map_err(|error| Box::new(io::Error::other(format!("invalid {name} {text:?}: {error}"))) as _)
+    text.parse::<u64>().map_err(|error| {
+        Box::new(io::Error::other(format!(
+            "invalid {name} {text:?}: {error}"
+        ))) as _
+    })
 }

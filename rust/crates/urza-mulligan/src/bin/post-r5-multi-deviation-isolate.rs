@@ -60,13 +60,8 @@ fn run() -> Result<(), Box<dyn Error>> {
         },
     ];
 
-    let result = rollout_with_forced_semantic_actions(
-        exact,
-        &cards,
-        &DeterministicPolicy,
-        config,
-        &forced,
-    )?;
+    let result =
+        rollout_with_forced_semantic_actions(exact, &cards, &DeterministicPolicy, config, &forced)?;
     println!(
         "ISOLATE_RESULT\topening_world={}\thidden_world={}\tstop={:?}\tturn={}\tphase={:?}\twindow={:?}\tpending={:?}\tstack_len={}\ttrace_len={}",
         opening_world.0,
@@ -79,9 +74,16 @@ fn run() -> Result<(), Box<dyn Error>> {
         result.final_information.stack.len(),
         result.trace.len(),
     );
-    if matches!(result.stop, RolloutStop::NoCandidate | RolloutStop::StepLimit) {
+    if matches!(
+        result.stop,
+        RolloutStop::NoCandidate | RolloutStop::StepLimit
+    ) {
         println!("FINAL_STATE\t{:?}", result.final_state);
-        return Err(format!("Power Artifact witness is still incomplete: {:?}", result.stop).into());
+        return Err(format!(
+            "Power Artifact witness is still incomplete: {:?}",
+            result.stop
+        )
+        .into());
     }
 
     println!(
