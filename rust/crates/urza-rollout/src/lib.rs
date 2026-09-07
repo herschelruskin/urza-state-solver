@@ -638,7 +638,7 @@ mod tests {
             result
                 .trace
                 .iter()
-                .any(|step| step.class == PolicyActionClass::ActivateAbility)
+                .any(|step| step.class == PolicyActionClass::ManaSetup)
         );
         assert!(
             result
@@ -709,7 +709,7 @@ mod tests {
             result
                 .trace
                 .iter()
-                .any(|step| step.class == PolicyActionClass::ActivateAbility)
+                .any(|step| step.class == PolicyActionClass::ManaSetup)
         );
         assert!(
             result
@@ -742,7 +742,7 @@ mod tests {
             result
                 .trace
                 .iter()
-                .any(|step| step.class == PolicyActionClass::ActivateAbility)
+                .any(|step| step.class == PolicyActionClass::ManaSetup)
         );
         assert!(
             result

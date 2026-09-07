@@ -8,7 +8,7 @@ use urza_info::{CanonicalObjectId, CardDefId, InformationState, PendingDecisionK
 /// R5 deterministic policy layer on top of the frozen R4
 /// rules/information/value contract.
 pub const POLICY_PHASE: &str = "R5";
-pub const POLICY_VERSION: &str = "r5_candidate_contract_v4_phase_tutor";
+pub const POLICY_VERSION: &str = "r5_candidate_contract_v5_resource_setup";
 
 /// Opaque decision-local handle supplied by the execution bridge.
 ///
@@ -27,6 +27,7 @@ pub enum PolicyActionClass {
     ContingentDecision,
     PlayLand,
     ProduceMana,
+    ManaSetup,
     CastSpell,
     ActivateAbility,
     PassPriority,
@@ -195,6 +196,7 @@ const fn class_rank(class: PolicyActionClass, drain_stack: bool, phase: Phase) -
             PolicyActionClass::CastSpell => 3,
             PolicyActionClass::ActivateAbility => 4,
             PolicyActionClass::ProduceMana => 5,
+            PolicyActionClass::ManaSetup => 6,
         }
     } else if matches!(phase, Phase::PrecombatMain) {
         // Demand-driven main-phase mana: use an already-legal action before
@@ -206,7 +208,8 @@ const fn class_rank(class: PolicyActionClass, drain_stack: bool, phase: Phase) -
             PolicyActionClass::CastSpell => 2,
             PolicyActionClass::ActivateAbility => 3,
             PolicyActionClass::ProduceMana => 4,
-            PolicyActionClass::PassPriority => 5,
+            PolicyActionClass::ManaSetup => 5,
+            PolicyActionClass::PassPriority => 6,
         }
     } else {
         // Outside the main phase, do not pre-emptively tap reusable sources
@@ -220,6 +223,7 @@ const fn class_rank(class: PolicyActionClass, drain_stack: bool, phase: Phase) -
             PolicyActionClass::ActivateAbility => 3,
             PolicyActionClass::PassPriority => 4,
             PolicyActionClass::ProduceMana => 5,
+            PolicyActionClass::ManaSetup => 6,
         }
     }
 }

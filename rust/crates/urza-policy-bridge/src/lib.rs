@@ -18,7 +18,7 @@ use urza_rules::{
     apply_action_with_rng, enumerate_payments, legal_contingent_actions,
 };
 
-pub const CANDIDATE_BRIDGE_VERSION: &str = "r5_public_candidate_bridge_v2";
+pub const CANDIDATE_BRIDGE_VERSION: &str = "r5_public_candidate_bridge_v3_resource_setup";
 pub const ORDINARY_ACTION_FAMILY_COUNT: usize = 26;
 pub const CONTINGENT_ACTION_FAMILY_COUNT: usize = 8;
 
@@ -664,6 +664,7 @@ fn classify_action<D: CardDatabase>(
         Action::ActivateManaAbility { .. } | Action::ActivateUrzaArtifactMana { .. } => {
             PolicyActionClass::ProduceMana
         }
+        Action::ActivateNativeArtifactUntap { .. } => PolicyActionClass::ManaSetup,
         Action::CastFromHand { .. }
         | Action::CastAuraFromHand { .. }
         | Action::CastTargetedFromHand { .. }
@@ -685,8 +686,7 @@ fn classify_action<D: CardDatabase>(
                 PolicyActionClass::CastSpell
             }
         }
-        Action::ActivateNativeArtifactUntap { .. }
-        | Action::ActivateGrindingStation { .. }
+        Action::ActivateGrindingStation { .. }
         | Action::ActivateChromeDome { .. }
         | Action::ActivateGrantedKnackBounce { .. }
         | Action::ActivateRepurposingBay { .. }
