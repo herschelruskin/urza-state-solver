@@ -1,0 +1,35 @@
+name: Post-R7 first-pass rollout isolate
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - '.github/workflows/post-r7-policy-rollout-isolate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.89
+      - name: Instrument exact rollout regression
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('rust/crates/urza-rollout/src/lib.rs')
+          text = path.read_text()
+          old = '''        let result = rollout(state, &cards, &DeterministicPolicy, config(64)).unwrap();\n\n        assert_eq!(result.stop, RolloutStop::Horizon);\n        let produce_before_cast = result\n'''
+          new = '''        let result = rollout(state, &cards, &DeterministicPolicy, config(64)).unwrap();\n\n        println!("FIRST_PASS_TRACE={:#?}", result.trace);\n        println!("FIRST_PASS_FINAL_STATE={:#?}", result.final_state);\n        assert_eq!(result.stop, RolloutStop::Horizon);\n        let produce_before_cast = result\n'''
+          if old not in text:
+              raise SystemExit('target snippet not found')
+          path.write_text(text.replace(old, new, 1))
+          PY
+      - name: Run exact test with trace
+        working-directory: rust
+        run: cargo test --locked -p urza-rollout monotone_guard_allows_resource_until_commander_unlocks -- --nocapture
