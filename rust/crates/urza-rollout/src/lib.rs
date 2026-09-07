@@ -1,7 +1,11 @@
 #![forbid(unsafe_code)]
 
-use std::collections::{BTreeSet, HashMap};
+mod liveness;
 
+use liveness::{
+    AttemptMap, ManaObservationMap, ManaRecurrenceObservation, cycle_stationary_through_budget,
+    mana_agnostic_state, mana_strictly_dominates, suppressible_ordinary,
+};
 use thiserror::Error;
 use urza_core::{PendingDecision, Phase, TrueState, Window};
 use urza_info::{InformationState, ObservationError, observe};
@@ -15,7 +19,7 @@ use urza_rules::{
     detect_terminal_win,
 };
 
-pub const ROLLOUT_VERSION: &str = "r5_deterministic_rollout_v2";
+pub const ROLLOUT_VERSION: &str = "r5_deterministic_rollout_v3";
 pub const DEFAULT_MAX_STEPS: u32 = 4096;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -117,10 +121,9 @@ pub fn rollout_with_logical_event_offset<D: CardDatabase>(
 ) -> Result<RolloutResult, RolloutError> {
     let mut state = initial;
     let mut trace = Vec::new();
-    let mut deterministic_attempts: HashMap<
-        TrueState,
-        BTreeSet<(PolicyActionClass, PolicyPublicKey)>,
-    > = HashMap::new();
+    let mut deterministic_attempts = AttemptMap::new();
+    let mut monotone_attempts = AttemptMap::new();
+    let mut mana_observations = ManaObservationMap::new();
 
     loop {
         if let Some(stop) = prepare_for_policy(&mut state, cards)? {
@@ -132,14 +135,16 @@ pub fn rollout_with_logical_event_offset<D: CardDatabase>(
         }
 
         let bridge = CandidateBridge::build(&state, cards)?;
-        let rejected = deterministic_attempts.get(&state);
+        let resource_key = mana_agnostic_state(&state);
+        let exact_rejected = deterministic_attempts.get(&state);
+        let monotone_rejected = monotone_attempts.get(&resource_key);
         let available: Vec<_> = bridge
             .candidates()
             .iter()
             .filter(|candidate| {
-                !rejected.is_some_and(|attempts| {
-                    attempts.contains(&(candidate.class, candidate.key.clone()))
-                })
+                let semantics = (candidate.class, candidate.key.clone());
+                !exact_rejected.is_some_and(|attempts| attempts.contains(&semantics))
+                    && !monotone_rejected.is_some_and(|attempts| attempts.contains(&semantics))
             })
             .cloned()
             .collect();
@@ -152,13 +157,47 @@ pub fn rollout_with_logical_event_offset<D: CardDatabase>(
             .find(|candidate| candidate.token == token)
             .cloned()
             .ok_or(RolloutError::MissingResolvedAction(token))?;
+        let selected_class = selected.class;
+        let selected_semantics = (selected_class, selected.key.clone());
+        let decision_state = state.clone();
+
+        if matches!(decision_state.pending, PendingDecision::None)
+            && suppressible_ordinary(selected_class)
+            && let Some(previous) = mana_observations.get(&resource_key)
+            && previous.semantics == selected_semantics
+            && mana_strictly_dominates(decision_state.mana, previous.mana)
+        {
+            let pattern = &trace[previous.trace_index..];
+            if cycle_stationary_through_budget(
+                &decision_state,
+                cards,
+                policy,
+                config,
+                logical_event_offset,
+                trace.len(),
+                pattern,
+                &deterministic_attempts,
+                &monotone_attempts,
+            )? {
+                // The exact non-mana state and semantic action cycle have
+                // recurred with strictly more floating mana, and exact shadow
+                // execution proves that no different policy choice becomes
+                // available before this rollout's old step cap. Suppress only
+                // the current ordinary semantic action for this execution-local
+                // mana-agnostic recurrence key. No trace or RNG coordinate is
+                // consumed by the rejected retry.
+                monotone_attempts
+                    .entry(resource_key)
+                    .or_default()
+                    .insert(selected_semantics);
+                continue;
+            }
+        }
+
         let action = bridge
             .resolved_action(token)
             .ok_or(RolloutError::MissingResolvedAction(token))?;
         let index = u32::try_from(trace.len()).map_err(|_| RolloutError::StepIndexOverflow)?;
-        let selected_class = selected.class;
-        let selected_semantics = (selected_class, selected.key.clone());
-        let decision_state = state.clone();
         let rng_cursor_before = state.rng_occurrence_cursor;
 
         trace.push(RolloutStep {
@@ -185,15 +224,20 @@ pub fn rollout_with_logical_event_offset<D: CardDatabase>(
         // legal exit. Pass and contingent decisions are never suppressed.
         if state.rng_occurrence_cursor == rng_cursor_before
             && matches!(decision_state.pending, PendingDecision::None)
-            && !matches!(
-                selected_class,
-                PolicyActionClass::PassPriority | PolicyActionClass::ContingentDecision
-            )
+            && suppressible_ordinary(selected_class)
         {
             deterministic_attempts
-                .entry(decision_state)
+                .entry(decision_state.clone())
                 .or_default()
-                .insert(selected_semantics);
+                .insert(selected_semantics.clone());
+            mana_observations.insert(
+                mana_agnostic_state(&decision_state),
+                ManaRecurrenceObservation {
+                    mana: decision_state.mana,
+                    semantics: selected_semantics,
+                    trace_index: usize::try_from(index).expect("u32 fits usize"),
+                },
+            );
         }
     }
 }
@@ -551,6 +595,116 @@ mod tests {
                 .iter()
                 .any(|step| step.class == PolicyActionClass::PassPriority)
         );
+    }
+
+    #[test]
+    fn monotone_basalt_gadgeteer_cycle_exits_before_step_limit() {
+        let cards = cards();
+        let basalt = cards.card_id_by_name("Basalt Monolith").expect("Basalt");
+        let gadgeteer = cards
+            .card_id_by_name("Forensic Gadgeteer")
+            .expect("Gadgeteer");
+        let mut state = base_state(&cards, urza_rules::HORIZON_TURN);
+        state.phase = Phase::Upkeep;
+        state.battlefield =
+            BattlefieldZone::new(vec![permanent(20, basalt), permanent(25, gadgeteer)]);
+
+        let result = rollout(state, &cards, &DeterministicPolicy, config(64)).unwrap();
+
+        assert_eq!(result.stop, RolloutStop::Horizon);
+        assert!(
+            result.trace.len() < 32,
+            "monotone resource recurrence should exit before the step cap"
+        );
+        assert!(
+            result
+                .trace
+                .iter()
+                .any(|step| step.class == PolicyActionClass::ActivateAbility)
+        );
+        assert!(
+            result
+                .trace
+                .iter()
+                .any(|step| step.class == PolicyActionClass::PassPriority)
+        );
+    }
+
+    #[test]
+    fn monotone_guard_allows_resource_until_commander_unlocks() {
+        let cards = cards();
+        let basalt = cards.card_id_by_name("Basalt Monolith").expect("Basalt");
+        let gadgeteer = cards
+            .card_id_by_name("Forensic Gadgeteer")
+            .expect("Gadgeteer");
+        let mut state = base_state(&cards, urza_rules::HORIZON_TURN);
+        state.battlefield =
+            BattlefieldZone::new(vec![permanent(20, basalt), permanent(25, gadgeteer)]);
+        state.mana.blue = 2;
+        state.commander.command_zone_casts = 1;
+
+        let result = rollout(state, &cards, &DeterministicPolicy, config(64)).unwrap();
+
+        assert_eq!(
+            result.stop,
+            RolloutStop::Terminal(WinFamily::BasaltGadgeteer)
+        );
+        let produce_before_cast = result
+            .trace
+            .iter()
+            .take_while(|step| step.class != PolicyActionClass::CastSpell)
+            .filter(|step| step.class == PolicyActionClass::ProduceMana)
+            .count();
+        assert_eq!(produce_before_cast, 2);
+        assert!(
+            result
+                .trace
+                .iter()
+                .any(|step| step.class == PolicyActionClass::CastSpell)
+        );
+    }
+
+    #[test]
+    fn monotone_cycle_guard_preserves_raw_object_id_invariance() {
+        let cards = cards();
+        let basalt = cards.card_id_by_name("Basalt Monolith").expect("Basalt");
+        let gadgeteer = cards
+            .card_id_by_name("Forensic Gadgeteer")
+            .expect("Gadgeteer");
+        let mut left = base_state(&cards, urza_rules::HORIZON_TURN);
+        left.phase = Phase::Upkeep;
+        left.battlefield =
+            BattlefieldZone::new(vec![permanent(20, basalt), permanent(25, gadgeteer)]);
+        let mut right = base_state(&cards, urza_rules::HORIZON_TURN);
+        right.phase = Phase::Upkeep;
+        right.battlefield = BattlefieldZone::new(vec![
+            permanent(20_020, basalt),
+            permanent(20_025, gadgeteer),
+        ]);
+
+        let left_result = rollout(left, &cards, &DeterministicPolicy, config(64)).unwrap();
+        let right_result = rollout(right, &cards, &DeterministicPolicy, config(64)).unwrap();
+
+        assert_eq!(left_result.stop, RolloutStop::Horizon);
+        assert_eq!(left_result.stop, right_result.stop);
+        assert_eq!(left_result.trace, right_result.trace);
+        assert_eq!(
+            left_result.final_information,
+            right_result.final_information
+        );
+    }
+
+    #[test]
+    fn mana_agnostic_recurrence_key_retains_rng_cursor() {
+        let cards = cards();
+        let mut left = base_state(&cards, urza_rules::HORIZON_TURN);
+        left.mana.colorless = 1;
+        let mut right = left.clone();
+        right.mana.colorless = 9;
+
+        assert_eq!(mana_agnostic_state(&left), mana_agnostic_state(&right));
+        right.rng_occurrence_cursor = 1;
+        assert_ne!(mana_agnostic_state(&left), mana_agnostic_state(&right));
     }
 
     #[test]
