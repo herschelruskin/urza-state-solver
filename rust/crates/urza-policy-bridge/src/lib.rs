@@ -18,8 +18,8 @@ use urza_rules::{
     apply_action_with_rng, enumerate_payments, legal_contingent_actions,
 };
 
-pub const CANDIDATE_BRIDGE_VERSION: &str = "r5_public_candidate_bridge_v3_resource_setup";
-pub const ORDINARY_ACTION_FAMILY_COUNT: usize = 26;
+pub const CANDIDATE_BRIDGE_VERSION: &str = "post_r7_public_candidate_bridge_v1_ring";
+pub const ORDINARY_ACTION_FAMILY_COUNT: usize = 27;
 pub const CONTINGENT_ACTION_FAMILY_COUNT: usize = 8;
 
 const KIND_PASS_PRIORITY: u16 = 1;
@@ -56,6 +56,7 @@ const KIND_CHOOSE_SCRY: u16 = 31;
 const KIND_CHOOSE_PRODUCER_UNTAP: u16 = 32;
 const KIND_CHOOSE_CAM_TARGET: u16 = 33;
 const KIND_CHOOSE_CAM_EFFECT: u16 = 34;
+const KIND_ONE_RING_DRAW: u16 = 35;
 
 #[derive(Debug, Error)]
 pub enum BridgeError {
@@ -416,6 +417,11 @@ fn generate_ordinary_actions<D: CardDatabase>(
                     });
                 }
             }
+            UtilityKind::TheOneRing => {
+                actions.push(Action::ActivateOneRingDraw {
+                    source: representative,
+                });
+            }
             _ => {}
         }
 
@@ -696,7 +702,8 @@ fn classify_action<D: CardDatabase>(
         | Action::ActivateTezzeretMinusThree { .. }
         | Action::ActivateRealityChipReconfigure { .. }
         | Action::ActivateRealityChipDetach { .. }
-        | Action::ActivateFortuneTellersTalentLevel { .. } => PolicyActionClass::ActivateAbility,
+        | Action::ActivateFortuneTellersTalentLevel { .. }
+        | Action::ActivateOneRingDraw { .. } => PolicyActionClass::ActivateAbility,
         Action::ChooseTransmuteSacrifice { .. }
         | Action::ChooseSearchTarget { .. }
         | Action::PayTransmuteDifference { .. }
@@ -910,6 +917,13 @@ fn public_key_for_action<D: CardDatabase>(
             object_classes,
             payment_detail(*payment),
         )?,
+        Action::ActivateOneRingDraw { source } => source_key(
+            KIND_ONE_RING_DRAW,
+            *source,
+            state,
+            object_classes,
+            Vec::new(),
+        )?,
         Action::PlayLibraryTopLand { card, entry } => PolicyPublicKey {
             kind: KIND_PLAY_LIBRARY_TOP_LAND,
             card: Some(*card),
@@ -1119,7 +1133,7 @@ const fn cam_choice_code(choice: CamEffectChoice) -> u16 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use urza_cards::R4CardDatabase;
+    use urza_cards::{PostR7CardDatabase, R4CardDatabase};
     use urza_core::{
         BattlefieldZone, CardFace, CardZone, CounterState, GenericCost, ManaPool, PendingDecision,
         PermanentMode, PermanentState, Phase, SourceRef, TrueLibrary, Window,
@@ -1402,8 +1416,37 @@ mod tests {
 
     #[test]
     fn bridge_surface_counts_match_the_exhaustive_action_mapping() {
-        assert_eq!(ORDINARY_ACTION_FAMILY_COUNT, 26);
+        assert_eq!(ORDINARY_ACTION_FAMILY_COUNT, 27);
         assert_eq!(CONTINGENT_ACTION_FAMILY_COUNT, 8);
+    }
+
+    #[test]
+    fn post_r7_ring_draw_is_exposed_only_while_ring_is_untapped() {
+        let cards = PostR7CardDatabase::load().unwrap();
+        let ring = cards.card_id_by_name("The One Ring").unwrap();
+        let mut state = priority_state();
+        state.battlefield = BattlefieldZone::new(vec![permanent(7, ring)]);
+
+        let bridge = CandidateBridge::build(&state, &cards).unwrap();
+        let ring_actions = bridge
+            .candidates()
+            .iter()
+            .filter(|candidate| candidate.key.kind == KIND_ONE_RING_DRAW)
+            .collect::<Vec<_>>();
+        assert_eq!(ring_actions.len(), 1);
+        assert_eq!(ring_actions[0].class, PolicyActionClass::ActivateAbility);
+
+        let mut tapped = state;
+        let mut permanents = tapped.battlefield.permanents().to_vec();
+        permanents[0].tapped = true;
+        tapped.battlefield = BattlefieldZone::new(permanents);
+        let tapped_bridge = CandidateBridge::build(&tapped, &cards).unwrap();
+        assert!(
+            tapped_bridge
+                .candidates()
+                .iter()
+                .all(|candidate| candidate.key.kind != KIND_ONE_RING_DRAW)
+        );
     }
 
     #[test]

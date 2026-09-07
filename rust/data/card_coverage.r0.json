@@ -409,8 +409,8 @@
     },
     {
       "card_id": 81,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "PRIMITIVE_ACTIVE",
+      "reason": "Post-R7 second-pass One Ring primitive: normal artifact cast, burden upkeep life loss, and tap-to-add-burden/draw are modeled on the production stack. Cast protection, indestructible, and exotic LKI interleavings after intervening burden changes remain deferred."
     },
     {
       "card_id": 82,

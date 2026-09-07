@@ -21,6 +21,7 @@ pub const RULES_PHASE: &str = "R4";
 pub const R2_RULES_VERSION: &str = "r2_core_kernel_v2";
 pub const R3_RULES_VERSION: &str = "r3_search_complete_v4";
 pub const RULES_VERSION: &str = "r4_acceptance_v6";
+pub const POST_R7_RULES_VERSION: &str = "post_r7_card_advantage_v1_ring";
 pub const HORIZON_TURN: u8 = 6;
 pub const RNG_EVENT_SEARCH_SHUFFLE: EventType = EventType(0x0301);
 pub const ABILITY_REPURPOSING_BAY_SEARCH: AbilityId = AbilityId(0x0301);
@@ -44,6 +45,8 @@ pub const ABILITY_CHROME_DOME_SACRIFICE: AbilityId = AbilityId(0x040a);
 pub const ABILITY_FLOODCALLER_UNTAP: AbilityId = AbilityId(0x040b);
 pub const ABILITY_CAM_TAP_UNTAP: AbilityId = AbilityId(0x040c);
 pub const ABILITY_KNACK_BOUNCE: AbilityId = AbilityId(0x040d);
+pub const ABILITY_ONE_RING_DRAW: AbilityId = AbilityId(0x040e);
+pub const ABILITY_ONE_RING_UPKEEP: AbilityId = AbilityId(0x040f);
 pub const RNG_EVENT_URZA_SPIN_SHUFFLE: EventType = EventType(0x0302);
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -382,6 +385,7 @@ pub enum UtilityKind {
     TezzeretCruelCaptain,
     RealityChip,
     FortuneTellersTalent,
+    TheOneRing,
     GrafdiggersCage,
     SewerVeillanceCam,
 }
@@ -510,6 +514,9 @@ pub enum Action {
         payment: ManaPayment,
     },
     ActivateTopDraw {
+        source: ObjectId,
+    },
+    ActivateOneRingDraw {
         source: ObjectId,
     },
     ActivateUrzaSpin {
@@ -829,6 +836,10 @@ fn apply_action_internal<D: CardDatabase>(
             activate_top_draw(state, cards, source)?;
             Transition::default()
         }
+        Action::ActivateOneRingDraw { source } => {
+            activate_one_ring_draw(state, cards, source)?;
+            Transition::default()
+        }
         Action::ActivateUrzaSpin { source, payment } => {
             activate_urza_spin(state, cards, source, payment)?;
             Transition::default()
@@ -1122,6 +1133,7 @@ pub fn advance_phase<D: CardDatabase>(
             }
             state.battlefield = BattlefieldZone::new(permanents);
             state.phase = Phase::Upkeep;
+            queue_one_ring_upkeep_triggers(state, cards);
             state.window = Window::Priority;
         }
         Phase::Upkeep => {
@@ -1990,6 +2002,37 @@ fn activate_top_draw<D: CardDatabase>(
         },
         ability: ABILITY_TOP_DRAW,
         parameter: None,
+    });
+    state.window = Window::Priority;
+    Ok(())
+}
+
+fn activate_one_ring_draw<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: ObjectId,
+) -> Result<(), RuleError> {
+    ensure_priority(state)?;
+    ensure_no_pending_decision(state)?;
+    let permanent = battlefield_permanent(state, source)?.clone();
+    let profile = card_profile(cards, permanent.card)?;
+    if profile.utility != UtilityKind::TheOneRing {
+        return Err(RuleError::UnsupportedCardMechanic(permanent.card));
+    }
+    if permanent.tapped {
+        return Err(RuleError::PermanentTapped(source));
+    }
+    set_tapped(state, source)?;
+    state.stack.push(StackObject::ActivatedAbility {
+        source: SourceRef {
+            object_id: Some(source),
+            card: permanent.card,
+        },
+        ability: ABILITY_ONE_RING_DRAW,
+        // Snapshot supports the ordinary leave-before-resolution LKI case.
+        // More exotic interleavings that change burden before the source
+        // leaves are explicitly outside this primitive slice.
+        parameter: Some(permanent.counters.burden),
     });
     state.window = Window::Priority;
     Ok(())
@@ -3067,6 +3110,22 @@ fn resolve_top_stack_object<D: CardDatabase>(
         }
         StackObject::ActivatedAbility {
             source,
+            ability: ABILITY_ONE_RING_DRAW,
+            parameter,
+        } => {
+            state.stack.pop();
+            resolve_one_ring_draw(state, cards, source, parameter)
+        }
+        StackObject::ActivatedAbility {
+            source,
+            ability: ABILITY_ONE_RING_UPKEEP,
+            parameter,
+        } => {
+            state.stack.pop();
+            resolve_one_ring_upkeep(state, cards, source, parameter)
+        }
+        StackObject::ActivatedAbility {
+            source,
             ability: ABILITY_URZA_SPIN,
             ..
         } => {
@@ -3238,6 +3297,64 @@ fn resolve_top_stack_object<D: CardDatabase>(
         | StackObject::ActivatedAbility { .. }
         | StackObject::TargetedActivatedAbility { .. } => Err(RuleError::UnsupportedStackObject),
     }
+}
+
+fn resolve_one_ring_draw<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: SourceRef,
+    snapshot: Option<u16>,
+) -> Result<Transition, RuleError> {
+    let mut draw_count = snapshot.unwrap_or(0);
+    if let Some(source_id) = source.object_id
+        && let Some(permanent) = state.battlefield.get(source_id).cloned()
+        && permanent.card == source.card
+        && card_profile(cards, permanent.card)?.utility == UtilityKind::TheOneRing
+    {
+        let next = permanent
+            .counters
+            .burden
+            .checked_add(1)
+            .ok_or(RuleError::ArithmeticOverflow)?;
+        let mut permanents = state.battlefield.permanents().to_vec();
+        let live = permanents
+            .iter_mut()
+            .find(|candidate| candidate.object_id == source_id)
+            .ok_or(RuleError::MissingPermanent(source_id))?;
+        live.counters.burden = next;
+        state.battlefield = BattlefieldZone::new(permanents);
+        draw_count = next;
+    }
+
+    let drawn = draw_cards(state, usize::from(draw_count))?;
+    state.window = Window::Priority;
+    Ok(Transition {
+        observations: if drawn.is_empty() {
+            Vec::new()
+        } else {
+            vec![RulesObservation::CardsDrawn(drawn)]
+        },
+    })
+}
+
+fn resolve_one_ring_upkeep<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: SourceRef,
+    snapshot: Option<u16>,
+) -> Result<Transition, RuleError> {
+    let burden = if let Some(source_id) = source.object_id
+        && let Some(permanent) = state.battlefield.get(source_id)
+        && permanent.card == source.card
+        && card_profile(cards, permanent.card)?.utility == UtilityKind::TheOneRing
+    {
+        permanent.counters.burden
+    } else {
+        snapshot.unwrap_or(0)
+    };
+    state.life = state.life.saturating_sub(burden);
+    state.window = Window::Priority;
+    Ok(Transition::default())
 }
 
 fn resolve_reality_chip_reconfigure<D: CardDatabase>(
@@ -5063,6 +5180,29 @@ fn queue_cam_leave_trigger(state: &mut TrueState, card: CardDefId) {
         },
         ability: ABILITY_CAM_TAP_UNTAP,
     });
+}
+
+fn queue_one_ring_upkeep_triggers<D: CardDatabase>(state: &mut TrueState, cards: &D) {
+    let triggers = state
+        .battlefield
+        .permanents()
+        .iter()
+        .filter_map(|permanent| {
+            cards.profile(permanent.card).and_then(|profile| {
+                (profile.utility == UtilityKind::TheOneRing).then_some(
+                    StackObject::ActivatedAbility {
+                        source: SourceRef {
+                            object_id: Some(permanent.object_id),
+                            card: permanent.card,
+                        },
+                        ability: ABILITY_ONE_RING_UPKEEP,
+                        parameter: Some(permanent.counters.burden),
+                    },
+                )
+            })
+        })
+        .collect::<Vec<_>>();
+    state.stack.extend(triggers);
 }
 
 fn queue_due_chrome_end_step_triggers(state: &mut TrueState) {
@@ -8582,5 +8722,169 @@ mod tests {
         )
         .unwrap();
         assert!(!state.battlefield.get(ObjectId(1)).unwrap().tapped);
+    }
+}
+
+#[cfg(test)]
+mod post_r7_one_ring_tests {
+    use std::collections::BTreeMap;
+
+    use super::*;
+
+    const RING: CardDefId = CardDefId(500);
+    const DRAW_A: CardDefId = CardDefId(501);
+    const DRAW_B: CardDefId = CardDefId(502);
+    const DRAW_C: CardDefId = CardDefId(503);
+    const URZA_DUMMY: CardDefId = CardDefId(504);
+    const CONSTRUCT_DUMMY: CardDefId = CardDefId(505);
+
+    #[derive(Default)]
+    struct RingCards {
+        profiles: BTreeMap<CardDefId, CardProfile>,
+    }
+
+    impl RingCards {
+        fn new() -> Self {
+            let mut profiles = BTreeMap::new();
+            profiles.insert(
+                RING,
+                CardProfile {
+                    card: RING,
+                    mana_cost: Some(ManaCost {
+                        generic: 4,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 4,
+                    role: R2CardRole::ArtifactPermanent,
+                    battlefield_face: CardFace::Front,
+                    utility: UtilityKind::TheOneRing,
+                    is_artifact: true,
+                    ..CardProfile::default()
+                },
+            );
+            Self { profiles }
+        }
+    }
+
+    impl CardDatabase for RingCards {
+        fn profile(&self, card: CardDefId) -> Option<CardProfile> {
+            self.profiles.get(&card).copied()
+        }
+
+        fn commander_card(&self) -> CardDefId {
+            URZA_DUMMY
+        }
+
+        fn urza_construct_token_card(&self) -> CardDefId {
+            CONSTRUCT_DUMMY
+        }
+    }
+
+    fn ring_permanent(burden: u16, tapped: bool) -> PermanentState {
+        PermanentState {
+            object_id: ObjectId(1),
+            card: RING,
+            face: CardFace::Front,
+            tapped,
+            summoning_sick: false,
+            token: false,
+            counters: CounterState {
+                burden,
+                ..CounterState::default()
+            },
+            mode: PermanentMode::Normal,
+            attached_to: None,
+            granted_ability: None,
+        }
+    }
+
+    #[test]
+    fn one_ring_draw_adds_burden_on_resolution_and_draws_new_total() {
+        let cards = RingCards::new();
+        let mut state = TrueState {
+            turn: 2,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![DRAW_A, DRAW_B, DRAW_C]),
+            battlefield: BattlefieldZone::new(vec![ring_permanent(0, false)]),
+            ..TrueState::default()
+        };
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateOneRingDraw {
+                source: ObjectId(1),
+            },
+        )
+        .unwrap();
+        assert!(state.battlefield.get(ObjectId(1)).unwrap().tapped);
+        assert_eq!(
+            state.battlefield.get(ObjectId(1)).unwrap().counters.burden,
+            0
+        );
+
+        let first = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            state.battlefield.get(ObjectId(1)).unwrap().counters.burden,
+            1
+        );
+        assert_eq!(state.hand.cards(), &[DRAW_A]);
+        assert_eq!(
+            first.observations,
+            vec![RulesObservation::CardsDrawn(vec![DRAW_A])]
+        );
+
+        set_untapped(&mut state, ObjectId(1)).unwrap();
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateOneRingDraw {
+                source: ObjectId(1),
+            },
+        )
+        .unwrap();
+        let second = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(
+            state.battlefield.get(ObjectId(1)).unwrap().counters.burden,
+            2
+        );
+        assert_eq!(state.hand.cards(), &[DRAW_A, DRAW_B, DRAW_C]);
+        assert_eq!(
+            second.observations,
+            vec![RulesObservation::CardsDrawn(vec![DRAW_B, DRAW_C])]
+        );
+    }
+
+    #[test]
+    fn one_ring_upkeep_loss_is_stacked_before_normal_draw_step() {
+        let cards = RingCards::new();
+        let mut state = TrueState {
+            turn: 2,
+            phase: Phase::Untap,
+            window: Window::None,
+            life: 40,
+            library: TrueLibrary::unknown(vec![DRAW_A]),
+            battlefield: BattlefieldZone::new(vec![ring_permanent(2, true)]),
+            ..TrueState::default()
+        };
+
+        advance_automatic(&mut state, &cards).unwrap();
+        assert_eq!(state.phase, Phase::Upkeep);
+        assert_eq!(state.stack.len(), 1);
+        assert_eq!(state.life, 40);
+        assert!(!state.battlefield.get(ObjectId(1)).unwrap().tapped);
+
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(state.life, 38);
+        assert_eq!(state.phase, Phase::Upkeep);
+        assert!(state.hand.is_empty());
+
+        let draw = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(state.phase, Phase::Draw);
+        assert_eq!(
+            draw.observations,
+            vec![RulesObservation::CardsDrawn(vec![DRAW_A])]
+        );
     }
 }

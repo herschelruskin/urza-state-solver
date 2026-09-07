@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::io;
 
-use urza_cards::R4CardDatabase;
+use urza_cards::CurrentCardDatabase;
 use urza_core::{CardDefId, PendingDecision, Phase, TrueState, Window};
 use urza_info::observe;
 use urza_mc::sample_hidden_world;
@@ -44,7 +44,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     }
 
     let deck = load_commander_deck()?;
-    let cards = R4CardDatabase::load()?;
+    let cards = CurrentCardDatabase::load()?;
     let interpretation = InterpretationCatalog::load()?;
     let opening_world = WorldId(
         generation
@@ -254,7 +254,7 @@ fn run() -> Result<(), Box<dyn Error>> {
 
 fn prepare_for_decision(
     state: &mut TrueState,
-    cards: &R4CardDatabase,
+    cards: &CurrentCardDatabase,
 ) -> Result<Option<RolloutStop>, Box<dyn Error>> {
     let information = observe(state)?;
     if let Some(family) = detect_terminal_win(&information, cards) {

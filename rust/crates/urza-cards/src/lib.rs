@@ -29,6 +29,8 @@ pub const R1_CATALOG_DIGEST_BLAKE3: &str =
     "4b39c7db7bfd2c6f68d7a49efa515cdffb2c6a9716022bc0b21eeec56754a983";
 pub const R3_ACCEPTED_ACTIVE_IDENTITY_COUNT: usize = 32;
 pub const R4_ACCEPTED_ACTIVE_IDENTITY_COUNT: usize = 47;
+pub const POST_R7_ACCEPTED_ACTIVE_IDENTITY_COUNT: usize = 48;
+pub const POST_R7_CARD_DATABASE_VERSION: &str = "post_r7_card_advantage_v1_ring";
 pub const R4_ONLY_ACTIVE_NAMES: [&str; 15] = [
     "Basalt Monolith",
     "Grim Monolith",
@@ -973,6 +975,68 @@ impl urza_rules::CardDatabase for R4CardDatabase {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct PostR7CardDatabase {
+    cards: BTreeMap<CardDefId, urza_rules::CardProfile>,
+}
+
+pub type CurrentCardDatabase = PostR7CardDatabase;
+
+impl PostR7CardDatabase {
+    pub fn load() -> Result<Self, CatalogError> {
+        let mut cards = R4CardDatabase::load()?.cards;
+        let ring = card_id_by_name_from_r1("The One Ring")?;
+        let profile = cards.get_mut(&ring).ok_or_else(|| {
+            CatalogError::Invariant("missing post-R7 One Ring profile".to_owned())
+        })?;
+        profile.role = urza_rules::R2CardRole::ArtifactPermanent;
+        profile.utility = urza_rules::UtilityKind::TheOneRing;
+        profile.is_artifact = true;
+        Ok(Self { cards })
+    }
+
+    pub fn profile(&self, card: CardDefId) -> Option<urza_rules::CardProfile> {
+        self.cards.get(&card).copied()
+    }
+
+    pub fn card_id_by_name(&self, name: &str) -> Result<CardDefId, CatalogError> {
+        card_id_by_name_from_r1(name)
+    }
+
+    pub fn supported_active_cards(&self) -> Vec<CardDefId> {
+        self.cards
+            .iter()
+            .filter_map(|(card, profile)| {
+                (card.0 < URZA_CONSTRUCT_TOKEN_CARD_ID.0
+                    && profile.role != urza_rules::R2CardRole::Unsupported)
+                    .then_some(*card)
+            })
+            .collect()
+    }
+}
+
+impl urza_rules::CardDatabase for PostR7CardDatabase {
+    fn profile(&self, card: CardDefId) -> Option<urza_rules::CardProfile> {
+        self.profile(card)
+    }
+
+    fn commander_card(&self) -> CardDefId {
+        self.cards
+            .values()
+            .find(|profile| profile.role == urza_rules::R2CardRole::UrzaCommander)
+            .map(|profile| profile.card)
+            .expect("validated post-R7 database contains Urza")
+    }
+
+    fn urza_construct_token_card(&self) -> CardDefId {
+        URZA_CONSTRUCT_TOKEN_CARD_ID
+    }
+
+    fn clue_token_card(&self) -> Option<CardDefId> {
+        Some(CLUE_TOKEN_CARD_ID)
+    }
+}
+
 fn card_id_by_name_from_r1(name: &str) -> Result<CardDefId, CatalogError> {
     let catalog = load_r1_catalog()?;
     catalog
@@ -1048,17 +1112,12 @@ pub fn validate_r4_database() -> Result<(), CatalogError> {
             CatalogError::Invariant(format!("missing coverage for {}", card.deck_name))
         })?;
 
-        if profile.role == urza_rules::R2CardRole::Unsupported {
-            if status != CoverageStatus::IntentionallyUnmodeled {
-                return Err(CatalogError::Invariant(format!(
-                    "{} is unsupported by current R4 slice but coverage says {:?}",
-                    card.deck_name, status
-                )));
-            }
-        } else if !matches!(
-            status,
-            CoverageStatus::PrimitiveActive | CoverageStatus::RulesActive
-        ) {
+        if profile.role != urza_rules::R2CardRole::Unsupported
+            && !matches!(
+                status,
+                CoverageStatus::PrimitiveActive | CoverageStatus::RulesActive
+            )
+        {
             return Err(CatalogError::Invariant(format!(
                 "{} has an R4-visible rules primitive but coverage says {:?}",
                 card.deck_name, status
@@ -1108,6 +1167,47 @@ pub fn validate_r4_database() -> Result<(), CatalogError> {
         )));
     }
 
+    Ok(())
+}
+
+pub fn validate_post_r7_database() -> Result<(), CatalogError> {
+    validate_r4_database()?;
+    let coverage = load_coverage()?;
+    let database = PostR7CardDatabase::load()?;
+    let supported: BTreeSet<_> = database.supported_active_cards().into_iter().collect();
+    if supported.len() != POST_R7_ACCEPTED_ACTIVE_IDENTITY_COUNT {
+        return Err(CatalogError::Invariant(format!(
+            "post-R7 database must expose exactly {POST_R7_ACCEPTED_ACTIVE_IDENTITY_COUNT} active identities"
+        )));
+    }
+
+    let r4 = R4CardDatabase::load()?;
+    let r4_supported: BTreeSet<_> = r4.supported_active_cards().into_iter().collect();
+    if !r4_supported.is_subset(&supported) {
+        return Err(CatalogError::Invariant(
+            "post-R7 database must extend the frozen R4 surface".to_owned(),
+        ));
+    }
+    let added: BTreeSet<_> = supported.difference(&r4_supported).copied().collect();
+    let ring = card_id_by_name_from_r1("The One Ring")?;
+    if added != BTreeSet::from([ring]) {
+        return Err(CatalogError::Invariant(format!(
+            "first post-R7 slice must add only The One Ring, got {added:?}"
+        )));
+    }
+    let ring_coverage = coverage
+        .entries
+        .iter()
+        .find(|entry| entry.card_id == ring.0)
+        .ok_or_else(|| CatalogError::Invariant("missing One Ring coverage entry".to_owned()))?;
+    if !matches!(
+        ring_coverage.status,
+        CoverageStatus::PrimitiveActive | CoverageStatus::RulesActive
+    ) {
+        return Err(CatalogError::Invariant(
+            "The One Ring must be active in post-R7 coverage".to_owned(),
+        ));
+    }
     Ok(())
 }
 
@@ -1744,5 +1844,29 @@ mod tests {
             R2CardRole::Unsupported,
             "R3 historical surface must remain frozen"
         );
+    }
+}
+
+#[cfg(test)]
+mod post_r7_database_tests {
+    use super::*;
+
+    #[test]
+    fn post_r7_database_extends_frozen_r4_with_only_the_one_ring() {
+        validate_post_r7_database().unwrap();
+        let r4 = R4CardDatabase::load().unwrap();
+        let current = PostR7CardDatabase::load().unwrap();
+        assert_eq!(r4.supported_active_cards().len(), 47);
+        assert_eq!(current.supported_active_cards().len(), 48);
+        let ring = current.card_id_by_name("The One Ring").unwrap();
+        assert_eq!(
+            r4.profile(ring).unwrap().role,
+            urza_rules::R2CardRole::Unsupported
+        );
+        let profile = current.profile(ring).unwrap();
+        assert_eq!(profile.role, urza_rules::R2CardRole::ArtifactPermanent);
+        assert_eq!(profile.utility, urza_rules::UtilityKind::TheOneRing);
+        assert!(profile.is_artifact);
+        assert_eq!(profile.mana_value, 4);
     }
 }
