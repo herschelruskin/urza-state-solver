@@ -136,11 +136,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     );
     println!(
         "SCAN\troot={:?}\thidden_start={}\thidden_count={}\tmax_steps={}\tmax_deviations={}\tprefix_mode=full_rollout_liveness_preserved\tdedup=exact_state_plus_executed_prefix_fingerprint",
-        rollout_config.root,
-        hidden_start,
-        hidden_count,
-        rollout_config.max_steps,
-        max_deviations,
+        rollout_config.root, hidden_start, hidden_count, rollout_config.max_steps, max_deviations,
     );
 
     let mut stats = SearchStats::new(max_deviations);
@@ -208,11 +204,7 @@ fn run() -> Result<(), Box<dyn Error>> {
 
     println!(
         "NO_MULTI_DEVIATION_POSITIVE\topening_world={}\tworlds_scanned={}\tmax_deviations={}\tmax_trace={}\tmax_candidates={}\tliveness_history=preserved",
-        opening_world.0,
-        worlds_scanned,
-        max_deviations,
-        stats.max_trace,
-        stats.max_candidates,
+        opening_world.0, worlds_scanned, max_deviations, stats.max_trace, stats.max_candidates,
     );
     for depth in 1..=max_deviations {
         println!(
@@ -292,8 +284,7 @@ fn explore_branch(
             ))));
         }
 
-        stats.decisions_scanned[next_depth] =
-            stats.decisions_scanned[next_depth].saturating_add(1);
+        stats.decisions_scanned[next_depth] = stats.decisions_scanned[next_depth].saturating_add(1);
         stats.max_candidates = stats.max_candidates.max(bridge.candidates().len());
         let (prefix_hash_a, prefix_hash_b) = trace_fingerprint(prefix);
 
@@ -487,13 +478,7 @@ fn print_trace(label: &str, trace: &[RolloutStep]) {
     for step in trace {
         println!(
             "{label}\tindex={}\tlogical_index={}\tturn={}\tphase={:?}\twindow={:?}\tclass={:?}\tkey={:?}",
-            step.index,
-            step.index,
-            step.turn,
-            step.phase,
-            step.window,
-            step.class,
-            step.key,
+            step.index, step.index, step.turn, step.phase, step.window, step.class, step.key,
         );
     }
 }
