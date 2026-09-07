@@ -4750,7 +4750,29 @@ fn sacrifice_artifact(state: &mut TrueState, object: ObjectId) -> Result<(), Rul
         return Err(RuleError::MissingPermanent(object));
     };
     let permanent = permanents.remove(index);
+    for candidate in &mut permanents {
+        if candidate.attached_to == Some(object)
+            && candidate.mode == PermanentMode::RealityChipAttached
+        {
+            candidate.mode = PermanentMode::RealityChipCreature;
+            candidate.attached_to = None;
+        }
+    }
+    let mut attached_non_token_cards = Vec::new();
+    permanents.retain(|candidate| {
+        if candidate.attached_to == Some(object) {
+            if !candidate.token {
+                attached_non_token_cards.push(candidate.card);
+            }
+            false
+        } else {
+            true
+        }
+    });
     state.battlefield = BattlefieldZone::new(permanents);
+    for card in attached_non_token_cards {
+        state.graveyard.insert(card);
+    }
     if !permanent.token {
         state.graveyard.insert(permanent.card);
     }
@@ -6911,6 +6933,52 @@ mod tests {
         assert!(state.battlefield.get(ObjectId(1)).is_none());
         assert!(state.battlefield.get(ObjectId(2)).is_none());
         assert!(state.stack.is_empty());
+        state.validate().unwrap();
+    }
+
+    #[test]
+    fn chrome_copy_mandatory_sacrifice_resolves_attachments() {
+        let cards = TestCards::r4();
+        let mut copied_golem = artifact_permanent(1, GOLEM);
+        copied_golem.token = true;
+        let mut aura = artifact_permanent(2, POWER_ARTIFACT);
+        aura.attached_to = Some(ObjectId(1));
+        let mut chip = artifact_permanent(3, REALITY_CHIP);
+        chip.mode = PermanentMode::RealityChipAttached;
+        chip.attached_to = Some(ObjectId(1));
+        let mut state = TrueState {
+            turn: 6,
+            phase: Phase::EndStep,
+            window: Window::Resolving,
+            battlefield: BattlefieldZone::new(vec![copied_golem, aura, chip]),
+            delayed_events: vec![DelayedEvent::ChromeCopySacrifice {
+                object: ObjectId(1),
+                card: GOLEM,
+                due_turn: 6,
+            }],
+            ..TrueState::default()
+        };
+        state.validate().unwrap();
+
+        resolve_chrome_dome_sacrifice(
+            &mut state,
+            &cards,
+            SourceRef {
+                object_id: Some(ObjectId(1)),
+                card: GOLEM,
+            },
+        )
+        .unwrap();
+
+        assert!(state.battlefield.get(ObjectId(1)).is_none());
+        assert!(state.battlefield.get(ObjectId(2)).is_none());
+        assert!(state.graveyard.cards().contains(&POWER_ARTIFACT));
+        let chip = state.battlefield.get(ObjectId(3)).unwrap();
+        assert_eq!(chip.card, REALITY_CHIP);
+        assert_eq!(chip.mode, PermanentMode::RealityChipCreature);
+        assert_eq!(chip.attached_to, None);
+        assert!(state.delayed_events.is_empty());
+        assert_eq!(state.window, Window::Priority);
         state.validate().unwrap();
     }
 
