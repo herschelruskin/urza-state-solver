@@ -6,7 +6,7 @@ text = path.read_text()
 old = 'let mut detail = Vec::with_capacity(2 + top.len() + bottom.len());'
 new = 'let mut detail = Vec::with_capacity(top.len() + bottom.len() + 2);'
 count = text.count(old)
-if count != 1:
-    raise SystemExit(f'expected one stale scry public-key capacity anchor, found {count}')
-path.write_text(text.replace(old, new, 1))
-print('Assistant patcher scry public-key anchor repaired')
+if count != 2:
+    raise SystemExit(f'expected two stale scry public-key capacity anchors, found {count}')
+path.write_text(text.replace(old, new))
+print('Assistant patcher scry public-key anchors repaired')
