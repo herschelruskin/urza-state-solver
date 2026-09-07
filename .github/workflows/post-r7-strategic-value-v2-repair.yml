@@ -1,0 +1,64 @@
+name: Post-R7 strategic value v2 repair
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - '.github/workflows/post-r7-strategic-value-v2-repair.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.89
+        with:
+          components: rustfmt, clippy
+      - name: Apply v2 resource-aware patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          python rust/scripts/post_r7_strategic_value_v2_patch.py
+      - name: Format
+        working-directory: rust
+        run: cargo fmt --all -- --check
+      - name: Strategic policy tests
+        working-directory: rust
+        run: cargo test --locked -p urza-policy --test strategic_value
+      - name: Bridge and rollout regressions
+        working-directory: rust
+        run: |
+          set -euo pipefail
+          cargo test --locked -p urza-policy-bridge
+          cargo test --locked -p urza-rollout
+      - name: Mulligan smoke binary compile
+        working-directory: rust
+        run: cargo check --locked -p urza-mulligan --bin post-r7-strategic-value-smoke
+      - name: Strict Clippy touched surface
+        working-directory: rust
+        run: cargo clippy --locked -p urza-policy -p urza-policy-bridge -p urza-rollout -p urza-mulligan --bin post-r7-strategic-value-smoke -- -D warnings
+      - name: Known positive-neighborhood strategic probe
+        working-directory: rust
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo run --quiet --locked -p urza-mulligan --bin post-r7-strategic-value-smoke -- 13 245416 1 | tee ../strategic-v2-known-neighborhood.tsv
+      - name: Commit repaired policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add rust/crates/urza-policy/src/lib.rs \
+                  rust/crates/urza-policy/tests/strategic_value.rs \
+                  rust/crates/urza-rollout/src/lib.rs \
+                  rust/crates/urza-mulligan/src/bin/post-r7-strategic-value-smoke.rs \
+                  rust/POST_R7_STRATEGIC_VALUE_POLICY.md \
+                  rust/DEVELOPMENT_LOG.md
+          git commit -m "[R7] Repair strategic value resource ordering"
+          git push
