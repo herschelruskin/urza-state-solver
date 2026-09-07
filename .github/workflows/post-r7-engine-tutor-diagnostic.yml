@@ -1,5 +1,6 @@
 name: Post-R7 engine tutor diagnostic
 
+# Re-run the frozen 128-world population after each accepted post-R7 mechanics slice.
 on:
   push:
     branches: [rust-engine-rebuild]
