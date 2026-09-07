@@ -1,0 +1,36 @@
+name: Post-R5 multi-deviation NoCandidate isolate
+
+on:
+  push:
+    branches:
+      - rust-engine-rebuild
+    paths:
+      - rust/crates/urza-rollout/**
+      - rust/crates/urza-policy/**
+      - rust/crates/urza-policy-bridge/**
+      - rust/crates/urza-mulligan/src/bin/post-r5-multi-deviation-isolate.rs
+      - .github/workflows/post-r5-multi-deviation-isolate.yml
+  workflow_dispatch:
+
+jobs:
+  isolate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+      - name: Reproduce and inspect exact NoCandidate witness
+        working-directory: rust
+        shell: bash
+        run: |
+          set -o pipefail
+          cargo run --release --locked -p urza-mulligan --bin post-r5-multi-deviation-isolate \
+            | tee ../multi-deviation-isolate.tsv
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: multi-deviation-isolate-${{ github.sha }}
+          path: multi-deviation-isolate.tsv
+          if-no-files-found: warn
