@@ -19,8 +19,8 @@
     },
     {
       "card_id": 3,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "RULES_ACTIVE",
+      "reason": "Post-R7 rules-active: Artificer's Assistant is an ordinary {U} creature and its whenever-you-cast-a-historic-spell trigger stages a real scry 1; simultaneous controlled cast triggers use an explicit player trigger-order decision. Flying/combat is irrelevant to the goldfish objective."
     },
     {
       "card_id": 4,
@@ -99,8 +99,8 @@
     },
     {
       "card_id": 19,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "ENVIRONMENT_DEFERRED",
+      "reason": "Pinned Oracle text is validated. Faerie Mastermind's opponent-second-card draw trigger belongs to the explicit goldfish environment model; its real {3}{U} each-player-draw activation remains a future rules slice."
     },
     {
       "card_id": 20,
@@ -269,8 +269,8 @@
     },
     {
       "card_id": 53,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "ENVIRONMENT_DEFERRED",
+      "reason": "Pinned Oracle text is validated. Mystic Remora's opponent noncreature-spell draw rate and cumulative-upkeep survival belong to the explicit goldfish environment abstraction rather than hidden rules shortcuts."
     },
     {
       "card_id": 54,
@@ -334,8 +334,8 @@
     },
     {
       "card_id": 66,
-      "status": "INTENTIONALLY_UNMODELED",
-      "reason": "R0 foundation: intrinsic card rules are intentionally not implemented yet"
+      "status": "ENVIRONMENT_DEFERRED",
+      "reason": "Pinned Oracle text is validated. Rhystic Study's opponent-spell tax/draw rate belongs to the explicit goldfish environment abstraction rather than the intrinsic rules engine."
     },
     {
       "card_id": 67,

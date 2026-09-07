@@ -29,8 +29,8 @@ pub const R1_CATALOG_DIGEST_BLAKE3: &str =
     "4b39c7db7bfd2c6f68d7a49efa515cdffb2c6a9716022bc0b21eeec56754a983";
 pub const R3_ACCEPTED_ACTIVE_IDENTITY_COUNT: usize = 32;
 pub const R4_ACCEPTED_ACTIVE_IDENTITY_COUNT: usize = 47;
-pub const POST_R7_ACCEPTED_ACTIVE_IDENTITY_COUNT: usize = 49;
-pub const POST_R7_CARD_DATABASE_VERSION: &str = "post_r7_card_advantage_v2_uthros";
+pub const POST_R7_ACCEPTED_ACTIVE_IDENTITY_COUNT: usize = 50;
+pub const POST_R7_CARD_DATABASE_VERSION: &str = "post_r7_card_advantage_v3_assistant_scry_order";
 pub const R4_ONLY_ACTIVE_NAMES: [&str; 15] = [
     "Basalt Monolith",
     "Grim Monolith",
@@ -979,6 +979,7 @@ impl urza_rules::CardDatabase for R4CardDatabase {
 pub struct PostR7CardDatabase {
     cards: BTreeMap<CardDefId, urza_rules::CardProfile>,
     printed_powers: BTreeMap<CardDefId, i16>,
+    historic_cards: BTreeSet<CardDefId>,
 }
 
 pub type CurrentCardDatabase = PostR7CardDatabase;
@@ -1001,6 +1002,22 @@ impl PostR7CardDatabase {
         uthros_profile.role = urza_rules::R2CardRole::ArtifactPermanent;
         uthros_profile.utility = urza_rules::UtilityKind::UthrosResearchCraft;
         uthros_profile.is_artifact = true;
+
+        let assistant = card_id_by_name_from_r1("Artificer's Assistant")?;
+        let assistant_profile = cards.get_mut(&assistant).ok_or_else(|| {
+            CatalogError::Invariant("missing post-R7 Artificer's Assistant profile".to_owned())
+        })?;
+        assistant_profile.role = urza_rules::R2CardRole::CreaturePermanent;
+        assistant_profile.utility = urza_rules::UtilityKind::ArtificersAssistant;
+        assistant_profile.is_creature = true;
+
+        let catalog = load_r1_catalog()?;
+        let historic_cards = catalog
+            .cards
+            .iter()
+            .filter(|card| metadata_is_historic(card))
+            .map(|card| CardDefId(card.id))
+            .collect::<BTreeSet<_>>();
 
         // Public printed powers used by Station. Keeping this table in the
         // current database avoids mutating the frozen R1 metadata schema/digest.
@@ -1025,6 +1042,7 @@ impl PostR7CardDatabase {
         Ok(Self {
             cards,
             printed_powers,
+            historic_cards,
         })
     }
 
@@ -1076,6 +1094,25 @@ impl urza_rules::CardDatabase for PostR7CardDatabase {
     fn printed_power(&self, card: CardDefId) -> Option<i16> {
         self.printed_power(card)
     }
+
+    fn is_historic_spell(&self, card: CardDefId) -> bool {
+        self.historic_cards.contains(&card)
+    }
+}
+
+fn metadata_is_historic(card: &R1CardMetadata) -> bool {
+    if card.feature_flags.is_artifact {
+        return true;
+    }
+    let historic_type_line = |line: &str| {
+        line.split(|ch: char| ch.is_whitespace() || ch == '—' || ch == '/')
+            .any(|word| matches!(word, "Legendary" | "Saga"))
+    };
+    historic_type_line(&card.type_line)
+        || card
+            .faces
+            .iter()
+            .any(|face| historic_type_line(&face.type_line))
 }
 
 fn card_id_by_name_from_r1(name: &str) -> Result<CardDefId, CatalogError> {
@@ -1232,9 +1269,10 @@ pub fn validate_post_r7_database() -> Result<(), CatalogError> {
     let added: BTreeSet<_> = supported.difference(&r4_supported).copied().collect();
     let ring = card_id_by_name_from_r1("The One Ring")?;
     let uthros = card_id_by_name_from_r1("Uthros Research Craft")?;
-    if added != BTreeSet::from([ring, uthros]) {
+    let assistant = card_id_by_name_from_r1("Artificer's Assistant")?;
+    if added != BTreeSet::from([ring, uthros, assistant]) {
         return Err(CatalogError::Invariant(format!(
-            "post-R7 card-advantage surface must add exactly Ring and Uthros, got {added:?}"
+            "post-R7 current surface must add exactly Ring, Uthros, and Artificer's Assistant, got {added:?}"
         )));
     }
     let ring_coverage = coverage
@@ -1261,6 +1299,21 @@ pub fn validate_post_r7_database() -> Result<(), CatalogError> {
     ) {
         return Err(CatalogError::Invariant(
             "Uthros Research Craft must be active in post-R7 coverage".to_owned(),
+        ));
+    }
+    let assistant_coverage = coverage
+        .entries
+        .iter()
+        .find(|entry| entry.card_id == assistant.0)
+        .ok_or_else(|| {
+            CatalogError::Invariant("missing Artificer's Assistant coverage entry".to_owned())
+        })?;
+    if !matches!(
+        assistant_coverage.status,
+        CoverageStatus::PrimitiveActive | CoverageStatus::RulesActive
+    ) {
+        return Err(CatalogError::Invariant(
+            "Artificer's Assistant must be active in post-R7 coverage".to_owned(),
         ));
     }
     Ok(())
@@ -1433,6 +1486,47 @@ mod tests {
     fn r1_catalog_is_total_pinned_and_syntactically_self_consistent() {
         validate_r1_catalog().unwrap();
         assert_eq!(r1_catalog_digest_hex(), R1_CATALOG_DIGEST_BLAKE3);
+    }
+
+    #[test]
+    fn post_r7_priority_card_text_hashes_are_explicitly_pinned() {
+        let catalog = load_r1_catalog().unwrap();
+        // These digests correspond to the exact pinned Oracle text documented
+        // in POST_R7_TEXT_SCRY_STACK_VALIDATION.md. They are deliberately
+        // checked without changing the frozen R1 metadata schema.
+        for (name, expected) in [
+            (
+                "Artificer's Assistant",
+                "4500992939e68bf5d0e9ccaae34745d9b5493891717d983002967d79a4d583f6",
+            ),
+            (
+                "Faerie Mastermind",
+                "9057053fb56b1a7734ce8ae12241f7eb15814d48df0cd2dc3b13e4994333a438",
+            ),
+            (
+                "Mystic Remora",
+                "4c1b24efecbfc96ef5aa572d00c124322ce5f061349ecbec21e3a0676021a00b",
+            ),
+            (
+                "Rhystic Study",
+                "b01edb4edf239cd0b4116ab58ea2fb90152ed9b83b068b6ea34ccbe8d67fd03c",
+            ),
+        ] {
+            let card = catalog
+                .cards
+                .iter()
+                .find(|card| card.deck_name == name)
+                .unwrap();
+            assert_eq!(
+                card.oracle_text_sha256, expected,
+                "Oracle text drift for {name}"
+            );
+            assert_ne!(
+                card.oracle_text_sha256,
+                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "{name} must not have empty Oracle text"
+            );
+        }
     }
 
     #[test]
@@ -1912,7 +2006,12 @@ mod post_r7_database_tests {
         let r4 = R4CardDatabase::load().unwrap();
         let current = PostR7CardDatabase::load().unwrap();
         assert_eq!(r4.supported_active_cards().len(), 47);
-        assert_eq!(current.supported_active_cards().len(), 49);
+        assert_eq!(current.supported_active_cards().len(), 50);
+        let assistant = current.card_id_by_name("Artificer's Assistant").unwrap();
+        assert_eq!(
+            current.profile(assistant).unwrap().utility,
+            urza_rules::UtilityKind::ArtificersAssistant
+        );
         let ring = current.card_id_by_name("The One Ring").unwrap();
         assert_eq!(
             r4.profile(ring).unwrap().role,

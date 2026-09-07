@@ -18,9 +18,9 @@ use urza_rules::{
     UtilityKind, apply_action_with_rng, enumerate_payments, legal_contingent_actions,
 };
 
-pub const CANDIDATE_BRIDGE_VERSION: &str = "post_r7_public_candidate_bridge_v3_clue";
+pub const CANDIDATE_BRIDGE_VERSION: &str = "post_r7_public_candidate_bridge_v4_trigger_order";
 pub const ORDINARY_ACTION_FAMILY_COUNT: usize = 29;
-pub const CONTINGENT_ACTION_FAMILY_COUNT: usize = 8;
+pub const CONTINGENT_ACTION_FAMILY_COUNT: usize = 9;
 
 const KIND_PASS_PRIORITY: u16 = 1;
 const KIND_PLAY_LAND: u16 = 2;
@@ -59,6 +59,7 @@ const KIND_CHOOSE_CAM_EFFECT: u16 = 34;
 const KIND_ONE_RING_DRAW: u16 = 35;
 const KIND_UTHROS_STATION: u16 = 36;
 const KIND_CLUE_DRAW: u16 = 37;
+const KIND_CHOOSE_TRIGGER_ORDER: u16 = 38;
 
 #[derive(Debug, Error)]
 pub enum BridgeError {
@@ -735,6 +736,7 @@ fn classify_action<D: CardDatabase>(
         | Action::PayTransmuteDifference { .. }
         | Action::ChooseTopOrder { .. }
         | Action::ChooseScry { .. }
+        | Action::ChooseTriggerOrder { .. }
         | Action::ChooseProducerUntap { .. }
         | Action::ChooseCamTarget { .. }
         | Action::ChooseCamEffect { .. } => PolicyActionClass::ContingentDecision,
@@ -1041,6 +1043,11 @@ fn public_key_for_action<D: CardDatabase>(
                 ..PolicyPublicKey::default()
             }
         }
+        Action::ChooseTriggerOrder { order } => PolicyPublicKey {
+            kind: KIND_CHOOSE_TRIGGER_ORDER,
+            detail: order.iter().map(|index| u16::from(*index)).collect(),
+            ..PolicyPublicKey::default()
+        },
         Action::ChooseProducerUntap { untap } => PolicyPublicKey {
             kind: KIND_CHOOSE_PRODUCER_UNTAP,
             secondary: u16::from(*untap),
@@ -1461,7 +1468,7 @@ mod tests {
     #[test]
     fn bridge_surface_counts_match_the_exhaustive_action_mapping() {
         assert_eq!(ORDINARY_ACTION_FAMILY_COUNT, 29);
-        assert_eq!(CONTINGENT_ACTION_FAMILY_COUNT, 8);
+        assert_eq!(CONTINGENT_ACTION_FAMILY_COUNT, 9);
     }
 
     #[test]
@@ -1529,6 +1536,85 @@ mod tests {
                 .iter()
                 .all(|candidate| candidate.key.kind != KIND_UTHROS_STATION)
         );
+    }
+
+    #[test]
+    fn post_r7_assistant_trigger_order_is_public_and_top_can_stack_afterward() {
+        let cards = PostR7CardDatabase::load().unwrap();
+        let assistant = cards.card_id_by_name("Artificer's Assistant").unwrap();
+        let uthros = cards.card_id_by_name("Uthros Research Craft").unwrap();
+        let top = cards.card_id_by_name("Sensei's Divining Top").unwrap();
+        let sol_ring = cards.card_id_by_name("Sol Ring").unwrap();
+
+        let mut uthros_perm = permanent(2, uthros);
+        uthros_perm.counters.charge = 3;
+        let mut state = priority_state();
+        state.hand = CardZone::new(vec![sol_ring]);
+        state.battlefield = BattlefieldZone::new(vec![
+            permanent(1, assistant),
+            uthros_perm,
+            permanent(3, top),
+        ]);
+        state.mana = ManaPool {
+            colorless: 2,
+            ..ManaPool::default()
+        };
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::CastFromHand {
+                card: sol_ring,
+                payment: ManaPayment {
+                    colorless: 1,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+        assert!(matches!(
+            state.pending,
+            PendingDecision::TriggerOrder {
+                trigger_count: 2,
+                ..
+            }
+        ));
+
+        let bridge = CandidateBridge::build(&state, &cards).unwrap();
+        let order_actions = bridge
+            .candidates()
+            .iter()
+            .filter(|candidate| candidate.key.kind == KIND_CHOOSE_TRIGGER_ORDER)
+            .collect::<Vec<_>>();
+        assert_eq!(order_actions.len(), 2);
+        assert!(
+            order_actions
+                .iter()
+                .all(|candidate| candidate.class == PolicyActionClass::ContingentDecision)
+        );
+
+        let chosen = order_actions
+            .iter()
+            .find(|candidate| candidate.key.detail == vec![0, 1])
+            .unwrap();
+        apply_action(
+            &mut state,
+            &cards,
+            bridge.resolved_action(chosen.token).unwrap(),
+        )
+        .unwrap();
+
+        // Once trigger order is fixed, priority returns. Top's look activation
+        // is a legal public action that may be stacked above both triggers;
+        // policy/value may decide later whether that is strategically useful.
+        let bridge = CandidateBridge::build(&state, &cards).unwrap();
+        assert!(bridge.candidates().iter().any(|candidate| {
+            candidate.key.kind == KIND_TOP_LOOK
+                && matches!(
+                    bridge.resolve(candidate.token),
+                    Some(Action::ActivateTopLook { .. })
+                )
+        }));
     }
 
     #[test]

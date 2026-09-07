@@ -21,7 +21,7 @@ pub const RULES_PHASE: &str = "R4";
 pub const R2_RULES_VERSION: &str = "r2_core_kernel_v2";
 pub const R3_RULES_VERSION: &str = "r3_search_complete_v4";
 pub const RULES_VERSION: &str = "r4_acceptance_v6";
-pub const POST_R7_RULES_VERSION: &str = "post_r7_card_advantage_v3_clue";
+pub const POST_R7_RULES_VERSION: &str = "post_r7_card_advantage_v4_assistant_scry_order";
 pub const HORIZON_TURN: u8 = 6;
 pub const RNG_EVENT_SEARCH_SHUFFLE: EventType = EventType(0x0301);
 pub const ABILITY_REPURPOSING_BAY_SEARCH: AbilityId = AbilityId(0x0301);
@@ -50,6 +50,7 @@ pub const ABILITY_ONE_RING_UPKEEP: AbilityId = AbilityId(0x040f);
 pub const ABILITY_UTHROS_STATION: AbilityId = AbilityId(0x0410);
 pub const ABILITY_UTHROS_ARTIFACT_DRAW: AbilityId = AbilityId(0x0411);
 pub const ABILITY_CLUE_DRAW: AbilityId = AbilityId(0x0412);
+pub const ABILITY_ARTIFICERS_ASSISTANT_SCRY: AbilityId = AbilityId(0x0413);
 pub const RNG_EVENT_URZA_SPIN_SHUFFLE: EventType = EventType(0x0302);
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -390,6 +391,7 @@ pub enum UtilityKind {
     FortuneTellersTalent,
     TheOneRing,
     UthrosResearchCraft,
+    ArtificersAssistant,
     GrafdiggersCage,
     SewerVeillanceCam,
 }
@@ -442,6 +444,15 @@ pub trait CardDatabase {
     /// genuinely need power may opt into this public card-data surface.
     fn printed_power(&self, _card: CardDefId) -> Option<i16> {
         None
+    }
+
+    /// Historic is a public characteristic of the spell being cast. Frozen
+    /// databases need only artifact support; the current post-R7 database
+    /// overrides this using the pinned R1 type-line metadata for legendary and
+    /// Saga spells as well.
+    fn is_historic_spell(&self, card: CardDefId) -> bool {
+        self.profile(card)
+            .is_some_and(|profile| profile.is_artifact)
     }
 }
 
@@ -593,6 +604,11 @@ pub enum Action {
         top: Vec<CardDefId>,
         bottom: Vec<CardDefId>,
     },
+    /// `order` is top-of-stack first and indexes the canonical trigger block
+    /// already present at the top of the execution stack.
+    ChooseTriggerOrder {
+        order: Vec<u8>,
+    },
     ChooseProducerUntap {
         untap: bool,
     },
@@ -724,6 +740,8 @@ pub enum RuleError {
     NoTransmutePaymentPending,
     #[error("the requested top/scry ordering is not a permutation of the observed cards")]
     InvalidObservedCardOrdering,
+    #[error("the requested trigger order is not a permutation of the pending trigger block")]
+    InvalidTriggerOrdering,
     #[error("permission slot {0} does not exist")]
     MissingPermissionSlot(u16),
     #[error("the requested card face is not supported by this permission")]
@@ -924,6 +942,7 @@ fn apply_action_internal<D: CardDatabase>(
         }
         Action::ChooseTopOrder { order } => choose_top_order(state, order)?,
         Action::ChooseScry { top, bottom } => choose_scry(state, top, bottom)?,
+        Action::ChooseTriggerOrder { order } => choose_trigger_order(state, order)?,
         Action::ChooseProducerUntap { untap } => choose_producer_untap(state, untap)?,
         Action::ChooseCamTarget { target } => choose_cam_target(state, cards, target)?,
         Action::ChooseCamEffect { choice } => choose_cam_effect(state, choice)?,
@@ -1087,6 +1106,12 @@ pub fn legal_contingent_actions<D: CardDatabase>(
                 }
             }
             actions
+        }
+        ObservedPendingDecision::TriggerOrder { trigger_count, .. } => {
+            index_permutations(*trigger_count)
+                .into_iter()
+                .map(|order| Action::ChooseTriggerOrder { order })
+                .collect()
         }
         _ => Vec::new(),
     }
@@ -3161,6 +3186,7 @@ fn cast_commander<D: CardDatabase>(
         card: commander,
         x_value: None,
     });
+    queue_cast_triggers(state, cards, commander);
     state.commander.zone = CommanderZone::Stack;
     state.commander.command_zone_casts = next_cast_count;
     state.spell_cast_this_turn = true;
@@ -3258,6 +3284,13 @@ fn resolve_top_stack_object<D: CardDatabase>(
         } => {
             state.stack.pop();
             resolve_uthros_artifact_draw(state, cards, source)
+        }
+        StackObject::ControlledTrigger {
+            source,
+            ability: ABILITY_ARTIFICERS_ASSISTANT_SCRY,
+        } => {
+            state.stack.pop();
+            stage_scry(state, source, 1)
         }
         StackObject::ActivatedAbility {
             ability: ABILITY_CLUE_DRAW,
@@ -4472,6 +4505,42 @@ fn choose_scry(
     Ok(Transition::default())
 }
 
+fn choose_trigger_order(state: &mut TrueState, order: Vec<u8>) -> Result<Transition, RuleError> {
+    let PendingDecision::TriggerOrder { trigger_count, .. } = state.pending.clone() else {
+        return Err(RuleError::SearchDecisionMismatch);
+    };
+    let count = usize::from(trigger_count);
+    if order.len() != count {
+        return Err(RuleError::InvalidTriggerOrdering);
+    }
+    let mut sorted = order.clone();
+    sorted.sort_unstable();
+    let expected = (0..trigger_count).collect::<Vec<_>>();
+    if sorted != expected || state.stack.len() < count {
+        return Err(RuleError::InvalidTriggerOrdering);
+    }
+    let split = state.stack.len() - count;
+    let block = state.stack[split..].to_vec();
+    if block.iter().any(|object| {
+        !matches!(
+            object,
+            StackObject::ControlledTrigger { .. } | StackObject::TargetedControlledTrigger { .. }
+        )
+    }) {
+        return Err(RuleError::InvalidTriggerOrdering);
+    }
+
+    state.stack.truncate(split);
+    // `order` is expressed top-first. Stack storage is bottom-first, so push
+    // the chosen sequence in reverse.
+    for index in order.iter().rev() {
+        state.stack.push(block[usize::from(*index)].clone());
+    }
+    state.pending = PendingDecision::None;
+    state.window = Window::Priority;
+    Ok(Transition::default())
+}
+
 fn resolve_top_draw(state: &mut TrueState, source: SourceRef) -> Result<Transition, RuleError> {
     let drawn = draw_cards(state, 1)?;
     let mut observations = vec![RulesObservation::CardsDrawn(drawn)];
@@ -4602,6 +4671,27 @@ fn same_multiset(left: &[CardDefId], right: &[CardDefId]) -> bool {
     left.sort_unstable();
     right.sort_unstable();
     left == right
+}
+
+fn index_permutations(count: u8) -> Vec<Vec<u8>> {
+    fn visit(prefix: &mut Vec<u8>, rest: &mut Vec<u8>, out: &mut Vec<Vec<u8>>) {
+        if rest.is_empty() {
+            out.push(prefix.clone());
+            return;
+        }
+        for index in 0..rest.len() {
+            let value = rest.remove(index);
+            prefix.push(value);
+            visit(prefix, rest, out);
+            prefix.pop();
+            rest.insert(index, value);
+        }
+    }
+
+    let mut rest = (0..count).collect::<Vec<_>>();
+    let mut out = Vec::new();
+    visit(&mut Vec::new(), &mut rest, &mut out);
+    out
 }
 
 fn unique_permutations(cards: &[CardDefId]) -> Vec<Vec<CardDefId>> {
@@ -5430,6 +5520,15 @@ fn queue_cast_triggers<D: CardDatabase>(state: &mut TrueState, cards: &D, card: 
                 ability: ABILITY_UTHROS_ARTIFACT_DRAW,
             });
         }
+        if profile.utility == UtilityKind::ArtificersAssistant && cards.is_historic_spell(card) {
+            triggers.push(StackObject::ControlledTrigger {
+                source: SourceRef {
+                    object_id: Some(permanent.object_id),
+                    card: permanent.card,
+                },
+                ability: ABILITY_ARTIFICERS_ASSISTANT_SCRY,
+            });
+        }
         if !cast_profile.is_creature && profile.engine == EngineKind::ValleyFloodcaller {
             triggers.push(StackObject::ControlledTrigger {
                 source: SourceRef {
@@ -5439,6 +5538,17 @@ fn queue_cast_triggers<D: CardDatabase>(state: &mut TrueState, cards: &D, card: 
                 ability: ABILITY_FLOODCALLER_UNTAP,
             });
         }
+    }
+    if triggers.len() > 1 {
+        let trigger_count = u8::try_from(triggers.len())
+            .expect("Commander goldfish cannot create more than 255 simultaneous cast triggers");
+        state.pending = PendingDecision::TriggerOrder {
+            source: SourceRef {
+                object_id: None,
+                card,
+            },
+            trigger_count,
+        };
     }
     state.stack.extend(triggers);
 }
@@ -9570,5 +9680,213 @@ mod post_r7_clue_tests {
             state, before,
             "deferred activation must not partially pay costs"
         );
+    }
+}
+
+#[cfg(test)]
+mod post_r7_assistant_scry_tests {
+    use std::collections::BTreeMap;
+
+    use super::*;
+    use urza_core::CardZone;
+
+    const ASSISTANT: CardDefId = CardDefId(700);
+    const UTHROS: CardDefId = CardDefId(701);
+    const ARTIFACT: CardDefId = CardDefId(702);
+    const BAD: CardDefId = CardDefId(703);
+    const GOOD: CardDefId = CardDefId(704);
+    const URZA_DUMMY: CardDefId = CardDefId(705);
+    const CONSTRUCT_DUMMY: CardDefId = CardDefId(706);
+
+    #[derive(Default)]
+    struct AssistantCards {
+        profiles: BTreeMap<CardDefId, CardProfile>,
+    }
+
+    impl AssistantCards {
+        fn new() -> Self {
+            let mut profiles = BTreeMap::new();
+            profiles.insert(
+                ASSISTANT,
+                CardProfile {
+                    card: ASSISTANT,
+                    mana_cost: Some(ManaCost {
+                        blue: 1,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 1,
+                    role: R2CardRole::CreaturePermanent,
+                    battlefield_face: CardFace::Front,
+                    utility: UtilityKind::ArtificersAssistant,
+                    is_creature: true,
+                    ..CardProfile::default()
+                },
+            );
+            profiles.insert(
+                UTHROS,
+                CardProfile {
+                    card: UTHROS,
+                    mana_cost: Some(ManaCost {
+                        generic: 3,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 3,
+                    role: R2CardRole::ArtifactPermanent,
+                    battlefield_face: CardFace::Front,
+                    utility: UtilityKind::UthrosResearchCraft,
+                    is_artifact: true,
+                    ..CardProfile::default()
+                },
+            );
+            profiles.insert(
+                ARTIFACT,
+                CardProfile {
+                    card: ARTIFACT,
+                    mana_cost: Some(ManaCost {
+                        generic: 1,
+                        ..ManaCost::default()
+                    }),
+                    mana_value: 1,
+                    role: R2CardRole::ArtifactPermanent,
+                    battlefield_face: CardFace::Front,
+                    is_artifact: true,
+                    ..CardProfile::default()
+                },
+            );
+            Self { profiles }
+        }
+    }
+
+    impl CardDatabase for AssistantCards {
+        fn profile(&self, card: CardDefId) -> Option<CardProfile> {
+            self.profiles.get(&card).copied()
+        }
+
+        fn commander_card(&self) -> CardDefId {
+            URZA_DUMMY
+        }
+
+        fn urza_construct_token_card(&self) -> CardDefId {
+            CONSTRUCT_DUMMY
+        }
+    }
+
+    fn permanent(object: u32, card: CardDefId) -> PermanentState {
+        PermanentState {
+            object_id: ObjectId(object),
+            card,
+            face: CardFace::Front,
+            tapped: false,
+            summoning_sick: false,
+            token: false,
+            counters: CounterState::default(),
+            mode: PermanentMode::Normal,
+            attached_to: None,
+            granted_ability: None,
+        }
+    }
+
+    fn setup() -> (AssistantCards, TrueState) {
+        let cards = AssistantCards::new();
+        let mut uthros = permanent(2, UTHROS);
+        uthros.counters.charge = 3;
+        let state = TrueState {
+            turn: 3,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![BAD, GOOD]),
+            hand: CardZone::new(vec![ARTIFACT]),
+            battlefield: BattlefieldZone::new(vec![permanent(1, ASSISTANT), uthros]),
+            mana: ManaPool {
+                colorless: 1,
+                ..ManaPool::default()
+            },
+            ..TrueState::default()
+        };
+        (cards, state)
+    }
+
+    fn cast_artifact(state: &mut TrueState, cards: &AssistantCards) {
+        apply_action(
+            state,
+            cards,
+            Action::CastFromHand {
+                card: ARTIFACT,
+                payment: ManaPayment {
+                    colorless: 1,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn assistant_and_uthros_stage_a_real_player_trigger_order_choice() {
+        let (cards, mut state) = setup();
+        cast_artifact(&mut state, &cards);
+        assert!(matches!(
+            state.pending,
+            PendingDecision::TriggerOrder {
+                trigger_count: 2,
+                ..
+            }
+        ));
+        assert_eq!(state.stack.len(), 3, "spell plus two controlled triggers");
+        let information = urza_info::observe(&state).unwrap();
+        let actions = legal_contingent_actions(&information, &cards);
+        assert_eq!(actions.len(), 2);
+        assert!(actions.contains(&Action::ChooseTriggerOrder { order: vec![0, 1] }));
+        assert!(actions.contains(&Action::ChooseTriggerOrder { order: vec![1, 0] }));
+    }
+
+    #[test]
+    fn scry_first_can_bottom_the_current_top_before_uthros_draws() {
+        let (cards, mut state) = setup();
+        cast_artifact(&mut state, &cards);
+
+        // Canonical trigger block is Assistant then Uthros. `order` is top-first,
+        // so [0,1] deliberately resolves Assistant's scry before Uthros's draw.
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ChooseTriggerOrder { order: vec![0, 1] },
+        )
+        .unwrap();
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert!(matches!(state.pending, PendingDecision::ScryChoice { .. }));
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ChooseScry {
+                top: vec![],
+                bottom: vec![BAD],
+            },
+        )
+        .unwrap();
+        assert_eq!(state.library.cards(), &[GOOD, BAD]);
+
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert!(state.hand.cards().contains(&GOOD));
+        assert!(!state.hand.cards().contains(&BAD));
+        let uthros = state.battlefield.get(ObjectId(2)).unwrap();
+        assert_eq!(uthros.counters.charge, 4);
+    }
+
+    #[test]
+    fn uthros_first_draws_before_assistant_sees_the_next_card() {
+        let (cards, mut state) = setup();
+        cast_artifact(&mut state, &cards);
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ChooseTriggerOrder { order: vec![1, 0] },
+        )
+        .unwrap();
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert!(state.hand.cards().contains(&BAD));
+        assert_eq!(state.library.cards(), &[GOOD]);
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert!(matches!(state.pending, PendingDecision::ScryChoice { .. }));
     }
 }
