@@ -96,12 +96,7 @@ pub fn build_post_r7_real_state_cases(
         known_bottom: Vec::new(),
         pregame,
     };
-    let opening = bridge_kept_hand(
-        &kept,
-        &deck,
-        generation.opening_root,
-        opening_world,
-    )?;
+    let opening = bridge_kept_hand(&kept, &deck, generation.opening_root, opening_world)?;
 
     let source_hidden_world = generation.evaluation.rollout.first_world;
     let exact_opening = sample_hidden_world(
@@ -221,12 +216,7 @@ fn replay_after_action(
     let end = index
         .checked_add(1)
         .ok_or_else(|| io::Error::other("source trace prefix overflow"))?;
-    Ok(replay_trace(
-        initial.clone(),
-        cards,
-        config,
-        &trace[..end],
-    )?)
+    Ok(replay_trace(initial.clone(), cards, config, &trace[..end])?)
 }
 
 fn assert_expected_source_hand(
@@ -244,11 +234,7 @@ fn assert_expected_source_hand(
     ];
     let mut expected = Vec::with_capacity(names.len());
     for name in names {
-        expected.push(
-            cards
-                .card_id_by_name(name)
-                .ok_or_else(|| io::Error::other(format!("missing source card {name}")))?,
-        );
+        expected.push(cards.card_id_by_name(name)?);
     }
     expected.sort_unstable();
     let mut actual = actual.to_vec();
