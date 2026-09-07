@@ -20,6 +20,6 @@ jobs:
         run: |
           set -euo pipefail
           echo '=== R4CardDatabase references ==='
-          rg -n 'R4CardDatabase' rust --glob '*.rs' || true
+          grep -RFn --include='*.rs' 'R4CardDatabase' rust || true
           echo '=== R4 validation/count references ==='
-          rg -n 'R4_ACCEPTED_ACTIVE_IDENTITY_COUNT|R4_ONLY_ACTIVE_NAMES|validate_r4_database' rust --glob '*.rs' || true
+          grep -REn --include='*.rs' 'R4_ACCEPTED_ACTIVE_IDENTITY_COUNT|R4_ONLY_ACTIVE_NAMES|validate_r4_database' rust || true
