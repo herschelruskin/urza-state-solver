@@ -1,6 +1,6 @@
 name: Post-R7 first-pass policy gate
 
-# Re-run from the formatted Rust-1.89-compatible first-pass head.
+# Verify the committed phase-aware/tutor-safe policy and mana-setup metadata head.
 on:
   push:
     branches: [rust-engine-rebuild]
