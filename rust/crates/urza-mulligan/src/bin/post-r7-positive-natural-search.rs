@@ -3,13 +3,13 @@ use std::io;
 
 use urza_cards::R4CardDatabase;
 use urza_mc::sample_hidden_world;
-use urza_policy::DeterministicPolicy;
-use urza_rng::WorldId;
-use urza_rollout::{RolloutConfig, RolloutStop, rollout};
 use urza_mulligan::{
     InterpretationCatalog, KeptHand, MulliganStage, bridge_kept_hand, draw_fresh_seven,
     load_commander_deck, r7_pilot_generation_config, sample_pregame_context,
 };
+use urza_policy::DeterministicPolicy;
+use urza_rng::WorldId;
+use urza_rollout::{RolloutConfig, RolloutStop, rollout};
 
 const SEARCH_VERSION: &str = "post_r7_positive_natural_search_v1";
 
@@ -138,12 +138,7 @@ fn run() -> Result<(), Box<dyn Error>> {
 
     println!(
         "NO_POSITIVE\topening_world={}\tscanned={}\thorizon={}\tstep_limit={}\tno_candidate={}\tmax_trace_len={}",
-        opening_world.0,
-        hidden_count,
-        horizons,
-        step_limits,
-        no_candidates,
-        max_trace_len,
+        opening_world.0, hidden_count, horizons, step_limits, no_candidates, max_trace_len,
     );
     Ok(())
 }
