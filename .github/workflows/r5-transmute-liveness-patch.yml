@@ -1,0 +1,44 @@
+name: R5 Transmute liveness patch helper
+
+on:
+  push:
+    branches:
+      - rust-engine-rebuild
+    paths:
+      - .github/workflows/r5-transmute-liveness-patch.yml
+      - .github/scripts/patch_transmute_attached_liveness.py
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+          components: rustfmt
+      - name: Patch Transmute attached-sacrifice liveness boundary
+        run: python3 .github/scripts/patch_transmute_attached_liveness.py
+      - name: Format and test policy bridge repair
+        working-directory: rust
+        run: |
+          cargo fmt --all
+          cargo test --locked -p urza-policy-bridge --lib transmute_with_only_attached_artifact_is_not_exposed_as_a_dead_end_root
+          cargo test --locked -p urza-policy-bridge --lib transmute_without_a_sacrifice_is_not_exposed_as_a_dead_end_root
+          cargo test --locked -p urza-policy-bridge --lib
+      - name: Commit exact bridge liveness repair
+        run: |
+          if git diff --quiet; then
+            echo 'repair already applied'
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add rust/crates/urza-policy-bridge/src/lib.rs
+          git commit -m '[R5] Suppress unsupported attached-only Transmute roots'
+          git push
