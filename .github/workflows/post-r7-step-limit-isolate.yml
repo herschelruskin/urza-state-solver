@@ -1,16 +1,18 @@
-name: Post-R7 StepLimit isolate
+name: R5 monotone liveness exact-seed
 
 on:
   push:
     branches:
       - rust-engine-rebuild
     paths:
+      - rust/crates/urza-rollout/src/lib.rs
+      - rust/crates/urza-rollout/src/liveness.rs
       - rust/crates/urza-mulligan/src/bin/post-r7-step-limit-isolate.rs
       - .github/workflows/post-r7-step-limit-isolate.yml
   workflow_dispatch:
 
 jobs:
-  isolate:
+  exact-seed:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -18,16 +20,23 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.89.0
-      - name: Isolate StepLimit world
+      - name: R5 rollout regressions
+        working-directory: rust
+        run: cargo test --locked -p urza-rollout
+      - name: Replay isolated monotone StepLimit seed
         working-directory: rust
         shell: bash
         run: |
           set -o pipefail
           cargo run --locked -p urza-mulligan --bin post-r7-step-limit-isolate -- \
-            4 212544 16384 \
+            4 216536 1 \
             | tee ../step-limit-isolate.tsv
+          if grep -q '^STEP_LIMIT' ../step-limit-isolate.tsv; then
+            echo 'isolated world still reaches StepLimit' >&2
+            exit 1
+          fi
       - uses: actions/upload-artifact@v4
         with:
-          name: step-limit-isolate-${{ github.sha }}
+          name: r5-monotone-liveness-${{ github.sha }}
           path: step-limit-isolate.tsv
           if-no-files-found: error
