@@ -7,7 +7,6 @@ use urza_mulligan::{
     r7_pilot_generation_config, sample_pregame_context,
 };
 use urza_policy::{DeterministicPolicy, PolicyActionClass, PolicyPublicKey};
-use urza_policy_bridge::CandidateBridge;
 use urza_rng::WorldId;
 use urza_rollout::{
     ForcedSemanticAction, RolloutConfig, RolloutStop, rollout_with_forced_semantic_actions,
@@ -80,20 +79,14 @@ fn run() -> Result<(), Box<dyn Error>> {
         result.final_information.stack.len(),
         result.trace.len(),
     );
-    if result.stop != RolloutStop::NoCandidate {
-        return Err(format!("expected NoCandidate, got {:?}", result.stop).into());
+    if matches!(result.stop, RolloutStop::NoCandidate | RolloutStop::StepLimit) {
+        println!("FINAL_STATE\t{:?}", result.final_state);
+        return Err(format!("Power Artifact witness is still incomplete: {:?}", result.stop).into());
     }
 
-    let bridge = CandidateBridge::build(&result.final_state, &cards)?;
-    println!("RAW_BRIDGE\tcandidates={}", bridge.candidates().len());
-    for candidate in bridge.candidates() {
-        println!(
-            "RAW_CANDIDATE\ttoken={:?}\tclass={:?}\tkey={:?}",
-            candidate.token, candidate.class, candidate.key
-        );
-    }
-    let raw_choice = DeterministicPolicy.choose(bridge.information(), bridge.candidates())?;
-    println!("RAW_POLICY_CHOICE\t{raw_choice:?}");
-    println!("FINAL_STATE\t{:?}", result.final_state);
+    println!(
+        "REPAIR_VERIFIED\topening_world={}\thidden_world={}\tstop={:?}",
+        opening_world.0, hidden_world.0, result.stop
+    );
     Ok(())
 }
