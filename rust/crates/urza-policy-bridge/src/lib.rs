@@ -14,12 +14,12 @@ use urza_policy::{ActionToken, PolicyActionClass, PolicyCandidate, PolicyPublicK
 use urza_rng::{LogicalEventId, RootSeed, WorldId};
 use urza_rules::{
     Action, AuraTargetKind, CamEffectChoice, CardDatabase, EngineKind, GameRngContext,
-    LandEntryChoice, ManaPayment, R2CardRole, SpecialSearchKind, SpellEffectKind, UtilityKind,
-    apply_action_with_rng, enumerate_payments, legal_contingent_actions,
+    LandEntryChoice, ManaCost, ManaPayment, R2CardRole, SpecialSearchKind, SpellEffectKind,
+    UtilityKind, apply_action_with_rng, enumerate_payments, legal_contingent_actions,
 };
 
-pub const CANDIDATE_BRIDGE_VERSION: &str = "post_r7_public_candidate_bridge_v2_uthros";
-pub const ORDINARY_ACTION_FAMILY_COUNT: usize = 28;
+pub const CANDIDATE_BRIDGE_VERSION: &str = "post_r7_public_candidate_bridge_v3_clue";
+pub const ORDINARY_ACTION_FAMILY_COUNT: usize = 29;
 pub const CONTINGENT_ACTION_FAMILY_COUNT: usize = 8;
 
 const KIND_PASS_PRIORITY: u16 = 1;
@@ -58,6 +58,7 @@ const KIND_CHOOSE_CAM_TARGET: u16 = 33;
 const KIND_CHOOSE_CAM_EFFECT: u16 = 34;
 const KIND_ONE_RING_DRAW: u16 = 35;
 const KIND_UTHROS_STATION: u16 = 36;
+const KIND_CLUE_DRAW: u16 = 37;
 
 #[derive(Debug, Error)]
 pub enum BridgeError {
@@ -334,6 +335,20 @@ fn generate_ordinary_actions<D: CardDatabase>(
             actions.push(Action::ActivateUrzaArtifactMana {
                 artifact: representative,
             });
+        }
+        if cards.clue_token_card() == Some(class.card) {
+            for payment in enumerate_payments(
+                information.mana,
+                ManaCost {
+                    generic: 2,
+                    ..ManaCost::default()
+                },
+            ) {
+                actions.push(Action::ActivateClueDraw {
+                    source: representative,
+                    payment,
+                });
+            }
         }
 
         if profile.engine == EngineKind::GrindingStation {
@@ -713,7 +728,8 @@ fn classify_action<D: CardDatabase>(
         | Action::ActivateRealityChipDetach { .. }
         | Action::ActivateFortuneTellersTalentLevel { .. }
         | Action::ActivateOneRingDraw { .. }
-        | Action::ActivateUthrosStation { .. } => PolicyActionClass::ActivateAbility,
+        | Action::ActivateUthrosStation { .. }
+        | Action::ActivateClueDraw { .. } => PolicyActionClass::ActivateAbility,
         Action::ChooseTransmuteSacrifice { .. }
         | Action::ChooseSearchTarget { .. }
         | Action::PayTransmuteDifference { .. }
@@ -945,6 +961,13 @@ fn public_key_for_action<D: CardDatabase>(
             out.target = Some(*creature);
             out
         }
+        Action::ActivateClueDraw { source, payment } => source_key(
+            KIND_CLUE_DRAW,
+            *source,
+            state,
+            object_classes,
+            payment_detail(*payment),
+        )?,
         Action::PlayLibraryTopLand { card, entry } => PolicyPublicKey {
             kind: KIND_PLAY_LIBRARY_TOP_LAND,
             card: Some(*card),
@@ -1437,7 +1460,7 @@ mod tests {
 
     #[test]
     fn bridge_surface_counts_match_the_exhaustive_action_mapping() {
-        assert_eq!(ORDINARY_ACTION_FAMILY_COUNT, 28);
+        assert_eq!(ORDINARY_ACTION_FAMILY_COUNT, 29);
         assert_eq!(CONTINGENT_ACTION_FAMILY_COUNT, 8);
     }
 
@@ -1515,6 +1538,92 @@ mod tests {
         assert_eq!(
             cards.profile(chrome).unwrap().engine,
             EngineKind::ChromeDome
+        );
+    }
+}
+
+#[cfg(test)]
+mod post_r7_clue_bridge_tests {
+    use super::*;
+    use urza_cards::{CLUE_TOKEN_CARD_ID, PostR7CardDatabase};
+    use urza_core::{
+        BattlefieldZone, CardFace, CounterState, PermanentMode, PermanentState, Phase, TrueState,
+        Window,
+    };
+
+    fn permanent(object: u32, card: CardDefId, token: bool) -> PermanentState {
+        PermanentState {
+            object_id: ObjectId(object),
+            card,
+            face: CardFace::Front,
+            tapped: false,
+            summoning_sick: false,
+            token,
+            counters: CounterState::default(),
+            mode: PermanentMode::Normal,
+            attached_to: None,
+            granted_ability: None,
+        }
+    }
+
+    fn clue_state(mana: u16) -> TrueState {
+        TrueState {
+            turn: 3,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            battlefield: BattlefieldZone::new(vec![permanent(1, CLUE_TOKEN_CARD_ID, true)]),
+            mana: ManaPool {
+                colorless: mana,
+                ..ManaPool::default()
+            },
+            ..TrueState::default()
+        }
+    }
+
+    #[test]
+    fn post_r7_bridge_exposes_clue_cash_in_only_with_two_mana() {
+        let cards = PostR7CardDatabase::load().unwrap();
+        let state = clue_state(2);
+        let bridge = CandidateBridge::build(&state, &cards).unwrap();
+        let clue = bridge
+            .candidates()
+            .iter()
+            .filter(|candidate| candidate.key.kind == KIND_CLUE_DRAW)
+            .collect::<Vec<_>>();
+        assert_eq!(clue.len(), 1);
+        assert_eq!(clue[0].class, PolicyActionClass::ActivateAbility);
+        assert!(matches!(
+            bridge.resolve(clue[0].token),
+            Some(Action::ActivateClueDraw { .. })
+        ));
+
+        let short = clue_state(1);
+        let bridge = CandidateBridge::build(&short, &cards).unwrap();
+        assert!(
+            bridge
+                .candidates()
+                .iter()
+                .all(|candidate| candidate.key.kind != KIND_CLUE_DRAW)
+        );
+    }
+
+    #[test]
+    fn attached_clue_is_filtered_from_public_candidate_surface() {
+        let cards = PostR7CardDatabase::load().unwrap();
+        let mut state = clue_state(2);
+        let mut aura = permanent(2, cards.card_id_by_name("Power Artifact").unwrap(), false);
+        aura.attached_to = Some(ObjectId(1));
+        let mut permanents = state.battlefield.permanents().to_vec();
+        permanents.push(aura);
+        state.battlefield = BattlefieldZone::new(permanents);
+        state.validate().unwrap();
+
+        let bridge = CandidateBridge::build(&state, &cards).unwrap();
+        assert!(
+            bridge
+                .candidates()
+                .iter()
+                .all(|candidate| candidate.key.kind != KIND_CLUE_DRAW)
         );
     }
 }

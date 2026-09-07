@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::error::Error;
 use std::io;
 
-use urza_cards::CurrentCardDatabase;
+use urza_cards::{CLUE_TOKEN_CARD_ID, CurrentCardDatabase};
 use urza_core::{CardDefId, PendingDecision, Phase, TrueState, Window};
 use urza_info::observe;
 use urza_mc::sample_hidden_world;
@@ -16,8 +16,9 @@ use urza_rng::WorldId;
 use urza_rollout::{RolloutConfig, RolloutStop, replay_trace, rollout};
 use urza_rules::{RuleError, advance_automatic, detect_terminal_win};
 
-const DIAGNOSTIC_VERSION: &str = "post_r7_engine_tutor_diagnostic_v1";
+const DIAGNOSTIC_VERSION: &str = "post_r7_engine_tutor_diagnostic_v2_clue";
 const KIND_CHOOSE_SEARCH_TARGET: u16 = 28;
+const KIND_CLUE_DRAW: u16 = 37;
 const ENGINES: [&str; 5] = [
     "The Reality Chip",
     "Forensic Gadgeteer",
@@ -37,6 +38,13 @@ struct EngineStats {
     activation_selected: u64,
     tutor_target_candidate_decisions: u64,
     tutor_target_selected: u64,
+}
+
+#[derive(Debug, Default, Clone)]
+struct ClueStats {
+    visible_decisions: u64,
+    candidate_decisions: u64,
+    selected_decisions: u64,
 }
 
 #[derive(Debug, Default, Clone)]
@@ -99,6 +107,7 @@ fn run() -> Result<(), Box<dyn Error>> {
         .map(|name| (name.to_owned(), EngineStats::default()))
         .collect::<BTreeMap<_, _>>();
     let mut tutor_stats = BTreeMap::<String, TutorStats>::new();
+    let mut clue_stats = ClueStats::default();
     let mut worlds = 0_u64;
     let mut total_decisions = 0_u64;
     let mut terminal_worlds = 0_u64;
@@ -229,6 +238,25 @@ fn run() -> Result<(), Box<dyn Error>> {
                 }
             }
 
+            let clue_visible = information
+                .battlefield
+                .iter()
+                .any(|permanent| permanent.card == CLUE_TOKEN_CARD_ID);
+            if clue_visible {
+                clue_stats.visible_decisions += 1;
+            }
+            let clue_candidates = bridge
+                .candidates()
+                .iter()
+                .filter(|candidate| candidate.key.kind == KIND_CLUE_DRAW)
+                .count();
+            if clue_candidates != 0 {
+                clue_stats.candidate_decisions += 1;
+                if step.key.kind == KIND_CLUE_DRAW {
+                    clue_stats.selected_decisions += 1;
+                }
+            }
+
             let tutor_candidates = bridge
                 .candidates()
                 .iter()
@@ -293,6 +321,10 @@ fn run() -> Result<(), Box<dyn Error>> {
             stats.tutor_target_selected,
         );
     }
+    println!(
+        "CLUE_SUMMARY\tvisible_decisions={}\tcandidate_decisions={}\tselected_decisions={}",
+        clue_stats.visible_decisions, clue_stats.candidate_decisions, clue_stats.selected_decisions,
+    );
     for (source, stats) in tutor_stats {
         let targets = stats
             .selected_targets

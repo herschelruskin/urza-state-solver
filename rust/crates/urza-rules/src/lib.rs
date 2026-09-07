@@ -21,7 +21,7 @@ pub const RULES_PHASE: &str = "R4";
 pub const R2_RULES_VERSION: &str = "r2_core_kernel_v2";
 pub const R3_RULES_VERSION: &str = "r3_search_complete_v4";
 pub const RULES_VERSION: &str = "r4_acceptance_v6";
-pub const POST_R7_RULES_VERSION: &str = "post_r7_card_advantage_v2_uthros";
+pub const POST_R7_RULES_VERSION: &str = "post_r7_card_advantage_v3_clue";
 pub const HORIZON_TURN: u8 = 6;
 pub const RNG_EVENT_SEARCH_SHUFFLE: EventType = EventType(0x0301);
 pub const ABILITY_REPURPOSING_BAY_SEARCH: AbilityId = AbilityId(0x0301);
@@ -49,6 +49,7 @@ pub const ABILITY_ONE_RING_DRAW: AbilityId = AbilityId(0x040e);
 pub const ABILITY_ONE_RING_UPKEEP: AbilityId = AbilityId(0x040f);
 pub const ABILITY_UTHROS_STATION: AbilityId = AbilityId(0x0410);
 pub const ABILITY_UTHROS_ARTIFACT_DRAW: AbilityId = AbilityId(0x0411);
+pub const ABILITY_CLUE_DRAW: AbilityId = AbilityId(0x0412);
 pub const RNG_EVENT_URZA_SPIN_SHUFFLE: EventType = EventType(0x0302);
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -533,6 +534,10 @@ pub enum Action {
         source: ObjectId,
         creature: CanonicalObjectId,
     },
+    ActivateClueDraw {
+        source: ObjectId,
+        payment: ManaPayment,
+    },
     ActivateUrzaSpin {
         source: ObjectId,
         payment: ManaPayment,
@@ -856,6 +861,10 @@ fn apply_action_internal<D: CardDatabase>(
         }
         Action::ActivateUthrosStation { source, creature } => {
             activate_uthros_station(state, cards, source, creature)?;
+            Transition::default()
+        }
+        Action::ActivateClueDraw { source, payment } => {
+            activate_clue_draw(state, cards, source, payment)?;
             Transition::default()
         }
         Action::ActivateUrzaSpin { source, payment } => {
@@ -2104,6 +2113,49 @@ fn activate_uthros_station<D: CardDatabase>(
     Ok(())
 }
 
+fn activate_clue_draw<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: ObjectId,
+    payment: ManaPayment,
+) -> Result<(), RuleError> {
+    ensure_priority(state)?;
+    ensure_no_pending_decision(state)?;
+    let permanent = battlefield_permanent(state, source)?.clone();
+    if cards.clue_token_card() != Some(permanent.card) {
+        return Err(RuleError::UnsupportedCardMechanic(permanent.card));
+    }
+    if state
+        .battlefield
+        .permanents()
+        .iter()
+        .any(|candidate| candidate.attached_to == Some(source))
+    {
+        return Err(RuleError::AttachedSacrificeDeferred(source));
+    }
+    let cost = ManaCost {
+        generic: 2,
+        ..ManaCost::default()
+    };
+    validate_payment(state.mana, payment, cost)?;
+
+    // Mana payment and sacrifice are activation costs. Validate every deferred
+    // boundary first, then commit both costs before putting the draw ability on
+    // the stack. The common sacrifice path owns token/attachment lifecycle.
+    spend_payment(&mut state.mana, payment);
+    sacrifice_artifact(state, source)?;
+    state.stack.push(StackObject::ActivatedAbility {
+        source: SourceRef {
+            object_id: Some(source),
+            card: permanent.card,
+        },
+        ability: ABILITY_CLUE_DRAW,
+        parameter: None,
+    });
+    state.window = Window::Priority;
+    Ok(())
+}
+
 fn activate_urza_spin<D: CardDatabase>(
     state: &mut TrueState,
     cards: &D,
@@ -3206,6 +3258,13 @@ fn resolve_top_stack_object<D: CardDatabase>(
         } => {
             state.stack.pop();
             resolve_uthros_artifact_draw(state, cards, source)
+        }
+        StackObject::ActivatedAbility {
+            ability: ABILITY_CLUE_DRAW,
+            ..
+        } => {
+            state.stack.pop();
+            resolve_clue_draw(state)
         }
         StackObject::ActivatedAbility {
             source,
@@ -4424,6 +4483,18 @@ fn resolve_top_draw(state: &mut TrueState, source: SourceRef) -> Result<Transiti
     state.window = Window::Priority;
     observations.shrink_to_fit();
     Ok(Transition { observations })
+}
+
+fn resolve_clue_draw(state: &mut TrueState) -> Result<Transition, RuleError> {
+    let drawn = draw_cards(state, 1)?;
+    state.window = Window::Priority;
+    Ok(Transition {
+        observations: if drawn.is_empty() {
+            Vec::new()
+        } else {
+            vec![RulesObservation::CardsDrawn(drawn)]
+        },
+    })
 }
 
 fn resolve_urza_spin(
@@ -9338,5 +9409,166 @@ mod post_r7_uthros_tests {
             state.stack.last(),
             Some(StackObject::Spell { .. })
         ));
+    }
+}
+
+#[cfg(test)]
+mod post_r7_clue_tests {
+    use std::collections::BTreeMap;
+
+    use super::*;
+    use urza_core::CardZone;
+
+    const CLUE: CardDefId = CardDefId(600);
+    const DRAW: CardDefId = CardDefId(601);
+    const AURA: CardDefId = CardDefId(602);
+    const URZA_DUMMY: CardDefId = CardDefId(603);
+    const CONSTRUCT_DUMMY: CardDefId = CardDefId(604);
+
+    #[derive(Default)]
+    struct ClueCards {
+        profiles: BTreeMap<CardDefId, CardProfile>,
+    }
+
+    impl ClueCards {
+        fn new() -> Self {
+            let mut profiles = BTreeMap::new();
+            profiles.insert(
+                CLUE,
+                CardProfile {
+                    card: CLUE,
+                    role: R2CardRole::ArtifactPermanent,
+                    battlefield_face: CardFace::Front,
+                    is_artifact: true,
+                    ..CardProfile::default()
+                },
+            );
+            Self { profiles }
+        }
+    }
+
+    impl CardDatabase for ClueCards {
+        fn profile(&self, card: CardDefId) -> Option<CardProfile> {
+            self.profiles.get(&card).copied()
+        }
+
+        fn commander_card(&self) -> CardDefId {
+            URZA_DUMMY
+        }
+
+        fn urza_construct_token_card(&self) -> CardDefId {
+            CONSTRUCT_DUMMY
+        }
+
+        fn clue_token_card(&self) -> Option<CardDefId> {
+            Some(CLUE)
+        }
+    }
+
+    fn permanent(object: u32, card: CardDefId, token: bool) -> PermanentState {
+        PermanentState {
+            object_id: ObjectId(object),
+            card,
+            face: CardFace::Front,
+            tapped: false,
+            summoning_sick: false,
+            token,
+            counters: CounterState::default(),
+            mode: PermanentMode::Normal,
+            attached_to: None,
+            granted_ability: None,
+        }
+    }
+
+    #[test]
+    fn clue_activation_commits_two_mana_and_sacrifice_before_drawing_on_resolution() {
+        let cards = ClueCards::new();
+        let mut state = TrueState {
+            turn: 3,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![DRAW]),
+            battlefield: BattlefieldZone::new(vec![permanent(1, CLUE, true)]),
+            mana: ManaPool {
+                colorless: 2,
+                ..ManaPool::default()
+            },
+            ..TrueState::default()
+        };
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateClueDraw {
+                source: ObjectId(1),
+                payment: ManaPayment {
+                    colorless: 2,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap();
+
+        assert_eq!(state.mana, ManaPool::default());
+        assert!(state.battlefield.get(ObjectId(1)).is_none());
+        assert!(
+            state.graveyard.cards().is_empty(),
+            "sacrificed Clue token must cease to exist"
+        );
+        assert!(state.hand.is_empty());
+        assert!(matches!(
+            state.stack.last(),
+            Some(StackObject::ActivatedAbility {
+                ability: ABILITY_CLUE_DRAW,
+                ..
+            })
+        ));
+
+        let resolved = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(state.hand, CardZone::new(vec![DRAW]));
+        assert_eq!(
+            resolved.observations,
+            vec![RulesObservation::CardsDrawn(vec![DRAW])]
+        );
+        state.validate().unwrap();
+    }
+
+    #[test]
+    fn attached_clue_preserves_existing_player_chosen_sacrifice_deferral() {
+        let cards = ClueCards::new();
+        let clue = permanent(1, CLUE, true);
+        let mut aura = permanent(2, AURA, false);
+        aura.attached_to = Some(ObjectId(1));
+        let mut state = TrueState {
+            turn: 3,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            battlefield: BattlefieldZone::new(vec![clue, aura]),
+            mana: ManaPool {
+                colorless: 2,
+                ..ManaPool::default()
+            },
+            ..TrueState::default()
+        };
+        state.validate().unwrap();
+
+        let before = state.clone();
+        let error = apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateClueDraw {
+                source: ObjectId(1),
+                payment: ManaPayment {
+                    colorless: 2,
+                    ..ManaPayment::default()
+                },
+            },
+        )
+        .unwrap_err();
+        assert_eq!(error, RuleError::AttachedSacrificeDeferred(ObjectId(1)));
+        assert_eq!(
+            state, before,
+            "deferred activation must not partially pay costs"
+        );
     }
 }
