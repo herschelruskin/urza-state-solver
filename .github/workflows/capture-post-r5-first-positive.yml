@@ -1,0 +1,47 @@
+name: Capture post-R5 first positive witness
+
+on:
+  push:
+    branches:
+      - rust-engine-rebuild
+    paths:
+      - .github/workflows/capture-post-r5-first-positive.yml
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      ARTIFACT_ID: "10027078477"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and verify exact positive artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p rust/diagnostics
+          gh api \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            repos/${{ github.repository }}/actions/artifacts/${ARTIFACT_ID}/zip \
+            > /tmp/positive.zip
+          unzip -p /tmp/positive.zip > rust/diagnostics/post_r5_first_positive_100013_245416.tsv
+          grep -F $'POSITIVE_MULTI_DEVIATION\topening_world=100013\thidden_world=245416\tdepth=2\tfamily=ChromeDomeBatteredGolem\tturn=6' \
+            rust/diagnostics/post_r5_first_positive_100013_245416.tsv
+          grep -F $'FORCED_PLAN\tdepth=1\tindex=35\tclass=PassPriority' \
+            rust/diagnostics/post_r5_first_positive_100013_245416.tsv
+          grep -F $'FORCED_PLAN\tdepth=2\tindex=36\tclass=PassPriority' \
+            rust/diagnostics/post_r5_first_positive_100013_245416.tsv
+      - name: Commit durable witness
+        shell: bash
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add rust/diagnostics/post_r5_first_positive_100013_245416.tsv
+          git commit -m '[R5] Capture first positive multi-deviation witness'
+          git push
