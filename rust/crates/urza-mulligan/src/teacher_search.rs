@@ -15,7 +15,7 @@ use urza_rules::{
 };
 use urza_value::{WinByHorizonScore, WinDistribution};
 
-pub const R7_TEACHER_SEARCH_VERSION: &str = "r7_public_belief_bounded_search_v4";
+pub const R7_TEACHER_SEARCH_VERSION: &str = "r7_public_belief_bounded_search_v5";
 pub const R7_TEACHER_POLICY_VERSION: &str = "r7_teacher_public_belief_v3";
 pub const R7_TEACHER_SEARCH_BOUNDARY: &str = "R7 teacher search samples exact hidden worlds only to estimate public action values; every \
      teacher action is selected once per shared InformationState and is then applied uniformly to \
@@ -28,7 +28,7 @@ pub const R7_TEACHER_SEARCH_BOUNDARY: &str = "R7 teacher search samples exact hi
      the exact public-state ceiling of every sampled world winning on the current turn, which no \
      sibling can improve. An incomplete leaf is never scored as a loss: an unresolved candidate \
      subtree is excluded only when another candidate at the same public decision has a complete \
-     finite value, while an all-incomplete decision fails explicitly. Complete sampled-belief subtrees are memoized only after a finite value is known; cache identity includes the sampled exact-world support and RNG coordinates but never changes public action identity. R5 and R6 behavior is unchanged.";
+     finite value, while an all-incomplete decision fails explicitly. Exact sampled-belief subtree outcomes are memoized after evaluation; complete values remain finite values, while incomplete leaves and all-incomplete decisions are cached only as the same explicit incomplete outcome and are never converted into losses or scores. Cache identity includes the sampled exact-world support and RNG coordinates but never changes public action identity. R5 and R6 behavior is unchanged.";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TeacherSearchConfig {
@@ -279,6 +279,46 @@ impl TeacherBeliefSubtreeKey {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum TeacherBeliefSubtreeOutcome {
+    Complete(WinDistribution),
+    IncompleteLeaf { world: WorldId, stop: RolloutStop },
+    AllCandidateBranchesIncomplete { candidate_count: usize },
+}
+
+impl TeacherBeliefSubtreeOutcome {
+    fn from_result(result: &Result<WinDistribution, TeacherSearchError>) -> Option<Self> {
+        match result {
+            Ok(value) => Some(Self::Complete(value.clone())),
+            Err(TeacherSearchError::IncompleteLeaf { world, stop }) => Some(Self::IncompleteLeaf {
+                world: *world,
+                stop: *stop,
+            }),
+            Err(TeacherSearchError::AllCandidateBranchesIncomplete { candidate_count }) => {
+                Some(Self::AllCandidateBranchesIncomplete {
+                    candidate_count: *candidate_count,
+                })
+            }
+            Err(_) => None,
+        }
+    }
+
+    fn as_result(&self) -> Result<WinDistribution, TeacherSearchError> {
+        match self {
+            Self::Complete(value) => Ok(value.clone()),
+            Self::IncompleteLeaf { world, stop } => Err(TeacherSearchError::IncompleteLeaf {
+                world: *world,
+                stop: *stop,
+            }),
+            Self::AllCandidateBranchesIncomplete { candidate_count } => {
+                Err(TeacherSearchError::AllCandidateBranchesIncomplete {
+                    candidate_count: *candidate_count,
+                })
+            }
+        }
+    }
+}
+
 #[derive(Debug)]
 struct PublicWorldGroup {
     information: InformationState,
@@ -345,7 +385,7 @@ struct TeacherEvaluator<'a, D> {
     cards: &'a D,
     config: TeacherSearchConfig,
     baseline_policy: DeterministicPolicy,
-    subtree_cache: HashMap<TeacherBeliefSubtreeKey, WinDistribution>,
+    subtree_cache: HashMap<TeacherBeliefSubtreeKey, TeacherBeliefSubtreeOutcome>,
     stats: TeacherSearchStats,
 }
 
@@ -359,13 +399,15 @@ impl<D: CardDatabase> TeacherEvaluator<'_, D> {
         let key = TeacherBeliefSubtreeKey::new(&worlds, choices_left, steps_left);
         if let Some(cached) = self.subtree_cache.get(&key) {
             self.stats.subtree_cache_hits = self.stats.subtree_cache_hits.saturating_add(1);
-            return Ok(cached.clone());
+            return cached.as_result();
         }
 
-        let value = self.evaluate_partition_uncached(worlds, choices_left, steps_left)?;
-        self.subtree_cache.insert(key, value.clone());
-        self.stats.subtree_cache_inserts = self.stats.subtree_cache_inserts.saturating_add(1);
-        Ok(value)
+        let result = self.evaluate_partition_uncached(worlds, choices_left, steps_left);
+        if let Some(outcome) = TeacherBeliefSubtreeOutcome::from_result(&result) {
+            self.subtree_cache.insert(key, outcome);
+            self.stats.subtree_cache_inserts = self.stats.subtree_cache_inserts.saturating_add(1);
+        }
+        result
     }
 
     fn evaluate_partition_uncached(
@@ -960,6 +1002,46 @@ mod tests {
             .evaluate_partition(vec![world], 2, 4)
             .expect("cached complete subtree");
         assert_eq!(second, first);
+        assert_eq!(evaluator.stats.subtree_cache_hits, 1);
+        assert_eq!(evaluator.stats.subtree_cache_inserts, 1);
+    }
+
+    #[test]
+    fn incomplete_teacher_partition_is_reused_without_becoming_a_value() {
+        let cards = R4CardDatabase::load().expect("R4 database");
+        let config = TeacherSearchConfig {
+            samples: 1,
+            max_choice_depth: 0,
+            leaf_rollout_max_steps: 1,
+            ..TeacherSearchConfig::default()
+        };
+        let mut evaluator = TeacherEvaluator {
+            cards: &cards,
+            config,
+            baseline_policy: DeterministicPolicy,
+            subtree_cache: HashMap::new(),
+            stats: TeacherSearchStats::default(),
+        };
+        let island = cards.card_id_by_name("Island").unwrap();
+        let world = TeacherWorld {
+            world: WorldId(78),
+            state: TrueState {
+                turn: 2,
+                phase: Phase::PrecombatMain,
+                window: Window::Priority,
+                hand: CardZone::new(vec![island]),
+                ..TrueState::default()
+            },
+            logical_event: 0,
+        };
+
+        let first = evaluator.evaluate_partition(vec![world.clone()], 0, 4);
+        assert!(is_incomplete_subtree(first.as_ref().unwrap_err()));
+        assert_eq!(evaluator.stats.subtree_cache_hits, 0);
+        assert_eq!(evaluator.stats.subtree_cache_inserts, 1);
+
+        let second = evaluator.evaluate_partition(vec![world], 0, 4);
+        assert!(is_incomplete_subtree(second.as_ref().unwrap_err()));
         assert_eq!(evaluator.stats.subtree_cache_hits, 1);
         assert_eq!(evaluator.stats.subtree_cache_inserts, 1);
     }
