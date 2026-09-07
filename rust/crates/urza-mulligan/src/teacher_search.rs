@@ -818,7 +818,7 @@ mod tests {
         assert_eq!(result.win_distribution.losses, 0);
         assert_eq!(result.score.total_wins, 1);
         assert!(result.stats.public_actions_evaluated >= 2);
-        assert!(result.stats.incomplete_candidate_branches > 0);
+        assert!(result.stats.ceiling_pruned_public_actions > 0);
     }
 
     #[test]
