@@ -468,6 +468,15 @@ fn generate_ordinary_actions<D: CardDatabase>(
         actions.push(Action::CastCommander { payment: *payment });
     }
 
+    let has_supported_transmute_sacrifice = artifact_classes.iter().any(|class| {
+        let representative = class.objects[0];
+        !state
+            .battlefield
+            .permanents()
+            .iter()
+            .any(|permanent| permanent.attached_to == Some(representative))
+    });
+
     actions.retain(|action| {
         let transmute_cast = match action {
             Action::CastFromHand { card, .. } | Action::CastLibraryTop { card, .. } => {
@@ -487,7 +496,7 @@ fn generate_ordinary_actions<D: CardDatabase>(
                 }),
             _ => false,
         };
-        !transmute_cast || !artifact_classes.is_empty()
+        !transmute_cast || has_supported_transmute_sacrifice
     });
     actions.retain(|action| action_is_legal(state, cards, action));
     actions
@@ -1316,6 +1325,42 @@ mod tests {
         let live_bridge = CandidateBridge::build(&state, &cards).unwrap();
         assert!(live_bridge.candidates().iter().any(|candidate| matches!(
             live_bridge.resolve(candidate.token),
+            Some(Action::CastFromHand { card, .. }) if *card == transmute
+        )));
+    }
+
+    #[test]
+    fn transmute_with_only_attached_artifact_is_not_exposed_as_a_dead_end_root() {
+        let cards = R4CardDatabase::load().unwrap();
+        let transmute = cards.card_id_by_name("Transmute Artifact").unwrap();
+        let sol_ring = cards.card_id_by_name("Sol Ring").unwrap();
+        let power_artifact = cards.card_id_by_name("Power Artifact").unwrap();
+        let mana_vault = cards.card_id_by_name("Mana Vault").unwrap();
+
+        let mut aura = permanent(9, power_artifact);
+        aura.attached_to = Some(ObjectId(8));
+        let mut state = priority_state();
+        state.hand = CardZone::new(vec![transmute]);
+        state.mana = ManaPool {
+            blue: 2,
+            ..ManaPool::default()
+        };
+        state.battlefield = BattlefieldZone::new(vec![permanent(8, sol_ring), aura]);
+        state.validate().unwrap();
+
+        let bridge = CandidateBridge::build(&state, &cards).unwrap();
+        assert!(!bridge.candidates().iter().any(|candidate| matches!(
+            bridge.resolve(candidate.token),
+            Some(Action::CastFromHand { card, .. }) if *card == transmute
+        )));
+
+        let mut permanents = state.battlefield.permanents().to_vec();
+        permanents.push(permanent(10, mana_vault));
+        state.battlefield = BattlefieldZone::new(permanents);
+        state.validate().unwrap();
+        let bridge = CandidateBridge::build(&state, &cards).unwrap();
+        assert!(bridge.candidates().iter().any(|candidate| matches!(
+            bridge.resolve(candidate.token),
             Some(Action::CastFromHand { card, .. }) if *card == transmute
         )));
     }
