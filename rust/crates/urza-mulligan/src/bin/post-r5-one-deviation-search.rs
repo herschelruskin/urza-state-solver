@@ -13,7 +13,7 @@ use urza_policy::DeterministicPolicy;
 use urza_policy_bridge::CandidateBridge;
 use urza_rng::{LogicalEventId, WorldId};
 use urza_rollout::{
-    RolloutConfig, RolloutResult, RolloutStop, RolloutStep, replay_trace, rollout,
+    RolloutConfig, RolloutResult, RolloutStep, RolloutStop, replay_trace, rollout,
     rollout_with_logical_event_offset,
 };
 use urza_rules::{
@@ -94,10 +94,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     );
     println!(
         "SCAN\troot={:?}\thidden_start={}\thidden_count={}\tmax_steps={}",
-        rollout_config.root,
-        hidden_start,
-        hidden_count,
-        rollout_config.max_steps,
+        rollout_config.root, hidden_start, hidden_count, rollout_config.max_steps,
     );
 
     let mut worlds_scanned = 0_u64;
@@ -251,7 +248,11 @@ fn run() -> Result<(), Box<dyn Error>> {
                             alternate.class,
                             alternate.key,
                         );
-                        print_trace("TRACE_CONTINUATION", &continuation.trace, u64::from(consumed));
+                        print_trace(
+                            "TRACE_CONTINUATION",
+                            &continuation.trace,
+                            u64::from(consumed),
+                        );
                         return Ok(());
                     }
                     RolloutStop::Horizon => {
@@ -281,7 +282,11 @@ fn run() -> Result<(), Box<dyn Error>> {
                             alternate.class,
                             alternate.key,
                         );
-                        print_trace("TRACE_CONTINUATION", &continuation.trace, u64::from(consumed));
+                        print_trace(
+                            "TRACE_CONTINUATION",
+                            &continuation.trace,
+                            u64::from(consumed),
+                        );
                         return Err(Box::new(io::Error::other(format!(
                             "one-deviation continuation stopped incompletely at {:?}",
                             continuation.stop
@@ -338,7 +343,11 @@ fn needs_automatic_advance(state: &TrueState) -> bool {
         )
 }
 
-fn print_incomplete_baseline(opening_world: WorldId, hidden_world: WorldId, result: &RolloutResult) {
+fn print_incomplete_baseline(
+    opening_world: WorldId,
+    hidden_world: WorldId,
+    result: &RolloutResult,
+) {
     println!(
         "INCOMPLETE_BASELINE\topening_world={}\thidden_world={}\tstop={:?}\tturn={}\ttrace_len={}",
         opening_world.0,
