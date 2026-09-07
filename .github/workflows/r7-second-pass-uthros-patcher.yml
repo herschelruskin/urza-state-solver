@@ -5,6 +5,7 @@ on:
     branches: [rust-engine-rebuild]
     paths:
       - '.github/scripts/patch_post_r7_uthros.py'
+      - '.github/scripts/fix_post_r7_uthros_test_import.py'
       - '.github/workflows/r7-second-pass-uthros-patcher.yml'
   workflow_dispatch:
 
@@ -21,7 +22,9 @@ jobs:
         with:
           components: rustfmt, clippy
       - name: Apply Uthros card-advantage slice
-        run: python .github/scripts/patch_post_r7_uthros.py
+        run: |
+          python .github/scripts/patch_post_r7_uthros.py
+          python .github/scripts/fix_post_r7_uthros_test_import.py
       - name: Format
         working-directory: rust
         run: cargo fmt --all
