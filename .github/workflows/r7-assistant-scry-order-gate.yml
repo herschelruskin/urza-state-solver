@@ -1,0 +1,63 @@
+name: R7 Assistant scry and trigger-order gate
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - '.github/scripts/patch_post_r7_assistant_scry.py'
+      - '.github/workflows/r7-assistant-scry-order-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch-test-commit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.89
+        with:
+          components: rustfmt, clippy
+      - name: Apply Assistant scry and trigger-order slice
+        run: python .github/scripts/patch_post_r7_assistant_scry.py
+      - name: Format
+        working-directory: rust
+        run: cargo fmt --all
+      - name: Card/database validation
+        working-directory: rust
+        run: cargo test --locked -p urza-cards
+      - name: Rules validation
+        working-directory: rust
+        run: cargo test --locked -p urza-rules
+      - name: Information-state validation
+        working-directory: rust
+        run: cargo test --locked -p urza-info
+      - name: Candidate bridge validation
+        working-directory: rust
+        run: cargo test --locked -p urza-policy-bridge
+      - name: Rollout liveness validation
+        working-directory: rust
+        run: cargo test --locked -p urza-rollout
+      - name: Build post-R7 diagnostics
+        working-directory: rust
+        run: |
+          cargo build --locked -p urza-mulligan --bin post-r7-engine-tutor-diagnostic
+          cargo build --locked -p urza-mulligan --bin post-r7-oracle-comparison-export
+      - name: Clippy affected surface
+        working-directory: rust
+        run: cargo clippy --locked -p urza-cards -p urza-rules -p urza-info -p urza-policy-bridge -p urza-rollout -p urza-mulligan --all-targets -- -D warnings
+      - name: Commit accepted validation slice
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add rust/data/card_coverage.r0.json \
+                  rust/crates/urza-rules/src/lib.rs \
+                  rust/crates/urza-cards/src/lib.rs \
+                  rust/crates/urza-policy-bridge/src/lib.rs \
+                  rust/POST_R7_TEXT_SCRY_STACK_VALIDATION.md
+          git commit -m "[R7] Validate Assistant scry and controlled trigger order"
+          git push
