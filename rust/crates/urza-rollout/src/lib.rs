@@ -659,7 +659,10 @@ mod tests {
                 .iter()
                 .any(|step| step.class == PolicyActionClass::CastSpell)
         );
-        assert_eq!(result.final_information.commander.zone, CommanderZone::Battlefield);
+        assert_eq!(
+            result.final_information.commander.zone,
+            CommanderZone::Battlefield
+        );
     }
 
     #[test]
