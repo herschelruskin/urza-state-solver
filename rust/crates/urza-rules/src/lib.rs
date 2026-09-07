@@ -3686,7 +3686,21 @@ fn resolve_knack_bounce<D: CardDatabase>(
         .position(|candidate| candidate.object_id == object_id)
         .ok_or(RuleError::MissingPermanent(object_id))?;
     let removed = permanents.remove(index);
+    let mut attached_non_token_cards = Vec::new();
+    permanents.retain(|candidate| {
+        if candidate.attached_to == Some(object_id) {
+            if !candidate.token {
+                attached_non_token_cards.push(candidate.card);
+            }
+            false
+        } else {
+            true
+        }
+    });
     state.battlefield = BattlefieldZone::new(permanents);
+    for card in attached_non_token_cards {
+        state.graveyard.insert(card);
+    }
     state.delayed_events.retain(|event| {
         !matches!(event, DelayedEvent::ChromeCopySacrifice { object, .. } if *object == object_id)
     });
@@ -6911,6 +6925,39 @@ mod tests {
         assert!(state.battlefield.get(ObjectId(1)).is_none());
         assert!(state.battlefield.get(ObjectId(2)).is_none());
         assert!(state.stack.is_empty());
+        state.validate().unwrap();
+    }
+
+    #[test]
+    fn knack_bounce_moves_attached_aura_to_graveyard_when_target_leaves() {
+        let cards = TestCards::r4();
+        let top = artifact_permanent(1, TOP);
+        let mut aura = artifact_permanent(2, POWER_ARTIFACT);
+        aura.attached_to = Some(ObjectId(1));
+        let mut state = TrueState {
+            turn: 6,
+            phase: Phase::PrecombatMain,
+            window: Window::Resolving,
+            battlefield: BattlefieldZone::new(vec![top, aura]),
+            ..TrueState::default()
+        };
+        state.validate().unwrap();
+
+        resolve_knack_bounce(
+            &mut state,
+            &cards,
+            SourceRef {
+                object_id: Some(ObjectId(1)),
+                card: TOP,
+            },
+        )
+        .unwrap();
+
+        assert_eq!(state.hand.cards(), &[TOP]);
+        assert_eq!(state.graveyard.cards(), &[POWER_ARTIFACT]);
+        assert!(state.battlefield.get(ObjectId(1)).is_none());
+        assert!(state.battlefield.get(ObjectId(2)).is_none());
+        assert_eq!(state.window, Window::Priority);
         state.validate().unwrap();
     }
 
