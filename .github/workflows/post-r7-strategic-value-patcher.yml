@@ -54,3 +54,4 @@ jobs:
                   rust/DEVELOPMENT_LOG.md
           git commit -m "[R7] Add strategic public-information value policy"
           git push
+# retry runner after checkout stall
