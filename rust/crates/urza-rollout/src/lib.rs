@@ -100,6 +100,8 @@ pub enum RolloutError {
     ForcedCandidateMissing(u32),
     #[error("forced semantic candidate is ambiguous at rollout step {0}")]
     ForcedCandidateAmbiguous(u32),
+    #[error("forced semantic plan indices must be strictly increasing: {previous} then {next}")]
+    ForcedPlanOrder { previous: u32, next: u32 },
     #[error("rollout stopped at {stop:?} before forced step {index} was reached")]
     ForcedIndexNotReached { index: u32, stop: RolloutStop },
     #[error("replay trace step {position} declares index {declared}")]
@@ -140,7 +142,7 @@ pub fn rollout_with_logical_event_offset<D: CardDatabase>(
     config: RolloutConfig,
     logical_event_offset: u64,
 ) -> Result<RolloutResult, RolloutError> {
-    rollout_internal(initial, cards, policy, config, logical_event_offset, None)
+    rollout_internal(initial, cards, policy, config, logical_event_offset, &[])
 }
 
 pub fn rollout_with_forced_semantic_action<D: CardDatabase>(
@@ -150,7 +152,24 @@ pub fn rollout_with_forced_semantic_action<D: CardDatabase>(
     config: RolloutConfig,
     forced: &ForcedSemanticAction,
 ) -> Result<RolloutResult, RolloutError> {
-    rollout_internal(initial, cards, policy, config, 0, Some(forced))
+    rollout_with_forced_semantic_actions(
+        initial,
+        cards,
+        policy,
+        config,
+        std::slice::from_ref(forced),
+    )
+}
+
+pub fn rollout_with_forced_semantic_actions<D: CardDatabase>(
+    initial: TrueState,
+    cards: &D,
+    policy: &DeterministicPolicy,
+    config: RolloutConfig,
+    forced: &[ForcedSemanticAction],
+) -> Result<RolloutResult, RolloutError> {
+    validate_forced_plan(forced)?;
+    rollout_internal(initial, cards, policy, config, 0, forced)
 }
 
 fn rollout_internal<D: CardDatabase>(
@@ -159,18 +178,18 @@ fn rollout_internal<D: CardDatabase>(
     policy: &DeterministicPolicy,
     config: RolloutConfig,
     logical_event_offset: u64,
-    forced: Option<&ForcedSemanticAction>,
+    forced: &[ForcedSemanticAction],
 ) -> Result<RolloutResult, RolloutError> {
     let mut state = initial;
     let mut trace = Vec::new();
     let mut deterministic_attempts = AttemptMap::new();
     let mut monotone_attempts = AttemptMap::new();
     let mut mana_observations = ManaObservationMap::new();
-    let mut forced_applied = false;
+    let mut next_forced = 0_usize;
 
     loop {
         if let Some(stop) = prepare_for_policy(&mut state, cards)? {
-            return finish_or_forced_error(state, stop, trace, forced, forced_applied);
+            return finish_or_forced_error(state, stop, trace, forced, next_forced);
         }
 
         if trace.len() >= config.max_steps as usize {
@@ -179,7 +198,7 @@ fn rollout_internal<D: CardDatabase>(
                 RolloutStop::StepLimit,
                 trace,
                 forced,
-                forced_applied,
+                next_forced,
             );
         }
 
@@ -203,7 +222,7 @@ fn rollout_internal<D: CardDatabase>(
                 RolloutStop::NoCandidate,
                 trace,
                 forced,
-                forced_applied,
+                next_forced,
             );
         };
         let policy_selected = bridge
@@ -250,18 +269,20 @@ fn rollout_internal<D: CardDatabase>(
         }
 
         let index = u32::try_from(trace.len()).map_err(|_| RolloutError::StepIndexOverflow)?;
-        let selected = if let Some(forced) = forced.filter(|forced| forced.index == index) {
-            let mut matching = bridge
-                .candidates()
-                .iter()
-                .filter(|candidate| candidate.class == forced.class && candidate.key == forced.key);
+        let selected = if let Some(forced_action) = forced
+            .get(next_forced)
+            .filter(|forced_action| forced_action.index == index)
+        {
+            let mut matching = bridge.candidates().iter().filter(|candidate| {
+                candidate.class == forced_action.class && candidate.key == forced_action.key
+            });
             let Some(candidate) = matching.next() else {
                 return Err(RolloutError::ForcedCandidateMissing(index));
             };
             if matching.next().is_some() {
                 return Err(RolloutError::ForcedCandidateAmbiguous(index));
             }
-            forced_applied = true;
+            next_forced = next_forced.saturating_add(1);
             candidate.clone()
         } else {
             policy_selected
@@ -439,18 +460,28 @@ fn execute<D: CardDatabase>(
     Ok(())
 }
 
+fn validate_forced_plan(forced: &[ForcedSemanticAction]) -> Result<(), RolloutError> {
+    for pair in forced.windows(2) {
+        if pair[0].index >= pair[1].index {
+            return Err(RolloutError::ForcedPlanOrder {
+                previous: pair[0].index,
+                next: pair[1].index,
+            });
+        }
+    }
+    Ok(())
+}
+
 fn finish_or_forced_error(
     state: TrueState,
     stop: RolloutStop,
     trace: Vec<RolloutStep>,
-    forced: Option<&ForcedSemanticAction>,
-    forced_applied: bool,
+    forced: &[ForcedSemanticAction],
+    next_forced: usize,
 ) -> Result<RolloutResult, RolloutError> {
-    if let Some(forced) = forced
-        && !forced_applied
-    {
+    if let Some(forced_action) = forced.get(next_forced) {
         return Err(RolloutError::ForcedIndexNotReached {
-            index: forced.index,
+            index: forced_action.index,
             stop,
         });
     }
