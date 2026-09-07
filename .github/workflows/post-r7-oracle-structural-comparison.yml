@@ -57,8 +57,8 @@ jobs:
           os.chdir(oracle)
           import urza_solver as u
 
-          # This is intentionally a diagnostic probe, not a claim that the
-          # corrected Oracle ceiling has converged at this width.
+          # Diagnostic only. Oracle is clairvoyant and this width is not a
+          # convergence claim; Rust remains the information-faithful subject.
           u.ACTION_CAP = 60
           beam = 120
           depth = 40
@@ -94,6 +94,10 @@ jobs:
               opening = ""
               rust_result = ""
               rust_actions = []
+              rust_engine_opportunities = []
+              rust_engine_candidates = []
+              rust_tutor_opportunities = []
+              rust_tutor_candidates = []
               for line in lines:
                   if line.startswith("META\t"):
                       meta = line
@@ -111,6 +115,14 @@ jobs:
                       rust_result = line
                   elif line.startswith("RUST_ACTION\t"):
                       rust_actions.append(line)
+                  elif line.startswith("ENGINE_OPPORTUNITY\t"):
+                      rust_engine_opportunities.append(line)
+                  elif line.startswith("ENGINE_CANDIDATE\t"):
+                      rust_engine_candidates.append(line)
+                  elif line.startswith("TUTOR_OPPORTUNITY\t"):
+                      rust_tutor_opportunities.append(line)
+                  elif line.startswith("TUTOR_CANDIDATE\t"):
+                      rust_tutor_candidates.append(line)
 
               if len(deck) != 99:
                   raise RuntimeError(f"{rust_path.name}: expected 99-card deck order, got {len(deck)}")
@@ -122,7 +134,7 @@ jobs:
                       if part.startswith("hidden_world=")
                   )
               )
-              win_turn, family, trace, states = u.search_hand(
+              oracle_result = u.search_hand(
                   deck,
                   7,
                   [],
@@ -132,6 +144,13 @@ jobs:
                   caverns_live=caverns_live,
                   rng_root_seed=hidden_world,
               )
+              if not isinstance(oracle_result, tuple) or len(oracle_result) < 4:
+                  raise RuntimeError(f"unexpected Oracle search_hand result: {oracle_result!r}")
+              win_turn = oracle_result[0]
+              family = oracle_result[1]
+              trace = oracle_result[2]
+              states = oracle_result[3]
+              oracle_extras = oracle_result[4:]
 
               oracle_trace_path = rust_path.with_suffix(".oracle.txt")
               oracle_trace_path.write_text("\n".join(trace) + "\n", encoding="utf-8")
@@ -153,18 +172,29 @@ jobs:
                   line for line in trace if "tutor" in line.lower() or any(name in line for name in tutors)
               ]
 
+              oracle_result_line = (
+                  f"ORACLE_RESULT\twin_turn={win_turn}\tfamily={family}\tstates={states}"
+                  f"\ttrace_len={len(trace)}\treturn_arity={len(oracle_result)}"
+                  f"\textras={oracle_extras!r}"
+              )
               report = []
               report.append(f"CASE\t{rust_path.stem}")
               report.append(f"OPENING\t{opening}")
               report.append(f"ORACLE_PROBE\tbeam={beam}\tdepth={depth}\taction_cap={u.ACTION_CAP}\tclairvoyant=true")
               report.append(rust_result)
-              report.append(
-                  f"ORACLE_RESULT\twin_turn={win_turn}\tfamily={family}\tstates={states}\ttrace_len={len(trace)}"
-              )
+              report.append(oracle_result_line)
               for engine in engines:
                   report.append(
                       f"ENGINE\t{engine}\trust_actions={len(rust_engine[engine])}\toracle_trace_hits={len(oracle_engine[engine])}"
                   )
+              report.append(f"RUST_ENGINE_OPPORTUNITIES\t{len(rust_engine_opportunities)}")
+              report.extend(rust_engine_opportunities)
+              report.append(f"RUST_ENGINE_CANDIDATES\t{len(rust_engine_candidates)}")
+              report.extend(rust_engine_candidates)
+              report.append(f"RUST_TUTOR_OPPORTUNITIES\t{len(rust_tutor_opportunities)}")
+              report.extend(rust_tutor_opportunities)
+              report.append(f"RUST_TUTOR_CANDIDATES\t{len(rust_tutor_candidates)}")
+              report.extend(rust_tutor_candidates)
               report.append(f"RUST_TUTOR_LINES\t{len(rust_tutor)}")
               report.extend(f"RUST_TUTOR\t{line}" for line in rust_tutor)
               report.append(f"ORACLE_TUTOR_LINES\t{len(oracle_tutor)}")
@@ -182,6 +212,21 @@ jobs:
               rust_path.with_suffix(".summary.txt").write_text(text, encoding="utf-8")
               summaries.append(text)
               print(text)
+
+              matched = [
+                  "MATCHED_PHYSICAL_WORLD\tstep_alignment=false\toracle_clairvoyant=true\trust_information_faithful=true",
+                  meta,
+                  f"OPENING\t{opening}",
+                  rust_result,
+                  oracle_result_line,
+                  "--- RUST FROZEN POLICY TRACE ---",
+                  *rust_actions,
+                  "--- ORACLE DIAGNOSTIC TRACE ---",
+                  *trace,
+              ]
+              rust_path.with_suffix(".matched.txt").write_text(
+                  "\n".join(matched) + "\n", encoding="utf-8"
+              )
 
           (compare / "comparison-summary.txt").write_text(
               "\n".join(summaries), encoding="utf-8"
