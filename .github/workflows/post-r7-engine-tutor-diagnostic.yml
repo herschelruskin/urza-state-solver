@@ -1,0 +1,35 @@
+name: Post-R7 engine tutor diagnostic
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - 'rust/crates/urza-mulligan/src/bin/post-r7-engine-tutor-diagnostic.rs'
+      - '.github/workflows/post-r7-engine-tutor-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  engine-tutor-opening:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        opening: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.89
+      - name: Scan natural engine and tutor opportunities
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd rust
+          cargo run --quiet --locked -p urza-mulligan --bin post-r7-engine-tutor-diagnostic -- ${{ matrix.opening }} 245632 8 > ../engine-tutor-${{ matrix.opening }}.tsv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: engine-tutor-${{ matrix.opening }}-${{ github.sha }}
+          path: engine-tutor-${{ matrix.opening }}.tsv
+          if-no-files-found: error
