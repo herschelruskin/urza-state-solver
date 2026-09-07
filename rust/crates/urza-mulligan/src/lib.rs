@@ -15,6 +15,7 @@ mod engine;
 #[cfg(test)]
 mod future_invariance;
 mod interpretation;
+mod post_r7_real_state_boundary;
 mod report;
 mod signal_boundary;
 mod teacher_annotations;
@@ -29,6 +30,7 @@ pub use corpus_review::*;
 pub use decision::*;
 pub use engine::*;
 pub use interpretation::*;
+pub use post_r7_real_state_boundary::*;
 pub use report::*;
 pub use signal_boundary::*;
 pub use teacher_annotations::*;
