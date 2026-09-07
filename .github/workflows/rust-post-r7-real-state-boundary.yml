@@ -1,0 +1,55 @@
+name: Post-R7 real-state teacher boundary
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - "rust/**"
+      - "decklist.txt"
+      - ".github/workflows/rust-post-r7-real-state-boundary.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  real-state-boundary:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, '[post-r7-real-state]')
+    strategy:
+      fail-fast: false
+      matrix:
+        tier:
+          - kept-opening
+          - turn-1-main
+          - turn-2-main
+          - late-real-state
+        probe:
+          - r5
+          - d0
+          - d1
+          - d2
+          - d3
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+      - name: Locked dependency graph
+        working-directory: rust
+        run: cargo metadata --locked --format-version 1 --no-deps > /dev/null
+      - name: Probe replayed real-state boundary
+        working-directory: rust
+        run: |
+          set -o pipefail
+          output="../post-r7-real-state-${{ matrix.tier }}-${{ matrix.probe }}.tsv"
+          printf 'REPOSITORY_SHA\t%s\n' "$GITHUB_SHA" > "$output"
+          printf 'REPOSITORY_DIRTY\tfalse\n' >> "$output"
+          cargo run --locked -p urza-mulligan --bin post-r7-real-state-boundary -- "${{ matrix.tier }}" "${{ matrix.probe }}" | tee -a "$output"
+      - name: Upload real-state boundary probe
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-r7-real-state-${{ matrix.tier }}-${{ matrix.probe }}-${{ github.sha }}
+          path: post-r7-real-state-${{ matrix.tier }}-${{ matrix.probe }}.tsv
+          if-no-files-found: error
