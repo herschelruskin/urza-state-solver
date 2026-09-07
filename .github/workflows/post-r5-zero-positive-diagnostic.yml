@@ -1,0 +1,71 @@
+name: Post-R5 zero-positive diagnostics
+
+on:
+  push:
+    branches:
+      - rust-engine-rebuild
+    paths:
+      - rust/POST_R5_ZERO_POSITIVE_DIAGNOSTIC.md
+      - rust/R4_ACCEPTANCE.md
+      - rust/crates/urza-rules/**
+      - rust/crates/urza-rollout/**
+      - rust/crates/urza-policy/**
+      - rust/crates/urza-policy-bridge/**
+      - rust/crates/urza-mulligan/src/bin/post-r5-one-deviation-search.rs
+      - .github/workflows/post-r5-zero-positive-diagnostic.yml
+  workflow_dispatch:
+
+jobs:
+  terminal-reachability:
+    name: terminal-reachability
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+      - name: Revalidate accepted R4 rules and terminal witnesses
+        working-directory: rust
+        shell: bash
+        run: |
+          set -o pipefail
+          {
+            echo 'TERMINAL_REACHABILITY_REVALIDATION'
+            cargo test --locked -p urza-rules --lib
+            cargo run --locked -p urza-cli -- r4-audit
+          } | tee ../terminal-reachability.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: terminal-reachability-${{ github.sha }}
+          path: terminal-reachability.txt
+          if-no-files-found: warn
+
+  one-deviation:
+    name: one-deviation-opening-${{ matrix.opening_offset }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        opening_offset: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+      - name: Probe one legal deviation on a real Horizon world
+        working-directory: rust
+        shell: bash
+        run: |
+          set -o pipefail
+          cargo run --release --locked -p urza-mulligan --bin post-r5-one-deviation-search -- \
+            ${{ matrix.opening_offset }} 245312 1 \
+            | tee ../one-deviation-${{ matrix.opening_offset }}.tsv
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: one-deviation-${{ matrix.opening_offset }}-${{ github.sha }}
+          path: one-deviation-${{ matrix.opening_offset }}.tsv
+          if-no-files-found: warn
