@@ -645,10 +645,7 @@ mod tests {
 
         let result = rollout(state, &cards, &DeterministicPolicy, config(64)).unwrap();
 
-        assert_eq!(
-            result.stop,
-            RolloutStop::Terminal(WinFamily::BasaltGadgeteer)
-        );
+        assert_eq!(result.stop, RolloutStop::Horizon);
         let produce_before_cast = result
             .trace
             .iter()
@@ -662,6 +659,7 @@ mod tests {
                 .iter()
                 .any(|step| step.class == PolicyActionClass::CastSpell)
         );
+        assert_eq!(result.final_information.commander.zone, CommanderZone::Battlefield);
     }
 
     #[test]
