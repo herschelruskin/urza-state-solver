@@ -3,12 +3,14 @@
 use std::collections::BTreeSet;
 
 use thiserror::Error;
-use urza_info::{CanonicalObjectId, CardDefId, InformationState, PendingDecisionKind};
+use urza_info::{
+    CanonicalObjectId, CardDefId, InformationState, PendingDecisionKind, Phase,
+};
 
 /// R5 deterministic policy layer on top of the frozen R4
 /// rules/information/value contract.
 pub const POLICY_PHASE: &str = "R5";
-pub const POLICY_VERSION: &str = "r5_candidate_contract_v3";
+pub const POLICY_VERSION: &str = "r5_candidate_contract_v4_phase_tutor";
 
 /// Opaque decision-local handle supplied by the execution bridge.
 ///
@@ -80,8 +82,10 @@ pub enum PolicyError {
 ///
 /// The policy consumes only public information and public candidate metadata.
 /// It guarantees stable selection independent of candidate enumeration order,
-/// prevents ordinary actions from skipping a pending rules decision, and drains
-/// an already-nonempty public stack before adding more optional actions.
+/// prevents ordinary actions from skipping a pending rules decision, drains an
+/// already-nonempty public stack before adding more optional actions, preserves
+/// reusable mana sources outside the main phase, and avoids deterministic
+/// fail-to-find when a staged modeled tutor has at least one real target.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct DeterministicPolicy;
 
@@ -93,11 +97,17 @@ impl DeterministicPolicy {
     ) -> Result<Option<ActionToken>, PolicyError> {
         validate_candidate_tokens(candidates)?;
 
-        let pending = information.pending.kind() != PendingDecisionKind::None;
+        let pending_kind = information.pending.kind();
+        let pending = pending_kind != PendingDecisionKind::None;
         let drain_stack = !pending && !information.stack.is_empty();
         let has_contingent = candidates
             .iter()
             .any(|candidate| candidate.class == PolicyActionClass::ContingentDecision);
+        let prefer_real_search_target = is_search_target_pending(pending_kind)
+            && candidates.iter().any(|candidate| {
+                candidate.class == PolicyActionClass::ContingentDecision
+                    && candidate.key.card.is_some()
+            });
 
         if pending && !has_contingent {
             return Err(PolicyError::MissingContingentCandidate);
@@ -112,7 +122,18 @@ impl DeterministicPolicy {
                 !pending || candidate.class == PolicyActionClass::ContingentDecision
             })
             .min_by(|left, right| {
-                semantic_rank(left, drain_stack).cmp(&semantic_rank(right, drain_stack))
+                semantic_rank(
+                    left,
+                    drain_stack,
+                    information.phase,
+                    prefer_real_search_target,
+                )
+                .cmp(&semantic_rank(
+                    right,
+                    drain_stack,
+                    information.phase,
+                    prefer_real_search_target,
+                ))
             });
 
         Ok(selected.map(|candidate| candidate.token))
@@ -132,32 +153,78 @@ fn validate_candidate_tokens(candidates: &[PolicyCandidate]) -> Result<(), Polic
 fn semantic_rank(
     candidate: &PolicyCandidate,
     drain_stack: bool,
-) -> (u8, &PolicyPublicKey, ActionToken) {
+    phase: Phase,
+    prefer_real_search_target: bool,
+) -> (u8, u8, &PolicyPublicKey, ActionToken) {
     (
-        class_rank(candidate.class, drain_stack),
+        class_rank(candidate.class, drain_stack, phase),
+        search_target_rank(candidate, prefer_real_search_target),
         &candidate.key,
         candidate.token,
     )
 }
 
-const fn class_rank(class: PolicyActionClass, drain_stack: bool) -> u8 {
+const fn search_target_rank(
+    candidate: &PolicyCandidate,
+    prefer_real_search_target: bool,
+) -> u8 {
+    if prefer_real_search_target
+        && candidate.class == PolicyActionClass::ContingentDecision
+        && candidate.key.card.is_none()
+    {
+        1
+    } else {
+        0
+    }
+}
+
+const fn is_search_target_pending(kind: PendingDecisionKind) -> bool {
+    matches!(
+        kind,
+        PendingDecisionKind::TutorTarget
+            | PendingDecisionKind::TransmuteTarget
+            | PendingDecisionKind::WhirTarget
+            | PendingDecisionKind::ReshapeTarget
+            | PendingDecisionKind::BayTarget
+            | PendingDecisionKind::SagaTarget
+            | PendingDecisionKind::TezzeretTarget
+    )
+}
+
+const fn class_rank(class: PolicyActionClass, drain_stack: bool, phase: Phase) -> u8 {
     if drain_stack {
         match class {
             PolicyActionClass::ContingentDecision => 0,
             PolicyActionClass::PassPriority => 1,
             PolicyActionClass::PlayLand => 2,
-            PolicyActionClass::ProduceMana => 3,
-            PolicyActionClass::CastSpell => 4,
-            PolicyActionClass::ActivateAbility => 5,
+            PolicyActionClass::CastSpell => 3,
+            PolicyActionClass::ActivateAbility => 4,
+            PolicyActionClass::ProduceMana => 5,
         }
-    } else {
+    } else if matches!(phase, Phase::PrecombatMain) {
+        // Demand-driven main-phase mana: use an already-legal action before
+        // tapping more resources. If nothing spendable is legal yet, produce
+        // mana and re-evaluate on the next public decision.
         match class {
             PolicyActionClass::ContingentDecision => 0,
             PolicyActionClass::PlayLand => 1,
-            PolicyActionClass::ProduceMana => 2,
-            PolicyActionClass::CastSpell => 3,
-            PolicyActionClass::ActivateAbility => 4,
+            PolicyActionClass::CastSpell => 2,
+            PolicyActionClass::ActivateAbility => 3,
+            PolicyActionClass::ProduceMana => 4,
             PolicyActionClass::PassPriority => 5,
+        }
+    } else {
+        // Outside the main phase, do not pre-emptively tap reusable sources
+        // merely because a mana action is legal. Already-affordable public
+        // spells/activations may still be taken; otherwise preserve resources
+        // and advance the phase.
+        match class {
+            PolicyActionClass::ContingentDecision => 0,
+            PolicyActionClass::PlayLand => 1,
+            PolicyActionClass::CastSpell => 2,
+            PolicyActionClass::ActivateAbility => 3,
+            PolicyActionClass::PassPriority => 4,
+            PolicyActionClass::ProduceMana => 5,
         }
     }
 }
@@ -232,6 +299,122 @@ mod tests {
 
         assert_eq!(forward, Some(ActionToken(9)));
         assert_eq!(forward, reversed);
+    }
+
+    #[test]
+    fn main_phase_spends_before_producing_more_mana() {
+        let information = InformationState {
+            phase: Phase::PrecombatMain,
+            ..InformationState::default()
+        };
+        let policy = DeterministicPolicy;
+        let mana = candidate(2, PolicyActionClass::ProduceMana, 10, 1);
+        let spell = candidate(3, PolicyActionClass::CastSpell, 20, 2);
+        let pass = candidate(9, PolicyActionClass::PassPriority, 0, 0);
+
+        assert_eq!(
+            policy.choose(&information, &[mana, spell, pass]).unwrap(),
+            Some(ActionToken(3))
+        );
+    }
+
+    #[test]
+    fn main_phase_produces_mana_when_no_spend_action_is_legal() {
+        let information = InformationState {
+            phase: Phase::PrecombatMain,
+            ..InformationState::default()
+        };
+        let policy = DeterministicPolicy;
+        let mana = candidate(2, PolicyActionClass::ProduceMana, 10, 1);
+        let pass = candidate(9, PolicyActionClass::PassPriority, 0, 0);
+
+        assert_eq!(
+            policy.choose(&information, &[mana, pass]).unwrap(),
+            Some(ActionToken(2))
+        );
+    }
+
+    #[test]
+    fn upkeep_preserves_reusable_mana_source_when_no_spend_action_is_legal() {
+        let information = InformationState {
+            phase: Phase::Upkeep,
+            ..InformationState::default()
+        };
+        let policy = DeterministicPolicy;
+        let mana = candidate(2, PolicyActionClass::ProduceMana, 10, 1);
+        let pass = candidate(9, PolicyActionClass::PassPriority, 0, 0);
+
+        assert_eq!(
+            policy.choose(&information, &[mana, pass]).unwrap(),
+            Some(ActionToken(9))
+        );
+    }
+
+    #[test]
+    fn tutor_target_prefers_a_real_card_over_fail_to_find() {
+        let information = InformationState {
+            pending: ObservedPendingDecision::TutorTarget {
+                source: ObservedSourceRef {
+                    canonical_object: None,
+                    card: CardDefId(44),
+                },
+            },
+            ..InformationState::default()
+        };
+        let policy = DeterministicPolicy;
+        let fail_to_find = PolicyCandidate::new(
+            ActionToken(1),
+            PolicyActionClass::ContingentDecision,
+            PolicyPublicKey {
+                kind: 28,
+                card: None,
+                ..PolicyPublicKey::default()
+            },
+        );
+        let real_target = PolicyCandidate::new(
+            ActionToken(9),
+            PolicyActionClass::ContingentDecision,
+            PolicyPublicKey {
+                kind: 28,
+                card: Some(CardDefId(79)),
+                ..PolicyPublicKey::default()
+            },
+        );
+
+        assert_eq!(
+            policy
+                .choose(&information, &[fail_to_find, real_target])
+                .unwrap(),
+            Some(ActionToken(9))
+        );
+    }
+
+    #[test]
+    fn tutor_target_can_fail_to_find_when_no_real_target_exists() {
+        let information = InformationState {
+            pending: ObservedPendingDecision::TutorTarget {
+                source: ObservedSourceRef {
+                    canonical_object: None,
+                    card: CardDefId(44),
+                },
+            },
+            ..InformationState::default()
+        };
+        let policy = DeterministicPolicy;
+        let fail_to_find = PolicyCandidate::new(
+            ActionToken(1),
+            PolicyActionClass::ContingentDecision,
+            PolicyPublicKey {
+                kind: 28,
+                card: None,
+                ..PolicyPublicKey::default()
+            },
+        );
+
+        assert_eq!(
+            policy.choose(&information, &[fail_to_find]).unwrap(),
+            Some(ActionToken(1))
+        );
     }
 
     #[test]
