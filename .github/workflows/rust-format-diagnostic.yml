@@ -1,0 +1,31 @@
+name: Rust formatter diagnostic
+
+on:
+  push:
+    branches:
+      - rust-engine-rebuild
+    paths:
+      - .github/workflows/rust-format-diagnostic.yml
+      - rust/crates/urza-rollout/src/lib.rs
+      - rust/crates/urza-mulligan/src/bin/post-r5-one-deviation-search.rs
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+          components: rustfmt
+      - name: Format diagnostic files
+        working-directory: rust
+        run: cargo fmt --all
+      - uses: actions/upload-artifact@v4
+        with:
+          name: formatted-diagnostic-${{ github.sha }}
+          path: |
+            rust/crates/urza-rollout/src/lib.rs
+            rust/crates/urza-mulligan/src/bin/post-r5-one-deviation-search.rs
+          if-no-files-found: error
