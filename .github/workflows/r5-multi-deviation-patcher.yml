@@ -1,4 +1,4 @@
-name: R5 Top lifecycle patch helper
+name: R5 permanent lifecycle patch helper
 
 on:
   push:
@@ -22,7 +22,7 @@ jobs:
         with:
           toolchain: 1.89.0
           components: rustfmt
-      - name: Patch exact Top leave-the-battlefield lifecycle defects
+      - name: Patch exact permanent leave-the-battlefield lifecycle defects
         run: python3 .github/scripts/patch_chrome_top_lifecycle.py
       - name: Format and test rules repairs
         working-directory: rust
@@ -30,6 +30,7 @@ jobs:
           cargo fmt --all
           cargo test --locked -p urza-rules --lib chrome_copy_top_draw_clears_delayed_sacrifice_when_token_leaves
           cargo test --locked -p urza-rules --lib top_draw_moves_attached_aura_to_graveyard_when_top_leaves
+          cargo test --locked -p urza-rules --lib knack_bounce_moves_attached_aura_to_graveyard_when_target_leaves
           cargo test --locked -p urza-rules --lib
       - name: Commit exact rules repair
         run: |
@@ -40,5 +41,5 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add rust/crates/urza-rules/src/lib.rs
-          git commit -m '[R5] Clean attached Aura when Top leaves'
+          git commit -m '[R5] Clean attached Aura when Knack target leaves'
           git push
