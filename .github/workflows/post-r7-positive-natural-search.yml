@@ -1,0 +1,39 @@
+name: Post-R7 positive natural trajectory search
+
+on:
+  push:
+    branches:
+      - rust-engine-rebuild
+    paths:
+      - rust/crates/urza-mulligan/src/bin/post-r7-positive-natural-search.rs
+      - .github/workflows/post-r7-positive-natural-search.yml
+  workflow_dispatch:
+
+jobs:
+  search:
+    name: opening-${{ matrix.opening_offset }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        opening_offset: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+      - name: Scan accepted pilot keep
+        working-directory: rust
+        shell: bash
+        run: |
+          set -o pipefail
+          cargo run --locked -p urza-mulligan --bin post-r7-positive-natural-search -- \
+            ${{ matrix.opening_offset }} 200000 256 \
+            | tee ../positive-natural-${{ matrix.opening_offset }}.tsv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: positive-natural-${{ matrix.opening_offset }}-${{ github.sha }}
+          path: positive-natural-${{ matrix.opening_offset }}.tsv
+          if-no-files-found: error
