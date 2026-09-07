@@ -23,6 +23,7 @@ struct TeacherProbe {
     actions: String,
     truncated: String,
     incomplete_branches: String,
+    ceiling_pruned_actions: String,
 }
 
 fn main() {
@@ -123,7 +124,7 @@ fn run() -> Result<(), Box<dyn Error>> {
                 .parse::<u8>()?;
             let probe = teacher_probe(&case.state, &cards, world, depth)?;
             println!(
-                "BOUNDARY_STAGE_RESULT\tcase={}\tstage={}\tvalue={}\tstatus={}\tgroups={}\tactions={}\ttruncated={}\tincomplete={}\telapsed_ms={}",
+                "BOUNDARY_STAGE_RESULT\tcase={}\tstage={}\tvalue={}\tstatus={}\tgroups={}\tactions={}\ttruncated={}\tincomplete={}\tceiling_pruned={}\telapsed_ms={}",
                 case.case_name,
                 stage,
                 probe.value,
@@ -132,6 +133,7 @@ fn run() -> Result<(), Box<dyn Error>> {
                 probe.actions,
                 probe.truncated,
                 probe.incomplete_branches,
+                probe.ceiling_pruned_actions,
                 started.elapsed().as_millis()
             );
         }
@@ -175,6 +177,7 @@ fn teacher_probe(
             actions: result.stats.public_actions_evaluated.to_string(),
             truncated: result.stats.truncated_public_groups.to_string(),
             incomplete_branches: result.stats.incomplete_candidate_branches.to_string(),
+            ceiling_pruned_actions: result.stats.ceiling_pruned_public_actions.to_string(),
         }),
         Err(TeacherSearchError::IncompleteLeaf { stop, .. }) => Ok(incomplete_teacher_probe(
             format!("incomplete-leaf:{stop:?}"),
@@ -194,5 +197,6 @@ fn incomplete_teacher_probe(status: String) -> TeacherProbe {
         actions: String::from("NA"),
         truncated: String::from("NA"),
         incomplete_branches: String::from("NA"),
+        ceiling_pruned_actions: String::from("NA"),
     }
 }
