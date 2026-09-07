@@ -6,6 +6,7 @@ on:
       - rust-engine-rebuild
     paths:
       - .github/workflows/r5-multi-deviation-patcher.yml
+      - .github/scripts/patch_chrome_top_lifecycle.py
 
 permissions:
   contents: write
@@ -20,98 +21,15 @@ jobs:
         with:
           toolchain: 1.89.0
           components: rustfmt
-      - name: Patch exact Chrome-copy Top lifecycle defect and regression
-        shell: bash
+      - name: Patch Chrome-copy Top lifecycle defect
+        run: python3 .github/scripts/patch_chrome_top_lifecycle.py
+      - name: Format and test rules repair
+        working-directory: rust
         run: |
-          python3 <<'PY'
-          from pathlib import Path
-
-          path = Path('rust/crates/urza-rules/src/lib.rs')
-          text = path.read_text()
-
-          old = '''    let permanent = permanents.remove(index);
-    state.battlefield = BattlefieldZone::new(permanents);
-    if permanent.token {
-        return Ok(());
-    }
-'''
-          new = '''    let permanent = permanents.remove(index);
-    state.battlefield = BattlefieldZone::new(permanents);
-    state.delayed_events.retain(|event| {
-        !matches!(
-            event,
-            DelayedEvent::ChromeCopySacrifice {
-                object: delayed,
-                ..
-            } if *delayed == object_id
-        )
-    });
-    if permanent.token {
-        return Ok(());
-    }
-'''
-          if text.count(old) != 1:
-              raise SystemExit(f'expected one Top-return lifecycle match, found {text.count(old)}')
-          text = text.replace(old, new, 1)
-
-          marker = '''    #[test]
-    fn generic_scry_observes_before_top_bottom_choice() {
-'''
-          test = '''    #[test]
-    fn chrome_copy_top_draw_clears_delayed_sacrifice_when_token_leaves() {
-        let cards = TestCards::r4();
-        let mut copied_top = artifact_permanent(7, TOP);
-        copied_top.token = true;
-        let mut state = TrueState {
-            turn: 5,
-            phase: Phase::Upkeep,
-            window: Window::Priority,
-            library: TrueLibrary::unknown(vec![TARGET_A, TARGET_B]),
-            battlefield: BattlefieldZone::new(vec![copied_top]),
-            delayed_events: vec![DelayedEvent::ChromeCopySacrifice {
-                object: ObjectId(7),
-                card: TOP,
-                due_turn: 5,
-            }],
-            ..TrueState::default()
-        };
-        state.validate().unwrap();
-
-        apply_action(
-            &mut state,
-            &cards,
-            Action::ActivateTopDraw {
-                source: ObjectId(7),
-            },
-        )
-        .unwrap();
-        let transition = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
-
-        assert_eq!(
-            transition.observations,
-            vec![RulesObservation::CardsDrawn(vec![TARGET_A])]
-        );
-        assert_eq!(state.hand.cards(), &[TARGET_A]);
-        assert_eq!(state.library.cards(), &[TARGET_B]);
-        assert!(state.battlefield.get(ObjectId(7)).is_none());
-        assert!(state.delayed_events.is_empty());
-        assert!(state.stack.is_empty());
-        assert_eq!(state.window, Window::Priority);
-        state.validate().unwrap();
-    }
-
-'''
-          if text.count(marker) != 1:
-              raise SystemExit(f'expected one test insertion marker, found {text.count(marker)}')
-          text = text.replace(marker, test + marker, 1)
-          path.write_text(text)
-          PY
-          cd rust
           cargo fmt --all
           cargo test --locked -p urza-rules --lib chrome_copy_top_draw_clears_delayed_sacrifice_when_token_leaves
           cargo test --locked -p urza-rules --lib
       - name: Commit exact rules repair
-        shell: bash
         run: |
           if git diff --quiet; then
             echo 'repair already applied'
