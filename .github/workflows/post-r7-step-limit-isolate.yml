@@ -31,7 +31,7 @@ jobs:
           cargo run --locked -p urza-mulligan --bin post-r7-step-limit-isolate -- \
             4 216536 1 \
             | tee ../step-limit-isolate.tsv
-          if grep -q '^STEP_LIMIT' ../step-limit-isolate.tsv; then
+          if grep -q $'^STEP_LIMIT\t' ../step-limit-isolate.tsv; then
             echo 'isolated world still reaches StepLimit' >&2
             exit 1
           fi
