@@ -7,6 +7,7 @@ on:
     paths:
       - .github/workflows/r5-multi-deviation-patcher.yml
       - .github/scripts/patch_chrome_top_lifecycle.py
+  workflow_dispatch:
 
 permissions:
   contents: write
