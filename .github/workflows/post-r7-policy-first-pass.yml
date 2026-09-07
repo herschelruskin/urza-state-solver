@@ -1,0 +1,39 @@
+name: Post-R7 first-pass policy gate
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - 'rust/crates/urza-policy/**'
+      - 'rust/crates/urza-policy-bridge/**'
+      - 'rust/crates/urza-rollout/**'
+      - '.github/workflows/post-r7-policy-first-pass.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  policy-first-pass:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.89
+        with:
+          components: rustfmt, clippy
+      - name: Format
+        working-directory: rust
+        run: cargo fmt --all -- --check
+      - name: Policy tests
+        working-directory: rust
+        run: cargo test --locked -p urza-policy
+      - name: Bridge tests
+        working-directory: rust
+        run: cargo test --locked -p urza-policy-bridge
+      - name: Rollout tests
+        working-directory: rust
+        run: cargo test --locked -p urza-rollout
+      - name: Clippy policy surface
+        working-directory: rust
+        run: cargo clippy --locked -p urza-policy -p urza-policy-bridge -p urza-rollout --all-targets -- -D warnings
