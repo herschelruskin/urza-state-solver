@@ -1,5 +1,6 @@
 name: Post-R7 first-pass policy gate
 
+# Re-run from the formatted Rust-1.89-compatible first-pass head.
 on:
   push:
     branches: [rust-engine-rebuild]
