@@ -1,6 +1,7 @@
 name: Post-R7 engine tutor diagnostic
 
 # Re-run the frozen 128-world population after each accepted post-R7 mechanics slice.
+# Clue cash-in is counted separately because the Clue token is not a deck identity.
 on:
   push:
     branches: [rust-engine-rebuild]
@@ -66,6 +67,7 @@ jobs:
 
           totals = {'worlds': 0, 'decisions': 0, 'terminal_worlds': 0}
           engines = defaultdict(lambda: defaultdict(int))
+          clue = {'visible_decisions': 0, 'candidate_decisions': 0, 'selected_decisions': 0}
           tutors = defaultdict(lambda: {
               'resolutions': 0,
               'fail_to_find': 0,
@@ -88,6 +90,10 @@ jobs:
                       engine = f.pop('engine')
                       for key, value in f.items():
                           engines[engine][key] += int(value)
+                  elif line.startswith('CLUE_SUMMARY\t'):
+                      f = parse_fields(line)
+                      for key in clue:
+                          clue[key] += int(f[key])
                   elif line.startswith('TUTOR_SUMMARY\t'):
                       f = parse_fields(line)
                       source = f['source']
@@ -112,6 +118,10 @@ jobs:
                   'tutor_target_candidate_decisions', 'tutor_target_selected',
               )
               out.append('ENGINE_SUMMARY\tengine=' + engine + '\t' + '\t'.join(f'{key}={stats[key]}' for key in keys))
+          out.append(
+              'CLUE_SUMMARY\t'
+              + '\t'.join(f'{key}={clue[key]}' for key in ('visible_decisions', 'candidate_decisions', 'selected_decisions'))
+          )
 
           tutor_total = {'resolutions': 0, 'fail_to_find': 0, 'real_target': 0, 'candidate_targets': 0}
           for source in sorted(tutors):
