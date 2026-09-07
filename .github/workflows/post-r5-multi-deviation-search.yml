@@ -5,6 +5,7 @@ on:
     branches:
       - rust-engine-rebuild
     paths:
+      - rust/crates/urza-rules/**
       - rust/crates/urza-rollout/**
       - rust/crates/urza-policy/**
       - rust/crates/urza-policy-bridge/**
