@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/scripts/patch_post_r7_ring.py'
       - '.github/scripts/fix_post_r7_ring_version_namespace.py'
+      - '.github/scripts/fix_post_r7_ring_bridge_count.py'
       - '.github/workflows/r7-second-pass-ring-patcher.yml'
   workflow_dispatch:
 
@@ -25,6 +26,7 @@ jobs:
         run: |
           python .github/scripts/patch_post_r7_ring.py
           python .github/scripts/fix_post_r7_ring_version_namespace.py
+          python .github/scripts/fix_post_r7_ring_bridge_count.py
       - name: Format
         working-directory: rust
         run: cargo fmt --all
