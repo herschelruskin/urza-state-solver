@@ -1,0 +1,105 @@
+name: Post-R7 matched One Ring comparison
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - '.github/workflows/post-r7-ring-matched-comparison.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  matched-ring:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout Rust rebuild
+        uses: actions/checkout@v4
+        with:
+          path: rustrepo
+      - name: Checkout corrected Oracle ceiling
+        uses: actions/checkout@v4
+        with:
+          ref: oracle-ceiling-permissions-trigger-order
+          path: oracle
+      - uses: dtolnay/rust-toolchain@1.89
+      - name: Export exact Ring world from current Rust surface
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p compare
+          cd rustrepo/rust
+          cargo run --quiet --locked -p urza-mulligan --bin post-r7-oracle-comparison-export -- 1 245323 > ../../compare/ring.rust.tsv
+      - name: Run same corrected-Oracle probe and summarize Ring usage
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os
+          import sys
+          from pathlib import Path
+
+          root = Path.cwd().resolve()
+          rust_path = root / 'compare' / 'ring.rust.tsv'
+          lines = rust_path.read_text().splitlines()
+          meta = next(line for line in lines if line.startswith('META\t'))
+          opening = next(line for line in lines if line.startswith('OPENING_HAND\t'))
+          rust_result = next(line for line in lines if line.startswith('RUST_RESULT\t'))
+          deck = [line.split('\t', 2)[2] for line in lines if line.startswith('DECK_CARD\t')]
+          if len(deck) != 99:
+              raise SystemExit(f'expected 99 cards, got {len(deck)}')
+          fields = dict(
+              part.split('=', 1) for part in meta.split('\t')[1:] if '=' in part
+          )
+          hidden_world = int(fields['hidden_world'])
+          caverns = fields.get('caverns', 'false').lower() == 'true'
+
+          oracle = root / 'oracle'
+          sys.path.insert(0, str(oracle))
+          os.chdir(oracle)
+          import urza_solver as u
+          u.ACTION_CAP = 60
+          result = u.search_hand(
+              deck,
+              7,
+              [],
+              max_turn=7,
+              beam=120,
+              max_actions_per_turn=40,
+              caverns_live=caverns,
+              rng_root_seed=hidden_world,
+          )
+          if not isinstance(result, tuple) or len(result) < 4:
+              raise SystemExit(f'unexpected Oracle result: {result!r}')
+          win_turn, family, trace, states = result[:4]
+
+          rust_actions = [line for line in lines if line.startswith('RUST_ACTION\t')]
+          rust_ring = [line for line in rust_actions if '\tcard=The One Ring\t' in line]
+          ring_candidates = [line for line in lines if line.startswith('ENGINE_CANDIDATE\t') and '\tcard=The One Ring\t' in line]
+          oracle_ring = [line for line in trace if 'The One Ring' in line]
+
+          out = [
+              'MATCHED_RING\trust_information_faithful=true\toracle_clairvoyant=true',
+              meta,
+              opening,
+              rust_result,
+              f'RUST_RING_ACTIONS\tcount={len(rust_ring)}',
+              *rust_ring,
+              f'RUST_RING_CANDIDATES\tcount={len(ring_candidates)}',
+              *ring_candidates,
+              f'ORACLE_RESULT\twin_turn={win_turn}\tfamily={family}\tstates={states}\ttrace_len={len(trace)}',
+              f'ORACLE_RING_HITS\tcount={len(oracle_ring)}',
+              *[f'ORACLE_RING\t{line}' for line in oracle_ring],
+          ]
+          text = '\n'.join(out) + '\n'
+          (root / 'compare' / 'ring-summary.txt').write_text(text)
+          (root / 'compare' / 'ring.oracle.txt').write_text('\n'.join(trace) + '\n')
+          print(text)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: post-r7-ring-matched-${{ github.sha }}
+          path: compare/
+          if-no-files-found: error
