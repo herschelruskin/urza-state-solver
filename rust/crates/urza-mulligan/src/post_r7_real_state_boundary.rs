@@ -2,20 +2,22 @@ use std::error::Error;
 use std::io;
 
 use urza_cards::R4CardDatabase;
-use urza_core::{CardDefId, Phase, TrueState};
+use urza_core::{CardDefId, PendingDecision, Phase, TrueState, Window};
+use urza_info::observe;
 use urza_mc::sample_hidden_world;
 use urza_policy::DeterministicPolicy;
 use urza_rng::WorldId;
 use urza_rollout::{RolloutConfig, RolloutStop, replay_trace, rollout};
+use urza_rules::{advance_automatic, detect_terminal_win};
 
 use crate::{
     KeptHand, MulliganStage, bridge_kept_hand, draw_fresh_seven, load_commander_deck,
     r7_pilot_generation_config, sample_pregame_context,
 };
 
-pub const POST_R7_REAL_STATE_BOUNDARY_VERSION: &str = "post_r7_real_state_boundary_v1";
+pub const POST_R7_REAL_STATE_BOUNDARY_VERSION: &str = "post_r7_real_state_boundary_v2";
 pub const POST_R7_REAL_STATE_SOURCE_VERSION: &str =
-    "accepted_r7_pilot_world_100005_r5_world_200000_v1";
+    "accepted_r7_pilot_world_100005_r5_world_200000_decision_states_v2";
 pub const POST_R7_REAL_STATE_SOURCE_OPENING_WORLD: WorldId = WorldId(100_005);
 pub const POST_R7_REAL_STATE_R5_ROOT_SEED: u64 = 0x5052_3752_4541_0001;
 pub const POST_R7_REAL_STATE_TEACHER_ROOT_SEED: u64 = 0x5052_3754_4541_0001;
@@ -26,13 +28,13 @@ pub const POST_R7_REAL_STATE_TEACHER_STEPS: u16 = 12;
 pub const POST_R7_REAL_STATE_TEACHER_CANDIDATES: usize = 12;
 pub const POST_R7_REAL_STATE_BOUNDARY: &str = "Post-R7 real-state boundary cases are replayed from one actual accepted pilot keep and one \
      frozen-production hidden-world rollout. They are not synthetic abundant-mana states. The four \
-     tiers are the exact sampled kept opening state, the state after the first frozen-R5 action at \
-     the first turn-1 main-phase decision, the state after the first frozen-R5 action at the first \
-     turn-2 main-phase decision, and a late state after the penultimate frozen-R5 action. R5 and \
-     bounded teacher probes independently resample only from each tier's legal public library belief. \
-     Teacher results are a read-only oracle/sidecar and cannot alter mulligan decisions, production \
-     policy, cache identity, interpretation features, or gameplay. Incomplete and timeout outcomes \
-     are diagnostic statuses, never losses.";
+     tiers are the exact sampled kept opening state, the exact decision state immediately before the \
+     first frozen-R5 turn-1 main-phase action, the exact decision state immediately before the first \
+     frozen-R5 turn-2 main-phase action, and the exact decision state immediately before the final \
+     frozen-R5 action. R5 and bounded teacher probes independently resample only from each tier's \
+     legal public library belief. Teacher results are a read-only oracle/sidecar and cannot alter \
+     mulligan decisions, production policy, cache identity, interpretation features, or gameplay. \
+     Incomplete and timeout outcomes are diagnostic statuses, never losses.";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum PostR7RealStateTier {
@@ -64,7 +66,7 @@ impl PostR7RealStateTier {
 pub struct PostR7RealStateCase {
     pub tier: PostR7RealStateTier,
     pub state: TrueState,
-    /// Number of frozen-production source actions replayed to construct this state.
+    /// Number of frozen-production source actions already replayed before this decision state.
     pub source_action_prefix_len: usize,
     pub source_trace_len: usize,
     pub source_stop: RolloutStop,
@@ -132,28 +134,28 @@ pub fn build_post_r7_real_state_cases(
         .iter()
         .position(|step| step.turn == 2 && step.phase == Phase::PrecombatMain)
         .ok_or_else(|| io::Error::other("source trajectory has no turn-2 main-phase decision"))?;
-    let late_index = source.trace.len() - 2;
+    let late_index = source.trace.len() - 1;
     if late_index <= t2_index {
         return Err(Box::new(io::Error::other(
             "source trajectory does not extend beyond the turn-2 ladder tier",
         )));
     }
 
-    let t1 = replay_after_action(
+    let t1 = replay_decision_state(
         &exact_opening,
         cards,
         source_config,
         &source.trace,
         t1_index,
     )?;
-    let t2 = replay_after_action(
+    let t2 = replay_decision_state(
         &exact_opening,
         cards,
         source_config,
         &source.trace,
         t2_index,
     )?;
-    let late = replay_after_action(
+    let late = replay_decision_state(
         &exact_opening,
         cards,
         source_config,
@@ -174,7 +176,7 @@ pub fn build_post_r7_real_state_cases(
         PostR7RealStateCase {
             tier: PostR7RealStateTier::Turn1Main,
             state: t1,
-            source_action_prefix_len: t1_index + 1,
+            source_action_prefix_len: t1_index,
             source_trace_len: source.trace.len(),
             source_stop: source.stop,
             source_opening_world: opening_world,
@@ -183,7 +185,7 @@ pub fn build_post_r7_real_state_cases(
         PostR7RealStateCase {
             tier: PostR7RealStateTier::Turn2Main,
             state: t2,
-            source_action_prefix_len: t2_index + 1,
+            source_action_prefix_len: t2_index,
             source_trace_len: source.trace.len(),
             source_stop: source.stop,
             source_opening_world: opening_world,
@@ -192,7 +194,7 @@ pub fn build_post_r7_real_state_cases(
         PostR7RealStateCase {
             tier: PostR7RealStateTier::LateRealState,
             state: late,
-            source_action_prefix_len: late_index + 1,
+            source_action_prefix_len: late_index,
             source_trace_len: source.trace.len(),
             source_stop: source.stop,
             source_opening_world: opening_world,
@@ -206,17 +208,49 @@ pub fn build_post_r7_real_state_cases(
     Ok(cases)
 }
 
-fn replay_after_action(
+fn replay_decision_state(
     initial: &TrueState,
     cards: &R4CardDatabase,
     config: RolloutConfig,
     trace: &[urza_rollout::RolloutStep],
     index: usize,
 ) -> Result<TrueState, Box<dyn Error>> {
-    let end = index
-        .checked_add(1)
-        .ok_or_else(|| io::Error::other("source trace prefix overflow"))?;
-    Ok(replay_trace(initial.clone(), cards, config, &trace[..end])?)
+    let expected = trace
+        .get(index)
+        .ok_or_else(|| io::Error::other("source trace decision index out of bounds"))?;
+    let mut state = replay_trace(initial.clone(), cards, config, &trace[..index])?;
+
+    if detect_terminal_win(&observe(&state)?, cards).is_some() {
+        return Err(Box::new(io::Error::other(format!(
+            "source replay reached terminal before trace decision {index}"
+        ))));
+    }
+    if state.stack.is_empty()
+        && matches!(state.pending, PendingDecision::None)
+        && matches!(
+            (state.phase, state.window),
+            (Phase::OpponentCycle, Window::None) | (Phase::Untap, Window::None)
+        )
+    {
+        advance_automatic(&mut state, cards)?;
+    }
+
+    let information = observe(&state)?;
+    if information.turn != expected.turn
+        || information.phase != expected.phase
+        || information.window != expected.window
+    {
+        return Err(Box::new(io::Error::other(format!(
+            "source decision-state replay mismatch at {index}: expected turn {} {:?}/{:?}, got turn {} {:?}/{:?}",
+            expected.turn,
+            expected.phase,
+            expected.window,
+            information.turn,
+            information.phase,
+            information.window
+        ))));
+    }
+    Ok(state)
 }
 
 fn assert_expected_source_hand(
@@ -250,10 +284,9 @@ fn assert_expected_source_hand(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use urza_info::observe;
 
     #[test]
-    fn real_state_ladder_is_replayed_from_one_accepted_pilot_trajectory() {
+    fn real_state_ladder_is_replayed_from_exact_source_decision_states() {
         let cards = R4CardDatabase::load().unwrap();
         let cases = build_post_r7_real_state_cases(&cards).unwrap();
 
@@ -276,8 +309,10 @@ mod tests {
         let turn1 = observe(&cases[1].state).unwrap();
         assert_eq!(turn1.turn, 1);
         assert_eq!(turn1.phase, Phase::PrecombatMain);
+        assert_eq!(turn1.window, Window::Priority);
         let turn2 = observe(&cases[2].state).unwrap();
         assert_eq!(turn2.turn, 2);
         assert_eq!(turn2.phase, Phase::PrecombatMain);
+        assert_eq!(turn2.window, Window::Priority);
     }
 }
