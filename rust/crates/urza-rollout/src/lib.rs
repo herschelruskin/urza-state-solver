@@ -65,6 +65,21 @@ pub struct RolloutResult {
     pub trace: Vec<RolloutStep>,
 }
 
+/// Diagnostic-only semantic override for exactly one executed rollout step.
+///
+/// The normal deterministic policy and all execution-local liveness history
+/// are preserved before and after this step. The forced action is resolved
+/// from the public legal candidate bridge at `index`; it may intentionally
+/// override an execution-local liveness suppression because the diagnostic is
+/// asking whether another legal action at that exact natural state changes the
+/// outcome.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ForcedSemanticAction {
+    pub index: u32,
+    pub class: PolicyActionClass,
+    pub key: PolicyPublicKey,
+}
+
 #[derive(Debug, Error)]
 pub enum RolloutError {
     #[error(transparent)]
@@ -81,6 +96,12 @@ pub enum RolloutError {
     StepIndexOverflow,
     #[error("rollout logical event id overflow")]
     LogicalEventOverflow,
+    #[error("forced semantic candidate is missing at rollout step {0}")]
+    ForcedCandidateMissing(u32),
+    #[error("forced semantic candidate is ambiguous at rollout step {0}")]
+    ForcedCandidateAmbiguous(u32),
+    #[error("rollout stopped at {stop:?} before forced step {index} was reached")]
+    ForcedIndexNotReached { index: u32, stop: RolloutStop },
     #[error("replay trace step {position} declares index {declared}")]
     ReplayStepIndexMismatch { position: u32, declared: u32 },
     #[error("replay stopped before trace step {index}: {stop:?}")]
@@ -119,19 +140,54 @@ pub fn rollout_with_logical_event_offset<D: CardDatabase>(
     config: RolloutConfig,
     logical_event_offset: u64,
 ) -> Result<RolloutResult, RolloutError> {
+    rollout_internal(
+        initial,
+        cards,
+        policy,
+        config,
+        logical_event_offset,
+        None,
+    )
+}
+
+pub fn rollout_with_forced_semantic_action<D: CardDatabase>(
+    initial: TrueState,
+    cards: &D,
+    policy: &DeterministicPolicy,
+    config: RolloutConfig,
+    forced: &ForcedSemanticAction,
+) -> Result<RolloutResult, RolloutError> {
+    rollout_internal(initial, cards, policy, config, 0, Some(forced))
+}
+
+fn rollout_internal<D: CardDatabase>(
+    initial: TrueState,
+    cards: &D,
+    policy: &DeterministicPolicy,
+    config: RolloutConfig,
+    logical_event_offset: u64,
+    forced: Option<&ForcedSemanticAction>,
+) -> Result<RolloutResult, RolloutError> {
     let mut state = initial;
     let mut trace = Vec::new();
     let mut deterministic_attempts = AttemptMap::new();
     let mut monotone_attempts = AttemptMap::new();
     let mut mana_observations = ManaObservationMap::new();
+    let mut forced_applied = false;
 
     loop {
         if let Some(stop) = prepare_for_policy(&mut state, cards)? {
-            return finish(state, stop, trace);
+            return finish_or_forced_error(state, stop, trace, forced, forced_applied);
         }
 
         if trace.len() >= config.max_steps as usize {
-            return finish(state, RolloutStop::StepLimit, trace);
+            return finish_or_forced_error(
+                state,
+                RolloutStop::StepLimit,
+                trace,
+                forced,
+                forced_applied,
+            );
         }
 
         let bridge = CandidateBridge::build(&state, cards)?;
@@ -149,22 +205,29 @@ pub fn rollout_with_logical_event_offset<D: CardDatabase>(
             .cloned()
             .collect();
         let Some(token) = policy.choose(bridge.information(), &available)? else {
-            return finish(state, RolloutStop::NoCandidate, trace);
+            return finish_or_forced_error(
+                state,
+                RolloutStop::NoCandidate,
+                trace,
+                forced,
+                forced_applied,
+            );
         };
-        let selected = bridge
+        let policy_selected = bridge
             .candidates()
             .iter()
             .find(|candidate| candidate.token == token)
             .cloned()
             .ok_or(RolloutError::MissingResolvedAction(token))?;
-        let selected_class = selected.class;
-        let selected_semantics = (selected_class, selected.key.clone());
+        let policy_selected_class = policy_selected.class;
+        let policy_selected_semantics =
+            (policy_selected_class, policy_selected.key.clone());
         let decision_state = state.clone();
 
         if matches!(decision_state.pending, PendingDecision::None)
-            && suppressible_ordinary(selected_class)
+            && suppressible_ordinary(policy_selected_class)
             && let Some(previous) = mana_observations.get(&resource_key)
-            && previous.semantics == selected_semantics
+            && previous.semantics == policy_selected_semantics
             && mana_strictly_dominates(decision_state.mana, previous.mana)
         {
             let pattern = &trace[previous.trace_index..];
@@ -189,15 +252,32 @@ pub fn rollout_with_logical_event_offset<D: CardDatabase>(
                 monotone_attempts
                     .entry(resource_key)
                     .or_default()
-                    .insert(selected_semantics);
+                    .insert(policy_selected_semantics);
                 continue;
             }
         }
 
-        let action = bridge
-            .resolved_action(token)
-            .ok_or(RolloutError::MissingResolvedAction(token))?;
         let index = u32::try_from(trace.len()).map_err(|_| RolloutError::StepIndexOverflow)?;
+        let selected = if let Some(forced) = forced.filter(|forced| forced.index == index) {
+            let mut matching = bridge.candidates().iter().filter(|candidate| {
+                candidate.class == forced.class && candidate.key == forced.key
+            });
+            let Some(candidate) = matching.next() else {
+                return Err(RolloutError::ForcedCandidateMissing(index));
+            };
+            if matching.next().is_some() {
+                return Err(RolloutError::ForcedCandidateAmbiguous(index));
+            }
+            forced_applied = true;
+            candidate.clone()
+        } else {
+            policy_selected
+        };
+        let selected_class = selected.class;
+        let selected_semantics = (selected_class, selected.key.clone());
+        let action = bridge
+            .resolved_action(selected.token)
+            .ok_or(RolloutError::MissingResolvedAction(selected.token))?;
         let rng_cursor_before = state.rng_occurrence_cursor;
 
         trace.push(RolloutStep {
@@ -364,6 +444,24 @@ fn execute<D: CardDatabase>(
         },
     )?;
     Ok(())
+}
+
+fn finish_or_forced_error(
+    state: TrueState,
+    stop: RolloutStop,
+    trace: Vec<RolloutStep>,
+    forced: Option<&ForcedSemanticAction>,
+    forced_applied: bool,
+) -> Result<RolloutResult, RolloutError> {
+    if let Some(forced) = forced
+        && !forced_applied
+    {
+        return Err(RolloutError::ForcedIndexNotReached {
+            index: forced.index,
+            stop,
+        });
+    }
+    finish(state, stop, trace)
 }
 
 fn finish(
@@ -693,6 +791,38 @@ mod tests {
             left_result.final_information,
             right_result.final_information
         );
+    }
+
+    #[test]
+    fn forced_baseline_semantics_reproduce_liveness_guard_exactly() {
+        let cards = cards();
+        let basalt = cards.card_id_by_name("Basalt Monolith").expect("Basalt");
+        let gadgeteer = cards
+            .card_id_by_name("Forensic Gadgeteer")
+            .expect("Gadgeteer");
+        let mut state = base_state(&cards, urza_rules::HORIZON_TURN);
+        state.phase = Phase::Upkeep;
+        state.battlefield =
+            BattlefieldZone::new(vec![permanent(20, basalt), permanent(25, gadgeteer)]);
+
+        let cfg = config(64);
+        let baseline = rollout(state.clone(), &cards, &DeterministicPolicy, cfg).unwrap();
+        let baseline_step = baseline.trace[baseline.trace.len() / 2].clone();
+        let forced = ForcedSemanticAction {
+            index: baseline_step.index,
+            class: baseline_step.class,
+            key: baseline_step.key,
+        };
+        let replayed = rollout_with_forced_semantic_action(
+            state,
+            &cards,
+            &DeterministicPolicy,
+            cfg,
+            &forced,
+        )
+        .unwrap();
+
+        assert_eq!(replayed, baseline);
     }
 
     #[test]
