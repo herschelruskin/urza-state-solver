@@ -55,13 +55,13 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.89.0
-      - name: Probe one legal deviation on a real Horizon world
+      - name: Probe one legal deviation across known Horizon worlds
         working-directory: rust
         shell: bash
         run: |
           set -o pipefail
           cargo run --release --locked -p urza-mulligan --bin post-r5-one-deviation-search -- \
-            ${{ matrix.opening_offset }} 245312 1 \
+            ${{ matrix.opening_offset }} 245312 64 \
             | tee ../one-deviation-${{ matrix.opening_offset }}.tsv
       - uses: actions/upload-artifact@v4
         if: always()
