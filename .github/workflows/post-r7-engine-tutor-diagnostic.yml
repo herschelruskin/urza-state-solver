@@ -4,6 +4,7 @@ on:
   push:
     branches: [rust-engine-rebuild]
     paths:
+      - 'rust/crates/urza-policy/**'
       - 'rust/crates/urza-mulligan/src/bin/post-r7-engine-tutor-diagnostic.rs'
       - '.github/workflows/post-r7-engine-tutor-diagnostic.yml'
   workflow_dispatch:
