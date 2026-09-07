@@ -1,0 +1,130 @@
+name: Post-R7 strategic value 128-world smoke
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - '.github/workflows/post-r7-strategic-value-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        opening: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.89
+      - name: Run eight hidden worlds
+        working-directory: rust
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo run --quiet --locked -p urza-mulligan --bin post-r7-strategic-value-smoke -- \
+            ${{ matrix.opening }} 245632 8 | tee ../strategic-value-${{ matrix.opening }}.tsv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: strategic-value-${{ matrix.opening }}-${{ github.sha }}
+          path: strategic-value-${{ matrix.opening }}.tsv
+          if-no-files-found: error
+
+  aggregate:
+    needs: smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: strategic-value-*-${{ github.sha }}
+          path: samples
+          merge-multiple: true
+      - name: Aggregate 128-world result
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          files = sorted(Path('samples').glob('strategic-value-*.tsv'))
+          if len(files) != 16:
+              raise SystemExit(f'expected 16 smoke files, found {len(files)}')
+
+          totals = {
+              'worlds': 0,
+              'baseline_terminals': 0,
+              'strategic_terminals': 0,
+              'strategic_decisions': 0,
+              'top_looks': 0,
+              'tutor_targets': 0,
+              'trigger_orders': 0,
+          }
+          rows = []
+          for path in files:
+              summary = next(
+                  (line for line in path.read_text().splitlines() if line.startswith('SUMMARY\t')),
+                  None,
+              )
+              if summary is None:
+                  raise SystemExit(f'missing SUMMARY in {path}')
+              fields = {}
+              for field in summary.split('\t')[1:]:
+                  key, value = field.split('=', 1)
+                  fields[key] = int(value)
+              if fields['worlds'] != 8:
+                  raise SystemExit(f'{path} reported {fields["worlds"]} worlds, expected 8')
+              for key in totals:
+                  totals[key] += fields[key]
+              rows.append(fields)
+
+          if totals['worlds'] != 128:
+              raise SystemExit(f'aggregate worlds={totals["worlds"]}, expected 128')
+
+          lines = [
+              '# Post-R7 strategic value 128-world smoke result',
+              '',
+              '## Status',
+              '',
+              '**GREEN — all 128 natural worlds completed without `NoCandidate` or `StepLimit`.**',
+              '',
+              f'- Source workflow commit: `${{ github.sha }}`',
+              f'- Worlds: **{totals["worlds"]}**',
+              f'- Frozen deterministic baseline terminals: **{totals["baseline_terminals"]}**',
+              f'- Strategic-policy terminals: **{totals["strategic_terminals"]}**',
+              f'- Strategic decisions: **{totals["strategic_decisions"]}**',
+              f'- Sensei Top look selections: **{totals["top_looks"]}**',
+              f'- Real staged tutor-target selections: **{totals["tutor_targets"]}**',
+              f'- Trigger-order decisions: **{totals["trigger_orders"]}**',
+              '',
+              '## Per-opening totals',
+              '',
+              '| Opening | Baseline terminals | Strategic terminals | Decisions | Top looks | Tutor targets | Trigger orders |',
+              '| ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
+          ]
+          for row in sorted(rows, key=lambda row: row['opening']):
+              lines.append(
+                  f'| {row["opening"]} | {row["baseline_terminals"]} | {row["strategic_terminals"]} | '
+                  f'{row["strategic_decisions"]} | {row["top_looks"]} | {row["tutor_targets"]} | {row["trigger_orders"]} |'
+              )
+          lines += [
+              '',
+              'This smoke uses the exact accepted post-R7 opening population and hidden-world range: 16 opening offsets, hidden worlds `245632..245639` for each opening. The smoke binary aborts on `NoCandidate` or `StepLimit`, so successful aggregation means all 128 worlds reached only normal horizon/terminal stops.',
+              '',
+          ]
+          Path('rust/POST_R7_STRATEGIC_VALUE_SMOKE_RESULT.md').write_text('\n'.join(lines))
+          print('\n'.join(lines))
+          PY
+      - name: Commit smoke result
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add rust/POST_R7_STRATEGIC_VALUE_SMOKE_RESULT.md
+          git commit -m "[R7] Record strategic value 128-world smoke"
+          git push
