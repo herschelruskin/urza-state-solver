@@ -5,6 +5,7 @@ on:
     branches: [rust-engine-rebuild]
     paths:
       - '.github/scripts/patch_post_r7_ring.py'
+      - '.github/scripts/fix_post_r7_ring_version_namespace.py'
       - '.github/workflows/r7-second-pass-ring-patcher.yml'
   workflow_dispatch:
 
@@ -21,7 +22,9 @@ jobs:
         with:
           components: rustfmt, clippy
       - name: Apply One Ring primitive and post-R7 database layer
-        run: python .github/scripts/patch_post_r7_ring.py
+        run: |
+          python .github/scripts/patch_post_r7_ring.py
+          python .github/scripts/fix_post_r7_ring_version_namespace.py
       - name: Format
         working-directory: rust
         run: cargo fmt --all
