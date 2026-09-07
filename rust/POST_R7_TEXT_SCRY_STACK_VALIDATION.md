@@ -1,6 +1,6 @@
 # Post-R7 Oracle-Text and Scry/Stack Validation
 
-Status: **MECHANICS VALIDATION SLICE**
+Status: **ACCEPTED — RETURN TO POLICY/VALUE**
 
 This checkpoint is intentionally narrow. It closes the remaining card-text and
 scry/stack questions before returning to policy/value work.
@@ -60,3 +60,29 @@ extra Top activation is valuable belongs to the upcoming policy/value pass.
 Historic classification for the current database comes from pinned R1 public
 type-line metadata: artifacts, legendary spells, and Sagas. Legendary lands do
 not create Assistant triggers because lands are played rather than cast.
+
+## Acceptance evidence
+
+Mechanics commit: `cb7eec3778c67ee2eab9a1fe341526b9f2f278d5`.
+
+Gate `34169213798` passed the complete affected surface:
+
+- `urza-cards` tests, including the four pinned non-empty Oracle-text digests
+- `urza-rules`, including Assistant/Uthros ordering in both directions
+- `urza-info`
+- `urza-policy-bridge`, including both public trigger-order candidates and a
+  legal Top look activation after ordering is fixed
+- `urza-rollout` liveness regressions
+- both post-R7 diagnostic binaries
+- rustfmt and clippy with warnings denied
+
+The unchanged-policy frozen 128-world smoke run `34169471868` completed all
+128 worlds successfully with no `NoCandidate`, StepLimit, or other liveness
+failure. It recorded 6,704 decisions and zero tutor fail-to-find events.
+
+Natural terminal count changed from 2 in the post-Clue checkpoint to 0 after
+real controlled-trigger ordering became a decision. This is not a rules or
+liveness failure: it is evidence that trigger ordering now materially changes
+trajectories and that the deterministic baseline does not yet value those
+choices strategically. That issue is explicitly handed to the policy/value
+phase rather than hidden by restoring fixed trigger insertion order.
