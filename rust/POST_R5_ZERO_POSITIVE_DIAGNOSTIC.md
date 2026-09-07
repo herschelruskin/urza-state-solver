@@ -17,7 +17,7 @@ This is sufficient to stop blind hidden-world widening and diagnose reachability
 
 1. **Freeze the negative checkpoint.** Preserve the 524,288-rollout result and frozen semantics above. **DONE.**
 2. **Revalidate terminal reachability.** Re-run the accepted R4 terminal-family gate: all 13 registered families must retain a real-catalog positive witness and an executable final-step transition through the public Rust rules API. Any failure is a concrete rules/terminal defect and stops policy broadening. **DONE.**
-3. **One-deviation natural-state search.** On real frozen-policy Horizon worlds, replay the baseline prefix, enumerate legal public candidates through `CandidateBridge`, force exactly one alternate semantic action, then return to accepted deterministic rollout with the same root/world and logical RNG coordinates. Stop on the first positive or incomplete diagnostic. **RECONNAISSANCE CLEAN/NEGATIVE; exact liveness-history continuation validation remains before closing this step.**
+3. **One-deviation natural-state search.** On real frozen-policy Horizon worlds, enumerate legal public candidates through `CandidateBridge`, force exactly one alternate semantic action inside the same rollout execution, and continue with the accepted deterministic policy while preserving root/world/logical RNG coordinates and execution-local liveness history. **DONE: bounded exact pass clean/negative.**
 4. **Two/three-deviation search with state deduplication.** Only if step 3 is clean and negative. This remains diagnostic POLICY/search work, not production-policy replacement. **PENDING.**
 5. **Policy-independent legal trajectory search.** Only if bounded deviations remain negative. Use a diagnostic best-first/beam search over the accepted Rust candidate bridge and rules engine to answer whether a legal positive path exists; never port Python gameplay logic or silently install the diagnostic search as production policy. **PENDING.**
 
@@ -32,11 +32,13 @@ Current-head diagnostic CI revalidated the accepted R4 terminal boundary without
 
 Conclusion: there is no evidence that terminal recognition or the accepted executable final-step boundary is dead. A zero-positive natural rollout population must be diagnosed farther upstream in reachability/search/policy unless a new concrete rules defect is isolated.
 
-## One-deviation reconnaissance
+## One-deviation diagnostic
 
-Diagnostic implementation: `rust/crates/urza-mulligan/src/bin/post-r5-one-deviation-search.rs`.
+Diagnostic implementation: `rust/crates/urza-mulligan/src/bin/post-r5-one-deviation-search.rs` plus the diagnostic-only forced-semantic hook in `urza-rollout`.
 
-The runner recreates accepted pilot openings, samples real hidden worlds, runs the frozen deterministic baseline, enumerates legal public candidates at each baseline decision, forces one alternate semantic action with the same root/world/logical event coordinate, then returns to the frozen deterministic rollout.
+The exact runner recreates accepted pilot openings, samples real hidden worlds, runs the frozen deterministic baseline, enumerates legal public candidates at each baseline decision, then reruns from the original sampled state and forces exactly one alternate semantic action at that executed trace index inside the same rollout loop. The production path still supplies no forced action. `ROLLOUT_VERSION` remains `r5_deterministic_rollout_v3`.
+
+The forced run therefore reconstructs and preserves the same execution-local deterministic-attempt, monotone-attempt, and mana-recurrence history before the intervention, uses the same root/world/logical RNG coordinates, and continues through the same R5 rollout machinery afterward. A regression test also forces the baseline semantic action through a liveness-sensitive Basalt Monolith / Forensic Gadgeteer path and requires exact equality with the ordinary baseline result.
 
 ### Initial breadth check
 
@@ -51,9 +53,9 @@ On hidden world `245312` for each of all 16 accepted pilot openings:
 - `NoCandidate`: **0**;
 - widest decision: **21 legal candidates**.
 
-### 64-world-per-opening broadening
+### Exact 64-world-per-opening pass
 
-On the already-known clean Horizon block `245312..245375`, for all 16 accepted pilot openings:
+On the already-known clean Horizon block `245312..245375`, for all 16 accepted pilot openings, with the exact in-rollout forced-decision implementation:
 
 - baseline worlds: **1,024**;
 - baseline decisions: **42,554**;
@@ -63,25 +65,17 @@ On the already-known clean Horizon block `245312..245375`, for all 16 accepted p
 - `StepLimit`: **0**;
 - `NoCandidate`: **0**;
 - maximum baseline trace length observed: **131**;
-- widest decision observed: **25 legal candidates**.
+- widest decision observed: **25 legal candidates**;
+- execution-local liveness history: **preserved**.
 
-This is a clean finite negative for the current one-deviation reconnaissance sample. It materially weakens the hypothesis that the frozen policy is merely one obvious local action error away from a positive on typical sampled states, but it does not prove that no one-deviation positive exists elsewhere.
-
-### Exact-continuation caveat
-
-The reconnaissance runner replays the prefix through the public rules API and resumes after the forced action with `rollout_with_logical_event_offset`. That preserves game state plus root/world/logical RNG coordinates, but the resumed rollout initializes fresh execution-local R5 liveness/cycle-guard attempt maps. Those maps are intentionally private to `urza-rollout`.
-
-Therefore:
-
-- a future positive from this runner would first be classified as a **legal one-deviation reachability witness**, then revalidated inside a single rollout execution before being called an exact production-policy miss;
-- the current negative evidence is strong reconnaissance, but step 3 should not be declared fully closed until an in-rollout forced-decision diagnostic preserves the exact liveness-history maps across the intervention;
-- do **not** advance to two/three deviations merely by ignoring this boundary.
+This closes the bounded one-deviation step as a clean finite negative. It does not prove that no one-deviation positive exists anywhere, but within this deliberately broad natural-state sample there is no evidence that one legal action correction followed by the frozen R5 policy is sufficient to reach a registered terminal. The earlier fresh-continuation caveat is removed for this pass.
 
 ## Decision boundary
 
 - R4 final acceptance states that all 13 audited terminal families have a real-catalog positive witness and an executable final-step witness through the public rules transition API; current-head revalidation passed.
 - If future terminal revalidation fails, isolate and repair only the reproducible correctness defect before continuing.
-- If an exact one-deviation execution produces a natural terminal, record the opening world, hidden world, decision index, baseline semantic action, forced semantic action, terminal family/turn, and complete semantic trace. That identifies a concrete deterministic-policy miss.
-- If an exact one-deviation continuation produces `StepLimit` or `NoCandidate`, stop expansion and isolate that exact opening/hidden world/deviation.
-- If exact bounded deviations are negative but policy-independent search wins, classify the gap as POLICY/search evidence rather than permission to mutate rules.
+- If a future one-deviation execution produces a natural terminal, record the opening world, hidden world, decision index, baseline semantic action, forced semantic action, terminal family/turn, and complete semantic trace. That identifies a concrete deterministic-policy miss.
+- If any bounded-deviation continuation produces `StepLimit` or `NoCandidate`, stop expansion and isolate that exact opening/hidden world/deviation.
+- Step 4 may now be attempted if explicitly desired, but it must remain a diagnostic two/three-deviation search with state deduplication; the one-deviation result is not permission to alter rules or production policy.
+- If bounded deviations are negative but policy-independent search wins, classify the gap as POLICY/search evidence rather than permission to mutate rules.
 - An all-Horizon teacher is not adequate evidence for R7 mulligan-value separation; positive reachability/density must be established before relying on that signal for learning.
