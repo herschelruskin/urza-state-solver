@@ -1,9 +1,12 @@
 #![forbid(unsafe_code)]
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use thiserror::Error;
-use urza_info::{CanonicalObjectId, CardDefId, InformationState, PendingDecisionKind, Phase};
+use urza_info::{
+    AbilityId, CanonicalObjectId, CardDefId, InformationState, ObservedPendingDecision,
+    PendingDecisionKind, Phase,
+};
 
 /// R5 deterministic policy layer on top of the frozen R4
 /// rules/information/value contract.
@@ -136,6 +139,392 @@ impl DeterministicPolicy {
             });
 
         Ok(selected.map(|candidate| candidate.token))
+    }
+}
+
+/// Explicit post-R7 policy namespace. The frozen R5 `DeterministicPolicy`
+/// remains unchanged so historical rollout/cache identities do not silently
+/// acquire strategic semantics.
+pub const POST_R7_STRATEGIC_POLICY_VERSION: &str = "post_r7_strategic_value_v1";
+
+/// Common selector contract used by rollout. Implementations receive only the
+/// public `InformationState` and bridge-produced public candidates.
+pub trait PolicySelector {
+    fn choose(
+        &self,
+        information: &InformationState,
+        candidates: &[PolicyCandidate],
+    ) -> Result<Option<ActionToken>, PolicyError>;
+}
+
+impl PolicySelector for DeterministicPolicy {
+    fn choose(
+        &self,
+        information: &InformationState,
+        candidates: &[PolicyCandidate],
+    ) -> Result<Option<ActionToken>, PolicyError> {
+        DeterministicPolicy::choose(self, information, candidates)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TerminalRecipe {
+    required: Vec<CardDefId>,
+}
+
+impl TerminalRecipe {
+    pub fn new(mut required: Vec<CardDefId>) -> Self {
+        required.sort_unstable();
+        required.dedup();
+        Self { required }
+    }
+
+    pub fn required(&self) -> &[CardDefId] {
+        &self.required
+    }
+}
+
+/// Public, caller-supplied strategic metadata. Card identities and bridge kind
+/// codes are public catalog/bridge facts; no execution object IDs or hidden
+/// library order enter this configuration.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StrategicPolicyConfig {
+    pub default_card_value: i32,
+    pub unknown_card_value: i32,
+    pub card_values: BTreeMap<CardDefId, i32>,
+    pub action_kind_values: BTreeMap<u16, i32>,
+    pub stack_intervention_kind_values: BTreeMap<u16, i32>,
+    pub stack_intervention_trigger_abilities: BTreeSet<AbilityId>,
+    pub terminal_recipes: Vec<TerminalRecipe>,
+    pub assistant_scry_ability: Option<AbilityId>,
+    pub uthros_draw_ability: Option<AbilityId>,
+}
+
+impl Default for StrategicPolicyConfig {
+    fn default() -> Self {
+        Self {
+            default_card_value: 50,
+            unknown_card_value: 50,
+            card_values: BTreeMap::new(),
+            action_kind_values: BTreeMap::new(),
+            stack_intervention_kind_values: BTreeMap::new(),
+            stack_intervention_trigger_abilities: BTreeSet::new(),
+            terminal_recipes: Vec::new(),
+            assistant_scry_ability: None,
+            uthros_draw_ability: None,
+        }
+    }
+}
+
+/// Information-faithful post-R7 selector for engine, tutor, library-selection,
+/// and terminal-precursor choices.
+///
+/// This is deliberately a compact deterministic value layer, not a Python
+/// gameplay-policy port. Unknown cards receive only `unknown_card_value`;
+/// identities are scored only after they are public in hand/battlefield,
+/// observed by scry/Top, or exposed as legal tutor candidates.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StrategicPolicy {
+    config: StrategicPolicyConfig,
+}
+
+impl StrategicPolicy {
+    pub fn new(config: StrategicPolicyConfig) -> Self {
+        Self { config }
+    }
+
+    pub fn config(&self) -> &StrategicPolicyConfig {
+        &self.config
+    }
+
+    pub fn choose(
+        &self,
+        information: &InformationState,
+        candidates: &[PolicyCandidate],
+    ) -> Result<Option<ActionToken>, PolicyError> {
+        validate_candidate_tokens(candidates)?;
+
+        let pending_kind = information.pending.kind();
+        let pending = pending_kind != PendingDecisionKind::None;
+        let has_contingent = candidates
+            .iter()
+            .any(|candidate| candidate.class == PolicyActionClass::ContingentDecision);
+        if pending && !has_contingent {
+            return Err(PolicyError::MissingContingentCandidate);
+        }
+        if !pending && has_contingent {
+            return Err(PolicyError::ContingentCandidateWithoutPending);
+        }
+
+        let drain_stack = !pending && !information.stack.is_empty();
+        let selected = candidates
+            .iter()
+            .filter(|candidate| {
+                !pending || candidate.class == PolicyActionClass::ContingentDecision
+            })
+            .min_by(|left, right| {
+                self.action_bucket(information, left, drain_stack)
+                    .cmp(&self.action_bucket(information, right, drain_stack))
+                    .then_with(|| {
+                        self.candidate_score(information, right)
+                            .cmp(&self.candidate_score(information, left))
+                    })
+                    .then_with(|| left.key.cmp(&right.key))
+                    .then_with(|| left.token.cmp(&right.token))
+            });
+
+        Ok(selected.map(|candidate| candidate.token))
+    }
+
+    fn action_bucket(
+        &self,
+        information: &InformationState,
+        candidate: &PolicyCandidate,
+        drain_stack: bool,
+    ) -> u8 {
+        if information.pending.kind() != PendingDecisionKind::None {
+            return 0;
+        }
+        if drain_stack {
+            if self.stack_intervention_score(information, candidate) > 0 {
+                return 0;
+            }
+            return match candidate.class {
+                PolicyActionClass::PassPriority => 1,
+                PolicyActionClass::ActivateAbility => 2,
+                PolicyActionClass::CastSpell => 3,
+                PolicyActionClass::PlayLand => 4,
+                PolicyActionClass::ProduceMana => 5,
+                PolicyActionClass::ManaSetup => 6,
+                PolicyActionClass::ContingentDecision => 7,
+            };
+        }
+
+        if matches!(information.phase, Phase::PrecombatMain) {
+            match candidate.class {
+                PolicyActionClass::PlayLand => 0,
+                PolicyActionClass::CastSpell | PolicyActionClass::ActivateAbility => 1,
+                PolicyActionClass::ProduceMana => 2,
+                PolicyActionClass::ManaSetup => 3,
+                PolicyActionClass::PassPriority => 4,
+                PolicyActionClass::ContingentDecision => 5,
+            }
+        } else {
+            match candidate.class {
+                PolicyActionClass::PlayLand => 0,
+                PolicyActionClass::CastSpell | PolicyActionClass::ActivateAbility => 1,
+                PolicyActionClass::PassPriority => 2,
+                PolicyActionClass::ProduceMana => 3,
+                PolicyActionClass::ManaSetup => 4,
+                PolicyActionClass::ContingentDecision => 5,
+            }
+        }
+    }
+
+    fn candidate_score(&self, information: &InformationState, candidate: &PolicyCandidate) -> i64 {
+        let pending_kind = information.pending.kind();
+        if pending_kind != PendingDecisionKind::None {
+            return self.contingent_score(information, candidate, pending_kind);
+        }
+
+        let kind_value = i64::from(
+            self.config
+                .action_kind_values
+                .get(&candidate.key.kind)
+                .copied()
+                .unwrap_or_default(),
+        );
+        let card_value = match (candidate.class, candidate.key.card) {
+            (PolicyActionClass::CastSpell, Some(card)) => self.deployment_value(information, card),
+            (PolicyActionClass::ActivateAbility, Some(card)) => {
+                i64::from(self.base_card_value(card))
+            }
+            _ => 0,
+        };
+        kind_value + card_value + self.stack_intervention_score(information, candidate)
+    }
+
+    fn contingent_score(
+        &self,
+        information: &InformationState,
+        candidate: &PolicyCandidate,
+        pending_kind: PendingDecisionKind,
+    ) -> i64 {
+        if is_search_target_pending(pending_kind) {
+            return candidate.key.card.map_or(i64::MIN / 4, |card| {
+                self.acquisition_value(information, card)
+            });
+        }
+
+        match &information.pending {
+            ObservedPendingDecision::ScryChoice { .. } => {
+                self.scry_choice_value(information, &candidate.key.detail)
+            }
+            ObservedPendingDecision::TopReorder { .. } => {
+                self.top_order_value(information, &candidate.key.detail)
+            }
+            ObservedPendingDecision::TriggerOrder { trigger_count, .. } => {
+                self.trigger_order_value(information, *trigger_count, &candidate.key.detail)
+            }
+            _ => candidate
+                .key
+                .card
+                .map_or(0, |card| self.acquisition_value(information, card)),
+        }
+    }
+
+    fn scry_choice_value(&self, information: &InformationState, detail: &[u16]) -> i64 {
+        let Some((&top_len, rest)) = detail.split_first() else {
+            return 0;
+        };
+        let top_len = usize::from(top_len);
+        if top_len > rest.len() {
+            return 0;
+        }
+        if top_len == 0 {
+            return i64::from(self.config.unknown_card_value) * 100;
+        }
+        let card = CardDefId(rest[0]);
+        let value = self.acquisition_value(information, card);
+        let keep_observed_tie_break = i64::from(value >= i64::from(self.config.unknown_card_value));
+        value * 100 + keep_observed_tie_break
+    }
+
+    fn top_order_value(&self, information: &InformationState, detail: &[u16]) -> i64 {
+        detail
+            .iter()
+            .take(8)
+            .enumerate()
+            .map(|(index, card)| {
+                let shift = 7_u32.saturating_sub(u32::try_from(index).unwrap_or(7));
+                self.acquisition_value(information, CardDefId(*card)) * (1_i64 << shift)
+            })
+            .sum()
+    }
+
+    fn trigger_order_value(
+        &self,
+        information: &InformationState,
+        trigger_count: u8,
+        detail: &[u16],
+    ) -> i64 {
+        let count = usize::from(trigger_count);
+        if count == 0 || detail.len() != count || information.stack.len() < count {
+            return 0;
+        }
+        let Some(first_index) = detail.first().map(|index| usize::from(*index)) else {
+            return 0;
+        };
+        if first_index >= count {
+            return 0;
+        }
+        let block = &information.stack[information.stack.len() - count..];
+        let first_ability = block[first_index].ability;
+        let Some(top) = information.library.known_top.first().copied() else {
+            return 0;
+        };
+        let delta =
+            self.acquisition_value(information, top) - i64::from(self.config.unknown_card_value);
+        if delta > 0 && first_ability == self.config.uthros_draw_ability {
+            10_000 + delta
+        } else if delta < 0 && first_ability == self.config.assistant_scry_ability {
+            10_000 - delta
+        } else {
+            0
+        }
+    }
+
+    fn stack_intervention_score(
+        &self,
+        information: &InformationState,
+        candidate: &PolicyCandidate,
+    ) -> i64 {
+        if candidate.class != PolicyActionClass::ActivateAbility
+            || information.library.known_top.len() >= 3
+        {
+            return 0;
+        }
+        let Some(value) = self
+            .config
+            .stack_intervention_kind_values
+            .get(&candidate.key.kind)
+            .copied()
+        else {
+            return 0;
+        };
+        let relevant_trigger = information.stack.iter().any(|object| {
+            object.ability.is_some_and(|ability| {
+                self.config
+                    .stack_intervention_trigger_abilities
+                    .contains(&ability)
+            })
+        });
+        i64::from(value) * i64::from(relevant_trigger)
+    }
+
+    fn acquisition_value(&self, information: &InformationState, card: CardDefId) -> i64 {
+        let mut present = BTreeSet::new();
+        present.extend(information.hand.iter().copied());
+        present.extend(
+            information
+                .battlefield
+                .iter()
+                .map(|permanent| permanent.card),
+        );
+        let base = i64::from(self.base_card_value(card));
+        if present.contains(&card) {
+            return base.saturating_sub(20);
+        }
+        base + self.recipe_gain(card, &present)
+    }
+
+    fn deployment_value(&self, information: &InformationState, card: CardDefId) -> i64 {
+        let present = information
+            .battlefield
+            .iter()
+            .map(|permanent| permanent.card)
+            .collect::<BTreeSet<_>>();
+        i64::from(self.base_card_value(card)) + self.recipe_gain(card, &present)
+    }
+
+    fn recipe_gain(&self, card: CardDefId, present: &BTreeSet<CardDefId>) -> i64 {
+        self.config
+            .terminal_recipes
+            .iter()
+            .filter(|recipe| recipe.required.contains(&card) && !present.contains(&card))
+            .map(|recipe| {
+                let missing = recipe
+                    .required
+                    .iter()
+                    .filter(|required| !present.contains(required))
+                    .count();
+                match missing {
+                    0 => 0,
+                    1 => 1_200,
+                    2 => 300,
+                    _ => 80,
+                }
+            })
+            .max()
+            .unwrap_or_default()
+    }
+
+    fn base_card_value(&self, card: CardDefId) -> i32 {
+        self.config
+            .card_values
+            .get(&card)
+            .copied()
+            .unwrap_or(self.config.default_card_value)
+    }
+}
+
+impl PolicySelector for StrategicPolicy {
+    fn choose(
+        &self,
+        information: &InformationState,
+        candidates: &[PolicyCandidate],
+    ) -> Result<Option<ActionToken>, PolicyError> {
+        StrategicPolicy::choose(self, information, candidates)
     }
 }
 

@@ -1,7 +1,7 @@
 use std::collections::{BTreeSet, HashMap};
 
 use urza_core::{ManaPool, PendingDecision, TrueState};
-use urza_policy::{DeterministicPolicy, PolicyActionClass, PolicyPublicKey};
+use urza_policy::{PolicyActionClass, PolicyPublicKey, PolicySelector};
 use urza_policy_bridge::CandidateBridge;
 use urza_rules::CardDatabase;
 
@@ -68,10 +68,10 @@ fn mana_amounts(pool: ManaPool) -> [u16; 6] {
 /// Any RNG occurrence advance also fails the proof so stochastic retries are
 /// never converted into liveness suppressions.
 #[allow(clippy::too_many_arguments)]
-pub(crate) fn cycle_stationary_through_budget<D: CardDatabase>(
+pub(crate) fn cycle_stationary_through_budget<D: CardDatabase, P: PolicySelector>(
     initial: &TrueState,
     cards: &D,
-    policy: &DeterministicPolicy,
+    policy: &P,
     config: RolloutConfig,
     logical_event_offset: u64,
     start_index: usize,

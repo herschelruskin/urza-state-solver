@@ -388,3 +388,10 @@ Added deterministic scoped-thread execution for independent sampled root/world j
 - Staging evidence: static baseline run `33951225114`; dynamic experiment run `33951419805`.
 - Production acceptance run `33951783273` passed the complete scheduler-scaling gate; permanent foundation validation follows on the finalized docs head.
 - Validated production closure commit: `ffcf8e0d98001bef7230d3c53cf038923b8609f8`; formatting-only hygiene run `33952039708` produced commit `364f028ced5b829ccd4b9c72a635d6a693376ceb`.
+
+
+## 2026-09-07 — Post-R7 strategic value policy candidate
+
+Classification: `POLICY/VALUE`. No rules/card broadening and no Python gameplay-policy port.
+
+Added an explicitly versioned public-information `StrategicPolicy` while preserving the frozen R5 `DeterministicPolicy` and historical rollout/cache identity. The new value layer ranks real tutor targets, observed scry/Top choices, Assistant/Uthros trigger order, intrinsic engine actions, and public terminal-precursor progress. Unknown library cards retain one anonymous value and cannot be identity-scored. Rollout now has a generic selector entrypoint; the existing `rollout` API remains deterministic-R5 compatible. Acceptance is contingent on the dedicated policy/rollout tests and 128-world strategic smoke.

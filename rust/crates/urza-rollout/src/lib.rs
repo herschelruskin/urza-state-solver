@@ -11,6 +11,7 @@ use urza_core::{PendingDecision, Phase, TrueState, Window};
 use urza_info::{InformationState, ObservationError, observe};
 use urza_policy::{
     ActionToken, DeterministicPolicy, PolicyActionClass, PolicyError, PolicyPublicKey,
+    PolicySelector,
 };
 use urza_policy_bridge::{BridgeError, CandidateBridge};
 use urza_rng::{LogicalEventId, RootSeed, WorldId};
@@ -20,6 +21,7 @@ use urza_rules::{
 };
 
 pub const ROLLOUT_VERSION: &str = "r5_deterministic_rollout_v3";
+pub const POST_R7_STRATEGIC_ROLLOUT_VERSION: &str = "post_r7_strategic_rollout_v1";
 pub const DEFAULT_MAX_STEPS: u32 = 4096;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -135,6 +137,18 @@ pub fn rollout<D: CardDatabase>(
     rollout_with_logical_event_offset(initial, cards, policy, config, 0)
 }
 
+/// Run the accepted rollout engine with an explicitly supplied public policy
+/// selector. The historical `rollout` entrypoint remains pinned to
+/// `DeterministicPolicy`.
+pub fn rollout_with_selector<D: CardDatabase, P: PolicySelector>(
+    initial: TrueState,
+    cards: &D,
+    policy: &P,
+    config: RolloutConfig,
+) -> Result<RolloutResult, RolloutError> {
+    rollout_internal(initial, cards, policy, config, 0, &[])
+}
+
 pub fn rollout_with_logical_event_offset<D: CardDatabase>(
     initial: TrueState,
     cards: &D,
@@ -172,10 +186,10 @@ pub fn rollout_with_forced_semantic_actions<D: CardDatabase>(
     rollout_internal(initial, cards, policy, config, 0, forced)
 }
 
-fn rollout_internal<D: CardDatabase>(
+fn rollout_internal<D: CardDatabase, P: PolicySelector>(
     initial: TrueState,
     cards: &D,
-    policy: &DeterministicPolicy,
+    policy: &P,
     config: RolloutConfig,
     logical_event_offset: u64,
     forced: &[ForcedSemanticAction],
