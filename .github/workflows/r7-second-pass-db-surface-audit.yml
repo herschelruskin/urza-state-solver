@@ -1,0 +1,25 @@
+name: R7 second-pass database surface audit
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - '.github/workflows/r7-second-pass-db-surface-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Locate current R4 database consumers
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '=== R4CardDatabase references ==='
+          rg -n 'R4CardDatabase' rust --glob '*.rs' || true
+          echo '=== R4 validation/count references ==='
+          rg -n 'R4_ACCEPTED_ACTIVE_IDENTITY_COUNT|R4_ONLY_ACTIVE_NAMES|validate_r4_database' rust --glob '*.rs' || true
