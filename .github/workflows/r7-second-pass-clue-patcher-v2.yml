@@ -1,0 +1,57 @@
+name: R7 second-pass Gadgeteer Clue patcher v2
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - '.github/scripts/fix_post_r7_clue_patcher_anchor.py'
+      - '.github/workflows/r7-second-pass-clue-patcher-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch-test-commit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.89
+        with:
+          components: rustfmt, clippy
+      - name: Repair patcher anchor in runner
+        run: python .github/scripts/fix_post_r7_clue_patcher_anchor.py
+      - name: Apply Gadgeteer Clue cash-in slice
+        run: python .github/scripts/patch_post_r7_clue.py
+      - name: Format
+        working-directory: rust
+        run: cargo fmt --all
+      - name: Card database regression
+        working-directory: rust
+        run: cargo test --locked -p urza-cards
+      - name: Rules tests
+        working-directory: rust
+        run: cargo test --locked -p urza-rules
+      - name: Candidate bridge tests
+        working-directory: rust
+        run: cargo test --locked -p urza-policy-bridge
+      - name: Build post-R7 diagnostics
+        working-directory: rust
+        run: |
+          cargo build --locked -p urza-mulligan --bin post-r7-engine-tutor-diagnostic
+          cargo build --locked -p urza-mulligan --bin post-r7-oracle-comparison-export
+      - name: Clippy affected surface
+        working-directory: rust
+        run: cargo clippy --locked -p urza-cards -p urza-rules -p urza-policy-bridge -p urza-mulligan --all-targets -- -D warnings
+      - name: Commit Gadgeteer Clue slice
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add rust/crates/urza-rules/src/lib.rs \
+                  rust/crates/urza-policy-bridge/src/lib.rs \
+                  rust/crates/urza-mulligan/src/bin/post-r7-engine-tutor-diagnostic.rs
+          git commit -m "[R7] Complete Gadgeteer Clue cash-in"
+          git push
