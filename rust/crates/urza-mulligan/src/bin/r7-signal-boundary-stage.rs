@@ -24,6 +24,8 @@ struct TeacherProbe {
     truncated: String,
     incomplete_branches: String,
     ceiling_pruned_actions: String,
+    cache_hits: String,
+    cache_inserts: String,
 }
 
 fn main() {
@@ -124,7 +126,7 @@ fn run() -> Result<(), Box<dyn Error>> {
                 .parse::<u8>()?;
             let probe = teacher_probe(&case.state, &cards, world, depth)?;
             println!(
-                "BOUNDARY_STAGE_RESULT\tcase={}\tstage={}\tvalue={}\tstatus={}\tgroups={}\tactions={}\ttruncated={}\tincomplete={}\tceiling_pruned={}\telapsed_ms={}",
+                "BOUNDARY_STAGE_RESULT\tcase={}\tstage={}\tvalue={}\tstatus={}\tgroups={}\tactions={}\ttruncated={}\tincomplete={}\tceiling_pruned={}\tcache_hits={}\tcache_inserts={}\telapsed_ms={}",
                 case.case_name,
                 stage,
                 probe.value,
@@ -134,6 +136,8 @@ fn run() -> Result<(), Box<dyn Error>> {
                 probe.truncated,
                 probe.incomplete_branches,
                 probe.ceiling_pruned_actions,
+                probe.cache_hits,
+                probe.cache_inserts,
                 started.elapsed().as_millis()
             );
         }
@@ -178,6 +182,8 @@ fn teacher_probe(
             truncated: result.stats.truncated_public_groups.to_string(),
             incomplete_branches: result.stats.incomplete_candidate_branches.to_string(),
             ceiling_pruned_actions: result.stats.ceiling_pruned_public_actions.to_string(),
+            cache_hits: result.stats.subtree_cache_hits.to_string(),
+            cache_inserts: result.stats.subtree_cache_inserts.to_string(),
         }),
         Err(TeacherSearchError::IncompleteLeaf { stop, .. }) => Ok(incomplete_teacher_probe(
             format!("incomplete-leaf:{stop:?}"),
@@ -198,5 +204,7 @@ fn incomplete_teacher_probe(status: String) -> TeacherProbe {
         truncated: String::from("NA"),
         incomplete_branches: String::from("NA"),
         ceiling_pruned_actions: String::from("NA"),
+        cache_hits: String::from("NA"),
+        cache_inserts: String::from("NA"),
     }
 }

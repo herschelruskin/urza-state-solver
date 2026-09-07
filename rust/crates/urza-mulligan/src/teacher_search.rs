@@ -1,8 +1,8 @@
 use std::cmp::Ordering;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::fmt;
 
-use urza_core::{PendingDecision, Phase, TrueState, Window};
+use urza_core::{PendingDecision, Phase, ReplayKey, TrueState, Window};
 use urza_info::{InformationState, ObservationError, observe};
 use urza_mc::{MonteCarloError, sample_hidden_world};
 use urza_policy::{DeterministicPolicy, PolicyActionClass, PolicyPublicKey};
@@ -15,7 +15,7 @@ use urza_rules::{
 };
 use urza_value::{WinByHorizonScore, WinDistribution};
 
-pub const R7_TEACHER_SEARCH_VERSION: &str = "r7_public_belief_bounded_search_v3";
+pub const R7_TEACHER_SEARCH_VERSION: &str = "r7_public_belief_bounded_search_v4";
 pub const R7_TEACHER_POLICY_VERSION: &str = "r7_teacher_public_belief_v3";
 pub const R7_TEACHER_SEARCH_BOUNDARY: &str = "R7 teacher search samples exact hidden worlds only to estimate public action values; every \
      teacher action is selected once per shared InformationState and is then applied uniformly to \
@@ -28,7 +28,7 @@ pub const R7_TEACHER_SEARCH_BOUNDARY: &str = "R7 teacher search samples exact hi
      the exact public-state ceiling of every sampled world winning on the current turn, which no \
      sibling can improve. An incomplete leaf is never scored as a loss: an unresolved candidate \
      subtree is excluded only when another candidate at the same public decision has a complete \
-     finite value, while an all-incomplete decision fails explicitly. R5 and R6 behavior is unchanged.";
+     finite value, while an all-incomplete decision fails explicitly. Complete sampled-belief subtrees are memoized only after a finite value is known; cache identity includes the sampled exact-world support and RNG coordinates but never changes public action identity. R5 and R6 behavior is unchanged.";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TeacherSearchConfig {
@@ -107,6 +107,8 @@ pub struct TeacherSearchStats {
     pub truncated_public_groups: u64,
     pub incomplete_candidate_branches: u64,
     pub ceiling_pruned_public_actions: u64,
+    pub subtree_cache_hits: u64,
+    pub subtree_cache_inserts: u64,
     pub leaf_rollouts: u64,
     pub observation_splits: u64,
     pub max_full_candidate_count: u32,
@@ -244,6 +246,39 @@ struct TeacherWorld {
     logical_event: u64,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+struct TeacherBeliefWorldKey {
+    world: u64,
+    state: ReplayKey,
+    logical_event: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+struct TeacherBeliefSubtreeKey {
+    choices_left: u8,
+    steps_left: u16,
+    worlds: Vec<TeacherBeliefWorldKey>,
+}
+
+impl TeacherBeliefSubtreeKey {
+    fn new(worlds: &[TeacherWorld], choices_left: u8, steps_left: u16) -> Self {
+        let mut worlds: Vec<_> = worlds
+            .iter()
+            .map(|world| TeacherBeliefWorldKey {
+                world: world.world.0,
+                state: ReplayKey::from(&world.state),
+                logical_event: world.logical_event,
+            })
+            .collect();
+        worlds.sort_unstable_by_key(|world| world.world);
+        Self {
+            choices_left,
+            steps_left,
+            worlds,
+        }
+    }
+}
+
 #[derive(Debug)]
 struct PublicWorldGroup {
     information: InformationState,
@@ -286,6 +321,7 @@ pub fn evaluate_teacher<D: CardDatabase>(
         cards,
         config,
         baseline_policy: DeterministicPolicy,
+        subtree_cache: HashMap::new(),
         stats: TeacherSearchStats {
             sampled_worlds: config.samples,
             ..TeacherSearchStats::default()
@@ -309,11 +345,30 @@ struct TeacherEvaluator<'a, D> {
     cards: &'a D,
     config: TeacherSearchConfig,
     baseline_policy: DeterministicPolicy,
+    subtree_cache: HashMap<TeacherBeliefSubtreeKey, WinDistribution>,
     stats: TeacherSearchStats,
 }
 
 impl<D: CardDatabase> TeacherEvaluator<'_, D> {
     fn evaluate_partition(
+        &mut self,
+        worlds: Vec<TeacherWorld>,
+        choices_left: u8,
+        steps_left: u16,
+    ) -> Result<WinDistribution, TeacherSearchError> {
+        let key = TeacherBeliefSubtreeKey::new(&worlds, choices_left, steps_left);
+        if let Some(cached) = self.subtree_cache.get(&key) {
+            self.stats.subtree_cache_hits = self.stats.subtree_cache_hits.saturating_add(1);
+            return Ok(cached.clone());
+        }
+
+        let value = self.evaluate_partition_uncached(worlds, choices_left, steps_left)?;
+        self.subtree_cache.insert(key, value.clone());
+        self.stats.subtree_cache_inserts = self.stats.subtree_cache_inserts.saturating_add(1);
+        Ok(value)
+    }
+
+    fn evaluate_partition_uncached(
         &mut self,
         worlds: Vec<TeacherWorld>,
         choices_left: u8,
@@ -845,6 +900,68 @@ mod tests {
         assert_eq!(left_result.win_distribution, right_result.win_distribution);
         assert_eq!(left_result.score, right_result.score);
         assert_eq!(left_result.stats, right_result.stats);
+    }
+
+    #[test]
+    fn belief_subtree_key_is_world_order_invariant_and_budget_sensitive() {
+        let left = TeacherWorld {
+            world: WorldId(11),
+            state: TrueState::default(),
+            logical_event: 3,
+        };
+        let right = TeacherWorld {
+            world: WorldId(12),
+            state: TrueState {
+                life: 39,
+                ..TrueState::default()
+            },
+            logical_event: 4,
+        };
+
+        let forward = TeacherBeliefSubtreeKey::new(&[left.clone(), right.clone()], 2, 7);
+        let reverse = TeacherBeliefSubtreeKey::new(&[right, left], 2, 7);
+        assert_eq!(forward, reverse);
+        assert_ne!(forward, TeacherBeliefSubtreeKey::new(&[], 1, 7));
+    }
+
+    #[test]
+    fn complete_teacher_partition_is_reused_from_subtree_cache() {
+        let cards = R4CardDatabase::load().expect("R4 database");
+        let config = TeacherSearchConfig {
+            samples: 1,
+            ..TeacherSearchConfig::default()
+        };
+        let mut evaluator = TeacherEvaluator {
+            cards: &cards,
+            config,
+            baseline_policy: DeterministicPolicy,
+            subtree_cache: HashMap::new(),
+            stats: TeacherSearchStats::default(),
+        };
+        let world = TeacherWorld {
+            world: WorldId(77),
+            state: TrueState {
+                turn: HORIZON_TURN,
+                phase: Phase::OpponentCycle,
+                window: Window::None,
+                ..TrueState::default()
+            },
+            logical_event: 0,
+        };
+
+        let first = evaluator
+            .evaluate_partition(vec![world.clone()], 2, 4)
+            .expect("first complete subtree");
+        assert_eq!(first.losses, 1);
+        assert_eq!(evaluator.stats.subtree_cache_hits, 0);
+        assert_eq!(evaluator.stats.subtree_cache_inserts, 1);
+
+        let second = evaluator
+            .evaluate_partition(vec![world], 2, 4)
+            .expect("cached complete subtree");
+        assert_eq!(second, first);
+        assert_eq!(evaluator.stats.subtree_cache_hits, 1);
+        assert_eq!(evaluator.stats.subtree_cache_inserts, 1);
     }
 
     #[test]
