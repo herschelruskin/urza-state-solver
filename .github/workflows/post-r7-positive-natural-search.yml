@@ -32,7 +32,7 @@ jobs:
         run: |
           set -o pipefail
           cargo run --locked -p urza-mulligan --bin post-r7-positive-natural-search -- \
-            ${{ matrix.opening_offset }} 228928 16384 \
+            ${{ matrix.opening_offset }} 245312 16384 \
             | tee ../positive-natural-${{ matrix.opening_offset }}.tsv
       - uses: actions/upload-artifact@v4
         with:
