@@ -1,0 +1,196 @@
+name: Post-R7 Oracle structural comparison
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - 'rust/crates/urza-mulligan/src/bin/post-r7-oracle-comparison-export.rs'
+      - '.github/workflows/post-r7-oracle-structural-comparison.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  matched-world-comparison:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout Rust rebuild
+        uses: actions/checkout@v4
+        with:
+          path: rustrepo
+
+      - name: Checkout corrected Oracle ceiling
+        uses: actions/checkout@v4
+        with:
+          ref: oracle-ceiling-permissions-trigger-order
+          path: oracle
+
+      - name: Install Rust 1.89
+        uses: dtolnay/rust-toolchain@1.89
+
+      - name: Export exact Rust worlds and frozen-policy traces
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p compare
+          cd rustrepo/rust
+          cargo build --locked -p urza-mulligan --bin post-r7-oracle-comparison-export
+          cargo run --quiet --locked -p urza-mulligan --bin post-r7-oracle-comparison-export -- 13 245416 > ../../compare/positive-13-245416.rust.tsv
+          cargo run --quiet --locked -p urza-mulligan --bin post-r7-oracle-comparison-export -- 1 245323 > ../../compare/top-ring-1-245323.rust.tsv
+          cargo run --quiet --locked -p urza-mulligan --bin post-r7-oracle-comparison-export -- 6 245406 > ../../compare/power-artifact-6-245406.rust.tsv
+
+      - name: Run matched corrected-Oracle structural probes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os
+          import sys
+          from pathlib import Path
+
+          root = Path.cwd().resolve()
+          compare = root / "compare"
+          oracle = root / "oracle"
+          sys.path.insert(0, str(oracle))
+          os.chdir(oracle)
+          import urza_solver as u
+
+          # This is intentionally a diagnostic probe, not a claim that the
+          # corrected Oracle ceiling has converged at this width.
+          u.ACTION_CAP = 60
+          beam = 120
+          depth = 40
+          engines = [
+              "The Reality Chip",
+              "Forensic Gadgeteer",
+              "The One Ring",
+              "Fortune Teller's Talent",
+              "Uthros Research Craft",
+              "Sensei's Divining Top",
+          ]
+          tutors = [
+              "Mystical Tutor",
+              "Merchant Scroll",
+              "Spellseeker",
+              "Dizzy Spell",
+              "Muddle the Mixture",
+              "Whir of Invention",
+              "Reshape",
+              "Transmute Artifact",
+              "Repurposing Bay",
+              "Tezzeret, Cruel Captain",
+              "Urza's Saga",
+              "Scour for Scrap",
+          ]
+
+          summaries = []
+          for rust_path in sorted(compare.glob("*.rust.tsv")):
+              lines = rust_path.read_text(encoding="utf-8").splitlines()
+              deck = []
+              caverns_live = False
+              meta = ""
+              opening = ""
+              rust_result = ""
+              rust_actions = []
+              for line in lines:
+                  if line.startswith("META\t"):
+                      meta = line
+                      fields = dict(
+                          part.split("=", 1)
+                          for part in line.split("\t")[1:]
+                          if "=" in part
+                      )
+                      caverns_live = fields.get("caverns", "false").lower() == "true"
+                  elif line.startswith("OPENING_HAND\t"):
+                      opening = line.split("\t", 1)[1]
+                  elif line.startswith("DECK_CARD\t"):
+                      deck.append(line.split("\t", 2)[2])
+                  elif line.startswith("RUST_RESULT\t"):
+                      rust_result = line
+                  elif line.startswith("RUST_ACTION\t"):
+                      rust_actions.append(line)
+
+              if len(deck) != 99:
+                  raise RuntimeError(f"{rust_path.name}: expected 99-card deck order, got {len(deck)}")
+
+              hidden_world = int(
+                  next(
+                      part.split("=", 1)[1]
+                      for part in meta.split("\t")
+                      if part.startswith("hidden_world=")
+                  )
+              )
+              win_turn, family, trace, states = u.search_hand(
+                  deck,
+                  7,
+                  [],
+                  max_turn=7,
+                  beam=beam,
+                  max_actions_per_turn=depth,
+                  caverns_live=caverns_live,
+                  rng_root_seed=hidden_world,
+              )
+
+              oracle_trace_path = rust_path.with_suffix(".oracle.txt")
+              oracle_trace_path.write_text("\n".join(trace) + "\n", encoding="utf-8")
+
+              rust_engine = {
+                  engine: [line for line in rust_actions if f"card={engine}\t" in line]
+                  for engine in engines
+              }
+              oracle_engine = {
+                  engine: [line for line in trace if engine in line]
+                  for engine in engines
+              }
+              rust_tutor = [
+                  line
+                  for line in rust_actions
+                  if "\tkind=28\t" in line or any(f"card={name}\t" in line for name in tutors)
+              ]
+              oracle_tutor = [
+                  line for line in trace if "tutor" in line.lower() or any(name in line for name in tutors)
+              ]
+
+              report = []
+              report.append(f"CASE\t{rust_path.stem}")
+              report.append(f"OPENING\t{opening}")
+              report.append(f"ORACLE_PROBE\tbeam={beam}\tdepth={depth}\taction_cap={u.ACTION_CAP}\tclairvoyant=true")
+              report.append(rust_result)
+              report.append(
+                  f"ORACLE_RESULT\twin_turn={win_turn}\tfamily={family}\tstates={states}\ttrace_len={len(trace)}"
+              )
+              for engine in engines:
+                  report.append(
+                      f"ENGINE\t{engine}\trust_actions={len(rust_engine[engine])}\toracle_trace_hits={len(oracle_engine[engine])}"
+                  )
+              report.append(f"RUST_TUTOR_LINES\t{len(rust_tutor)}")
+              report.extend(f"RUST_TUTOR\t{line}" for line in rust_tutor)
+              report.append(f"ORACLE_TUTOR_LINES\t{len(oracle_tutor)}")
+              report.extend(f"ORACLE_TUTOR\t{line}" for line in oracle_tutor)
+              report.append("ORACLE_ENGINE_FIRST_HITS")
+              for engine in engines:
+                  first = oracle_engine[engine][0] if oracle_engine[engine] else "-"
+                  report.append(f"ORACLE_ENGINE\t{engine}\t{first}")
+              report.append("RUST_ENGINE_FIRST_ACTIONS")
+              for engine in engines:
+                  first = rust_engine[engine][0] if rust_engine[engine] else "-"
+                  report.append(f"RUST_ENGINE\t{engine}\t{first}")
+
+              text = "\n".join(report) + "\n"
+              rust_path.with_suffix(".summary.txt").write_text(text, encoding="utf-8")
+              summaries.append(text)
+              print(text)
+
+          (compare / "comparison-summary.txt").write_text(
+              "\n".join(summaries), encoding="utf-8"
+          )
+          PY
+
+      - name: Upload structural comparison
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-r7-oracle-structural-comparison-${{ github.sha }}
+          path: compare/
+          if-no-files-found: error
