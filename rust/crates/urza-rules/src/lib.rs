@@ -4204,7 +4204,21 @@ fn remove_permanent_to_library_top(
         return Ok(());
     };
     let permanent = permanents.remove(index);
+    let mut attached_non_token_cards = Vec::new();
+    permanents.retain(|candidate| {
+        if candidate.attached_to == Some(object_id) {
+            if !candidate.token {
+                attached_non_token_cards.push(candidate.card);
+            }
+            false
+        } else {
+            true
+        }
+    });
     state.battlefield = BattlefieldZone::new(permanents);
+    for card in attached_non_token_cards {
+        state.graveyard.insert(card);
+    }
     state.delayed_events.retain(|event| {
         !matches!(
             event,
@@ -6858,6 +6872,45 @@ mod tests {
         assert!(state.delayed_events.is_empty());
         assert!(state.stack.is_empty());
         assert_eq!(state.window, Window::Priority);
+        state.validate().unwrap();
+    }
+
+    #[test]
+    fn top_draw_moves_attached_aura_to_graveyard_when_top_leaves() {
+        let cards = TestCards::r4();
+        let top = artifact_permanent(1, TOP);
+        let mut aura = artifact_permanent(2, POWER_ARTIFACT);
+        aura.attached_to = Some(ObjectId(1));
+        let mut state = TrueState {
+            turn: 6,
+            phase: Phase::PrecombatMain,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![TARGET_A, TARGET_B]),
+            battlefield: BattlefieldZone::new(vec![top, aura]),
+            ..TrueState::default()
+        };
+        state.validate().unwrap();
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateTopDraw {
+                source: ObjectId(1),
+            },
+        )
+        .unwrap();
+        let transition = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+
+        assert_eq!(
+            transition.observations,
+            vec![RulesObservation::CardsDrawn(vec![TARGET_A])]
+        );
+        assert_eq!(state.library.cards(), &[TOP, TARGET_B]);
+        assert_eq!(state.library.known_top(), &[TOP]);
+        assert_eq!(state.graveyard.cards(), &[POWER_ARTIFACT]);
+        assert!(state.battlefield.get(ObjectId(1)).is_none());
+        assert!(state.battlefield.get(ObjectId(2)).is_none());
+        assert!(state.stack.is_empty());
         state.validate().unwrap();
     }
 
