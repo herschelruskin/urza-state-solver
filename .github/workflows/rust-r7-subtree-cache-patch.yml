@@ -21,7 +21,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: 1.89.0
-      - name: Apply R7 subtree-cache patch
+      - name: Cache exact incomplete subtree outcomes
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -36,96 +36,162 @@ jobs:
           text = path.read_text()
           text = replace_one(
               text,
-              "use std::collections::BTreeMap;",
-              "use std::collections::{BTreeMap, HashMap};",
-              "collections import",
-          )
-          text = replace_one(
-              text,
-              "use urza_core::{PendingDecision, Phase, TrueState, Window};",
-              "use urza_core::{PendingDecision, Phase, ReplayKey, TrueState, Window};",
-              "ReplayKey import",
-          )
-          text = replace_one(
-              text,
-              'pub const R7_TEACHER_SEARCH_VERSION: &str = "r7_public_belief_bounded_search_v3";',
               'pub const R7_TEACHER_SEARCH_VERSION: &str = "r7_public_belief_bounded_search_v4";',
+              'pub const R7_TEACHER_SEARCH_VERSION: &str = "r7_public_belief_bounded_search_v5";',
               "search version",
           )
           text = replace_one(
               text,
-              "finite value, while an all-incomplete decision fails explicitly. R5 and R6 behavior is unchanged.",
-              "finite value, while an all-incomplete decision fails explicitly. Complete sampled-belief subtrees are memoized only after a finite value is known; cache identity includes the sampled exact-world support and RNG coordinates but never changes public action identity. R5 and R6 behavior is unchanged.",
-              "boundary text",
+              "Complete sampled-belief subtrees are memoized only after a finite value is known; cache identity includes the sampled exact-world support and RNG coordinates but never changes public action identity.",
+              "Exact sampled-belief subtree outcomes are memoized after evaluation; complete values remain finite values, while incomplete leaves and all-incomplete decisions are cached only as the same explicit incomplete outcome and are never converted into losses or scores. Cache identity includes the sampled exact-world support and RNG coordinates but never changes public action identity.",
+              "boundary cache text",
           )
-          text = replace_one(
-              text,
-              "    pub ceiling_pruned_public_actions: u64,\n    pub leaf_rollouts: u64,",
-              "    pub ceiling_pruned_public_actions: u64,\n    pub subtree_cache_hits: u64,\n    pub subtree_cache_inserts: u64,\n    pub leaf_rollouts: u64,",
-              "cache stats",
-          )
-          text = replace_one(
-              text,
-              "#[derive(Debug, Clone)]\nstruct TeacherWorld {\n    world: WorldId,\n    state: TrueState,\n    logical_event: u64,\n}\n",
-              "#[derive(Debug, Clone)]\nstruct TeacherWorld {\n    world: WorldId,\n    state: TrueState,\n    logical_event: u64,\n}\n\n#[derive(Debug, Clone, PartialEq, Eq, Hash)]\nstruct TeacherBeliefWorldKey {\n    world: u64,\n    state: ReplayKey,\n    logical_event: u64,\n}\n\n#[derive(Debug, Clone, PartialEq, Eq, Hash)]\nstruct TeacherBeliefSubtreeKey {\n    choices_left: u8,\n    steps_left: u16,\n    worlds: Vec<TeacherBeliefWorldKey>,\n}\n\nimpl TeacherBeliefSubtreeKey {\n    fn new(worlds: &[TeacherWorld], choices_left: u8, steps_left: u16) -> Self {\n        let mut worlds: Vec<_> = worlds\n            .iter()\n            .map(|world| TeacherBeliefWorldKey {\n                world: world.world.0,\n                state: ReplayKey::from(&world.state),\n                logical_event: world.logical_event,\n            })\n            .collect();\n        worlds.sort_unstable_by_key(|world| world.world);\n        Self {\n            choices_left,\n            steps_left,\n            worlds,\n        }\n    }\n}\n",
-              "belief cache key",
-          )
-          text = replace_one(
-              text,
-              "        baseline_policy: DeterministicPolicy,\n        stats: TeacherSearchStats {",
-              "        baseline_policy: DeterministicPolicy,\n        subtree_cache: HashMap::new(),\n        stats: TeacherSearchStats {",
-              "evaluator cache init",
-          )
-          text = replace_one(
-              text,
-              "    baseline_policy: DeterministicPolicy,\n    stats: TeacherSearchStats,",
-              "    baseline_policy: DeterministicPolicy,\n    subtree_cache: HashMap<TeacherBeliefSubtreeKey, WinDistribution>,\n    stats: TeacherSearchStats,",
-              "evaluator cache field",
-          )
-          text = replace_one(
-              text,
-              "impl<D: CardDatabase> TeacherEvaluator<'_, D> {\n    fn evaluate_partition(\n        &mut self,\n        worlds: Vec<TeacherWorld>,\n        choices_left: u8,\n        steps_left: u16,\n    ) -> Result<WinDistribution, TeacherSearchError> {\n        let mut aggregate = WinDistribution::default();",
-              "impl<D: CardDatabase> TeacherEvaluator<'_, D> {\n    fn evaluate_partition(\n        &mut self,\n        worlds: Vec<TeacherWorld>,\n        choices_left: u8,\n        steps_left: u16,\n    ) -> Result<WinDistribution, TeacherSearchError> {\n        let key = TeacherBeliefSubtreeKey::new(&worlds, choices_left, steps_left);\n        if let Some(cached) = self.subtree_cache.get(&key) {\n            self.stats.subtree_cache_hits = self.stats.subtree_cache_hits.saturating_add(1);\n            return Ok(cached.clone());\n        }\n\n        let value = self.evaluate_partition_uncached(worlds, choices_left, steps_left)?;\n        self.subtree_cache.insert(key, value.clone());\n        self.stats.subtree_cache_inserts = self.stats.subtree_cache_inserts.saturating_add(1);\n        Ok(value)\n    }\n\n    fn evaluate_partition_uncached(\n        &mut self,\n        worlds: Vec<TeacherWorld>,\n        choices_left: u8,\n        steps_left: u16,\n    ) -> Result<WinDistribution, TeacherSearchError> {\n        let mut aggregate = WinDistribution::default();",
-              "partition cache wrapper",
-          )
-          marker = "    #[test]\n    fn candidate_cap_is_class_stratified_and_semantically_deterministic() {"
-          cache_tests = '''    #[test]\n    fn belief_subtree_key_is_world_order_invariant_and_budget_sensitive() {\n        let left = TeacherWorld {\n            world: WorldId(11),\n            state: TrueState::default(),\n            logical_event: 3,\n        };\n        let right = TeacherWorld {\n            world: WorldId(12),\n            state: TrueState {\n                life: 39,\n                ..TrueState::default()\n            },\n            logical_event: 4,\n        };\n\n        let forward = TeacherBeliefSubtreeKey::new(&[left.clone(), right.clone()], 2, 7);\n        let reverse = TeacherBeliefSubtreeKey::new(&[right, left], 2, 7);\n        assert_eq!(forward, reverse);\n        assert_ne!(forward, TeacherBeliefSubtreeKey::new(&[], 1, 7));\n    }\n\n    #[test]\n    fn complete_teacher_partition_is_reused_from_subtree_cache() {\n        let cards = R4CardDatabase::load().expect("R4 database");\n        let config = TeacherSearchConfig {\n            samples: 1,\n            ..TeacherSearchConfig::default()\n        };\n        let mut evaluator = TeacherEvaluator {\n            cards: &cards,\n            config,\n            baseline_policy: DeterministicPolicy,\n            subtree_cache: HashMap::new(),\n            stats: TeacherSearchStats::default(),\n        };\n        let world = TeacherWorld {\n            world: WorldId(77),\n            state: TrueState {\n                turn: HORIZON_TURN,\n                phase: Phase::OpponentCycle,\n                window: Window::None,\n                ..TrueState::default()\n            },\n            logical_event: 0,\n        };\n\n        let first = evaluator\n            .evaluate_partition(vec![world.clone()], 2, 4)\n            .expect("first complete subtree");\n        assert_eq!(first.losses, 1);\n        assert_eq!(evaluator.stats.subtree_cache_hits, 0);\n        assert_eq!(evaluator.stats.subtree_cache_inserts, 1);\n\n        let second = evaluator\n            .evaluate_partition(vec![world], 2, 4)\n            .expect("cached complete subtree");\n        assert_eq!(second, first);\n        assert_eq!(evaluator.stats.subtree_cache_hits, 1);\n        assert_eq!(evaluator.stats.subtree_cache_inserts, 1);\n    }\n\n'''
-          text = replace_one(text, marker, cache_tests + marker, "cache tests")
-          path.write_text(text)
+          insert_after = '''impl TeacherBeliefSubtreeKey {
+    fn new(worlds: &[TeacherWorld], choices_left: u8, steps_left: u16) -> Self {
+        let mut worlds: Vec<_> = worlds
+            .iter()
+            .map(|world| TeacherBeliefWorldKey {
+                world: world.world.0,
+                state: ReplayKey::from(&world.state),
+                logical_event: world.logical_event,
+            })
+            .collect();
+        worlds.sort_unstable_by_key(|world| world.world);
+        Self {
+            choices_left,
+            steps_left,
+            worlds,
+        }
+    }
+}
+'''
+          cached_enum = insert_after + '''
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum TeacherBeliefSubtreeOutcome {
+    Complete(WinDistribution),
+    IncompleteLeaf { world: WorldId, stop: RolloutStop },
+    AllCandidateBranchesIncomplete { candidate_count: usize },
+}
 
-          stage = Path("rust/crates/urza-mulligan/src/bin/r7-signal-boundary-stage.rs")
-          text = stage.read_text()
+impl TeacherBeliefSubtreeOutcome {
+    fn from_result(result: &Result<WinDistribution, TeacherSearchError>) -> Option<Self> {
+        match result {
+            Ok(value) => Some(Self::Complete(value.clone())),
+            Err(TeacherSearchError::IncompleteLeaf { world, stop }) => Some(Self::IncompleteLeaf {
+                world: *world,
+                stop: *stop,
+            }),
+            Err(TeacherSearchError::AllCandidateBranchesIncomplete { candidate_count }) => {
+                Some(Self::AllCandidateBranchesIncomplete {
+                    candidate_count: *candidate_count,
+                })
+            }
+            Err(_) => None,
+        }
+    }
+
+    fn as_result(&self) -> Result<WinDistribution, TeacherSearchError> {
+        match self {
+            Self::Complete(value) => Ok(value.clone()),
+            Self::IncompleteLeaf { world, stop } => Err(TeacherSearchError::IncompleteLeaf {
+                world: *world,
+                stop: *stop,
+            }),
+            Self::AllCandidateBranchesIncomplete { candidate_count } => {
+                Err(TeacherSearchError::AllCandidateBranchesIncomplete {
+                    candidate_count: *candidate_count,
+                })
+            }
+        }
+    }
+}
+'''
+          text = replace_one(text, insert_after, cached_enum, "cached outcome enum")
           text = replace_one(
               text,
-              "    ceiling_pruned_actions: String,\n}",
-              "    ceiling_pruned_actions: String,\n    cache_hits: String,\n    cache_inserts: String,\n}",
-              "stage cache fields",
+              "    subtree_cache: HashMap<TeacherBeliefSubtreeKey, WinDistribution>,",
+              "    subtree_cache: HashMap<TeacherBeliefSubtreeKey, TeacherBeliefSubtreeOutcome>,",
+              "cache value type",
           )
-          text = replace_one(
-              text,
-              '"BOUNDARY_STAGE_RESULT\\tcase={}\\tstage={}\\tvalue={}\\tstatus={}\\tgroups={}\\tactions={}\\ttruncated={}\\tincomplete={}\\tceiling_pruned={}\\telapsed_ms={}",',
-              '"BOUNDARY_STAGE_RESULT\\tcase={}\\tstage={}\\tvalue={}\\tstatus={}\\tgroups={}\\tactions={}\\ttruncated={}\\tincomplete={}\\tceiling_pruned={}\\tcache_hits={}\\tcache_inserts={}\\telapsed_ms={}",',
-              "stage format",
-          )
-          text = replace_one(
-              text,
-              "                probe.ceiling_pruned_actions,\n                started.elapsed().as_millis()",
-              "                probe.ceiling_pruned_actions,\n                probe.cache_hits,\n                probe.cache_inserts,\n                started.elapsed().as_millis()",
-              "stage format args",
-          )
-          text = replace_one(
-              text,
-              "            ceiling_pruned_actions: result.stats.ceiling_pruned_public_actions.to_string(),\n        }),",
-              "            ceiling_pruned_actions: result.stats.ceiling_pruned_public_actions.to_string(),\n            cache_hits: result.stats.subtree_cache_hits.to_string(),\n            cache_inserts: result.stats.subtree_cache_inserts.to_string(),\n        }),",
-              "stage success stats",
-          )
-          text = replace_one(
-              text,
-              "        ceiling_pruned_actions: String::from(\"NA\"),\n    }",
-              "        ceiling_pruned_actions: String::from(\"NA\"),\n        cache_hits: String::from(\"NA\"),\n        cache_inserts: String::from(\"NA\"),\n    }",
-              "stage incomplete stats",
-          )
-          stage.write_text(text)
+          old_wrapper = '''        if let Some(cached) = self.subtree_cache.get(&key) {
+            self.stats.subtree_cache_hits = self.stats.subtree_cache_hits.saturating_add(1);
+            return Ok(cached.clone());
+        }
+
+        let value = self.evaluate_partition_uncached(worlds, choices_left, steps_left)?;
+        self.subtree_cache.insert(key, value.clone());
+        self.stats.subtree_cache_inserts = self.stats.subtree_cache_inserts.saturating_add(1);
+        Ok(value)
+'''
+          new_wrapper = '''        if let Some(cached) = self.subtree_cache.get(&key) {
+            self.stats.subtree_cache_hits = self.stats.subtree_cache_hits.saturating_add(1);
+            return cached.as_result();
+        }
+
+        let result = self.evaluate_partition_uncached(worlds, choices_left, steps_left);
+        if let Some(outcome) = TeacherBeliefSubtreeOutcome::from_result(&result) {
+            self.subtree_cache.insert(key, outcome);
+            self.stats.subtree_cache_inserts = self.stats.subtree_cache_inserts.saturating_add(1);
+        }
+        result
+'''
+          text = replace_one(text, old_wrapper, new_wrapper, "cache wrapper")
+          old_assert = '''        assert_eq!(evaluator.stats.subtree_cache_hits, 1);
+        assert_eq!(evaluator.stats.subtree_cache_inserts, 1);
+    }
+
+    #[test]
+    fn candidate_cap_is_class_stratified_and_semantically_deterministic() {
+'''
+          new_assert = '''        assert_eq!(evaluator.stats.subtree_cache_hits, 1);
+        assert_eq!(evaluator.stats.subtree_cache_inserts, 1);
+    }
+
+    #[test]
+    fn incomplete_teacher_partition_is_reused_without_becoming_a_value() {
+        let cards = R4CardDatabase::load().expect("R4 database");
+        let config = TeacherSearchConfig {
+            samples: 1,
+            max_choice_depth: 0,
+            leaf_rollout_max_steps: 1,
+            ..TeacherSearchConfig::default()
+        };
+        let mut evaluator = TeacherEvaluator {
+            cards: &cards,
+            config,
+            baseline_policy: DeterministicPolicy,
+            subtree_cache: HashMap::new(),
+            stats: TeacherSearchStats::default(),
+        };
+        let island = cards.card_id_by_name("Island").unwrap();
+        let world = TeacherWorld {
+            world: WorldId(78),
+            state: TrueState {
+                turn: 2,
+                phase: Phase::PrecombatMain,
+                window: Window::Priority,
+                hand: CardZone::new(vec![island]),
+                ..TrueState::default()
+            },
+            logical_event: 0,
+        };
+
+        let first = evaluator.evaluate_partition(vec![world.clone()], 0, 4);
+        assert!(is_incomplete_subtree(first.as_ref().unwrap_err()));
+        assert_eq!(evaluator.stats.subtree_cache_hits, 0);
+        assert_eq!(evaluator.stats.subtree_cache_inserts, 1);
+
+        let second = evaluator.evaluate_partition(vec![world], 0, 4);
+        assert!(is_incomplete_subtree(second.as_ref().unwrap_err()));
+        assert_eq!(evaluator.stats.subtree_cache_hits, 1);
+        assert_eq!(evaluator.stats.subtree_cache_inserts, 1);
+    }
+
+    #[test]
+    fn candidate_cap_is_class_stratified_and_semantically_deterministic() {
+'''
+          text = replace_one(text, old_assert, new_assert, "incomplete cache test")
+          path.write_text(text)
           PY
       - name: Format
         working-directory: rust
@@ -138,6 +204,6 @@ jobs:
           git diff --check
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add rust/crates/urza-mulligan/src/teacher_search.rs rust/crates/urza-mulligan/src/bin/r7-signal-boundary-stage.rs
-          git commit -m "[r7-boundary] Add R7 teacher subtree cache"
+          git add rust/crates/urza-mulligan/src/teacher_search.rs
+          git commit -m "[r7-boundary] Cache incomplete R7 teacher subtrees"
           git push origin HEAD:rust-engine-rebuild
