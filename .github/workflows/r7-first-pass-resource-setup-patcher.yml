@@ -75,6 +75,29 @@ jobs:
               raise SystemExit('native untap activation block not found')
           text = text.replace(old, new, 1)
           bridge.write_text(text)
+
+          rollout = Path('rust/crates/urza-rollout/src/lib.rs')
+          text = rollout.read_text()
+          tests = [
+              'deterministic_basalt_tap_untap_cycle_escapes_to_pass',
+              'deterministic_cycle_guard_escapes_with_underlying_stack_object',
+              'monotone_basalt_gadgeteer_cycle_exits_before_step_limit',
+          ]
+          for name in tests:
+              marker = f'    fn {name}() {{'
+              start = text.find(marker)
+              if start < 0:
+                  raise SystemExit(f'test {name} not found')
+              end = text.find('\n    #[test]', start + len(marker))
+              if end < 0:
+                  raise SystemExit(f'end of test {name} not found')
+              block = text[start:end]
+              old_label = 'PolicyActionClass::ActivateAbility'
+              if block.count(old_label) != 1:
+                  raise SystemExit(f'test {name} expected exactly one old native-untap class assertion')
+              block = block.replace(old_label, 'PolicyActionClass::ManaSetup', 1)
+              text = text[:start] + block + text[end:]
+          rollout.write_text(text)
           PY
       - name: Format
         working-directory: rust
@@ -97,6 +120,6 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add rust/crates/urza-policy/src/lib.rs rust/crates/urza-policy-bridge/src/lib.rs
+          git add rust/crates/urza-policy/src/lib.rs rust/crates/urza-policy-bridge/src/lib.rs rust/crates/urza-rollout/src/lib.rs
           git commit -m "[R7] Separate mana setup from engine activations"
           git push
