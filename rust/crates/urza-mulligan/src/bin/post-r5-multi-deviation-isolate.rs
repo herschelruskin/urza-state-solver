@@ -13,8 +13,8 @@ use urza_rollout::{
     ForcedSemanticAction, RolloutConfig, RolloutStop, rollout_with_forced_semantic_actions,
 };
 
-const OPENING_OFFSET: u64 = 1;
-const HIDDEN_WORLD: u64 = 245323;
+const OPENING_OFFSET: u64 = 6;
+const HIDDEN_WORLD: u64 = 245406;
 
 fn main() {
     if let Err(error) = run() {
@@ -50,12 +50,12 @@ fn run() -> Result<(), Box<dyn Error>> {
     };
     let forced = [
         ForcedSemanticAction {
-            index: 40,
+            index: 38,
             class: PolicyActionClass::PassPriority,
             key: pass_key.clone(),
         },
         ForcedSemanticAction {
-            index: 41,
+            index: 39,
             class: PolicyActionClass::PassPriority,
             key: pass_key,
         },
