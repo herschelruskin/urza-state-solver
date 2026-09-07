@@ -1,0 +1,102 @@
+name: R7 first-pass mana-setup patcher
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - '.github/workflows/r7-first-pass-resource-setup-patcher.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch-test-commit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.89
+        with:
+          components: rustfmt, clippy
+      - name: Classify native untap as mana setup
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          policy = Path('rust/crates/urza-policy/src/lib.rs')
+          text = policy.read_text()
+          text = text.replace(
+              'pub const POLICY_VERSION: &str = "r5_candidate_contract_v4_phase_tutor";',
+              'pub const POLICY_VERSION: &str = "r5_candidate_contract_v5_resource_setup";',
+              1,
+          )
+          old = '''    ProduceMana,\n    CastSpell,\n    ActivateAbility,\n    PassPriority,\n'''
+          new = '''    ProduceMana,\n    ManaSetup,\n    CastSpell,\n    ActivateAbility,\n    PassPriority,\n'''
+          if old not in text:
+              raise SystemExit('PolicyActionClass insertion point not found')
+          text = text.replace(old, new, 1)
+
+          old = '''            PolicyActionClass::ActivateAbility => 4,\n            PolicyActionClass::ProduceMana => 5,\n        }\n'''
+          new = '''            PolicyActionClass::ActivateAbility => 4,\n            PolicyActionClass::ProduceMana => 5,\n            PolicyActionClass::ManaSetup => 6,\n        }\n'''
+          if old not in text:
+              raise SystemExit('drain-stack class rank block not found')
+          text = text.replace(old, new, 1)
+
+          old = '''            PolicyActionClass::ActivateAbility => 3,\n            PolicyActionClass::ProduceMana => 4,\n            PolicyActionClass::PassPriority => 5,\n        }\n'''
+          new = '''            PolicyActionClass::ActivateAbility => 3,\n            PolicyActionClass::ProduceMana => 4,\n            PolicyActionClass::ManaSetup => 5,\n            PolicyActionClass::PassPriority => 6,\n        }\n'''
+          if old not in text:
+              raise SystemExit('main-phase class rank block not found')
+          text = text.replace(old, new, 1)
+
+          old = '''            PolicyActionClass::PassPriority => 4,\n            PolicyActionClass::ProduceMana => 5,\n        }\n'''
+          new = '''            PolicyActionClass::PassPriority => 4,\n            PolicyActionClass::ProduceMana => 5,\n            PolicyActionClass::ManaSetup => 6,\n        }\n'''
+          if old not in text:
+              raise SystemExit('non-main class rank block not found')
+          text = text.replace(old, new, 1)
+          policy.write_text(text)
+
+          bridge = Path('rust/crates/urza-policy-bridge/src/lib.rs')
+          text = bridge.read_text()
+          text = text.replace(
+              'pub const CANDIDATE_BRIDGE_VERSION: &str = "r5_public_candidate_bridge_v2";',
+              'pub const CANDIDATE_BRIDGE_VERSION: &str = "r5_public_candidate_bridge_v3_resource_setup";',
+              1,
+          )
+          old = '''        Action::ActivateManaAbility { .. } | Action::ActivateUrzaArtifactMana { .. } => {\n            PolicyActionClass::ProduceMana\n        }\n'''
+          new = '''        Action::ActivateManaAbility { .. } | Action::ActivateUrzaArtifactMana { .. } => {\n            PolicyActionClass::ProduceMana\n        }\n        Action::ActivateNativeArtifactUntap { .. } => PolicyActionClass::ManaSetup,\n'''
+          if old not in text:
+              raise SystemExit('mana classification block not found')
+          text = text.replace(old, new, 1)
+          old = '''        Action::ActivateNativeArtifactUntap { .. }\n        | Action::ActivateGrindingStation { .. }\n'''
+          new = '''        Action::ActivateGrindingStation { .. }\n'''
+          if old not in text:
+              raise SystemExit('native untap activation block not found')
+          text = text.replace(old, new, 1)
+          bridge.write_text(text)
+          PY
+      - name: Format
+        working-directory: rust
+        run: cargo fmt --all
+      - name: Policy tests
+        working-directory: rust
+        run: cargo test --locked -p urza-policy
+      - name: Bridge tests
+        working-directory: rust
+        run: cargo test --locked -p urza-policy-bridge
+      - name: Rollout tests
+        working-directory: rust
+        run: cargo test --locked -p urza-rollout
+      - name: Clippy policy surface
+        working-directory: rust
+        run: cargo clippy --locked -p urza-policy -p urza-policy-bridge -p urza-rollout --all-targets -- -D warnings
+      - name: Commit repaired policy metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add rust/crates/urza-policy/src/lib.rs rust/crates/urza-policy-bridge/src/lib.rs
+          git commit -m "[R7] Separate mana setup from engine activations"
+          git push
