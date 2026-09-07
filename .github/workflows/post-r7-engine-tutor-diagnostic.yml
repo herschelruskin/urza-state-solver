@@ -5,6 +5,7 @@ on:
     branches: [rust-engine-rebuild]
     paths:
       - 'rust/crates/urza-policy/**'
+      - 'rust/crates/urza-policy-bridge/**'
       - 'rust/crates/urza-mulligan/src/bin/post-r7-engine-tutor-diagnostic.rs'
       - '.github/workflows/post-r7-engine-tutor-diagnostic.yml'
   workflow_dispatch:
@@ -33,4 +34,100 @@ jobs:
         with:
           name: engine-tutor-${{ matrix.opening }}-${{ github.sha }}
           path: engine-tutor-${{ matrix.opening }}.tsv
+          if-no-files-found: error
+
+  aggregate:
+    needs: engine-tutor-opening
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: engine-tutor-*-${{ github.sha }}
+          path: samples
+          merge-multiple: true
+      - name: Aggregate identical 128-world sample
+        shell: bash
+        run: |
+          python - <<'PY'
+          from collections import defaultdict
+          from pathlib import Path
+
+          def parse_fields(line):
+              out = {}
+              for field in line.rstrip().split('\t')[1:]:
+                  if '=' in field:
+                      key, value = field.split('=', 1)
+                      out[key] = value
+              return out
+
+          totals = {'worlds': 0, 'decisions': 0, 'terminal_worlds': 0}
+          engines = defaultdict(lambda: defaultdict(int))
+          tutors = defaultdict(lambda: {
+              'resolutions': 0,
+              'fail_to_find': 0,
+              'real_target': 0,
+              'candidate_targets': 0,
+              'selected_targets': defaultdict(int),
+          })
+          files = sorted(Path('samples').glob('engine-tutor-*.tsv'))
+          if len(files) != 16:
+              raise SystemExit(f'expected 16 sample files, found {len(files)}')
+
+          for path in files:
+              for line in path.read_text().splitlines():
+                  if line.startswith('SUMMARY\t'):
+                      f = parse_fields(line)
+                      for key in totals:
+                          totals[key] += int(f[key])
+                  elif line.startswith('ENGINE_SUMMARY\t'):
+                      f = parse_fields(line)
+                      engine = f.pop('engine')
+                      for key, value in f.items():
+                          engines[engine][key] += int(value)
+                  elif line.startswith('TUTOR_SUMMARY\t'):
+                      f = parse_fields(line)
+                      source = f['source']
+                      stats = tutors[source]
+                      for key in ('resolutions', 'fail_to_find', 'real_target', 'candidate_targets'):
+                          stats[key] += int(f[key])
+                      if f.get('selected_targets'):
+                          for item in f['selected_targets'].split('|'):
+                              target, count = item.rsplit(':', 1)
+                              stats['selected_targets'][target] += int(count)
+
+          out = [f"AGGREGATE\tsha=${{ github.sha }}\tfiles={len(files)}"]
+          out.append(
+              'SUMMARY\t' + '\t'.join(f'{key}={totals[key]}' for key in ('worlds', 'decisions', 'terminal_worlds'))
+          )
+          for engine in sorted(engines):
+              stats = engines[engine]
+              keys = (
+                  'visible_decisions', 'candidate_decisions', 'selected_decisions',
+                  'cast_candidate_decisions', 'cast_selected',
+                  'activation_candidate_decisions', 'activation_selected',
+                  'tutor_target_candidate_decisions', 'tutor_target_selected',
+              )
+              out.append('ENGINE_SUMMARY\tengine=' + engine + '\t' + '\t'.join(f'{key}={stats[key]}' for key in keys))
+
+          tutor_total = {'resolutions': 0, 'fail_to_find': 0, 'real_target': 0, 'candidate_targets': 0}
+          for source in sorted(tutors):
+              stats = tutors[source]
+              for key in tutor_total:
+                  tutor_total[key] += stats[key]
+              selected = '|'.join(
+                  f'{target}:{count}' for target, count in sorted(stats['selected_targets'].items())
+              )
+              out.append(
+                  'TUTOR_SUMMARY\tsource=' + source + '\t'
+                  + '\t'.join(f'{key}={stats[key]}' for key in tutor_total)
+                  + f'\tselected_targets={selected}'
+              )
+          out.append('TUTOR_TOTAL\t' + '\t'.join(f'{key}={tutor_total[key]}' for key in tutor_total))
+          Path('engine-tutor-aggregate.tsv').write_text('\n'.join(out) + '\n')
+          print('\n'.join(out))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: engine-tutor-aggregate-${{ github.sha }}
+          path: engine-tutor-aggregate.tsv
           if-no-files-found: error
