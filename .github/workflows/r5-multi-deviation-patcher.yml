@@ -1,4 +1,4 @@
-name: R5 multi-deviation rollout patcher
+name: R5 multi-deviation formatter helper
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 jobs:
-  patch:
+  format:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -20,69 +20,18 @@ jobs:
         with:
           toolchain: 1.89.0
           components: rustfmt
-      - name: Add exact multi-action diagnostic rollout hook
-        shell: bash
-        run: |
-          python3 <<'PY'
-          from pathlib import Path
-
-          path = Path('rust/crates/urza-rollout/src/lib.rs')
-          text = path.read_text()
-
-          def replace_once(old: str, new: str) -> None:
-              global text
-              count = text.count(old)
-              if count != 1:
-                  raise SystemExit(f'expected one match, found {count}: {old[:100]!r}')
-              text = text.replace(old, new, 1)
-
-          replace_once(
-              '    #[error("forced semantic candidate is ambiguous at rollout step {0}")]\n    ForcedCandidateAmbiguous(u32),\n    #[error("rollout stopped at {stop:?} before forced step {index} was reached")]\n',
-              '    #[error("forced semantic candidate is ambiguous at rollout step {0}")]\n    ForcedCandidateAmbiguous(u32),\n    #[error("forced semantic plan indices must be strictly increasing: {previous} then {next}")]\n    ForcedPlanOrder { previous: u32, next: u32 },\n    #[error("rollout stopped at {stop:?} before forced step {index} was reached")]\n',
-          )
-
-          replace_once(
-              '    rollout_internal(initial, cards, policy, config, logical_event_offset, None)\n}\n\npub fn rollout_with_forced_semantic_action<D: CardDatabase>(\n    initial: TrueState,\n    cards: &D,\n    policy: &DeterministicPolicy,\n    config: RolloutConfig,\n    forced: &ForcedSemanticAction,\n) -> Result<RolloutResult, RolloutError> {\n    rollout_internal(initial, cards, policy, config, 0, Some(forced))\n}\n\nfn rollout_internal<D: CardDatabase>(\n    initial: TrueState,\n    cards: &D,\n    policy: &DeterministicPolicy,\n    config: RolloutConfig,\n    logical_event_offset: u64,\n    forced: Option<&ForcedSemanticAction>,\n) -> Result<RolloutResult, RolloutError> {\n',
-              '    rollout_internal(initial, cards, policy, config, logical_event_offset, &[])\n}\n\npub fn rollout_with_forced_semantic_action<D: CardDatabase>(\n    initial: TrueState,\n    cards: &D,\n    policy: &DeterministicPolicy,\n    config: RolloutConfig,\n    forced: &ForcedSemanticAction,\n) -> Result<RolloutResult, RolloutError> {\n    rollout_with_forced_semantic_actions(\n        initial,\n        cards,\n        policy,\n        config,\n        std::slice::from_ref(forced),\n    )\n}\n\npub fn rollout_with_forced_semantic_actions<D: CardDatabase>(\n    initial: TrueState,\n    cards: &D,\n    policy: &DeterministicPolicy,\n    config: RolloutConfig,\n    forced: &[ForcedSemanticAction],\n) -> Result<RolloutResult, RolloutError> {\n    validate_forced_plan(forced)?;\n    rollout_internal(initial, cards, policy, config, 0, forced)\n}\n\nfn rollout_internal<D: CardDatabase>(\n    initial: TrueState,\n    cards: &D,\n    policy: &DeterministicPolicy,\n    config: RolloutConfig,\n    logical_event_offset: u64,\n    forced: &[ForcedSemanticAction],\n) -> Result<RolloutResult, RolloutError> {\n',
-          )
-
-          replace_once(
-              '    let mut mana_observations = ManaObservationMap::new();\n    let mut forced_applied = false;\n',
-              '    let mut mana_observations = ManaObservationMap::new();\n    let mut next_forced = 0_usize;\n',
-          )
-
-          text = text.replace(
-              'finish_or_forced_error(state, stop, trace, forced, forced_applied)',
-              'finish_or_forced_error(state, stop, trace, forced, next_forced)',
-          )
-          text = text.replace(
-              '                forced_applied,\n',
-              '                next_forced,\n',
-          )
-
-          replace_once(
-              '        let selected = if let Some(forced) = forced.filter(|forced| forced.index == index) {\n            let mut matching = bridge\n                .candidates()\n                .iter()\n                .filter(|candidate| candidate.class == forced.class && candidate.key == forced.key);\n            let Some(candidate) = matching.next() else {\n                return Err(RolloutError::ForcedCandidateMissing(index));\n            };\n            if matching.next().is_some() {\n                return Err(RolloutError::ForcedCandidateAmbiguous(index));\n            }\n            forced_applied = true;\n            candidate.clone()\n        } else {\n            policy_selected\n        };\n',
-              '        let selected = if let Some(forced_action) = forced\n            .get(next_forced)\n            .filter(|forced_action| forced_action.index == index)\n        {\n            let mut matching = bridge.candidates().iter().filter(|candidate| {\n                candidate.class == forced_action.class && candidate.key == forced_action.key\n            });\n            let Some(candidate) = matching.next() else {\n                return Err(RolloutError::ForcedCandidateMissing(index));\n            };\n            if matching.next().is_some() {\n                return Err(RolloutError::ForcedCandidateAmbiguous(index));\n            }\n            next_forced = next_forced.saturating_add(1);\n            candidate.clone()\n        } else {\n            policy_selected\n        };\n',
-          )
-
-          replace_once(
-              'fn finish_or_forced_error(\n    state: TrueState,\n    stop: RolloutStop,\n    trace: Vec<RolloutStep>,\n    forced: Option<&ForcedSemanticAction>,\n    forced_applied: bool,\n) -> Result<RolloutResult, RolloutError> {\n    if let Some(forced) = forced\n        && !forced_applied\n    {\n        return Err(RolloutError::ForcedIndexNotReached {\n            index: forced.index,\n            stop,\n        });\n    }\n    finish(state, stop, trace)\n}\n',
-              'fn validate_forced_plan(forced: &[ForcedSemanticAction]) -> Result<(), RolloutError> {\n    for pair in forced.windows(2) {\n        if pair[0].index >= pair[1].index {\n            return Err(RolloutError::ForcedPlanOrder {\n                previous: pair[0].index,\n                next: pair[1].index,\n            });\n        }\n    }\n    Ok(())\n}\n\nfn finish_or_forced_error(\n    state: TrueState,\n    stop: RolloutStop,\n    trace: Vec<RolloutStep>,\n    forced: &[ForcedSemanticAction],\n    next_forced: usize,\n) -> Result<RolloutResult, RolloutError> {\n    if let Some(forced_action) = forced.get(next_forced) {\n        return Err(RolloutError::ForcedIndexNotReached {\n            index: forced_action.index,\n            stop,\n        });\n    }\n    finish(state, stop, trace)\n}\n',
-          )
-
-          path.write_text(text)
-          PY
-          cd rust
-          cargo fmt --all
-      - name: Commit multi-action hook
+      - name: Apply rustfmt
+        working-directory: rust
+        run: cargo fmt --all
+      - name: Commit rustfmt changes
         shell: bash
         run: |
           if git diff --quiet; then
-            echo 'multi-action hook already applied'
+            echo 'rustfmt already clean'
             exit 0
           fi
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add rust/crates/urza-rollout/src/lib.rs
-          git commit -m '[R5] Add exact multi-deviation rollout hook'
+          git add rust
+          git commit -m '[R5] Apply rustfmt to multi-deviation diagnostic'
           git push
