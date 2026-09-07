@@ -24,9 +24,12 @@ jobs:
         run: |
           set -euo pipefail
           python rust/scripts/post_r7_strategic_value_v2_patch.py
-      - name: Format
+      - name: Format generated Rust
         working-directory: rust
-        run: cargo fmt --all -- --check
+        run: |
+          set -euo pipefail
+          cargo fmt --all
+          cargo fmt --all -- --check
       - name: Strategic policy tests
         working-directory: rust
         run: cargo test --locked -p urza-policy --test strategic_value
