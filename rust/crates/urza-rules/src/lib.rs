@@ -4205,6 +4205,15 @@ fn remove_permanent_to_library_top(
     };
     let permanent = permanents.remove(index);
     state.battlefield = BattlefieldZone::new(permanents);
+    state.delayed_events.retain(|event| {
+        !matches!(
+            event,
+            DelayedEvent::ChromeCopySacrifice {
+                object: delayed,
+                ..
+            } if *delayed == object_id
+        )
+    });
     if permanent.token {
         return Ok(());
     }
@@ -6807,6 +6816,49 @@ mod tests {
         assert_eq!(state.library.known_top(), &[TOP]);
         assert!(state.battlefield.get(ObjectId(1)).is_none());
         assert!(matches!(state.pending, PendingDecision::None));
+    }
+
+    #[test]
+    fn chrome_copy_top_draw_clears_delayed_sacrifice_when_token_leaves() {
+        let cards = TestCards::r4();
+        let mut copied_top = artifact_permanent(7, TOP);
+        copied_top.token = true;
+        let mut state = TrueState {
+            turn: 5,
+            phase: Phase::Upkeep,
+            window: Window::Priority,
+            library: TrueLibrary::unknown(vec![TARGET_A, TARGET_B]),
+            battlefield: BattlefieldZone::new(vec![copied_top]),
+            delayed_events: vec![DelayedEvent::ChromeCopySacrifice {
+                object: ObjectId(7),
+                card: TOP,
+                due_turn: 5,
+            }],
+            ..TrueState::default()
+        };
+        state.validate().unwrap();
+
+        apply_action(
+            &mut state,
+            &cards,
+            Action::ActivateTopDraw {
+                source: ObjectId(7),
+            },
+        )
+        .unwrap();
+        let transition = apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+
+        assert_eq!(
+            transition.observations,
+            vec![RulesObservation::CardsDrawn(vec![TARGET_A])]
+        );
+        assert_eq!(state.hand.cards(), &[TARGET_A]);
+        assert_eq!(state.library.cards(), &[TARGET_B]);
+        assert!(state.battlefield.get(ObjectId(7)).is_none());
+        assert!(state.delayed_events.is_empty());
+        assert!(state.stack.is_empty());
+        assert_eq!(state.window, Window::Priority);
+        state.validate().unwrap();
     }
 
     #[test]
