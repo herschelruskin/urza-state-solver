@@ -15,17 +15,20 @@ use urza_rules::{
 };
 use urza_value::{WinByHorizonScore, WinDistribution};
 
-pub const R7_TEACHER_SEARCH_VERSION: &str = "r7_public_belief_bounded_search_v2";
-pub const R7_TEACHER_POLICY_VERSION: &str = "r7_teacher_public_belief_v2";
+pub const R7_TEACHER_SEARCH_VERSION: &str = "r7_public_belief_bounded_search_v3";
+pub const R7_TEACHER_POLICY_VERSION: &str = "r7_teacher_public_belief_v3";
 pub const R7_TEACHER_SEARCH_BOUNDARY: &str = "R7 teacher search samples exact hidden worlds only to estimate public action values; every \
      teacher action is selected once per shared InformationState and is then applied uniformly to \
      every sampled world with that observation. Hidden-world identity, exact unknown library order, \
      interpretation roles, archetype features, and R7 grouping labels never participate in action \
      identity. Search depth, total teacher steps, and retained candidates are explicitly bounded; \
-     leaves fall back to the frozen R5 deterministic public policy. An incomplete leaf is never \
-     scored as a loss: an unresolved candidate subtree is excluded only when another candidate at \
-     the same public decision has a complete finite value, while an all-incomplete decision fails \
-     explicitly. R5 and R6 behavior is unchanged.";
+     leaves fall back to the frozen R5 deterministic public policy. When the stack is nonempty, \
+     retained PassPriority candidates are evaluated before other teacher candidates so stack \
+     resolution is tested first. Candidate siblings are skipped only after a complete branch reaches \
+     the exact public-state ceiling of every sampled world winning on the current turn, which no \
+     sibling can improve. An incomplete leaf is never scored as a loss: an unresolved candidate \
+     subtree is excluded only when another candidate at the same public decision has a complete \
+     finite value, while an all-incomplete decision fails explicitly. R5 and R6 behavior is unchanged.";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct TeacherSearchConfig {
@@ -103,6 +106,7 @@ pub struct TeacherSearchStats {
     pub forced_public_steps: u64,
     pub truncated_public_groups: u64,
     pub incomplete_candidate_branches: u64,
+    pub ceiling_pruned_public_actions: u64,
     pub leaf_rollouts: u64,
     pub observation_splits: u64,
     pub max_full_candidate_count: u32,
@@ -411,7 +415,7 @@ impl<D: CardDatabase> TeacherEvaluator<'_, D> {
             return self.evaluate_leaf(group.worlds);
         }
 
-        let candidates =
+        let mut candidates =
             retain_bounded_candidates(&full_candidates, self.config.max_candidates_per_group);
         if candidates.len() < full_candidates.len() {
             self.stats.truncated_public_groups =
@@ -422,9 +426,12 @@ impl<D: CardDatabase> TeacherEvaluator<'_, D> {
             .max_retained_candidate_count
             .max(saturating_u32(candidates.len()));
 
+        order_teacher_candidates(&mut candidates, !group.information.stack.is_empty());
         let candidate_count = candidates.len();
+        let current_turn = group.information.turn;
+        let world_count = saturating_u32(group.worlds.len());
         let mut best: Option<(TeacherPublicAction, WinDistribution, WinByHorizonScore)> = None;
-        for candidate in candidates {
+        for (index, candidate) in candidates.into_iter().enumerate() {
             self.stats.public_actions_evaluated =
                 self.stats.public_actions_evaluated.saturating_add(1);
             let children = self.apply_public_action(group.worlds.clone(), &candidate)?;
@@ -448,7 +455,16 @@ impl<D: CardDatabase> TeacherEvaluator<'_, D> {
                 },
             };
             if replace {
-                best = Some((candidate, value, score));
+                best = Some((candidate, value.clone(), score));
+            }
+
+            if is_current_turn_ceiling(&value, current_turn, world_count) {
+                let pruned = candidate_count.saturating_sub(index + 1);
+                self.stats.ceiling_pruned_public_actions = self
+                    .stats
+                    .ceiling_pruned_public_actions
+                    .saturating_add(u64::try_from(pruned).unwrap_or(u64::MAX));
+                return Ok(value);
             }
         }
 
@@ -563,6 +579,41 @@ fn public_candidates<D: CardDatabase>(
             key: candidate.key.clone(),
         })
         .collect())
+}
+
+fn order_teacher_candidates(candidates: &mut [TeacherPublicAction], stack_nonempty: bool) {
+    if !stack_nonempty {
+        candidates.sort_unstable();
+        return;
+    }
+
+    candidates.sort_unstable_by(|left, right| {
+        resolution_priority(left)
+            .cmp(&resolution_priority(right))
+            .then_with(|| left.cmp(right))
+    });
+}
+
+fn resolution_priority(candidate: &TeacherPublicAction) -> u8 {
+    if candidate.class == PolicyActionClass::PassPriority {
+        0
+    } else {
+        1
+    }
+}
+
+fn is_current_turn_ceiling(
+    distribution: &WinDistribution,
+    current_turn: u8,
+    world_count: u32,
+) -> bool {
+    if !(1..=HORIZON_TURN).contains(&current_turn) {
+        return false;
+    }
+    let bucket = usize::from(current_turn - 1);
+    distribution.losses == 0
+        && distribution.wins() == world_count
+        && distribution.t1_through_t6[bucket] == world_count
 }
 
 fn retain_bounded_candidates(
@@ -828,5 +879,51 @@ mod tests {
         ] {
             assert!(retained.iter().any(|candidate| candidate.class == class));
         }
+    }
+
+    #[test]
+    fn resolution_order_prioritizes_pass_without_changing_membership() {
+        let candidate = |class, kind| TeacherPublicAction {
+            class,
+            key: PolicyPublicKey {
+                kind,
+                ..PolicyPublicKey::default()
+            },
+        };
+        let mut candidates = vec![
+            candidate(PolicyActionClass::ActivateAbility, 7),
+            candidate(PolicyActionClass::PassPriority, 9),
+            candidate(PolicyActionClass::ProduceMana, 3),
+        ];
+        let mut expected = candidates.clone();
+        expected.sort_unstable();
+
+        order_teacher_candidates(&mut candidates, true);
+        assert_eq!(candidates[0].class, PolicyActionClass::PassPriority);
+
+        let mut actual_membership = candidates;
+        actual_membership.sort_unstable();
+        assert_eq!(actual_membership, expected);
+    }
+
+    #[test]
+    fn current_turn_ceiling_requires_every_world_to_win_now() {
+        let ceiling = WinDistribution {
+            t1_through_t6: [0, 2, 0, 0, 0, 0],
+            losses: 0,
+        };
+        assert!(is_current_turn_ceiling(&ceiling, 2, 2));
+
+        let later = WinDistribution {
+            t1_through_t6: [0, 0, 2, 0, 0, 0],
+            losses: 0,
+        };
+        assert!(!is_current_turn_ceiling(&later, 2, 2));
+
+        let partial = WinDistribution {
+            t1_through_t6: [0, 1, 0, 0, 0, 0],
+            losses: 1,
+        };
+        assert!(!is_current_turn_ceiling(&partial, 2, 2));
     }
 }
