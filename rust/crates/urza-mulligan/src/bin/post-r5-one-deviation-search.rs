@@ -333,13 +333,7 @@ fn print_trace(label: &str, trace: &[RolloutStep]) {
     for step in trace {
         println!(
             "{label}\tindex={}\tlogical_index={}\tturn={}\tphase={:?}\twindow={:?}\tclass={:?}\tkey={:?}",
-            step.index,
-            step.index,
-            step.turn,
-            step.phase,
-            step.window,
-            step.class,
-            step.key,
+            step.index, step.index, step.turn, step.phase, step.window, step.class, step.key,
         );
     }
 }

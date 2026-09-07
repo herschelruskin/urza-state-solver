@@ -140,14 +140,7 @@ pub fn rollout_with_logical_event_offset<D: CardDatabase>(
     config: RolloutConfig,
     logical_event_offset: u64,
 ) -> Result<RolloutResult, RolloutError> {
-    rollout_internal(
-        initial,
-        cards,
-        policy,
-        config,
-        logical_event_offset,
-        None,
-    )
+    rollout_internal(initial, cards, policy, config, logical_event_offset, None)
 }
 
 pub fn rollout_with_forced_semantic_action<D: CardDatabase>(
@@ -220,8 +213,7 @@ fn rollout_internal<D: CardDatabase>(
             .cloned()
             .ok_or(RolloutError::MissingResolvedAction(token))?;
         let policy_selected_class = policy_selected.class;
-        let policy_selected_semantics =
-            (policy_selected_class, policy_selected.key.clone());
+        let policy_selected_semantics = (policy_selected_class, policy_selected.key.clone());
         let decision_state = state.clone();
 
         if matches!(decision_state.pending, PendingDecision::None)
@@ -259,9 +251,10 @@ fn rollout_internal<D: CardDatabase>(
 
         let index = u32::try_from(trace.len()).map_err(|_| RolloutError::StepIndexOverflow)?;
         let selected = if let Some(forced) = forced.filter(|forced| forced.index == index) {
-            let mut matching = bridge.candidates().iter().filter(|candidate| {
-                candidate.class == forced.class && candidate.key == forced.key
-            });
+            let mut matching = bridge
+                .candidates()
+                .iter()
+                .filter(|candidate| candidate.class == forced.class && candidate.key == forced.key);
             let Some(candidate) = matching.next() else {
                 return Err(RolloutError::ForcedCandidateMissing(index));
             };
@@ -813,14 +806,9 @@ mod tests {
             class: baseline_step.class,
             key: baseline_step.key,
         };
-        let replayed = rollout_with_forced_semantic_action(
-            state,
-            &cards,
-            &DeterministicPolicy,
-            cfg,
-            &forced,
-        )
-        .unwrap();
+        let replayed =
+            rollout_with_forced_semantic_action(state, &cards, &DeterministicPolicy, cfg, &forced)
+                .unwrap();
 
         assert_eq!(replayed, baseline);
     }
