@@ -1,6 +1,6 @@
 # Post-R7 Second-Pass Card-Advantage Surface
 
-Status: **IN PROGRESS — Ring + Uthros accepted; Clue cash-in next**
+Status: **COMPLETE — Ring + Uthros + Gadgeteer/Clue accepted**
 
 First-pass policy behavior is frozen by `POST_R7_FIRST_PASS_ACCEPTANCE.md`. This pass expands missing gameplay mechanics without simultaneously retuning policy.
 
@@ -36,19 +36,37 @@ First-pass policy behavior is frozen by `POST_R7_FIRST_PASS_ACCEPTANCE.md`. This
      - tutors: 81 resolutions, 81 real targets, 0 fail-to-find
    - interpretation: the new Uthros surface is actively used and liveness-clean, but this slice alone did not increase natural terminal count beyond the post-Ring checkpoint
 
-3. **Clue cash-in / Gadgeteer completion — NEXT**
+3. **Clue cash-in / Gadgeteer completion — ACCEPTED**
    - `{2}, Sacrifice this artifact: Draw a card`
-   - exact sacrifice lifecycle through the common artifact-removal path
-   - CandidateBridge generation using public state only
+   - payment and sacrifice are committed as activation costs; draw occurs only when the activated ability resolves
+   - Clue sacrifice uses the common artifact-sacrifice lifecycle, so a token Clue ceases to exist rather than entering the graveyard
+   - player-chosen sacrifice of an attached Clue preserves the existing `AttachedSacrificeDeferred` boundary; the activation is rejected before any mana or sacrifice cost is partially committed
+   - CandidateBridge exposes the activation only when the public state has a legal generic-two payment and the real rules transition is supported
+   - CandidateBridge ordinary action-family count expands from 28 to 29; Clue cash-in has its own public semantic key
+   - mechanics commit: `77ace29a23964a1b27f782d6f7a6c90f9c913a40`
+   - write gate `34167692955`: card-database regression, rules, CandidateBridge, diagnostic builds, clippy, and rustfmt all green
+   - identical 128-world checkpoint `34167841723`:
+     - all 128 rollouts completed successfully with no `NoCandidate` or step-limit failure
+     - 6,625 audited decisions
+     - 2 natural terminals, up from 1 on the post-Uthros matched population
+     - Clues were visible at 48 audited decisions
+     - Clue cash-in was a legal candidate at 4 decisions and selected at 3
+     - Uthros shifted from 189 candidate / 98 selected decisions to 186 / 95, with Station activation opportunities/selections moving from 87 / 76 to 84 / 73 as trajectories changed
+     - tutors remained 81 resolutions, 81 real targets, 0 fail-to-find
+   - interpretation: Clue cash-in is both reachable and actively selected. On this fixed small population the added card-flow branch coincides with one additional natural terminal; the matched total establishes a real trajectory change, while exact per-world causal attribution is intentionally left to a targeted diagnostic rather than inferred from the aggregate alone.
 
 ## Attribution gate
 
-After each slice:
+Each accepted slice passed:
 
 - targeted `urza-rules` regressions
 - `urza-policy-bridge` tests and action-family audit
 - full affected crate tests + clippy/rustfmt
 - exact matched-world recheck when relevant
-- same 16 openings x 8 hidden worlds (`245632..245639`) engine/tutor diagnostic when the slice is stable
+- same 16 openings x 8 hidden worlds (`245632..245639`) engine/tutor diagnostic once stable
 
 No Oracle action is copied into the production policy. Oracle remains diagnostic-only and may use hidden state; Rust action generation and selection remain information-faithful.
+
+## Second-pass conclusion
+
+The three missing card-advantage surfaces targeted by this pass are now executable in production Rust rules and CandidateBridge: The One Ring, Uthros Research Craft, and Gadgeteer-created Clue cash-in. The fixed 128-world population progressed from 1 natural terminal after Ring, stayed at 1 after Uthros while Uthros became heavily used, and reached 2 after Clue cash-in while tutors remained fully live. Remaining scarcity should therefore be treated primarily as a policy/value/search-quality question rather than evidence that these three engines are mechanically absent.
