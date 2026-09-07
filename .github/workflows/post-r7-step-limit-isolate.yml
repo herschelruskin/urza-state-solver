@@ -1,0 +1,33 @@
+name: Post-R7 StepLimit isolate
+
+on:
+  push:
+    branches:
+      - rust-engine-rebuild
+    paths:
+      - rust/crates/urza-mulligan/src/bin/post-r7-step-limit-isolate.rs
+      - .github/workflows/post-r7-step-limit-isolate.yml
+  workflow_dispatch:
+
+jobs:
+  isolate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.89.0
+      - name: Isolate StepLimit world
+        working-directory: rust
+        shell: bash
+        run: |
+          set -o pipefail
+          cargo run --locked -p urza-mulligan --bin post-r7-step-limit-isolate -- \
+            4 212544 16384 \
+            | tee ../step-limit-isolate.tsv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: step-limit-isolate-${{ github.sha }}
+          path: step-limit-isolate.tsv
+          if-no-files-found: error
