@@ -11,16 +11,14 @@ use urza_mulligan::{
 };
 use urza_policy::DeterministicPolicy;
 use urza_policy_bridge::CandidateBridge;
-use urza_rng::{LogicalEventId, WorldId};
+use urza_rng::WorldId;
 use urza_rollout::{
-    RolloutConfig, RolloutResult, RolloutStep, RolloutStop, replay_trace, rollout,
-    rollout_with_logical_event_offset,
+    ForcedSemanticAction, RolloutConfig, RolloutResult, RolloutStep, RolloutStop, replay_trace,
+    rollout, rollout_with_forced_semantic_action,
 };
-use urza_rules::{
-    GameRngContext, RuleError, advance_automatic, apply_action_with_rng, detect_terminal_win,
-};
+use urza_rules::{RuleError, advance_automatic, detect_terminal_win};
 
-const SEARCH_VERSION: &str = "post_r5_one_deviation_search_v1";
+const SEARCH_VERSION: &str = "post_r5_one_deviation_search_v2_exact_liveness";
 
 fn main() {
     if let Err(error) = run() {
@@ -93,7 +91,7 @@ fn run() -> Result<(), Box<dyn Error>> {
         hand_names.join("|"),
     );
     println!(
-        "SCAN\troot={:?}\thidden_start={}\thidden_count={}\tmax_steps={}",
+        "SCAN\troot={:?}\thidden_start={}\thidden_count={}\tmax_steps={}\tprefix_mode=full_rollout_liveness_preserved",
         rollout_config.root, hidden_start, hidden_count, rollout_config.max_steps,
     );
 
@@ -128,7 +126,7 @@ fn run() -> Result<(), Box<dyn Error>> {
                     baseline.final_information.turn,
                     baseline.trace.len(),
                 );
-                print_trace("BASELINE_TRACE", &baseline.trace, 0);
+                print_trace("BASELINE_TRACE", &baseline.trace);
                 return Ok(());
             }
             RolloutStop::Horizon => {}
@@ -190,43 +188,43 @@ fn run() -> Result<(), Box<dyn Error>> {
                 candidate.class != baseline_step.class || candidate.key != baseline_step.key
             }) {
                 deviations_tested = deviations_tested.saturating_add(1);
-                let action = bridge.resolved_action(alternate.token).ok_or_else(|| {
-                    io::Error::other(format!(
-                        "alternate token {:?} could not be resolved at step {}",
-                        alternate.token, baseline_step.index
-                    ))
-                })?;
-                let mut deviated_state = decision_state.clone();
-                apply_action_with_rng(
-                    &mut deviated_state,
-                    &cards,
-                    action,
-                    GameRngContext {
-                        root: config.root,
-                        world: config.world,
-                        logical_event: LogicalEventId(u64::from(baseline_step.index)),
-                    },
-                )?;
-
-                let consumed = baseline_step
-                    .index
-                    .checked_add(1)
-                    .ok_or_else(|| io::Error::other("step index overflow"))?;
-                let continuation = rollout_with_logical_event_offset(
-                    deviated_state,
+                let forced = ForcedSemanticAction {
+                    index: baseline_step.index,
+                    class: alternate.class,
+                    key: alternate.key.clone(),
+                };
+                let deviated = rollout_with_forced_semantic_action(
+                    exact.clone(),
                     &cards,
                     &DeterministicPolicy,
-                    RolloutConfig {
-                        max_steps: config.max_steps.saturating_sub(consumed),
-                        ..config
-                    },
-                    u64::from(consumed),
+                    config,
+                    &forced,
                 )?;
 
-                match continuation.stop {
+                if deviated.trace.len() <= position || deviated.trace[..position] != *prefix {
+                    return Err(Box::new(io::Error::other(format!(
+                        "forced rollout prefix drift at step {}",
+                        baseline_step.index
+                    ))));
+                }
+                let forced_step = &deviated.trace[position];
+                if forced_step.index != baseline_step.index
+                    || forced_step.turn != information.turn
+                    || forced_step.phase != information.phase
+                    || forced_step.window != information.window
+                    || forced_step.class != alternate.class
+                    || forced_step.key != alternate.key
+                {
+                    return Err(Box::new(io::Error::other(format!(
+                        "forced rollout did not apply requested semantic action at step {}",
+                        baseline_step.index
+                    ))));
+                }
+
+                match deviated.stop {
                     RolloutStop::Terminal(family) => {
                         println!(
-                            "POSITIVE_ONE_DEVIATION\topening_world={}\thidden_world={}\tdecision_index={}\tbaseline_class={:?}\tbaseline_key={:?}\tforced_class={:?}\tforced_key={:?}\tfamily={family:?}\tturn={}\tbaseline_trace_len={}\tcontinuation_trace_len={}",
+                            "POSITIVE_ONE_DEVIATION\topening_world={}\thidden_world={}\tdecision_index={}\tbaseline_class={:?}\tbaseline_key={:?}\tforced_class={:?}\tforced_key={:?}\tfamily={family:?}\tturn={}\tbaseline_trace_len={}\tdeviated_trace_len={}",
                             opening_world.0,
                             hidden_world.0,
                             baseline_step.index,
@@ -234,25 +232,11 @@ fn run() -> Result<(), Box<dyn Error>> {
                             baseline_step.key,
                             alternate.class,
                             alternate.key,
-                            continuation.final_information.turn,
+                            deviated.final_information.turn,
                             baseline.trace.len(),
-                            continuation.trace.len(),
+                            deviated.trace.len(),
                         );
-                        print_trace("TRACE_PREFIX", prefix, 0);
-                        println!(
-                            "TRACE_FORCED\tindex={}\tturn={}\tphase={:?}\twindow={:?}\tclass={:?}\tkey={:?}",
-                            baseline_step.index,
-                            information.turn,
-                            information.phase,
-                            information.window,
-                            alternate.class,
-                            alternate.key,
-                        );
-                        print_trace(
-                            "TRACE_CONTINUATION",
-                            &continuation.trace,
-                            u64::from(consumed),
-                        );
+                        print_trace("DEVIATED_TRACE", &deviated.trace);
                         return Ok(());
                     }
                     RolloutStop::Horizon => {
@@ -260,7 +244,7 @@ fn run() -> Result<(), Box<dyn Error>> {
                     }
                     RolloutStop::StepLimit | RolloutStop::NoCandidate => {
                         println!(
-                            "INCOMPLETE_ONE_DEVIATION\topening_world={}\thidden_world={}\tdecision_index={}\tbaseline_class={:?}\tbaseline_key={:?}\tforced_class={:?}\tforced_key={:?}\tstop={:?}\tturn={}\tcontinuation_trace_len={}",
+                            "INCOMPLETE_ONE_DEVIATION\topening_world={}\thidden_world={}\tdecision_index={}\tbaseline_class={:?}\tbaseline_key={:?}\tforced_class={:?}\tforced_key={:?}\tstop={:?}\tturn={}\tdeviated_trace_len={}",
                             opening_world.0,
                             hidden_world.0,
                             baseline_step.index,
@@ -268,28 +252,14 @@ fn run() -> Result<(), Box<dyn Error>> {
                             baseline_step.key,
                             alternate.class,
                             alternate.key,
-                            continuation.stop,
-                            continuation.final_information.turn,
-                            continuation.trace.len(),
+                            deviated.stop,
+                            deviated.final_information.turn,
+                            deviated.trace.len(),
                         );
-                        print_trace("TRACE_PREFIX", prefix, 0);
-                        println!(
-                            "TRACE_FORCED\tindex={}\tturn={}\tphase={:?}\twindow={:?}\tclass={:?}\tkey={:?}",
-                            baseline_step.index,
-                            information.turn,
-                            information.phase,
-                            information.window,
-                            alternate.class,
-                            alternate.key,
-                        );
-                        print_trace(
-                            "TRACE_CONTINUATION",
-                            &continuation.trace,
-                            u64::from(consumed),
-                        );
+                        print_trace("DEVIATED_TRACE", &deviated.trace);
                         return Err(Box::new(io::Error::other(format!(
-                            "one-deviation continuation stopped incompletely at {:?}",
-                            continuation.stop
+                            "one-deviation rollout stopped incompletely at {:?}",
+                            deviated.stop
                         ))));
                     }
                 }
@@ -298,7 +268,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     }
 
     println!(
-        "NO_ONE_DEVIATION_POSITIVE\topening_world={}\tworlds_scanned={}\tdecisions_scanned={}\tdeviations_tested={}\thorizon_continuations={}\tmax_baseline_trace={}\tmax_candidates={}",
+        "NO_ONE_DEVIATION_POSITIVE\topening_world={}\tworlds_scanned={}\tdecisions_scanned={}\tdeviations_tested={}\thorizon_continuations={}\tmax_baseline_trace={}\tmax_candidates={}\tliveness_history=preserved",
         opening_world.0,
         worlds_scanned,
         decisions_scanned,
@@ -356,15 +326,15 @@ fn print_incomplete_baseline(
         result.final_information.turn,
         result.trace.len(),
     );
-    print_trace("BASELINE_TRACE", &result.trace, 0);
+    print_trace("BASELINE_TRACE", &result.trace);
 }
 
-fn print_trace(label: &str, trace: &[RolloutStep], logical_offset: u64) {
+fn print_trace(label: &str, trace: &[RolloutStep]) {
     for step in trace {
         println!(
             "{label}\tindex={}\tlogical_index={}\tturn={}\tphase={:?}\twindow={:?}\tclass={:?}\tkey={:?}",
             step.index,
-            logical_offset.saturating_add(u64::from(step.index)),
+            step.index,
             step.turn,
             step.phase,
             step.window,
