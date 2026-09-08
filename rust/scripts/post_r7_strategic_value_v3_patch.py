@@ -46,8 +46,10 @@ append = r'''
 
 #[test]
 fn fresh_three_card_library_look_beats_medium_deployment_but_not_recipe_completion() {
-    let mut config = StrategicPolicyConfig::default();
-    config.unknown_card_value = 50;
+    let mut config = StrategicPolicyConfig {
+        unknown_card_value: 50,
+        ..StrategicPolicyConfig::default()
+    };
     config.action_kind_values.insert(15, 70);
     config.library_look_kind = Some(15);
     config.card_values.insert(CardDefId(40), 90);
