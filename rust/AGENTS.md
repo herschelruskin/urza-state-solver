@@ -43,6 +43,8 @@ A card may clear the modeling gate only as `COMPLETE`, `GOLDFISH_IRRELEVANT`, or
 
 Do not classify a card as goldfish-irrelevant merely because it is normally used as interaction. Own-spell/self-target lines, cast triggers, graveyard movement, resource conversion, alternate costs, and other interactions with modeled engine cards must be considered first.
 
+Operational coordination for this gate is tracked in `POST_R7_PARALLEL_MODELING_COMPLETENESS_TRACKER.md`. Read that tracker before beginning card-model work, use its dependency-aware shard/integration protocol for parallel repairs, and update it after every accepted integration wave. The tracker does not override the TSV registry or executable evidence; shard-local success is not permission to change authoritative completeness counts outside an integration gate.
+
 ## Post-R7 teacher/diagnostic discipline
 
 Teacher search is a read-only oracle/sidecar over states produced by the accepted engine. It may annotate or diagnose; it must not silently rerank London bottoms, replace production keep/mull decisions, alter R5/R6/formal-R7 policy identity, feed interpretation labels into gameplay, or mutate rules because it finds a stronger line.
