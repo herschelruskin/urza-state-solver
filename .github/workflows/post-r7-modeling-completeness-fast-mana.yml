@@ -9,6 +9,11 @@ on:
       - 'rust/scripts/post_r7_modeling_completeness_fast_mana_patch.py'
       - 'rust/crates/urza-cards/tests/post_r7_modeling_completeness_fast_mana.rs'
       - 'rust/crates/urza-policy-bridge/tests/post_r7_modeling_completeness_fast_mana.rs'
+      - 'rust/crates/urza-rules/src/lib.rs'
+      - 'rust/crates/urza-cards/src/lib.rs'
+      - 'rust/crates/urza-mulligan/src/interpretation.rs'
+      - 'rust/crates/urza-mulligan/src/bin/post-r7-modeling-completeness-gate.rs'
+      - 'rust/data/goldfish_model_gate.v1.tsv'
   workflow_dispatch:
 
 permissions:
@@ -73,6 +78,7 @@ jobs:
             rust/crates/urza-rules/src/lib.rs \
             rust/crates/urza-cards/src/lib.rs \
             rust/crates/urza-mulligan/src/interpretation.rs \
+            rust/crates/urza-mulligan/src/bin/post-r7-modeling-completeness-gate.rs \
             rust/data/goldfish_model_gate.v1.tsv \
             rust/POST_R7_MODELING_COMPLETENESS_GATE_RESULT.md
           git commit -m '[R7] Resolve Lotus Petal and Mox Opal completeness'
