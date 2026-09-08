@@ -1,0 +1,134 @@
+name: Post-R7 card modeling coverage audit
+
+on:
+  push:
+    branches:
+      - rust-engine-rebuild
+    paths:
+      - '.github/workflows/post-r7-card-model-coverage-audit.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: dtolnay/rust-toolchain@1.89
+        with:
+          components: rustfmt, clippy
+      - name: Format check
+        working-directory: rust
+        run: cargo fmt --all -- --check
+      - name: Compile audit surface
+        working-directory: rust
+        run: cargo check --locked -p urza-mulligan --bin post-r7-card-model-coverage-audit
+      - name: Strict Clippy audit surface
+        working-directory: rust
+        run: cargo clippy --locked -p urza-mulligan --bin post-r7-card-model-coverage-audit -- -D warnings
+      - name: Run exact coverage audit
+        working-directory: rust
+        run: cargo run --quiet --locked -p urza-mulligan --bin post-r7-card-model-coverage-audit | tee ../card-model-coverage.tsv
+      - name: Build audit report
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          lines = Path('card-model-coverage.tsv').read_text().splitlines()
+          rows = []
+          summary = None
+          for line in lines:
+              parts = line.split('\t')
+              if not parts:
+                  continue
+              if parts[0] == 'CARD' and len(parts) >= 14 and parts[1] != 'id':
+                  rows.append({
+                      'id': int(parts[1]),
+                      'name': parts[2],
+                      'commander': parts[3],
+                      'coverage': parts[4],
+                      'supported': parts[5] == 'true',
+                      'role': parts[6],
+                      'engine': parts[7],
+                      'utility': parts[8],
+                      'simple_tutor': parts[9],
+                      'special_search': parts[10],
+                      'spell_effect': parts[11],
+                      'reason': parts[12] if len(parts) == 13 else '\t'.join(parts[12:]),
+                  })
+              elif parts[0] == 'SUMMARY':
+                  summary = dict(item.split('=', 1) for item in parts[1:])
+          if summary is None or len(rows) != 95:
+              raise SystemExit(f'incomplete audit: rows={len(rows)} summary={summary}')
+
+          unsupported = [r for r in rows if not r['supported']]
+          partial = [r for r in rows if r['supported'] and r['coverage'] != 'RulesActive']
+          rules_active = [r for r in rows if r['coverage'] == 'RulesActive']
+          env = [r for r in rows if r['coverage'] == 'EnvironmentDeferred']
+
+          out = [
+              '# Post-R7 full card modeling coverage audit',
+              '',
+              '**This report distinguishes catalog presence from actual runtime gameplay support.**',
+              '',
+              f"- Distinct deck identities including commander: **{summary['identities']}**",
+              f"- Current runtime-supported identities: **{summary['supported']}**",
+              f"- Current runtime-unsupported identities: **{summary['unsupported']}**",
+              f"- Coverage registry `RULES_ACTIVE`: **{summary['rules_active']}**",
+              f"- Coverage registry `PRIMITIVE_ACTIVE`: **{summary['primitive_active']}**",
+              f"- Coverage registry `ENVIRONMENT_DEFERRED`: **{summary['environment_deferred']}**",
+              f"- Coverage registry `POLICY_ONLY`: **{summary['policy_only']}**",
+              f"- Coverage registry `INTENTIONALLY_UNMODELED`: **{summary['intentionally_unmodeled']}**",
+              '',
+              '## Runtime-unsupported identities',
+              '',
+              '| ID | Card | Coverage registry | Reason |',
+              '| ---: | --- | --- | --- |',
+          ]
+          for r in unsupported:
+              reason = r['reason'].replace('|', '\\|')
+              out.append(f"| {r['id']} | {r['name']} | {r['coverage']} | {reason} |")
+
+          out += [
+              '',
+              '## Runtime-supported but not marked RULES_ACTIVE',
+              '',
+              'These cards have some executable gameplay surface, but their registry classification explicitly says the implementation is primitive, environment-deferred, policy-only, or intentionally unmodeled. They must not be treated as fully modeled without a card-by-card rules review.',
+              '',
+              '| ID | Card | Coverage registry | Role | Engine | Utility | Search | Spell effect | Reason |',
+              '| ---: | --- | --- | --- | --- | --- | --- | --- | --- |',
+          ]
+          for r in partial:
+              search = f"{r['simple_tutor']} / {r['special_search']}"
+              reason = r['reason'].replace('|', '\\|')
+              out.append(f"| {r['id']} | {r['name']} | {r['coverage']} | {r['role']} | {r['engine']} | {r['utility']} | {search} | {r['spell_effect']} | {reason} |")
+
+          out += [
+              '',
+              '## Registry RULES_ACTIVE identities',
+              '',
+              ', '.join(r['name'] for r in rules_active),
+              '',
+              '## Environment-deferred identities',
+              '',
+              ', '.join(r['name'] for r in env),
+              '',
+              '## Audit interpretation',
+              '',
+              'A card appearing in the 95-identity catalog proves only deck identity/oracle metadata coverage. It does not prove that the current rules engine can cast/play it or execute all of its relevant Oracle text. Runtime support and rules completeness must be audited separately before policy conclusions are accepted.',
+              '',
+          ]
+          Path('rust/POST_R7_FULL_CARD_MODEL_COVERAGE_AUDIT.md').write_text('\n'.join(out) + '\n')
+          print('\n'.join(out[:20]))
+          PY
+      - name: Commit audit result
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add rust/POST_R7_FULL_CARD_MODEL_COVERAGE_AUDIT.md
+          git commit -m '[R7] Record full card modeling coverage audit'
+          git push
