@@ -1,4 +1,4 @@
-name: Post-R7 rules-active completeness repair v1
+name: Post-R7 shared-primitives bootstrap
 
 on:
   push:
@@ -6,27 +6,32 @@ on:
       - rust-engine-rebuild
     paths:
       - '.github/workflows/post-r7-rules-active-repair-v1.yml'
-      - 'rust/scripts/post_r7_rules_active_repair_v1_patch.py'
-      - 'rust/scripts/post_r7_rules_active_repair_v1_compile_fix.py'
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  rules-active-repair:
+  materialize-shard:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
+      - name: Check out shared-primitives shard
+        run: |
+          git fetch origin rust-modeling/shared-primitives
+          git checkout -B rust-modeling/shared-primitives origin/rust-modeling/shared-primitives
+          test "$(git merge-base rust-modeling/shared-primitives df19087b828dcf9b2a116a4dbe6ee65b55196a8e)" = df19087b828dcf9b2a116a4dbe6ee65b55196a8e
+          echo "SHARD_PRE_MATERIALIZE_SHA=$(git rev-parse HEAD)"
+          echo "SHARD_BASE_SHA=df19087b828dcf9b2a116a4dbe6ee65b55196a8e"
       - uses: dtolnay/rust-toolchain@1.89
         with:
           components: rustfmt, clippy
-      - name: Apply rules-active repair patch
-        run: python rust/scripts/post_r7_rules_active_repair_v1_patch.py
-      - name: Apply fixture compile fix
-        run: python rust/scripts/post_r7_rules_active_repair_v1_compile_fix.py
+      - name: Materialize staged repair into direct source
+        run: |
+          python rust/scripts/post_r7_rules_active_repair_v1_patch.py
+          python rust/scripts/post_r7_rules_active_repair_v1_compile_fix.py
       - name: Normalize formatting
         working-directory: rust
         run: cargo fmt --all
@@ -36,13 +41,13 @@ jobs:
       - name: Workspace all-target compile
         working-directory: rust
         run: cargo check --locked --workspace --all-targets
-      - name: Rules-active repair card fixtures
+      - name: Shared repair card fixtures
         working-directory: rust
         run: cargo test --locked -p urza-cards --test post_r7_modeling_completeness_rules_active_repair_v1
-      - name: Rules-active repair bridge fixtures
+      - name: Shared repair bridge fixtures
         working-directory: rust
         run: cargo test --locked -p urza-policy-bridge --test post_r7_modeling_completeness_rules_active_repair_v1
-      - name: Recheck Forensic Gadgeteer completeness
+      - name: Forensic Gadgeteer cross-regression
         working-directory: rust
         run: cargo test --locked -p urza-cards --test post_r7_modeling_completeness_forensic_gadgeteer
       - name: Rules regression suite
@@ -54,9 +59,6 @@ jobs:
       - name: Frozen R4 terminal regression
         working-directory: rust
         run: cargo test --locked -p urza-cards --test r4_terminal_acceptance
-      - name: Modeling gate unit test
-        working-directory: rust
-        run: cargo test --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate
       - name: Strict Clippy
         working-directory: rust
         run: |
@@ -64,21 +66,12 @@ jobs:
           cargo clippy --locked -p urza-rules --all-targets -- -D warnings
           cargo clippy --locked -p urza-cards --all-targets -- -D warnings
           cargo clippy --locked -p urza-policy-bridge --all-targets -- -D warnings
-          cargo clippy --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- -D warnings
-      - name: Record updated inventory
-        working-directory: rust
-        run: cargo run --quiet --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- --inventory > POST_R7_MODELING_COMPLETENESS_GATE_RESULT.md
-      - name: Assert expected remaining red gate
-        working-directory: rust
+      - name: Preserve authoritative completeness baseline
         run: |
-          set -euo pipefail
-          if cargo run --quiet --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- --enforce > ../modeling-enforce.txt 2>&1; then
-            echo 'gate unexpectedly green before backlog is cleared' >&2
-            exit 1
-          fi
-          grep -q $'MODELING_COMPLETENESS_GATE\ttotal=95\tresolved=14\tunresolved=81' ../modeling-enforce.txt
-          grep -q 'MODELING_COMPLETENESS_GATE_RED: 81 unresolved active identities remain' ../modeling-enforce.txt
-      - name: Commit rules-active repair promotion
+          git restore --source=HEAD -- rust/data/goldfish_model_gate.v1.tsv
+          git restore --source=HEAD -- rust/crates/urza-mulligan/src/bin/post-r7-modeling-completeness-gate.rs
+          git diff --exit-code -- rust/data/goldfish_model_gate.v1.tsv rust/crates/urza-mulligan/src/bin/post-r7-modeling-completeness-gate.rs
+      - name: Commit direct Rust source and fixtures to shard
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
@@ -90,9 +83,8 @@ jobs:
             rust/crates/urza-policy-bridge/src/lib.rs \
             rust/crates/urza-cards/tests/post_r7_modeling_completeness_forensic_gadgeteer.rs \
             rust/crates/urza-cards/tests/post_r7_modeling_completeness_rules_active_repair_v1.rs \
-            rust/crates/urza-policy-bridge/tests/post_r7_modeling_completeness_rules_active_repair_v1.rs \
-            rust/crates/urza-mulligan/src/bin/post-r7-modeling-completeness-gate.rs \
-            rust/data/goldfish_model_gate.v1.tsv \
-            rust/POST_R7_MODELING_COMPLETENESS_GATE_RESULT.md
-          git commit -m '[R7] Repair and audit rules-active completeness v1'
-          git push
+            rust/crates/urza-policy-bridge/tests/post_r7_modeling_completeness_rules_active_repair_v1.rs
+          git diff --cached --quiet && { echo 'no materialized changes'; exit 1; }
+          git commit -m '[R7] Materialize shared-primitives repair candidate'
+          git push origin HEAD:rust-modeling/shared-primitives
+          echo "SHARD_MATERIALIZED_SHA=$(git rev-parse HEAD)"
