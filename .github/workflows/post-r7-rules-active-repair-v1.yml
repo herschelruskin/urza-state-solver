@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/post-r7-rules-active-repair-v1.yml'
       - 'rust/scripts/post_r7_rules_active_repair_v1_patch.py'
+      - 'rust/scripts/post_r7_rules_active_repair_v1_compile_fix.py'
   workflow_dispatch:
 
 permissions:
@@ -24,6 +25,8 @@ jobs:
           components: rustfmt, clippy
       - name: Apply rules-active repair patch
         run: python rust/scripts/post_r7_rules_active_repair_v1_patch.py
+      - name: Apply fixture compile fix
+        run: python rust/scripts/post_r7_rules_active_repair_v1_compile_fix.py
       - name: Normalize formatting
         working-directory: rust
         run: cargo fmt --all
