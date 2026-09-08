@@ -1,0 +1,95 @@
+name: Post-R7 rules-active completeness repair v1
+
+on:
+  push:
+    branches:
+      - rust-engine-rebuild
+    paths:
+      - '.github/workflows/post-r7-rules-active-repair-v1.yml'
+      - 'rust/scripts/post_r7_rules_active_repair_v1_patch.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  rules-active-repair:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: dtolnay/rust-toolchain@1.89
+        with:
+          components: rustfmt, clippy
+      - name: Apply rules-active repair patch
+        run: python rust/scripts/post_r7_rules_active_repair_v1_patch.py
+      - name: Normalize formatting
+        working-directory: rust
+        run: cargo fmt --all
+      - name: Format check
+        working-directory: rust
+        run: cargo fmt --all -- --check
+      - name: Workspace all-target compile
+        working-directory: rust
+        run: cargo check --locked --workspace --all-targets
+      - name: Rules-active repair card fixtures
+        working-directory: rust
+        run: cargo test --locked -p urza-cards --test post_r7_modeling_completeness_rules_active_repair_v1
+      - name: Rules-active repair bridge fixtures
+        working-directory: rust
+        run: cargo test --locked -p urza-policy-bridge --test post_r7_modeling_completeness_rules_active_repair_v1
+      - name: Recheck Forensic Gadgeteer completeness
+        working-directory: rust
+        run: cargo test --locked -p urza-cards --test post_r7_modeling_completeness_forensic_gadgeteer
+      - name: Rules regression suite
+        working-directory: rust
+        run: cargo test --locked -p urza-rules
+      - name: Frozen R4 card regression
+        working-directory: rust
+        run: cargo test --locked -p urza-cards --test r4_final_acceptance
+      - name: Frozen R4 terminal regression
+        working-directory: rust
+        run: cargo test --locked -p urza-cards --test r4_terminal_acceptance
+      - name: Modeling gate unit test
+        working-directory: rust
+        run: cargo test --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate
+      - name: Strict Clippy
+        working-directory: rust
+        run: |
+          cargo clippy --locked -p urza-core --all-targets -- -D warnings
+          cargo clippy --locked -p urza-rules --all-targets -- -D warnings
+          cargo clippy --locked -p urza-cards --all-targets -- -D warnings
+          cargo clippy --locked -p urza-policy-bridge --all-targets -- -D warnings
+          cargo clippy --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- -D warnings
+      - name: Record updated inventory
+        working-directory: rust
+        run: cargo run --quiet --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- --inventory > POST_R7_MODELING_COMPLETENESS_GATE_RESULT.md
+      - name: Assert expected remaining red gate
+        working-directory: rust
+        run: |
+          set -euo pipefail
+          if cargo run --quiet --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- --enforce > ../modeling-enforce.txt 2>&1; then
+            echo 'gate unexpectedly green before backlog is cleared' >&2
+            exit 1
+          fi
+          grep -q $'MODELING_COMPLETENESS_GATE\ttotal=95\tresolved=14\tunresolved=81' ../modeling-enforce.txt
+          grep -q 'MODELING_COMPLETENESS_GATE_RED: 81 unresolved active identities remain' ../modeling-enforce.txt
+      - name: Commit rules-active repair promotion
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            rust/crates/urza-core/src/state.rs \
+            rust/crates/urza-rules/src/lib.rs \
+            rust/crates/urza-cards/src/lib.rs \
+            rust/crates/urza-policy-bridge/src/lib.rs \
+            rust/crates/urza-cards/tests/post_r7_modeling_completeness_forensic_gadgeteer.rs \
+            rust/crates/urza-cards/tests/post_r7_modeling_completeness_rules_active_repair_v1.rs \
+            rust/crates/urza-policy-bridge/tests/post_r7_modeling_completeness_rules_active_repair_v1.rs \
+            rust/crates/urza-mulligan/src/bin/post-r7-modeling-completeness-gate.rs \
+            rust/data/goldfish_model_gate.v1.tsv \
+            rust/POST_R7_MODELING_COMPLETENESS_GATE_RESULT.md
+          git commit -m '[R7] Repair and audit rules-active completeness v1'
+          git push
