@@ -24,7 +24,7 @@ As of 2026-09-08:
 
 - Repository: `herschelruskin/urza-state-solver`
 - Integration branch: `rust-engine-rebuild`
-- Current working branch head: `44f885152d7d61d2986f9a51fd2e434f2cae1a85`
+- Repair staging baseline at tracker creation: `44f885152d7d61d2986f9a51fd2e434f2cae1a85`
 - Last accepted completeness promotion head: `3716b84d719fe651a6fee442e45275b5e4b52483` (`[R7] Audit Battered Golem completeness`)
 - Active catalog identities: 95
 - Accepted resolved dispositions: 11
@@ -36,7 +36,7 @@ As of 2026-09-08:
 - Accepted `GOLDFISH_IRRELEVANT`: 0
 - Accepted `ENVIRONMENT_DEFERRED`: 0
 
-Important: the working branch contains staging/harness commits after the last accepted completeness promotion. Do not infer card acceptance from branch head alone. The generated gate result + successful integration CI are authoritative.
+Important: the working branch contains staging/harness/documentation commits after the last accepted completeness promotion. Do not infer card acceptance from branch head alone. Verify the current branch head before writes; the generated gate result + successful integration CI are authoritative for modeling acceptance.
 
 ### Currently staged but not accepted repair
 
