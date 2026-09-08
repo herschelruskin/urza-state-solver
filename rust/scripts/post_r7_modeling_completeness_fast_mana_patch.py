@@ -205,9 +205,7 @@ replace_exact(
     }""",
     """        ManaAbility::TapForBlueAndDamage { .. } => (true, true, false),
         ManaAbility::TapForColorlessAndDamage { mana, .. } => (true, false, mana >= 2),
-        ManaAbility::TapSacrificeForBlue | ManaAbility::MetalcraftTapForBlue => {
-            (true, true, false)
-        }
+        ManaAbility::TapSacrificeForBlue | ManaAbility::MetalcraftTapForBlue => (true, true, false),
     }""",
 )
 
