@@ -1,4 +1,4 @@
-name: Post-R7 shared-primitives bootstrap
+name: Post-R7 shared-primitives direct validation
 
 on:
   push:
@@ -9,32 +9,27 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  materialize-shard:
+  validate-committed-shard:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Check out shared-primitives shard
+      - name: Check out exact committed shared-primitives candidate
         run: |
+          set -euo pipefail
           git fetch origin rust-modeling/shared-primitives
-          git checkout -B rust-modeling/shared-primitives origin/rust-modeling/shared-primitives
-          test "$(git merge-base rust-modeling/shared-primitives df19087b828dcf9b2a116a4dbe6ee65b55196a8e)" = df19087b828dcf9b2a116a4dbe6ee65b55196a8e
-          echo "SHARD_PRE_MATERIALIZE_SHA=$(git rev-parse HEAD)"
+          git checkout --detach c26b57f8c7443c95156ff8b49e9c0acee6ca36a6
+          test "$(git rev-parse HEAD)" = c26b57f8c7443c95156ff8b49e9c0acee6ca36a6
+          test "$(git merge-base HEAD df19087b828dcf9b2a116a4dbe6ee65b55196a8e)" = df19087b828dcf9b2a116a4dbe6ee65b55196a8e
           echo "SHARD_BASE_SHA=df19087b828dcf9b2a116a4dbe6ee65b55196a8e"
+          echo "SHARD_SOURCE_SHA=$(git rev-parse HEAD)"
       - uses: dtolnay/rust-toolchain@1.89
         with:
           components: rustfmt, clippy
-      - name: Materialize staged repair into direct source
-        run: |
-          python rust/scripts/post_r7_rules_active_repair_v1_patch.py
-          python rust/scripts/post_r7_rules_active_repair_v1_compile_fix.py
-      - name: Normalize formatting
-        working-directory: rust
-        run: cargo fmt --all
       - name: Format check
         working-directory: rust
         run: cargo fmt --all -- --check
@@ -59,6 +54,19 @@ jobs:
       - name: Frozen R4 terminal regression
         working-directory: rust
         run: cargo test --locked -p urza-cards --test r4_terminal_acceptance
+      - name: Modeling gate baseline regression
+        working-directory: rust
+        run: cargo test --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate
+      - name: Assert authoritative counts remain unchanged
+        working-directory: rust
+        run: |
+          set -euo pipefail
+          if cargo run --quiet --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- --enforce > ../modeling-enforce.txt 2>&1; then
+            echo 'gate unexpectedly green before backlog is cleared' >&2
+            exit 1
+          fi
+          grep -q $'MODELING_COMPLETENESS_GATE\ttotal=95\tresolved=11\tunresolved=84' ../modeling-enforce.txt
+          grep -q 'MODELING_COMPLETENESS_GATE_RED: 84 unresolved active identities remain' ../modeling-enforce.txt
       - name: Strict Clippy
         working-directory: rust
         run: |
@@ -66,25 +74,6 @@ jobs:
           cargo clippy --locked -p urza-rules --all-targets -- -D warnings
           cargo clippy --locked -p urza-cards --all-targets -- -D warnings
           cargo clippy --locked -p urza-policy-bridge --all-targets -- -D warnings
-      - name: Preserve authoritative completeness baseline
-        run: |
-          git restore --source=HEAD -- rust/data/goldfish_model_gate.v1.tsv
-          git restore --source=HEAD -- rust/crates/urza-mulligan/src/bin/post-r7-modeling-completeness-gate.rs
-          git diff --exit-code -- rust/data/goldfish_model_gate.v1.tsv rust/crates/urza-mulligan/src/bin/post-r7-modeling-completeness-gate.rs
-      - name: Commit direct Rust source and fixtures to shard
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add \
-            rust/crates/urza-core/src/state.rs \
-            rust/crates/urza-rules/src/lib.rs \
-            rust/crates/urza-cards/src/lib.rs \
-            rust/crates/urza-policy-bridge/src/lib.rs \
-            rust/crates/urza-cards/tests/post_r7_modeling_completeness_forensic_gadgeteer.rs \
-            rust/crates/urza-cards/tests/post_r7_modeling_completeness_rules_active_repair_v1.rs \
-            rust/crates/urza-policy-bridge/tests/post_r7_modeling_completeness_rules_active_repair_v1.rs
-          git diff --cached --quiet && { echo 'no materialized changes'; exit 1; }
-          git commit -m '[R7] Materialize shared-primitives repair candidate'
-          git push origin HEAD:rust-modeling/shared-primitives
-          echo "SHARD_MATERIALIZED_SHA=$(git rev-parse HEAD)"
+          cargo clippy --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- -D warnings
+      - name: Ensure validation is read-only
+        run: git diff --exit-code
