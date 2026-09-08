@@ -375,10 +375,10 @@ mod tests {
         let audit = inspect().unwrap();
         assert_eq!(audit.rows.len(), 95);
         assert_eq!(audit.count(Disposition::AuditRequired), 46);
-        assert_eq!(audit.count(Disposition::ImplementationRequired), 42);
+        assert_eq!(audit.count(Disposition::ImplementationRequired), 40);
         assert_eq!(audit.count(Disposition::EnvironmentSplitRequired), 3);
-        assert_eq!(audit.count(Disposition::Complete), 4);
-        assert_eq!(audit.resolved(), 4);
-        assert_eq!(audit.unresolved(), 91);
+        assert_eq!(audit.count(Disposition::Complete), 6);
+        assert_eq!(audit.resolved(), 6);
+        assert_eq!(audit.unresolved(), 89);
     }
 }

@@ -21,7 +21,7 @@ pub const RULES_PHASE: &str = "R4";
 pub const R2_RULES_VERSION: &str = "r2_core_kernel_v2";
 pub const R3_RULES_VERSION: &str = "r3_search_complete_v4";
 pub const RULES_VERSION: &str = "r4_acceptance_v6";
-pub const POST_R7_RULES_VERSION: &str = "post_r7_card_advantage_v4_assistant_scry_order";
+pub const POST_R7_RULES_VERSION: &str = "post_r7_modeling_completeness_v1_fast_mana";
 pub const HORIZON_TURN: u8 = 6;
 pub const RNG_EVENT_SEARCH_SHUFFLE: EventType = EventType(0x0301);
 pub const ABILITY_REPURPOSING_BAY_SEARCH: AbilityId = AbilityId(0x0301);
@@ -311,6 +311,13 @@ pub enum ManaAbility {
         mana: u16,
         damage: u16,
     },
+    /// In the pinned mono-blue goldfish model, an unrestricted any-color mana
+    /// choice projects losslessly to blue. The completeness fixture audits all
+    /// active card/face mana costs and fails if a non-blue colored symbol enters.
+    TapSacrificeForBlue,
+    /// Mox Opal's any-color choice under metalcraft, projected to blue under
+    /// the same pinned-deck invariant.
+    MetalcraftTapForBlue,
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
@@ -1780,6 +1787,7 @@ fn activate_mana_ability<D: CardDatabase>(
 
     let mut mana = state.mana;
     let mut life = state.life;
+    let mut sacrifice_source = false;
     match ability {
         ManaAbility::None => unreachable!("checked above"),
         ManaAbility::TapForBlue => add_blue(&mut mana, 1)?,
@@ -1795,9 +1803,33 @@ fn activate_mana_ability<D: CardDatabase>(
             add_colorless(&mut mana, amount)?;
             life = life.saturating_sub(damage);
         }
+        ManaAbility::TapSacrificeForBlue => {
+            add_blue(&mut mana, 1)?;
+            sacrifice_source = true;
+        }
+        ManaAbility::MetalcraftTapForBlue => {
+            let artifact_count = state
+                .battlefield
+                .permanents()
+                .iter()
+                .filter(|candidate| {
+                    cards
+                        .profile(candidate.card)
+                        .is_some_and(|candidate_profile| candidate_profile.is_artifact)
+                })
+                .count();
+            if artifact_count < 3 {
+                return Err(RuleError::NotManaSource(source));
+            }
+            add_blue(&mut mana, 1)?;
+        }
     }
 
-    set_tapped(state, source)?;
+    if sacrifice_source {
+        sacrifice_artifact(state, source)?;
+    } else {
+        set_tapped(state, source)?;
+    }
     state.mana = mana;
     state.life = life;
     Ok(())

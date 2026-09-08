@@ -2,13 +2,13 @@
 
 - Gate state: **RED**
 - Active catalog identities: **95**
-- Current runtime-supported identities: **50**
-- Resolved dispositions: **4**
-- Unresolved dispositions: **91**
+- Current runtime-supported identities: **52**
+- Resolved dispositions: **6**
+- Unresolved dispositions: **89**
 - `AUDIT_REQUIRED`: **46**
-- `IMPLEMENTATION_REQUIRED`: **42**
+- `IMPLEMENTATION_REQUIRED`: **40**
 - `ENVIRONMENT_SPLIT_REQUIRED`: **3**
-- `COMPLETE`: **4**
+- `COMPLETE`: **6**
 - `GOLDFISH_IRRELEVANT`: **0**
 - `ENVIRONMENT_DEFERRED`: **0**
 
@@ -55,7 +55,6 @@ The gate remains RED until every active identity is explicitly resolved as `COMP
 | Imposter Mech | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
 | Ipnu Rivulet | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
 | Jeweled Amulet | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
-| Lotus Petal | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
 | Mana Drain | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
 | Mana Vault | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Manifold Key | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
@@ -67,7 +66,6 @@ The gate remains RED until every active identity is explicitly resolved as `COMP
 | Misty Rainforest | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
 | Moonsnare Prototype | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
 | Mox Diamond | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
-| Mox Opal | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
 | Muddle the Mixture | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
 | Mystic Remora | `ENVIRONMENT_SPLIT_REQUIRED` | false | `EnvironmentDeferred` | Current coverage is environment-deferred, but opponent-spell draws must be separated from intrinsic cumulative-upkeep and base-cast behavior before this card can be accepted. |
 | Mystical Tutor | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
@@ -116,5 +114,7 @@ The gate remains RED until every active identity is explicitly resolved as `COMP
 | --- | --- | --- | --- | --- |
 | Ancient Tomb | `COMPLETE` | true | `PrimitiveActive` | Goldfish-complete: ordinary untapped land play and intrinsic tap for two colorless with two self-damage are executed by the current rules engine; dedicated post-R7 mana-baseline fixture proves the exact resource and life transition. |
 | Island | `COMPLETE` | true | `PrimitiveActive` | Goldfish-complete: ordinary untapped basic-land play and intrinsic blue mana are executed by the current rules engine; dedicated post-R7 mana-baseline fixture proves play, tap, and mana production. |
+| Lotus Petal | `COMPLETE` | true | `IntentionallyUnmodeled` | Goldfish-complete: zero-mana artifact cast and {T}, sacrifice mana ability are executable; unrestricted any-color production is projected to blue only under a fixture that audits the pinned deck for non-blue colored costs. |
+| Mox Opal | `COMPLETE` | true | `IntentionallyUnmodeled` | Goldfish-complete: zero-mana legendary artifact cast, public three-artifact metalcraft legality, and tap-for-mana are executable; any-color production uses the audited mono-blue projection. |
 | Seat of the Synod | `COMPLETE` | true | `PrimitiveActive` | Goldfish-complete: ordinary artifact-land play, intrinsic blue mana, and artifact identity are represented by the current rules engine; dedicated post-R7 mana-baseline fixture proves land play, blue production, and artifact characteristic used by Urza/artifact effects. |
 | Sol Ring | `COMPLETE` | true | `PrimitiveActive` | Goldfish-complete: zero-choice artifact spell resolution at printed {1} and intrinsic tap for two colorless are executed by the current rules engine; dedicated post-R7 mana-baseline fixture proves cast payment, battlefield entry, and mana production. |

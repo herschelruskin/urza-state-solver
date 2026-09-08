@@ -29,8 +29,8 @@ pub const R1_CATALOG_DIGEST_BLAKE3: &str =
     "4b39c7db7bfd2c6f68d7a49efa515cdffb2c6a9716022bc0b21eeec56754a983";
 pub const R3_ACCEPTED_ACTIVE_IDENTITY_COUNT: usize = 32;
 pub const R4_ACCEPTED_ACTIVE_IDENTITY_COUNT: usize = 47;
-pub const POST_R7_ACCEPTED_ACTIVE_IDENTITY_COUNT: usize = 50;
-pub const POST_R7_CARD_DATABASE_VERSION: &str = "post_r7_card_advantage_v3_assistant_scry_order";
+pub const POST_R7_ACCEPTED_ACTIVE_IDENTITY_COUNT: usize = 52;
+pub const POST_R7_CARD_DATABASE_VERSION: &str = "post_r7_modeling_completeness_v1_fast_mana";
 pub const R4_ONLY_ACTIVE_NAMES: [&str; 15] = [
     "Basalt Monolith",
     "Grim Monolith",
@@ -1011,6 +1011,24 @@ impl PostR7CardDatabase {
         assistant_profile.utility = urza_rules::UtilityKind::ArtificersAssistant;
         assistant_profile.is_creature = true;
 
+        let lotus = card_id_by_name_from_r1("Lotus Petal")?;
+        let lotus_profile = cards.get_mut(&lotus).ok_or_else(|| {
+            CatalogError::Invariant("missing post-R7 Lotus Petal profile".to_owned())
+        })?;
+        lotus_profile.role = urza_rules::R2CardRole::ArtifactPermanent;
+        lotus_profile.mana_cost = Some(urza_rules::ManaCost::default());
+        lotus_profile.mana_ability = urza_rules::ManaAbility::TapSacrificeForBlue;
+        lotus_profile.is_artifact = true;
+
+        let mox_opal = card_id_by_name_from_r1("Mox Opal")?;
+        let mox_opal_profile = cards.get_mut(&mox_opal).ok_or_else(|| {
+            CatalogError::Invariant("missing post-R7 Mox Opal profile".to_owned())
+        })?;
+        mox_opal_profile.role = urza_rules::R2CardRole::ArtifactPermanent;
+        mox_opal_profile.mana_cost = Some(urza_rules::ManaCost::default());
+        mox_opal_profile.mana_ability = urza_rules::ManaAbility::MetalcraftTapForBlue;
+        mox_opal_profile.is_artifact = true;
+
         let catalog = load_r1_catalog()?;
         let historic_cards = catalog
             .cards
@@ -1270,9 +1288,11 @@ pub fn validate_post_r7_database() -> Result<(), CatalogError> {
     let ring = card_id_by_name_from_r1("The One Ring")?;
     let uthros = card_id_by_name_from_r1("Uthros Research Craft")?;
     let assistant = card_id_by_name_from_r1("Artificer's Assistant")?;
-    if added != BTreeSet::from([ring, uthros, assistant]) {
+    let lotus = card_id_by_name_from_r1("Lotus Petal")?;
+    let mox_opal = card_id_by_name_from_r1("Mox Opal")?;
+    if added != BTreeSet::from([ring, uthros, assistant, lotus, mox_opal]) {
         return Err(CatalogError::Invariant(format!(
-            "post-R7 current surface must add exactly Ring, Uthros, and Artificer's Assistant, got {added:?}"
+            "post-R7 current surface must add exactly Ring, Uthros, Artificer's Assistant, Lotus Petal, and Mox Opal, got {added:?}"
         )));
     }
     let ring_coverage = coverage

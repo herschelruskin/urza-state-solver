@@ -209,6 +209,7 @@ fn mana_roles(ability: ManaAbility) -> (bool, bool, bool) {
         ManaAbility::TapForColorless(amount) => (true, false, amount >= 2),
         ManaAbility::TapForBlueAndDamage { .. } => (true, true, false),
         ManaAbility::TapForColorlessAndDamage { mana, .. } => (true, false, mana >= 2),
+        ManaAbility::TapSacrificeForBlue | ManaAbility::MetalcraftTapForBlue => (true, true, false),
     }
 }
 
