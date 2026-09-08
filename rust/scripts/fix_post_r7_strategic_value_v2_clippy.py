@@ -2,13 +2,31 @@ from pathlib import Path
 
 path = Path("rust/crates/urza-policy/src/lib.rs")
 text = path.read_text()
-old = "            return match candidate.class {\n"
-new = "            match candidate.class {\n"
-if text.count(old) != 1:
-    raise SystemExit(f"expected one v2 return-match marker, found {text.count(old)}")
-text = text.replace(old, new, 1)
-old_tail = "                PolicyActionClass::ContingentDecision => 6,\n            };\n        } else {\n"
-new_tail = "                PolicyActionClass::ContingentDecision => 6,\n            }\n        } else {\n"
+old_head = '''        if matches!(information.phase, Phase::PrecombatMain) {
+            if self.is_redundant_library_look(information, candidate) {
+                return 7;
+            }
+            return match candidate.class {
+'''
+new_head = '''        if matches!(information.phase, Phase::PrecombatMain) {
+            if self.is_redundant_library_look(information, candidate) {
+                return 7;
+            }
+            match candidate.class {
+'''
+if text.count(old_head) != 1:
+    raise SystemExit(f"expected one v2 main-phase return-match block, found {text.count(old_head)}")
+text = text.replace(old_head, new_head, 1)
+old_tail = '''                PolicyActionClass::PassPriority => 5,
+                PolicyActionClass::ContingentDecision => 6,
+            };
+        } else {
+'''
+new_tail = '''                PolicyActionClass::PassPriority => 5,
+                PolicyActionClass::ContingentDecision => 6,
+            }
+        } else {
+'''
 if text.count(old_tail) != 1:
-    raise SystemExit(f"expected one v2 match-tail marker, found {text.count(old_tail)}")
+    raise SystemExit(f"expected one v2 main-phase match tail, found {text.count(old_tail)}")
 path.write_text(text.replace(old_tail, new_tail, 1))
