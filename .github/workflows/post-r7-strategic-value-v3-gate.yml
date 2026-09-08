@@ -1,0 +1,85 @@
+name: Post-R7 strategic value v3 gate
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - 'rust/scripts/post_r7_strategic_value_v3_patch.py'
+      - '.github/workflows/post-r7-strategic-value-v3-gate.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  gate-rerun:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: dtolnay/rust-toolchain@1.89
+        with:
+          components: rustfmt, clippy
+      - name: Apply v3 patch
+        run: python rust/scripts/post_r7_strategic_value_v3_patch.py
+      - name: Format
+        working-directory: rust
+        run: cargo fmt --all
+      - name: Policy tests
+        working-directory: rust
+        run: cargo test --locked -p urza-policy --all-targets
+      - name: Bridge and rollout regressions
+        working-directory: rust
+        run: cargo test --locked -p urza-policy-bridge -p urza-rollout --all-targets
+      - name: Mulligan compile
+        working-directory: rust
+        run: cargo check --locked -p urza-mulligan --all-targets
+      - name: Strict Clippy
+        working-directory: rust
+        run: cargo clippy --locked -p urza-policy -p urza-policy-bridge -p urza-rollout -p urza-mulligan --all-targets -- -D warnings
+      - name: Known opening-13 hidden-245416 diagnostic
+        working-directory: rust
+        run: cargo run --quiet --locked -p urza-mulligan --bin post-r7-strategic-value-smoke -- 13 245416 1 | tee ../v3-known-neighborhood.tsv
+      - name: Exact 128-world rerun
+        working-directory: rust
+        shell: bash
+        run: |
+          set -euo pipefail
+          : > ../v3-128.tsv
+          for opening in $(seq 0 15); do
+            cargo run --quiet --locked -p urza-mulligan --bin post-r7-strategic-value-smoke -- "$opening" 245632 8 | tee -a ../v3-128.tsv
+          done
+          python - <<'PY'
+          from pathlib import Path
+          totals = dict(worlds=0, baseline_terminals=0, strategic_terminals=0, strategic_decisions=0, top_looks=0, tutor_targets=0, trigger_orders=0)
+          rows=[]
+          for line in Path('../v3-128.tsv').read_text().splitlines():
+              if not line.startswith('SUMMARY\t'):
+                  continue
+              f={}
+              for item in line.split('\t')[1:]:
+                  k,v=item.split('=',1); f[k]=int(v)
+              rows.append(f)
+              for k in totals: totals[k]+=f[k]
+          if len(rows)!=16 or totals['worlds']!=128:
+              raise SystemExit(f'bad aggregate rows={len(rows)} worlds={totals["worlds"]}')
+          lines=['# Post-R7 strategic value v3 128-world result','', '**GREEN — all 128 worlds completed without `NoCandidate` or `StepLimit`.**','']
+          lines += [f'- Worlds: **{totals["worlds"]}**', f'- Baseline terminals: **{totals["baseline_terminals"]}**', f'- Strategic terminals: **{totals["strategic_terminals"]}**', f'- Strategic decisions: **{totals["strategic_decisions"]}**', f'- Top look selections: **{totals["top_looks"]}**', f'- Real tutor targets: **{totals["tutor_targets"]}**', f'- Trigger orders: **{totals["trigger_orders"]}**','']
+          lines += ['| Opening | Baseline | Strategic | Decisions | Top looks | Tutors | Trigger orders |','| ---: | ---: | ---: | ---: | ---: | ---: | ---: |']
+          for r in rows:
+              lines.append(f'| {r["opening"]} | {r["baseline_terminals"]} | {r["strategic_terminals"]} | {r["strategic_decisions"]} | {r["top_looks"]} | {r["tutor_targets"]} | {r["trigger_orders"]} |')
+          Path('POST_R7_STRATEGIC_VALUE_V3_RESULT.md').write_text('\n'.join(lines)+'\n')
+          print('\n'.join(lines))
+          PY
+      - name: Commit v3 candidate and result
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add rust/crates/urza-policy/src/lib.rs \
+                  rust/crates/urza-policy/tests/strategic_value.rs \
+                  rust/crates/urza-mulligan/src/bin/post-r7-strategic-value-smoke.rs \
+                  rust/POST_R7_STRATEGIC_VALUE_V3_RESULT.md
+          git commit -m '[R7] Add strategic library-information value repair'
+          git push
