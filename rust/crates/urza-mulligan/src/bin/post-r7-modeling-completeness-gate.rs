@@ -323,7 +323,11 @@ fn print_inventory(audit: &Audit) {
     println!();
     println!("| Card | Disposition | Runtime supported | Coverage | Rationale |");
     println!("| --- | --- | --- | --- | --- |");
-    for row in audit.rows.iter().filter(|row| !row.disposition.is_resolved()) {
+    for row in audit
+        .rows
+        .iter()
+        .filter(|row| !row.disposition.is_resolved())
+    {
         println!(
             "| {} | `{}` | {} | `{:?}` | {} |",
             escape_markdown(&row.card_name),
