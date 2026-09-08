@@ -6,8 +6,6 @@ on:
       - rust-engine-rebuild
     paths:
       - '.github/workflows/post-r7-modeling-completeness-fast-mana.yml'
-      - 'rust/scripts/post_r7_modeling_completeness_fast_mana_patch.py'
-      - 'rust/scripts/post_r7_modeling_completeness_fast_mana_gate_patch.py'
       - 'rust/crates/urza-cards/tests/post_r7_modeling_completeness_fast_mana.rs'
       - 'rust/crates/urza-policy-bridge/tests/post_r7_modeling_completeness_fast_mana.rs'
       - 'rust/crates/urza-rules/src/lib.rs'
@@ -15,10 +13,11 @@ on:
       - 'rust/crates/urza-mulligan/src/interpretation.rs'
       - 'rust/crates/urza-mulligan/src/bin/post-r7-modeling-completeness-gate.rs'
       - 'rust/data/goldfish_model_gate.v1.tsv'
+      - 'rust/POST_R7_MODELING_COMPLETENESS_GATE_RESULT.md'
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   fast-mana:
@@ -30,13 +29,12 @@ jobs:
       - uses: dtolnay/rust-toolchain@1.89
         with:
           components: rustfmt, clippy
-      - name: Apply fast mana completeness patch
-        run: |
-          python rust/scripts/post_r7_modeling_completeness_fast_mana_patch.py
-          python rust/scripts/post_r7_modeling_completeness_fast_mana_gate_patch.py
       - name: Format check
         working-directory: rust
         run: cargo fmt --all -- --check
+      - name: Workspace compile
+        working-directory: rust
+        run: cargo check --locked --workspace --all-targets
       - name: Fast mana card fixtures
         working-directory: rust
         run: cargo test --locked -p urza-cards --test post_r7_modeling_completeness_fast_mana
@@ -59,9 +57,11 @@ jobs:
           cargo clippy --locked -p urza-cards --tests -- -D warnings
           cargo clippy --locked -p urza-policy-bridge --tests -- -D warnings
           cargo clippy --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- -D warnings
-      - name: Record updated inventory
+      - name: Assert committed inventory is current
         working-directory: rust
-        run: cargo run --quiet --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- --inventory > POST_R7_MODELING_COMPLETENESS_GATE_RESULT.md
+        run: |
+          cargo run --quiet --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- --inventory > /tmp/post-r7-modeling-inventory.md
+          diff -u POST_R7_MODELING_COMPLETENESS_GATE_RESULT.md /tmp/post-r7-modeling-inventory.md
       - name: Assert expected remaining red gate
         working-directory: rust
         run: |
@@ -72,17 +72,3 @@ jobs:
           fi
           grep -q $'MODELING_COMPLETENESS_GATE\ttotal=95\tresolved=6\tunresolved=89' ../modeling-enforce.txt
           grep -q 'MODELING_COMPLETENESS_GATE_RED: 89 unresolved active identities remain' ../modeling-enforce.txt
-      - name: Commit fast mana promotion
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add \
-            rust/crates/urza-rules/src/lib.rs \
-            rust/crates/urza-cards/src/lib.rs \
-            rust/crates/urza-mulligan/src/interpretation.rs \
-            rust/crates/urza-mulligan/src/bin/post-r7-modeling-completeness-gate.rs \
-            rust/data/goldfish_model_gate.v1.tsv \
-            rust/POST_R7_MODELING_COMPLETENESS_GATE_RESULT.md
-          git commit -m '[R7] Resolve Lotus Petal and Mox Opal completeness'
-          git push
