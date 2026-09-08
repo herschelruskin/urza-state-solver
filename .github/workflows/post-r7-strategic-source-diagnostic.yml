@@ -1,0 +1,110 @@
+name: Post-R7 strategic engine-source diagnostic
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - '.github/workflows/post-r7-strategic-source-diagnostic.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.89
+        with:
+          components: rustfmt
+      - name: Format diagnostic source
+        working-directory: rust
+        run: cargo fmt --all
+      - name: Compile diagnostic
+        working-directory: rust
+        run: cargo check --locked -p urza-mulligan --bin post-r7-strategic-source-diagnostic
+      - name: Run exact 128-world source diagnostic
+        working-directory: rust
+        shell: bash
+        run: |
+          set -euo pipefail
+          : > ../strategic-source-all.tsv
+          for opening in $(seq 0 15); do
+            cargo run --quiet --locked -p urza-mulligan --bin post-r7-strategic-source-diagnostic -- \
+              "$opening" 245632 8 | tee "../strategic-source-${opening}.tsv" | tee -a ../strategic-source-all.tsv
+          done
+      - name: Aggregate diagnostic
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          rows = []
+          totals = {}
+          for opening in range(16):
+              path = Path(f'strategic-source-{opening}.tsv')
+              summary = next(line for line in path.read_text().splitlines() if line.startswith('SUMMARY\t'))
+              fields = {}
+              for field in summary.split('\t')[1:]:
+                  k, v = field.split('=', 1)
+                  fields[k] = int(v)
+              rows.append(fields)
+              for k, v in fields.items():
+                  if k != 'opening':
+                      totals[k] = totals.get(k, 0) + v
+
+          event_lines = [
+              line for line in Path('strategic-source-all.tsv').read_text().splitlines()
+              if line.startswith('TOP_MANA_EVENT\t')
+          ]
+          lines = [
+              '# Post-R7 strategic engine-source diagnostic',
+              '',
+              'Diagnostic only; no production policy or rules semantics are changed by this result.',
+              '',
+              '## Aggregate',
+              '',
+          ]
+          for key in [
+              'worlds', 'terminals', 'decisions', 'top_battlefield', 'top_look_candidates',
+              'top_look_selected', 'top_mana_candidates', 'top_mana_selected',
+              'top_mana_without_live_look', 'ftt_battlefield', 'ftt_level_candidates',
+              'ftt_level_selected', 'ring_draw_candidates', 'ring_draw_selected',
+              'uthros_station_candidates', 'uthros_station_selected'
+          ]:
+              lines.append(f'- {key}: **{totals.get(key, 0)}**')
+          lines += [
+              '',
+              '## Per opening',
+              '',
+              '| Opening | Worlds | Terminals | Decisions | Top BF | Top look cand. | Top look sel. | Top mana cand. | Top mana sel. | Top mana w/o look | FTT BF | FTT level cand. | FTT level sel. | Ring cand. | Ring sel. | Uthros cand. | Uthros sel. |',
+              '| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
+          ]
+          for row in rows:
+              lines.append(
+                  f'| {row["opening"]} | {row["worlds"]} | {row["terminals"]} | {row["decisions"]} | '
+                  f'{row["top_battlefield"]} | {row["top_look_candidates"]} | {row["top_look_selected"]} | '
+                  f'{row["top_mana_candidates"]} | {row["top_mana_selected"]} | {row["top_mana_without_live_look"]} | '
+                  f'{row["ftt_battlefield"]} | {row["ftt_level_candidates"]} | {row["ftt_level_selected"]} | '
+                  f'{row["ring_draw_candidates"]} | {row["ring_draw_selected"]} | '
+                  f'{row["uthros_station_candidates"]} | {row["uthros_station_selected"]} |'
+              )
+          lines += ['', '## Top-as-mana events', '']
+          lines.extend(f'`{line}`' for line in event_lines[:200])
+          lines += ['', f'Total Top-as-Urza-mana events recorded: **{len(event_lines)}**.', '']
+          Path('rust/POST_R7_STRATEGIC_SOURCE_DIAGNOSTIC.md').write_text('\n'.join(lines))
+          print('\n'.join(lines[:80]))
+          PY
+      - name: Commit diagnostic result and formatting
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add rust/crates/urza-mulligan/src/bin/post-r7-strategic-source-diagnostic.rs \
+                  rust/POST_R7_STRATEGIC_SOURCE_DIAGNOSTIC.md
+          git commit -m "[R7] Record strategic engine-source diagnostic"
+          git push
