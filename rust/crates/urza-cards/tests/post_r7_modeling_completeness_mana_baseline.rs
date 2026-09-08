@@ -1,8 +1,6 @@
 use urza_cards::CurrentCardDatabase;
 use urza_core::{CardZone, ManaPool, Phase, TrueLibrary, TrueState, Window};
-use urza_rules::{
-    Action, LandEntryChoice, ManaAbility, ManaPayment, R2CardRole, apply_action,
-};
+use urza_rules::{Action, LandEntryChoice, ManaAbility, ManaPayment, R2CardRole, apply_action};
 
 fn card(cards: &CurrentCardDatabase, name: &str) -> urza_core::CardDefId {
     cards.card_id_by_name(name).unwrap()
@@ -48,12 +46,7 @@ fn island_is_a_complete_untapped_blue_land_for_goldfish() {
     let source = only_permanent_id(&state);
     assert!(!state.battlefield.permanents()[0].tapped);
 
-    apply_action(
-        &mut state,
-        &cards,
-        Action::ActivateManaAbility { source },
-    )
-    .unwrap();
+    apply_action(&mut state, &cards, Action::ActivateManaAbility { source }).unwrap();
     assert_eq!(state.mana.blue, 1);
     assert!(state.battlefield.permanents()[0].tapped);
 }
@@ -80,12 +73,7 @@ fn ancient_tomb_produces_two_colorless_and_deals_two_damage() {
     )
     .unwrap();
     let source = only_permanent_id(&state);
-    apply_action(
-        &mut state,
-        &cards,
-        Action::ActivateManaAbility { source },
-    )
-    .unwrap();
+    apply_action(&mut state, &cards, Action::ActivateManaAbility { source }).unwrap();
 
     assert_eq!(state.mana.colorless, 2);
     assert_eq!(state.life, 38);
@@ -119,12 +107,7 @@ fn sol_ring_casts_for_one_and_taps_for_two_colorless() {
     apply_action(&mut state, &cards, Action::PassPriority).unwrap();
     let source = only_permanent_id(&state);
 
-    apply_action(
-        &mut state,
-        &cards,
-        Action::ActivateManaAbility { source },
-    )
-    .unwrap();
+    apply_action(&mut state, &cards, Action::ActivateManaAbility { source }).unwrap();
     assert_eq!(state.mana.colorless, 2);
 }
 
@@ -148,12 +131,7 @@ fn seat_of_the_synod_is_both_blue_land_and_artifact() {
     )
     .unwrap();
     let source = only_permanent_id(&state);
-    apply_action(
-        &mut state,
-        &cards,
-        Action::ActivateManaAbility { source },
-    )
-    .unwrap();
+    apply_action(&mut state, &cards, Action::ActivateManaAbility { source }).unwrap();
 
     assert_eq!(state.mana.blue, 1);
     assert!(state.battlefield.permanents()[0].tapped);
