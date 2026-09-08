@@ -33,6 +33,15 @@ Historical implementation identifiers are not retroactively renamed. In particul
 - Per-object state and typed delayed events are authoritative; traces are reporting only.
 - Performance work must prefer representation, memoization, factoring, exact bounds, adaptive sampling, and parallelism before policy restrictions.
 - No active card may silently lack a coverage status.
+- Catalog presence, runtime support, and historical coverage labels are not proof of gameplay completeness. The post-R7 modeling completeness gate in `POST_R7_MODELING_COMPLETENESS_GATE.md` must be GREEN before new strategic-policy or terminal-sequencing results are accepted.
+
+## Post-R7 modeling completeness discipline
+
+Every active deck identity must have an explicit entry in `data/goldfish_model_gate.v1.tsv`. The unit of completeness is the relevant Oracle clause, not the card name or historical milestone label.
+
+A card may clear the modeling gate only as `COMPLETE`, `GOLDFISH_IRRELEVANT`, or `ENVIRONMENT_DEFERRED`, with an explicit rationale and the executable evidence required by `POST_R7_MODELING_COMPLETENESS_GATE.md`. `AUDIT_REQUIRED`, `IMPLEMENTATION_REQUIRED`, and `ENVIRONMENT_SPLIT_REQUIRED` are blocking states.
+
+Do not classify a card as goldfish-irrelevant merely because it is normally used as interaction. Own-spell/self-target lines, cast triggers, graveyard movement, resource conversion, alternate costs, and other interactions with modeled engine cards must be considered first.
 
 ## Post-R7 teacher/diagnostic discipline
 
