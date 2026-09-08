@@ -12,6 +12,7 @@ def replace_exact(path: str, old: str, new: str) -> None:
 
 RULES = "rust/crates/urza-rules/src/lib.rs"
 CARDS = "rust/crates/urza-cards/src/lib.rs"
+INTERPRETATION = "rust/crates/urza-mulligan/src/interpretation.rs"
 REGISTRY = "rust/data/goldfish_model_gate.v1.tsv"
 
 replace_exact(
@@ -194,6 +195,19 @@ replace_exact(
         return Err(CatalogError::Invariant(format!(
             \"post-R7 current surface must add exactly Ring, Uthros, Artificer's Assistant, Lotus Petal, and Mox Opal, got {added:?}\"
         )));
+    }""",
+)
+
+replace_exact(
+    INTERPRETATION,
+    """        ManaAbility::TapForBlueAndDamage { .. } => (true, true, false),
+        ManaAbility::TapForColorlessAndDamage { mana, .. } => (true, false, mana >= 2),
+    }""",
+    """        ManaAbility::TapForBlueAndDamage { .. } => (true, true, false),
+        ManaAbility::TapForColorlessAndDamage { mana, .. } => (true, false, mana >= 2),
+        ManaAbility::TapSacrificeForBlue | ManaAbility::MetalcraftTapForBlue => {
+            (true, true, false)
+        }
     }""",
 )
 
