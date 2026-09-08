@@ -1,0 +1,31 @@
+name: Post-R7 v3 known positive isolate
+
+on:
+  push:
+    branches: [rust-engine-rebuild]
+    paths:
+      - '.github/workflows/post-r7-v3-known-positive-isolate.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  isolate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.89
+      - name: Re-run exact two-deviation search
+        working-directory: rust
+        run: |
+          cargo run --quiet --locked -p urza-mulligan --bin post-r5-multi-deviation-search -- 13 245416 1 2 | tee ../known-positive-search.txt
+      - name: Commit isolation output
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp known-positive-search.txt rust/POST_R7_V3_KNOWN_POSITIVE_ISOLATION.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add rust/POST_R7_V3_KNOWN_POSITIVE_ISOLATION.txt
+          git commit -m '[R7] Record v3 known positive isolation'
+          git push
