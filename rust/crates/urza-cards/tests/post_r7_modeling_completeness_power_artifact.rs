@@ -4,20 +4,13 @@ use urza_core::{
     Phase, TrueLibrary, TrueState, Window,
 };
 use urza_info::observe;
-use urza_rules::{
-    Action, AuraTargetKind, EngineKind, ManaPayment, R2CardRole, apply_action,
-};
+use urza_rules::{Action, AuraTargetKind, EngineKind, ManaPayment, R2CardRole, apply_action};
 
 fn card(cards: &CurrentCardDatabase, name: &str) -> urza_core::CardDefId {
     cards.card_id_by_name(name).unwrap()
 }
 
-fn permanent(
-    cards: &CurrentCardDatabase,
-    object: u32,
-    name: &str,
-    tapped: bool,
-) -> PermanentState {
+fn permanent(cards: &CurrentCardDatabase, object: u32, name: &str, tapped: bool) -> PermanentState {
     let card = card(cards, name);
     let profile = cards.profile(card).unwrap();
     PermanentState {
@@ -69,11 +62,7 @@ fn canonical_for(
         .canonical_id
 }
 
-fn cast_power_artifact(
-    state: &mut TrueState,
-    cards: &CurrentCardDatabase,
-    target_name: &str,
-) {
+fn cast_power_artifact(state: &mut TrueState, cards: &CurrentCardDatabase, target_name: &str) {
     let power = card(cards, "Power Artifact");
     let target = canonical_for(state, cards, target_name);
     apply_action(
