@@ -25,11 +25,7 @@ fn priority_state() -> TrueState {
     state
 }
 
-fn permanent(
-    cards: &CurrentCardDatabase,
-    object: u32,
-    name: &str,
-) -> PermanentState {
+fn permanent(cards: &CurrentCardDatabase, object: u32, name: &str) -> PermanentState {
     let card = card(cards, name);
     let profile = cards.profile(card).unwrap();
     PermanentState {
@@ -47,11 +43,14 @@ fn permanent(
 }
 
 fn cost_contains_nonblue_colored_symbol(cost: &str) -> bool {
-    cost.split('{').skip(1).filter_map(|part| part.split('}').next()).any(|symbol| {
-        symbol
-            .split('/')
-            .any(|component| matches!(component, "W" | "B" | "R" | "G"))
-    })
+    cost.split('{')
+        .skip(1)
+        .filter_map(|part| part.split('}').next())
+        .any(|symbol| {
+            symbol
+                .split('/')
+                .any(|component| matches!(component, "W" | "B" | "R" | "G"))
+        })
 }
 
 #[test]
@@ -146,7 +145,13 @@ fn mox_opal_requires_three_artifacts_and_then_taps_for_blue() {
         Err(RuleError::NotManaSource(ObjectId(1)))
     ));
     assert_eq!(below_metalcraft.mana, ManaPool::default());
-    assert!(!below_metalcraft.battlefield.get(ObjectId(1)).unwrap().tapped);
+    assert!(
+        !below_metalcraft
+            .battlefield
+            .get(ObjectId(1))
+            .unwrap()
+            .tapped
+    );
 
     let mut metalcraft = priority_state();
     metalcraft.battlefield = BattlefieldZone::new(vec![
