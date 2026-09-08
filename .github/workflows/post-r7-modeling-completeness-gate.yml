@@ -6,6 +6,7 @@ on:
       - rust-engine-rebuild
     paths:
       - '.github/workflows/post-r7-modeling-completeness-gate.yml'
+      - 'rust/AGENTS.md'
       - 'rust/data/goldfish_model_gate.v1.tsv'
       - 'rust/crates/urza-cards/**'
       - 'rust/crates/urza-rules/**'
