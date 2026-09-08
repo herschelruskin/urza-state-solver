@@ -6,6 +6,10 @@ on:
       - rust-engine-rebuild
     paths:
       - '.github/workflows/post-r7-modeling-completeness-mana-baseline.yml'
+      - 'rust/scripts/post_r7_modeling_completeness_mana_baseline_patch.py'
+      - 'rust/crates/urza-cards/tests/post_r7_modeling_completeness_mana_baseline.rs'
+      - 'rust/crates/urza-mulligan/src/bin/post-r7-modeling-completeness-gate.rs'
+      - 'rust/data/goldfish_model_gate.v1.tsv'
   workflow_dispatch:
 
 permissions:
