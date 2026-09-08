@@ -60,8 +60,7 @@ fn run() -> Result<(), Box<dyn Error>> {
             .reason
             .as_deref()
             .unwrap_or("")
-            .replace('\t', " ")
-            .replace('\n', " ");
+            .replace(['\t', '\n'], " ");
         println!(
             "CARD\t{}\t{}\t{}\t{:?}\t{}\t{:?}\t{:?}\t{:?}\t{:?}\t{:?}\t{:?}\t{}",
             card.id,
