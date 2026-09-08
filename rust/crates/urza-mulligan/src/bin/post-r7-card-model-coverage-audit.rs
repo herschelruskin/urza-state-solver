@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use std::error::Error;
 
-use urza_cards::{CurrentCardDatabase, CoverageStatus, load_coverage, load_r1_catalog};
+use urza_cards::{CoverageStatus, CurrentCardDatabase, load_coverage, load_r1_catalog};
 use urza_rules::R2CardRole;
 
 fn main() {
@@ -30,7 +30,9 @@ fn run() -> Result<(), Box<dyn Error>> {
     let mut intentionally_unmodeled = 0_usize;
 
     println!("CARD_MODEL_COVERAGE_AUDIT\tpost_r7_current_database_v1");
-    println!("CARD\tid\tname\tcommander\tcoverage\truntime_supported\trole\tengine\tutility\tsimple_tutor\tspecial_search\tspell_effect\treason");
+    println!(
+        "CARD\tid\tname\tcommander\tcoverage\truntime_supported\trole\tengine\tutility\tsimple_tutor\tspecial_search\tspell_effect\treason"
+    );
 
     for card in &catalog.cards {
         let entry = coverage_by_id
