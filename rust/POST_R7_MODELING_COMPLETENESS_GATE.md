@@ -15,6 +15,12 @@ This is post-R7 validation work under `rust/AGENTS.md`.
 - Existing R2/R3/R4/post-R7 primitives are evidence, not automatic completeness.
 - A historical `RULES_ACTIVE` label does not grandfather a card through this gate.
 
+## Operational tracker
+
+`rust/POST_R7_PARALLEL_MODELING_COMPLETENESS_TRACKER.md` is the required operational coordinator for clearing this gate. It defines dependency-aware shared-primitives work, parallel card-family shards, integration-wave acceptance, current accepted counts, and the integration history.
+
+The tracker is subordinate to this gate and `rust/data/goldfish_model_gate.v1.tsv`: shard-local success may produce candidate-complete cards, but only an integration gate may promote authoritative dispositions or completeness counts. Update the tracker after every accepted integration wave.
+
 ## Registry
 
 `rust/data/goldfish_model_gate.v1.tsv` is the gate registry. It must contain exactly one row for every active catalog identity.
@@ -70,13 +76,14 @@ This means the first gate run is expected to be RED. That failure is the backlog
 
 ## Work order
 
-Clear the gate by strategic impact rather than by alphabetical order:
+Clear the gate by strategic impact rather than by alphabetical order. Execute this order through the parallel wave/shard protocol in `POST_R7_PARALLEL_MODELING_COMPLETENESS_TRACKER.md`:
 
-1. mana sources, zero/one-mana acceleration, alternate mana costs, untap effects, and sacrifice-for-mana effects;
-2. tutors, transmute/search/recursion, draw/filter/scry/surveil/library manipulation;
-3. combo/recurrence pieces and power/copy/counter interactions that feed terminal witnesses;
-4. modal DFC front faces and utility lands whose non-mana modes can affect assembly;
-5. self-targetable/own-spell interaction and cast-trigger enablers;
-6. opponent-only/environment-only text and final explicit exemptions.
+1. shared rules primitives that unblock multiple card families;
+2. mana sources, zero/one-mana acceleration, alternate mana costs, untap effects, and sacrifice-for-mana effects;
+3. tutors, transmute/search/recursion, draw/filter/scry/surveil/library manipulation;
+4. combo/recurrence pieces and power/copy/counter interactions that feed terminal witnesses;
+5. modal DFC front faces and utility lands whose non-mana modes can affect assembly;
+6. self-targetable/own-spell interaction, alternate/free costs, and cast-trigger enablers;
+7. opponent-only/environment-only text and final explicit exemptions.
 
 After the gate becomes GREEN, rerun the frozen strategic populations before diagnosing terminal precursor sequencing or sacrifice/resource policy timing.
