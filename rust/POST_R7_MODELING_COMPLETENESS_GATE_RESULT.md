@@ -3,12 +3,12 @@
 - Gate state: **RED**
 - Active catalog identities: **95**
 - Current runtime-supported identities: **52**
-- Resolved dispositions: **6**
-- Unresolved dispositions: **89**
-- `AUDIT_REQUIRED`: **46**
+- Resolved dispositions: **8**
+- Unresolved dispositions: **87**
+- `AUDIT_REQUIRED`: **44**
 - `IMPLEMENTATION_REQUIRED`: **40**
 - `ENVIRONMENT_SPLIT_REQUIRED`: **3**
-- `COMPLETE`: **6**
+- `COMPLETE`: **8**
 - `GOLDFISH_IRRELEVANT`: **0**
 - `ENVIRONMENT_DEFERRED`: **0**
 
@@ -22,7 +22,6 @@ The gate remains RED until every active identity is explicitly resolved as `COMP
 | An Offer You Can't Refuse | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
 | Artificer's Assistant | `AUDIT_REQUIRED` | true | `RulesActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Banishing Knack | `AUDIT_REQUIRED` | true | `RulesActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
-| Basalt Monolith | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Battered Golem | `AUDIT_REQUIRED` | true | `RulesActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Cephalid Coliseum | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Chain of Vapor | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
@@ -48,7 +47,6 @@ The gate remains RED until every active identity is explicitly resolved as `COMP
 | Giant's Boulder | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
 | Gitaxian Probe | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
 | Grafdigger's Cage | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
-| Grim Monolith | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Grinding Station | `AUDIT_REQUIRED` | true | `RulesActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Hope of Ghirapur | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Hydroelectric Specimen | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
@@ -113,6 +111,8 @@ The gate remains RED until every active identity is explicitly resolved as `COMP
 | Card | Disposition | Runtime supported | Coverage | Rationale |
 | --- | --- | --- | --- | --- |
 | Ancient Tomb | `COMPLETE` | true | `PrimitiveActive` | Goldfish-complete: ordinary untapped land play and intrinsic tap for two colorless with two self-damage are executed by the current rules engine; dedicated post-R7 mana-baseline fixture proves the exact resource and life transition. |
+| Basalt Monolith | `COMPLETE` | true | `PrimitiveActive` | Goldfish-complete: printed {3} cast, untapped entry, {T} for three colorless, skipped normal untap, and {3} self-untap are executable; dedicated post-R7 Monolith fixtures also prove the intrinsic mana and native untap actions are solver-visible. |
+| Grim Monolith | `COMPLETE` | true | `PrimitiveActive` | Goldfish-complete: printed {2} cast, untapped entry, {T} for three colorless, skipped normal untap, and {4} self-untap are executable; dedicated post-R7 Monolith fixtures also prove the intrinsic mana and native untap actions are solver-visible. |
 | Island | `COMPLETE` | true | `PrimitiveActive` | Goldfish-complete: ordinary untapped basic-land play and intrinsic blue mana are executed by the current rules engine; dedicated post-R7 mana-baseline fixture proves play, tap, and mana production. |
 | Lotus Petal | `COMPLETE` | true | `IntentionallyUnmodeled` | Goldfish-complete: zero-mana artifact cast and {T}, sacrifice mana ability are executable; unrestricted any-color production is projected to blue only under a fixture that audits the pinned deck for non-blue colored costs. |
 | Mox Opal | `COMPLETE` | true | `IntentionallyUnmodeled` | Goldfish-complete: zero-mana legendary artifact cast, public three-artifact metalcraft legality, and tap-for-mana are executable; any-color production uses the audited mono-blue projection. |
