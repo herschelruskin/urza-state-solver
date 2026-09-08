@@ -1,0 +1,84 @@
+name: Post-R7 Forensic Gadgeteer completeness
+
+on:
+  push:
+    branches:
+      - rust-engine-rebuild
+    paths:
+      - '.github/workflows/post-r7-modeling-completeness-forensic-gadgeteer.yml'
+      - 'rust/scripts/post_r7_modeling_completeness_forensic_gadgeteer_audit_patch.py'
+      - 'rust/crates/urza-cards/tests/post_r7_modeling_completeness_forensic_gadgeteer.rs'
+      - 'rust/crates/urza-policy-bridge/tests/post_r7_modeling_completeness_forensic_gadgeteer.rs'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  forensic-gadgeteer:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: dtolnay/rust-toolchain@1.89
+        with:
+          components: rustfmt, clippy
+      - name: Apply Forensic Gadgeteer completeness audit patch
+        run: python rust/scripts/post_r7_modeling_completeness_forensic_gadgeteer_audit_patch.py
+      - name: Normalize formatting
+        working-directory: rust
+        run: cargo fmt --all
+      - name: Format check
+        working-directory: rust
+        run: cargo fmt --all -- --check
+      - name: Forensic Gadgeteer card fixtures
+        working-directory: rust
+        run: cargo test --locked -p urza-cards --test post_r7_modeling_completeness_forensic_gadgeteer
+      - name: Forensic Gadgeteer bridge fixtures
+        working-directory: rust
+        run: cargo test --locked -p urza-policy-bridge --test post_r7_modeling_completeness_forensic_gadgeteer
+      - name: Rules regression suite
+        working-directory: rust
+        run: cargo test --locked -p urza-rules
+      - name: Frozen R4 card regression
+        working-directory: rust
+        run: cargo test --locked -p urza-cards --test r4_final_acceptance
+      - name: Frozen R4 terminal regression
+        working-directory: rust
+        run: cargo test --locked -p urza-cards --test r4_terminal_acceptance
+      - name: Modeling gate unit test
+        working-directory: rust
+        run: cargo test --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate
+      - name: Strict Clippy
+        working-directory: rust
+        run: |
+          cargo clippy --locked -p urza-cards --test post_r7_modeling_completeness_forensic_gadgeteer -- -D warnings
+          cargo clippy --locked -p urza-policy-bridge --test post_r7_modeling_completeness_forensic_gadgeteer -- -D warnings
+          cargo clippy --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- -D warnings
+      - name: Record updated inventory
+        working-directory: rust
+        run: cargo run --quiet --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- --inventory > POST_R7_MODELING_COMPLETENESS_GATE_RESULT.md
+      - name: Assert expected remaining red gate
+        working-directory: rust
+        run: |
+          set -euo pipefail
+          if cargo run --quiet --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- --enforce > ../modeling-enforce.txt 2>&1; then
+            echo 'gate unexpectedly green before backlog is cleared' >&2
+            exit 1
+          fi
+          grep -q $'MODELING_COMPLETENESS_GATE\ttotal=95\tresolved=10\tunresolved=85' ../modeling-enforce.txt
+          grep -q 'MODELING_COMPLETENESS_GATE_RED: 85 unresolved active identities remain' ../modeling-enforce.txt
+      - name: Commit Forensic Gadgeteer audit promotion
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            rust/crates/urza-cards/tests/post_r7_modeling_completeness_forensic_gadgeteer.rs \
+            rust/crates/urza-policy-bridge/tests/post_r7_modeling_completeness_forensic_gadgeteer.rs \
+            rust/crates/urza-mulligan/src/bin/post-r7-modeling-completeness-gate.rs \
+            rust/data/goldfish_model_gate.v1.tsv \
+            rust/POST_R7_MODELING_COMPLETENESS_GATE_RESULT.md
+          git commit -m '[R7] Audit Forensic Gadgeteer completeness'
+          git push
