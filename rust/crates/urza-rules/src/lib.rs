@@ -21,7 +21,7 @@ pub const RULES_PHASE: &str = "R4";
 pub const R2_RULES_VERSION: &str = "r2_core_kernel_v2";
 pub const R3_RULES_VERSION: &str = "r3_search_complete_v4";
 pub const RULES_VERSION: &str = "r4_acceptance_v6";
-pub const POST_R7_RULES_VERSION: &str = "post_r7_modeling_completeness_v1_fast_mana";
+pub const POST_R7_RULES_VERSION: &str = "post_r7_modeling_completeness_v2_rules_active_repair";
 pub const HORIZON_TURN: u8 = 6;
 pub const RNG_EVENT_SEARCH_SHUFFLE: EventType = EventType(0x0301);
 pub const ABILITY_REPURPOSING_BAY_SEARCH: AbilityId = AbilityId(0x0301);
@@ -2010,14 +2010,6 @@ fn activate_granted_knack_bounce<D: CardDatabase>(
     if card_profile(cards, target_permanent.card)?.role == R2CardRole::Land {
         return Err(RuleError::InvalidPermanentTarget);
     }
-    if state
-        .battlefield
-        .permanents()
-        .iter()
-        .any(|permanent| permanent.attached_to == Some(target_id))
-    {
-        return Err(RuleError::AttachedBounceDeferred(target_id));
-    }
     set_tapped(state, source)?;
     state.stack.push(StackObject::TargetedActivatedAbility {
         source: SourceRef {
@@ -2190,10 +2182,7 @@ fn activate_clue_draw<D: CardDatabase>(
     {
         return Err(RuleError::AttachedSacrificeDeferred(source));
     }
-    let cost = ManaCost {
-        generic: 2,
-        ..ManaCost::default()
-    };
+    let cost = reduced_artifact_activation_cost(state, cards, source, 2)?;
     validate_payment(state.mana, payment, cost)?;
 
     // Mana payment and sacrifice are activation costs. Validate every deferred
@@ -2494,7 +2483,7 @@ fn cast_library_top<D: CardDatabase>(
         R2CardRole::ArtifactPermanent
         | R2CardRole::CreaturePermanent
         | R2CardRole::EnchantmentPermanent
-        | R2CardRole::PlaneswalkerPermanent => ensure_sorcery_window(state)?,
+        | R2CardRole::PlaneswalkerPermanent => ensure_spell_cast_window(state, cards, profile)?,
         R2CardRole::SearchSpell => {
             let instant = profile
                 .simple_tutor
@@ -2504,7 +2493,7 @@ fn cast_library_top<D: CardDatabase>(
                 ensure_priority(state)?;
                 ensure_no_pending_decision(state)?;
             } else {
-                ensure_sorcery_window(state)?;
+                ensure_spell_cast_window(state, cards, profile)?;
             }
             if !matches!(
                 profile.special_search,
@@ -2754,12 +2743,12 @@ fn play_urza_permission<D: CardDatabase>(
     match profile.role {
         R2CardRole::ArtifactPermanent
         | R2CardRole::CreaturePermanent
-        | R2CardRole::PlaneswalkerPermanent => ensure_sorcery_window(state)?,
+        | R2CardRole::PlaneswalkerPermanent => ensure_spell_cast_window(state, cards, profile)?,
         R2CardRole::EnchantmentPermanent => {
             if profile.aura_target != AuraTargetKind::None {
                 return Err(RuleError::UnsupportedCardMechanic(permission.card));
             }
-            ensure_sorcery_window(state)?;
+            ensure_spell_cast_window(state, cards, profile)?;
         }
         R2CardRole::SearchSpell => {
             let instant = profile
@@ -2770,7 +2759,7 @@ fn play_urza_permission<D: CardDatabase>(
                 ensure_priority(state)?;
                 ensure_no_pending_decision(state)?;
             } else {
-                ensure_sorcery_window(state)?;
+                ensure_spell_cast_window(state, cards, profile)?;
             }
             if profile.special_search == SpecialSearchKind::Reshape {
                 return Err(RuleError::UnsupportedCardMechanic(permission.card));
@@ -2827,7 +2816,7 @@ fn play_urza_permission_aura<D: CardDatabase>(
     {
         return Err(RuleError::UnsupportedCardMechanic(permission.card));
     }
-    ensure_sorcery_window(state)?;
+    ensure_spell_cast_window(state, cards, profile)?;
     let target_object = resolve_aura_target(state, cards, target, profile.aura_target)?;
     let target_card = battlefield_permanent(state, target_object)?.card;
     let object_id = next_object_id(state)?;
@@ -2866,10 +2855,12 @@ fn cast_from_hand<D: CardDatabase>(
                     ensure_priority(state)?;
                     ensure_no_pending_decision(state)?;
                 } else {
-                    ensure_sorcery_window(state)?;
+                    ensure_spell_cast_window(state, cards, profile)?;
                 }
             }
-            SpecialSearchKind::TransmuteArtifact => ensure_sorcery_window(state)?,
+            SpecialSearchKind::TransmuteArtifact => {
+                ensure_spell_cast_window(state, cards, profile)?
+            }
             SpecialSearchKind::Whir | SpecialSearchKind::Reshape => {
                 return Err(RuleError::UnsupportedCardMechanic(card));
             }
@@ -2880,12 +2871,12 @@ fn cast_from_hand<D: CardDatabase>(
         R2CardRole::ArtifactPermanent
         | R2CardRole::CreaturePermanent
         | R2CardRole::PlaneswalkerPermanent
-        | R2CardRole::UrzaCommander => ensure_sorcery_window(state)?,
+        | R2CardRole::UrzaCommander => ensure_spell_cast_window(state, cards, profile)?,
         R2CardRole::EnchantmentPermanent => {
             if profile.aura_target != AuraTargetKind::None {
                 return Err(RuleError::UnsupportedCardMechanic(card));
             }
-            ensure_sorcery_window(state)?;
+            ensure_spell_cast_window(state, cards, profile)?;
         }
         _ => return Err(RuleError::UnsupportedCardMechanic(card)),
     }
@@ -2900,8 +2891,8 @@ fn cast_aura_from_hand<D: CardDatabase>(
     target: CanonicalObjectId,
     payment: ManaPayment,
 ) -> Result<(), RuleError> {
-    ensure_sorcery_window(state)?;
     let profile = card_profile(cards, card)?;
+    ensure_spell_cast_window(state, cards, profile)?;
     if profile.role != R2CardRole::EnchantmentPermanent
         || profile.aura_target == AuraTargetKind::None
     {
@@ -3071,8 +3062,8 @@ fn cast_reshape<D: CardDatabase>(
     sacrifice: ObjectId,
     payment: ManaPayment,
 ) -> Result<(), RuleError> {
-    ensure_sorcery_window(state)?;
     let profile = card_profile(cards, card)?;
+    ensure_spell_cast_window(state, cards, profile)?;
     if profile.role != R2CardRole::SearchSpell
         || profile.special_search != SpecialSearchKind::Reshape
     {
@@ -3875,6 +3866,11 @@ fn resolve_floodcaller_untap<D: CardDatabase>(
             .is_some_and(|profile| profile.floodcaller_untap_eligible)
         {
             permanent.tapped = false;
+            permanent.counters.temporary_power_boost = permanent
+                .counters
+                .temporary_power_boost
+                .checked_add(1)
+                .ok_or(RuleError::ArithmeticOverflow)?;
         }
     }
     state.battlefield = BattlefieldZone::new(permanents);
@@ -3999,7 +3995,10 @@ fn resolve_chrome_dome_copy<D: CardDatabase>(
             card: target.card,
             face: profile.battlefield_face,
             tapped: false,
-            summoning_sick: profile.is_creature,
+            // Chrome Dome explicitly gives the copy haste. Combat is outside the
+            // goldfish model; clearing summoning sickness is the exact execution
+            // consequence needed for tap abilities.
+            summoning_sick: false,
             token: true,
             counters: CounterState {
                 loyalty: profile.starting_loyalty,
@@ -4084,7 +4083,29 @@ fn resolve_knack_bounce<D: CardDatabase>(
         .position(|candidate| candidate.object_id == object_id)
         .ok_or(RuleError::MissingPermanent(object_id))?;
     let removed = permanents.remove(index);
+    for candidate in &mut permanents {
+        if candidate.attached_to == Some(object_id)
+            && candidate.mode == PermanentMode::RealityChipAttached
+        {
+            candidate.mode = PermanentMode::RealityChipCreature;
+            candidate.attached_to = None;
+        }
+    }
+    let mut attached_non_token_cards = Vec::new();
+    permanents.retain(|candidate| {
+        if candidate.attached_to == Some(object_id) {
+            if !candidate.token {
+                attached_non_token_cards.push(candidate.card);
+            }
+            false
+        } else {
+            true
+        }
+    });
     state.battlefield = BattlefieldZone::new(permanents);
+    for card in attached_non_token_cards {
+        state.graveyard.insert(card);
+    }
     state.delayed_events.retain(|event| {
         !matches!(event, DelayedEvent::ChromeCopySacrifice { object, .. } if *object == object_id)
     });
@@ -5197,14 +5218,6 @@ fn validate_sacrifice_artifact<D: CardDatabase>(
     if !profile.is_artifact {
         return Err(RuleError::InvalidSacrifice(object));
     }
-    if state
-        .battlefield
-        .permanents()
-        .iter()
-        .any(|candidate| candidate.attached_to == Some(object))
-    {
-        return Err(RuleError::AttachedSacrificeDeferred(object));
-    }
     Ok(profile)
 }
 
@@ -5322,6 +5335,30 @@ fn ensure_sorcery_window(state: &TrueState) -> Result<(), RuleError> {
     Ok(())
 }
 
+fn has_valley_floodcaller<D: CardDatabase>(state: &TrueState, cards: &D) -> bool {
+    state.battlefield.permanents().iter().any(|permanent| {
+        cards
+            .profile(permanent.card)
+            .is_some_and(|profile| profile.engine == EngineKind::ValleyFloodcaller)
+    })
+}
+
+fn ensure_spell_cast_window<D: CardDatabase>(
+    state: &TrueState,
+    cards: &D,
+    profile: CardProfile,
+) -> Result<(), RuleError> {
+    let intrinsic_flash = profile.engine == EngineKind::ValleyFloodcaller
+        || profile.utility == UtilityKind::SewerVeillanceCam;
+    let floodcaller_permission = !profile.is_creature && has_valley_floodcaller(state, cards);
+    if intrinsic_flash || floodcaller_permission {
+        ensure_priority(state)?;
+        ensure_no_pending_decision(state)
+    } else {
+        ensure_sorcery_window(state)
+    }
+}
+
 fn ensure_no_pending_decision(state: &TrueState) -> Result<(), RuleError> {
     if matches!(state.pending, PendingDecision::None) {
         Ok(())
@@ -5378,7 +5415,28 @@ fn current_creature_power<D: CardDatabase>(
     };
     let counters = i16::try_from(permanent.counters.plus_one_plus_one)
         .map_err(|_| RuleError::ArithmeticOverflow)?;
+    let temporary = i16::try_from(permanent.counters.temporary_power_boost)
+        .map_err(|_| RuleError::ArithmeticOverflow)?;
+    let target_profile = card_profile(cards, permanent.card)?;
+    let chrome_boost = if target_profile.is_artifact && target_profile.is_creature {
+        state
+            .battlefield
+            .permanents()
+            .iter()
+            .filter(|candidate| {
+                candidate.object_id != permanent.object_id
+                    && cards
+                        .profile(candidate.card)
+                        .is_some_and(|profile| profile.engine == EngineKind::ChromeDome)
+            })
+            .count()
+    } else {
+        0
+    };
+    let chrome_boost = i16::try_from(chrome_boost).map_err(|_| RuleError::ArithmeticOverflow)?;
     base.checked_add(counters)
+        .and_then(|power| power.checked_add(temporary))
+        .and_then(|power| power.checked_add(chrome_boost))
         .ok_or(RuleError::ArithmeticOverflow)
 }
 
@@ -5648,6 +5706,7 @@ fn clear_end_of_turn_knack_grants(state: &mut TrueState) {
         if permanent.granted_ability == Some(urza_core::GrantedAbility::KnackBounceUntilEndOfTurn) {
             permanent.granted_ability = None;
         }
+        permanent.counters.temporary_power_boost = 0;
     }
     state.battlefield = BattlefieldZone::new(permanents);
 }

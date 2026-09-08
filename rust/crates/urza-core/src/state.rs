@@ -43,6 +43,8 @@ pub struct GenericCost(pub u16);
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct CounterState {
     pub plus_one_plus_one: u16,
+    #[serde(default)]
+    pub temporary_power_boost: u16,
     pub charge: u16,
     pub burden: u16,
     pub lore: u16,

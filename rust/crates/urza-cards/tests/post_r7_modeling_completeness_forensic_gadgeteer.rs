@@ -149,7 +149,7 @@ fn forensic_gadgeteer_profile_and_artifact_cast_investigate_are_executable() {
 
     apply_action(&mut state, &cards, Action::PassPriority).unwrap();
     state.mana = ManaPool {
-        colorless: 2,
+        colorless: 1,
         ..ManaPool::default()
     };
     apply_action(
@@ -158,7 +158,7 @@ fn forensic_gadgeteer_profile_and_artifact_cast_investigate_are_executable() {
         Action::ActivateClueDraw {
             source: clue,
             payment: ManaPayment {
-                colorless: 2,
+                colorless: 1,
                 ..ManaPayment::default()
             },
         },

@@ -14,11 +14,11 @@ use urza_policy::{ActionToken, PolicyActionClass, PolicyCandidate, PolicyPublicK
 use urza_rng::{LogicalEventId, RootSeed, WorldId};
 use urza_rules::{
     Action, AuraTargetKind, CamEffectChoice, CardDatabase, EngineKind, GameRngContext,
-    LandEntryChoice, ManaCost, ManaPayment, R2CardRole, SpecialSearchKind, SpellEffectKind,
-    UtilityKind, apply_action_with_rng, enumerate_payments, legal_contingent_actions,
+    LandEntryChoice, ManaPayment, R2CardRole, SpecialSearchKind, SpellEffectKind, UtilityKind,
+    apply_action_with_rng, enumerate_payments, legal_contingent_actions,
 };
 
-pub const CANDIDATE_BRIDGE_VERSION: &str = "post_r7_public_candidate_bridge_v4_trigger_order";
+pub const CANDIDATE_BRIDGE_VERSION: &str = "post_r7_public_candidate_bridge_v5_modeling_repair";
 pub const ORDINARY_ACTION_FAMILY_COUNT: usize = 29;
 pub const CONTINGENT_ACTION_FAMILY_COUNT: usize = 9;
 
@@ -338,16 +338,10 @@ fn generate_ordinary_actions<D: CardDatabase>(
             });
         }
         if cards.clue_token_card() == Some(class.card) {
-            for payment in enumerate_payments(
-                information.mana,
-                ManaCost {
-                    generic: 2,
-                    ..ManaCost::default()
-                },
-            ) {
+            for payment in &all_payments {
                 actions.push(Action::ActivateClueDraw {
                     source: representative,
-                    payment,
+                    payment: *payment,
                 });
             }
         }

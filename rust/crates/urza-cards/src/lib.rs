@@ -30,7 +30,8 @@ pub const R1_CATALOG_DIGEST_BLAKE3: &str =
 pub const R3_ACCEPTED_ACTIVE_IDENTITY_COUNT: usize = 32;
 pub const R4_ACCEPTED_ACTIVE_IDENTITY_COUNT: usize = 47;
 pub const POST_R7_ACCEPTED_ACTIVE_IDENTITY_COUNT: usize = 52;
-pub const POST_R7_CARD_DATABASE_VERSION: &str = "post_r7_modeling_completeness_v1_fast_mana";
+pub const POST_R7_CARD_DATABASE_VERSION: &str =
+    "post_r7_modeling_completeness_v2_rules_active_repair";
 pub const R4_ONLY_ACTIVE_NAMES: [&str; 15] = [
     "Basalt Monolith",
     "Grim Monolith",
@@ -1009,6 +1010,7 @@ impl PostR7CardDatabase {
         })?;
         assistant_profile.role = urza_rules::R2CardRole::CreaturePermanent;
         assistant_profile.utility = urza_rules::UtilityKind::ArtificersAssistant;
+        assistant_profile.floodcaller_untap_eligible = true;
         assistant_profile.is_creature = true;
 
         let lotus = card_id_by_name_from_r1("Lotus Petal")?;
