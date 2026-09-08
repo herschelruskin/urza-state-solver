@@ -1,4 +1,5 @@
 name: Post-R7 card modeling coverage audit
+# revision 3: strict-lint-clean audit helper
 
 on:
   push:
