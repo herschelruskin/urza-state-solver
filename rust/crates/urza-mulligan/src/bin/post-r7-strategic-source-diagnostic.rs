@@ -14,8 +14,8 @@ use urza_policy_bridge::CandidateBridge;
 use urza_rng::WorldId;
 use urza_rollout::{RolloutConfig, RolloutStop, replay_trace, rollout_with_selector};
 use urza_rules::{
-    ABILITY_ARTIFICERS_ASSISTANT_SCRY, ABILITY_UTHROS_ARTIFACT_DRAW, RuleError,
-    advance_automatic, detect_terminal_win,
+    ABILITY_ARTIFICERS_ASSISTANT_SCRY, ABILITY_UTHROS_ARTIFACT_DRAW, RuleError, advance_automatic,
+    detect_terminal_win,
 };
 
 const VERSION: &str = "post_r7_strategic_source_diagnostic_v1";
@@ -198,7 +198,11 @@ fn run() -> Result<(), Box<dyn Error>> {
                 );
             }
 
-            if information.battlefield.iter().any(|permanent| permanent.card == ftt) {
+            if information
+                .battlefield
+                .iter()
+                .any(|permanent| permanent.card == ftt)
+            {
                 stats.ftt_battlefield_decisions += 1;
             }
             let ftt_level_candidate = bridge
@@ -298,7 +302,9 @@ fn strategic_policy(cards: &CurrentCardDatabase) -> Result<StrategicPolicy, Box<
         ("Urza's Saga", 105),
         ("Tezzeret, Cruel Captain", 100),
     ] {
-        config.card_values.insert(cards.card_id_by_name(name)?, value);
+        config
+            .card_values
+            .insert(cards.card_id_by_name(name)?, value);
     }
     config.action_kind_values.extend([
         (KIND_TOP_LOOK, 70),
@@ -309,7 +315,9 @@ fn strategic_policy(cards: &CurrentCardDatabase) -> Result<StrategicPolicy, Box<
         (KIND_UTHROS_STATION, 60),
         (KIND_CLUE_DRAW, 45),
     ]);
-    config.stack_intervention_kind_values.insert(KIND_TOP_LOOK, 220);
+    config
+        .stack_intervention_kind_values
+        .insert(KIND_TOP_LOOK, 220);
     config.stack_intervention_trigger_abilities.extend([
         ABILITY_ARTIFICERS_ASSISTANT_SCRY,
         ABILITY_UTHROS_ARTIFACT_DRAW,
@@ -322,8 +330,16 @@ fn strategic_policy(cards: &CurrentCardDatabase) -> Result<StrategicPolicy, Box<
         vec!["Power Artifact", "Grim Monolith"],
         vec!["Sensei's Divining Top", "The Reality Chip"],
         vec!["Sensei's Divining Top", "Fortune Teller's Talent"],
-        vec!["Sensei's Divining Top", "Forensic Gadgeteer", "Grinding Station"],
-        vec!["Sensei's Divining Top", "Forensic Gadgeteer", "Battered Golem"],
+        vec![
+            "Sensei's Divining Top",
+            "Forensic Gadgeteer",
+            "Grinding Station",
+        ],
+        vec![
+            "Sensei's Divining Top",
+            "Forensic Gadgeteer",
+            "Battered Golem",
+        ],
         vec!["Banishing Knack", "Battered Golem", "Sewer-veillance Cam"],
         vec!["Retraction Helix", "Battered Golem", "Sewer-veillance Cam"],
     ] {
