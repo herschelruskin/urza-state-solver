@@ -3,12 +3,12 @@
 - Gate state: **RED**
 - Active catalog identities: **95**
 - Current runtime-supported identities: **50**
-- Resolved dispositions: **0**
-- Unresolved dispositions: **95**
-- `AUDIT_REQUIRED`: **50**
+- Resolved dispositions: **4**
+- Unresolved dispositions: **91**
+- `AUDIT_REQUIRED`: **46**
 - `IMPLEMENTATION_REQUIRED`: **42**
 - `ENVIRONMENT_SPLIT_REQUIRED`: **3**
-- `COMPLETE`: **0**
+- `COMPLETE`: **4**
 - `GOLDFISH_IRRELEVANT`: **0**
 - `ENVIRONMENT_DEFERRED`: **0**
 
@@ -20,7 +20,6 @@ The gate remains RED until every active identity is explicitly resolved as `COMP
 | --- | --- | --- | --- | --- |
 | Aether Spellbomb | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | An Offer You Can't Refuse | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
-| Ancient Tomb | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Artificer's Assistant | `AUDIT_REQUIRED` | true | `RulesActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Banishing Knack | `AUDIT_REQUIRED` | true | `RulesActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Basalt Monolith | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
@@ -55,7 +54,6 @@ The gate remains RED until every active identity is explicitly resolved as `COMP
 | Hydroelectric Specimen | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Imposter Mech | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
 | Ipnu Rivulet | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
-| Island | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Jeweled Amulet | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
 | Lotus Petal | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
 | Mana Drain | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
@@ -90,11 +88,9 @@ The gate remains RED until every active identity is explicitly resolved as `COMP
 | Scalding Tarn | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
 | Scour for Scrap | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
 | Sea Gate Restoration | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
-| Seat of the Synod | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Sensei's Divining Top | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Sewer-veillance Cam | `AUDIT_REQUIRED` | true | `RulesActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Sink into Stupor | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
-| Sol Ring | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Spellseeker | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Spellskite | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
 | Swan Song | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
@@ -113,3 +109,12 @@ The gate remains RED until every active identity is explicitly resolved as `COMP
 | Welding Jar | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Whir of Invention | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Witching Well | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
+
+## Resolved identities
+
+| Card | Disposition | Runtime supported | Coverage | Rationale |
+| --- | --- | --- | --- | --- |
+| Ancient Tomb | `COMPLETE` | true | `PrimitiveActive` | Goldfish-complete: ordinary untapped land play and intrinsic tap for two colorless with two self-damage are executed by the current rules engine; dedicated post-R7 mana-baseline fixture proves the exact resource and life transition. |
+| Island | `COMPLETE` | true | `PrimitiveActive` | Goldfish-complete: ordinary untapped basic-land play and intrinsic blue mana are executed by the current rules engine; dedicated post-R7 mana-baseline fixture proves play, tap, and mana production. |
+| Seat of the Synod | `COMPLETE` | true | `PrimitiveActive` | Goldfish-complete: ordinary artifact-land play, intrinsic blue mana, and artifact identity are represented by the current rules engine; dedicated post-R7 mana-baseline fixture proves land play, blue production, and artifact characteristic used by Urza/artifact effects. |
+| Sol Ring | `COMPLETE` | true | `PrimitiveActive` | Goldfish-complete: zero-choice artifact spell resolution at printed {1} and intrinsic tap for two colorless are executed by the current rules engine; dedicated post-R7 mana-baseline fixture proves cast payment, battlefield entry, and mana production. |

@@ -374,10 +374,11 @@ mod tests {
     fn v1_registry_is_total_and_backlog_is_explicit() {
         let audit = inspect().unwrap();
         assert_eq!(audit.rows.len(), 95);
-        assert_eq!(audit.count(Disposition::AuditRequired), 50);
+        assert_eq!(audit.count(Disposition::AuditRequired), 46);
         assert_eq!(audit.count(Disposition::ImplementationRequired), 42);
         assert_eq!(audit.count(Disposition::EnvironmentSplitRequired), 3);
-        assert_eq!(audit.resolved(), 0);
-        assert_eq!(audit.unresolved(), 95);
+        assert_eq!(audit.count(Disposition::Complete), 4);
+        assert_eq!(audit.resolved(), 4);
+        assert_eq!(audit.unresolved(), 91);
     }
 }
