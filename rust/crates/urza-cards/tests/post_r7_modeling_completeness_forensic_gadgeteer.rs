@@ -12,12 +12,7 @@ fn card(cards: &CurrentCardDatabase, name: &str) -> urza_core::CardDefId {
     cards.card_id_by_name(name).unwrap()
 }
 
-fn permanent(
-    cards: &CurrentCardDatabase,
-    object: u32,
-    name: &str,
-    tapped: bool,
-) -> PermanentState {
+fn permanent(cards: &CurrentCardDatabase, object: u32, name: &str, tapped: bool) -> PermanentState {
     let card = card(cards, name);
     let profile = cards.profile(card).unwrap();
     PermanentState {
@@ -195,7 +190,10 @@ fn forensic_gadgeteer_does_not_investigate_for_a_nonartifact_spell() {
     )
     .unwrap();
     assert_eq!(state.stack.len(), 1);
-    assert!(matches!(state.stack.last(), Some(StackObject::Spell { .. })));
+    assert!(matches!(
+        state.stack.last(),
+        Some(StackObject::Spell { .. })
+    ));
 }
 
 #[test]

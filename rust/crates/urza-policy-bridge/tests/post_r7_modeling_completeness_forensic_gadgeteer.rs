@@ -10,12 +10,7 @@ fn card(cards: &CurrentCardDatabase, name: &str) -> urza_core::CardDefId {
     cards.card_id_by_name(name).unwrap()
 }
 
-fn permanent(
-    cards: &CurrentCardDatabase,
-    object: u32,
-    name: &str,
-    tapped: bool,
-) -> PermanentState {
+fn permanent(cards: &CurrentCardDatabase, object: u32, name: &str, tapped: bool) -> PermanentState {
     let card = card(cards, name);
     let profile = cards.profile(card).unwrap();
     PermanentState {
@@ -181,10 +176,11 @@ fn gadgeteer_investigate_produces_a_solver_visible_clue_draw() {
         .find_map(|candidate| match clue_bridge.resolve(candidate.token) {
             Some(Action::ActivateClueDraw { source, payment })
                 if *source == clue
-                    && *payment == ManaPayment {
-                        colorless: 2,
-                        ..ManaPayment::default()
-                    } =>
+                    && *payment
+                        == ManaPayment {
+                            colorless: 2,
+                            ..ManaPayment::default()
+                        } =>
             {
                 clue_bridge.resolved_action(candidate.token)
             }

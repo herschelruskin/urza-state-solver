@@ -3,12 +3,12 @@
 - Gate state: **RED**
 - Active catalog identities: **95**
 - Current runtime-supported identities: **52**
-- Resolved dispositions: **9**
-- Unresolved dispositions: **86**
-- `AUDIT_REQUIRED`: **43**
+- Resolved dispositions: **10**
+- Unresolved dispositions: **85**
+- `AUDIT_REQUIRED`: **42**
 - `IMPLEMENTATION_REQUIRED`: **40**
 - `ENVIRONMENT_SPLIT_REQUIRED`: **3**
-- `COMPLETE`: **9**
+- `COMPLETE`: **10**
 - `GOLDFISH_IRRELEVANT`: **0**
 - `ENVIRONMENT_DEFERRED`: **0**
 
@@ -41,7 +41,6 @@ The gate remains RED until every active identity is explicitly resolved as `COMP
 | Flusterstorm | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
 | Force of Negation | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
 | Force of Will | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
-| Forensic Gadgeteer | `AUDIT_REQUIRED` | true | `RulesActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Fortune Teller's Talent | `AUDIT_REQUIRED` | true | `PrimitiveActive` | Current engine exposes some rules surface, but this card has not yet passed the clause-level goldfish completeness audit; all relevant Oracle clauses need executable evidence or explicit exemptions. |
 | Gemstone Caverns | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
 | Giant's Boulder | `IMPLEMENTATION_REQUIRED` | false | `IntentionallyUnmodeled` | Current post-R7 database does not expose a playable rules role for this active deck identity; goldfish-relevant Oracle clauses and legal own-side actions must be classified and implemented or explicitly exempted. |
@@ -111,6 +110,7 @@ The gate remains RED until every active identity is explicitly resolved as `COMP
 | --- | --- | --- | --- | --- |
 | Ancient Tomb | `COMPLETE` | true | `PrimitiveActive` | Goldfish-complete: ordinary untapped land play and intrinsic tap for two colorless with two self-damage are executed by the current rules engine; dedicated post-R7 mana-baseline fixture proves the exact resource and life transition. |
 | Basalt Monolith | `COMPLETE` | true | `PrimitiveActive` | Goldfish-complete: printed {3} cast, untapped entry, {T} for three colorless, skipped normal untap, and {3} self-untap are executable; dedicated post-R7 Monolith fixtures also prove the intrinsic mana and native untap actions are solver-visible. |
+| Forensic Gadgeteer | `COMPLETE` | true | `RulesActive` | Goldfish-complete: normal creature casting, artifact-spell investigate triggers, real Clue token creation and Clue draw execution, and the static {1} artifact-activation reduction are executable. Dedicated post-R7 fixtures prove the trigger does not fire for nonartifact spells, Basalt 3->2 reduction, the one-mana reduction floor on Top, and solver-visible reduced-cost and Clue actions. |
 | Grim Monolith | `COMPLETE` | true | `PrimitiveActive` | Goldfish-complete: printed {2} cast, untapped entry, {T} for three colorless, skipped normal untap, and {4} self-untap are executable; dedicated post-R7 Monolith fixtures also prove the intrinsic mana and native untap actions are solver-visible. |
 | Island | `COMPLETE` | true | `PrimitiveActive` | Goldfish-complete: ordinary untapped basic-land play and intrinsic blue mana are executed by the current rules engine; dedicated post-R7 mana-baseline fixture proves play, tap, and mana production. |
 | Lotus Petal | `COMPLETE` | true | `IntentionallyUnmodeled` | Goldfish-complete: zero-mana artifact cast and {T}, sacrifice mana ability are executable; unrestricted any-color production is projected to blue only under a fixture that audits the pinned deck for non-blue colored costs. |
