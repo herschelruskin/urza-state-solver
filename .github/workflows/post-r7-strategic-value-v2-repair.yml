@@ -24,6 +24,7 @@ jobs:
         run: |
           set -euo pipefail
           python rust/scripts/post_r7_strategic_value_v2_patch.py
+          python rust/scripts/fix_post_r7_strategic_value_v2_clippy.py
       - name: Format generated Rust
         working-directory: rust
         run: |
