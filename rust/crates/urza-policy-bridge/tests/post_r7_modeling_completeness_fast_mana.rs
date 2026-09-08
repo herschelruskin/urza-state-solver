@@ -11,11 +11,7 @@ fn card(cards: &CurrentCardDatabase, name: &str) -> urza_core::CardDefId {
     cards.card_id_by_name(name).unwrap()
 }
 
-fn permanent(
-    cards: &CurrentCardDatabase,
-    object: u32,
-    name: &str,
-) -> PermanentState {
+fn permanent(cards: &CurrentCardDatabase, object: u32, name: &str) -> PermanentState {
     let card = card(cards, name);
     let profile = cards.profile(card).unwrap();
     PermanentState {
