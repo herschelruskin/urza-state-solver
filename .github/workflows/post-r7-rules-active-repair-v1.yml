@@ -61,12 +61,12 @@ jobs:
         working-directory: rust
         run: |
           set -euo pipefail
-          if cargo run --quiet --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- --enforce > ../modeling-enforce.txt 2>&1; then
+          if cargo run --quiet --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- --enforce > "$RUNNER_TEMP/modeling-enforce.txt" 2>&1; then
             echo 'gate unexpectedly green before backlog is cleared' >&2
             exit 1
           fi
-          grep -q $'MODELING_COMPLETENESS_GATE\ttotal=95\tresolved=11\tunresolved=84' ../modeling-enforce.txt
-          grep -q 'MODELING_COMPLETENESS_GATE_RED: 84 unresolved active identities remain' ../modeling-enforce.txt
+          grep -q $'MODELING_COMPLETENESS_GATE\ttotal=95\tresolved=11\tunresolved=84' "$RUNNER_TEMP/modeling-enforce.txt"
+          grep -q 'MODELING_COMPLETENESS_GATE_RED: 84 unresolved active identities remain' "$RUNNER_TEMP/modeling-enforce.txt"
       - name: Strict Clippy
         working-directory: rust
         run: |
@@ -75,5 +75,5 @@ jobs:
           cargo clippy --locked -p urza-cards --all-targets -- -D warnings
           cargo clippy --locked -p urza-policy-bridge --all-targets -- -D warnings
           cargo clippy --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- -D warnings
-      - name: Ensure validation is read-only
-        run: git diff --exit-code
+      - name: Ensure validation did not mutate tracked source
+        run: git diff --exit-code -- . ':(exclude)rust/target/**'
