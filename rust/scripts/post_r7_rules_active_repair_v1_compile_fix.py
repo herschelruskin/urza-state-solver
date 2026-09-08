@@ -20,8 +20,8 @@ replace_once(
 
 replace_once(
     "rust/crates/urza-cards/tests/post_r7_modeling_completeness_rules_active_repair_v1.rs",
-    "    ABILITY_ARTIFICERS_ASSISTANT_SCRY, ABILITY_FLOODCALLER_UNTAP, Action, CardDatabase,\n    EngineKind,",
-    "    ABILITY_ARTIFICERS_ASSISTANT_SCRY, ABILITY_FLOODCALLER_UNTAP, Action, EngineKind,",
+    "    ABILITY_ARTIFICERS_ASSISTANT_SCRY, ABILITY_FLOODCALLER_UNTAP, Action, CardDatabase, EngineKind,\n",
+    "    ABILITY_ARTIFICERS_ASSISTANT_SCRY, ABILITY_FLOODCALLER_UNTAP, Action, EngineKind,\n",
 )
 
 replace_once(
