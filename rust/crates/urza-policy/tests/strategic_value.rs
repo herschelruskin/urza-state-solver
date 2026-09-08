@@ -408,3 +408,41 @@ fn redundant_top_look_loses_to_passing_after_three_cards_are_known() {
         Some(ActionToken(2))
     );
 }
+
+#[test]
+fn fresh_three_card_library_look_beats_medium_deployment_but_not_recipe_completion() {
+    let mut config = StrategicPolicyConfig {
+        unknown_card_value: 50,
+        ..StrategicPolicyConfig::default()
+    };
+    config.action_kind_values.insert(15, 70);
+    config.library_look_kind = Some(15);
+    config.card_values.insert(CardDefId(40), 90);
+    config.card_values.insert(CardDefId(50), 100);
+    config
+        .terminal_recipes
+        .push(TerminalRecipe::new(vec![CardDefId(10), CardDefId(50)]));
+    let policy = StrategicPolicy::new(config);
+
+    let fresh = InformationState {
+        phase: Phase::PrecombatMain,
+        ..InformationState::default()
+    };
+    let top = candidate(1, PolicyActionClass::ActivateAbility, 15, None);
+    let medium_cast = candidate(2, PolicyActionClass::CastSpell, 9, Some(40));
+    assert_eq!(
+        policy.choose(&fresh, &[medium_cast, top.clone()]).unwrap(),
+        Some(ActionToken(1))
+    );
+
+    let recipe_state = InformationState {
+        phase: Phase::PrecombatMain,
+        battlefield: vec![permanent(10, 1)],
+        ..InformationState::default()
+    };
+    let completion = candidate(3, PolicyActionClass::CastSpell, 9, Some(50));
+    assert_eq!(
+        policy.choose(&recipe_state, &[top, completion]).unwrap(),
+        Some(ActionToken(3))
+    );
+}

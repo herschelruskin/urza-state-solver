@@ -145,7 +145,7 @@ impl DeterministicPolicy {
 /// Explicit post-R7 policy namespace. The frozen R5 `DeterministicPolicy`
 /// remains unchanged so historical rollout/cache identities do not silently
 /// acquire strategic semantics.
-pub const POST_R7_STRATEGIC_POLICY_VERSION: &str = "post_r7_strategic_value_v2_resource_aware";
+pub const POST_R7_STRATEGIC_POLICY_VERSION: &str = "post_r7_strategic_value_v3_library_information";
 
 /// Common selector contract used by rollout. Implementations receive only the
 /// public `InformationState` and bridge-produced public candidates.
@@ -400,7 +400,18 @@ impl StrategicPolicy {
             }
             _ => 0,
         };
-        kind_value + card_value + self.stack_intervention_score(information, candidate)
+        let library_information_value = if candidate.class == PolicyActionClass::ActivateAbility
+            && Some(candidate.key.kind) == self.config.library_look_kind
+            && information.library.known_top.len() < 3
+        {
+            i64::from(self.config.unknown_card_value).saturating_mul(3)
+        } else {
+            0
+        };
+        kind_value
+            + card_value
+            + library_information_value
+            + self.stack_intervention_score(information, candidate)
     }
 
     fn contingent_score(

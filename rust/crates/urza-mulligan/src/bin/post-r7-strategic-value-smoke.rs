@@ -12,7 +12,7 @@ use urza_rng::WorldId;
 use urza_rollout::{RolloutConfig, RolloutStop, rollout, rollout_with_selector};
 use urza_rules::{ABILITY_ARTIFICERS_ASSISTANT_SCRY, ABILITY_UTHROS_ARTIFACT_DRAW};
 
-const VERSION: &str = "post_r7_strategic_value_smoke_v2_resource_aware";
+const VERSION: &str = "post_r7_strategic_value_smoke_v3_library_information";
 const KIND_TOP_LOOK: u16 = 15;
 const KIND_TOP_DRAW: u16 = 16;
 const KIND_REALITY_CHIP_RECONFIGURE: u16 = 19;
