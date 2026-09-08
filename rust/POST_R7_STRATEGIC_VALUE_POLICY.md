@@ -24,3 +24,9 @@ Assistant/Uthros trigger ordering uses the already-public controlled-trigger blo
 - Rhystic Study, Mystic Remora and Faerie Mastermind receive no fabricated opponent-event draw value; the environment-deferred boundary remains intact.
 - Terminal recipes are precursor heuristics only. `detect_terminal_win` remains the sole terminal authority.
 - The historical `DeterministicPolicy`, `POLICY_VERSION`, and `rollout` entrypoint are unchanged. The new selector uses `POST_R7_STRATEGIC_POLICY_VERSION` and `POST_R7_STRATEGIC_ROLLOUT_VERSION`.
+
+## v2 resource-aware repair
+
+The first 128-world v1 smoke was liveness-clean but produced 0 strategic terminals, 0 Top-look selections, 81 real tutor-target selections and 1 trigger-order decision. The selector had made cast/activation spending outrank mana production, which encouraged spending the first affordable mana instead of accumulating resources for stronger engines and precursor pieces.
+
+v2 restores main-phase resource accumulation from unprotected sources before spending. A mana source is protected when the same public canonical source has a currently live configured strategic activation, preventing Urza artifact mana from automatically tapping that engine before its activation is compared against casts. Redundant Sensei Top looks are explicitly deprioritized once three top cards are already known.

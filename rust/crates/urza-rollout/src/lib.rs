@@ -21,7 +21,7 @@ use urza_rules::{
 };
 
 pub const ROLLOUT_VERSION: &str = "r5_deterministic_rollout_v3";
-pub const POST_R7_STRATEGIC_ROLLOUT_VERSION: &str = "post_r7_strategic_rollout_v1";
+pub const POST_R7_STRATEGIC_ROLLOUT_VERSION: &str = "post_r7_strategic_rollout_v2_resource_aware";
 pub const DEFAULT_MAX_STEPS: u32 = 4096;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -12,7 +12,7 @@ use urza_rng::WorldId;
 use urza_rollout::{RolloutConfig, RolloutStop, rollout, rollout_with_selector};
 use urza_rules::{ABILITY_ARTIFICERS_ASSISTANT_SCRY, ABILITY_UTHROS_ARTIFACT_DRAW};
 
-const VERSION: &str = "post_r7_strategic_value_smoke_v1";
+const VERSION: &str = "post_r7_strategic_value_smoke_v2_resource_aware";
 const KIND_TOP_LOOK: u16 = 15;
 const KIND_TOP_DRAW: u16 = 16;
 const KIND_REALITY_CHIP_RECONFIGURE: u16 = 19;
@@ -181,6 +181,7 @@ fn strategic_policy(cards: &CurrentCardDatabase) -> Result<StrategicPolicy, Box<
     ]);
     config.assistant_scry_ability = Some(ABILITY_ARTIFICERS_ASSISTANT_SCRY);
     config.uthros_draw_ability = Some(ABILITY_UTHROS_ARTIFACT_DRAW);
+    config.library_look_kind = Some(KIND_TOP_LOOK);
 
     for names in [
         vec!["Power Artifact", "Basalt Monolith"],

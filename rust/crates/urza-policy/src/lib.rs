@@ -145,7 +145,7 @@ impl DeterministicPolicy {
 /// Explicit post-R7 policy namespace. The frozen R5 `DeterministicPolicy`
 /// remains unchanged so historical rollout/cache identities do not silently
 /// acquire strategic semantics.
-pub const POST_R7_STRATEGIC_POLICY_VERSION: &str = "post_r7_strategic_value_v1";
+pub const POST_R7_STRATEGIC_POLICY_VERSION: &str = "post_r7_strategic_value_v2_resource_aware";
 
 /// Common selector contract used by rollout. Implementations receive only the
 /// public `InformationState` and bridge-produced public candidates.
@@ -198,6 +198,7 @@ pub struct StrategicPolicyConfig {
     pub terminal_recipes: Vec<TerminalRecipe>,
     pub assistant_scry_ability: Option<AbilityId>,
     pub uthros_draw_ability: Option<AbilityId>,
+    pub library_look_kind: Option<u16>,
 }
 
 impl Default for StrategicPolicyConfig {
@@ -212,6 +213,7 @@ impl Default for StrategicPolicyConfig {
             terminal_recipes: Vec::new(),
             assistant_scry_ability: None,
             uthros_draw_ability: None,
+            library_look_kind: None,
         }
     }
 }
@@ -257,20 +259,38 @@ impl StrategicPolicy {
         }
 
         let drain_stack = !pending && !information.stack.is_empty();
+        let protected_activation_sources = candidates
+            .iter()
+            .filter(|candidate| {
+                candidate.class == PolicyActionClass::ActivateAbility
+                    && self.activation_is_live(information, candidate)
+            })
+            .filter_map(|candidate| candidate.key.source)
+            .collect::<BTreeSet<_>>();
         let selected = candidates
             .iter()
             .filter(|candidate| {
                 !pending || candidate.class == PolicyActionClass::ContingentDecision
             })
             .min_by(|left, right| {
-                self.action_bucket(information, left, drain_stack)
-                    .cmp(&self.action_bucket(information, right, drain_stack))
-                    .then_with(|| {
-                        self.candidate_score(information, right)
-                            .cmp(&self.candidate_score(information, left))
-                    })
-                    .then_with(|| left.key.cmp(&right.key))
-                    .then_with(|| left.token.cmp(&right.token))
+                self.action_bucket(
+                    information,
+                    left,
+                    drain_stack,
+                    &protected_activation_sources,
+                )
+                .cmp(&self.action_bucket(
+                    information,
+                    right,
+                    drain_stack,
+                    &protected_activation_sources,
+                ))
+                .then_with(|| {
+                    self.candidate_score(information, right)
+                        .cmp(&self.candidate_score(information, left))
+                })
+                .then_with(|| left.key.cmp(&right.key))
+                .then_with(|| left.token.cmp(&right.token))
             });
 
         Ok(selected.map(|candidate| candidate.token))
@@ -281,6 +301,7 @@ impl StrategicPolicy {
         information: &InformationState,
         candidate: &PolicyCandidate,
         drain_stack: bool,
+        protected_activation_sources: &BTreeSet<CanonicalObjectId>,
     ) -> u8 {
         if information.pending.kind() != PendingDecisionKind::None {
             return 0;
@@ -301,13 +322,24 @@ impl StrategicPolicy {
         }
 
         if matches!(information.phase, Phase::PrecombatMain) {
+            if self.is_redundant_library_look(information, candidate) {
+                return 7;
+            }
             match candidate.class {
                 PolicyActionClass::PlayLand => 0,
-                PolicyActionClass::CastSpell | PolicyActionClass::ActivateAbility => 1,
-                PolicyActionClass::ProduceMana => 2,
+                PolicyActionClass::ProduceMana
+                    if !candidate
+                        .key
+                        .source
+                        .is_some_and(|source| protected_activation_sources.contains(&source)) =>
+                {
+                    1
+                }
+                PolicyActionClass::CastSpell | PolicyActionClass::ActivateAbility => 2,
                 PolicyActionClass::ManaSetup => 3,
-                PolicyActionClass::PassPriority => 4,
-                PolicyActionClass::ContingentDecision => 5,
+                PolicyActionClass::ProduceMana => 4,
+                PolicyActionClass::PassPriority => 5,
+                PolicyActionClass::ContingentDecision => 6,
             }
         } else {
             match candidate.class {
@@ -319,6 +351,33 @@ impl StrategicPolicy {
                 PolicyActionClass::ContingentDecision => 5,
             }
         }
+    }
+
+    fn activation_is_live(
+        &self,
+        information: &InformationState,
+        candidate: &PolicyCandidate,
+    ) -> bool {
+        candidate.class == PolicyActionClass::ActivateAbility
+            && !self.is_redundant_library_look(information, candidate)
+            && (self
+                .config
+                .action_kind_values
+                .get(&candidate.key.kind)
+                .copied()
+                .unwrap_or_default()
+                > 0
+                || self.stack_intervention_score(information, candidate) > 0)
+    }
+
+    fn is_redundant_library_look(
+        &self,
+        information: &InformationState,
+        candidate: &PolicyCandidate,
+    ) -> bool {
+        candidate.class == PolicyActionClass::ActivateAbility
+            && Some(candidate.key.kind) == self.config.library_look_kind
+            && information.library.known_top.len() >= 3
     }
 
     fn candidate_score(&self, information: &InformationState, candidate: &PolicyCandidate) -> i64 {

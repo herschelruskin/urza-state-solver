@@ -395,3 +395,8 @@ Added deterministic scoped-thread execution for independent sampled root/world j
 Classification: `POLICY/VALUE`. No rules/card broadening and no Python gameplay-policy port.
 
 Added an explicitly versioned public-information `StrategicPolicy` while preserving the frozen R5 `DeterministicPolicy` and historical rollout/cache identity. The new value layer ranks real tutor targets, observed scry/Top choices, Assistant/Uthros trigger order, intrinsic engine actions, and public terminal-precursor progress. Unknown library cards retain one anonymous value and cannot be identity-scored. Rollout now has a generic selector entrypoint; the existing `rollout` API remains deterministic-R5 compatible. Acceptance is contingent on the dedicated policy/rollout tests and 128-world strategic smoke.
+
+
+## 2026-09-07 — Post-R7 strategic value v2 resource-aware repair candidate
+
+The v1 128-world smoke was clean but strategically negative: 0 terminals, 0 Top looks, 81 real tutor targets, 1 trigger-order decision. Root cause in policy ordering: v1 spent legal mana on the first cast/activation before exhausting ordinary mana production, suppressing access to more expensive engines/precursors. v2 makes precombat resource production precede spending while protecting canonical sources that have live configured strategic activations, and suppresses redundant Top looks after three cards are known. Frozen R5 deterministic policy remains unchanged.

@@ -81,6 +81,7 @@ fn configured() -> StrategicPolicy {
     config.card_values.insert(CardDefId(30), 0);
     config.assistant_scry_ability = Some(ASSISTANT);
     config.uthros_draw_ability = Some(UTHROS_DRAW);
+    config.library_look_kind = Some(15);
     StrategicPolicy::new(config)
 }
 
@@ -323,6 +324,87 @@ fn cast_that_completes_public_terminal_recipe_beats_higher_base_card() {
         policy
             .choose(&information, &[standalone, completion])
             .unwrap(),
+        Some(ActionToken(2))
+    );
+}
+
+#[test]
+fn unprotected_mana_production_precedes_low_value_spend_in_main_phase() {
+    let policy = configured();
+    let information = InformationState {
+        phase: Phase::PrecombatMain,
+        ..InformationState::default()
+    };
+    let mana = PolicyCandidate::new(
+        ActionToken(1),
+        PolicyActionClass::ProduceMana,
+        PolicyPublicKey {
+            kind: 3,
+            source: Some(CanonicalObjectId(1)),
+            card: Some(CardDefId(2)),
+            ..PolicyPublicKey::default()
+        },
+    );
+    let cast = candidate(2, PolicyActionClass::CastSpell, 9, Some(30));
+    assert_eq!(
+        policy.choose(&information, &[cast, mana]).unwrap(),
+        Some(ActionToken(1))
+    );
+}
+
+#[test]
+fn live_engine_activation_protects_same_source_from_urza_mana() {
+    let mut config = StrategicPolicyConfig::default();
+    config.action_kind_values.insert(35, 140);
+    let policy = StrategicPolicy::new(config);
+    let information = InformationState {
+        phase: Phase::PrecombatMain,
+        ..InformationState::default()
+    };
+    let mana = PolicyCandidate::new(
+        ActionToken(1),
+        PolicyActionClass::ProduceMana,
+        PolicyPublicKey {
+            kind: 5,
+            source: Some(CanonicalObjectId(7)),
+            card: Some(CardDefId(81)),
+            ..PolicyPublicKey::default()
+        },
+    );
+    let draw = PolicyCandidate::new(
+        ActionToken(2),
+        PolicyActionClass::ActivateAbility,
+        PolicyPublicKey {
+            kind: 35,
+            source: Some(CanonicalObjectId(7)),
+            card: Some(CardDefId(81)),
+            ..PolicyPublicKey::default()
+        },
+    );
+    assert_eq!(
+        policy.choose(&information, &[mana, draw]).unwrap(),
+        Some(ActionToken(2))
+    );
+}
+
+#[test]
+fn redundant_top_look_loses_to_passing_after_three_cards_are_known() {
+    let mut config = StrategicPolicyConfig::default();
+    config.action_kind_values.insert(15, 70);
+    config.library_look_kind = Some(15);
+    let policy = StrategicPolicy::new(config);
+    let information = InformationState {
+        phase: Phase::PrecombatMain,
+        library: LibraryBelief {
+            known_top: vec![CardDefId(10), CardDefId(20), CardDefId(30)],
+            ..LibraryBelief::default()
+        },
+        ..InformationState::default()
+    };
+    let top = candidate(1, PolicyActionClass::ActivateAbility, 15, Some(77));
+    let pass = candidate(2, PolicyActionClass::PassPriority, 1, None);
+    assert_eq!(
+        policy.choose(&information, &[top, pass]).unwrap(),
         Some(ActionToken(2))
     );
 }
