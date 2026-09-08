@@ -44,7 +44,7 @@ jobs:
               parts = line.split('\t')
               if not parts:
                   continue
-              if parts[0] == 'CARD' and len(parts) >= 14 and parts[1] != 'id':
+              if parts[0] == 'CARD' and len(parts) >= 13 and parts[1] != 'id':
                   rows.append({
                       'id': int(parts[1]),
                       'name': parts[2],
@@ -57,7 +57,7 @@ jobs:
                       'simple_tutor': parts[9],
                       'special_search': parts[10],
                       'spell_effect': parts[11],
-                      'reason': parts[12] if len(parts) == 13 else '\t'.join(parts[12:]),
+                      'reason': '\t'.join(parts[12:]),
                   })
               elif parts[0] == 'SUMMARY':
                   summary = dict(item.split('=', 1) for item in parts[1:])
