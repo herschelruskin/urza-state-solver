@@ -1,7 +1,7 @@
 use urza_cards::CurrentCardDatabase;
 use urza_core::{
-    BattlefieldZone, CardZone, CounterState, LibraryKnowledge, ManaPool, ObjectId, PermissionId,
-    PermanentMode, PermanentState, Phase, SourceRef, StackObject, TrueLibrary, TrueState,
+    BattlefieldZone, CardZone, CounterState, LibraryKnowledge, ManaPool, ObjectId, PermanentMode,
+    PermanentState, PermissionId, Phase, SourceRef, StackObject, TrueLibrary, TrueState,
     UrzaPermission, Window,
 };
 use urza_info::observe;
@@ -101,7 +101,14 @@ fn targeted_spell_uses_reality_chip_library_top_permission() {
         Some(StackObject::TargetedSpell { card, .. }) if *card == knack
     ));
     apply_action(&mut state, &cards, Action::PassPriority).unwrap();
-    assert!(state.battlefield.get(ObjectId(2)).unwrap().granted_ability.is_some());
+    assert!(
+        state
+            .battlefield
+            .get(ObjectId(2))
+            .unwrap()
+            .granted_ability
+            .is_some()
+    );
 }
 
 #[test]
@@ -137,7 +144,14 @@ fn targeted_spell_uses_fortune_tellers_talent_library_top_permission() {
     )
     .unwrap();
     apply_action(&mut state, &cards, Action::PassPriority).unwrap();
-    assert!(state.battlefield.get(ObjectId(11)).unwrap().granted_ability.is_some());
+    assert!(
+        state
+            .battlefield
+            .get(ObjectId(11))
+            .unwrap()
+            .granted_ability
+            .is_some()
+    );
 }
 
 #[test]
@@ -175,5 +189,12 @@ fn targeted_spell_uses_urza_exile_permission_without_mana_payment() {
         Some(StackObject::TargetedSpell { card, .. }) if *card == helix
     ));
     apply_action(&mut state, &cards, Action::PassPriority).unwrap();
-    assert!(state.battlefield.get(ObjectId(20)).unwrap().granted_ability.is_some());
+    assert!(
+        state
+            .battlefield
+            .get(ObjectId(20))
+            .unwrap()
+            .granted_ability
+            .is_some()
+    );
 }
