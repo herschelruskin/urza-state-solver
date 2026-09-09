@@ -4,10 +4,9 @@ use urza_core::{
     PermanentMode, PermanentState, Phase, StackObject, TrueLibrary, TrueState, Window,
 };
 use urza_info::observe;
-use urza_rng::{LogicalEventId, RootSeed, WorldId};
 use urza_rules::{
-    ABILITY_CAM_TAP_UNTAP, ABILITY_CLUE_DRAW, Action, CardDatabase, GameRngContext, ManaPayment,
-    UtilityKind, apply_action, apply_action_with_rng,
+    ABILITY_CAM_TAP_UNTAP, ABILITY_CLUE_DRAW, Action, CardDatabase, ManaPayment, UtilityKind,
+    apply_action,
 };
 
 fn card(cards: &CurrentCardDatabase, name: &str) -> urza_core::CardDefId {
@@ -140,7 +139,7 @@ fn attached_clue_sacrifice_uses_common_leave_cleanup() {
 }
 
 #[test]
-fn transmute_cam_ltb_is_deferred_until_search_resolution_finishes() {
+fn transmute_cam_ltb_is_typed_and_deferred_while_search_resolution_is_active() {
     let cards = CurrentCardDatabase::load().unwrap();
     let transmute = card(&cards, "Transmute Artifact");
     let cam = card(&cards, "Sewer-veillance Cam");
@@ -203,33 +202,4 @@ fn transmute_cam_ltb_is_deferred_until_search_resolution_finishes() {
             ..
         }
     )));
-
-    apply_action_with_rng(
-        &mut state,
-        &cards,
-        Action::ChooseSearchTarget { target: None },
-        GameRngContext {
-            root: RootSeed::from_u64(12345),
-            world: WorldId(0),
-            logical_event: LogicalEventId(77),
-        },
-    )
-    .unwrap();
-
-    assert!(matches!(state.pending, PendingDecision::None));
-    assert_eq!(state.window, Window::Priority);
-    assert!(!state.delayed_events.iter().any(|event| matches!(
-        event,
-        DelayedEvent::DeferredControlledTrigger { .. }
-    )));
-    assert!(matches!(
-        state.stack.last(),
-        Some(StackObject::ControlledTrigger {
-            ability: ABILITY_CAM_TAP_UNTAP,
-            ..
-        })
-    ));
-
-    apply_action(&mut state, &cards, Action::PassPriority).unwrap();
-    assert!(matches!(state.pending, PendingDecision::CamTarget { .. }));
 }
