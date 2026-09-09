@@ -43,6 +43,8 @@ pub struct GenericCost(pub u16);
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct CounterState {
     pub plus_one_plus_one: u16,
+    #[serde(default)]
+    pub temporary_power_boost: u16,
     pub charge: u16,
     pub burden: u16,
     pub lore: u16,
@@ -515,6 +517,10 @@ pub enum DelayedEvent {
         colorless: u16,
         due_turn: u8,
     },
+    DeferredControlledTrigger {
+        source: SourceRef,
+        ability: AbilityId,
+    },
     PermissionExpiry {
         permission: PermissionId,
         due_turn: u8,
@@ -681,7 +687,9 @@ impl TrueState {
                         return Err(StateValidationError::UnknownPermissionExpiry(*permission));
                     }
                 }
-                DelayedEvent::BaubleDraw { .. } | DelayedEvent::ManaDrainCredit { .. } => {}
+                DelayedEvent::BaubleDraw { .. }
+                | DelayedEvent::ManaDrainCredit { .. }
+                | DelayedEvent::DeferredControlledTrigger { .. } => {}
             }
         }
 
@@ -706,7 +714,8 @@ impl TrueState {
         });
         let pending = self.pending.source().into_iter();
         let delayed = self.delayed_events.iter().filter_map(|event| match event {
-            DelayedEvent::BaubleDraw { source, .. } => Some(*source),
+            DelayedEvent::BaubleDraw { source, .. }
+            | DelayedEvent::DeferredControlledTrigger { source, .. } => Some(*source),
             _ => None,
         });
         let permissions = self

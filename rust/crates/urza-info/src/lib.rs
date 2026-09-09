@@ -194,6 +194,10 @@ pub enum ObservedDelayedEvent {
         colorless: u16,
         due_turn: u8,
     },
+    DeferredControlledTrigger {
+        source: ObservedSourceRef,
+        ability: AbilityId,
+    },
     PermissionExpiry {
         permission_slot: u16,
         due_turn: u8,
@@ -390,6 +394,12 @@ pub fn observe(state: &TrueState) -> Result<InformationState, ObservationError> 
                 colorless: *colorless,
                 due_turn: *due_turn,
             },
+            DelayedEvent::DeferredControlledTrigger { source, ability } => {
+                ObservedDelayedEvent::DeferredControlledTrigger {
+                    source: observe_source(*source, &object_classes),
+                    ability: *ability,
+                }
+            }
             DelayedEvent::PermissionExpiry {
                 permission,
                 due_turn,
@@ -952,7 +962,9 @@ fn external_roles(state: &TrueState) -> BTreeMap<ObjectId, Vec<ExternalRole>> {
                     card: *card,
                     due_turn: *due_turn,
                 }),
-            DelayedEvent::ManaDrainCredit { .. } | DelayedEvent::PermissionExpiry { .. } => {}
+            DelayedEvent::ManaDrainCredit { .. }
+            | DelayedEvent::DeferredControlledTrigger { .. }
+            | DelayedEvent::PermissionExpiry { .. } => {}
         }
     }
 

@@ -1,0 +1,80 @@
+name: Post-R7 shared-primitives shard direct validation
+
+on:
+  push:
+    branches:
+      - rust-modeling/shared-primitives
+    paths:
+      - '.github/workflows/post-r7-shared-primitives-direct-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-committed-source:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check out exact committed shared-primitives source
+        run: |
+          set -euo pipefail
+          git checkout --detach fe97ddf2f3744096c7d68af2593dd79225ac131d
+          test "$(git rev-parse HEAD)" = fe97ddf2f3744096c7d68af2593dd79225ac131d
+          test "$(git merge-base HEAD df19087b828dcf9b2a116a4dbe6ee65b55196a8e)" = df19087b828dcf9b2a116a4dbe6ee65b55196a8e
+          echo "SHARD_BASE_SHA=df19087b828dcf9b2a116a4dbe6ee65b55196a8e"
+          echo "SHARD_SOURCE_SHA=$(git rev-parse HEAD)"
+      - uses: dtolnay/rust-toolchain@1.89
+        with:
+          components: rustfmt, clippy
+      - name: Format check
+        working-directory: rust
+        run: cargo fmt --all -- --check
+      - name: Workspace all-target compile
+        working-directory: rust
+        run: cargo check --locked --workspace --all-targets
+      - name: Leave/LTB focused fixtures
+        working-directory: rust
+        run: |
+          cargo test --locked -p urza-rules --test post_r7_leave_ltb
+          cargo test --locked -p urza-cards --test post_r7_shared_primitives_leave_ltb
+      - name: Targeted permission clause fixtures
+        working-directory: rust
+        run: |
+          cargo test --locked -p urza-cards --test post_r7_shared_primitives_targeted_permission_zones
+          cargo test --locked -p urza-policy-bridge --test post_r7_shared_primitives_targeted_permission_zones
+      - name: Shared repair regressions
+        working-directory: rust
+        run: |
+          cargo test --locked -p urza-cards --test post_r7_modeling_completeness_rules_active_repair_v1
+          cargo test --locked -p urza-policy-bridge --test post_r7_modeling_completeness_rules_active_repair_v1
+          cargo test --locked -p urza-cards --test post_r7_modeling_completeness_forensic_gadgeteer
+          cargo test --locked -p urza-rules
+          cargo test --locked -p urza-cards --test r4_final_acceptance
+          cargo test --locked -p urza-cards --test r4_terminal_acceptance
+      - name: Modeling gate baseline regression
+        working-directory: rust
+        run: cargo test --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate
+      - name: Assert authoritative counts remain 11 of 95
+        working-directory: rust
+        run: |
+          set -euo pipefail
+          if cargo run --quiet --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- --enforce > "$RUNNER_TEMP/modeling-enforce.txt" 2>&1; then
+            echo 'gate unexpectedly green before backlog is cleared' >&2
+            exit 1
+          fi
+          grep -q $'MODELING_COMPLETENESS_GATE\ttotal=95\tresolved=11\tunresolved=84' "$RUNNER_TEMP/modeling-enforce.txt"
+          grep -q 'MODELING_COMPLETENESS_GATE_RED: 84 unresolved active identities remain' "$RUNNER_TEMP/modeling-enforce.txt"
+      - name: Strict Clippy
+        working-directory: rust
+        run: |
+          cargo clippy --locked -p urza-core --all-targets -- -D warnings
+          cargo clippy --locked -p urza-info --all-targets -- -D warnings
+          cargo clippy --locked -p urza-rules --all-targets -- -D warnings
+          cargo clippy --locked -p urza-cards --all-targets -- -D warnings
+          cargo clippy --locked -p urza-policy-bridge --all-targets -- -D warnings
+          cargo clippy --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- -D warnings
+      - name: Ensure validation did not mutate tracked source
+        run: git diff --exit-code -- . ':(exclude)rust/target/**'
