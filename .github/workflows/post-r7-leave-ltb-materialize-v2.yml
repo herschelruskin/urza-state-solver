@@ -1,0 +1,118 @@
+name: Post-R7 leave/LTB shared-primitives materialization v2
+
+on:
+  push:
+    branches:
+      - rust-modeling/shared-primitives
+    paths:
+      - '.github/workflows/post-r7-leave-ltb-materialize-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  materialize-leave-ltb:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@1.89
+        with:
+          components: rustfmt, clippy
+      - name: Verify fixture ancestry and exact source blobs
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor c1ac612bfa9d90ddcf9cc4da416fcc8e2bf51ef9 HEAD
+          test "$(git hash-object rust/crates/urza-core/src/state.rs)" = e0615adb906fd3c07b9a5b13600d52bffd9ad7d0
+          test "$(git hash-object rust/crates/urza-info/src/lib.rs)" = 4e8a291f49f0e2b618660b90565afedfac881cdc
+          test "$(git hash-object rust/crates/urza-rules/src/lib.rs)" = 69e0a17421390e7121f3ddb27ce9997ed2b72852
+      - name: Confirm leave/LTB fixture is red before repair
+        working-directory: rust
+        run: |
+          set -euo pipefail
+          if cargo test --locked -p urza-rules --test post_r7_leave_ltb > "$RUNNER_TEMP/pre-repair.txt" 2>&1; then
+            echo 'leave/LTB fixture unexpectedly green before repair' >&2
+            exit 1
+          fi
+          cat "$RUNNER_TEMP/pre-repair.txt"
+          grep -q 'DeferredControlledTrigger' "$RUNNER_TEMP/pre-repair.txt"
+      - name: Execute reviewed materialization script
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import textwrap
+
+          workflow = Path('.github/workflows/post-r7-leave-ltb-materialize.yml').read_text()
+          start = "          python - <<'PY'\n"
+          end = "\n          PY\n"
+          if workflow.count(start) != 1 or workflow.count(end) != 1:
+              raise SystemExit('could not isolate reviewed materialization script')
+          script = workflow.split(start, 1)[1].split(end, 1)[0]
+          exec(compile(textwrap.dedent(script), 'leave_ltb_materializer.py', 'exec'))
+          PY
+      - name: Format repaired tree
+        working-directory: rust
+        run: cargo fmt --all
+      - name: Assert materialization touched only reviewed Rust surfaces
+        run: |
+          set -euo pipefail
+          git diff --name-only | sort > "$RUNNER_TEMP/changed.txt"
+          cat "$RUNNER_TEMP/changed.txt"
+          while IFS= read -r path; do
+            case "$path" in
+              rust/crates/urza-core/src/state.rs|rust/crates/urza-info/src/lib.rs|rust/crates/urza-rules/src/lib.rs|rust/crates/urza-cards/tests/post_r7_shared_primitives_leave_ltb.rs|rust/crates/urza-rules/tests/post_r7_leave_ltb.rs) ;;
+              *) echo "unexpected materialized path: $path" >&2; exit 1 ;;
+            esac
+          done < "$RUNNER_TEMP/changed.txt"
+      - name: Workspace all-target compile
+        working-directory: rust
+        run: cargo check --locked --workspace --all-targets
+      - name: Leave/LTB focused fixtures
+        working-directory: rust
+        run: |
+          cargo test --locked -p urza-rules --test post_r7_leave_ltb
+          cargo test --locked -p urza-cards --test post_r7_shared_primitives_leave_ltb
+      - name: Targeted permission fixtures
+        working-directory: rust
+        run: |
+          cargo test --locked -p urza-cards --test post_r7_shared_primitives_targeted_permission_zones
+          cargo test --locked -p urza-policy-bridge --test post_r7_shared_primitives_targeted_permission_zones
+      - name: Shared-primitives regressions
+        working-directory: rust
+        run: |
+          cargo test --locked -p urza-rules
+          cargo test --locked -p urza-cards --test post_r7_modeling_completeness_rules_active_repair_v1
+          cargo test --locked -p urza-policy-bridge --test post_r7_modeling_completeness_rules_active_repair_v1
+          cargo test --locked -p urza-cards --test post_r7_modeling_completeness_forensic_gadgeteer
+          cargo test --locked -p urza-cards --test r4_final_acceptance
+          cargo test --locked -p urza-cards --test r4_terminal_acceptance
+      - name: Preserve authoritative completeness baseline
+        working-directory: rust
+        run: |
+          set -euo pipefail
+          cargo test --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate
+          if cargo run --quiet --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- --enforce > "$RUNNER_TEMP/modeling-enforce.txt" 2>&1; then
+            echo 'gate unexpectedly green before backlog is cleared' >&2
+            exit 1
+          fi
+          grep -q $'MODELING_COMPLETENESS_GATE\ttotal=95\tresolved=11\tunresolved=84' "$RUNNER_TEMP/modeling-enforce.txt"
+          grep -q 'MODELING_COMPLETENESS_GATE_RED: 84 unresolved active identities remain' "$RUNNER_TEMP/modeling-enforce.txt"
+      - name: Strict Clippy
+        working-directory: rust
+        run: |
+          cargo clippy --locked -p urza-core --all-targets -- -D warnings
+          cargo clippy --locked -p urza-info --all-targets -- -D warnings
+          cargo clippy --locked -p urza-rules --all-targets -- -D warnings
+          cargo clippy --locked -p urza-cards --all-targets -- -D warnings
+          cargo clippy --locked -p urza-policy-bridge --all-targets -- -D warnings
+      - name: Commit reviewed Rust repair only
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add rust/crates/urza-core/src/state.rs rust/crates/urza-info/src/lib.rs rust/crates/urza-rules/src/lib.rs rust/crates/urza-cards/tests/post_r7_shared_primitives_leave_ltb.rs rust/crates/urza-rules/tests/post_r7_leave_ltb.rs
+          git diff --cached --quiet && { echo 'no repair changes staged' >&2; exit 1; }
+          git commit -m '[R7] Centralize permanent leave and Cam LTB staging'
+          git push origin HEAD:rust-modeling/shared-primitives
