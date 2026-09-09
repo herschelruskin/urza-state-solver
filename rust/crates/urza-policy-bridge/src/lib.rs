@@ -18,8 +18,9 @@ use urza_rules::{
     apply_action_with_rng, enumerate_payments, legal_contingent_actions,
 };
 
-pub const CANDIDATE_BRIDGE_VERSION: &str = "post_r7_public_candidate_bridge_v5_modeling_repair";
-pub const ORDINARY_ACTION_FAMILY_COUNT: usize = 29;
+pub const CANDIDATE_BRIDGE_VERSION: &str =
+    "post_r7_public_candidate_bridge_v6_targeted_permissions";
+pub const ORDINARY_ACTION_FAMILY_COUNT: usize = 31;
 pub const CONTINGENT_ACTION_FAMILY_COUNT: usize = 9;
 
 const KIND_PASS_PRIORITY: u16 = 1;
@@ -60,6 +61,8 @@ const KIND_ONE_RING_DRAW: u16 = 35;
 const KIND_UTHROS_STATION: u16 = 36;
 const KIND_CLUE_DRAW: u16 = 37;
 const KIND_CHOOSE_TRIGGER_ORDER: u16 = 38;
+const KIND_CAST_TARGETED_LIBRARY_TOP: u16 = 39;
+const KIND_PLAY_URZA_PERMISSION_TARGETED: u16 = 40;
 
 #[derive(Debug, Error)]
 pub enum BridgeError {
@@ -472,6 +475,17 @@ fn generate_ordinary_actions<D: CardDatabase>(
                 actions.push(Action::CastLibraryTop { card, payment });
             }
         }
+        if profile.spell_effect != SpellEffectKind::None {
+            for target in &canonical_targets {
+                for payment in &all_payments {
+                    actions.push(Action::CastTargetedLibraryTop {
+                        card,
+                        target: *target,
+                        payment: *payment,
+                    });
+                }
+            }
+        }
     }
 
     for permission in &information.urza_permissions {
@@ -483,6 +497,10 @@ fn generate_ordinary_actions<D: CardDatabase>(
         }
         for target in &canonical_targets {
             actions.push(Action::PlayUrzaPermissionAura {
+                permission_slot: permission.permission_slot,
+                target: *target,
+            });
+            actions.push(Action::PlayUrzaPermissionTargeted {
                 permission_slot: permission.permission_slot,
                 target: *target,
             });
@@ -693,10 +711,12 @@ fn classify_action<D: CardDatabase>(
         Action::CastFromHand { .. }
         | Action::CastAuraFromHand { .. }
         | Action::CastTargetedFromHand { .. }
+        | Action::CastTargetedLibraryTop { .. }
         | Action::CastWhir { .. }
         | Action::CastReshape { .. }
         | Action::CastLibraryTop { .. }
         | Action::PlayUrzaPermissionAura { .. }
+        | Action::PlayUrzaPermissionTargeted { .. }
         | Action::CastCommander { .. } => PolicyActionClass::CastSpell,
         Action::PlayUrzaPermission {
             permission_slot, ..
@@ -834,6 +854,17 @@ fn public_key_for_action<D: CardDatabase>(
             payment,
         } => spell_key(
             KIND_CAST_TARGETED_FROM_HAND,
+            *card,
+            Some(*target),
+            None,
+            payment_detail(*payment),
+        ),
+        Action::CastTargetedLibraryTop {
+            card,
+            target,
+            payment,
+        } => spell_key(
+            KIND_CAST_TARGETED_LIBRARY_TOP,
             *card,
             Some(*target),
             None,
@@ -992,6 +1023,16 @@ fn public_key_for_action<D: CardDatabase>(
             target,
         } => PolicyPublicKey {
             kind: KIND_PLAY_URZA_PERMISSION_AURA,
+            card: Some(permission_card(information, *permission_slot)?),
+            target: Some(*target),
+            parameter: Some(*permission_slot),
+            ..PolicyPublicKey::default()
+        },
+        Action::PlayUrzaPermissionTargeted {
+            permission_slot,
+            target,
+        } => PolicyPublicKey {
+            kind: KIND_PLAY_URZA_PERMISSION_TARGETED,
             card: Some(permission_card(information, *permission_slot)?),
             target: Some(*target),
             parameter: Some(*permission_slot),
@@ -1461,7 +1502,7 @@ mod tests {
 
     #[test]
     fn bridge_surface_counts_match_the_exhaustive_action_mapping() {
-        assert_eq!(ORDINARY_ACTION_FAMILY_COUNT, 29);
+        assert_eq!(ORDINARY_ACTION_FAMILY_COUNT, 31);
         assert_eq!(CONTINGENT_ACTION_FAMILY_COUNT, 9);
     }
 

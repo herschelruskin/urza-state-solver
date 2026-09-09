@@ -21,7 +21,7 @@ pub const RULES_PHASE: &str = "R4";
 pub const R2_RULES_VERSION: &str = "r2_core_kernel_v2";
 pub const R3_RULES_VERSION: &str = "r3_search_complete_v4";
 pub const RULES_VERSION: &str = "r4_acceptance_v6";
-pub const POST_R7_RULES_VERSION: &str = "post_r7_modeling_completeness_v2_rules_active_repair";
+pub const POST_R7_RULES_VERSION: &str = "post_r7_modeling_completeness_v3_targeted_permissions";
 pub const HORIZON_TURN: u8 = 6;
 pub const RNG_EVENT_SEARCH_SHUFFLE: EventType = EventType(0x0301);
 pub const ABILITY_REPURPOSING_BAY_SEARCH: AbilityId = AbilityId(0x0301);
@@ -521,6 +521,11 @@ pub enum Action {
         target: CanonicalObjectId,
         payment: ManaPayment,
     },
+    CastTargetedLibraryTop {
+        card: CardDefId,
+        target: CanonicalObjectId,
+        payment: ManaPayment,
+    },
     CastWhir {
         card: CardDefId,
         x_value: u16,
@@ -589,6 +594,10 @@ pub enum Action {
         face: CardFace,
     },
     PlayUrzaPermissionAura {
+        permission_slot: u16,
+        target: CanonicalObjectId,
+    },
+    PlayUrzaPermissionTargeted {
         permission_slot: u16,
         target: CanonicalObjectId,
     },
@@ -846,6 +855,14 @@ fn apply_action_internal<D: CardDatabase>(
             cast_targeted_from_hand(state, cards, card, target, payment)?;
             Transition::default()
         }
+        Action::CastTargetedLibraryTop {
+            card,
+            target,
+            payment,
+        } => {
+            cast_targeted_library_top(state, cards, card, target, payment)?;
+            Transition::default()
+        }
         Action::CastWhir {
             card,
             x_value,
@@ -931,6 +948,10 @@ fn apply_action_internal<D: CardDatabase>(
             permission_slot,
             target,
         } => play_urza_permission_aura(state, cards, permission_slot, target)?,
+        Action::PlayUrzaPermissionTargeted {
+            permission_slot,
+            target,
+        } => play_urza_permission_targeted(state, cards, permission_slot, target)?,
         Action::CastCommander { payment } => {
             cast_commander(state, cards, payment)?;
             Transition::default()
@@ -2838,6 +2859,38 @@ fn play_urza_permission_aura<D: CardDatabase>(
     Ok(Transition::default())
 }
 
+fn play_urza_permission_targeted<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    permission_slot: u16,
+    target: CanonicalObjectId,
+) -> Result<Transition, RuleError> {
+    let permission_id = resolve_permission_slot(state, permission_slot)
+        .map_err(|error| match error {
+            urza_info::ObservationError::InvalidState(error) => RuleError::InvalidState(error),
+        })?
+        .ok_or(RuleError::MissingPermissionSlot(permission_slot))?;
+    let permission = state
+        .urza_permissions
+        .iter()
+        .find(|permission| permission.permission_id == permission_id)
+        .cloned()
+        .ok_or(RuleError::MissingPermissionSlot(permission_slot))?;
+    if permission.expires_turn < state.turn {
+        return Err(RuleError::MissingPermissionSlot(permission_slot));
+    }
+    if !state.exile.cards().contains(&permission.card) {
+        return Err(RuleError::PermissionCardNotInExile);
+    }
+    let (_, target) = targeted_spell_profile_and_target(state, cards, permission.card, target)?;
+    let object_id = next_object_id(state)?;
+    let removed = state.exile.remove_one(permission.card);
+    debug_assert!(removed);
+    push_targeted_spell(state, cards, object_id, permission.card, target);
+    consume_permission(state, permission_id);
+    Ok(Transition::default())
+}
+
 fn cast_from_hand<D: CardDatabase>(
     state: &mut TrueState,
     cards: &D,
@@ -2933,6 +2986,59 @@ fn cast_targeted_from_hand<D: CardDatabase>(
     target: CanonicalObjectId,
     payment: ManaPayment,
 ) -> Result<(), RuleError> {
+    if !state.hand.cards().contains(&card) {
+        return Err(RuleError::CardNotInHand(card));
+    }
+    let (profile, target) = targeted_spell_profile_and_target(state, cards, card, target)?;
+    let cost = profile
+        .mana_cost
+        .ok_or(RuleError::UnsupportedCardMechanic(card))?;
+    validate_payment(state.mana, payment, cost)?;
+    let object_id = next_object_id(state)?;
+    spend_payment(&mut state.mana, payment);
+    let removed = state.hand.remove_one(card);
+    debug_assert!(removed);
+    push_targeted_spell(state, cards, object_id, card, target);
+    Ok(())
+}
+
+fn cast_targeted_library_top<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    card: CardDefId,
+    target: CanonicalObjectId,
+    payment: ManaPayment,
+) -> Result<(), RuleError> {
+    if !top_play_permission_active(state, cards) {
+        return Err(RuleError::LibraryTopPermissionUnavailable);
+    }
+    if library_cast_blocked_by_cage(state, cards) {
+        return Err(RuleError::LibraryCastBlockedByCage);
+    }
+    if state.library.cards().first().copied() != Some(card) {
+        return Err(RuleError::LibraryTopPermissionUnavailable);
+    }
+    let (profile, target) = targeted_spell_profile_and_target(state, cards, card, target)?;
+    let mut cost = profile
+        .mana_cost
+        .ok_or(RuleError::UnsupportedCardMechanic(card))?;
+    cost.generic = cost
+        .generic
+        .saturating_sub(library_spell_generic_reduction(state, cards)?);
+    validate_payment(state.mana, payment, cost)?;
+    let object_id = next_object_id(state)?;
+    spend_payment(&mut state.mana, payment);
+    remove_library_top_without_draw(state)?;
+    push_targeted_spell(state, cards, object_id, card, target);
+    Ok(())
+}
+
+fn targeted_spell_profile_and_target<D: CardDatabase>(
+    state: &TrueState,
+    cards: &D,
+    card: CardDefId,
+    target: CanonicalObjectId,
+) -> Result<(CardProfile, SourceRef), RuleError> {
     ensure_priority(state)?;
     ensure_no_pending_decision(state)?;
     let profile = card_profile(cards, card)?;
@@ -2940,9 +3046,6 @@ fn cast_targeted_from_hand<D: CardDatabase>(
         || profile.spell_effect != SpellEffectKind::KnackBounceGrant
     {
         return Err(RuleError::UnsupportedCardMechanic(card));
-    }
-    if !state.hand.cards().contains(&card) {
-        return Err(RuleError::CardNotInHand(card));
     }
     let target_id = resolve_canonical_object(state, target)
         .map_err(|error| match error {
@@ -2953,26 +3056,30 @@ fn cast_targeted_from_hand<D: CardDatabase>(
     if !permanent_is_creature(cards, &target_permanent)? {
         return Err(RuleError::InvalidPermanentTarget);
     }
-    let cost = profile
-        .mana_cost
-        .ok_or(RuleError::UnsupportedCardMechanic(card))?;
-    validate_payment(state.mana, payment, cost)?;
-    let object_id = next_object_id(state)?;
-    spend_payment(&mut state.mana, payment);
-    let removed = state.hand.remove_one(card);
-    debug_assert!(removed);
-    state.stack.push(StackObject::TargetedSpell {
-        object_id,
-        card,
-        target: SourceRef {
+    Ok((
+        profile,
+        SourceRef {
             object_id: Some(target_id),
             card: target_permanent.card,
         },
+    ))
+}
+
+fn push_targeted_spell<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    object_id: ObjectId,
+    card: CardDefId,
+    target: SourceRef,
+) {
+    state.stack.push(StackObject::TargetedSpell {
+        object_id,
+        card,
+        target,
     });
     queue_cast_triggers(state, cards, card);
     state.spell_cast_this_turn = true;
     state.window = Window::Priority;
-    Ok(())
 }
 
 fn resolve_aura_target<D: CardDatabase>(
