@@ -52,17 +52,28 @@ jobs:
           script = workflow.split(start, 1)[1].split(end, 1)[0]
           exec(compile(textwrap.dedent(script), 'leave_ltb_materializer.py', 'exec'))
           PY
-      - name: Complete deferred-trigger external-role exhaustiveness
+      - name: Complete deferred-trigger info exhaustiveness and remove dead wrapper
         run: |
           python - <<'PY'
           from pathlib import Path
-          path = Path('rust/crates/urza-info/src/lib.rs')
+
+          info = Path('rust/crates/urza-info/src/lib.rs')
           old = '            DelayedEvent::ManaDrainCredit { .. } | DelayedEvent::PermissionExpiry { .. } => {}\n'
           new = '            DelayedEvent::ManaDrainCredit { .. }\n            | DelayedEvent::DeferredControlledTrigger { .. }\n            | DelayedEvent::PermissionExpiry { .. } => {}\n'
-          text = path.read_text()
+          text = info.read_text()
           if text.count(old) != 1:
               raise SystemExit(f'expected exactly one external-role delayed-event arm, found {text.count(old)}')
-          path.write_text(text.replace(old, new, 1))
+          info.write_text(text.replace(old, new, 1))
+
+          rules = Path('rust/crates/urza-rules/src/lib.rs')
+          text = rules.read_text()
+          start = 'fn put_card_onto_battlefield_with_id<D: CardDatabase>(\n'
+          end = 'fn put_card_onto_battlefield_with_id_collect_triggers<D: CardDatabase>(\n'
+          if text.count(start) != 1 or text.count(end) != 1:
+              raise SystemExit('expected one obsolete battlefield-with-id wrapper')
+          prefix, rest = text.split(start, 1)
+          _wrapper, suffix = rest.split(end, 1)
+          rules.write_text(prefix + end + suffix)
           PY
       - name: Format repaired tree
         working-directory: rust
