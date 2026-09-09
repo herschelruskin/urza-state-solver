@@ -52,7 +52,7 @@ jobs:
           script = workflow.split(start, 1)[1].split(end, 1)[0]
           exec(compile(textwrap.dedent(script), 'leave_ltb_materializer.py', 'exec'))
           PY
-      - name: Complete deferred-trigger info exhaustiveness and remove dead wrapper
+      - name: Complete deferred-trigger info and trigger-batch compatibility
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -73,7 +73,27 @@ jobs:
               raise SystemExit('expected one obsolete battlefield-with-id wrapper')
           prefix, rest = text.split(start, 1)
           _wrapper, suffix = rest.split(end, 1)
-          rules.write_text(prefix + end + suffix)
+          text = prefix + end + suffix
+
+          old = '''fn stage_trigger_batch(state: &mut TrueState, source: SourceRef, triggers: Vec<StackObject>) {
+    if triggers.len() > 1 {
+'''
+          new = '''fn stage_trigger_batch(state: &mut TrueState, source: SourceRef, triggers: Vec<StackObject>) {
+    let needs_order = triggers.len() > 1
+        && !triggers.iter().all(|trigger| {
+            matches!(
+                trigger,
+                StackObject::ControlledTrigger {
+                    ability: ABILITY_ARTIFACT_ENTRY_UNTAP,
+                    ..
+                }
+            )
+        });
+    if needs_order {
+'''
+          if text.count(old) != 1:
+              raise SystemExit(f'expected exactly one trigger batch header, found {text.count(old)}')
+          rules.write_text(text.replace(old, new, 1))
           PY
       - name: Format repaired tree
         working-directory: rust
