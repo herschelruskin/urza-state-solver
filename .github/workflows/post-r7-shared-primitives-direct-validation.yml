@@ -21,8 +21,8 @@ jobs:
       - name: Check out exact committed targeted-permission source
         run: |
           set -euo pipefail
-          git checkout --detach f6fb9a2967397820fd61d6eb8fc90d1aec9e4ca5
-          test "$(git rev-parse HEAD)" = f6fb9a2967397820fd61d6eb8fc90d1aec9e4ca5
+          git checkout --detach c8513c1ae9cb2c396e97b8550c2f608e7f939797
+          test "$(git rev-parse HEAD)" = c8513c1ae9cb2c396e97b8550c2f608e7f939797
           test "$(git merge-base HEAD df19087b828dcf9b2a116a4dbe6ee65b55196a8e)" = df19087b828dcf9b2a116a4dbe6ee65b55196a8e
           echo "SHARD_BASE_SHA=df19087b828dcf9b2a116a4dbe6ee65b55196a8e"
           echo "SHARD_SOURCE_SHA=$(git rev-parse HEAD)"
