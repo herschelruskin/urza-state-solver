@@ -377,20 +377,58 @@ fn valley_floodcaller_flash_and_tribal_trigger_clauses_are_exact() {
     )
     .unwrap();
 
-    let mut cleanup = state;
-    cleanup.phase = Phase::EndStep;
+    let sol_ring = card(&cards, "Sol Ring");
+    let mut cleanup = TrueState {
+        turn: 1,
+        phase: Phase::EndStep,
+        window: Window::Priority,
+        hand: CardZone::new(vec![sol_ring]),
+        battlefield: BattlefieldZone::new(vec![permanent(
+            &cards,
+            70,
+            "Valley Floodcaller",
+            true,
+            false,
+        )]),
+        mana: ManaPool {
+            colorless: 1,
+            ..ManaPool::default()
+        },
+        ..TrueState::default()
+    };
+    apply_action(
+        &mut cleanup,
+        &cards,
+        Action::CastFromHand {
+            card: sol_ring,
+            payment: ManaPayment {
+                colorless: 1,
+                ..ManaPayment::default()
+            },
+        },
+    )
+    .unwrap();
+    apply_action(&mut cleanup, &cards, Action::PassPriority).unwrap();
+    assert_eq!(
+        cleanup
+            .battlefield
+            .get(ObjectId(70))
+            .unwrap()
+            .counters
+            .temporary_power_boost,
+        1
+    );
+    apply_action(&mut cleanup, &cards, Action::PassPriority).unwrap();
     advance_phase(&mut cleanup, &cards).unwrap();
-    for object in [ObjectId(30), ObjectId(31)] {
-        assert_eq!(
-            cleanup
-                .battlefield
-                .get(object)
-                .unwrap()
-                .counters
-                .temporary_power_boost,
-            0
-        );
-    }
+    assert_eq!(
+        cleanup
+            .battlefield
+            .get(ObjectId(70))
+            .unwrap()
+            .counters
+            .temporary_power_boost,
+        0
+    );
 }
 
 #[test]
