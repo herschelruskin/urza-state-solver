@@ -8,8 +8,8 @@ use urza_core::{
 use urza_info::observe;
 use urza_rng::{LogicalEventId, RootSeed, WorldId};
 use urza_rules::{
-    ABILITY_CAM_TAP_UNTAP, Action, CardDatabase, CardProfile, GameRngContext, ManaCost, ManaPayment,
-    R2CardRole, SpecialSearchKind, UtilityKind, apply_action, apply_action_with_rng,
+    ABILITY_CAM_TAP_UNTAP, Action, CardDatabase, CardProfile, GameRngContext, ManaCost,
+    ManaPayment, R2CardRole, SpecialSearchKind, UtilityKind, apply_action, apply_action_with_rng,
 };
 
 const TRANSMUTE: CardDefId = CardDefId(900);
@@ -160,7 +160,10 @@ fn transmute_cam_trigger_flushes_only_after_staged_resolution_completes() {
     )
     .unwrap();
 
-    assert!(matches!(state.pending, PendingDecision::TransmuteTarget { .. }));
+    assert!(matches!(
+        state.pending,
+        PendingDecision::TransmuteTarget { .. }
+    ));
     assert_eq!(state.window, Window::PostObservation);
     assert!(state.stack.is_empty());
     assert!(state.delayed_events.iter().any(|event| matches!(

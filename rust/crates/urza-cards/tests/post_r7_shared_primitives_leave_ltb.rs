@@ -186,7 +186,10 @@ fn transmute_cam_ltb_is_typed_and_deferred_while_search_resolution_is_active() {
     )
     .unwrap();
 
-    assert!(matches!(state.pending, PendingDecision::TransmuteTarget { .. }));
+    assert!(matches!(
+        state.pending,
+        PendingDecision::TransmuteTarget { .. }
+    ));
     assert_eq!(state.window, Window::PostObservation);
     assert!(state.battlefield.get(ObjectId(10)).is_none());
     assert!(state.graveyard.cards().contains(&cam));

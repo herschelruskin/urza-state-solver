@@ -21,7 +21,7 @@ pub const RULES_PHASE: &str = "R4";
 pub const R2_RULES_VERSION: &str = "r2_core_kernel_v2";
 pub const R3_RULES_VERSION: &str = "r3_search_complete_v4";
 pub const RULES_VERSION: &str = "r4_acceptance_v6";
-pub const POST_R7_RULES_VERSION: &str = "post_r7_modeling_completeness_v3_targeted_permissions";
+pub const POST_R7_RULES_VERSION: &str = "post_r7_modeling_completeness_v4_shared_leave_ltb";
 pub const HORIZON_TURN: u8 = 6;
 pub const RNG_EVENT_SEARCH_SHUFFLE: EventType = EventType(0x0301);
 pub const ABILITY_REPURPOSING_BAY_SEARCH: AbilityId = AbilityId(0x0301);
@@ -746,8 +746,6 @@ pub enum RuleError {
     ExcessImprovise { x_value: u16 },
     #[error("object {0:?} is not a legal sacrifice for this effect")]
     InvalidSacrifice(ObjectId),
-    #[error("object {0:?} has an incoming attachment; this sacrifice interaction is deferred")]
-    AttachedSacrificeDeferred(ObjectId),
     #[error("the Repurposing Bay source and sacrificed artifact must be different objects")]
     BayCannotSacrificeSelf,
     #[error("no permanent corresponds to observed canonical object {0:?}")]
@@ -1846,13 +1844,22 @@ fn activate_mana_ability<D: CardDatabase>(
         }
     }
 
-    if sacrifice_source {
-        sacrifice_artifact(state, source)?;
+    let leave_triggers = if sacrifice_source {
+        leave_permanent(state, cards, source, LeaveDestination::Graveyard)?
     } else {
         set_tapped(state, source)?;
-    }
+        Vec::new()
+    };
     state.mana = mana;
     state.life = life;
+    stage_trigger_batch(
+        state,
+        SourceRef {
+            object_id: None,
+            card: permanent.card,
+        },
+        leave_triggers,
+    );
     Ok(())
 }
 
@@ -1944,8 +1951,9 @@ fn activate_grinding_station<D: CardDatabase>(
         })?
         .ok_or(RuleError::MissingCanonicalPermanent(sacrifice))?;
     validate_sacrifice_artifact(state, cards, sacrifice_id)?;
+    let sacrificed_card = battlefield_permanent(state, sacrifice_id)?.card;
     set_tapped(state, source)?;
-    sacrifice_artifact(state, sacrifice_id)?;
+    let leave_triggers = leave_permanent(state, cards, sacrifice_id, LeaveDestination::Graveyard)?;
     state.stack.push(StackObject::ActivatedAbility {
         source: SourceRef {
             object_id: Some(source),
@@ -1954,6 +1962,14 @@ fn activate_grinding_station<D: CardDatabase>(
         ability: ABILITY_GRINDING_STATION_MILL,
         parameter: None,
     });
+    stage_trigger_batch(
+        state,
+        SourceRef {
+            object_id: None,
+            card: sacrificed_card,
+        },
+        leave_triggers,
+    );
     state.window = Window::Priority;
     Ok(())
 }
@@ -2195,22 +2211,11 @@ fn activate_clue_draw<D: CardDatabase>(
     if cards.clue_token_card() != Some(permanent.card) {
         return Err(RuleError::UnsupportedCardMechanic(permanent.card));
     }
-    if state
-        .battlefield
-        .permanents()
-        .iter()
-        .any(|candidate| candidate.attached_to == Some(source))
-    {
-        return Err(RuleError::AttachedSacrificeDeferred(source));
-    }
     let cost = reduced_artifact_activation_cost(state, cards, source, 2)?;
     validate_payment(state.mana, payment, cost)?;
 
-    // Mana payment and sacrifice are activation costs. Validate every deferred
-    // boundary first, then commit both costs before putting the draw ability on
-    // the stack. The common sacrifice path owns token/attachment lifecycle.
     spend_payment(&mut state.mana, payment);
-    sacrifice_artifact(state, source)?;
+    let leave_triggers = leave_permanent(state, cards, source, LeaveDestination::Graveyard)?;
     state.stack.push(StackObject::ActivatedAbility {
         source: SourceRef {
             object_id: Some(source),
@@ -2219,6 +2224,14 @@ fn activate_clue_draw<D: CardDatabase>(
         ability: ABILITY_CLUE_DRAW,
         parameter: None,
     });
+    stage_trigger_batch(
+        state,
+        SourceRef {
+            object_id: None,
+            card: permanent.card,
+        },
+        leave_triggers,
+    );
     state.window = Window::Priority;
     Ok(())
 }
@@ -3180,6 +3193,7 @@ fn cast_reshape<D: CardDatabase>(
         return Err(RuleError::CardNotInHand(card));
     }
     validate_sacrifice_artifact(state, cards, sacrifice)?;
+    let sacrificed_card = battlefield_permanent(state, sacrifice)?.card;
     let cost = ManaCost {
         blue: 2,
         generic: x_value,
@@ -3189,7 +3203,7 @@ fn cast_reshape<D: CardDatabase>(
     let object_id = next_object_id(state)?;
 
     spend_payment(&mut state.mana, payment);
-    sacrifice_artifact(state, sacrifice)?;
+    let mut triggers = leave_permanent(state, cards, sacrifice, LeaveDestination::Graveyard)?;
     let removed = state.hand.remove_one(card);
     debug_assert!(removed);
     state.stack.push(StackObject::Spell {
@@ -3197,7 +3211,16 @@ fn cast_reshape<D: CardDatabase>(
         card,
         x_value: Some(x_value),
     });
-    queue_cast_triggers(state, cards, card);
+    triggers.extend(collect_cast_triggers(state, cards, card));
+    stage_trigger_batch(
+        state,
+        SourceRef {
+            object_id: None,
+            card,
+        },
+        triggers,
+    );
+    let _ = sacrificed_card;
     state.spell_cast_this_turn = true;
     state.window = Window::Priority;
     Ok(())
@@ -3223,12 +3246,13 @@ fn activate_repurposing_bay<D: CardDatabase>(
         return Err(RuleError::UnsupportedCardMechanic(bay.card));
     }
     let sacrificed = validate_sacrifice_artifact(state, cards, sacrifice)?;
+    let sacrificed_card = battlefield_permanent(state, sacrifice)?.card;
     let cost = reduced_artifact_activation_cost(state, cards, source, 2)?;
     validate_payment(state.mana, payment, cost)?;
 
     spend_payment(&mut state.mana, payment);
     set_tapped(state, source)?;
-    sacrifice_artifact(state, sacrifice)?;
+    let leave_triggers = leave_permanent(state, cards, sacrifice, LeaveDestination::Graveyard)?;
     state.stack.push(StackObject::ActivatedAbility {
         source: SourceRef {
             object_id: Some(source),
@@ -3237,6 +3261,14 @@ fn activate_repurposing_bay<D: CardDatabase>(
         ability: ABILITY_REPURPOSING_BAY_SEARCH,
         parameter: Some(sacrificed.mana_value),
     });
+    stage_trigger_batch(
+        state,
+        SourceRef {
+            object_id: None,
+            card: sacrificed_card,
+        },
+        leave_triggers,
+    );
     state.window = Window::Priority;
     Ok(())
 }
@@ -3381,7 +3413,7 @@ fn resolve_top_stack_object<D: CardDatabase>(
             ..
         } => {
             state.stack.pop();
-            resolve_top_draw(state, source)
+            resolve_top_draw(state, cards, source)
         }
         StackObject::ActivatedAbility {
             source,
@@ -4152,13 +4184,15 @@ fn resolve_chrome_dome_sacrifice<D: CardDatabase>(
             .get(object_id)
             .is_some_and(|permanent| permanent.card == source.card)
     {
-        let was_cam = cards
-            .profile(source.card)
-            .is_some_and(|profile| profile.utility == UtilityKind::SewerVeillanceCam);
-        sacrifice_artifact(state, object_id)?;
-        if was_cam {
-            queue_cam_leave_trigger(state, source.card);
-        }
+        let triggers = leave_permanent(state, cards, object_id, LeaveDestination::Graveyard)?;
+        stage_trigger_batch(
+            state,
+            SourceRef {
+                object_id: None,
+                card: source.card,
+            },
+            triggers,
+        );
     }
     state.window = Window::Priority;
     Ok(Transition::default())
@@ -4181,47 +4215,15 @@ fn resolve_knack_bounce<D: CardDatabase>(
         state.window = Window::Priority;
         return Ok(Transition::default());
     }
-    let was_cam = cards
-        .profile(permanent.card)
-        .is_some_and(|profile| profile.utility == UtilityKind::SewerVeillanceCam);
-    let mut permanents = state.battlefield.permanents().to_vec();
-    let index = permanents
-        .iter()
-        .position(|candidate| candidate.object_id == object_id)
-        .ok_or(RuleError::MissingPermanent(object_id))?;
-    let removed = permanents.remove(index);
-    for candidate in &mut permanents {
-        if candidate.attached_to == Some(object_id)
-            && candidate.mode == PermanentMode::RealityChipAttached
-        {
-            candidate.mode = PermanentMode::RealityChipCreature;
-            candidate.attached_to = None;
-        }
-    }
-    let mut attached_non_token_cards = Vec::new();
-    permanents.retain(|candidate| {
-        if candidate.attached_to == Some(object_id) {
-            if !candidate.token {
-                attached_non_token_cards.push(candidate.card);
-            }
-            false
-        } else {
-            true
-        }
-    });
-    state.battlefield = BattlefieldZone::new(permanents);
-    for card in attached_non_token_cards {
-        state.graveyard.insert(card);
-    }
-    state.delayed_events.retain(|event| {
-        !matches!(event, DelayedEvent::ChromeCopySacrifice { object, .. } if *object == object_id)
-    });
-    if !removed.token {
-        state.hand.insert(removed.card);
-    }
-    if was_cam {
-        queue_cam_leave_trigger(state, removed.card);
-    }
+    let triggers = leave_permanent(state, cards, object_id, LeaveDestination::Hand)?;
+    stage_trigger_batch(
+        state,
+        SourceRef {
+            object_id: None,
+            card: permanent.card,
+        },
+        triggers,
+    );
     state.window = Window::Priority;
     Ok(Transition::default())
 }
@@ -4518,29 +4520,29 @@ fn resolve_saga_chapter_ii<D: CardDatabase>(
     })
 }
 
-fn sacrifice_saga_after_final_chapter(
+fn sacrifice_saga_after_final_chapter<D: CardDatabase>(
     state: &mut TrueState,
+    cards: &D,
     source: SourceRef,
 ) -> Result<(), RuleError> {
     let Some(object_id) = source.object_id else {
         return Ok(());
     };
-    let Some(permanent) = state.battlefield.get(object_id) else {
+    let Some(permanent) = state.battlefield.get(object_id).cloned() else {
         return Ok(());
     };
     if permanent.card != source.card || permanent.mode != PermanentMode::UrzasSaga {
         return Ok(());
     }
-    let mut permanents = state.battlefield.permanents().to_vec();
-    let index = permanents
-        .iter()
-        .position(|candidate| candidate.object_id == object_id)
-        .ok_or(RuleError::MissingPermanent(object_id))?;
-    let saga = permanents.remove(index);
-    state.battlefield = BattlefieldZone::new(permanents);
-    if !saga.token {
-        state.graveyard.insert(saga.card);
-    }
+    let triggers = leave_permanent(state, cards, object_id, LeaveDestination::Graveyard)?;
+    stage_trigger_batch(
+        state,
+        SourceRef {
+            object_id: None,
+            card: permanent.card,
+        },
+        triggers,
+    );
     Ok(())
 }
 
@@ -4701,13 +4703,28 @@ fn choose_trigger_order(state: &mut TrueState, order: Vec<u8>) -> Result<Transit
     Ok(Transition::default())
 }
 
-fn resolve_top_draw(state: &mut TrueState, source: SourceRef) -> Result<Transition, RuleError> {
+fn resolve_top_draw<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    source: SourceRef,
+) -> Result<Transition, RuleError> {
     let drawn = draw_cards(state, 1)?;
     let mut observations = vec![RulesObservation::CardsDrawn(drawn)];
     if let Some(object_id) = source.object_id
-        && state.battlefield.get(object_id).is_some()
+        && state
+            .battlefield
+            .get(object_id)
+            .is_some_and(|permanent| permanent.card == source.card)
     {
-        remove_permanent_to_library_top(state, object_id)?;
+        let triggers = leave_permanent(state, cards, object_id, LeaveDestination::LibraryTop)?;
+        stage_trigger_batch(
+            state,
+            SourceRef {
+                object_id: None,
+                card: source.card,
+            },
+            triggers,
+        );
     }
     state.window = Window::Priority;
     observations.shrink_to_fit();
@@ -4764,62 +4781,6 @@ fn resolve_urza_spin(
     Ok(Transition {
         observations: vec![RulesObservation::UrzaCardExiled { card }],
     })
-}
-
-fn remove_permanent_to_library_top(
-    state: &mut TrueState,
-    object_id: ObjectId,
-) -> Result<(), RuleError> {
-    let mut permanents = state.battlefield.permanents().to_vec();
-    let Some(index) = permanents
-        .iter()
-        .position(|permanent| permanent.object_id == object_id)
-    else {
-        return Ok(());
-    };
-    let permanent = permanents.remove(index);
-    let mut attached_non_token_cards = Vec::new();
-    permanents.retain(|candidate| {
-        if candidate.attached_to == Some(object_id) {
-            if !candidate.token {
-                attached_non_token_cards.push(candidate.card);
-            }
-            false
-        } else {
-            true
-        }
-    });
-    state.battlefield = BattlefieldZone::new(permanents);
-    for card in attached_non_token_cards {
-        state.graveyard.insert(card);
-    }
-    state.delayed_events.retain(|event| {
-        !matches!(
-            event,
-            DelayedEvent::ChromeCopySacrifice {
-                object: delayed,
-                ..
-            } if *delayed == object_id
-        )
-    });
-    if permanent.token {
-        return Ok(());
-    }
-    let mut library = Vec::with_capacity(state.library.cards().len() + 1);
-    library.push(permanent.card);
-    library.extend_from_slice(state.library.cards());
-    let old = state.library.knowledge();
-    state.library = TrueLibrary::new(
-        library,
-        LibraryKnowledge {
-            known_top: old
-                .known_top
-                .checked_add(1)
-                .ok_or(RuleError::ArithmeticOverflow)?,
-            known_bottom: old.known_bottom,
-        },
-    )?;
-    Ok(())
 }
 
 fn same_multiset(left: &[CardDefId], right: &[CardDefId]) -> bool {
@@ -5026,7 +4987,8 @@ fn choose_transmute_sacrifice<D: CardDatabase>(
         .ok_or(RuleError::MissingCanonicalPermanent(canonical))?;
     let sacrificed = validate_sacrifice_artifact(state, cards, artifact)?;
 
-    sacrifice_artifact(state, artifact)?;
+    let leave_triggers = leave_permanent(state, cards, artifact, LeaveDestination::Graveyard)?;
+    defer_controlled_triggers(state, leave_triggers);
     stage_parameterized_search(
         state,
         cards,
@@ -5086,7 +5048,7 @@ fn choose_search_target<D: CardDatabase>(
         PendingDecision::SagaTarget { .. } => {
             let result =
                 complete_battlefield_search(state, cards, source, target, shuffled_remainder)?;
-            sacrifice_saga_after_final_chapter(state, source)?;
+            sacrifice_saga_after_final_chapter(state, cards, source)?;
             Ok(result)
         }
         PendingDecision::TezzeretTarget { .. } => {
@@ -5112,6 +5074,7 @@ fn choose_search_target<D: CardDatabase>(
             let Some(target) = target else {
                 state.pending = PendingDecision::None;
                 state.window = Window::Priority;
+                flush_deferred_controlled_triggers(state, source, Vec::new());
                 return Ok(Transition {
                     observations: vec![RulesObservation::SearchCompleted {
                         source: source.card,
@@ -5122,9 +5085,11 @@ fn choose_search_target<D: CardDatabase>(
             };
             let target_profile = card_profile(cards, target)?;
             if target_profile.mana_value <= sacrificed_mana_value {
-                let entered = put_card_onto_battlefield(state, cards, target)?;
+                let (entered, entry_triggers) =
+                    put_card_onto_battlefield_collect_triggers(state, cards, target)?;
                 state.pending = PendingDecision::None;
                 state.window = Window::Priority;
+                flush_deferred_controlled_triggers(state, source, entry_triggers);
                 Ok(Transition {
                     observations: vec![
                         RulesObservation::SearchCompleted {
@@ -5240,6 +5205,7 @@ fn pay_transmute_difference<D: CardDatabase>(
 
     let destination;
     let mut observations = Vec::new();
+    let mut entry_triggers = Vec::new();
     if let Some(payment) = payment {
         let cost = ManaCost {
             generic: difference.0,
@@ -5248,7 +5214,9 @@ fn pay_transmute_difference<D: CardDatabase>(
         validate_payment(state.mana, payment, cost)?;
         let object_id = next_object_id(state)?;
         spend_payment(&mut state.mana, payment);
-        let entered = put_card_onto_battlefield_with_id(state, cards, target, object_id)?;
+        let (entered, triggers) =
+            put_card_onto_battlefield_with_id_collect_triggers(state, cards, target, object_id)?;
+        entry_triggers = triggers;
         destination = SearchDestination::Battlefield;
         observations.push(entered);
     } else {
@@ -5258,6 +5226,7 @@ fn pay_transmute_difference<D: CardDatabase>(
 
     state.pending = PendingDecision::None;
     state.window = Window::Priority;
+    flush_deferred_controlled_triggers(state, source, entry_triggers);
     observations.insert(
         0,
         RulesObservation::SearchCompleted {
@@ -5328,7 +5297,19 @@ fn validate_sacrifice_artifact<D: CardDatabase>(
     Ok(profile)
 }
 
-fn sacrifice_artifact(state: &mut TrueState, object: ObjectId) -> Result<(), RuleError> {
+#[derive(Debug, Clone, Copy)]
+enum LeaveDestination {
+    Graveyard,
+    Hand,
+    LibraryTop,
+}
+
+fn leave_permanent<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    object: ObjectId,
+    destination: LeaveDestination,
+) -> Result<Vec<StackObject>, RuleError> {
     let mut permanents = state.battlefield.permanents().to_vec();
     let Some(index) = permanents
         .iter()
@@ -5337,6 +5318,7 @@ fn sacrifice_artifact(state: &mut TrueState, object: ObjectId) -> Result<(), Rul
         return Err(RuleError::MissingPermanent(object));
     };
     let permanent = permanents.remove(index);
+
     for candidate in &mut permanents {
         if candidate.attached_to == Some(object)
             && candidate.mode == PermanentMode::RealityChipAttached
@@ -5345,34 +5327,73 @@ fn sacrifice_artifact(state: &mut TrueState, object: ObjectId) -> Result<(), Rul
             candidate.attached_to = None;
         }
     }
-    let mut attached_non_token_cards = Vec::new();
+
+    let mut removed_attachments = Vec::new();
     permanents.retain(|candidate| {
         if candidate.attached_to == Some(object) {
-            if !candidate.token {
-                attached_non_token_cards.push(candidate.card);
-            }
+            removed_attachments.push(candidate.clone());
             false
         } else {
             true
         }
     });
     state.battlefield = BattlefieldZone::new(permanents);
-    for card in attached_non_token_cards {
-        state.graveyard.insert(card);
-    }
-    if !permanent.token {
-        state.graveyard.insert(permanent.card);
+
+    let mut departed_objects = BTreeSet::new();
+    departed_objects.insert(object);
+    for attachment in &removed_attachments {
+        departed_objects.insert(attachment.object_id);
+        if !attachment.token {
+            state.graveyard.insert(attachment.card);
+        }
     }
     state.delayed_events.retain(|event| {
         !matches!(
             event,
-            DelayedEvent::ChromeCopySacrifice {
-                object: delayed,
-                ..
-            } if *delayed == object
+            DelayedEvent::ChromeCopySacrifice { object, .. }
+                if departed_objects.contains(object)
         )
     });
-    Ok(())
+
+    if !permanent.token {
+        match destination {
+            LeaveDestination::Graveyard => state.graveyard.insert(permanent.card),
+            LeaveDestination::Hand => state.hand.insert(permanent.card),
+            LeaveDestination::LibraryTop => {
+                let mut library = Vec::with_capacity(state.library.cards().len() + 1);
+                library.push(permanent.card);
+                library.extend_from_slice(state.library.cards());
+                let old = state.library.knowledge();
+                state.library = TrueLibrary::new(
+                    library,
+                    LibraryKnowledge {
+                        known_top: old
+                            .known_top
+                            .checked_add(1)
+                            .ok_or(RuleError::ArithmeticOverflow)?,
+                        known_bottom: old.known_bottom,
+                    },
+                )?;
+            }
+        }
+    }
+
+    let mut triggers = Vec::new();
+    for departed in std::iter::once(&permanent).chain(removed_attachments.iter()) {
+        if cards
+            .profile(departed.card)
+            .is_some_and(|profile| profile.utility == UtilityKind::SewerVeillanceCam)
+        {
+            triggers.push(StackObject::ControlledTrigger {
+                source: SourceRef {
+                    object_id: None,
+                    card: departed.card,
+                },
+                ability: ABILITY_CAM_TAP_UNTAP,
+            });
+        }
+    }
+    Ok(triggers)
 }
 
 fn put_card_onto_battlefield<D: CardDatabase>(
@@ -5380,18 +5401,35 @@ fn put_card_onto_battlefield<D: CardDatabase>(
     cards: &D,
     card: CardDefId,
 ) -> Result<RulesObservation, RuleError> {
-    let object_id = next_object_id(state)?;
-    put_card_onto_battlefield_with_id(state, cards, card, object_id)
+    let (observation, triggers) = put_card_onto_battlefield_collect_triggers(state, cards, card)?;
+    stage_trigger_batch(
+        state,
+        SourceRef {
+            object_id: None,
+            card,
+        },
+        triggers,
+    );
+    Ok(observation)
 }
 
-fn put_card_onto_battlefield_with_id<D: CardDatabase>(
+fn put_card_onto_battlefield_collect_triggers<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    card: CardDefId,
+) -> Result<(RulesObservation, Vec<StackObject>), RuleError> {
+    let object_id = next_object_id(state)?;
+    put_card_onto_battlefield_with_id_collect_triggers(state, cards, card, object_id)
+}
+
+fn put_card_onto_battlefield_with_id_collect_triggers<D: CardDatabase>(
     state: &mut TrueState,
     cards: &D,
     card: CardDefId,
     object_id: ObjectId,
-) -> Result<RulesObservation, RuleError> {
+) -> Result<(RulesObservation, Vec<StackObject>), RuleError> {
     let profile = card_profile(cards, card)?;
-    insert_permanent(
+    let triggers = insert_permanent_collect_triggers(
         state,
         cards,
         PermanentState {
@@ -5410,11 +5448,14 @@ fn put_card_onto_battlefield_with_id<D: CardDatabase>(
             granted_ability: None,
         },
     );
-    Ok(RulesObservation::PermanentEntered {
-        card,
-        face: profile.battlefield_face,
-        token: false,
-    })
+    Ok((
+        RulesObservation::PermanentEntered {
+            card,
+            face: profile.battlefield_face,
+            token: false,
+        },
+        triggers,
+    ))
 }
 
 fn ensure_mana_activation_window(state: &TrueState) -> Result<(), RuleError> {
@@ -5647,16 +5688,29 @@ fn set_permanent_tapped(
 }
 
 fn insert_permanent<D: CardDatabase>(state: &mut TrueState, cards: &D, permanent: PermanentState) {
+    let source = SourceRef {
+        object_id: Some(permanent.object_id),
+        card: permanent.card,
+    };
+    let triggers = insert_permanent_collect_triggers(state, cards, permanent);
+    stage_trigger_batch(state, source, triggers);
+}
+
+fn insert_permanent_collect_triggers<D: CardDatabase>(
+    state: &mut TrueState,
+    cards: &D,
+    permanent: PermanentState,
+) -> Vec<StackObject> {
     let entered = permanent.clone();
     let mut permanents = state.battlefield.permanents().to_vec();
     permanents.push(permanent);
     state.battlefield = BattlefieldZone::new(permanents);
 
     let Some(entered_profile) = cards.profile(entered.card) else {
-        return;
+        return Vec::new();
     };
+    let mut triggers = Vec::new();
     if entered_profile.is_artifact {
-        let mut triggers = Vec::new();
         for producer in state.battlefield.permanents() {
             let Some(profile) = cards.profile(producer.card) else {
                 continue;
@@ -5674,10 +5728,9 @@ fn insert_permanent<D: CardDatabase>(state: &mut TrueState, cards: &D, permanent
                 });
             }
         }
-        state.stack.extend(triggers);
     }
     if entered_profile.utility == UtilityKind::SewerVeillanceCam {
-        state.stack.push(StackObject::ControlledTrigger {
+        triggers.push(StackObject::ControlledTrigger {
             source: SourceRef {
                 object_id: Some(entered.object_id),
                 card: entered.card,
@@ -5685,11 +5738,28 @@ fn insert_permanent<D: CardDatabase>(state: &mut TrueState, cards: &D, permanent
             ability: ABILITY_CAM_TAP_UNTAP,
         });
     }
+    triggers
 }
 
 fn queue_cast_triggers<D: CardDatabase>(state: &mut TrueState, cards: &D, card: CardDefId) {
+    let triggers = collect_cast_triggers(state, cards, card);
+    stage_trigger_batch(
+        state,
+        SourceRef {
+            object_id: None,
+            card,
+        },
+        triggers,
+    );
+}
+
+fn collect_cast_triggers<D: CardDatabase>(
+    state: &TrueState,
+    cards: &D,
+    card: CardDefId,
+) -> Vec<StackObject> {
     let Some(cast_profile) = cards.profile(card) else {
-        return;
+        return Vec::new();
     };
     let mut triggers = Vec::new();
     for permanent in state.battlefield.permanents() {
@@ -5736,28 +5806,66 @@ fn queue_cast_triggers<D: CardDatabase>(state: &mut TrueState, cards: &D, card: 
             });
         }
     }
-    if triggers.len() > 1 {
+    triggers
+}
+
+fn stage_trigger_batch(state: &mut TrueState, source: SourceRef, triggers: Vec<StackObject>) {
+    let needs_order = triggers.len() > 1
+        && !triggers.iter().all(|trigger| {
+            matches!(
+                trigger,
+                StackObject::ControlledTrigger {
+                    ability: ABILITY_ARTIFACT_ENTRY_UNTAP,
+                    ..
+                }
+            )
+        });
+    if needs_order {
+        debug_assert!(matches!(state.pending, PendingDecision::None));
         let trigger_count = u8::try_from(triggers.len())
-            .expect("Commander goldfish cannot create more than 255 simultaneous cast triggers");
+            .expect("Commander goldfish cannot create more than 255 simultaneous triggers");
         state.pending = PendingDecision::TriggerOrder {
-            source: SourceRef {
-                object_id: None,
-                card,
-            },
+            source,
             trigger_count,
         };
     }
     state.stack.extend(triggers);
 }
 
-fn queue_cam_leave_trigger(state: &mut TrueState, card: CardDefId) {
-    state.stack.push(StackObject::ControlledTrigger {
-        source: SourceRef {
-            object_id: None,
-            card,
-        },
-        ability: ABILITY_CAM_TAP_UNTAP,
-    });
+fn defer_controlled_triggers(state: &mut TrueState, triggers: Vec<StackObject>) {
+    for trigger in triggers {
+        let StackObject::ControlledTrigger { source, ability } = trigger else {
+            unreachable!("leave-battlefield triggers are controlled triggers");
+        };
+        state
+            .delayed_events
+            .push(DelayedEvent::DeferredControlledTrigger { source, ability });
+    }
+}
+
+fn take_deferred_controlled_triggers(state: &mut TrueState) -> Vec<StackObject> {
+    let mut triggers = Vec::new();
+    let mut retained = Vec::new();
+    for event in std::mem::take(&mut state.delayed_events) {
+        match event {
+            DelayedEvent::DeferredControlledTrigger { source, ability } => {
+                triggers.push(StackObject::ControlledTrigger { source, ability });
+            }
+            other => retained.push(other),
+        }
+    }
+    state.delayed_events = retained;
+    triggers
+}
+
+fn flush_deferred_controlled_triggers(
+    state: &mut TrueState,
+    source: SourceRef,
+    mut extra: Vec<StackObject>,
+) {
+    let mut triggers = take_deferred_controlled_triggers(state);
+    triggers.append(&mut extra);
+    stage_trigger_batch(state, source, triggers);
 }
 
 fn queue_one_ring_upkeep_triggers<D: CardDatabase>(state: &mut TrueState, cards: &D) {
@@ -9751,6 +9859,15 @@ mod post_r7_clue_tests {
                     ..CardProfile::default()
                 },
             );
+            profiles.insert(
+                AURA,
+                CardProfile {
+                    card: AURA,
+                    role: R2CardRole::EnchantmentPermanent,
+                    battlefield_face: CardFace::Front,
+                    ..CardProfile::default()
+                },
+            );
             Self { profiles }
         }
     }
@@ -9842,7 +9959,7 @@ mod post_r7_clue_tests {
     }
 
     #[test]
-    fn attached_clue_preserves_existing_player_chosen_sacrifice_deferral() {
+    fn attached_clue_sacrifice_cleans_attachment_and_resolves_draw() {
         let cards = ClueCards::new();
         let clue = permanent(1, CLUE, true);
         let mut aura = permanent(2, AURA, false);
@@ -9851,6 +9968,7 @@ mod post_r7_clue_tests {
             turn: 3,
             phase: Phase::PrecombatMain,
             window: Window::Priority,
+            library: TrueLibrary::unknown(vec![DRAW]),
             battlefield: BattlefieldZone::new(vec![clue, aura]),
             mana: ManaPool {
                 colorless: 2,
@@ -9860,8 +9978,7 @@ mod post_r7_clue_tests {
         };
         state.validate().unwrap();
 
-        let before = state.clone();
-        let error = apply_action(
+        apply_action(
             &mut state,
             &cards,
             Action::ActivateClueDraw {
@@ -9872,12 +9989,23 @@ mod post_r7_clue_tests {
                 },
             },
         )
-        .unwrap_err();
-        assert_eq!(error, RuleError::AttachedSacrificeDeferred(ObjectId(1)));
-        assert_eq!(
-            state, before,
-            "deferred activation must not partially pay costs"
-        );
+        .unwrap();
+
+        assert_eq!(state.mana, ManaPool::default());
+        assert!(state.battlefield.get(ObjectId(1)).is_none());
+        assert!(state.battlefield.get(ObjectId(2)).is_none());
+        assert_eq!(state.graveyard, CardZone::new(vec![AURA]));
+        assert!(matches!(
+            state.stack.last(),
+            Some(StackObject::ActivatedAbility {
+                ability: ABILITY_CLUE_DRAW,
+                ..
+            })
+        ));
+
+        apply_action(&mut state, &cards, Action::PassPriority).unwrap();
+        assert_eq!(state.hand, CardZone::new(vec![DRAW]));
+        state.validate().unwrap();
     }
 }
 
