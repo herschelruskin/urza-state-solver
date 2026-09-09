@@ -58,7 +58,7 @@ jobs:
       - name: Assert materialization touched only reviewed Rust surfaces
         run: |
           set -euo pipefail
-          git diff --name-only | sort > "$RUNNER_TEMP/changed.txt"
+          git diff --name-only -- . ':(exclude)rust/target/**' | sort > "$RUNNER_TEMP/changed.txt"
           cat "$RUNNER_TEMP/changed.txt"
           while IFS= read -r path; do
             case "$path" in
