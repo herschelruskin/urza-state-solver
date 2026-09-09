@@ -75,22 +75,21 @@ jobs:
           _wrapper, suffix = rest.split(end, 1)
           text = prefix + end + suffix
 
-          old = '''fn stage_trigger_batch(state: &mut TrueState, source: SourceRef, triggers: Vec<StackObject>) {
-    if triggers.len() > 1 {
-'''
-          new = '''fn stage_trigger_batch(state: &mut TrueState, source: SourceRef, triggers: Vec<StackObject>) {
-    let needs_order = triggers.len() > 1
-        && !triggers.iter().all(|trigger| {
-            matches!(
-                trigger,
-                StackObject::ControlledTrigger {
-                    ability: ABILITY_ARTIFACT_ENTRY_UNTAP,
-                    ..
-                }
-            )
-        });
-    if needs_order {
-'''
+          old = 'fn stage_trigger_batch(state: &mut TrueState, source: SourceRef, triggers: Vec<StackObject>) {\n    if triggers.len() > 1 {\n'
+          new = '\n'.join([
+              'fn stage_trigger_batch(state: &mut TrueState, source: SourceRef, triggers: Vec<StackObject>) {',
+              '    let needs_order = triggers.len() > 1',
+              '        && !triggers.iter().all(|trigger| {',
+              '            matches!(',
+              '                trigger,',
+              '                StackObject::ControlledTrigger {',
+              '                    ability: ABILITY_ARTIFACT_ENTRY_UNTAP,',
+              '                    ..',
+              '                }',
+              '            )',
+              '        });',
+              '    if needs_order {',
+          ]) + '\n'
           if text.count(old) != 1:
               raise SystemExit(f'expected exactly one trigger batch header, found {text.count(old)}')
           rules.write_text(text.replace(old, new, 1))
