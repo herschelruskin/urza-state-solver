@@ -1,0 +1,82 @@
+name: Post-R7 Wave 0 clause acceptance
+
+on:
+  push:
+    branches:
+      - rust-engine-rebuild
+    paths:
+      - '.github/workflows/post-r7-wave0-clause-acceptance.yml'
+      - 'rust/crates/urza-cards/tests/post_r7_wave0_clause_acceptance.rs'
+      - 'rust/crates/urza-core/src/**'
+      - 'rust/crates/urza-info/src/**'
+      - 'rust/crates/urza-rules/src/**'
+      - 'rust/crates/urza-cards/src/**'
+      - 'rust/crates/urza-policy-bridge/src/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  wave0-clause-acceptance:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify Wave 0 integration ancestry
+        run: |
+          set -euo pipefail
+          git merge-base --is-ancestor 10a089e8bb80c0823ce8429751e705a59fd368d5 HEAD
+          echo "WAVE0_INTEGRATION_BASE=10a089e8bb80c0823ce8429751e705a59fd368d5"
+          echo "VALIDATING_SHA=$(git rev-parse HEAD)"
+      - uses: dtolnay/rust-toolchain@1.89
+        with:
+          components: rustfmt, clippy
+      - name: Format check
+        working-directory: rust
+        run: cargo fmt --all -- --check
+      - name: Workspace all-target compile
+        working-directory: rust
+        run: cargo check --locked --workspace --all-targets
+      - name: Wave 0 clause acceptance fixtures
+        working-directory: rust
+        run: cargo test --locked -p urza-cards --test post_r7_wave0_clause_acceptance
+      - name: Shared-primitives regressions
+        working-directory: rust
+        run: |
+          cargo test --locked -p urza-rules
+          cargo test --locked -p urza-cards --test post_r7_modeling_completeness_rules_active_repair_v1
+          cargo test --locked -p urza-cards --test post_r7_shared_primitives_leave_ltb
+          cargo test --locked -p urza-rules --test post_r7_leave_ltb
+          cargo test --locked -p urza-cards --test post_r7_shared_primitives_targeted_permission_zones
+          cargo test --locked -p urza-policy-bridge --test post_r7_modeling_completeness_rules_active_repair_v1
+          cargo test --locked -p urza-policy-bridge --test post_r7_shared_primitives_targeted_permission_zones
+          cargo test --locked -p urza-cards --test post_r7_modeling_completeness_forensic_gadgeteer
+      - name: Frozen R4 regressions
+        working-directory: rust
+        run: |
+          cargo test --locked -p urza-cards --test r4_final_acceptance
+          cargo test --locked -p urza-cards --test r4_terminal_acceptance
+      - name: Preserve pre-promotion authoritative baseline
+        working-directory: rust
+        run: |
+          set -euo pipefail
+          cargo test --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate
+          if cargo run --quiet --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- --enforce > "$RUNNER_TEMP/modeling-enforce.txt" 2>&1; then
+            echo 'gate unexpectedly green before backlog is cleared' >&2
+            exit 1
+          fi
+          grep -q $'MODELING_COMPLETENESS_GATE\ttotal=95\tresolved=11\tunresolved=84' "$RUNNER_TEMP/modeling-enforce.txt"
+          grep -q 'MODELING_COMPLETENESS_GATE_RED: 84 unresolved active identities remain' "$RUNNER_TEMP/modeling-enforce.txt"
+      - name: Strict Clippy
+        working-directory: rust
+        run: |
+          cargo clippy --locked -p urza-core --all-targets -- -D warnings
+          cargo clippy --locked -p urza-info --all-targets -- -D warnings
+          cargo clippy --locked -p urza-rules --all-targets -- -D warnings
+          cargo clippy --locked -p urza-cards --all-targets -- -D warnings
+          cargo clippy --locked -p urza-policy-bridge --all-targets -- -D warnings
+          cargo clippy --locked -p urza-mulligan --bin post-r7-modeling-completeness-gate -- -D warnings
+      - name: Ensure validation did not mutate tracked source
+        run: git diff --exit-code -- . ':(exclude)rust/target/**'
