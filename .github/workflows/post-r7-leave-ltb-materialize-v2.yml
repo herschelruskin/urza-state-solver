@@ -52,6 +52,18 @@ jobs:
           script = workflow.split(start, 1)[1].split(end, 1)[0]
           exec(compile(textwrap.dedent(script), 'leave_ltb_materializer.py', 'exec'))
           PY
+      - name: Complete deferred-trigger external-role exhaustiveness
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('rust/crates/urza-info/src/lib.rs')
+          old = '            DelayedEvent::ManaDrainCredit { .. } | DelayedEvent::PermissionExpiry { .. } => {}\n'
+          new = '            DelayedEvent::ManaDrainCredit { .. }\n            | DelayedEvent::DeferredControlledTrigger { .. }\n            | DelayedEvent::PermissionExpiry { .. } => {}\n'
+          text = path.read_text()
+          if text.count(old) != 1:
+              raise SystemExit(f'expected exactly one external-role delayed-event arm, found {text.count(old)}')
+          path.write_text(text.replace(old, new, 1))
+          PY
       - name: Format repaired tree
         working-directory: rust
         run: cargo fmt --all
