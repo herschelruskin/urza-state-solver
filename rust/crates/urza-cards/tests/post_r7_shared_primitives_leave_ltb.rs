@@ -96,8 +96,10 @@ fn attached_clue_sacrifice_uses_common_leave_cleanup() {
             },
             power,
         ]),
+        // Power Artifact reduces the Clue activation's generic cost to the
+        // model's minimum of one generic mana.
         mana: ManaPool {
-            colorless: 2,
+            colorless: 1,
             ..ManaPool::default()
         },
         ..TrueState::default()
@@ -110,7 +112,7 @@ fn attached_clue_sacrifice_uses_common_leave_cleanup() {
         Action::ActivateClueDraw {
             source: ObjectId(1),
             payment: ManaPayment {
-                colorless: 2,
+                colorless: 1,
                 ..ManaPayment::default()
             },
         },
