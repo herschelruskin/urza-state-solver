@@ -18,11 +18,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Check out exact committed targeted-permission source
+      - name: Check out exact committed shared-primitives source
         run: |
           set -euo pipefail
-          git checkout --detach c8513c1ae9cb2c396e97b8550c2f608e7f939797
-          test "$(git rev-parse HEAD)" = c8513c1ae9cb2c396e97b8550c2f608e7f939797
+          git checkout --detach fe97ddf2f3744096c7d68af2593dd79225ac131d
+          test "$(git rev-parse HEAD)" = fe97ddf2f3744096c7d68af2593dd79225ac131d
           test "$(git merge-base HEAD df19087b828dcf9b2a116a4dbe6ee65b55196a8e)" = df19087b828dcf9b2a116a4dbe6ee65b55196a8e
           echo "SHARD_BASE_SHA=df19087b828dcf9b2a116a4dbe6ee65b55196a8e"
           echo "SHARD_SOURCE_SHA=$(git rev-parse HEAD)"
@@ -35,6 +35,11 @@ jobs:
       - name: Workspace all-target compile
         working-directory: rust
         run: cargo check --locked --workspace --all-targets
+      - name: Leave/LTB focused fixtures
+        working-directory: rust
+        run: |
+          cargo test --locked -p urza-rules --test post_r7_leave_ltb
+          cargo test --locked -p urza-cards --test post_r7_shared_primitives_leave_ltb
       - name: Targeted permission clause fixtures
         working-directory: rust
         run: |
@@ -66,6 +71,7 @@ jobs:
         working-directory: rust
         run: |
           cargo clippy --locked -p urza-core --all-targets -- -D warnings
+          cargo clippy --locked -p urza-info --all-targets -- -D warnings
           cargo clippy --locked -p urza-rules --all-targets -- -D warnings
           cargo clippy --locked -p urza-cards --all-targets -- -D warnings
           cargo clippy --locked -p urza-policy-bridge --all-targets -- -D warnings
