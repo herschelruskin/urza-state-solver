@@ -1,0 +1,112 @@
+name: Post-R7 Wave 0 fixture cleanup correction
+
+on:
+  push:
+    branches:
+      - rust-engine-rebuild
+    paths:
+      - '.github/workflows/post-r7-wave0-fixture-cleanup-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  correct-fixture:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.89
+        with:
+          components: rustfmt
+      - name: Replace only the invalid stack-active cleanup tail
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('rust/crates/urza-cards/tests/post_r7_wave0_clause_acceptance.rs')
+          text = path.read_text()
+          old = '''    let mut cleanup = state;
+    cleanup.phase = Phase::EndStep;
+    advance_phase(&mut cleanup, &cards).unwrap();
+    for object in [ObjectId(30), ObjectId(31)] {
+        assert_eq!(
+            cleanup
+                .battlefield
+                .get(object)
+                .unwrap()
+                .counters
+                .temporary_power_boost,
+            0
+        );
+    }
+'''
+          new = '''    let sol_ring = card(&cards, "Sol Ring");
+    let mut cleanup = TrueState {
+        turn: 1,
+        phase: Phase::EndStep,
+        window: Window::Priority,
+        hand: CardZone::new(vec![sol_ring]),
+        battlefield: BattlefieldZone::new(vec![permanent(
+            &cards,
+            70,
+            "Valley Floodcaller",
+            true,
+            false,
+        )]),
+        mana: ManaPool {
+            colorless: 1,
+            ..ManaPool::default()
+        },
+        ..TrueState::default()
+    };
+    apply_action(
+        &mut cleanup,
+        &cards,
+        Action::CastFromHand {
+            card: sol_ring,
+            payment: ManaPayment {
+                colorless: 1,
+                ..ManaPayment::default()
+            },
+        },
+    )
+    .unwrap();
+    apply_action(&mut cleanup, &cards, Action::PassPriority).unwrap();
+    assert_eq!(
+        cleanup
+            .battlefield
+            .get(ObjectId(70))
+            .unwrap()
+            .counters
+            .temporary_power_boost,
+        1
+    );
+    apply_action(&mut cleanup, &cards, Action::PassPriority).unwrap();
+    advance_phase(&mut cleanup, &cards).unwrap();
+    assert_eq!(
+        cleanup
+            .battlefield
+            .get(ObjectId(70))
+            .unwrap()
+            .counters
+            .temporary_power_boost,
+        0
+    );
+'''
+          if text.count(old) != 1:
+              raise SystemExit(f'expected one invalid cleanup tail, found {text.count(old)}')
+          path.write_text(text.replace(old, new, 1))
+          PY
+      - name: Format and focused test
+        working-directory: rust
+        run: |
+          cargo fmt --all
+          cargo test --locked -p urza-cards --test post_r7_wave0_clause_acceptance
+      - name: Commit corrected fixture only
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add rust/crates/urza-cards/tests/post_r7_wave0_clause_acceptance.rs
+          git diff --cached --quiet && { echo 'no fixture correction staged' >&2; exit 1; }
+          git commit -m '[R7] Correct Wave 0 EOT cleanup fixture'
+          git push origin HEAD:rust-engine-rebuild
