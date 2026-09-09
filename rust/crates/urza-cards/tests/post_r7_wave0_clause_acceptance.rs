@@ -96,7 +96,11 @@ fn artificers_assistant_historic_clause_is_total_for_the_pinned_deck() {
         window: Window::Priority,
         hand: CardZone::new(vec![crypt]),
         battlefield: BattlefieldZone::new(vec![permanent(
-            &cards, 1, "Artificer's Assistant", false, false,
+            &cards,
+            1,
+            "Artificer's Assistant",
+            false,
+            false,
         )]),
         ..TrueState::default()
     };
@@ -124,7 +128,11 @@ fn artificers_assistant_historic_clause_is_total_for_the_pinned_deck() {
         window: Window::Priority,
         hand: CardZone::new(vec![scroll]),
         battlefield: BattlefieldZone::new(vec![permanent(
-            &cards, 2, "Artificer's Assistant", false, false,
+            &cards,
+            2,
+            "Artificer's Assistant",
+            false,
+            false,
         )]),
         mana: pool_for(scroll_payment),
         ..TrueState::default()
@@ -152,7 +160,11 @@ fn artificers_assistant_historic_clause_is_total_for_the_pinned_deck() {
         window: Window::Priority,
         hand: CardZone::new(vec![saga]),
         battlefield: BattlefieldZone::new(vec![permanent(
-            &cards, 3, "Artificer's Assistant", false, false,
+            &cards,
+            3,
+            "Artificer's Assistant",
+            false,
+            false,
         )]),
         ..TrueState::default()
     };
@@ -266,7 +278,13 @@ fn chrome_dome_other_another_copy_haste_and_characteristics_are_exact() {
         .find(|permanent| permanent.card == card(&cards, "Mana Vault") && permanent.token)
         .unwrap()
         .object_id;
-    assert!(!copy_state.battlefield.get(copied_vault).unwrap().summoning_sick);
+    assert!(
+        !copy_state
+            .battlefield
+            .get(copied_vault)
+            .unwrap()
+            .summoning_sick
+    );
     apply_action(
         &mut copy_state,
         &cards,
