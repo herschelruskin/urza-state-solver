@@ -1,3 +1,11 @@
+## v0.68 — bounded-search stabilization
+- Preserve v0.64 game rules while repairing search bias uncovered by matched land testing.
+- Guaranteed-white/rainbow sources are credited in search scoring and diversity.
+- Flexible colored mana is canonicalized to W when no current card can distinguish another color; Pentad Prism preserves unrestricted-color representation.
+- Known City of Brass / Mana Confluence dominance failures converge at beam 240 and remain stable through beam 640.
+- Crash-safe mana runner flushes trial/context CSVs after every completed context.
+- Beam-40 N=10 screen is debug-only and is not pooled into v0.68 production results.
+
 # Changelog
 
 ## v0.65-instrumentation
