@@ -1,0 +1,61 @@
+target_card,target_group,role,deck_multiplicity,control_card,is_mana_acceleration
+Ancient Den,land_access,land,1,Plains,0
+Ancient Tomb,land_access,land,1,Plains,0
+Cavern of Souls,land_access,land,1,Plains,0
+City of Brass,land_access,land,1,Plains,0
+City of Traitors,land_access,land,1,Plains,0
+Command Beacon,land_access,land,1,Plains,0
+Crystal Vein,land_access,land,1,Plains,0
+"Eiganjo, Seat of the Empire",land_access,land,1,Plains,0
+Emeria's Call,land_access,mdfc_land,1,Plains,0
+Gemstone Caverns,land_access,land,1,Plains,0
+Gemstone Mine,land_access,land,1,Plains,0
+Great Hall of the Citadel,land_access,land,1,Plains,0
+Mana Confluence,land_access,land,1,Plains,0
+Mishra's Workshop,land_access,land,1,Plains,0
+Razorgrass Ambush,land_access,mdfc_land,1,Plains,0
+Remote Farm,land_access,land,1,Plains,0
+Ruins of Trokair,land_access,land,1,Plains,0
+Shefet Dunes,land_access,land,1,Plains,0
+Spire of Industry,land_access,land,1,Plains,0
+Starting Town,land_access,land,1,Plains,0
+Talon Gates of Madara,land_access,land,1,Plains,0
+Tarnished Citadel,land_access,land,1,Plains,0
+The Mycosynth Gardens,land_access,land,1,Plains,0
+"Untaidake, the Cloud Keeper",land_access,land,1,Plains,0
+Urza's Cave,land_access,land,1,Plains,0
+Urza's Saga,land_access,land,1,Plains,0
+Arcane Signet,infrastructure,mana_rock,1,Plains,1
+Basalt Monolith,infrastructure,fast_mana,1,Plains,1
+Brainstone,infrastructure,repair_selection,1,Plains,0
+Candelabra of Tawnos,infrastructure,mana_untap,1,Plains,1
+Chrome Mox,infrastructure,fast_mana,1,Plains,1
+Coalition Relic,infrastructure,mana_rock,1,Plains,1
+Eldrazi Confluence,infrastructure,conditional_mana,1,Plains,1
+Enlightened Tutor,infrastructure,mana_tutor,1,Plains,0
+Everflowing Chalice,infrastructure,mana_rock,1,Plains,1
+Expedition Map,infrastructure,mana_tutor,1,Plains,0
+Fellwar Stone,infrastructure,mana_rock,1,Plains,1
+Giant's Boulder,infrastructure,repair_selection,1,Plains,0
+Gleaming Splendor,infrastructure,conditional_mana,1,Plains,1
+Grim Monolith,infrastructure,fast_mana,1,Plains,1
+Jeweled Amulet,infrastructure,fast_mana,1,Plains,1
+Kozilek's Command,infrastructure,conditional_mana,1,Plains,1
+Lion's Eye Diamond,infrastructure,fast_mana,1,Plains,1
+Liquimetal Torque,infrastructure,mana_rock,1,Plains,1
+Lotus Petal,infrastructure,fast_mana,1,Plains,1
+Loyal Tutor,infrastructure,mana_tutor,1,Plains,0
+Mana Vault,infrastructure,fast_mana,1,Plains,1
+Manifold Key,infrastructure,mana_untap,1,Plains,1
+Moonsilver Key,infrastructure,mana_tutor,1,Plains,0
+Mox Diamond,infrastructure,fast_mana,1,Plains,1
+Mox Opal,infrastructure,fast_mana,1,Plains,1
+Pearl Medallion,infrastructure,cost_reducer,1,Plains,1
+Pentad Prism,infrastructure,mana_rock,1,Plains,1
+Prismatic Lens,infrastructure,mana_rock,1,Plains,1
+Scroll Rack,infrastructure,repair_selection,1,Plains,0
+Sol Ring,infrastructure,fast_mana,1,Plains,1
+"Tezzeret, Cruel Captain",infrastructure,mana_tutor,1,Plains,0
+The Mind Stone,infrastructure,mana_rock,1,Plains,1
+Tooth of Ramos,infrastructure,mana_rock,1,Plains,1
+Voltaic Key,infrastructure,mana_untap,1,Plains,1
