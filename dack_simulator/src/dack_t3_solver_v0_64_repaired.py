@@ -447,7 +447,8 @@ def pay_options(s,generic,white=0,colorless=0,legend=False,artifact=False):
 
 def pay_simple(s,generic,white=0,colorless=0,legend=False,artifact=False,payment_rank=0):
     opts=pay_options(s,generic,white,colorless,legend,artifact)
-    if not opts:return None    opts=sorted(opts,key=lambda q:(min(q.w+q.any,2),q.w+q.c+q.any+q.restricted_legend,q.c,q.w),reverse=True)
+    if not opts:return None
+    opts=sorted(opts,key=lambda q:(min(q.w+q.any,2),q.w+q.c+q.any+q.restricted_legend,q.c,q.w),reverse=True)
     # Do not repeat the last legal payment for all higher global payment ranks.
     # cast_actions already deduplicates outcomes; returning None here avoids generating
     # the same branch up to seven extra times before that deduplication step.
@@ -896,7 +897,8 @@ def dack_bottom_ev(seven,keep_n,rest,beam=500,samples=16,refine=False,finalists_
         structural=sum(bottom_priority(seven[i],seven) for i in inds)
         contam=sum(x in COMBO_CREATURES for x in hand)
         aura_kept=sum(x in AURAS for x in hand)
-        candidates.append(((structural,-contam,-aura_kept),hand,bottom,tuple(rest)))    candidates.sort(key=lambda x:x[0],reverse=True)
+        candidates.append(((structural,-contam,-aura_kept),hand,bottom,tuple(rest)))
+    candidates.sort(key=lambda x:x[0],reverse=True)
     # Keep enough alternatives that the hierarchy guides rather than hard-forces the EV answer.
     finalists=candidates[:min(finalists_n,len(candidates))]
     scored=[]
@@ -1345,7 +1347,8 @@ def upkeep_untap_mana_actions(s):
     # Keys may untap mana artifacts during upkeep.
     for ki,k in enumerate(s.battlefield):
         if k.name not in {"Voltaic Key","Manifold Key"} or k.tapped:continue
-        for paid in pay_options(s,1):            for ti,target in enumerate(paid.battlefield):
+        for paid in pay_options(s,1):
+            for ti,target in enumerate(paid.battlefield):
                 if ti!=ki and target.tapped and is_artifact_perm(effective_name(target)):
                     bf=list(paid.battlefield);bf[ki]=replace(bf[ki],tapped=True);bf[ti]=replace(bf[ti],tapped=False)
                     out.append(replace(paid,battlefield=tuple(bf)))
@@ -1794,6 +1797,7 @@ def selftest():
             (Perm("Mana Vault"),Perm("Voltaic Key"),Perm("Plains"),Perm("Ancient Den")))
     q=search_turn(s,beam=12000,depth=24)
     assert can_cast_dack(q), "full-search Vault/Key Dack line missing"
+
     # Saga III -> LED state must finish Dack.
     s=State(3,(),("Lion's Eye Diamond",)+tuple(COMBO_CREATURES),
             (Perm("Urza's Saga",False,2,1),Perm("Ancient Tomb"),Perm("Sol Ring")))
@@ -2244,6 +2248,7 @@ def v051_candidate_audit():
     cs=structural_bottom_candidates(seven,3,2)
     assert any(h==target for h,b in cs), "compact fast-mana keep pruned by structural screen"
     return True
+
 def v052_deep_bottom_prescreen_audit():
     seven=("Voltaic Key","Grim Monolith","Candelabra of Tawnos","Silence","Kozilek's Command","Shefet Dunes","Jeweled Amulet")
     target=sort_hand(("Candelabra of Tawnos","Grim Monolith","Jeweled Amulet","Shefet Dunes","Voltaic Key"))
