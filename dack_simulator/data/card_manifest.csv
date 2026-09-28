@@ -1,0 +1,101 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: card_manifest.csv>index,copy_index,card,deck_multiplicity,role,is_literal_land,is_mdfc_land,is_land_access,is_ramp_protected,is_mana_acceleration,is_test_target,test_control
+0,1,Ancient Den,1,land,1,0,1,0,0,1,Plains
+1,1,Ancient Tomb,1,land,1,0,1,0,0,1,Plains
+2,1,Arcane Signet,1,mana_rock,0,0,0,1,1,1,Plains
+3,1,Basalt Monolith,1,fast_mana,0,0,0,1,1,1,Plains
+4,1,Bilbo's Gambit,1,ramp_protected_other,0,0,0,0,0,0,
+5,1,Boonweaver Giant,1,ramp_protected_other,0,0,0,0,0,0,
+6,1,Bound by Moonsilver,1,ramp_protected_other,0,0,0,0,0,0,
+7,1,Brainstone,1,repair_selection,0,0,0,1,0,1,Plains
+8,1,Calamity's Wake,1,ramp_protected_other,0,0,0,0,0,0,
+9,1,Campfire,1,ramp_protected_other,0,0,0,0,0,0,
+10,1,Candelabra of Tawnos,1,mana_untap,0,0,0,1,1,1,Plains
+11,1,Captured by the Consulate,1,ramp_protected_other,0,0,0,0,0,0,
+12,1,Cavern of Souls,1,land,1,0,1,0,0,1,Plains
+13,1,Chrome Mox,1,fast_mana,0,0,0,1,1,1,Plains
+14,1,City of Brass,1,land,1,0,1,0,0,1,Plains
+15,1,City of Traitors,1,land,1,0,1,0,0,1,Plains
+16,1,Coalition Flag,1,ramp_protected_other,0,0,0,0,0,0,
+17,1,Coalition Relic,1,mana_rock,0,0,0,1,1,1,Plains
+18,1,Command Beacon,1,land,1,0,1,0,0,1,Plains
+19,1,Crystal Vein,1,land,1,0,1,0,0,1,Plains
+20,1,Cursed Totem,1,ramp_protected_other,0,0,0,0,0,0,
+21,1,Darksteel Mutation,1,ramp_protected_other,0,0,0,0,0,0,
+22,1,Deafening Silence,1,ramp_protected_other,0,0,0,0,0,0,
+23,1,Defense Grid,1,ramp_protected_other,0,0,0,0,0,0,
+24,1,"Eiganjo, Seat of the Empire",1,land,1,0,1,0,0,1,Plains
+25,1,Eldrazi Confluence,1,conditional_mana,0,0,0,1,1,1,Plains
+26,1,Emeria's Call,1,mdfc_land,0,1,1,0,0,1,Plains
+27,1,Enlightened Tutor,1,mana_tutor,0,0,0,1,0,1,Plains
+28,1,Everflowing Chalice,1,mana_rock,0,0,0,1,1,1,Plains
+29,1,Expedition Map,1,mana_tutor,0,0,0,1,0,1,Plains
+30,1,Fellwar Stone,1,mana_rock,0,0,0,1,1,1,Plains
+31,1,Floating Shield,1,ramp_protected_other,0,0,0,0,0,0,
+32,1,Gemstone Caverns,1,land,1,0,1,0,0,1,Plains
+33,1,Gemstone Mine,1,land,1,0,1,0,0,1,Plains
+34,1,Giant's Boulder,1,repair_selection,0,0,0,1,0,1,Plains
+35,1,Gift of Immortality,1,ramp_protected_other,0,0,0,0,0,0,
+36,1,Gleaming Splendor,1,conditional_mana,0,0,0,1,1,1,Plains
+37,1,Great Hall of the Citadel,1,land,1,0,1,0,0,1,Plains
+38,1,Grim Monolith,1,fast_mana,0,0,0,1,1,1,Plains
+39,1,Idolized,1,ramp_protected_other,0,0,0,0,0,0,
+40,1,Jeweled Amulet,1,fast_mana,0,0,0,1,1,1,Plains
+41,1,Kozilek's Command,1,conditional_mana,0,0,0,1,1,1,Plains
+42,1,Lion's Eye Diamond,1,fast_mana,0,0,0,1,1,1,Plains
+43,1,Liquimetal Torque,1,mana_rock,0,0,0,1,1,1,Plains
+44,1,Lotus Petal,1,fast_mana,0,0,0,1,1,1,Plains
+45,1,Loyal Tutor,1,mana_tutor,0,0,0,1,0,1,Plains
+46,1,Mana Confluence,1,land,1,0,1,0,0,1,Plains
+47,1,Mana Vault,1,fast_mana,0,0,0,1,1,1,Plains
+48,1,Manifold Key,1,mana_untap,0,0,0,1,1,1,Plains
+49,1,Mantle of the Ancients,1,ramp_protected_other,0,0,0,0,0,0,
+50,1,March of Otherworldly Light,1,ramp_protected_other,0,0,0,0,0,0,
+51,1,Mishra's Workshop,1,land,1,0,1,0,0,1,Plains
+52,1,Moonsilver Key,1,mana_tutor,0,0,0,1,0,1,Plains
+53,1,Mox Diamond,1,fast_mana,0,0,0,1,1,1,Plains
+54,1,Mox Opal,1,fast_mana,0,0,0,1,1,1,Plains
+55,1,Orim's Chant,1,ramp_protected_other,0,0,0,0,0,0,
+56,1,Paladin Class,1,ramp_protected_other,0,0,0,0,0,0,
+57,1,Path to Exile,1,ramp_protected_other,0,0,0,0,0,0,
+58,1,Pearl Medallion,1,cost_reducer,0,0,0,1,1,1,Plains
+59,1,Pentad Prism,1,mana_rock,0,0,0,1,1,1,Plains
+60,1,Plains,4,land,1,0,1,0,0,0,
+61,2,Plains,4,land,1,0,1,0,0,0,
+62,3,Plains,4,land,1,0,1,0,0,0,
+63,4,Plains,4,land,1,0,1,0,0,0,
+64,1,Portable Hole,1,ramp_protected_other,0,0,0,0,0,0,
+65,1,"Preston, the Vanisher",1,ramp_protected_other,0,0,0,0,0,0,
+66,1,Prismatic Lens,1,mana_rock,0,0,0,1,1,1,Plains
+67,1,Razorgrass Ambush,1,mdfc_land,0,1,1,0,0,1,Plains
+68,1,Remote Farm,1,land,1,0,1,0,0,1,Plains
+69,1,Roaming Throne,1,ramp_protected_other,0,0,0,0,0,0,
+70,1,Ruins of Trokair,1,land,1,0,1,0,0,1,Plains
+71,1,Rule of Law,1,ramp_protected_other,0,0,0,0,0,0,
+72,1,Scroll Rack,1,repair_selection,0,0,0,1,0,1,Plains
+73,1,Shardmage's Rescue,1,ramp_protected_other,0,0,0,0,0,0,
+74,1,Shefet Dunes,1,land,1,0,1,0,0,1,Plains
+75,1,Sheltered by Ghosts,1,ramp_protected_other,0,0,0,0,0,0,
+76,1,Silence,1,ramp_protected_other,0,0,0,0,0,0,
+77,1,Sol Ring,1,fast_mana,0,0,0,1,1,1,Plains
+78,1,Spire of Industry,1,land,1,0,1,0,0,1,Plains
+79,1,Starting Town,1,land,1,0,1,0,0,1,Plains
+80,1,Static Prison,1,ramp_protected_other,0,0,0,0,0,0,
+81,1,Super State,1,ramp_protected_other,0,0,0,0,0,0,
+82,1,Swords to Plowshares,1,ramp_protected_other,0,0,0,0,0,0,
+83,1,Talon Gates of Madara,1,land,1,0,1,0,0,1,Plains
+84,1,Tarnished Citadel,1,land,1,0,1,0,0,1,Plains
+85,1,"Tezzeret, Cruel Captain",1,mana_tutor,0,0,0,1,0,1,Plains
+86,1,The Mind Stone,1,mana_rock,0,0,0,1,1,1,Plains
+87,1,The Mycosynth Gardens,1,land,1,0,1,0,0,1,Plains
+88,1,Thorn of Amethyst,1,ramp_protected_other,0,0,0,0,0,0,
+89,1,Tooth of Ramos,1,mana_rock,0,0,0,1,1,1,Plains
+90,1,Touch the Spirit Realm,1,ramp_protected_other,0,0,0,0,0,0,
+91,1,Trinisphere,1,ramp_protected_other,0,0,0,0,0,0,
+92,1,Twinblade Blessing,1,ramp_protected_other,0,0,0,0,0,0,
+93,1,"Untaidake, the Cloud Keeper",1,land,1,0,1,0,0,1,Plains
+94,1,Urza's Cave,1,land,1,0,1,0,0,1,Plains
+95,1,Urza's Saga,1,land,1,0,1,0,0,1,Plains
+96,1,Vexing Bauble,1,ramp_protected_other,0,0,0,0,0,0,
+97,1,Void Mirror,1,ramp_protected_other,0,0,0,0,0,0,
+98,1,Voltaic Key,1,mana_untap,0,0,0,1,1,1,Plains
