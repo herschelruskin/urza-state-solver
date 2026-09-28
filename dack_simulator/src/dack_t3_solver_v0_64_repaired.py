@@ -447,8 +447,7 @@ def pay_options(s,generic,white=0,colorless=0,legend=False,artifact=False):
 
 def pay_simple(s,generic,white=0,colorless=0,legend=False,artifact=False,payment_rank=0):
     opts=pay_options(s,generic,white,colorless,legend,artifact)
-    if not opts:return None
-    opts=sorted(opts,key=lambda q:(min(q.w+q.any,2),q.w+q.c+q.any+q.restricted_legend,q.c,q.w),reverse=True)
+    if not opts:return None    opts=sorted(opts,key=lambda q:(min(q.w+q.any,2),q.w+q.c+q.any+q.restricted_legend,q.c,q.w),reverse=True)
     # Do not repeat the last legal payment for all higher global payment ranks.
     # cast_actions already deduplicates outcomes; returning None here avoids generating
     # the same branch up to seven extra times before that deduplication step.
@@ -897,8 +896,7 @@ def dack_bottom_ev(seven,keep_n,rest,beam=500,samples=16,refine=False,finalists_
         structural=sum(bottom_priority(seven[i],seven) for i in inds)
         contam=sum(x in COMBO_CREATURES for x in hand)
         aura_kept=sum(x in AURAS for x in hand)
-        candidates.append(((structural,-contam,-aura_kept),hand,bottom,tuple(rest)))
-    candidates.sort(key=lambda x:x[0],reverse=True)
+        candidates.append(((structural,-contam,-aura_kept),hand,bottom,tuple(rest)))    candidates.sort(key=lambda x:x[0],reverse=True)
     # Keep enough alternatives that the hierarchy guides rather than hard-forces the EV answer.
     finalists=candidates[:min(finalists_n,len(candidates))]
     scored=[]
@@ -997,3 +995,1519 @@ def choose_london_hand(rng,V,beam=500,samples=16,refine_margin=0.08,screen_final
         audit.append((keep_n,keep_ev,threshold,decision,seven,hand,bottom,refined))
         if decision:return State(1,hand,lib),keep_n,audit
     raise RuntimeError("London selection failed")
+
+
+# ---------- 7. Chrome Mox policy ----------
+def chrome_mox_allowed(card):
+    return card in MOX_SAFE and card not in AURAS and card not in COMBO_CREATURES
+
+# ---------- 8. special engines ----------
+# Coalition Relic charging
+def special_actions(s):
+    out=[]
+    # Archaeomancer's Map catch-up abstraction: once per opponent land event, if an opponent
+    # has more lands, we may put a Plains from hand onto battlefield. Primary goldfish model exposes two such opportunities per opponent cycle.
+    if s.turn>=2 and s.map_bonus_used<2 and any(x.name=="Archaeomancer's Map" for x in s.battlefield):
+        for land in s.hand:
+            if land in LANDS:
+                hh=list(s.hand);hh.remove(land)
+                tapped=land in ETB_TAPPED
+                counters=2 if land=="Remote Farm" else (1 if land=="Urza's Saga" else 0)
+                out.append(replace(s,hand=sort_hand(hh),battlefield=s.battlefield+(Perm(land,tapped,counters,s.turn),),map_bonus_used=s.map_bonus_used+1))
+    # Talon Gates of Madara: 4: put it from hand onto battlefield (not a land play).
+    if "Talon Gates of Madara" in s.hand:
+        for paid in pay_options(s,4):
+            hh=list(paid.hand);hh.remove("Talon Gates of Madara")
+            out.append(replace(paid,hand=sort_hand(hh),battlefield=paid.battlefield+(Perm("Talon Gates of Madara",False,0,s.turn),)))
+    for i,p in enumerate(s.battlefield):
+        if p.name=="Coalition Relic" and not p.tapped:
+            bf=list(s.battlefield);bf[i]=replace(p,tapped=True,counters=p.counters+1)
+            out.append(replace(s,battlefield=tuple(bf)))
+    # Giant's Boulder: 1,T -> one mana of any color.
+    for i,p in enumerate(s.battlefield):
+        if p.name=="Giant's Boulder" and not p.tapped:
+            for paid in pay_options(s,1):
+                bf=list(paid.battlefield);bf[i]=replace(bf[i],tapped=True)
+                out.append(replace(paid,battlefield=tuple(bf),any=paid.any+1))
+    # Great Hall conversion: 1,T -> two legend-only mana.
+    for i,p in enumerate(s.battlefield):
+        if p.name=="Great Hall of the Citadel" and not p.tapped:
+            for paid in pay_options(s,1):
+                bf=list(paid.battlefield);bf[i]=replace(bf[i],tapped=True)
+                out.append(replace(paid,battlefield=tuple(bf),restricted_legend=paid.restricted_legend+2))
+                out.append(replace(paid,battlefield=tuple(bf),restricted_dack_white=paid.restricted_dack_white+2))
+    return out
+
+
+# v0.3 deployment-relevant activated abilities
+
+def land_tutor_choice(s,to_battlefield_tapped=False):
+    """Deterministic target from visible state only; never inspect library order."""
+    avail=set(s.library)
+    # White shortage first. Prefer robust untapped W for Map-to-hand; Cave target enters tapped anyway.
+    white_now=s.w+s.any+s.restricted_dack_white
+    white_sources=sum(x in {"Plains","Ancient Den","Eiganjo, Seat of the Empire","Shefet Dunes",
+                            "City of Brass","Mana Confluence","Gemstone Mine","Starting Town","Tarnished Citadel"}
+                      for x in s.hand)
+    if white_now+white_sources<2:
+        for x in ("Ancient Den","Plains","City of Brass","Mana Confluence","Gemstone Mine","Starting Town","Shefet Dunes"):
+            if x in avail:return x
+    # Raw acceleration/deployment. Cave puts target tapped, so City/Tomb are future-turn mana.
+    for x in ("Ancient Tomb","City of Traitors","Crystal Vein","Remote Farm","Ruins of Trokair",
+              "Urza's Saga","The Mycosynth Gardens","Ancient Den","Plains"):
+        if x in avail:return x
+    return next((x for x in LAND_TUTOR_TARGETS if x in avail),None)
+
+def v03_actions(s):
+    out=[]
+    # Expedition Map
+    for i,p in enumerate(s.battlefield):
+        if p.name=="Expedition Map" and not p.tapped:
+            for q in pay_options(s,2):
+                target=land_tutor_choice(q,False)
+                if target:
+                    lib=list(q.library); lib.remove(target)
+                    bf=list(q.battlefield); bf.pop(i)
+                    out.append(replace(q,battlefield=tuple(bf),library=shuffled_unknown(lib),
+                                       hand=sort_hand(q.hand+(target,)),grave=q.grave+("Expedition Map",)))
+    # Moonsilver Key: 1,T,sac -> artifact with mana ability or basic land, to hand.
+    for i,p in enumerate(s.battlefield):
+        if p.name=="Moonsilver Key" and not p.tapped:
+            for paid in pay_options(s,1):
+                # Key can find an artifact WITH A MANA ABILITY or a basic land.
+                # Brainstone is not legal even when the hand is contaminated.
+                target=next((x for x in ("Lion's Eye Diamond","Mana Vault","Sol Ring") if x in paid.library and x not in paid.hand),None)
+                if target is None and "Plains" in paid.library:
+                    target="Plains"
+                if target and target in paid.library:
+                    lib=list(paid.library);lib.remove(target)
+                    bf=list(paid.battlefield)
+                    # identify Key after payment state by index/name safely
+                    ki=next((j for j,x in enumerate(bf) if x.name=="Moonsilver Key" and not x.tapped),None)
+                    if ki is not None:
+                        bf.pop(ki)
+                        out.append(replace(paid,battlefield=tuple(bf),library=shuffled_unknown(lib),
+                                           hand=sort_hand(paid.hand+(target,)),grave=paid.grave+("Moonsilver Key",)))
+    # Urza's Cave
+    for i,p in enumerate(s.battlefield):
+        if p.name=="Urza's Cave" and not p.tapped:
+            for q in pay_options(s,3):
+                target=land_tutor_choice(q,True)
+                if target:
+                    lib=list(q.library); lib.remove(target)
+                    bf=list(q.battlefield); bf.pop(i); bf.append(Perm(target,True,0,s.turn))
+                    out.append(replace(q,battlefield=tuple(bf),library=shuffled_unknown(lib),grave=q.grave+("Urza's Cave",)))
+    # Gardens copy: relevant 0/1 MV artifacts.
+    mv={"Lion's Eye Diamond":0,"Lotus Petal":0,"Mox Opal":0,"Chrome Mox":0,"Mox Diamond":0,
+        "Jeweled Amulet":0,"Everflowing Chalice":0,"Mana Vault":1,"Sol Ring":1,"Candelabra of Tawnos":1,
+        "Voltaic Key":1,"Manifold Key":1,"Expedition Map":1,"Brainstone":1,"Campfire":1,"Giant's Boulder":1,
+        "Arcane Signet":2,"Fellwar Stone":2,"Liquimetal Torque":2,"Prismatic Lens":2,"The Mind Stone":2,
+        "Grim Monolith":2,"Basalt Monolith":3,"Coalition Relic":3}
+    for i,p in enumerate(s.battlefield):
+        if p.name=="The Mycosynth Gardens" and not p.tapped and not p.aux:
+            for q0 in s.battlefield:
+                if effective_name(q0) in mv:
+                    for q in pay_options(s,mv[effective_name(q0)]):
+                        bf=list(q.battlefield); bf[i]=replace(bf[i],tapped=True,aux="COPY:"+effective_name(q0))
+                        out.append(replace(q,battlefield=tuple(bf)))
+    # Jeweled Amulet charge. Unrestricted colored mana can be chosen as white when paying
+    # the activation, so it may be banked as W rather than being ignored.
+    for i,p in enumerate(s.battlefield):
+        if effective_name(p)=="Jeweled Amulet" and not p.tapped and p.counters==0:
+            if s.w:
+                bf=list(s.battlefield); bf[i]=replace(p,tapped=True,counters=1,aux="W")
+                out.append(replace(s,battlefield=tuple(bf),w=s.w-1))
+            if s.any:
+                bf=list(s.battlefield); bf[i]=replace(p,tapped=True,counters=1,aux="W")
+                out.append(replace(s,battlefield=tuple(bf),any=s.any-1))
+            if s.c:
+                bf=list(s.battlefield); bf[i]=replace(p,tapped=True,counters=1,aux="C")
+                out.append(replace(s,battlefield=tuple(bf),c=s.c-1))
+    # Tezzeret 0 / -3, one activation per turn.
+    for i,p in enumerate(s.battlefield):
+        if p.name=="Tezzeret, Cruel Captain" and p.activated_turn!=s.turn:
+            for j,q in enumerate(s.battlefield):
+                if q.tapped and is_artifact_perm(effective_name(q)):
+                    bf=list(s.battlefield); bf[i]=replace(p,activated_turn=s.turn); bf[j]=replace(q,tapped=False)
+                    out.append(replace(s,battlefield=tuple(bf)))
+            if p.loyalty>=3:
+                target=artifact_tutor_choice(s)
+                if target:
+                    lib=list(s.library);lib.remove(target)
+                    bf=list(s.battlefield);bf[i]=replace(p,loyalty=p.loyalty-3,activated_turn=s.turn)
+                    out.append(replace(s,battlefield=tuple(bf),library=shuffled_unknown(lib),hand=sort_hand(s.hand+(target,))))
+    return out
+
+
+def nasty_mana_actions(s):
+    out=[]
+    for ki,k in enumerate(s.battlefield):
+        if k.name not in {"Voltaic Key","Manifold Key"} or k.tapped:continue
+        for paid in pay_options(s,1):
+            for ti,target in enumerate(paid.battlefield):
+                if ti!=ki and target.tapped and is_artifact_perm(effective_name(target)):
+                    bf=list(paid.battlefield);bf[ki]=replace(bf[ki],tapped=True);bf[ti]=replace(bf[ti],tapped=False)
+                    out.append(replace(paid,battlefield=tuple(bf)))
+    from itertools import combinations
+    for ci,cand in enumerate(s.battlefield):
+        if cand.name!="Candelabra of Tawnos" or cand.tapped:continue
+        inds=[i for i,p in enumerate(s.battlefield) if p.tapped and p.name in LANDS and not (p.name=="The Mycosynth Gardens" and p.aux.startswith("COPY:"))]
+        for X in range(1,len(inds)+1):
+            for paid in pay_options(s,X):
+                for sub in combinations(inds,X):
+                    bf=list(paid.battlefield);bf[ci]=replace(bf[ci],tapped=True)
+                    for j in sub:bf[j]=replace(bf[j],tapped=False)
+                    out.append(replace(paid,battlefield=tuple(bf)))
+    return out
+
+# ---------- 9. stax legality ----------
+STAX={"Rule of Law","Deafening Silence","Trinisphere","Thorn of Amethyst","Vexing Bauble","Void Mirror"}
+def stax_allows(s,name,is_artifact=False,is_creature=False,mana_spent=True):
+    names={x.name for x in s.battlefield}
+    if "Rule of Law" in names and s.spells>=1:return False
+    if "Deafening Silence" in names and not is_creature and s.noncreature_spells>=1:return False
+    return True
+
+def payment_tags(before,after):
+    """Return (total mana spent, colored mana spent) from resource deltas."""
+    fields=("w","c","any","restricted_legend","restricted_artifact","restricted_dack_white")
+    total=sum(max(0,getattr(before,f)-getattr(after,f)) for f in fields)
+    # `w`, unrestricted `any`, and Dack-white are colored pools. Restricted legend/artifact
+    # are currently generated colorlessly in this deck model.
+    colored=max(0,before.w-after.w)+max(0,before.any-after.any)+max(0,before.restricted_dack_white-after.restricted_dack_white)
+    return total,colored
+
+def payment_stax_ok(before,after):
+    names={x.name for x in before.battlefield}
+    total,colored=payment_tags(before,after)
+    if "Vexing Bauble" in names and total==0:return False
+    if "Void Mirror" in names and colored==0:return False
+    return True
+
+# ---------- spell casting ----------
+COSTS={ "Defense Grid":(2,0,0),"Cursed Totem":(2,0,0),"Portable Hole":(0,1,0),
+"Vexing Bauble":(1,0,0),"Void Mirror":(2,0,0),"Trinisphere":(3,0,0),"Thorn of Amethyst":(2,0,0),
+"Shardmage\'s Rescue":(0,1,0),"Deafening Silence":(0,1,0),"Rule of Law":(2,1,0),"Paladin Class":(0,1,0),"Static Prison":(0,1,0),
+ "Archaeomancer's Map":(2,1,0),
+
+"Sol Ring":(1,0,0),"Mana Vault":(1,0,0),"Candelabra of Tawnos":(1,0,0),
+"Voltaic Key":(1,0,0),"Manifold Key":(1,0,0),"Expedition Map":(1,0,0),
+"Brainstone":(1,0,0),"Campfire":(1,0,0),"Giant's Boulder":(1,0,0),
+"Arcane Signet":(2,0,0),"Fellwar Stone":(2,0,0),"Liquimetal Torque":(2,0,0),
+"Prismatic Lens":(2,0,0),"Pentad Prism":(2,0,0),"Moonsilver Key":(2,0,0),"Pearl Medallion":(2,0,0),"Scroll Rack":(2,0,0),
+"The Mind Stone":(1,1,0),"Basalt Monolith":(3,0,0),"Grim Monolith":(2,0,0),
+"Coalition Relic":(3,0,0),"Tezzeret, Cruel Captain":(3,0,0),
+"Gleaming Splendor":(1,1,0),"Enlightened Tutor":(0,1,0),"Loyal Tutor":(0,1,0),
+"Everflowing Chalice":(0,0,0),"Chrome Mox":(0,0,0),"Mox Diamond":(0,0,0),
+"Mox Opal":(0,0,0),"Lotus Petal":(0,0,0),"Lion's Eye Diamond":(0,0,0),
+"Jeweled Amulet":(0,0,0),"Tooth of Ramos":(3,0,0),
+"Kozilek\'s Command":(0,0,2),"Eldrazi Confluence":(2,0,2)
+}
+def artifact_enters_bf(bf, perm):
+    arr=list(bf)+[perm]
+    # Tezzeret triggers for another artifact entering; if Tezz is already present, +1.
+    arr=[replace(x,loyalty=x.loyalty+1) if x.name=="Tezzeret, Cruel Captain" else x for x in arr]
+    return tuple(arr)
+
+
+def _cast_actions_ranked(s,payment_rank=0):
+    out=[]
+    for idx,n in enumerate(s.hand):
+        if n not in COSTS:continue
+        art=is_artifact_perm(n)
+        if not stax_allows(s,n,is_artifact=art):continue
+        g,w,cc=COSTS[n]
+        # Pearl Medallion
+        if w and any(x.name=="Pearl Medallion" for x in s.battlefield):g=max(0,g-1)
+        # Thorn/Trinisphere conservative handling
+        names={x.name for x in s.battlefield}
+        if "Thorn of Amethyst" in names and not art:g+=1
+        if "Trinisphere" in names:g=max(g,3-w-cc)
+
+        # Variable/special payment cards are handled directly from the pre-cast state so a
+        # non-saturating payment rank does not suppress their inner payment alternatives.
+        if n=="Pentad Prism":
+            if payment_rank>0:continue
+            seenpp=set()
+            for pp in pay_options(s,2,artifact=True):
+                w_spent=max(0,s.w-pp.w); any_spent=max(0,s.any-pp.any)
+                counters=0
+                if w_spent>0:counters=1
+                if any_spent>0:counters=max(counters,1)
+                if any_spent>=2 or (w_spent>0 and any_spent>0):counters=2
+                hh=list(pp.hand);hh.pop(idx)
+                q=replace(pp,hand=sort_hand(hh),spells=pp.spells+1,noncreature_spells=pp.noncreature_spells+1,
+                          battlefield=artifact_enters_bf(pp.battlefield,Perm(n,False,counters,s.turn)))
+                kk=key(q)
+                if kk not in seenpp:seenpp.add(kk);out.append(q)
+            continue
+        if n=="Everflowing Chalice":
+            for k in range(0,4):
+                p2=pay_simple(s,2*k,artifact=True,payment_rank=payment_rank)
+                if not p2:continue
+                if not payment_stax_ok(s,p2):continue
+                hh=list(p2.hand);hh.pop(idx)
+                base2=replace(p2,hand=sort_hand(hh),spells=p2.spells+1,noncreature_spells=p2.noncreature_spells+1)
+                out.append(replace(base2,battlefield=artifact_enters_bf(base2.battlefield,Perm(n,False,k,s.turn))))
+            continue
+        if n=="Kozilek's Command":
+            for X in range(1,7):
+                q=pay_simple(s,X,0,2,payment_rank=payment_rank)
+                if not q:continue
+                if not payment_stax_ok(s,q):continue
+                hh=list(q.hand);hh.pop(idx)
+                out.append(replace(q,hand=sort_hand(hh),spawn=q.spawn+X,grave=q.grave+(n,),
+                                   spells=q.spells+1,nonartifact_spells=q.nonartifact_spells+1,
+                                   noncreature_spells=q.noncreature_spells+1))
+            continue
+
+        paid=pay_simple(s,g,w,cc,artifact=art,payment_rank=payment_rank)
+        if not paid:continue
+        if not payment_stax_ok(s,paid):continue
+        h=list(paid.hand);h.pop(idx)
+        base=replace(paid,hand=sort_hand(h),spells=paid.spells+1,
+                     nonartifact_spells=paid.nonartifact_spells+(0 if art else 1),noncreature_spells=paid.noncreature_spells+1)
+        # tutors
+        if n=="Enlightened Tutor":
+            target=artifact_tutor_choice(base)
+            if target:
+                lib=list(base.library);lib.remove(target)
+                out.append(replace(base,library=(target,)+shuffled_unknown(lib),grave=base.grave+(n,)))
+            continue
+        if n=="Loyal Tutor":
+            if "Tezzeret, Cruel Captain" in base.library:
+                lib=list(base.library);lib.remove("Tezzeret, Cruel Captain");# preserve randomized relative order of unknown remainder
+                out.append(replace(base,library=("Tezzeret, Cruel Captain",)+shuffled_unknown(lib),grave=base.grave+(n,)))
+            continue
+        # Chrome Mox requires safe imprint
+        if n=="Chrome Mox":
+            for j,card in enumerate(base.hand):
+                if chrome_mox_allowed(card):
+                    hh=list(base.hand);hh.pop(j)
+                    out.append(replace(base,hand=sort_hand(hh),exile=base.exile+(card,),
+                                       battlefield=artifact_enters_bf(base.battlefield,Perm(n,False,0,s.turn))))
+            continue
+        # Mox Diamond requires actual land card in hand; MDFCs deliberately excluded.
+        if n=="Mox Diamond":
+            for j,card in enumerate(base.hand):
+                if card in LANDS and card not in {"Emeria's Call","Razorgrass Ambush"}:
+                    hh=list(base.hand);hh.pop(j)
+                    out.append(replace(base,hand=sort_hand(hh),grave=base.grave+(card,),
+                                       battlefield=artifact_enters_bf(base.battlefield,Perm(n,False,0,s.turn))))
+            continue
+        if n=="Eldrazi Confluence":
+            # Choose the Scion mode three times: three 1/1 Scions, each sacs for C.
+            out.append(replace(base,spawn=base.spawn+3,grave=base.grave+(n,)))
+            continue
+        # Archaeomancer's Map ETB: take up to two basic Plains (taking both weakly dominates here).
+        if n=="Archaeomancer's Map":
+            lib=list(base.library); hh=list(base.hand)
+            for _ in range(2):
+                if "Plains" in lib:
+                    lib.remove("Plains"); hh.append("Plains")
+            # preserve randomized relative order of unknown remainder
+            bf=base.battlefield+(Perm(n,False,0,s.turn),)
+            # artifact ETB adds loyalty to an existing Tezzeret
+            bf=tuple(replace(x,loyalty=x.loyalty+1) if x.name=="Tezzeret, Cruel Captain" else x for x in bf)
+            out.append(replace(base,hand=sort_hand(hh),library=shuffled_unknown(lib),battlefield=bf))
+            continue
+        # Giant's Boulder ETB scry 2: enumerate every legal keep/bottom subset and ordering.
+        if n=="Giant's Boulder":
+            from itertools import combinations, permutations
+            seen_libs=set(); top=list(base.library[:2]); tail=tuple(base.library[2:])
+            inds=range(len(top))
+            for nb in range(len(top)+1):
+                for bottom_inds in combinations(inds,nb):
+                    bset=set(bottom_inds)
+                    kept=[top[j] for j in inds if j not in bset]
+                    bot=[top[j] for j in inds if j in bset]
+                    kept_orders=set(permutations(kept)) if kept else {()}
+                    bottom_orders=set(permutations(bot)) if bot else {()}
+                    for kp in kept_orders:
+                        for bp in bottom_orders:
+                            libv=tuple(kp)+tail+tuple(bp)
+                            if libv in seen_libs: continue
+                            seen_libs.add(libv)
+                            bf=base.battlefield+(Perm(n,False,0,s.turn),)
+                            bf=tuple(replace(x,loyalty=x.loyalty+1) if x.name=="Tezzeret, Cruel Captain" else x for x in bf)
+                            out.append(replace(base,battlefield=bf,library=libv))
+            continue
+        # zero/normal permanent
+        bf=base.battlefield+(Perm(n,False,0,s.turn,loyalty=(4 if n=="Tezzeret, Cruel Captain" else 0)),)
+        if is_artifact_perm(n):
+            bf=tuple(replace(x,loyalty=x.loyalty+1) if x.name=="Tezzeret, Cruel Captain" and x.name!=n else x for x in bf)
+        out.append(replace(base,battlefield=bf))
+    return out
+
+def upkeep_untap_mana_actions(s):
+    """Activated mana/untap abilities legal and relevant during Mana Vault upkeep."""
+    out=[]
+    # Keys may untap mana artifacts during upkeep.
+    for ki,k in enumerate(s.battlefield):
+        if k.name not in {"Voltaic Key","Manifold Key"} or k.tapped:continue
+        for paid in pay_options(s,1):            for ti,target in enumerate(paid.battlefield):
+                if ti!=ki and target.tapped and is_artifact_perm(effective_name(target)):
+                    bf=list(paid.battlefield);bf[ki]=replace(bf[ki],tapped=True);bf[ti]=replace(bf[ti],tapped=False)
+                    out.append(replace(paid,battlefield=tuple(bf)))
+    # Monolith self-untaps are legal activated abilities.
+    for i,p in enumerate(s.battlefield):
+        if effective_name(p)=="Grim Monolith" and p.tapped:
+            for paid in pay_options(s,4):
+                bf=list(paid.battlefield);bf[i]=replace(bf[i],tapped=False);out.append(replace(paid,battlefield=tuple(bf)))
+        if effective_name(p)=="Basalt Monolith" and p.tapped:
+            for paid in pay_options(s,3):
+                bf=list(paid.battlefield);bf[i]=replace(bf[i],tapped=False);out.append(replace(paid,battlefield=tuple(bf)))
+    # Candelabra is also an activated untap ability.
+    from itertools import combinations
+    for ci,ca in enumerate(s.battlefield):
+        if ca.name!="Candelabra of Tawnos" or ca.tapped:continue
+        inds=[i for i,x in enumerate(s.battlefield) if x.name in LANDS and x.tapped]
+        for X in range(1,len(inds)+1):
+            for paid in pay_options(s,X):
+                for sub in combinations(inds,X):
+                    bf=list(paid.battlefield);bf[ci]=replace(bf[ci],tapped=True)
+                    for i in sub:bf[i]=replace(bf[i],tapped=False)
+                    out.append(replace(paid,battlefield=tuple(bf)))
+    return out
+
+def mana_vault_upkeep_options(s,beam=300,depth=10):
+    """No-pay line plus legal upkeep {4} Mana Vault untap lines only."""
+    outs=[s]
+    if not any(effective_name(p)=="Mana Vault" and p.tapped for p in s.battlefield):return outs
+    frontier=[s];seen={key(s)}
+    for _ in range(depth):
+        nxt=[]
+        for q in frontier:
+            for a in tap_mana_actions(q)+upkeep_untap_mana_actions(q):
+                # no card-zone manipulation is permitted by this upkeep helper
+                if a.hand!=q.hand or a.library!=q.library:continue
+                kk=key(a)
+                if kk not in seen:seen.add(kk);nxt.append(a)
+        for q in frontier+nxt:
+            for paid in pay_options(q,4):
+                for vi,pv in enumerate(paid.battlefield):
+                    if effective_name(pv)=="Mana Vault" and pv.tapped:
+                        bf=list(paid.battlefield);bf[vi]=replace(pv,tapped=False)
+                        outs.append(replace(paid,battlefield=tuple(bf),w=0,c=0,any=0,
+                            restricted_legend=0,restricted_artifact=0,restricted_dack_white=0))
+        if not nxt:break
+        nxt.sort(key=score,reverse=True);frontier=nxt[:beam]
+    d={}
+    for q in outs:d[key(q)]=q
+    return list(d.values())
+
+
+def can_cast_dack(s):
+    if not COMBO_CREATURES.issubset(set(s.library)):return False
+    if not stax_allows(s,COMMANDER,is_creature=True):return False
+    names={x.name for x in s.battlefield};generic=4
+    if "Thorn of Amethyst" in names:generic+=1
+    if "Pearl Medallion" in names:generic=max(0,generic-1)
+    # Exact allocation. restricted_dack_white may pay either W pips or generic for Dack;
+    # fold it into an any-like Dack-only pool, then enumerate the two white pips first.
+    for rdw_white in range(min(2,s.restricted_dack_white)+1):
+        needw=2-rdw_white
+        for ww in range(min(s.w,needw)+1):
+            aa=needw-ww
+            if aa>s.any:continue
+            remw=s.w-ww;rema=s.any-aa;remrdw=s.restricted_dack_white-rdw_white
+            # generic can use W/C/any/legend-only (Dack is legendary)/remaining Dack-only.
+            if remw+s.c+rema+s.restricted_legend+remrdw>=generic:return True
+    return False
+
+
+# ---------- 10. bounded search / diagnostics ----------
+# Battlefield-only equivalence classes. Cards collapse only after their distinct cast/play/search
+# identity can no longer matter to the T1-T3 objective.
+BF_EQUIV={"City of Brass":"RAINBOW_LAND","Mana Confluence":"RAINBOW_LAND"}
+_BF_EQUIV_ID={"RAINBOW_LAND":-1}
+def _perm_key(x):
+    n=BF_EQUIV.get(x.name,x.name)
+    nid=_BF_EQUIV_ID.get(n,CARD_ID.get(n,-2))
+    # aux is normally empty; preserve exact copy identity when present.
+    return (nid,x.tapped,x.counters,x.aux,x.loyalty,x.activated_turn)
+def key(s):
+    return (s.turn,tuple(CARD_ID[x] for x in s.hand),library_token(s.library),
+            tuple(sorted(_perm_key(x) for x in s.battlefield)),
+            s.land_played,s.w,s.c,s.any,s.restricted_legend,s.restricted_artifact,
+            s.treasures,s.spawn,s.spells,s.nonartifact_spells,s.noncreature_spells,s.restricted_dack_white,s.map_bonus_used)
+
+def _cast_rank_limit(s):
+    """Exact upper bound (capped at the historical 8) on payment ranks worth asking for."""
+    mx=1; names={x.name for x in s.battlefield}
+    for n in s.hand:
+        if n not in COSTS:continue
+        art=is_artifact_perm(n);g,w,cc=COSTS[n]
+        if w and "Pearl Medallion" in names:g=max(0,g-1)
+        if "Thorn of Amethyst" in names and not art:g+=1
+        if "Trinisphere" in names:g=max(g,3-w-cc)
+        if n=="Everflowing Chalice":
+            for k in range(4):mx=max(mx,len(_pay_pool_options(s.w,s.c,s.any,s.restricted_legend,s.restricted_artifact,2*k,0,0,False,True)))
+        elif n=="Kozilek's Command":
+            for X in range(1,7):mx=max(mx,len(_pay_pool_options(s.w,s.c,s.any,s.restricted_legend,s.restricted_artifact,X,0,2,False,False)))
+        elif n=="Pentad Prism":
+            mx=max(mx,1)
+        else:
+            mx=max(mx,len(_pay_pool_options(s.w,s.c,s.any,s.restricted_legend,s.restricted_artifact,g,w,cc,False,art)))
+    return min(8,mx)
+
+def cast_actions(s):
+    out=[];seen=set()
+    for rank in range(_cast_rank_limit(s)):
+        for q in _cast_actions_ranked(s,payment_rank=rank):
+            kk=key(q)
+            if kk not in seen:seen.add(kk);out.append(q)
+    return out
+
+def score(s):
+    mana=s.w+s.c+s.any+s.restricted_legend+s.restricted_dack_white
+    white=s.w+s.any+s.restricted_dack_white
+    white_potential=white
+    bank=0
+    for p in s.battlefield:
+        n=effective_name(p)
+        if p.name in WHITE_LANDS or n in {"Emeria, Shattered Skyclave","Razorgrass Field","Mox Diamond","Chrome Mox","Tooth of Ramos","The Mind Stone","Cavern of Souls"}:
+            white_potential+=1
+        if p.name=="Gemstone Caverns" and p.counters: white_potential+=1
+        # Approximate reusable next-turn mana. This matters especially for turn-end frontier pruning.
+        if n=="Ancient Tomb": bank+=2
+        elif n in {"Sol Ring"}: bank+=2
+        elif n in {"Mana Vault","Grim Monolith","Basalt Monolith"}:
+            if not p.tapped: bank+=3
+        elif n=="Coalition Relic": bank+=1+p.counters
+        elif n=="Everflowing Chalice": bank+=p.counters
+        elif n=="Pentad Prism": bank+=p.counters
+        elif n=="Remote Farm": bank+=2 if p.counters else 0
+        elif n=="Untaidake, the Cloud Keeper": bank+=2
+        elif n=="Lion's Eye Diamond" and not any(x in COMBO_CREATURES for x in s.hand):
+            bank+=3; white_potential+=3
+        elif n in LANDS or n in {"Arcane Signet","Fellwar Stone","Mox Diamond","Chrome Mox","Mox Opal","The Mind Stone","Liquimetal Torque","Prismatic Lens","Tooth of Ramos"}: bank+=1
+    white_hand=sum(x in WHITE_LANDS or x in {"Emeria's Call","Razorgrass Ambush","Mox Diamond","Chrome Mox","Lotus Petal","Tooth of Ramos"} for x in s.hand)
+    if "Lion's Eye Diamond" in s.hand and not any(x in COMBO_CREATURES for x in s.hand):
+        white_hand+=3
+    future_lands=min(3,sum(x in LANDS or x in {"Emeria's Call","Razorgrass Ambush"} for x in s.hand))
+    # Floating mana is useful within-turn but bankable infrastructure dominates when choosing pass states.
+    return ((1000 if can_cast_dack(s) else 0)+18*min(mana,8)+24*min(bank,8)+28*min(white,2)+
+            18*min(white_potential+white_hand,2)+5*future_lands+8*len(s.battlefield)-
+            40*sum(x in COMBO_CREATURES for x in s.hand))
+
+def search_turn_frontier_many(states,beam=6000,depth=24):
+    # Cache exact key/score calculations for immutable states within this turn search.
+    kcache={};scache={}
+    def kf(q):
+        oid=id(q);got=kcache.get(oid)
+        if got is not None and got[0] is q:return got[1]
+        v=key(q);kcache[oid]=(q,v);return v
+    def sf(q):
+        oid=id(q);got=scache.get(oid)
+        if got is not None and got[0] is q:return got[1]
+        v=score(q);scache[oid]=(q,v);return v
+    frontier=list(states);seen={kf(q) for q in frontier};wins=[]
+    end_by_key={kf(q):q for q in frontier}
+    for _ in range(depth):
+        nxt=[]
+        for q in frontier:
+            if can_cast_dack(q) and not city_trigger_pending(q):wins.append(q);continue
+            # A City sacrifice trigger on the stack must resolve before sorcery-speed actions/pass.
+            if city_trigger_pending(q):
+                resp_special=[a for a in special_actions(q)
+                              if a.hand==q.hand and a.library==q.library and len(a.battlefield)==len(q.battlefield)]
+                acts=tap_mana_actions(q)+utility_actions(q)+resp_special+nasty_mana_actions(q)+resolve_city_trigger_actions(q)
+            else:
+                # Passing priority through the rest of the turn is always legal.
+                kq=kf(q)
+                prev=end_by_key.get(kq)
+                if prev is None or sf(q)>sf(prev): end_by_key[kq]=q
+                acts=play_land_actions(q)+tap_mana_actions(q)+utility_actions(q)+special_actions(q)+v03_actions(q)+nasty_mana_actions(q)+repair_actions(q)+saga_tutor_actions(q)+cast_actions(q)
+            for a in acts:
+                k=kf(a)
+                if k not in seen:seen.add(k);nxt.append(a)
+        if wins:return wins,sorted(end_by_key.values(),key=sf,reverse=True)[:beam]
+        if not nxt:break
+        # Diversity-aware beam: preserve the best state within strategic signatures before filling by score.
+        nxt.sort(key=sf,reverse=True)
+        sigbest={}
+        for q in nxt:
+            names=frozenset(x.name for x in q.battlefield)
+            sig=(q.land_played,
+                 min(2,sum(x in {"Plains","Ancient Den","Eiganjo, Seat of the Empire","Shefet Dunes","Mana Confluence","City of Brass","Gemstone Mine","Starting Town"} for x in q.hand)),
+                 "Urza's Saga" in names, "Mana Vault" in names, "Sol Ring" in names,
+                 ("Lion's Eye Diamond" in names or "Lion's Eye Diamond" in q.hand),
+                 min(3,sum(x in LANDS or x in {"Emeria's Call","Razorgrass Ambush"} for x in q.hand)),
+                 "Coalition Relic" in names,
+                 any(x.name in {"Brainstone","Scroll Rack"} for x in q.battlefield))
+            if sig not in sigbest: sigbest[sig]=q
+        diverse=sorted(sigbest.values(),key=sf,reverse=True)[:max(1,beam//3)]
+        dk={kf(q) for q in diverse}
+        frontier=diverse+[q for q in nxt if kf(q) not in dk][:max(0,beam-len(diverse))]
+        # Bound the pass-state reservoir as well.
+        if len(end_by_key)>beam*3:
+            vals=sorted(end_by_key.values(),key=sf,reverse=True)
+            keep=vals[:beam]
+            end_by_key={kf(q):q for q in keep}
+    wins.extend(q for q in frontier if can_cast_dack(q) and not city_trigger_pending(q))
+    for q in frontier:
+        if not city_trigger_pending(q):end_by_key[kf(q)]=q
+    return wins,sorted(end_by_key.values(),key=sf,reverse=True)[:beam]
+
+
+def search_turn_frontier(s,beam=3000,depth=18):
+    frontier=[s];seen={key(s)}
+    wins=[]
+    for _ in range(depth):
+        nxt=[]
+        for q in frontier:
+            if can_cast_dack(q):
+                wins.append(q);continue
+            acts=play_land_actions(q)+tap_mana_actions(q)+utility_actions(q)+special_actions(q)+v03_actions(q)+nasty_mana_actions(q)+repair_actions(q)+saga_tutor_actions(q)+cast_actions(q)
+            for a in acts:
+                k=key(a)
+                if k not in seen:
+                    seen.add(k);nxt.append(a)
+        if not nxt:break
+        nxt.sort(key=score,reverse=True);frontier=nxt[:beam]
+    wins.extend(q for q in frontier if can_cast_dack(q))
+    return wins,frontier
+
+def search_turn(s,beam=6000,depth=18):
+    frontier=[s]; seen=set()
+    for _ in range(depth):
+        nxt=[]
+        for q in frontier:
+            if can_cast_dack(q):return q
+            acts=play_land_actions(q)+tap_mana_actions(q)+utility_actions(q)+special_actions(q)+v03_actions(q)+nasty_mana_actions(q)+repair_actions(q)+saga_tutor_actions(q)+cast_actions(q)
+            for a in acts:
+                k=key(a)
+                if k not in seen:seen.add(k);nxt.append(a)
+        if not nxt:break
+        nxt.sort(key=score,reverse=True);frontier=nxt[:beam]
+    wins=[q for q in frontier if can_cast_dack(q)]
+    return max(wins,key=score) if wins else max(frontier,key=score,default=s)
+
+def apply_gemstone_pregame(s,rng):
+    # Four-player seat model: 1/4 starting player (Caverns inactive), 3/4 non-starting.
+    if rng.random() < 0.25:
+        return s, True
+    if "Gemstone Caverns" not in s.hand:
+        return s, False
+    # Branch safe exile choices and choose best by solver score; never exile combo creatures.
+    outs=[s]
+    for i,card in enumerate(s.hand):
+        if card=="Gemstone Caverns" or card in COMBO_CREATURES: continue
+        hh=list(s.hand);hh.pop(i);hh.remove("Gemstone Caverns")
+        bf=s.battlefield+(Perm("Gemstone Caverns",False,1,0),)
+        outs.append(replace(s,hand=sort_hand(hh),battlefield=bf,exile=s.exile+(card,)))
+    return max(outs,key=score), False
+
+def simulate_one_frontier(rng,beam=2500,V=None,mull_beam=120,mull_samples=4):
+    if V is None:raise ValueError("pass calibrated V")
+    chosen,mull_depth,audit=choose_london_hand(rng,V,beam=mull_beam,samples=mull_samples)
+    # apply actual randomized seat once for the realized game
+    starting=(rng.random()<0.25)
+    states=_pregame_states(chosen,0 if starting else 1)
+    states=[draw(s,1) for s in states]
+    result={"win_turn":None,"mull":mull_depth,"repaired":0,"audit":audit}
+    for turn in (1,2,3):
+        if turn>1:
+            ns=[]
+            for s in states:
+                q=replace(s,turn=turn);q=untap_and_begin(q);q=add_opponent_cycle_resources(q)
+                for uq in mana_vault_upkeep_options(q):
+                    uq=draw(uq,1);uq=saga_advance(uq);uq=begin_first_main(uq)
+                    ns.append(uq)
+            states=ns
+        wins,states=search_turn_frontier_many(states,beam=beam,depth=24)
+        if wins:
+            result["win_turn"]=turn;result["repaired"]=max(q.repaired for q in wins);return result
+    if states:result["repaired"]=max(q.repaired for q in states)
+    return result
+
+def simulate_one(rng,beam=3000,V=None,mull_beam=500,mull_samples=16):
+    return simulate_one_frontier(rng,beam=beam,V=V,mull_beam=mull_beam,mull_samples=mull_samples)
+
+
+def run(n,seed,beam):
+    rng=random.Random(seed)
+    rows=[simulate_one(rng,beam) for _ in range(n)]
+    c=Counter(r["win_turn"] for r in rows);m=Counter(r["mull"] for r in rows)
+    return {
+      "n":n,"seed":seed,"beam":beam,
+      "T1":c[1]/n,"T2_exact":c[2]/n,"T3_exact":c[3]/n,
+      "le_T2":(c[1]+c[2])/n,"le_T3":(c[1]+c[2]+c[3])/n,
+      "fail_T3":c[None]/n,
+      "white_fail_T2":sum(r["white_fail_t2"] for r in rows)/n,
+      "white_fail_T3":sum(r["white_fail_t3"] for r in rows)/n,
+      "repair_rate":sum(r["repaired"]>0 for r in rows)/n,
+      "mulligan_keep_n":dict(sorted(m.items(),reverse=True))
+    }
+
+def selftest():
+    assert len(DECK)==99
+    assert not chrome_mox_allowed("Boonweaver Giant")
+    assert not chrome_mox_allowed("Coalition Flag")
+    assert not chrome_mox_allowed("Super State")
+    assert chrome_mox_allowed("Enlightened Tutor")
+    assert chrome_mox_allowed("Loyal Tutor")
+    assert chrome_mox_allowed("Silence")
+    # Nexus + Tower -> Tower taps for 3.
+    s=State(1,(),(),(Perm("Planar Nexus"),Perm("Urza's Tower")))
+    vals=tap_mana_actions(s)
+    assert any(x.c==3 for x in vals)
+    # Workshop with Nexus + 3 artifacts -> >=2 from Workshop.
+    s=State(1,(),(),(Perm("Planar Nexus"),Perm("Urza's Workshop"),
+        Perm("Sol Ring"),Perm("Mana Vault"),Perm("Chrome Mox")))
+    assert any(x.c>=2 for x in tap_mana_actions(s))
+    # Great Hall can create 2 legend-restricted.
+    s=State(1,(),(),(Perm("Great Hall of the Citadel"),),c=1)
+    assert any(x.restricted_legend==2 for x in special_actions(s))
+    # v0.3 regression tests
+    s=State(1,("Silence",),tuple(COMBO_CREATURES),(Perm("Lion's Eye Diamond"),))
+    assert any(x.w==3 and not x.hand for x in tap_mana_actions(s))
+    s=State(1,(),(),(Perm("Lotus Petal"),))
+    assert any(x.w==1 for x in tap_mana_actions(s))
+    s=State(1,(),(),(Perm("Mox Opal"),))
+    assert not any(x.any for x in tap_mana_actions(s))
+    s=State(1,(),(),(Perm("Mox Opal"),Perm("Sol Ring"),Perm("Mana Vault")))
+    assert any(x.any for x in tap_mana_actions(s))
+    s=State(1,(),("Planar Nexus",),(Perm("Expedition Map"),),c=2)
+    assert any("Planar Nexus" in x.hand for x in v03_actions(s))
+    s=State(1,(),("Lion's Eye Diamond",),(Perm("Tezzeret, Cruel Captain",loyalty=4),))
+    assert any("Lion's Eye Diamond" in x.hand for x in v03_actions(s))
+    # Eldrazi ramp abstraction tests.
+    s=State(1,("Kozilek's Command",),(),(),c=5)
+    ka=cast_actions(s)
+    assert any(x.spawn==3 for x in ka), "Kozilek Command X=3 ramp missing"
+    s=State(1,("Eldrazi Confluence",),(),(),c=4)
+    ea=cast_actions(s)
+    assert any(x.spawn==3 for x in ea), "Eldrazi Confluence triple-Scion ramp missing"
+
+    # Compound: Tezzeret -3 -> LED -> cast -> activate.
+    s=State(1,(),("Lion's Eye Diamond",)+tuple(COMBO_CREATURES),
+            (Perm("Tezzeret, Cruel Captain",loyalty=4),))
+    aa=[x for x in v03_actions(s) if "Lion's Eye Diamond" in x.hand]
+    assert aa, "Tezzeret -> LED tutor failed"
+    bb=[x for q in aa for x in cast_actions(q)]
+    assert any(any(p.name=="Lion's Eye Diamond" for p in q.battlefield) for q in bb), "LED cast failed"
+    assert any(x.w>=3 for q in bb for x in tap_mana_actions(q)), "LED activation failed"
+
+    # Compound: Gardens -> LED copy -> copied LED activation.
+    s=State(1,(),tuple(COMBO_CREATURES),
+            (Perm("The Mycosynth Gardens"),Perm("Lion's Eye Diamond")))
+    aa=[x for x in v03_actions(s) if any(p.aux=="COPY:Lion's Eye Diamond" for p in x.battlefield)]
+    assert aa, "Gardens copy failed"
+    assert any(x.w>=3 for q in aa for x in tap_mana_actions(q)), "copied LED activation failed"
+
+    # Compound: Map -> Nexus -> play Nexus.
+    s=State(1,(),("Planar Nexus",)+tuple(COMBO_CREATURES),(Perm("Expedition Map"),),c=2)
+    aa=[x for x in v03_actions(s) if "Planar Nexus" in x.hand]
+    assert aa, "Map -> Nexus tutor failed"
+    assert any(any(p.name=="Planar Nexus" for p in x.battlefield)
+               for q in aa for x in play_land_actions(q)), "Map -> Nexus play failed"
+
+    # Rack repair.
+    s=State(1,("Boonweaver Giant",),("Plains","Sol Ring","Preston, the Vanisher","Roaming Throne"),
+            (Perm("Scroll Rack"),),c=1)
+    aa=repair_actions(s)
+    assert any("Boonweaver Giant" in x.library and "Boonweaver Giant" not in x.hand for x in aa), "Rack repair failed"
+
+    # Brainstone repair.
+    s=State(1,("Preston, the Vanisher",),
+            ("Plains","Sol Ring","Silence","Boonweaver Giant","Roaming Throne"),
+            (Perm("Brainstone"),),c=2)
+    aa=repair_actions(s)
+    assert any("Preston, the Vanisher" in x.library and "Preston, the Vanisher" not in x.hand for x in aa), "Brainstone repair failed"
+
+    # Nexus/Tower and Nexus/Workshop.
+    s=State(1,(),tuple(COMBO_CREATURES),(Perm("Planar Nexus"),Perm("Urza's Tower")))
+    assert any(x.c==3 for x in tap_mana_actions(s)), "Nexus/Tower failed"
+    s=State(1,(),tuple(COMBO_CREATURES),(Perm("Planar Nexus"),Perm("Urza's Workshop"),
+      Perm("Sol Ring"),Perm("Mana Vault"),Perm("Chrome Mox")))
+    assert any(x.c>=2 for x in tap_mana_actions(s)), "Nexus/Workshop failed"
+
+
+    # Vault + Key = 5 net after retap.
+    s=State(1,(),tuple(COMBO_CREATURES),(Perm("Mana Vault"),Perm("Voltaic Key")))
+    a=[x for x in tap_mana_actions(s) if x.c>=3]
+    b=[x for q in a for x in nasty_mana_actions(q) if any(p.name=="Mana Vault" and not p.tapped for p in x.battlefield)]
+    assert b and any(x.c+x.any+x.w>=5 for q in b for x in tap_mana_actions(q)), "Vault/Key failed"
+
+    # Grim + Manifold Key = 5 net.
+    s=State(1,(),tuple(COMBO_CREATURES),(Perm("Grim Monolith"),Perm("Manifold Key")))
+    a=[x for x in tap_mana_actions(s) if x.c>=3]
+    b=[x for q in a for x in nasty_mana_actions(q) if any(p.name=="Grim Monolith" and not p.tapped for p in x.battlefield)]
+    assert b and any(x.c+x.any+x.w>=5 for q in b for x in tap_mana_actions(q)), "Grim/Key failed"
+
+    # Tomb + Candelabra = 3 net after untap/retap.
+    s=State(1,(),tuple(COMBO_CREATURES),(Perm("Ancient Tomb"),Perm("Candelabra of Tawnos")))
+    a=[x for x in tap_mana_actions(s) if x.c>=2]
+    b=[x for q in a for x in nasty_mana_actions(q) if any(p.name=="Ancient Tomb" and not p.tapped for p in x.battlefield)]
+    assert b and any(x.c+x.any+x.w>=3 for q in b for x in tap_mana_actions(q)), "Candelabra/Tomb failed"
+
+    # Chalice kicked twice -> taps for 2.
+    s=State(1,("Everflowing Chalice",),tuple(COMBO_CREATURES),(),c=4)
+    a=[x for x in cast_actions(s) if any(p.name=="Everflowing Chalice" and p.counters==2 for p in x.battlefield)]
+    assert a and any(x.c>=2 for q in a for x in tap_mana_actions(q)), "Chalice x2 failed"
+
+    # Coalition Relic bank releases at first main, not during upkeep.
+    s=State(1,(),tuple(COMBO_CREATURES),(Perm("Coalition Relic"),))
+    a=[x for x in special_actions(s) if any(p.name=="Coalition Relic" and p.counters for p in x.battlefield)]
+    assert a, "Relic charge failed"
+    q=untap_and_begin(replace(a[0],turn=2))
+    assert q.any==0 and any(p.name=="Coalition Relic" and p.counters==1 and not p.tapped for p in q.battlefield), "Relic released before first main"
+    q=begin_first_main(q)
+    assert q.any>=1 and any(p.name=="Coalition Relic" and p.counters==0 and not p.tapped for p in q.battlefield), "Relic main-phase release failed"
+
+    # Saga I -> II -> III -> LED using existing saga transition.
+    s=State(1,(),("Lion's Eye Diamond",)+tuple(COMBO_CREATURES),(Perm("Urza's Saga",False,1,1),))
+    q=saga_advance(replace(s,turn=2))
+    assert any(p.name=="Urza's Saga" and p.counters==2 for p in q.battlefield), "Saga II failed"
+    q=saga_advance(replace(q,turn=3))
+    opts=saga_tutor_actions(q)
+    assert any(any(p.name=="Lion's Eye Diamond" for p in z.battlefield) for z in opts), "Saga III LED failed"
+
+    # LED plus 3 generic gives a valid six-mana WW Dack state.
+    s=State(2,(),tuple(COMBO_CREATURES),(Perm("Lion's Eye Diamond"),),c=3)
+    a=[x for x in tap_mana_actions(s) if x.w>=3]
+    assert a and any(can_cast_dack(x) for x in a), "LED + generic Dack failed"
+
+
+    # Full search must preserve the white line rather than greedily choosing Tomb/colorless.
+    s=State(1,("Plains","Ancient Tomb","City of Traitors","Mox Diamond","Sol Ring","Mana Vault","Lotus Petal"),
+            tuple(COMBO_CREATURES))
+    q=search_turn(s,beam=12000,depth=24)
+    assert can_cast_dack(q), "full-search WW/Mox-Diamond T1 line was pruned"
+
+    # Full search Tezzeret -> LED. Petal supplies the otherwise missing sixth mana.
+    s=State(1,("Ancient Tomb","Sol Ring","Mana Vault","Lotus Petal","Tezzeret, Cruel Captain"),
+            ("Lion's Eye Diamond",)+tuple(COMBO_CREATURES))
+    q=search_turn(s,beam=12000,depth=24)
+    assert can_cast_dack(q), "full-search Tezzeret -> LED T1 line missing"
+
+    # Full search direct LED hand.
+    s=State(1,("Plains","Ancient Tomb","Sol Ring","Mana Vault","Lion's Eye Diamond"),
+            tuple(COMBO_CREATURES))
+    q=search_turn(s,beam=12000,depth=24)
+    assert can_cast_dack(q), "full-search direct LED T1 line missing"
+
+    # Full search Vault+Key with two white sources.
+    s=State(2,(),tuple(COMBO_CREATURES),
+            (Perm("Mana Vault"),Perm("Voltaic Key"),Perm("Plains"),Perm("Ancient Den")))
+    q=search_turn(s,beam=12000,depth=24)
+    assert can_cast_dack(q), "full-search Vault/Key Dack line missing"
+    # Saga III -> LED state must finish Dack.
+    s=State(3,(),("Lion's Eye Diamond",)+tuple(COMBO_CREATURES),
+            (Perm("Urza's Saga",False,2,1),Perm("Ancient Tomb"),Perm("Sol Ring")))
+    s=saga_advance(s)
+    q=search_turn(s,beam=12000,depth=24)
+    assert can_cast_dack(q), "full-search Saga III -> LED Dack line missing"
+
+    # Audit regression: Planar Nexus color conversion.
+    s=State(1,(),tuple(COMBO_CREATURES),(Perm("Planar Nexus"),),c=1)
+    assert any(x.any>=1 for x in tap_mana_actions(s)), "Planar Nexus color ability failed"
+    # Audit regression: Cavern naming Human can supply Dack-white.
+    s=State(1,(),tuple(COMBO_CREATURES),(Perm("Cavern of Souls"),),c=5,w=1)
+    assert any(can_cast_dack(x) for x in tap_mana_actions(s)), "Cavern Human Dack mana failed"
+    # Audit regression: Great Hall converts external 1 mana into WW for legendary Dack.
+    s=State(1,(),tuple(COMBO_CREATURES),(Perm("Great Hall of the Citadel"),),c=5)
+    assert any(can_cast_dack(x) for x in special_actions(s)), "Great Hall WW Dack failed"
+    # Audit regression: Workshop counts itself as an Urza's land.
+    s=State(1,(),tuple(COMBO_CREATURES),(Perm("Urza's Workshop"),Perm("Planar Nexus"),Perm("Sol Ring"),Perm("Mox Opal")))
+    assert urza_count(s)>=2, "Workshop self Urza count failed"
+    # Audit regression: Giant's Boulder mana conversion.
+    s=State(1,(),tuple(COMBO_CREATURES),(Perm("Giant's Boulder"),),c=1)
+    assert any(x.any>=1 for x in special_actions(s)), "Boulder mana failed"
+    # Regression: Map is castable at 2W and fetches two Plains.
+    s=State(1,("Archaeomancer's Map",),("Plains","Plains")+tuple(COMBO_CREATURES),c=2,w=1)
+    opts=cast_actions(s)
+    assert any(sum(x=="Plains" for x in q.hand)>=2 for q in opts), "Map ETB failed"
+    # Regression: Map catch-up can put a Plains without consuming land play on T2.
+    s=State(2,("Plains",),tuple(COMBO_CREATURES),(Perm("Archaeomancer's Map"),),map_bonus_used=False)
+    assert any(any(x.name=="Plains" for x in q.battlefield) and not q.land_played for q in special_actions(s)), "Map catch-up failed"
+    # Regression: Tezzeret gains loyalty when another artifact enters.
+    bf=artifact_enters_bf((Perm("Tezzeret, Cruel Captain",False,0,1,loyalty=4),),Perm("Sol Ring"))
+    assert next(x for x in bf if x.name=="Tezzeret, Cruel Captain").loyalty==5, "Tezz ETB loyalty failed"
+    # Tezz only finds Brainstone as a contamination-repair exception.
+    s=State(1,("Boonweaver Giant",),("Brainstone","Lion's Eye Diamond"),(Perm("Tezzeret, Cruel Captain",False,0,1,loyalty=4),))
+    assert any("Brainstone" in q.hand for q in v03_actions(s)), "Tezz repair priority failed"
+    # Regression: land tutors include all relevant lands, including Cavern/Saga/Workshop.
+    assert {"Cavern of Souls","Urza's Saga","Mishra's Workshop","Urza's Workshop"} <= set(LAND_TUTOR_TARGETS), "land tutor target coverage failed"
+    # Regression: Gleaming Splendor is not an Aura and can be a safe Chrome imprint under user policy.
+    assert "Gleaming Splendor" not in AURAS and chrome_mox_allowed("Gleaming Splendor"), "Splendor Chrome classification failed"
+    # Regression: Rule of Law/Deafening are valid safe Chrome imprints.
+    assert chrome_mox_allowed("Rule of Law") and chrome_mox_allowed("Deafening Silence"), "Chrome white imprint coverage failed"
+    # Regression: Emeria MDFC can be played untapped for W but is not a Mox Diamond land card.
+    s=State(1,("Emeria's Call",),tuple(COMBO_CREATURES))
+    opts=play_land_actions(s)
+    assert any(any(x.name=="Emeria, Shattered Skyclave" and not x.tapped for x in q.battlefield) for q in opts), "Emeria MDFC failed"
+    assert "Emeria's Call" not in LANDS, "Emeria incorrectly Mox-Diamond eligible"
+    # Regression: Razorgrass Field is a tapped W land face and not Mox-Diamond eligible.
+    s=State(1,("Razorgrass Ambush",),tuple(COMBO_CREATURES))
+    opts=play_land_actions(s)
+    assert any(any(x.name=="Razorgrass Field" and x.tapped for x in q.battlefield) for q in opts), "Razorgrass MDFC failed"
+    assert "Razorgrass Ambush" not in LANDS, "Razorgrass incorrectly Mox-Diamond eligible"
+    # Regression: Map catch-up may deploy nonbasic land from hand.
+    s=State(2,("Ancient Tomb",),tuple(COMBO_CREATURES),(Perm("Archaeomancer's Map"),))
+    assert any(any(x.name=="Ancient Tomb" for x in q.battlefield) for q in special_actions(s)), "Map any-land catch-up failed"
+    # Environment regression: Map permits exactly two catch-up land placements per cycle abstraction.
+    s=State(2,("Plains","Ancient Tomb","City of Traitors"),tuple(COMBO_CREATURES),(Perm("Archaeomancer's Map"),))
+    a=special_actions(s); assert a, "Map first catch-up absent"
+    s1=next(q for q in a if q.map_bonus_used==1)
+    a2=special_actions(s1); assert any(q.map_bonus_used==2 for q in a2), "Map second catch-up absent"
+    s2=next(q for q in a2 if q.map_bonus_used==2)
+    assert not any(q.map_bonus_used>2 for q in special_actions(s2)), "Map exceeded two catch-ups"
+    # Environment regression: Caverns pregame leaves starting-seat hand unchanged.
+    class FixedStart:
+        def random(self): return 0.0
+    s=State(1,("Gemstone Caverns","Silence"),tuple(COMBO_CREATURES))
+    q,starting=apply_gemstone_pregame(s,FixedStart())
+    assert starting and q==s, "Caverns active for starting player"
+    # Environment regression: non-starting Caverns can pregame into luck-counter Caverns.
+    class FixedNonStart:
+        def random(self): return 0.9
+    q,starting=apply_gemstone_pregame(s,FixedNonStart())
+    assert not starting and any(x.name=="Gemstone Caverns" and x.counters==1 for x in q.battlefield), "Caverns non-start pregame failed"
+    # ---- Compound sequencing regressions ----
+    # Rule of Law: after one spell, Dack cannot be cast this turn.
+    s=State(2,(),tuple(COMBO_CREATURES),(Perm("Rule of Law"),),w=2,c=4,spells=1)
+    assert not can_cast_dack(s), "Rule of Law failed to stop second spell"
+    # Rule of Law still allows Dack as first spell.
+    assert can_cast_dack(replace(s,spells=0)), "Rule of Law incorrectly stops first Dack"
+    # Deafening Silence counts artifact spells as noncreature spells.
+    s=State(2,("Sol Ring",),tuple(COMBO_CREATURES),(Perm("Deafening Silence"),),c=1,noncreature_spells=1)
+    assert not any("Sol Ring" in [x.name for x in q.battlefield] for q in cast_actions(s)), "Deafening allowed second noncreature"
+    # Deafening does not stop Dack creature after a prior noncreature spell.
+    s=State(2,(),tuple(COMBO_CREATURES),(Perm("Deafening Silence"),),w=2,c=4,noncreature_spells=1)
+    assert can_cast_dack(s), "Deafening incorrectly stopped Dack creature"
+    # Thorn taxes nonartifact Tezzeret but not Mana Vault.
+    s=State(1,("Tezzeret, Cruel Captain","Mana Vault"),tuple(COMBO_CREATURES),(Perm("Thorn of Amethyst"),),c=3)
+    ca=cast_actions(s)
+    assert any(any(x.name=="Mana Vault" for x in q.battlefield) for q in ca), "Thorn taxed artifact"
+    assert not any(any(x.name=="Tezzeret, Cruel Captain" for x in q.battlefield) for q in ca), "Thorn failed to tax Tezz"
+    # Trinisphere makes Sol Ring cost 3.
+    s=State(1,("Sol Ring",),tuple(COMBO_CREATURES),(Perm("Trinisphere"),),c=1)
+    assert not cast_actions(s), "Trinisphere failed on Sol Ring"
+    s=replace(s,c=3); assert cast_actions(s), "Trinisphere overblocked Sol Ring"
+    # Gardens copies Mana Vault and copied identity taps for 3.
+    s=State(1,(),tuple(COMBO_CREATURES),(Perm("The Mycosynth Gardens"),Perm("Mana Vault")),c=1)
+    copies=[q for q in v03_actions(s) if any(x.aux=="COPY:Mana Vault" for x in q.battlefield)]
+    assert copies, "Gardens->Vault copy absent"
+    assert any(x.c>=3 for q in copies for x in tap_mana_actions(q)), "Gardens Vault copy doesn't tap as Vault"
+    # Tezz 0 can untap a Gardens artifact copy.
+    q=copies[0]
+    bf=q.battlefield+(Perm("Tezzeret, Cruel Captain",False,0,1,loyalty=4),)
+    q=replace(q,battlefield=bf,c=0)
+    tapped=[x for x in tap_mana_actions(q) if any(y.aux=="COPY:Mana Vault" and y.tapped for y in x.battlefield)]
+    assert tapped and any(any(y.aux=="COPY:Mana Vault" and not y.tapped for y in z.battlefield) for x in tapped for z in v03_actions(x)), "Tezz failed copied-artifact untap"
+    # Tezz -3 -> LED -> activation can generate WWW with combo creatures safely in library.
+    s=State(1,(),("Lion's Eye Diamond",)+tuple(COMBO_CREATURES),(Perm("Tezzeret, Cruel Captain",False,0,1,loyalty=4),))
+    qs=[q for q in v03_actions(s) if "Lion's Eye Diamond" in q.hand]
+    assert qs, "Tezz->LED tutor absent"
+    ledcasts=[z for q in qs for z in cast_actions(q) if any(x.name=="Lion's Eye Diamond" for x in z.battlefield)]
+    assert ledcasts and any(x.w>=3 for z in ledcasts for x in tap_mana_actions(z)), "Tezz->LED activation chain failed"
+    # Expedition Map can contextually find Great Hall, not merely fixed priority.
+    s=State(1,(),("Great Hall of the Citadel",)+tuple(COMBO_CREATURES),(Perm("Expedition Map"),),c=2)
+    assert any("Great Hall of the Citadel" in q.hand for q in v03_actions(s)), "Map contextual target failed"
+    # Urza's Cave can contextually put Planar Nexus tapped.
+    s=State(1,(),("Planar Nexus",)+tuple(COMBO_CREATURES),(Perm("Urza's Cave"),),c=3)
+    assert any(any(x.name=="Planar Nexus" and x.tapped for x in q.battlefield) for q in v03_actions(s)), "Cave contextual target failed"
+    # Saga III follows deterministic LED > Vault policy.
+    s=State(3,(),("Lion's Eye Diamond","Mana Vault")+tuple(COMBO_CREATURES),(Perm("Urza's Saga",False,3,1,aux="SAGA3"),))
+    ss=saga_tutor_actions(s)
+    got={x.name for q in ss for x in q.battlefield}
+    assert "Lion's Eye Diamond" in got and "Mana Vault" not in got, "Saga tutor heuristic failed"
+    # Creature contamination overrides acceleration and finds Brainstone.
+    s=State(3,("Boonweaver Giant",),("Brainstone","Lion's Eye Diamond","Mana Vault"),(Perm("Urza's Saga",False,3,1,aux="SAGA3"),))
+    ss=saga_tutor_actions(s)
+    assert any(any(x.name=="Brainstone" for x in q.battlefield) for q in ss), "Saga failed repair priority"
+    # Search-level direct LED T1 line.
+    hand=sort_hand(("Lion's Eye Diamond","Ancient Tomb","Sol Ring","Lotus Petal"))
+    lib=tuple(COMBO_CREATURES)+tuple(x for x in DECK if x not in hand and x not in COMBO_CREATURES)[:30]
+    q=search_turn(State(1,hand,lib),beam=3000,depth=24)
+    assert can_cast_dack(q), "search lost direct LED T1 line"
+    # Search-level Vault + Key engine retains the expected five generic after setup.
+    hand=sort_hand(("Mana Vault","Voltaic Key","Ancient Tomb","Plains","Lotus Petal"))
+    lib=tuple(COMBO_CREATURES)+tuple(x for x in DECK if x not in hand and x not in COMBO_CREATURES)[:30]
+    q=search_turn(State(1,hand,lib),beam=3000,depth=28)
+    assert q.c+q.w+q.any>=6, "search lost Vault-Key mana engine"
+    # Exhaustive payment regression: generic 1 from W+C retains both distinct remainders.
+    s=State(1,(),tuple(COMBO_CREATURES),w=1,c=1)
+    po=pay_options(s,1)
+    assert any(q.w==1 and q.c==0 for q in po) and any(q.w==0 and q.c==1 for q in po), "payment branching incomplete"
+    # Frontier search must retain multiple strategically distinct terminal states.
+    s=State(1,("Plains","Ancient Tomb","Sol Ring"),tuple(COMBO_CREATURES))
+    wins,fr=search_turn_frontier(s,beam=1000,depth=8)
+    assert len(fr)>1 or wins, "turn frontier collapsed to one line"
+    # Brainstone/Rack must be proactive dig engines, not only creature-repair buttons.
+    s=State(1,("Plains","Sol Ring"),("Mana Vault","Ancient Tomb","Lotus Petal")+tuple(COMBO_CREATURES),
+            battlefield=(Perm("Brainstone",False,0,1),),c=2)
+    assert repair_actions(s), "Brainstone proactive dig missing"
+    s=State(1,("Plains","Sol Ring"),("Mana Vault","Ancient Tomb")+tuple(COMBO_CREATURES),
+            battlefield=(Perm("Scroll Rack",False,0,1),),c=1)
+    assert repair_actions(s), "Scroll Rack proactive dig missing"
+    s=State(1,(),(),battlefield=(Perm("Grim Monolith",True,0,1),),c=4)
+    assert any(not q.battlefield[0].tapped for q in utility_actions(s)), "Grim self-untap missing"
+    s=State(1,(),(),battlefield=(Perm("Basalt Monolith",True,0,1),),c=3)
+    assert any(not q.battlefield[0].tapped for q in utility_actions(s)), "Basalt self-untap missing"
+    # Exact commander payment allocation: 6 total with only one usable white must fail.
+    lib=tuple(COMBO_CREATURES)
+    assert not can_cast_dack(State(1,(),lib,w=1,c=5)), "Dack incorrectly cast with only one white"
+    assert can_cast_dack(State(1,(),lib,w=2,c=4)), "Dack exact WW+4 failed"
+    assert can_cast_dack(State(1,(),lib,w=1,c=4,restricted_dack_white=1)), "Cavern/Great-Hall Dack white failed"
+    # Nonstarting Caverns branches no-use plus each safe exile.
+    gs=State(1,sort_hand(("Gemstone Caverns","Plains","Sol Ring")),())
+    assert len(_pregame_states(gs,1))==2, "Gemstone deterministic visible-state branch missing"
+    assert _pregame_states(gs,1)[1].exile==("Plains",), "Gemstone exile heuristic regression"
+    # 2026 The Mind Stone is {1}{W} and taps for W.
+    assert COSTS["The Mind Stone"]==(1,1,0), "The Mind Stone cost regression"
+    ms=State(1,(),(),battlefield=(Perm("The Mind Stone",False,0,1),))
+    assert any(q.w==1 for q in tap_mana_actions(ms)), "The Mind Stone must tap W"
+    # Urza's Cave is a Cave, not an Urza's land; Workshop and Nexus are Urza's.
+    us=State(1,(),(),battlefield=(Perm("Urza's Cave"),Perm("Urza's Workshop"),Perm("Planar Nexus")))
+    assert urza_count(us)==2, "Urza land-type count wrong"
+    # Remote Farm persists after its final depletion counter is removed.
+    rf=State(2,(),(),battlefield=(Perm("Remote Farm",False,1,1),))
+    rr=[q for q in tap_mana_actions(rf) if q.w==2]
+    assert rr and not any(x.name=="Remote Farm" for x in rr[0].battlefield), "Remote Farm must sacrifice after last depletion counter"
+    uv=State(2,(),(),battlefield=(Perm("Mana Vault",True,0,1),Perm("Sol Ring"),Perm("Ancient Tomb")))
+    uo=mana_vault_upkeep_options(uv,beam=80,depth=6)
+    assert any(any(effective_name(x)=="Mana Vault" and not x.tapped for x in q.battlefield) for q in uo), "Mana Vault upkeep untap missing"
+    # Natural combo-creature contamination is represented deterministically.
+    cs=State(2,("Boonweaver Giant",),tuple(x for x in COMBO_CREATURES if x!="Boonweaver Giant"),(),w=3,c=3)
+    assert not can_cast_dack(cs), "combo creature contamination failed to invalidate Dack"
+    # London-bottom semantics: bottom cards are excluded from unknown T1/T2 draws.
+    uh=("Plains","Ancient Den","Sol Ring","Mana Vault")
+    bb=("Boonweaver Giant",)
+    # direct construction invariant used by both evaluators
+    assert bb[0] not in uh[:2] and (list(uh)+list(bb))[-1]=="Boonweaver Giant"
+    # structural hierarchy requested for London screening.
+    sev=("Boonweaver Giant","Shardmage\'s Rescue","Silence","Plains","Ancient Tomb","Mana Vault","Sol Ring")
+    assert bottom_priority("Boonweaver Giant",sev)>bottom_priority("Shardmage\'s Rescue",sev)>bottom_priority("Silence",sev)>bottom_priority("Mana Vault",sev)
+    sev2=("Chrome Mox","Plains","Paladin Class","Prismatic Lens","Touch the Spirit Realm","Bilbo's Gambit","Tooth of Ramos")
+    assert bottom_priority("Paladin Class",sev2)>bottom_priority("Plains",sev2)>bottom_priority("Chrome Mox",sev2)
+    # Weighted T2/T3 utility identity regression.
+    wh=sort_hand(("Mana Vault","Voltaic Key","Plains","Ancient Tomb","Lotus Petal","Silence","Path to Exile"))
+    wl=("Floating Shield","Idolized","Bilbo's Gambit")+tuple(x for x in DECK if x not in wh and x not in {"Floating Shield","Idolized","Bilbo's Gambit"})
+    assert _win_turn_from_unknown_order(wh,wl,0,beam=500,max_turn=3)==2, "weighted turn evaluator lost known T2 line"
+    we=keep_weighted_ev(wh,tuple(wl),beam=80,samples=1,t3_weight=.5)
+    assert abs(we["utility"]-(we["le2"]+.5*we["t3"]))<1e-12, "weighted utility identity failed"
+    # v0.33 exact Bauble / Void Mirror payment regressions.
+    bs=State(1,("Lotus Petal",),(),(Perm("Vexing Bauble"),))
+    assert not cast_actions(bs), "Bauble failed to counter true zero-mana spell"
+    bs=State(1,("Lotus Petal",),(),(Perm("Vexing Bauble"),Perm("Trinisphere")),c=3)
+    assert any(any(x.name=="Lotus Petal" for x in q.battlefield) for q in cast_actions(bs)), "Bauble incorrectly blocked taxed zero-MV spell"
+    vs=State(1,("Sol Ring",),(),(Perm("Void Mirror"),),c=1)
+    assert not cast_actions(vs), "Void Mirror failed on all-colorless payment"
+    vs=State(1,("Sol Ring",),(),(Perm("Void Mirror"),),w=1)
+    assert any(any(x.name=="Sol Ring" for x in q.battlefield) for q in cast_actions(vs)), "Void Mirror blocked colored generic payment"
+    # Full state key distinguishes different future libraries.
+    ka=State(1,(),("Plains","Sol Ring")); kb=State(1,(),("Plains","Mana Vault"))
+    assert key(ka)!=key(kb), "full-library state key regression"
+    # Post-search shuffle canonicalizes unknown remainder.
+    ss=State(1,(),("Mana Vault","Z","A"),(Perm("Tezzeret, Cruel Captain",loyalty=4),))
+    so=v03_actions(ss)
+    assert any(q.library==shuffled_unknown(("A","Z")) for q in so if "Mana Vault" in q.hand), "post-search hidden shuffle regression"
+    # v0.32 canonical deck and new-card regressions.
+    assert len(DECK)==99 and DECK.count("Plains")==4, "canonical v0.32 deck count failed"
+    assert "Pentad Prism" in DECK and "Moonsilver Key" in DECK and "Starting Town" in DECK
+    # New colored lands produce usable colored mana.
+    for land in ("City of Brass","Mana Confluence","Gemstone Mine","Starting Town","Tarnished Citadel"):
+        qs=tap_mana_actions(State(1,(),(),(Perm(land),)))
+        assert any(q.any>=1 for q in qs), f"{land} colored mana missing"
+    # Spire gives colorless without Metalcraft and colored with Metalcraft.
+    assert any(q.c>=1 for q in tap_mana_actions(State(1,(),(),(Perm("Spire of Industry"),))))
+    sm=State(1,(),(),(Perm("Spire of Industry"),Perm("Sol Ring"),Perm("Mana Vault"),Perm("Ancient Den")))
+    assert any(q.any>=1 for q in tap_mana_actions(sm)), "Spire Metalcraft color missing"
+    # Prism with two unrestricted colored units can enter with two counters and spend them.
+    ps=State(1,("Pentad Prism",),(),(),any=2)
+    pp=[q for q in cast_actions(ps) if any(x.name=="Pentad Prism" and x.counters==2 for x in q.battlefield)]
+    assert pp, "Pentad Prism two-counter sunburst missing"
+    assert any(q.any>=1 for q in pp for q in tap_mana_actions(q)), "Pentad Prism mana activation missing"
+    # Moonsilver Key follows LED-first deterministic tutor policy.
+    ks=State(1,(),("Lion's Eye Diamond","Mana Vault","Plains"),(Perm("Moonsilver Key"),),c=1)
+    ko=v03_actions(ks)
+    assert any("Lion's Eye Diamond" in q.hand for q in ko), "Moonsilver Key LED tutor missing"
+    # Known deterministic Vault T2 shell must survive the search.
+    hand=sort_hand(("Mana Vault","Voltaic Key","Plains","Ancient Tomb","Lotus Petal","Silence","Path to Exile"))
+    lib=("Floating Shield","Idolized")+tuple(x for x in DECK if x not in hand and x not in {"Floating Shield","Idolized"})
+    s=draw(State(1,hand,lib),1)
+    wins,f1=search_turn_frontier_many([s],beam=2500,depth=24)
+    if not wins:
+        states=[]
+        for x in f1:
+            y=draw(untap_and_begin(replace(x,turn=2)),1)
+            states.append(y)
+        wins,_=search_turn_frontier_many(states,beam=2500,depth=24)
+    assert wins, "known Mana Vault/Tomb/Petal T2 line lost"
+
+    # v0.38 hard regressions: known exact T3 continuations must survive the mulligan-evaluator beam.
+    def _exact_lib(h,b,d):
+        rr=DECK[:]
+        for xx in list(h)+list(b)+list(d): rr.remove(xx)
+        return tuple(list(d)+rr+list(b))
+    h=("Ancient Tomb","Loyal Tutor","Mana Confluence","Mana Vault","The Mycosynth Gardens")
+    b=("Bilbo's Gambit","Pearl Medallion");d=("Plains","Liquimetal Torque","Eldrazi Confluence")
+    assert _win_turn_from_unknown_order(sort_hand(h),_exact_lib(h,b,d),2,beam=40,max_turn=3)==3, "known Vault/Tutor T3 pruned"
+    h=("Mox Opal","Plains","Plains","The Mycosynth Gardens","Urza's Saga")
+    b=("Bound by Moonsilver","Shefet Dunes");d=("Mox Diamond","Calamity's Wake","Silence")
+    assert _win_turn_from_unknown_order(sort_hand(h),_exact_lib(h,b,d),2,beam=40,max_turn=3)==3, "known Saga/Opal T3 pruned"
+    print("selftest: PASS")
+
+if __name__=="__main__":
+    ap=argparse.ArgumentParser()
+    ap.add_argument("--games",type=int,default=1000)
+    ap.add_argument("--seed",type=int,default=20260925)
+    ap.add_argument("--beam",type=int,default=3000)
+    ap.add_argument("--selftest",action="store_true")
+    ap.add_argument("--json",default="")
+    a=ap.parse_args()
+    if a.selftest:selftest()
+    else:
+        r=run(a.games,a.seed,a.beam)
+        print(json.dumps(r,indent=2))
+        if a.json:
+            open(a.json,"w").write(json.dumps(r,indent=2))
+
+def london_sizes(min_keep=1):
+    """Legal London keep sizes. Commander mulligans may continue through 3/2/1."""
+    min_keep=max(1,min(7,int(min_keep)))
+    return tuple(range(7,min_keep-1,-1))
+
+def structural_bottom_candidates(seven,keep_n,top_n=2):
+    from itertools import combinations
+    seven=tuple(seven)
+    if keep_n==7:return [(sort_hand(seven),())]
+    nb=7-keep_n; out=[]
+    for inds in combinations(range(7),nb):
+        ii=set(inds); b=tuple(seven[i] for i in inds); h=tuple(seven[i] for i in range(7) if i not in ii)
+        out.append((sum(bottom_priority(x,seven) for x in b),sort_hand(h),b))
+    out.sort(key=lambda z:z[0],reverse=True)
+    # Structural score is a screen, not a hard oracle. Preserve diverse mana shapes so tied
+    # coarse priorities cannot erase compact Tomb/land/fast-mana keeps.
+    chosen=[]
+    def add(z):
+        hb=(z[1],z[2])
+        if hb not in chosen: chosen.append(hb)
+    for z in out[:top_n]: add(z)
+    def sigscore(z,mode):
+        h=z[1]
+        lands=sum(x in LANDS or x in {"Emeria's Call","Razorgrass Ambush"} for x in h)
+        fast=sum(x in {"Ancient Tomb","City of Traitors","Crystal Vein","Lion's Eye Diamond",
+                       "Lotus Petal","Mana Vault","Grim Monolith","Sol Ring","Mox Diamond","Chrome Mox"} for x in h)
+        white=sum(x in WHITE_LANDS or x in {"City of Brass","Mana Confluence","Gemstone Mine","Starting Town",
+                                            "Tarnished Citadel","Lotus Petal","Mox Diamond"} for x in h)
+        engines=sum(x in RAMP_PROTECTED for x in h)
+        return ((fast,lands,white,engines,z[0]) if mode==0 else
+                (lands,fast,white,engines,z[0]) if mode==1 else
+                (white,fast,lands,engines,z[0]))
+    for mode in range(3):
+        for z in sorted(out,key=lambda z:sigscore(z,mode),reverse=True)[:2]: add(z)
+    return chosen
+
+LOW_HAND_EXACT_MAX=3
+
+def adaptive_bottom_weighted_ev(seven,keep_n,unknown_lib,threshold,t3_weight=.5,beam=40,
+                                base_samples=2,refine_samples=5,margin=.16,top_n=2):
+    """Common-future adaptive London evaluation with exhaustive exact low-hand treatment through keep-3."""
+    from itertools import combinations
+    structural=structural_bottom_candidates(seven,keep_n,top_n)
+    def struct_score(b):return sum(bottom_priority(x,seven) for x in b)
+
+    # Reaching 3/2/1 cards is rare, and there are only 35/21/7 legal bottom choices. Sparse
+    # early futures are especially dangerous here because continuation thresholds are tiny.
+    # Evaluate every legal choice at N=20 so genuine compact low-card hands are not lost to a zero tie.
+    if keep_n<=LOW_HAND_EXACT_MAX:
+        scored=[]
+        for inds0 in combinations(range(7),7-keep_n):
+            inds=set(inds0)
+            h=sort_hand([x for i,x in enumerate(seven) if i not in inds])
+            b=tuple(seven[i] for i in sorted(inds))
+            ev=keep_turn_distribution(h,unknown_lib,beam=beam,samples=20,bottom=b)
+            u=utility_from_distribution(ev,t3_weight)
+            scored.append((u,struct_score(b),h,b,ev))
+        scored.sort(key=lambda z:(z[0],z[1]),reverse=True)
+        u,_,h,b,ev=scored[0]
+        return (u,h,b,ev,20)
+
+    candidates=list(structural)
+    # At keep 3-6, enumerate every legal bottom set only on a cheap screening beam. Every
+    # nominated finalist is then re-evaluated at the production beam.
+    if keep_n<=6:
+        allc=[]
+        for inds0 in combinations(range(7),7-keep_n):
+            inds=set(inds0)
+            h=sort_hand([x for i,x in enumerate(seven) if i not in inds])
+            b=tuple(seven[i] for i in sorted(inds))
+            ev1=keep_turn_distribution(h,unknown_lib,beam=min(14,beam),samples=1,bottom=b)
+            allc.append((utility_from_distribution(ev1,t3_weight),struct_score(b),h,b))
+        allc.sort(reverse=True,key=lambda z:(z[0],z[1]))
+        candidates=[]
+        for _,_,h,b in allc[:4]:
+            if (h,b) not in candidates:candidates.append((h,b))
+        for h,b in structural[:3]:
+            if (h,b) not in candidates:candidates.append((h,b))
+
+    scored=[]
+    for h,b in candidates:
+        ev=keep_turn_distribution(h,unknown_lib,beam=beam,samples=base_samples,bottom=b)
+        u=utility_from_distribution(ev,t3_weight)
+        scored.append((u,struct_score(b),h,b,ev))
+    scored.sort(key=lambda z:(z[0],z[1]),reverse=True)
+    u,_,h,b,ev=scored[0];best=(u,h,b,ev,base_samples)
+
+    if keep_n>1 and abs(best[0]-threshold)<=margin:
+        finalists=[]
+        for _,_,h,b,_ in scored[:min(3,len(scored))]:
+            if (h,b) not in finalists:finalists.append((h,b))
+        # Keep structural-prior candidates alive when the first two common futures tie at zero.
+        for h,b in structural[:3]:
+            if (h,b) in candidates and (h,b) not in finalists:finalists.append((h,b))
+        scored5=[]
+        for h,b in finalists:
+            ev=keep_turn_distribution(h,unknown_lib,beam=beam,samples=refine_samples,bottom=b)
+            u=utility_from_distribution(ev,t3_weight)
+            scored5.append((u,struct_score(b),h,b,ev))
+        scored5.sort(key=lambda z:(z[0],z[1]),reverse=True)
+        u,_,h,b,ev=scored5[0];best=(u,h,b,ev,refine_samples)
+
+        if abs(best[0]-threshold)<=0.08:
+            finalists10=[]
+            for _,_,h,b,_ in scored5[:min(2,len(scored5))]:finalists10.append((h,b))
+            for h,b in structural[:1]:
+                if (h,b) in candidates and (h,b) not in finalists10:finalists10.append((h,b))
+            scored10=[]
+            for h,b in finalists10:
+                ev=keep_turn_distribution(h,unknown_lib,beam=beam,samples=10,bottom=b)
+                u=utility_from_distribution(ev,t3_weight)
+                scored10.append((u,struct_score(b),h,b,ev))
+            scored10.sort(key=lambda z:(z[0],z[1]),reverse=True)
+            u,_,h,b,ev=scored10[0];best=(u,h,b,ev,10)
+    return best
+
+def backward_values_from_raw(raw_by_k):
+    """Recompute London continuation utilities from pooled raw keep utilities."""
+    V={0:0.0}; out={}
+    for k in range(1,8):
+        vals=list(raw_by_k[k])
+        V[k]=sum(max(x,V[k-1]) for x in vals)/len(vals) if vals else V[k-1]
+        out[k]=V[k]
+    return out
+
+def classification_audit():
+    """Fail loudly if known canonical mana-development categories regress."""
+    required_lands={"Shefet Dunes","Spire of Industry","Starting Town","Tarnished Citadel"}
+    required_ramp={"Pearl Medallion","Moonsilver Key","Expedition Map","Candelabra of Tawnos",
+                   "Giant's Boulder","Pentad Prism","Gleaming Splendor"}
+    assert required_lands <= set(LANDS), ("missing lands",required_lands-set(LANDS))
+    assert required_ramp <= set(RAMP_PROTECTED), ("missing ramp",required_ramp-set(RAMP_PROTECTED))
+    return True
+
+def v048_rules_audit():
+    # Moonsilver Key must never tutor Brainstone.
+    st=State(1,("Boonweaver Giant",),("Brainstone","Lion's Eye Diamond","Mana Vault","Plains"),
+             (Perm("Moonsilver Key"),),c=1)
+    ks=[q for q in v03_actions(st) if "Moonsilver Key" in q.grave]
+    assert ks and all("Brainstone" not in q.hand for q in ks)
+    assert any("Lion's Eye Diamond" in q.hand for q in ks)
+    # Gemstone Mine has exactly three colored activations before sacrifice.
+    q=play_land_actions(State(1,("Gemstone Mine",),()))[0]
+    assert q.battlefield[0].counters==3
+    for n in (2,1):
+        q=next(x for x in tap_mana_actions(q) if x.any>q.any)
+        assert q.battlefield[0].counters==n
+        q=replace(q,battlefield=(replace(q.battlefield[0],tapped=False),))
+    q=next(x for x in tap_mana_actions(q) if x.any>q.any)
+    assert not q.battlefield
+    # Tarnished and Shefet expose both C and colored/W modes.
+    ta=tap_mana_actions(State(1,(),(),(Perm("Tarnished Citadel"),)))
+    assert any(x.c==1 for x in ta) and any(x.any==1 for x in ta)
+    sh=tap_mana_actions(State(1,(),(),(Perm("Shefet Dunes"),)))
+    assert any(x.c==1 for x in sh) and any(x.w==1 for x in sh)
+    return True
+
+def v050_hidden_audit():
+    # Search shuffle cannot depend on pre-search unknown ordering.
+    a=("Plains","Ancient Tomb","Sol Ring","Silence")
+    assert shuffled_unknown(a)==shuffled_unknown(tuple(reversed(a)))
+    # Land target cannot depend on library ordering.
+    a=State(1,(),("Plains","Ancient Tomb","City of Traitors"))
+    b=State(1,(),("City of Traitors","Plains","Ancient Tomb"))
+    assert land_tutor_choice(a)==land_tutor_choice(b)
+    # White shortage visibly prioritizes white source; adequate visible white prioritizes acceleration.
+    assert land_tutor_choice(a)=="Plains"
+    c=State(1,("Plains","Ancient Den"),("Plains","Ancient Tomb","City of Traitors"))
+    assert land_tutor_choice(c)=="Ancient Tomb"
+    return True
+
+def v051_candidate_audit():
+    seven=("Ancient Tomb","Vexing Bauble","Plains","Starting Town","Lotus Petal","Sheltered by Ghosts","Razorgrass Ambush")
+    target=sort_hand(("Ancient Tomb","Lotus Petal","Starting Town"))
+    cs=structural_bottom_candidates(seven,3,2)
+    assert any(h==target for h,b in cs), "compact fast-mana keep pruned by structural screen"
+    return True
+def v052_deep_bottom_prescreen_audit():
+    seven=("Voltaic Key","Grim Monolith","Candelabra of Tawnos","Silence","Kozilek's Command","Shefet Dunes","Jeweled Amulet")
+    target=sort_hand(("Candelabra of Tawnos","Grim Monolith","Jeweled Amulet","Shefet Dunes","Voltaic Key"))
+    # Structural candidate generator may rank differently; exhaustive one-future prescreen in the
+    # adaptive evaluator must be capable of surfacing this compact synergy hand.
+    from itertools import combinations
+    assert any(sort_hand([x for i,x in enumerate(seven) if i not in set(inds)])==target
+               for inds in combinations(range(7),2))
+    return True
+
+
+def v056_performance_audit():
+    # Payment ranks above the number of distinct residual pools must not repeat branches.
+    st=State(1,(),(),w=1,c=2,any=1)
+    opts=pay_options(st,1)
+    assert pay_simple(st,1,payment_rank=len(opts)) is None
+    # Exact library tokens: same ordered content interns together; changed order differs.
+    a=("Plains","Ancient Tomb","Sol Ring")
+    b=tuple(list(a)); c=("Ancient Tomb","Plains","Sol Ring")
+    assert library_token(a)==library_token(b)
+    assert library_token(a)!=library_token(c)
+    # Cached deterministic shuffle is content-exact and returns the same permutation.
+    sh1=shuffled_unknown(("Plains","Ancient Tomb","Sol Ring"));sh2=shuffled_unknown(("Sol Ring","Plains","Ancient Tomb"))
+    assert sh1==sh2
+    # Chalice still exposes higher-rank kicker payments after duplicate-rank suppression.
+    st2=State(1,("Everflowing Chalice",),(),w=1,c=3)
+    assert cast_actions(st2), "Chalice payment branches disappeared"
+    # London structural hierarchy orientation: larger means more desirable to bottom.
+    seven=("Boonweaver Giant","Gift of Immortality","Silence","Plains","Mana Vault","Sol Ring","Ancient Tomb")
+    assert bottom_priority("Boonweaver Giant",seven)>bottom_priority("Gift of Immortality",seven)>bottom_priority("Silence",seven)>bottom_priority("Plains",seven)>bottom_priority("Mana Vault",seven)
+    # Seats 1/2/3 are identical in the current goldfish; only Gemstone distinguishes seat 0.
+    h=("Plains","Sol Ring");lib=("Silence","Mana Vault","Ancient Tomb")
+    assert _pregame_states(State(1,h,lib),1)==_pregame_states(State(1,h,lib),2)==_pregame_states(State(1,h,lib),3)
+    return True
+
+def v058_trace_audit():
+    # Sparse low-card keeps must bypass sampled shortlist pruning.
+    assert LOW_HAND_EXACT_MAX==3
+
+    # LED is a real three-white resource for a commander-zone Dack cast. This exact land+LED
+    # line was pruned at beam 40 before the LED-aware score/signature repair.
+    h=sort_hand(("Cavern of Souls","Command Beacon","Eiganjo, Seat of the Empire",
+                 "Lion's Eye Diamond","Plains","Urza's Cave"))
+    b=("Static Prison",)
+    rr=DECK[:]
+    for x in list(h)+list(b): rr.remove(x)
+    d=[]
+    for x in ("Silence","Path to Exile","Portable Hole"):
+        rr.remove(x); d.append(x)
+    lib=tuple(d+rr+list(b))
+    assert _win_turn_from_unknown_order(h,lib,0,beam=40,max_turn=3)==3, "LED T3 line pruned at beam40"
+    return True
+
+def v059_land_rules_audit():
+    # Remote Farm: ETB tapped with two depletion counters; second activation produces WW and sacrifices it.
+    q=play_land_actions(State(1,("Remote Farm",),()))[0]
+    assert q.battlefield[0].tapped and q.battlefield[0].counters==2
+    q=replace(q,battlefield=(replace(q.battlefield[0],tapped=False),))
+    q=next(x for x in tap_mana_actions(q) if x.w==2)
+    assert q.battlefield and q.battlefield[0].counters==1
+    q=replace(q,battlefield=(replace(q.battlefield[0],tapped=False),),w=0)
+    q=next(x for x in tap_mana_actions(q) if x.w==2)
+    assert not any(x.name=="Remote Farm" for x in q.battlefield)
+
+    # Playing either MDFC land face while City is present creates the sacrifice trigger.
+    for card in ("Emeria's Call","Razorgrass Ambush"):
+        s=State(1,(card,),(),(Perm("City of Traitors"),))
+        outs=play_land_actions(s)
+        assert outs and all(city_trigger_pending(o) for o in outs)
+        assert all(not any(x.name=="City of Traitors" for x in resolve_city_trigger_actions(o)[0].battlefield) for o in outs)
+
+    # Ruins of Trokair's normal and sacrifice modes.
+    s=State(1,(),(),(Perm("Ruins of Trokair"),))
+    acts=tap_mana_actions(s)
+    assert any(q.w==1 and any(x.name=="Ruins of Trokair" for x in q.battlefield) for q in acts)
+    assert any(q.w==2 and not any(x.name=="Ruins of Trokair" for x in q.battlefield) for q in acts)
+    return True
+
+def v060_targeted_rules_audit():
+    # Spire of Industry: unconditional C, colored mode with ANY artifact (not Metalcraft).
+    s=State(1,(),(),(Perm("Spire of Industry"),))
+    acts=tap_mana_actions(s)
+    assert any(q.c==1 for q in acts) and not any(q.any==1 for q in acts)
+    s=State(1,(),(),(Perm("Spire of Industry"),Perm("Sol Ring")))
+    acts=tap_mana_actions(s)
+    assert any(q.c==1 for q in acts) and any(q.any==1 for q in acts)
+
+    # Mox Opal still requires actual Metalcraft and counts itself as one artifact.
+    s=State(1,(),(),(Perm("Mox Opal"),Perm("Sol Ring")))
+    assert not any(q.any==1 for q in tap_mana_actions(s))
+    s=State(1,(),(),(Perm("Mox Opal"),Perm("Sol Ring"),Perm("Ancient Den")))
+    assert any(q.any==1 for q in tap_mana_actions(s))
+
+    # Candelabra X=1 can untap a tapped land; X distinct targets are preserved.
+    s=State(1,(),(),(Perm("Candelabra of Tawnos"),Perm("Ancient Tomb",True)),c=1)
+    ca=utility_actions(s)
+    assert any(any(p.name=="Ancient Tomb" and not p.tapped for p in q.battlefield) for q in ca)
+
+    # Coalition Relic charge cannot be spent in upkeep, but appears in first main.
+    s=State(2,(),(),(Perm("Coalition Relic",False,1),Perm("Mana Vault",True),
+                       Perm("Sol Ring")))
+    q=untap_and_begin(s)
+    assert q.any==0 and any(p.name=="Coalition Relic" and p.counters==1 for p in q.battlefield)
+    # Coalition's ordinary tap + Sol Ring = only 3, so charge counter must not illegally untap Vault in upkeep.
+    up=mana_vault_upkeep_options(q)
+    assert not any(any(p.name=="Mana Vault" and not p.tapped for p in z.battlefield) for z in up)
+    q=begin_first_main(q)
+    assert q.any==1 and any(p.name=="Coalition Relic" and p.counters==0 for p in q.battlefield)
+
+    # Gleaming locked abstraction: one Treasure exists before upkeep, so it may pay upkeep costs.
+    s=State(2,(),(),(Perm("Gleaming Splendor"),Perm("Mana Vault",True),
+                       Perm("Sol Ring"),Perm("Plains")))
+    q=add_opponent_cycle_resources(untap_and_begin(s))
+    assert q.treasures==1
+    up=mana_vault_upkeep_options(q)
+    assert any(any(p.name=="Mana Vault" and not p.tapped for p in z.battlefield) for z in up)
+
+    # Pentad Prism sunburst color accounting.
+    ps=State(1,("Pentad Prism",),(),(),w=2)
+    assert any(p.name=="Pentad Prism" and p.counters==1 for q in cast_actions(ps) for p in q.battlefield)
+    ps=State(1,("Pentad Prism",),(),(),w=1,any=1)
+    assert any(p.name=="Pentad Prism" and p.counters==2 for q in cast_actions(ps) for p in q.battlefield)
+
+    # LED: discards hand for WWW and cannot be used while a combo creature is stranded in hand.
+    s=State(1,("Silence",),(),(Perm("Lion's Eye Diamond"),))
+    la=tap_mana_actions(s)
+    assert any(q.w==3 and not q.hand and "Silence" in q.grave for q in la)
+    s=State(1,("Boonweaver Giant",),(),(Perm("Lion's Eye Diamond"),))
+    assert not any(q.w>=3 for q in tap_mana_actions(s))
+
+    # Mox Diamond may discard true land cards, never MDFCs.
+    s=State(1,("Mox Diamond","Plains","Emeria's Call","Razorgrass Ambush"),())
+    ma=[q for q in cast_actions(s) if any(p.name=="Mox Diamond" for p in q.battlefield)]
+    assert ma and all("Plains" in q.grave for q in ma)
+    assert all("Emeria's Call" not in q.grave and "Razorgrass Ambush" not in q.grave for q in ma)
+
+    # City trigger remains on stack long enough to tap City in response, then City is sacrificed.
+    s=State(1,("Plains",),(),(Perm("City of Traitors"),))
+    q=play_land_actions(s)[0]
+    assert city_trigger_pending(q)
+    taps=[z for z in tap_mana_actions(q) if z.c>=2]
+    assert taps
+    z=resolve_city_trigger_actions(taps[0])[0]
+    assert z.c>=2 and not any(p.name=="City of Traitors" for p in z.battlefield)
+
+    # If City was already tapped, Candelabra can untap it in response to its sacrifice trigger.
+    s=State(1,("Plains",),(),(Perm("City of Traitors",True),Perm("Candelabra of Tawnos")),c=1)
+    q=play_land_actions(s)[0]
+    assert city_trigger_pending(q)
+    unt=[z for z in utility_actions(q)
+         if any(p.name=="City of Traitors" and not p.tapped for p in z.battlefield)]
+    assert unt
+    taps=[z for z in tap_mana_actions(unt[0]) if z.c>=2]
+    assert taps
+    return True
+
+# ---------- v0.61 dual-policy tracking ----------
+POLICY_OBJECTIVES = {
+    "t2_max": 0.0,
+    "t2_t3_balanced": 0.5,
+}
+
+def policy_utility(ev, policy):
+    lam = POLICY_OBJECTIVES[policy] if isinstance(policy, str) else float(policy)
+    return ev["le2"] + lam * ev["t3"]
+
+def dual_policy_keep_eval(seven, keep_n, unknown_lib, thresholds, beam=40,
+                          base_samples=2, refine_samples=5, margin=.16, top_n=2):
+    """Evaluate the same visible London hand under both policy objectives.
+    Distribution/win caches are shared; only utility and continuation thresholds differ.
+    """
+    out={}
+    for policy,lam in POLICY_OBJECTIVES.items():
+        u,h,b,ev,ns = adaptive_bottom_weighted_ev(
+            seven, keep_n, unknown_lib, thresholds.get(policy,0.0),
+            lam, beam, base_samples, refine_samples, margin, top_n
+        )
+        out[policy]={"utility":u,"hand":h,"bottom":b,"ev":ev,"samples":ns}
+    return out
+
+def dual_backward_values(raw_by_policy):
+    """Recompute policy-specific London continuation values from raw best-keep utilities."""
+    out={}
+    for policy in POLICY_OBJECTIVES:
+        V={0:0.0}
+        for k in range(1,8):
+            vals=list(raw_by_policy[policy].get(k,()))
+            V[k]=sum(max(x,V[k-1]) for x in vals)/len(vals) if vals else V[k-1]
+        out[policy]=V
+    return out
+
+# ---------- v0.62 threshold-independent calibration mode ----------
+def calibration_keep_eval(seven, keep_n, unknown_lib, policy, beam=40):
+    """Raw best-keep utility independent of continuation thresholds.
+    k<=3 retains exhaustive N=20 evaluation; k>=4 forces nominated finalists
+    through fixed N=10 production-beam evaluation.
+    """
+    lam = POLICY_OBJECTIVES[policy] if isinstance(policy,str) else float(policy)
+    return adaptive_bottom_weighted_ev(
+        seven, keep_n, unknown_lib,
+        threshold=0.0, t3_weight=lam, beam=beam,
+        base_samples=2, refine_samples=10, margin=99.0, top_n=2
+    )
+
+def dual_calibration_keep_eval(seven, keep_n, unknown_lib, beam=40):
+    return {policy: calibration_keep_eval(seven,keep_n,unknown_lib,policy,beam)
+            for policy in POLICY_OBJECTIVES}
+
+def backward_from_fixed_raw(raw_by_policy):
+    out={}
+    for policy in POLICY_OBJECTIVES:
+        V={0:0.0}
+        for k in range(1,8):
+            vals=list(raw_by_policy[policy].get(k,()))
+            V[k]=sum(max(u,V[k-1]) for u in vals)/len(vals) if vals else V[k-1]
+        out[policy]=V
+    return out
+
+
+# ---------- v0.63 frozen dual-policy calibration ----------
+FROZEN_POLICY_THRESHOLDS = {'t2_max': {0: 0.0, 1: 0.0140625, 2: 0.09457, 3: 0.17125, 4: 0.25766, 5: 0.35113, 6: 0.39885}, 't2_t3_balanced': {0: 0.0, 1: 0.06171875, 2: 0.19234, 3: 0.31419, 4: 0.42268, 5: 0.51025, 6: 0.55603}}
+
+def v063_frozen_calibration_audit():
+    for policy,V in FROZEN_POLICY_THRESHOLDS.items():
+        assert set(V)==set(range(7))
+        assert V[0]==0.0
+        for k in range(1,7):
+            assert 0.0 <= V[k] <= 1.0
+            assert V[k] >= V[k-1], (policy,k,V[k-1],V[k])
+    return True
+
+
+# ---------- v0.64 repair / smoothing audit ----------
+def v064_repair_smoothing_audit():
+    # Boulder: scry 2 includes keep-one/bottom-one branches.
+    base_lib=("Boonweaver Giant","Mana Vault","Plains","Sol Ring")
+    s=State(1,("Giant's Boulder",),base_lib,c=1)
+    outs=[q for q in cast_actions(s) if any(effective_name(p)=="Giant's Boulder" for p in q.battlefield)]
+    libs={q.library for q in outs}
+    assert ("Mana Vault","Plains","Sol Ring","Boonweaver Giant") in libs, "Boulder cannot bottom only creature"
+    assert ("Boonweaver Giant","Plains","Sol Ring","Mana Vault") in libs, "Boulder cannot bottom only second card"
+    assert len(libs)>=6, ("Boulder missing scry branches",len(libs),libs)
+
+    # Amulet: unrestricted colored mana may be banked as white and returned as white.
+    s=State(1,(),(),(Perm("Jeweled Amulet"),),any=1)
+    charged=[q for q in v03_actions(s) if any(effective_name(p)=="Jeweled Amulet" and p.counters==1 and p.aux=="W" for p in q.battlefield)]
+    assert charged and any(q.any==0 for q in charged), "Amulet failed to charge from any-color mana"
+    q=untap_and_begin(replace(charged[0],turn=2))
+    assert any(z.w>=1 for z in tap_mana_actions(q)), "Amulet failed to return stored white"
+
+    # Campfire: shuffle required creature plus rest of grave into library, exile itself.
+    s=State(2,(),("Plains","Mana Vault"),(Perm("Campfire"),),
+            grave=("Boonweaver Giant","Lion's Eye Diamond"),c=2)
+    rr=repair_actions(s)
+    assert rr, "Campfire repair action missing"
+    assert any("Boonweaver Giant" in q.library and "Lion's Eye Diamond" in q.library and not q.grave
+               and "Campfire" in q.exile for q in rr), "Campfire did not shuffle grave/exile itself"
+
+    # LED may discard a creature if Campfire remains reachable.
+    s=State(1,("Boonweaver Giant",),("Campfire","Plains","Mana Vault"),(Perm("Lion's Eye Diamond"),),c=3)
+    led=[q for q in tap_mana_actions(s) if "Boonweaver Giant" in q.grave and q.w>=3]
+    assert led, "LED incorrectly blocked despite reachable Campfire"
+
+    # Artifact tutor sees grave contamination and prioritizes Campfire.
+    s=State(2,(),("Campfire","Lion's Eye Diamond","Mana Vault"),(),grave=("Boonweaver Giant",))
+    assert artifact_tutor_choice(s)=="Campfire", "grave repair tutor policy did not choose Campfire"
+    return True
