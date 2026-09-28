@@ -1,7 +1,9 @@
-# DACK simulator checkpoint — v0.65 instrumentation on v0.64 engine
+# DACK simulator — v0.68 search-stabilized mana instrumentation
 
-Canonical engine in this package: `src/dack_t3_solver_v0_64_repaired.py`.
-The engine itself is unchanged from the validated v0.64 repair checkpoint; **v0.65 refers only to the new sharded mana-screen instrumentation**.
+Historical validated engine: `src/dack_t3_solver_v0_64_repaired.py`.
+Current production candidate: `src/dack_t3_solver_v0_68_color_canonicalization.py`.
+
+v0.68 preserves the v0.64 game rules and adds bounded-search repairs discovered during high-N land testing: guaranteed white/rainbow sources are credited correctly by the beam scorer, and flexible colored mana is canonicalized to white when no current card can distinguish another color. `Pentad Prism` retains unrestricted-color handling because sunburst can distinguish colors.
 
 ## Current deck mana-base count
 - 99 cards total.
@@ -43,3 +45,13 @@ This gives paired target-vs-Plains deltas rather than observational correlations
 
 ## Suggested production progression
 Run equal-N shards first, then allocate additional contexts to cards whose paired confidence intervals remain decision-relevant. Never overwrite an existing shard; use a new shard ID/seed range and repool.
+
+
+## v0.68 production validation
+The original beam-40 land screen exposed impossible negative paired deltas for lands that should weakly dominate Plains when life is ignored. Adversarial replay identified two causes: scorer undervaluation of rainbow white sources, and extra search branching from representing unrestricted colored mana separately when its color flexibility was irrelevant.
+
+Known hard City of Brass / Mana Confluence rows were tested through beams 80–640. After the v0.68 repair, the hardest known rows converge by beam 240 and remain stable at 320–640. A 10-context replay for City of Brass and Mana Confluence at beam 240 produced zero future/seat dominance violations and exactly zero utility delta in every replayed context. Previously failing Tarnished Citadel and Starting Town futures also match Plains at beam 240.
+
+**Production screen setting: beam 240, four future samples per matched context.** Beam-40 N=10 results are retained only as debug/audit data and must not be mixed with v0.68 production estimates.
+
+Production execution uses tiny process-isolated shards with immediate CSV flushing so a timeout loses at most the currently evaluating context.
