@@ -1,0 +1,16 @@
+{
+  "experiment_id": "mana_vs_plains_v068_b240_s1",
+  "experiment_type": "conditional_forced_opening_slot",
+  "engine": "v0.68 color canonicalization",
+  "beam": 240,
+  "future_samples_per_context": 1,
+  "control_card": "Plains",
+  "seed_base": 71024001,
+  "horizon": 3,
+  "utility": "P(<=T2)+0.5*P(exact T3)",
+  "microtask_unit": "one target x one independent opening-hand context",
+  "target_count": 60,
+  "initial_goal_contexts_per_target": 25,
+  "pooling_rule": "pool independent context rows; never average shard percentages",
+  "compatibility_rule": "engine SHA, deck SHA, beam, sample count, and seed namespace must match"
+}
