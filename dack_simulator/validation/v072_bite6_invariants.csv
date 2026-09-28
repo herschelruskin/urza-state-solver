@@ -1,0 +1,34 @@
+<PARSED TEXT FOR SHEET: 1 / 1 TABS
+TAB NAME: v072_bite6_invariants.csv>index,target,local,future_seed,seat_class,seat_weight,target_win,control_win,violation,seconds
+0,City of Brass,0,5072839296657146419,all_seats,4,3,3,0,0.761
+1,City of Brass,1,15799470697933840262,all_seats,4,0,0,0,0.363
+2,City of Brass,2,5279339579171327390,all_seats,4,3,3,0,1.1685
+3,City of Brass,3,6809583072311146040,all_seats,4,0,0,0,0.0447
+4,City of Brass,4,5142303591747161626,all_seats,4,3,3,0,0.3266
+5,City of Brass,5,17483990191322934888,all_seats,4,2,2,0,0.9044
+6,City of Brass,6,3180641706422427165,all_seats,4,3,3,0,1.2319
+7,City of Brass,7,13859595009086482978,all_seats,4,3,3,0,1.4677
+8,City of Brass,8,9487166815934219707,all_seats,4,2,2,0,0.1479
+9,City of Brass,9,10793022628719176927,all_seats,4,3,3,0,1.4641
+10,Mana Confluence,0,3696056359195958804,all_seats,4,0,0,0,0.0372
+11,Mana Confluence,2,16994662291574426629,all_seats,4,0,0,0,2.011
+12,Mana Confluence,3,1421743089603931965,all_seats,4,0,0,0,3.1136
+13,Mana Confluence,4,10299155127483749003,all_seats,4,0,0,0,1.5472
+14,Mana Confluence,5,5779890511497906273,all_seats,4,0,0,0,1.6817
+15,Mana Confluence,6,13637520210818991418,all_seats,4,3,3,0,1.3121
+16,Mana Confluence,7,6579074135884534421,starting,1,0,0,0,8.0536
+17,Mana Confluence,7,6579074135884534421,nonstarting,3,0,0,0,8.0536
+18,Mana Confluence,8,9908160442549054428,all_seats,4,3,3,0,3.2821
+19,Mana Confluence,9,11198894182182584007,all_seats,4,2,2,0,0.1196
+20,Mana Confluence,10,1133884145509480793,all_seats,4,0,0,0,1.9714
+21,Tarnished Citadel,0,4159377842044734203,all_seats,4,3,3,0,1.0655
+22,Tarnished Citadel,1,6374078915655244755,all_seats,4,0,0,0,3.2514
+23,Tarnished Citadel,2,2872620945595446313,all_seats,4,2,2,0,0.9508
+24,Tarnished Citadel,3,3084347525873964262,starting,1,0,0,0,2.5579
+25,Tarnished Citadel,3,3084347525873964262,nonstarting,3,3,3,0,2.5579
+26,Tarnished Citadel,4,4130636691590464053,all_seats,4,0,0,0,2.3713
+27,Tarnished Citadel,5,2011429210998663346,all_seats,4,0,0,0,0.0416
+28,Tarnished Citadel,6,8059911030589975984,all_seats,4,0,0,0,1.8242
+29,Tarnished Citadel,7,11825809900038749686,all_seats,4,0,0,0,1.7162
+30,Tarnished Citadel,8,484672149912058934,all_seats,4,0,0,0,1.6762
+31,Tarnished Citadel,9,10639894820982693516,all_seats,4,3,3,0,4.3473
