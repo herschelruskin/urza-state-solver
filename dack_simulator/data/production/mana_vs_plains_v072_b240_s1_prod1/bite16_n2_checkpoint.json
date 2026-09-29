@@ -1,0 +1,46 @@
+{
+  "all_targets_equal_n": true,
+  "annotated_contexts_sha256": "af2e8176dac4ab35e4d6d7edc90baff2bba1838161e75e10b8af5a8ce1cd7d8a",
+  "annotation_sha256": "f9568316be8c93874e77e3ef41c682fd3200ad701b77197e2ca012378639fa63",
+  "annotation_version": "v1",
+  "balanced_equal_n": 2,
+  "beam": 240,
+  "checkpoint": "bite16_equal_n2",
+  "completed_tasks": 120,
+  "experiment_id": "mana_vs_plains_v072_b240_s1_prod1",
+  "intermediate_checkpoint": {
+    "pooled_context_rows": 90,
+    "raw_archive_sha256": "92d51b59d17fc2ca915824767337e65d82cac87610b55dbc884f630215aa6466",
+    "replicate1_targets_completed": 30
+  },
+  "microtask_runner_sha256": "d040e5ee2d40ac17be53ae017e814f00ab815c0ee38ad9a5abaa5456e0c84ec0",
+  "note": "First balanced equal-N expansion complete: all 60 targets now have replicates 0 and 1. N=2 is still exploratory, not ranking-quality inference.",
+  "pool_manifest_sha256": "ccaaf69e12fa1553147e1cd482573632b21091f2afc8be4c8a0678ab88df5f3c",
+  "pooled_context_rows": 120,
+  "pooled_contexts_sha256": "713781007321b620578ff74b349a99e1408d4c0d80e6dcdb1c0be2bc0310da30",
+  "pooled_summary_sha256": "ae16d99852219e3f545a391fd7f10bc14c1c88cb41a84ae33c47f9415c2aeef3",
+  "pooled_task_index_sha256": "41552ecd577a2582c9653f404650f8c2ff2f68c1223b3f93c295d898e9b5432c",
+  "pooled_trial_rows": 128,
+  "pooled_trials_sha256": "ef2a716c5a3ad25980cddda90b67f374315290403a74c3fb7388df342ef24195",
+  "production_config_sha256": "4d639e67262266a4067073e682e8e8cb9546ba0b136c2ba831dc3fa570cebab3",
+  "raw_task_archive_library_path": "/DACK simulator/production/mana_vs_plains_v072_b240_s1_prod1/checkpoints/bite16_n2_raw.zip",
+  "raw_task_archive_sha256": "80895dac4021f8e317aa97ea24014f6baa407a0c3a1c8145634020bb4462b946",
+  "raw_task_archive_size_bytes": 664738,
+  "raw_task_file_count": 600,
+  "replicates_completed": [0,1],
+  "restart_recoveries": [
+    {"replicate":1,"target_index":14,"target_card":"Ruins of Trokair"},
+    {"replicate":1,"target_index":34,"target_card":"Everflowing Chalice"}
+  ],
+  "runner_sha256": "93ed23ac1a63e2ae4acd60d77ba09c7023df7c0cbbc1acdc2330b72e39a3b23f",
+  "samples": 1,
+  "schema_version": "DACK-production-checkpoint-v1",
+  "seed_base": 7202401001,
+  "solver_sha256": "abba6f0baa7bedfb0b248bdd62501dae10157ba90bd5a3952fbeffbdcca48a7a",
+  "strict_invariants": {
+    "City of Brass": {"contexts":2,"violations":0},
+    "Mana Confluence": {"contexts":2,"violations":0},
+    "Tarnished Citadel": {"contexts":2,"violations":0}
+  },
+  "summary_cards": 60
+}
