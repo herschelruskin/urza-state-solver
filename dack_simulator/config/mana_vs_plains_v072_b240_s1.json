@@ -1,0 +1,17 @@
+{
+  "schema_version": "DACK-experiment-v1",
+  "experiment_id": "mana_vs_plains_v072_b240_s1",
+  "experiment_type": "conditional_forced_opening_slot",
+  "comparison": "target_vs_Plains",
+  "engine_version": "v0.72",
+  "solver_sha256": "abba6f0baa7bedfb0b248bdd62501dae10157ba90bd5a3952fbeffbdcca48a7a",
+  "beam": 240,
+  "samples_per_context": 1,
+  "seed_base": 7202401001,
+  "target_count": 60,
+  "initial_equal_n_goal": 25,
+  "independent_unit": "opening_hand_context",
+  "utility": "P(<=T2)+0.5*P(exact T3)",
+  "status": "production_active",
+  "note": "Bite 10 begins with a five-target persistence/pooling microbatch before wider expansion."
+}
