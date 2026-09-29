@@ -1,0 +1,40 @@
+{
+  "annotated_contexts_sha256": "42f00d4c0eed2ac527dc1001641253c3cc05c12e1ecb23b4309b29422c0b4b16",
+  "annotation_sha256": "f9568316be8c93874e77e3ef41c682fd3200ad701b77197e2ca012378639fa63",
+  "annotation_version": "v1",
+  "beam": 240,
+  "checkpoint": "bite15_wave6_first_complete_pass",
+  "completed_tasks": 60,
+  "experiment_id": "mana_vs_plains_v072_b240_s1_prod1",
+  "first_full_target_pass_complete": true,
+  "microtask_runner_sha256": "d040e5ee2d40ac17be53ae017e814f00ab815c0ee38ad9a5abaa5456e0c84ec0",
+  "note": "First full 60/60 target pass complete at N=1 per target. This is a coverage milestone, not ranking-quality inference.",
+  "pool_manifest_sha256": "a35aabbdac1eb6ac170a30753009f88fd2e577695f95b4da0179d5d68f3dfef8",
+  "pooled_context_rows": 60,
+  "pooled_contexts_sha256": "10a91fdd1985048f60be653b93b621aaf32a5d8c485d1c8daa3e352afeb24e15",
+  "pooled_summary_sha256": "89e0cd157425b9ffcbc39e1904de1fe8a7058d29d6ffa18b2b4a02bc50241c61",
+  "pooled_task_index_sha256": "9c8b95f60ae69908f14a5144919d2205cef789ef666bfbcc39176dbcef26668d",
+  "pooled_trial_rows": 64,
+  "pooled_trials_sha256": "c6e2b6863f8858e90238f9005e244ae077e27d1f7655364853564c63aa7bd1be",
+  "production_config_sha256": "4d639e67262266a4067073e682e8e8cb9546ba0b136c2ba831dc3fa570cebab3",
+  "raw_task_archive_library_path": "/DACK simulator/production/mana_vs_plains_v072_b240_s1_prod1/checkpoints/bite15_wave6_raw.zip",
+  "raw_task_archive_sha256": "6763cd8232a1dbf830eec757511d7225f9c1cb5212297bf502d48a0bd7156d51",
+  "raw_task_archive_size_bytes": 297661,
+  "raw_task_file_count": 300,
+  "replicate_completed": 0,
+  "restart_recovery": {
+    "reason": "outer execution window interrupted task while status=started; same-identity rerun completed cleanly",
+    "target_card": "Pentad Prism",
+    "target_index": 52
+  },
+  "runner_sha256": "93ed23ac1a63e2ae4acd60d77ba09c7023df7c0cbbc1acdc2330b72e39a3b23f",
+  "samples": 1,
+  "schema_version": "DACK-production-checkpoint-v1",
+  "seed_base": 7202401001,
+  "solver_sha256": "abba6f0baa7bedfb0b248bdd62501dae10157ba90bd5a3952fbeffbdcca48a7a",
+  "summary_cards": 60,
+  "target_indices_completed": [
+    0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59
+  ],
+  "wave15_added_target_indices": [50,51,52,53,54,55,56,57,58,59]
+}
