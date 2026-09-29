@@ -1,0 +1,13 @@
+{
+  "annotation_sha256": "f9568316be8c93874e77e3ef41c682fd3200ad701b77197e2ca012378639fa63",
+  "annotation_version": "v1",
+  "derived_rows": 240,
+  "derived_sha256": "beaac3b3b0a73b7f4e3fc058c1dbb2d61f2770350fd96b6975a171e95487978d",
+  "enrichment_script_sha256": "e31f1959eb29f0bb5e722a89799130fe5f0f908feabca5b86c640965332712c4",
+  "experiment_id": "mana_vs_plains_v072_b240_s1_prod1",
+  "schema_version": "DACK-derived-annotation-checkpoint-v1",
+  "scope": "derived metadata only; canonical production pool unchanged",
+  "source_checkpoint": "bite18_equal_n4",
+  "source_pooled_contexts_rows": 240,
+  "source_pooled_contexts_sha256": "26de45d828d6cf811af2216e1c5313310aa24b11b7f6129827b10cbc7d39e866"
+}
