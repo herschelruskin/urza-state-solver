@@ -1,0 +1,130 @@
+{
+  "bite": 10,
+  "complete_tasks": 10,
+  "experiment_id": "mana_vs_plains_v072_b240_s1_prod",
+  "file_sha256": {
+    "config/mana_vs_plains_v072_b240_s1_prod.json": "7c2814a0e7a533ddb8d51c64e67b6f6e6c3ff5737b487c3c19ed65727ce91b58",
+    "pool/bite10/pool_manifest.json": "7177383601aa895abfc4a8fe914c40b1f0a19bac2a2c066db9f882ee3473ccbf",
+    "pool/bite10/pooled_contexts.csv": "82763e6cc836e9798b4eed47fb6897332908a709790734387e0225446999bcf7",
+    "pool/bite10/pooled_summary_by_card.csv": "5608dd793a971a3658b61dba27218ec41d21cc4b2c2c241e054d370153c625fa",
+    "pool/bite10/pooled_task_index.csv": "24e9e7ea281a6b622912d4c424a7c1db9cf3fb0852297586de83b8c10bde8f0a",
+    "pool/bite10/pooled_trials.csv": "d091db8d1c3fce47215fd93b31c178adc0d2c7fe49f052de3d3482757c6a3e51"
+  },
+  "note": "First permanent v0.72 production batch. N=1 per listed target; not inferential.",
+  "replicate": 0,
+  "schema_version": "DACK-production-batch-checkpoint-v1",
+  "target_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "task_entries": [
+    {
+      "context_sha256": "a4fc0ec231aa8d44ef09c8e4b84f97f76d76cea58cb091180e6efc0c73f67d86",
+      "runner_manifest_sha256": "cf2b9146562f7e171b1b51816d2c303cdf1484412e6d1710b6205e4aaae7ba7d",
+      "status": "complete",
+      "target_card": "Ancient Den",
+      "target_index": 0,
+      "task_id": "mana_vs_plains_v072_b240_s1_prod__r000000__t00",
+      "task_manifest_sha256": "6c042fb76f6a28d27d767918ff1ca0e1b4f4c79d682376547cfb2adc309a08f8",
+      "trials_sha256": "652966f484bd64eeded74182856629c46bb778f86275072bce1ccbb55648c1f4"
+    },
+    {
+      "context_sha256": "151dff0a42fa9d64d581f5c2f3e0862be365a6d92b67766f8a26d45564666e41",
+      "runner_manifest_sha256": "d3f53bef2449b8de04c0b4176257c256fe08070992d6b6eee58ec9eff9ff5c06",
+      "status": "complete",
+      "target_card": "Ancient Tomb",
+      "target_index": 1,
+      "task_id": "mana_vs_plains_v072_b240_s1_prod__r000000__t01",
+      "task_manifest_sha256": "349f1dea74f7e107c9e1d71e51298bbac29793cc74802689bd51cda5dce95e4e",
+      "trials_sha256": "0742d0d6beb28974fa74da5863329a98d6a19523cd65d30e7f2fb314d0cc6d8b"
+    },
+    {
+      "context_sha256": "069abf401cf883e17dbe215cc84f66bf74db7cbb163558a21cc0c6dde92c3898",
+      "runner_manifest_sha256": "b8850714b0923ef672296a054867c305fa7389670b21bf679718c265de9a92f9",
+      "status": "complete",
+      "target_card": "Cavern of Souls",
+      "target_index": 2,
+      "task_id": "mana_vs_plains_v072_b240_s1_prod__r000000__t02",
+      "task_manifest_sha256": "709f36832dc2dcebba99add13f090d161de9b4d8b621bc843a44f84fde74d7b5",
+      "trials_sha256": "6e8aa333302ba30df26f2bf094365ecae6409ccc0efbb9f48b885a684dd1814d"
+    },
+    {
+      "context_sha256": "0102cba525eeba44049b0897968c3b5265a413c1d07e5bf4e4787e57a13a0ece",
+      "runner_manifest_sha256": "a281d16f4423c471c10e9245696188b03cf1b627e09346dae98da7f142d22fd8",
+      "status": "complete",
+      "target_card": "City of Brass",
+      "target_index": 3,
+      "task_id": "mana_vs_plains_v072_b240_s1_prod__r000000__t03",
+      "task_manifest_sha256": "424cd6ce9b8470c4df02ad6c6956b2f909dbab2abe1c3d455970f369e1ff080f",
+      "trials_sha256": "b5b68de4398c8f3af626484893b2712a032574b10c692dafd49fc2ea64f689d0"
+    },
+    {
+      "context_sha256": "02a7a1dd44dc8dd8923fcd9d916c04a7b28fad72707b6a6cbf9956c376f005b8",
+      "runner_manifest_sha256": "60006f647326c8f7e8ec34012cb34fb23dc4ff53e22933fd44d54d0d823b9ce1",
+      "status": "complete",
+      "target_card": "City of Traitors",
+      "target_index": 4,
+      "task_id": "mana_vs_plains_v072_b240_s1_prod__r000000__t04",
+      "task_manifest_sha256": "72c1096557268505e577498393baf7c539291f9d2c2cb74c85d53908c00cb886",
+      "trials_sha256": "dfa27bc7a91d8f4818f9fd57b58c7361cc9fb3f8c9ddd9adabd14e1189acf5a8"
+    },
+    {
+      "context_sha256": "55eeccfe25d36843a295fac83641d654f3d0b9e36e92f773c809d3cf9f3ec5ae",
+      "runner_manifest_sha256": "c348b7eea96c911082df0f70356ef9bf77eb065740ef99401c47e3e3f8434bd3",
+      "status": "complete",
+      "target_card": "Command Beacon",
+      "target_index": 5,
+      "task_id": "mana_vs_plains_v072_b240_s1_prod__r000000__t05",
+      "task_manifest_sha256": "eb6f1deb1fde495fb18e031b4621b837d26dff19a54ca4e5e9f0495aa390b2ba",
+      "trials_sha256": "6ba1721a2b303262742fec2c7d5cc190753939483b65a04c63c7b4615a7ad614"
+    },
+    {
+      "context_sha256": "5982c7918d261283db9f60a214c119403fd534242b20e0088eecc14333c5cca8",
+      "runner_manifest_sha256": "e2680738237c3bec298b8489bbbd9ef88afd60fe17796657598f6ea39bc48731",
+      "status": "complete",
+      "target_card": "Crystal Vein",
+      "target_index": 6,
+      "task_id": "mana_vs_plains_v072_b240_s1_prod__r000000__t06",
+      "task_manifest_sha256": "fea4ef6bdd5b4d1b074d0223e998d6a448a94708e4943e0676f42690b75e93f8",
+      "trials_sha256": "69c4b313c3b4b01bce36821fd6e9d7038b001678d9590a11cb6103e45b722ab3"
+    },
+    {
+      "context_sha256": "32d9b837c4489fdc227889c7412f4295c03cf8cf91a48d927ecdca977966146c",
+      "runner_manifest_sha256": "b1ee7dfa96485939c7c5f3eb9f5891cd9d3ae384cd72e998e859cb1a78402323",
+      "status": "complete",
+      "target_card": "Eiganjo, Seat of the Empire",
+      "target_index": 7,
+      "task_id": "mana_vs_plains_v072_b240_s1_prod__r000000__t07",
+      "task_manifest_sha256": "f92e4c898dbb31d93c9749f86f9e92e259ddaa79f5cf50fc79531dd814870a13",
+      "trials_sha256": "35e0bbc5cf2107052f95fe2e25134d3c58da105d3b5be984c420b0c68895c983"
+    },
+    {
+      "context_sha256": "c14f0ff24d904fc36669e0bb977e48714bd268a78c3e84b6b2f23fdc46a204d6",
+      "runner_manifest_sha256": "5d9f02dae2d44dcf45ea40d1098cf7d8fa67bf9d5795021d7734072884b7ad48",
+      "status": "complete",
+      "target_card": "Gemstone Caverns",
+      "target_index": 8,
+      "task_id": "mana_vs_plains_v072_b240_s1_prod__r000000__t08",
+      "task_manifest_sha256": "09d927350b4e23c4edc0368aeaac090546e4071d43e497124c91960994664279",
+      "trials_sha256": "5df2d0da0829f1097c88f9e0f596d291658d2036355003cd61e37d4e522c6217"
+    },
+    {
+      "context_sha256": "5da92d551c2b59d13507fbec40d38f185ef2ab7889c90012091efe787359beee",
+      "runner_manifest_sha256": "9774f1b1fdd4934f6247064851dd9ed07cd8c33e60dd8ee064344c88e6ef11c6",
+      "status": "complete",
+      "target_card": "Gemstone Mine",
+      "target_index": 9,
+      "task_id": "mana_vs_plains_v072_b240_s1_prod__r000000__t09",
+      "task_manifest_sha256": "c409d24613cddee2d25d69dd463e182579b745170e431ef31a49967f5e3d726c",
+      "trials_sha256": "7f66f74ba76e5211509841d3ce883452e15c18f897f3986d6b549cb983435dd7"
+    }
+  ]
+}
