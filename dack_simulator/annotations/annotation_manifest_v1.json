@@ -1,0 +1,80 @@
+{
+  "annotation_file": "card_annotations_v1.csv",
+  "annotation_json_mirror": "card_annotations_v1.json",
+  "annotation_json_mirror_sha256": "b6474187b7a22e8b7b14681c03b3a6e066343238def676980276267b6a785f37",
+  "annotation_sha256": "f9568316be8c93874e77e3ef41c682fd3200ad701b77197e2ca012378639fa63",
+  "annotation_summary_file": "card_annotation_summary_v1.csv",
+  "annotation_summary_sha256": "a1d26b610b3a786db468a47d7aa1c4b9489b078272738b3dc046e9e4cf87ad81",
+  "annotation_version": "v1",
+  "category_copy_counts": {
+    "aura": 12,
+    "combo_creature": 3,
+    "combo_piece": 16,
+    "fast_mana": 18,
+    "goldfish_relevance:combo_noncore": 13,
+    "goldfish_relevance:direct": 65,
+    "goldfish_relevance:interaction_noncore": 18,
+    "goldfish_relevance:liability": 3,
+    "interaction": 32,
+    "land": 28,
+    "mdfc_land": 2,
+    "protection": 14,
+    "ramp": 34,
+    "removal": 14,
+    "repair": 4,
+    "safe_chrome_imprint": 16,
+    "selection": 3,
+    "stax": 11,
+    "tutor": 7,
+    "utility": 6
+  },
+  "deck_card_copies": 99,
+  "deck_unique_card_names": 96,
+  "derived_columns": {
+    "boolean_categories": [
+      "land",
+      "mdfc_land",
+      "ramp",
+      "fast_mana",
+      "tutor",
+      "repair",
+      "selection",
+      "combo_piece",
+      "combo_creature",
+      "aura",
+      "protection",
+      "removal",
+      "interaction",
+      "stax",
+      "utility",
+      "safe_chrome_imprint"
+    ],
+    "goldfish_relevance": [
+      "direct",
+      "interaction_noncore",
+      "combo_noncore",
+      "liability",
+      "noncore"
+    ],
+    "hand_scopes": [
+      "base6",
+      "target_hand",
+      "control_hand"
+    ],
+    "per_category_outputs": [
+      "count",
+      "card_names"
+    ]
+  },
+  "derived_pooled_contexts_rows": 20,
+  "derived_pooled_contexts_sha256": "c0dce33b481658bc605012873f6fec33fffe22a404171d461b27404d787f0a4d",
+  "enrichment_script": "enrich_dack_context_annotations.py",
+  "enrichment_script_sha256": "e31f1959eb29f0bb5e722a89799130fe5f0f908feabca5b86c640965332712c4",
+  "note": "Categories overlap by design. Example: Sheltered by Ghosts is both removal and protection; Swords to Plowshares is removal+interaction. Semantic annotations are versioned and may evolve without invalidating canonical simulation rows.",
+  "schema_version": "DACK-annotation-derived-view-v1",
+  "scope": "analysis metadata only; does not alter solver, runner, task identity, or canonical production rows",
+  "source_checkpoint": "bite11_wave2",
+  "source_experiment_id": "mana_vs_plains_v072_b240_s1_prod1",
+  "source_pooled_contexts_rows": 20,
+  "source_pooled_contexts_sha256": "39396f0a670db148b6451ca68b1e564bec016d0947d6f1b75158808e1f9cbe24"
+}
