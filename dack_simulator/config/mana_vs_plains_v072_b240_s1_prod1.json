@@ -1,0 +1,19 @@
+{
+  "schema_version": "DACK-production-experiment-v1",
+  "experiment_id": "mana_vs_plains_v072_b240_s1_prod1",
+  "experiment_type": "conditional_forced_opening_slot",
+  "comparison": "target_vs_Plains",
+  "engine_version": "v0.72",
+  "solver_file": "dack_simulator/src/dack_t3_solver_v0_72_frontier_dominance.py",
+  "solver_sha256": "abba6f0baa7bedfb0b248bdd62501dae10157ba90bd5a3952fbeffbdcca48a7a",
+  "production_engine_config": "dack_simulator/config/v072_production_engine.json",
+  "production_engine_config_sha256": "4d639e67262266a4067073e682e8e8cb9546ba0b136c2ba831dc3fa570cebab3",
+  "beam": 240,
+  "samples_per_context": 1,
+  "seed_base": 7202401001,
+  "targets": 60,
+  "primary_statistical_unit": "independent opening-hand context",
+  "initial_equal_N_goal": 25,
+  "pooling_rule": "Only DACK-data-lake-v2 complete tasks with exact compatibility signature may pool.",
+  "note": "Permanent production experiment. Bite-9 smoke rows and all v0.68/v0.70 transient rows are excluded."
+}
