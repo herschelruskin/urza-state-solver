@@ -1,0 +1,21 @@
+{
+  "schema_version": "DACK-production-experiment-v1",
+  "experiment_id": "mana_vs_plains_v072_b240_s1_prod",
+  "experiment_type": "conditional_forced_opening_slot",
+  "comparison": "target_vs_Plains",
+  "engine_version": "v0.72",
+  "solver_sha256": "abba6f0baa7bedfb0b248bdd62501dae10157ba90bd5a3952fbeffbdcca48a7a",
+  "production_engine_config_sha256": "4d639e67262266a4067073e682e8e8cb9546ba0b136c2ba831dc3fa570cebab3",
+  "runner_sha256": "93ed23ac1a63e2ae4acd60d77ba09c7023df7c0cbbc1acdc2330b72e39a3b23f",
+  "microtask_runner_sha256": "d040e5ee2d40ac17be53ae017e814f00ab815c0ee38ad9a5abaa5456e0c84ec0",
+  "pooler_sha256": "1514c91a1e8b33d03ab9564c28160b25301bbdc99f5595d79b4ccd202e7ea303",
+  "beam": 240,
+  "samples_per_context": 1,
+  "seed_base": 72025001,
+  "target_count": 60,
+  "initial_equal_n_goal_per_target": 25,
+  "atomic_unit": "one target x one replicate x one independent opening-hand context",
+  "bite10_initial_wave": {"replicate": 0, "target_indices": [0,1,2,3,4,5,6,7,8,9]},
+  "smoke_data_included": false,
+  "notes": "Permanent v0.72 production data lake. Pool only compatible complete atomic tasks under Bite-9 schema v2."
+}
