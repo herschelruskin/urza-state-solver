@@ -1,0 +1,36 @@
+{
+  "schema_version": "DACK-production-engine-v1",
+  "engine_version": "v0.72",
+  "engine_status": "production_frozen",
+  "solver_file": "dack_simulator/src/dack_t3_solver_v0_72_frontier_dominance.py",
+  "solver_sha256": "abba6f0baa7bedfb0b248bdd62501dae10157ba90bd5a3952fbeffbdcca48a7a",
+  "parent_engine": {
+    "version": "v0.72-patch-c",
+    "solver_sha256": "31a7b0672b4415c87af2cde12000a083d58b920c93ce59b34eb0ba944ab3a068"
+  },
+  "production_beam": 240,
+  "horizon_turns": 3,
+  "utility": "P(<=T2)+0.5*P(exact T3)",
+  "validation": {
+    "bite8_completed_contexts": 90,
+    "broad_contexts": 60,
+    "broad_unique_targets": 60,
+    "strict_contexts": 30,
+    "strict_targets": [
+      "City of Brass",
+      "Mana Confluence",
+      "Tarnished Citadel"
+    ],
+    "patch_c_vs_patch_d_exact_mismatches": 0,
+    "designated_strict_plains_dominance_violations": 0,
+    "strict_contexts_including_broad": 33,
+    "strict_violations_including_broad": 0,
+    "results_sha256": "88bd0cc9bc6ee1a12b3fdcc609dd46c837dd000daeb46d62c00c9d5bc91df5b7",
+    "timeouts_sha256": "8f265afb493f33be2d762e710996e58604f6324d9972e629c742c6ae25eb4c13",
+    "persistent_results_path": "/DACK simulator/validation/v072_bite8_results.csv",
+    "persistent_timeouts_path": "/DACK simulator/validation/v072_bite8_timeouts.csv"
+  },
+  "runtime_note": "Brainstone namespace 720800 local 0 remained pathological beyond 90 seconds; a fresh independent Brainstone local 1 context completed and matched Patch C exactly.",
+  "data_pooling_rule": "Pool only rows with this solver SHA, deck SHA, beam, sample count, experiment schema, and seed namespace compatibility.",
+  "production_runner_status": "Engine frozen. Update/validate the atomic data-lake runner to point at this solver before generating production inference rows."
+}
