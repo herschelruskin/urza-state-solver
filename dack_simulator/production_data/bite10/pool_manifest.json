@@ -1,0 +1,29 @@
+{
+  "compatibility_signature": {
+    "beam": 240,
+    "comparison": "target_vs_Plains",
+    "deck_sha256": "6c19aebc8dafd0f21897e7670be1c1c18ae94211470538609fcdfe1a2496c54c",
+    "engine_version": "v0.72",
+    "experiment_id": "mana_vs_plains_v072_b240_s1_prod",
+    "experiment_type": "conditional_forced_opening_slot",
+    "microtask_runner_sha256": "d040e5ee2d40ac17be53ae017e814f00ab815c0ee38ad9a5abaa5456e0c84ec0",
+    "production_config_sha256": "4d639e67262266a4067073e682e8e8cb9546ba0b136c2ba831dc3fa570cebab3",
+    "runner_sha256": "93ed23ac1a63e2ae4acd60d77ba09c7023df7c0cbbc1acdc2330b72e39a3b23f",
+    "samples": 1,
+    "schema_version": "DACK-data-lake-v2",
+    "seed_base": 72025001,
+    "solver_sha256": "abba6f0baa7bedfb0b248bdd62501dae10157ba90bd5a3952fbeffbdcca48a7a"
+  },
+  "complete_tasks": 10,
+  "discovered_task_manifests": 10,
+  "pooled_context_rows": 10,
+  "pooled_contexts_sha256": "82763e6cc836e9798b4eed47fb6897332908a709790734387e0225446999bcf7",
+  "pooled_trial_rows": 12,
+  "pooled_trials_sha256": "d091db8d1c3fce47215fd93b31c178adc0d2c7fe49f052de3d3482757c6a3e51",
+  "schema_version": "DACK-atomic-pool-v1",
+  "status_counts": {
+    "complete": 10
+  },
+  "summary_cards": 10,
+  "task_index_sha256": "24e9e7ea281a6b622912d4c424a7c1db9cf3fb0852297586de83b8c10bde8f0a"
+}
