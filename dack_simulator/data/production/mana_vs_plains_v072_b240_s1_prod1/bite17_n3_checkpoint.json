@@ -1,0 +1,48 @@
+{
+  "all_targets_equal_n": true,
+  "annotated_contexts_sha256": "1154dedf11a750d802048ecbe68291a32fec933d15b54e7f1182e407c0976a18",
+  "annotation_sha256": "f9568316be8c93874e77e3ef41c682fd3200ad701b77197e2ca012378639fa63",
+  "annotation_version": "v1",
+  "balanced_equal_n": 3,
+  "beam": 240,
+  "checkpoint": "bite17_equal_n3",
+  "completed_tasks": 180,
+  "experiment_id": "mana_vs_plains_v072_b240_s1_prod1",
+  "intermediate_checkpoint": {
+    "pool_manifest_sha256": "f187ccb53ffca9cec41ebb724ba33b4da75862f0b6f414377c424031fdd855e1",
+    "pooled_context_rows": 150,
+    "pooled_trial_rows": 160,
+    "raw_archive_sha256": "0709bc633a7227227a178116ea22cba1676f6b7d87540f225745297fe9392ae9",
+    "replicate2_targets_completed": 30
+  },
+  "microtask_runner_sha256": "d040e5ee2d40ac17be53ae017e814f00ab815c0ee38ad9a5abaa5456e0c84ec0",
+  "note": "Second balanced equal-N expansion complete: all 60 targets now have replicates 0, 1, and 2. N=3 remains exploratory, not ranking-quality inference.",
+  "pool_manifest_sha256": "a347273acae16a16a8f358711dc7da7a3cdfb3496350e57b8955c936c6fd057a",
+  "pooled_context_rows": 180,
+  "pooled_contexts_sha256": "3cbbcad35ec726c49ce0d344499448df9fc1bd2715954ee210279c6defd9e829",
+  "pooled_summary_sha256": "dbdbe270226fd7c7dfbd7874675f3300979755bdec2097ad364639d06d332d47",
+  "pooled_task_index_sha256": "80e45fdb73b90a87449dd9712ab68183e8b5e92392a284d489b228f1d3a0f650",
+  "pooled_trial_rows": 192,
+  "pooled_trials_sha256": "66740cad7fea18ec3d4e5c238416f97be7e4350e8ab0795a918b70289faf7b3f",
+  "production_config_sha256": "4d639e67262266a4067073e682e8e8cb9546ba0b136c2ba831dc3fa570cebab3",
+  "raw_task_archive_library_path": "/DACK simulator/production/mana_vs_plains_v072_b240_s1_prod1/checkpoints/bite17_n3_raw.zip",
+  "raw_task_archive_sha256": "da158242fdfd006ecae272dcdf0bdb1a5890150679c464c76ded7db187469621",
+  "raw_task_archive_size_bytes": 997294,
+  "raw_task_file_count": 900,
+  "replicates_completed": [0,1,2],
+  "restart_recoveries": [
+    {"replicate": 2, "target_card": "Ruins of Trokair", "target_index": 14},
+    {"replicate": 2, "target_card": "Urza's Saga", "target_index": 23}
+  ],
+  "runner_sha256": "93ed23ac1a63e2ae4acd60d77ba09c7023df7c0cbbc1acdc2330b72e39a3b23f",
+  "samples": 1,
+  "schema_version": "DACK-production-checkpoint-v1",
+  "seed_base": 7202401001,
+  "solver_sha256": "abba6f0baa7bedfb0b248bdd62501dae10157ba90bd5a3952fbeffbdcca48a7a",
+  "strict_invariants": {
+    "City of Brass": {"contexts": 3, "violations": 0},
+    "Mana Confluence": {"contexts": 3, "violations": 0},
+    "Tarnished Citadel": {"contexts": 3, "violations": 0}
+  },
+  "summary_cards": 60
+}
