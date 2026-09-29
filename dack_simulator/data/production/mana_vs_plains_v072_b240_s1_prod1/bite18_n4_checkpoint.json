@@ -9,12 +9,16 @@
   "completed_tasks": 240,
   "experiment_id": "mana_vs_plains_v072_b240_s1_prod1",
   "intermediate_checkpoint": {
-    "pool_manifest_sha256": "edaae6485e4ddedb16925638dcffcb80cbae71d852f9f156fc11b6bdc22aa335",
-    "raw_archive_sha256": "8c42345c7785654b4be8f4fa2b992afc4eeb8470136c4fb992649930cd76c5e7",
-    "replicate3_targets_completed": 30
+    "pool_manifest_sha256": "93554863199251a341006f3efbe06a5dea24635eecef364a267a1ca53b55482f",
+    "pooled_context_rows": 210,
+    "pooled_contexts_sha256": "5465c5428e8d8e22f5f26f86f0360036c5d8d76d800b8e8dd1f32177f2d75b77",
+    "pooled_trial_rows": 225,
+    "raw_archive_sha256": "73618dfda6921b289618a825c3f6d512ff9b4d8da71aef80eb74a6f9855e10d3",
+    "raw_archive_size_bytes": 1044427,
+    "raw_task_file_count": 1050
   },
   "microtask_runner_sha256": "d040e5ee2d40ac17be53ae017e814f00ab815c0ee38ad9a5abaa5456e0c84ec0",
-  "note": "Third balanced equal-N expansion complete: all 60 targets now have replicates 0-3. N=4 remains exploratory and is not yet ranking-quality inference.",
+  "note": "Third balanced equal-N expansion complete: all 60 targets now have replicates 0-3. Existing complete replicate-3 task identities found during recovery were provenance-verified and reused; missing identities were completed atomically. N=4 remains exploratory, not ranking-quality inference.",
   "pool_manifest_sha256": "d7196d68ff79fb54d0d263c52b66a95fe346f4b61a5c4467c2ad44d74a5be388",
   "pooled_context_rows": 240,
   "pooled_contexts_sha256": "26de45d828d6cf811af2216e1c5313310aa24b11b7f6129827b10cbc7d39e866",
@@ -24,10 +28,15 @@
   "pooled_trials_sha256": "d2a1588d76b702a567bc5d6d8376ca5576fd8a184be337151dbe2bea5c2d76c2",
   "production_config_sha256": "4d639e67262266a4067073e682e8e8cb9546ba0b136c2ba831dc3fa570cebab3",
   "raw_task_archive_library_path": "/DACK simulator/production/mana_vs_plains_v072_b240_s1_prod1/checkpoints/bite18_n4_raw.zip",
-  "raw_task_archive_sha256": "c251612bdee175e45c13416d10ab258cc887c15dcc1dd118e51892808582ea83",
-  "raw_task_archive_size_bytes": 1329614,
+  "raw_task_archive_sha256": "ca71ea478f0f4e4f2380f39730fe0e312788568ec21b6c5aa99a1f06e2649a08",
+  "raw_task_archive_size_bytes": 1193850,
   "raw_task_file_count": 1200,
-  "recovery_note": "A local workspace reset after the midpoint dropped replicate-3 task directories 11-37 from the transient working copy. The persisted midpoint archive restored 0-29; targets 30-37 were rerun under the same identities. Final pool contains exactly one complete task for every target/replicate pair.",
+  "replicate_context_counts": {
+    "0": 60,
+    "1": 60,
+    "2": 60,
+    "3": 60
+  },
   "replicates_completed": [
     0,
     1,
