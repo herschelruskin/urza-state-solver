@@ -1,66 +1,64 @@
 {
-  "all_targets_equal_n": true,
-  "annotated_contexts_sha256": "beaac3b3b0a73b7f4e3fc058c1dbb2d61f2770350fd96b6975a171e95487978d",
-  "annotation_sha256": "f9568316be8c93874e77e3ef41c682fd3200ad701b77197e2ca012378639fa63",
-  "annotation_version": "v1",
-  "balanced_equal_n": 4,
-  "beam": 240,
-  "checkpoint": "bite18_equal_n4",
-  "completed_tasks": 240,
-  "experiment_id": "mana_vs_plains_v072_b240_s1_prod1",
-  "intermediate_checkpoint": {
-    "pool_manifest_sha256": "93554863199251a341006f3efbe06a5dea24635eecef364a267a1ca53b55482f",
-    "pooled_context_rows": 210,
-    "pooled_contexts_sha256": "5465c5428e8d8e22f5f26f86f0360036c5d8d76d800b8e8dd1f32177f2d75b77",
-    "pooled_trial_rows": 225,
-    "raw_archive_sha256": "73618dfda6921b289618a825c3f6d512ff9b4d8da71aef80eb74a6f9855e10d3",
-    "raw_archive_size_bytes": 1044427,
-    "raw_task_file_count": 1050
-  },
-  "microtask_runner_sha256": "d040e5ee2d40ac17be53ae017e814f00ab815c0ee38ad9a5abaa5456e0c84ec0",
-  "note": "Third balanced equal-N expansion complete: all 60 targets now have replicates 0-3. Existing complete replicate-3 task identities found during recovery were provenance-verified and reused; missing identities were completed atomically. N=4 remains exploratory, not ranking-quality inference.",
-  "pool_manifest_sha256": "d7196d68ff79fb54d0d263c52b66a95fe346f4b61a5c4467c2ad44d74a5be388",
-  "pooled_context_rows": 240,
-  "pooled_contexts_sha256": "26de45d828d6cf811af2216e1c5313310aa24b11b7f6129827b10cbc7d39e866",
-  "pooled_summary_sha256": "6a1c07b00e2283880521290b5e0820d2b604ae91399a39338bc2f6512f1a62b1",
-  "pooled_task_index_sha256": "e4ee0bd4b36621bec03dce2c2f3dce63d1c5c50b8c6c2bb122448955a80559c5",
-  "pooled_trial_rows": 257,
-  "pooled_trials_sha256": "d2a1588d76b702a567bc5d6d8376ca5576fd8a184be337151dbe2bea5c2d76c2",
-  "production_config_sha256": "4d639e67262266a4067073e682e8e8cb9546ba0b136c2ba831dc3fa570cebab3",
-  "raw_task_archive_library_path": "/DACK simulator/production/mana_vs_plains_v072_b240_s1_prod1/checkpoints/bite18_n4_raw.zip",
-  "raw_task_archive_sha256": "ca71ea478f0f4e4f2380f39730fe0e312788568ec21b6c5aa99a1f06e2649a08",
-  "raw_task_archive_size_bytes": 1193850,
-  "raw_task_file_count": 1200,
-  "replicate_context_counts": {
-    "0": 60,
-    "1": 60,
-    "2": 60,
-    "3": 60
-  },
-  "replicates_completed": [
-    0,
-    1,
-    2,
-    3
-  ],
-  "runner_sha256": "93ed23ac1a63e2ae4acd60d77ba09c7023df7c0cbbc1acdc2330b72e39a3b23f",
-  "samples": 1,
   "schema_version": "DACK-production-checkpoint-v1",
+  "experiment_id": "mana_vs_plains_v072_b240_s1_prod1",
+  "checkpoint": "bite18_equal_n4",
+  "all_targets_equal_n": true,
+  "balanced_equal_n": 4,
+  "completed_tasks": 240,
+  "summary_cards": 60,
+  "pooled_context_rows": 240,
+  "pooled_trial_rows": 257,
+  "replicates_completed": [0, 1, 2, 3],
+  "beam": 240,
+  "samples": 1,
   "seed_base": 7202401001,
   "solver_sha256": "abba6f0baa7bedfb0b248bdd62501dae10157ba90bd5a3952fbeffbdcca48a7a",
+  "production_config_sha256": "4d639e67262266a4067073e682e8e8cb9546ba0b136c2ba831dc3fa570cebab3",
+  "runner_sha256": "93ed23ac1a63e2ae4acd60d77ba09c7023df7c0cbbc1acdc2330b72e39a3b23f",
+  "microtask_runner_sha256": "d040e5ee2d40ac17be53ae017e814f00ab815c0ee38ad9a5abaa5456e0c84ec0",
+  "raw_task_archive_library_path": "/DACK simulator/production/mana_vs_plains_v072_b240_s1_prod1/checkpoints/bite18_n4_raw.zip",
+  "raw_task_archive_sha256": "71fc058de1b3e0abfb1257d39a38957773a4546721374e5171feb0eee9df29f5",
+  "raw_task_archive_size_bytes": 1329559,
+  "raw_task_file_count": 1200,
+  "pooled_contexts_sha256": "4667624926fbf5a4091e379963cb2463a69de244d0eb179ca13ee688b53aed5e",
+  "pooled_trials_sha256": "bd8cea8c93d6d166ad90c735eef3cd28f2c1c424fd715810b418b301300d5668",
+  "pooled_summary_sha256": "6a1c07b00e2283880521290b5e0820d2b604ae91399a39338bc2f6512f1a62b1",
+  "pooled_task_index_sha256": "c85a4ff211f4bd92076325819efd0fd0dd818144122a2fc148d5ac4a0ad2838c",
+  "pool_manifest_sha256": "46deb3a246ca0cb4fee54a4aebf791fafcfad2453e0f4a15069bc161324be0f5",
+  "annotation_version": "v1",
+  "annotation_sha256": "f9568316be8c93874e77e3ef41c682fd3200ad701b77197e2ca012378639fa63",
+  "annotated_contexts_sha256": "65c56bdb48a8eacb706770ce31249e882b6ec26d4021193de8a6540c33bc67a9",
   "strict_invariants": {
-    "City of Brass": {
-      "contexts": 4,
-      "violations": 0
-    },
-    "Mana Confluence": {
-      "contexts": 4,
-      "violations": 0
-    },
-    "Tarnished Citadel": {
-      "contexts": 4,
-      "violations": 0
-    }
+    "City of Brass": {"contexts": 4, "violations": 0},
+    "Mana Confluence": {"contexts": 4, "violations": 0},
+    "Tarnished Citadel": {"contexts": 4, "violations": 0}
   },
-  "summary_cards": 60
+  "intermediate_checkpoints": [
+    {
+      "label": "replicate3_targets_0_29",
+      "complete_tasks": 210,
+      "pooled_context_rows": 210,
+      "pooled_trial_rows": 225,
+      "raw_archive_sha256": "8c42345c7785654b4be8f4fa2b992afc4eeb8470136c4fb992649930cd76c5e7",
+      "pool_manifest_file_sha256": "edaae6485e4ddedb16925638dcffcb80cbae71d852f9f156fc11b6bdc22aa335"
+    },
+    {
+      "label": "replicate3_targets_0_39_recovery",
+      "complete_tasks": 220,
+      "raw_archive_sha256": "a3abaef1d554c5199991e2a6d3a8f34b453984563ba9e453a8981c31b6b8d6ff"
+    },
+    {
+      "label": "replicate3_targets_0_49_recovery",
+      "complete_tasks": 230,
+      "raw_archive_sha256": "291bfb545031ab89e385e0c4327fa957541b2ba15b501a8d7f014ef1ddce8fde"
+    }
+  ],
+  "restart_recoveries": [
+    {"replicate": 3, "target_index": 35, "target_card": "Expedition Map", "reason": "outer execution window left same-identity task in started state; rerun completed cleanly"}
+  ],
+  "workspace_recovery": {
+    "occurred": true,
+    "description": "Local working tree reverted to the N=3 base after the first midpoint. The persisted replicate-3 targets 0-29 archive was restored, and only uncheckpointed targets 30-59 were recomputed. Additional recovery archives were persisted after targets 39 and 49."
+  },
+  "note": "Balanced equal-N expansion complete: all 60 targets now have replicates 0-3. N=4 remains exploratory and is not ranking-quality inference."
 }
