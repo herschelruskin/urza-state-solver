@@ -1,0 +1,98 @@
+{
+  "compatibility_signature": {
+    "engine": "v0.75-current99",
+    "policy": "stable_lambda_0.5_frozen_continuation",
+    "lambda": 0.5,
+    "min_keep": 1,
+    "actual_seat_before_mulligans": true,
+    "mulligan_eval_beam": 60,
+    "screen_samples": 8,
+    "refine_samples": 16,
+    "refine_margin": 0.125,
+    "bottom_finalists": 12,
+    "gameplay_beam": 240,
+    "max_turn": 3,
+    "continuation": {
+      "0": 0,
+      "1": 0.06171875,
+      "2": 0.19234,
+      "3": 0.31419,
+      "4": 0.42268,
+      "5": 0.51025,
+      "6": 0.55603
+    },
+    "seed_base": 7502405001,
+    "deck_sha256": "762fddd131b67f2ccb9d3f60e02bd97909f19565ab452bafe0f8a5b000fe7265"
+  },
+  "n": 512,
+  "shards": 32,
+  "utility_lambda_0_5": 0.62109375,
+  "summary": {
+    "T1": {
+      "count": 27,
+      "rate": 0.052734375,
+      "ci95": [
+        0.036492305788731,
+        0.07563799671337895
+      ]
+    },
+    "T2_exact": {
+      "count": 179,
+      "rate": 0.349609375,
+      "ci95": [
+        0.30956420616105157,
+        0.39189445450559673
+      ]
+    },
+    "le_T2": {
+      "count": 206,
+      "rate": 0.40234375,
+      "ci95": [
+        0.3607477977267102,
+        0.44539418971916533
+      ]
+    },
+    "T3_exact": {
+      "count": 224,
+      "rate": 0.4375,
+      "ci95": [
+        0.3951533954746975,
+        0.4807774764906628
+      ]
+    },
+    "le_T3": {
+      "count": 430,
+      "rate": 0.83984375,
+      "ci95": [
+        0.8055628302469452,
+        0.869063053441408
+      ]
+    },
+    "fail_T3": {
+      "count": 82,
+      "rate": 0.16015625,
+      "ci95": [
+        0.13093694655859203,
+        0.19443716975305483
+      ]
+    }
+  },
+  "mean_keep": 5.154296875,
+  "keep_counts": {
+    "1": 3,
+    "2": 26,
+    "3": 40,
+    "4": 73,
+    "5": 143,
+    "6": 132,
+    "7": 95
+  },
+  "seat_counts": {
+    "0": 121,
+    "1": 142,
+    "2": 114,
+    "3": 135
+  },
+  "workflow_run_id": 36664119185,
+  "note": "All 32 deterministic 16-game shards completed successfully and passed the compatibility pool. Workflow push failed only due a non-fast-forward caused by the duplicate identical workflow launch; this pooled summary was committed directly afterward."
+}
