@@ -1,0 +1,368 @@
+"""DACK simulator v0.76: exact combo-creature sequencing.
+
+Changes from v0.75:
+- Current deck update: Homeward Path -> Mouth of Ronom; all basic Plains -> Snow-Covered Plains.
+- A combo creature in hand is no longer an automatic zero-EV contamination state.
+- Exact supported win layouts:
+    1) no combo creature in hand -> cast Dack with all three combo creatures in library;
+    2) cast Roaming Throne -> cast Dack, with Preston+Boonweaver in library;
+    3) cast Preston -> cast Dack, with Throne+Boonweaver in library;
+    4) cast Dack -> cast Boonweaver Giant, with Preston+Throne initially in library;
+    5) Brainstone / Scroll Rack can repair creature(s) to library first.
+- Multiple creature cards in hand are NOT silently treated as a win unless repair or the exact
+  supported state transition makes a listed line legal.
+"""
+from dataclasses import replace
+from itertools import combinations
+import random
+import dack_v075_current99 as v75
+
+d = v75.d
+
+DACK = "Dack Fayden, Helping Hand"
+THRONE = "Roaming Throne"
+PRESTON = "Preston, the Vanisher"
+GIANT = "Boonweaver Giant"
+COMBOS = frozenset({THRONE, PRESTON, GIANT})
+
+# ---------------------------------------------------------------------------
+# Exact current list: Homeward Path -> Mouth of Ronom; basics become Snow basics.
+# ---------------------------------------------------------------------------
+CURRENT_DECK = [
+    ("Mouth of Ronom" if x == "Homeward Path" else
+     "Snow-Covered Plains" if x == "Plains" else x)
+    for x in v75.CURRENT_DECK
+]
+assert len(CURRENT_DECK) == 99
+assert "Homeward Path" not in CURRENT_DECK
+assert CURRENT_DECK.count("Snow-Covered Plains") == 13
+assert CURRENT_DECK.count("Plains") == 0
+d.DECK = CURRENT_DECK
+
+for _card in CURRENT_DECK + [DACK]:
+    if _card not in d.CARD_ID:
+        _nid=max(d.CARD_ID.values(),default=-1)+1
+        d.CARD_ID[_card]=_nid
+        d.ID_CARD[_nid]=_card
+
+d.LANDS=frozenset(set(d.LANDS)|{"Mouth of Ronom","Snow-Covered Plains"})
+d.WHITE_LANDS=frozenset(set(d.WHITE_LANDS)|{"Snow-Covered Plains"})
+d.GUARANTEED_WHITE_LANDS=frozenset(set(d.GUARANTEED_WHITE_LANDS)|{"Snow-Covered Plains"})
+d.LAND_TUTOR_TARGETS=tuple(dict.fromkeys(tuple(d.LAND_TUTOR_TARGETS)+("Mouth of Ronom","Snow-Covered Plains")))
+
+# Snow Plains and Mouth are ordinary untapped mana lands for the speed objective.
+_v076_tap_mana_actions = d.tap_mana_actions
+def tap_mana_actions(s):
+    out=list(_v076_tap_mana_actions(s))
+    for i,p in enumerate(s.battlefield):
+        if p.tapped:
+            continue
+        if p.name=="Snow-Covered Plains":
+            bf=list(s.battlefield); bf[i]=replace(p,tapped=True)
+            out.append(replace(s,battlefield=tuple(bf),w=s.w+1))
+        elif p.name=="Mouth of Ronom":
+            bf=list(s.battlefield); bf[i]=replace(p,tapped=True)
+            out.append(replace(s,battlefield=tuple(bf),c=s.c+1))
+    return _dedupe(out)
+d.tap_mana_actions=tap_mana_actions
+
+# Roaming Throne can now be cast by the search and must count for metalcraft.
+_v076_is_artifact_perm=d.is_artifact_perm
+def is_artifact_perm(name):
+    return name==THRONE or _v076_is_artifact_perm(name)
+d.is_artifact_perm=is_artifact_perm
+
+def _dedupe(states):
+    seen=set(); out=[]
+    for q in states:
+        k=d.key(q)
+        if k not in seen:
+            seen.add(k); out.append(q)
+    return out
+
+# ---------------------------------------------------------------------------
+# Exact spell payments for the supported combo creatures / commander.
+# ---------------------------------------------------------------------------
+def _combo_hand(s):
+    return tuple(x for x in s.hand if x in COMBOS)
+
+def _has_marker(s,name,marker):
+    return any(p.name==name and p.aux==marker for p in s.battlefield)
+
+def _pearl_reduction(s,g,w):
+    if w and any(d.effective_name(x)=="Pearl Medallion" for x in s.battlefield):
+        return max(0,g-1)
+    return g
+
+def _dack_payment_states(s):
+    """Post-payment states for casting first-cast Dack from the command zone."""
+    if not d.stax_allows(s,DACK,is_creature=True):
+        return []
+    g=_pearl_reduction(s,4,2)
+    needw=2
+    out=[]
+    # restricted_dack_white can pay either a Dack white pip or Dack generic.
+    max_rdw=min(s.restricted_dack_white,g+needw)
+    for rdw_total in range(max_rdw+1):
+        for rdw_white in range(min(needw,rdw_total)+1):
+            rdw_generic=rdw_total-rdw_white
+            if rdw_generic>g:
+                continue
+            q0=replace(s,restricted_dack_white=s.restricted_dack_white-rdw_total)
+            for q in d.pay_options(q0,g-rdw_generic,needw-rdw_white,legend=True):
+                if d.payment_stax_ok(s,q):
+                    out.append(q)
+    return _dedupe(out)
+
+def _cast_combo_creature_states(s,name):
+    if name not in s.hand:
+        return []
+    # Giant is only a supported cast after the Dack->(Preston,Throne) setup.
+    if name==GIANT and not _has_marker(s,DACK,"DACK_SETUP_GIANT"):
+        return []
+    art=(name==THRONE)
+    legend=(name==PRESTON)
+    if not d.stax_allows(s,name,is_artifact=art,is_creature=True):
+        return []
+    if name==THRONE:
+        g,w=4,0
+    elif name==PRESTON:
+        g,w=3,1
+    else:
+        g,w=6,1
+    g=_pearl_reduction(s,g,w)
+    out=[]
+    for paid in d.pay_options(s,g,w,legend=legend,artifact=art):
+        if not d.payment_stax_ok(s,paid):
+            continue
+        h=list(paid.hand); h.remove(name)
+        base=replace(
+            paid,
+            hand=d.sort_hand(h),
+            spells=paid.spells+1,
+            nonartifact_spells=paid.nonartifact_spells+(0 if art else 1),
+            # all three are creatures, so noncreature_spells does not increase
+        )
+        perm=d.Perm(name,False,0,s.turn,aux="CAST_COMBO")
+        bf=d.artifact_enters_bf(base.battlefield,perm) if art else base.battlefield+(perm,)
+        won=(name==GIANT and _has_marker(base,DACK,"DACK_SETUP_GIANT"))
+        out.append(replace(base,battlefield=bf,success=(base.success or won)))
+    return _dedupe(out)
+
+def _dack_giant_setup_actions(s):
+    """Cast Dack first when Giant is the sole combo creature in hand.
+    Dack's ETB puts Preston + Throne onto the battlefield, then Giant remains to be cast.
+    """
+    if _combo_hand(s)!=(GIANT,):
+        return []
+    if PRESTON not in s.library or THRONE not in s.library:
+        return []
+    if any(p.aux=="CAST_COMBO" and p.name in COMBOS for p in s.battlefield):
+        return []
+    out=[]
+    for paid in _dack_payment_states(s):
+        lib=list(paid.library)
+        lib.remove(PRESTON); lib.remove(THRONE)
+        base=replace(
+            paid,
+            library=d.shuffled_unknown(lib),
+            spells=paid.spells+1,
+            nonartifact_spells=paid.nonartifact_spells+1,
+            battlefield=paid.battlefield+(d.Perm(DACK,False,0,s.turn,aux="DACK_SETUP_GIANT"),)
+        )
+        # Dack puts Preston and Throne onto the battlefield. Throne is an artifact for metalcraft.
+        bf=base.battlefield+(d.Perm(PRESTON,False,0,s.turn,aux="DACK_ETB"),)
+        bf=d.artifact_enters_bf(bf,d.Perm(THRONE,False,0,s.turn,aux="DACK_ETB"))
+        out.append(replace(base,battlefield=bf))
+    return _dedupe(out)
+
+def _dack_layout_supported(s):
+    if _combo_hand(s):
+        return False
+    lib=set(s.library)
+    casted={p.name for p in s.battlefield if p.aux=="CAST_COMBO" and p.name in COMBOS}
+    if not casted:
+        return COMBOS.issubset(lib)
+    if casted=={THRONE}:
+        return PRESTON in lib and GIANT in lib and THRONE not in lib
+    if casted=={PRESTON}:
+        return THRONE in lib and GIANT in lib and PRESTON not in lib
+    return False
+
+def can_cast_dack(s):
+    """Terminal success predicate under the explicit user-approved combo sequences."""
+    if s.success:
+        return True
+    if not _dack_layout_supported(s):
+        return False
+    return bool(_dack_payment_states(s))
+d.can_cast_dack=can_cast_dack
+
+# Add legal combo creature casts and the Dack->Giant setup to the normal action graph.
+_v076_cast_actions=d.cast_actions
+def cast_actions(s):
+    out=list(_v076_cast_actions(s))
+    out.extend(_cast_combo_creature_states(s,THRONE))
+    out.extend(_cast_combo_creature_states(s,PRESTON))
+    out.extend(_cast_combo_creature_states(s,GIANT))
+    out.extend(_dack_giant_setup_actions(s))
+    return _dedupe(out)
+d.cast_actions=cast_actions
+
+# Keep one-creature legal sequence states alive in the production beam.
+_v076_score=d.score
+def score(s):
+    z=_v076_score(s)
+    ncombo=sum(x in COMBOS for x in s.hand)
+    if ncombo==1:
+        z+=40  # neutralize the legacy automatic-contamination hand penalty
+    if _has_marker(s,DACK,"DACK_SETUP_GIANT") and GIANT in s.hand:
+        z+=350
+    if sum(1 for p in s.battlefield if p.aux=="CAST_COMBO" and p.name in {THRONE,PRESTON})==1:
+        z+=100
+    return z
+d.score=score
+
+# ---------------------------------------------------------------------------
+# London: creature in hand is no longer hard-zero EV.
+# ---------------------------------------------------------------------------
+_WEIGHTED_SEQ_CACHE={}
+def keep_weighted_ev_seat(hand,unknown_lib,seat,beam=50,samples=6,bottom=(),t3_weight=0.5):
+    hand=d.sort_hand(hand); unknown_lib=tuple(unknown_lib); bottom=tuple(bottom)
+    ck=(hand,tuple(sorted(unknown_lib)),bottom,int(seat),int(beam),
+        int(samples),float(t3_weight),"v076_combo_sequences")
+    got=_WEIGHTED_SEQ_CACHE.get(ck)
+    if got is not None:
+        return got
+    base=list(unknown_lib); n=len(base)
+    if n<3:
+        out={"utility":0.0,"t1":0.0,"t2":0.0,"t3":0.0,"le2":0.0,"le3":0.0}
+        _WEIGHTED_SEQ_CACHE[ck]=out
+        return out
+
+    rng=random.Random(d._stable_seed(hand+bottom,0x7600 + int(seat)*997))
+    order=list(range(n)); rng.shuffle(order)
+    counts={1:0,2:0,3:0}; trials=0
+    S=max(1,int(samples))
+    for j in range(S):
+        inds=[]
+        cursor=(j*17) % n
+        while len(inds)<3:
+            cand=order[(cursor + len(inds)*37 + j*13) % n]
+            if cand not in inds:
+                inds.append(cand)
+            else:
+                cursor=(cursor+1)%n
+        pick=set(inds)
+        first3=[base[i] for i in inds]
+        rem=[c for i,c in enumerate(base) if i not in pick]
+        rr=random.Random(d._stable_seed(hand+bottom,0x7601 + j*131 + int(seat)*19))
+        rr.shuffle(rem)
+        ll=tuple(first3+rem+list(bottom))
+        wt=d._win_turn_from_unknown_order(hand,ll,int(seat),beam,max_turn=3)
+        if wt:
+            counts[wt]+=1
+        trials+=1
+    t1=counts[1]/trials; t2=counts[2]/trials; t3=counts[3]/trials
+    out={
+        "utility":t1+t2+float(t3_weight)*t3,
+        "t1":t1,"t2":t2,"t3":t3,
+        "le2":t1+t2,"le3":t1+t2+t3
+    }
+    _WEIGHTED_SEQ_CACHE[ck]=out
+    return out
+d.keep_weighted_ev_seat=keep_weighted_ev_seat
+
+def dack_bottom_weighted_ev_seat(seven,keep_n,rest,seat,beam=50,samples=6,t3_weight=0.5,finalists_n=12):
+    combos=[()] if keep_n==7 else list(combinations(range(7),7-keep_n))
+    candidates=[]
+    for inds0 in combos:
+        inds=set(inds0)
+        hand=d.sort_hand([x for i,x in enumerate(seven) if i not in inds])
+        bottom=tuple(seven[i] for i in sorted(inds))
+        struct=sum(d.bottom_priority(seven[i],seven) for i in inds)
+        contam=sum(x in COMBOS for x in hand)
+        aura_kept=sum(x in d.AURAS for x in hand)
+        # One combo creature is now a legal sequence, not contamination.
+        severe=max(0,contam-1)
+        candidates.append(((struct,-severe,-aura_kept),hand,bottom,tuple(rest)))
+    candidates.sort(key=lambda x:x[0],reverse=True)
+    finalists=candidates[:min(max(1,int(finalists_n)),len(candidates))]
+    scored=[]
+    for struct,hand,bottom,unknown in finalists:
+        ev=keep_weighted_ev_seat(hand,unknown,seat=seat,beam=beam,samples=samples,
+                                 bottom=bottom,t3_weight=t3_weight)
+        scored.append((ev["utility"],ev,struct,hand,bottom,unknown))
+    scored.sort(key=lambda x:(x[0],x[2]),reverse=True)
+    return scored[0]
+d.dack_bottom_weighted_ev_seat=dack_bottom_weighted_ev_seat
+
+def clear_caches():
+    v75.clear_caches()
+    _WEIGHTED_SEQ_CACHE.clear()
+    for name in ("_WIN_CACHE","_FUTURE_SAMPLE_CACHE","_KEEP_CACHE","_KEEP_SEAT_CACHE","_WEIGHTED_SEAT_CACHE"):
+        obj=getattr(d,name,None)
+        if hasattr(obj,"clear"):
+            obj.clear()
+
+def selftest():
+    clear_caches()
+    assert v75.selftest()
+    assert len(d.DECK)==99
+    assert d.DECK.count("Snow-Covered Plains")==13
+    assert "Mouth of Ronom" in d.DECK and "Homeward Path" not in d.DECK
+
+    # New lands are exact speed-equivalent mana sources.
+    s=d.State(1,(),(),(d.Perm("Snow-Covered Plains"),))
+    assert any(q.w==1 for q in d.tap_mana_actions(s))
+    s=d.State(1,(),(),(d.Perm("Mouth of Ronom"),))
+    assert any(q.c==1 for q in d.tap_mana_actions(s))
+
+    # Direct clean Dack works.
+    s=d.State(1,(),tuple(COMBOS),w=2,c=4)
+    assert d.can_cast_dack(s)
+
+    # A creature in hand is NOT an automatic win merely because Dack mana exists.
+    for creature in (THRONE,PRESTON,GIANT):
+        lib=tuple(x for x in COMBOS if x!=creature)
+        s=d.State(1,(creature,),lib,w=8,c=12)
+        assert not d.can_cast_dack(s), creature
+
+    # Throne -> Dack.
+    s=d.State(1,(THRONE,),(PRESTON,GIANT),c=8,w=2)
+    ts=_cast_combo_creature_states(s,THRONE)
+    assert ts and any(d.can_cast_dack(q) for q in ts), "Throne -> Dack line missing"
+
+    # Preston -> Dack.
+    s=d.State(1,(PRESTON,),(THRONE,GIANT),c=7,w=3)
+    ps=_cast_combo_creature_states(s,PRESTON)
+    assert ps and any(d.can_cast_dack(q) for q in ps), "Preston -> Dack line missing"
+
+    # Dack -> Giant. 13 total with three white is enough for 4WW then 6W.
+    s=d.State(1,(GIANT,),(PRESTON,THRONE),c=10,w=3)
+    ds=_dack_giant_setup_actions(s)
+    assert ds, "Dack setup for Giant missing"
+    gs=[x for q in ds for x in _cast_combo_creature_states(q,GIANT)]
+    assert gs and any(d.can_cast_dack(q) for q in gs), "Dack -> Giant line missing"
+
+    # Rule of Law prevents the two-spell same-turn sequence.
+    s=d.State(1,(THRONE,),(PRESTON,GIANT),(d.Perm("Rule of Law"),),c=8,w=2)
+    ts=_cast_combo_creature_states(s,THRONE)
+    assert ts and not any(d.can_cast_dack(q) for q in ts), "Rule of Law failed to stop Throne -> Dack"
+
+    # Two creature cards are not silently declared a win.
+    s=d.State(1,(THRONE,PRESTON),(GIANT,),c=20,w=5)
+    assert not d.can_cast_dack(s)
+
+    # Brainstone can repair the creature to the library, after which clean Dack is legal.
+    s=d.State(1,(PRESTON,),("Plains","Sol Ring","Silence",THRONE,GIANT),
+              (d.Perm("Brainstone"),),c=6,w=2)
+    repaired=d.repair_actions(s)
+    assert any(PRESTON in q.library and PRESTON not in q.hand for q in repaired)
+    assert any(d.can_cast_dack(q) for q in repaired if PRESTON in q.library and PRESTON not in q.hand)
+
+    clear_caches()
+    return True
+
+if __name__=="__main__":
+    print("selftest:", "PASS" if selftest() else "FAIL")
