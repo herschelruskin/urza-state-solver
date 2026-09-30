@@ -1,0 +1,83 @@
+name: DACK v0.76 artifact recovery and final pool
+
+on:
+  push:
+    branches: [dack-simulator-v0.75-current99]
+    paths:
+      - .github/workflows/dack_v076_artifact_recovery.yml
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        game_id: [4,5,6,7,16,17,18,19]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run one missing paired game
+        run: |
+          mkdir -p recovery
+          python dack_artifact_paired_v076.py --group threes --start ${{ matrix.game_id }} --games 1 --out recovery/threes_${{ matrix.game_id }}.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recovery-threes-${{ matrix.game_id }}
+          path: recovery/threes_${{ matrix.game_id }}.json
+          retention-days: 14
+
+  pool:
+    needs: recover
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download successful corrected N64 artifacts from prior run
+        run: |
+          mkdir -p paired_twos paired_threes
+          gh run download 36679834269 --repo herschelruskin/urza-state-solver --pattern 'artifact-twos-*' --dir prior_twos
+          gh run download 36679834269 --repo herschelruskin/urza-state-solver --pattern 'artifact-threes-*' --dir prior_threes
+          find prior_twos -name '*.json' -exec cp {} paired_twos/ \;
+          find prior_threes -name '*.json' -exec cp {} paired_threes/ \;
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: recovery-threes-*
+          path: recovery
+          merge-multiple: true
+      - name: Add recovered games and verify counts
+        run: |
+          cp recovery/*.json paired_threes/
+          echo "twos files: $(find paired_twos -name '*.json' | wc -l)"
+          echo "threes files: $(find paired_threes -name '*.json' | wc -l)"
+          test "$(find paired_twos -name '*.json' | wc -l)" -eq 16
+          test "$(find paired_threes -name '*.json' | wc -l)" -eq 22
+      - name: Final paired pools
+        run: |
+          mkdir -p results
+          python pool_dack_artifact_paired_v076.py --glob 'paired_twos/*.json' --out results/dack_v076_artifact_twos_n64_FINAL.json
+          python pool_dack_artifact_paired_v076.py --glob 'paired_threes/*.json' --out results/dack_v076_artifact_threes_n64_FINAL.json
+      - name: Commit final pools
+        run: |
+          git config user.name "DACK Simulator Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -f results/dack_v076_artifact_twos_n64_FINAL.json results/dack_v076_artifact_threes_n64_FINAL.json
+          git commit -m "Add corrected v0.76 artifact N64 final pools" || exit 0
+          git pull --rebase origin dack-simulator-v0.75-current99
+          git push
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v076-artifact-n64-final
+          path: |
+            results/dack_v076_artifact_twos_n64_FINAL.json
+            results/dack_v076_artifact_threes_n64_FINAL.json
+          retention-days: 30
