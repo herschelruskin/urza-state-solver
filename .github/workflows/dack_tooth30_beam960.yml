@@ -1,0 +1,18 @@
+name: DACK Tooth game30 beam960 check
+on:
+  push:
+    branches: [dack-simulator-v0.75-current99]
+    paths: [.github/workflows/dack_tooth30_beam960.yml]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python dack_tooth30_beam960.py | tee tooth30_beam960.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tooth30-beam960
+          path: tooth30_beam960.json
