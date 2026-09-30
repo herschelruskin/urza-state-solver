@@ -307,7 +307,11 @@ def clear_caches():
 
 def selftest():
     clear_caches()
+    # Validate the inherited v0.75 artifact patch against its own frozen list, then restore v0.76.
+    _live=list(d.DECK)
+    d.DECK=list(v75.CURRENT_DECK)
     assert v75.selftest()
+    d.DECK=_live
     assert len(d.DECK)==99
     assert d.DECK.count("Snow-Covered Plains")==13
     assert "Mouth of Ronom" in d.DECK and "Homeward Path" not in d.DECK
