@@ -81,6 +81,48 @@ def _dedupe(states):
     return out
 
 # ---------------------------------------------------------------------------
+# Current basic-land / contamination-aware tutor helpers.
+# ---------------------------------------------------------------------------
+def _hand_contaminated(s):
+    return any(x in COMBOS for x in s.hand)
+
+def _repair_artifacts(s, mv1_only=False):
+    out=[]
+    if not _hand_contaminated(s):
+        return out
+    if "Brainstone" in s.library:
+        out.append("Brainstone")
+    if not mv1_only and "Scroll Rack" in s.library:
+        out.append("Scroll Rack")
+    return out
+
+def land_tutor_choice(s,to_battlefield_tapped=False):
+    """v0.76 visible-state land choice with Snow-Covered Plains and repair lines."""
+    avail=set(s.library)
+    # If a combo creature is stranded, Cave/Map may deliberately begin a repair chain.
+    # Saga -> Brainstone is the primary line; Inventors' Fair can find Brainstone/Rack.
+    if _hand_contaminated(s):
+        if "Urza's Saga" in avail and "Brainstone" in s.library:
+            return "Urza's Saga"
+        if "Inventors' Fair" in avail and any(x in s.library for x in ("Brainstone","Scroll Rack")):
+            return "Inventors' Fair"
+    white_now=s.w+s.any+s.restricted_dack_white
+    white_sources=sum(x in {"Snow-Covered Plains","Ancient Den","Eiganjo, Seat of the Empire",
+                            "City of Brass","Mana Confluence","Gemstone Mine","Starting Town",
+                            "Tarnished Citadel"} for x in s.hand)
+    if white_now+white_sources<2:
+        for x in ("Ancient Den","Snow-Covered Plains","City of Brass","Mana Confluence",
+                  "Gemstone Mine","Starting Town"):
+            if x in avail:
+                return x
+    for x in ("Ancient Tomb","City of Traitors","Crystal Vein","Remote Farm","Ruins of Trokair",
+              "Urza's Saga","The Mycosynth Gardens","Ancient Den","Snow-Covered Plains"):
+        if x in avail:
+            return x
+    return next((x for x in d.LAND_TUTOR_TARGETS if x in avail),None)
+d.land_tutor_choice=land_tutor_choice
+
+# ---------------------------------------------------------------------------
 # Exact spell payments for the supported combo creatures / commander.
 # ---------------------------------------------------------------------------
 def _combo_hand(s):
@@ -149,20 +191,27 @@ def _cast_combo_creature_states(s,name):
         out.append(replace(base,battlefield=bf,success=(base.success or won)))
     return _dedupe(out)
 
+def _precast_tp(s):
+    return {p.name for p in s.battlefield
+            if p.aux=="CAST_COMBO" and p.name in {THRONE,PRESTON}}
+
 def _dack_giant_setup_actions(s):
-    """Cast Dack first when Giant is the sole combo creature in hand.
-    Dack's ETB puts Preston + Throne onto the battlefield, then Giant remains to be cast.
+    """Cast Dack with Giant still in hand after any needed Throne/Preston pre-casts.
+    Dack supplies whichever of Throne/Preston are still in the library; Giant is then
+    actually cast from hand. This also supports the very rare multi-creature hands.
     """
-    if _combo_hand(s)!=(GIANT,):
+    ch=set(_combo_hand(s))
+    if GIANT not in ch or THRONE in ch or PRESTON in ch:
         return []
-    if PRESTON not in s.library or THRONE not in s.library:
-        return []
-    if any(p.aux=="CAST_COMBO" and p.name in COMBOS for p in s.battlefield):
+    casted=_precast_tp(s)
+    missing={THRONE,PRESTON}-casted
+    if not missing.issubset(set(s.library)):
         return []
     out=[]
     for paid in _dack_payment_states(s):
         lib=list(paid.library)
-        lib.remove(PRESTON); lib.remove(THRONE)
+        for x in missing:
+            lib.remove(x)
         base=replace(
             paid,
             library=d.shuffled_unknown(lib),
@@ -170,24 +219,26 @@ def _dack_giant_setup_actions(s):
             nonartifact_spells=paid.nonartifact_spells+1,
             battlefield=paid.battlefield+(d.Perm(DACK,False,0,s.turn,aux="DACK_SETUP_GIANT"),)
         )
-        # Dack puts Preston and Throne onto the battlefield. Throne is an artifact for metalcraft.
-        bf=base.battlefield+(d.Perm(PRESTON,False,0,s.turn,aux="DACK_ETB"),)
-        bf=d.artifact_enters_bf(bf,d.Perm(THRONE,False,0,s.turn,aux="DACK_ETB"))
+        bf=base.battlefield
+        if PRESTON in missing:
+            bf=bf+(d.Perm(PRESTON,False,0,s.turn,aux="DACK_ETB"),)
+        if THRONE in missing:
+            bf=d.artifact_enters_bf(bf,d.Perm(THRONE,False,0,s.turn,aux="DACK_ETB"))
         out.append(replace(base,battlefield=bf))
     return _dedupe(out)
 
 def _dack_layout_supported(s):
+    """Direct terminal Dack line when Giant is still in library.
+    Any subset of Throne/Preston may already have been cast from hand.
+    """
     if _combo_hand(s):
         return False
+    casted=_precast_tp(s)
+    if not casted.issubset({THRONE,PRESTON}):
+        return False
     lib=set(s.library)
-    casted={p.name for p in s.battlefield if p.aux=="CAST_COMBO" and p.name in COMBOS}
-    if not casted:
-        return COMBOS.issubset(lib)
-    if casted=={THRONE}:
-        return PRESTON in lib and GIANT in lib and THRONE not in lib
-    if casted=={PRESTON}:
-        return THRONE in lib and GIANT in lib and PRESTON not in lib
-    return False
+    missing={THRONE,PRESTON}-casted
+    return GIANT in lib and missing.issubset(lib)
 
 def can_cast_dack(s):
     """Terminal success predicate under the explicit user-approved combo sequences."""
@@ -200,8 +251,52 @@ d.can_cast_dack=can_cast_dack
 
 # Add legal combo creature casts and the Dack->Giant setup to the normal action graph.
 _v076_cast_actions=d.cast_actions
+def _enlightened_repair_actions(s):
+    if "Enlightened Tutor" not in s.hand or not _hand_contaminated(s):
+        return []
+    if not d.stax_allows(s,"Enlightened Tutor"):
+        return []
+    names={x.name for x in s.battlefield}
+    g,w=0,1
+    if "Thorn of Amethyst" in names: g+=1
+    if "Charitable Levy" in names: g+=1
+    if any(x.name=="Trinisphere" and not x.tapped for x in s.battlefield):
+        g=max(g,3-w)
+    out=[]
+    for paid in d.pay_options(s,g,w):
+        if not d.payment_stax_ok(s,paid):
+            continue
+        for target in _repair_artifacts(paid,False):
+            h=list(paid.hand); h.remove("Enlightened Tutor")
+            lib=list(paid.library); lib.remove(target)
+            out.append(replace(
+                paid, hand=d.sort_hand(h),
+                library=(target,)+d.shuffled_unknown(lib),
+                grave=paid.grave+("Enlightened Tutor",),
+                spells=paid.spells+1,
+                nonartifact_spells=paid.nonartifact_spells+1,
+                noncreature_spells=paid.noncreature_spells+1
+            ))
+    return out
+
+def _levy_snow_fetch_branches(s,states):
+    """Charitable Levy searches for a Plains card; Snow-Covered Plains qualifies."""
+    if not any(x.name=="Charitable Levy" for x in s.battlefield):
+        return list(states)
+    out=list(states)
+    for q in states:
+        levy_sacrificed=(q.grave.count("Charitable Levy")>s.grave.count("Charitable Levy")
+                         and not any(x.name=="Charitable Levy" for x in q.battlefield))
+        if levy_sacrificed and "Snow-Covered Plains" in q.library:
+            lib=list(q.library); lib.remove("Snow-Covered Plains")
+            bf=q.battlefield+(d.Perm("Snow-Covered Plains",True,0,q.turn),)
+            out.append(replace(q,battlefield=bf,library=d.shuffled_unknown(lib)))
+    return out
+
 def cast_actions(s):
-    out=list(_v076_cast_actions(s))
+    inherited=list(_v076_cast_actions(s))
+    out=_levy_snow_fetch_branches(s,inherited)
+    out.extend(_enlightened_repair_actions(s))
     out.extend(_cast_combo_creature_states(s,THRONE))
     out.extend(_cast_combo_creature_states(s,PRESTON))
     out.extend(_cast_combo_creature_states(s,GIANT))
@@ -209,13 +304,93 @@ def cast_actions(s):
     return _dedupe(out)
 d.cast_actions=cast_actions
 
+# Tutor repair branches that must coexist with the historical deterministic acceleration target.
+_v076_v03_actions=d.v03_actions
+def v03_actions(s):
+    out=list(_v076_v03_actions(s))
+
+    # Tezzeret -3: MV <= 1, so Brainstone is the only hand-repair target among Rack/Brainstone.
+    if _hand_contaminated(s) and "Brainstone" in s.library:
+        for i,p in enumerate(s.battlefield):
+            if p.name=="Tezzeret, Cruel Captain" and p.activated_turn!=s.turn and p.loyalty>=3:
+                lib=list(s.library); lib.remove("Brainstone")
+                bf=list(s.battlefield); bf[i]=replace(p,loyalty=p.loyalty-3,activated_turn=s.turn)
+                out.append(replace(s,battlefield=tuple(bf),library=d.shuffled_unknown(lib),
+                                   hand=d.sort_hand(s.hand+("Brainstone",))))
+
+    # Inventors' Fair: unrestricted artifact tutor, so branch Brainstone and Scroll Rack.
+    if _hand_contaminated(s):
+        for p in s.battlefield:
+            if p.name!="Inventors' Fair" or p.tapped or not d.metalcraft(s):
+                continue
+            for paid in d.pay_options(s,4):
+                fi=next((j for j,x in enumerate(paid.battlefield)
+                         if x.name=="Inventors' Fair" and not x.tapped),None)
+                if fi is None:
+                    continue
+                for target in _repair_artifacts(paid,False):
+                    lib=list(paid.library); lib.remove(target)
+                    bf=list(paid.battlefield); bf.pop(fi)
+                    out.append(replace(paid,battlefield=tuple(bf),library=d.shuffled_unknown(lib),
+                                       hand=d.sort_hand(paid.hand+(target,)),
+                                       grave=paid.grave+("Inventors' Fair",)))
+
+    # Urza's Cave repair chain: allow Saga -> Brainstone or Fair -> Brainstone/Rack,
+    # instead of forcing only the normal mana-land heuristic.
+    if _hand_contaminated(s) and any(x.name=="Urza's Cave" and not x.tapped for x in s.battlefield):
+        for paid in d.pay_options(s,3):
+            ci=next((j for j,x in enumerate(paid.battlefield)
+                     if x.name=="Urza's Cave" and not x.tapped),None)
+            if ci is None:
+                continue
+            repair_lands=[]
+            if "Urza's Saga" in paid.library and "Brainstone" in paid.library:
+                repair_lands.append("Urza's Saga")
+            if "Inventors' Fair" in paid.library and any(x in paid.library for x in ("Brainstone","Scroll Rack")):
+                repair_lands.append("Inventors' Fair")
+            for target in repair_lands:
+                lib=list(paid.library); lib.remove(target)
+                bf=list(paid.battlefield); bf.pop(ci)
+                counters=1 if target=="Urza's Saga" else 0
+                bf.append(d.Perm(target,True,counters,s.turn))
+                out.append(replace(paid,battlefield=tuple(bf),library=d.shuffled_unknown(lib),
+                                   grave=paid.grave+("Urza's Cave",)))
+
+    # Moonsilver Key may find a basic land; Snow-Covered Plains is a basic Plains.
+    if any(x.name=="Moonsilver Key" and not x.tapped for x in s.battlefield):
+        for paid in d.pay_options(s,1):
+            ki=next((j for j,x in enumerate(paid.battlefield)
+                     if x.name=="Moonsilver Key" and not x.tapped),None)
+            if ki is not None and "Snow-Covered Plains" in paid.library:
+                lib=list(paid.library); lib.remove("Snow-Covered Plains")
+                bf=list(paid.battlefield); bf.pop(ki)
+                out.append(replace(paid,battlefield=tuple(bf),library=d.shuffled_unknown(lib),
+                                   hand=d.sort_hand(paid.hand+("Snow-Covered Plains",)),
+                                   grave=paid.grave+("Moonsilver Key",)))
+    return _dedupe(out)
+d.v03_actions=v03_actions
+
+# Saga III is a separate action layer; branch Brainstone repair while retaining normal acceleration.
+_v076_saga_tutor_actions=d.saga_tutor_actions
+def saga_tutor_actions(s):
+    out=list(_v076_saga_tutor_actions(s))
+    if _hand_contaminated(s) and "Brainstone" in s.library:
+        for i,p in enumerate(s.battlefield):
+            if p.name=="Urza's Saga" and p.aux=="SAGA3":
+                lib=list(s.library); lib.remove("Brainstone")
+                bf=list(s.battlefield); bf.pop(i)
+                bf=list(d.artifact_enters_bf(tuple(bf),d.Perm("Brainstone",False,0,s.turn)))
+                out.append(replace(s,battlefield=tuple(bf),library=d.shuffled_unknown(lib)))
+    return _dedupe(out)
+d.saga_tutor_actions=saga_tutor_actions
+
 # Keep one-creature legal sequence states alive in the production beam.
 _v076_score=d.score
 def score(s):
     z=_v076_score(s)
     ncombo=sum(x in COMBOS for x in s.hand)
-    if ncombo==1:
-        z+=40  # neutralize the legacy automatic-contamination hand penalty
+    if ncombo:
+        z+=40*ncombo  # neutralize the legacy automatic-contamination hand penalty
     if _has_marker(s,DACK,"DACK_SETUP_GIANT") and GIANT in s.hand:
         z+=350
     if sum(1 for p in s.battlefield if p.aux=="CAST_COMBO" and p.name in {THRONE,PRESTON})==1:
@@ -357,6 +532,51 @@ def selftest():
     # Two creature cards are not silently declared a win.
     s=d.State(1,(THRONE,PRESTON),(GIANT,),c=20,w=5)
     assert not d.can_cast_dack(s)
+
+    # Multi-creature sequencing: Throne + Preston may both be cast before Dack.
+    s=d.State(1,(THRONE,PRESTON),(GIANT,),c=20,w=6)
+    t1=_cast_combo_creature_states(s,THRONE)
+    t2=[x for q in t1 for x in _cast_combo_creature_states(q,PRESTON)]
+    assert t2 and any(d.can_cast_dack(q) for q in t2), "Throne + Preston -> Dack missing"
+
+    # Throne/Preston + Giant: pre-cast the former, Dack supplies the other, then cast Giant.
+    s=d.State(1,(THRONE,GIANT),(PRESTON,),c=24,w=6)
+    a=_cast_combo_creature_states(s,THRONE)
+    b=[x for q in a for x in _dack_giant_setup_actions(q)]
+    g=[x for q in b for x in _cast_combo_creature_states(q,GIANT)]
+    assert g and any(d.can_cast_dack(q) for q in g), "Throne -> Dack -> Giant missing"
+
+    # Enlightened Tutor can topdeck either repair artifact.
+    s=d.State(1,(PRESTON,"Enlightened Tutor"),("Brainstone","Scroll Rack",THRONE,GIANT),w=1)
+    er=_enlightened_repair_actions(s)
+    assert any(q.library and q.library[0]=="Brainstone" for q in er)
+    assert any(q.library and q.library[0]=="Scroll Rack" for q in er)
+
+    # Tezzeret and Saga are correctly limited to the MV1 Brainstone repair.
+    s=d.State(1,(PRESTON,),("Brainstone","Scroll Rack",THRONE,GIANT),
+              (d.Perm("Tezzeret, Cruel Captain",loyalty=4),))
+    assert any("Brainstone" in q.hand for q in d.v03_actions(s))
+    s=d.State(3,(PRESTON,),("Brainstone","Scroll Rack",THRONE,GIANT),
+              (d.Perm("Urza's Saga",False,3,1,aux="SAGA3"),))
+    assert any(any(p.name=="Brainstone" for p in q.battlefield) for q in d.saga_tutor_actions(s))
+
+    # Inventors' Fair can find Rack as well as Brainstone when contaminated.
+    s=d.State(2,(PRESTON,),("Brainstone","Scroll Rack",THRONE,GIANT),
+              (d.Perm("Inventors' Fair"),d.Perm("Sol Ring"),d.Perm("Mana Vault"),d.Perm("Mox Opal")),c=4)
+    fr=d.v03_actions(s)
+    assert any("Brainstone" in q.hand for q in fr)
+    assert any("Scroll Rack" in q.hand for q in fr)
+
+    # Cave can deliberately start the slow Saga/Fair repair chain.
+    s=d.State(2,(PRESTON,),("Urza's Saga","Inventors' Fair","Brainstone","Scroll Rack",THRONE,GIANT),
+              (d.Perm("Urza's Cave"),),c=3)
+    cr=d.v03_actions(s)
+    assert any(any(p.name=="Urza's Saga" for p in q.battlefield) for q in cr)
+    assert any(any(p.name=="Inventors' Fair" for p in q.battlefield) for q in cr)
+
+    # Snow-Covered Plains is a legal Moonsilver basic target.
+    s=d.State(1,(),("Snow-Covered Plains",),(d.Perm("Moonsilver Key"),),c=1)
+    assert any("Snow-Covered Plains" in q.hand for q in d.v03_actions(s))
 
     # Brainstone can repair the creature to the library, after which clean Dack is legal.
     s=d.State(1,(PRESTON,),("Plains","Sol Ring","Silence",THRONE,GIANT),
