@@ -1,0 +1,51 @@
+name: DACK Pearl artifact identity paired N256
+
+on:
+  push:
+    branches:
+      - dack-simulator-v0.75-current99
+    paths:
+      - .github/workflows/dack_pearl_artifact_fix_paired.yml
+
+permissions:
+  contents: write
+
+jobs:
+  paired:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 32
+      matrix:
+        start: [0,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,76,80,84,88,92,96,100,104,108,112,116,120,124,128,132,136,140,144,148,152,156,160,164,168,172,176,180,184,188,192,196,200,204,208,212,216,220,224,228,232,236,240,244,248,252]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: |
+          mkdir -p paired
+          python dack_pearl_fix_paired.py --start ${{ matrix.start }} --games 4 --out paired/p_${{ matrix.start }}.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pearl-fix-${{ matrix.start }}
+          path: paired/p_${{ matrix.start }}.json
+          retention-days: 14
+  pool:
+    needs: paired
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: pearl-fix-*
+          path: paired
+          merge-multiple: true
+      - run: python pool_dack_pearl_fix.py --glob 'paired/*.json' --out results/dack_pearl_artifact_fix_paired_n256.json
+      - run: |
+          git config user.name "DACK Simulator Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -f results/dack_pearl_artifact_fix_paired_n256.json
+          git commit -m "Add Pearl artifact identity paired N=256 audit" || exit 0
+          git pull --rebase origin dack-simulator-v0.75-current99
+          git push
