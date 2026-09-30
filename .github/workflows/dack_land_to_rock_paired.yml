@@ -1,0 +1,57 @@
+name: DACK paired weak-land to Thought Vessel screen
+
+on:
+  push:
+    branches: [dack-simulator-v0.75-current99]
+    paths: [.github/workflows/dack_land_to_rock_paired.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  paired:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 32
+      matrix:
+        start: [0,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,76,80,84,88,92,96,100,104,108,112,116,120,124]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Run paired land-to-rock shard
+        run: |
+          mkdir -p paired
+          python dack_land_to_rock_paired.py --start ${{ matrix.start }} --games 4 --out paired/paired_${{ matrix.start }}.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-land-rock-paired-${{ matrix.start }}
+          path: paired/paired_${{ matrix.start }}.json
+          retention-days: 14
+  pool:
+    needs: paired
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-land-rock-paired-*
+          path: paired
+          merge-multiple: true
+      - name: Pool
+        run: python pool_dack_land_to_rock.py --glob 'paired/*.json' --out results/dack_land_to_thought_vessel_paired_n128.json
+      - name: Commit
+        run: |
+          git config user.name "DACK Simulator Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -f results/dack_land_to_thought_vessel_paired_n128.json
+          git commit -m "Add paired land to Thought Vessel N=128 screen" || exit 0
+          git pull --rebase origin dack-simulator-v0.75-current99
+          git push
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-land-rock-paired-n128
+          path: results/dack_land_to_thought_vessel_paired_n128.json
+          retention-days: 30
