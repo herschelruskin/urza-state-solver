@@ -1,0 +1,65 @@
+name: DACK v0.75 current-99 N512 baseline
+
+on:
+  push:
+    branches:
+      - dack-simulator-v0.75-current99
+    paths:
+      - .github/workflows/dack_v075_current99_n512.yml
+
+permissions:
+  contents: write
+
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run selftest
+        run: python dack_v075_current99.py
+      - name: Run deterministic shard
+        run: |
+          mkdir -p shard
+          python dack_current99_batch.py --shard ${{ matrix.shard }} --games 16 --out shard/shard_${{ matrix.shard }}.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-current99-n512-shard-${{ matrix.shard }}
+          path: shard/shard_${{ matrix.shard }}.json
+          retention-days: 14
+
+  pool:
+    needs: simulate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-current99-n512-shard-*
+          path: shards
+          merge-multiple: true
+      - name: Pool compatible shards
+        run: |
+          python pool_dack_current99.py --glob 'shards/*.json' --json-out results/dack_v075_current99_n512.json --csv-out results/dack_v075_current99_n512_games.csv
+      - name: Commit pooled checkpoint
+        run: |
+          git config user.name "DACK Simulator Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -f results/dack_v075_current99_n512.json results/dack_v075_current99_n512_games.csv
+          git commit -m "Add v0.75 current-99 N=512 pooled baseline" || exit 0
+          git push
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-current99-pooled-n512
+          path: |
+            results/dack_v075_current99_n512.json
+            results/dack_v075_current99_n512_games.csv
+          retention-days: 30
