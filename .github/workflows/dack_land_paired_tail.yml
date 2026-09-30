@@ -1,0 +1,32 @@
+name: DACK land paired tail recovery
+
+on:
+  push:
+    branches:
+      - dack-simulator-v0.75-current99
+    paths:
+      - .github/workflows/dack_land_paired_tail.yml
+
+jobs:
+  tail:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        start: [120,121,122,123]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run exact paired tail game
+        run: |
+          mkdir -p tail
+          python dack_land_paired.py --start ${{ matrix.start }} --games 1 --out tail/tail_${{ matrix.start }}.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-land-tail-${{ matrix.start }}
+          path: tail/tail_${{ matrix.start }}.json
+          retention-days: 14
