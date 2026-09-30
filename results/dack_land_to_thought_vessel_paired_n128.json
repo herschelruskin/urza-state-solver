@@ -1,0 +1,271 @@
+{
+  "test": "land_to_thought_vessel_paired",
+  "n": 128,
+  "base_deck_sha256": "762fddd131b67f2ccb9d3f60e02bd97909f19565ab452bafe0f8a5b000fe7265",
+  "policy_signature": {
+    "engine": "v0.75-current99",
+    "policy": "stable_lambda_0.5_frozen_continuation",
+    "lambda": 0.5,
+    "min_keep": 1,
+    "actual_seat_before_mulligans": true,
+    "mulligan_eval_beam": 60,
+    "screen_samples": 8,
+    "refine_samples": 16,
+    "refine_margin": 0.125,
+    "bottom_finalists": 12,
+    "gameplay_beam": 240,
+    "max_turn": 3,
+    "continuation": {
+      "0": 0.0,
+      "1": 0.06171875,
+      "2": 0.19234,
+      "3": 0.31419,
+      "4": 0.42268,
+      "5": 0.51025,
+      "6": 0.55603
+    },
+    "seed_base": 7502405001,
+    "deck_sha256": "762fddd131b67f2ccb9d3f60e02bd97909f19565ab452bafe0f8a5b000fe7265"
+  },
+  "summary": {
+    "baseline": {
+      "n": 128,
+      "counts": {
+        "0": 14,
+        "1": 3,
+        "2": 54,
+        "3": 57
+      },
+      "T1": 0.0234375,
+      "le_T2": 0.4453125,
+      "T3_exact": 0.4453125,
+      "le_T3": 0.890625,
+      "utility": 0.66796875,
+      "mean_keep": 5.2734375
+    },
+    "Urza's Cave": {
+      "n": 128,
+      "counts": {
+        "0": 14,
+        "1": 3,
+        "2": 55,
+        "3": 56
+      },
+      "T1": 0.0234375,
+      "le_T2": 0.453125,
+      "T3_exact": 0.4375,
+      "le_T3": 0.890625,
+      "utility": 0.671875,
+      "mean_keep": 5.2734375
+    },
+    "Petrified Hamlet": {
+      "n": 128,
+      "counts": {
+        "0": 18,
+        "1": 3,
+        "2": 52,
+        "3": 55
+      },
+      "T1": 0.0234375,
+      "le_T2": 0.4296875,
+      "T3_exact": 0.4296875,
+      "le_T3": 0.859375,
+      "utility": 0.64453125,
+      "mean_keep": 5.2578125
+    },
+    "Command Beacon": {
+      "n": 128,
+      "counts": {
+        "0": 15,
+        "1": 3,
+        "2": 55,
+        "3": 55
+      },
+      "T1": 0.0234375,
+      "le_T2": 0.453125,
+      "T3_exact": 0.4296875,
+      "le_T3": 0.8828125,
+      "utility": 0.66796875,
+      "mean_keep": 5.3046875
+    },
+    "Talon Gates of Madara": {
+      "n": 128,
+      "counts": {
+        "0": 14,
+        "1": 3,
+        "2": 56,
+        "3": 55
+      },
+      "T1": 0.0234375,
+      "le_T2": 0.4609375,
+      "T3_exact": 0.4296875,
+      "le_T3": 0.890625,
+      "utility": 0.67578125,
+      "mean_keep": 5.3046875
+    },
+    "Great Hall of the Citadel": {
+      "n": 128,
+      "counts": {
+        "0": 14,
+        "1": 3,
+        "2": 55,
+        "3": 56
+      },
+      "T1": 0.0234375,
+      "le_T2": 0.453125,
+      "T3_exact": 0.4375,
+      "le_T3": 0.890625,
+      "utility": 0.671875,
+      "mean_keep": 5.265625
+    },
+    "Cavern of Souls": {
+      "n": 128,
+      "counts": {
+        "0": 17,
+        "1": 3,
+        "2": 52,
+        "3": 56
+      },
+      "T1": 0.0234375,
+      "le_T2": 0.4296875,
+      "T3_exact": 0.4375,
+      "le_T3": 0.8671875,
+      "utility": 0.6484375,
+      "mean_keep": 5.2421875
+    }
+  },
+  "paired": {
+    "Urza's Cave": {
+      "delta_utility": 0.00390625,
+      "delta_utility_ci95_normal": [
+        -0.019142316888455933,
+        0.026954816888455933
+      ],
+      "delta_le_T2": 0.0078125,
+      "delta_le_T3": 0.0,
+      "le_T2_flips": {
+        "improved": 1,
+        "worsened": 0
+      },
+      "le_T3_flips": {
+        "improved": 4,
+        "worsened": 4
+      },
+      "turn_outcome": {
+        "better": 5,
+        "worse": 4,
+        "same": 119
+      }
+    },
+    "Petrified Hamlet": {
+      "delta_utility": -0.0234375,
+      "delta_utility_ci95_normal": [
+        -0.04479177039097204,
+        -0.002083229609027959
+      ],
+      "delta_le_T2": -0.015625,
+      "delta_le_T3": -0.03125,
+      "le_T2_flips": {
+        "improved": 1,
+        "worsened": 3
+      },
+      "le_T3_flips": {
+        "improved": 0,
+        "worsened": 4
+      },
+      "turn_outcome": {
+        "better": 1,
+        "worse": 7,
+        "same": 120
+      }
+    },
+    "Command Beacon": {
+      "delta_utility": 0.0,
+      "delta_utility_ci95_normal": [
+        -0.01882724938302942,
+        0.01882724938302942
+      ],
+      "delta_le_T2": 0.0078125,
+      "delta_le_T3": -0.0078125,
+      "le_T2_flips": {
+        "improved": 1,
+        "worsened": 0
+      },
+      "le_T3_flips": {
+        "improved": 2,
+        "worsened": 3
+      },
+      "turn_outcome": {
+        "better": 3,
+        "worse": 3,
+        "same": 122
+      }
+    },
+    "Talon Gates of Madara": {
+      "delta_utility": 0.0078125,
+      "delta_utility_ci95_normal": [
+        -0.007499718629219172,
+        0.023124718629219172
+      ],
+      "delta_le_T2": 0.015625,
+      "delta_le_T3": 0.0,
+      "le_T2_flips": {
+        "improved": 2,
+        "worsened": 0
+      },
+      "le_T3_flips": {
+        "improved": 1,
+        "worsened": 1
+      },
+      "turn_outcome": {
+        "better": 3,
+        "worse": 1,
+        "same": 124
+      }
+    },
+    "Great Hall of the Citadel": {
+      "delta_utility": 0.00390625,
+      "delta_utility_ci95_normal": [
+        -0.01641815230776869,
+        0.02423065230776869
+      ],
+      "delta_le_T2": 0.0078125,
+      "delta_le_T3": 0.0,
+      "le_T2_flips": {
+        "improved": 3,
+        "worsened": 2
+      },
+      "le_T3_flips": {
+        "improved": 1,
+        "worsened": 1
+      },
+      "turn_outcome": {
+        "better": 4,
+        "worse": 3,
+        "same": 121
+      }
+    },
+    "Cavern of Souls": {
+      "delta_utility": -0.01953125,
+      "delta_utility_ci95_normal": [
+        -0.03637907423624346,
+        -0.0026834257637565403
+      ],
+      "delta_le_T2": -0.015625,
+      "delta_le_T3": -0.0234375,
+      "le_T2_flips": {
+        "improved": 0,
+        "worsened": 2
+      },
+      "le_T3_flips": {
+        "improved": 0,
+        "worsened": 3
+      },
+      "turn_outcome": {
+        "better": 0,
+        "worse": 5,
+        "same": 123
+      }
+    }
+  }
+}
