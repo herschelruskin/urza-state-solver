@@ -1,0 +1,69 @@
+name: DACK v0.76 artifact benchmark Windows N32
+
+on:
+  push:
+    branches: [dack-simulator-v0.75-current99]
+    paths:
+      - .github/workflows/dack_v076_artifact_screen_windows_n32.yml
+
+jobs:
+  paired:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        group: [twos, threes]
+        start: [64,68,72,76,80,84,88,92]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run corrected paired artifact shard
+        shell: bash
+        run: |
+          mkdir -p paired
+          python dack_artifact_paired_v076.py --group ${{ matrix.group }} --start ${{ matrix.start }} --games 4 --out paired/${{ matrix.group }}_${{ matrix.start }}.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: artifact-win-${{ matrix.group }}-${{ matrix.start }}
+          path: paired/${{ matrix.group }}_${{ matrix.start }}.json
+          retention-days: 14
+
+  pool_twos:
+    needs: paired
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: artifact-win-twos-*
+          path: paired
+          merge-multiple: true
+      - name: Pool twos
+        shell: bash
+        run: python pool_dack_artifact_paired_v076.py --glob 'paired/*.json' --out results/dack_v076_artifact_twos_windows_n32.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v076-artifact-twos-windows-n32
+          path: results/dack_v076_artifact_twos_windows_n32.json
+
+  pool_threes:
+    needs: paired
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: artifact-win-threes-*
+          path: paired
+          merge-multiple: true
+      - name: Pool threes
+        shell: bash
+        run: python pool_dack_artifact_paired_v076.py --glob 'paired/*.json' --out results/dack_v076_artifact_threes_windows_n32.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v076-artifact-threes-windows-n32
+          path: results/dack_v076_artifact_threes_windows_n32.json
