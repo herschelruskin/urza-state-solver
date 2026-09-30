@@ -1,0 +1,43 @@
+name: DACK v0.76 first artifact package extend N128
+
+on:
+  push:
+    branches: [dack-simulator-v0.75-current99]
+    paths:
+      - .github/workflows/dack_v076_first_package_n128.yml
+
+jobs:
+  paired:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 32
+      matrix:
+        target:
+          - Pearl Medallion
+          - Mind Stone
+          - Prismatic Lens
+          - Implements of Sacrifice
+          - Tooth of Ramos
+          - Coalition Relic
+          - Everflowing Chalice
+          - Jeweled Amulet
+          - Moonsilver Key
+          - Expedition Map
+        start: [64,68,72,76,80,84,88,92,96,100,104,108,112,116,120,124]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run target extension shard
+        run: |
+          mkdir -p paired
+          SAFE=$(echo "${{ matrix.target }}" | tr ' ' '_' | tr -d "'")
+          python dack_artifact_target_v076.py --target "${{ matrix.target }}" --start ${{ matrix.start }} --games 4 --out paired/${SAFE}_${{ matrix.start }}.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firstpkg-${{ strategy.job-index }}
+          path: paired/*.json
+          retention-days: 14
