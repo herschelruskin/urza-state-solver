@@ -947,7 +947,8 @@ def dack_bottom_ev(seven,keep_n,rest,beam=500,samples=16,refine=False,finalists_
 def dack_bottom_weighted_ev(seven,keep_n,rest,beam=250,samples=8,t3_weight=0.5,finalists_n=3):
     from itertools import combinations
     nbot=7-keep_n
-    candidates=[]\n    for inds in combinations(range(7),nbot):
+    candidates=[]
+    for inds in combinations(range(7),nbot):
         bottom=tuple(seven[i] for i in inds)
         hand=tuple(seven[i] for i in range(7) if i not in inds)
         # structural hierarchy is the cheap first-stage screen
@@ -1896,7 +1897,8 @@ def selftest():
     assert any(x.residual_w==0 and x.residual_c==1 and x.spent_colored==1 for x in _pay_sigs), "v0.72 signature lost W-payment residual"
     assert len(set(_pay_sigs))==len(_pay_after), "v0.72 signature unexpectedly collapses distinct W/C payments"
     for q,x in zip(_pay_after,_pay_sigs):
-        assert payment_tags(_pay_before,q)==(x.spent_total,x.spent_colored), "v0.72 signature/payment_tags disagreement"    # Prism-sensitive color class mirrors the current Sunburst abstraction.
+        assert payment_tags(_pay_before,q)==(x.spent_total,x.spent_colored), "v0.72 signature/payment_tags disagreement"
+    # Prism-sensitive color class mirrors the current Sunburst abstraction.
     _pp1a=State(1,(),(),w=2); _pp1b=replace(_pp1a,w=0)
     _pp2a=State(1,(),(),w=1,any=1); _pp2b=replace(_pp2a,w=0,any=0)
     _pp3a=State(1,(),(),any=2); _pp3b=replace(_pp3a,any=0)
@@ -2845,7 +2847,8 @@ def v064_repair_smoothing_audit():
     assert len(libs)>=6, ("Boulder missing scry branches",len(libs),libs)
 
     # Amulet: unrestricted colored mana may be banked as white and returned as white.
-    s=State(1,(),(),(Perm("Jeweled Amulet"),),any=1)    charged=[q for q in v03_actions(s) if any(effective_name(p)=="Jeweled Amulet" and p.counters==1 and p.aux=="W" for p in q.battlefield)]
+    s=State(1,(),(),(Perm("Jeweled Amulet"),),any=1)
+    charged=[q for q in v03_actions(s) if any(effective_name(p)=="Jeweled Amulet" and p.counters==1 and p.aux=="W" for p in q.battlefield)]
     assert charged and any(q.any==0 for q in charged), "Amulet failed to charge from any-color mana"
     q=untap_and_begin(replace(charged[0],turn=2))
     assert any(z.w>=1 for z in tap_mana_actions(q)), "Amulet failed to return stored white"
