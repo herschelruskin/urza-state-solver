@@ -1,0 +1,421 @@
+{
+  "test": "artifact_benchmark_paired_v076",
+  "group": "twos",
+  "n": 64,
+  "base_deck_sha256": "542da9c13694dc31573d3b8b2044bcf94c6b4dccda8cde29084367dc281f5328",
+  "policy_signature": {
+    "engine": "v0.76-creature-sequences",
+    "policy": "lambda_0.5_pre_recalibration_validation",
+    "lambda": 0.5,
+    "min_keep": 1,
+    "actual_seat_before_mulligans": true,
+    "mulligan_eval_beam": 60,
+    "screen_samples": 8,
+    "refine_samples": 16,
+    "refine_margin": 0.125,
+    "bottom_finalists": 12,
+    "gameplay_beam": 240,
+    "max_turn": 3,
+    "continuation": {
+      "0": 0.0,
+      "1": 0.06171875,
+      "2": 0.19234,
+      "3": 0.31419,
+      "4": 0.42268,
+      "5": 0.51025,
+      "6": 0.55603
+    },
+    "seed_base": 7602405001,
+    "deck_sha256": "542da9c13694dc31573d3b8b2044bcf94c6b4dccda8cde29084367dc281f5328"
+  },
+  "generic_benchmark": "{2} artifact, untapped, T: add {C}",
+  "summary": {
+    "baseline": {
+      "n": 64,
+      "counts": {
+        "0": 9,
+        "1": 5,
+        "2": 19,
+        "3": 31
+      },
+      "T1": 0.078125,
+      "le_T2": 0.375,
+      "T3_exact": 0.484375,
+      "le_T3": 0.859375,
+      "utility": 0.6171875,
+      "mean_keep": 5.15625
+    },
+    "Liquimetal Torque -> Generic Rock": {
+      "n": 64,
+      "counts": {
+        "0": 9,
+        "1": 5,
+        "2": 19,
+        "3": 31
+      },
+      "T1": 0.078125,
+      "le_T2": 0.375,
+      "T3_exact": 0.484375,
+      "le_T3": 0.859375,
+      "utility": 0.6171875,
+      "mean_keep": 5.140625
+    },
+    "Liquimetal Torque -> Snow Plains": {
+      "n": 64,
+      "counts": {
+        "0": 9,
+        "1": 5,
+        "2": 19,
+        "3": 31
+      },
+      "T1": 0.078125,
+      "le_T2": 0.375,
+      "T3_exact": 0.484375,
+      "le_T3": 0.859375,
+      "utility": 0.6171875,
+      "mean_keep": 5.25
+    },
+    "Pearl Medallion -> Generic Rock": {
+      "n": 64,
+      "counts": {
+        "0": 9,
+        "1": 4,
+        "2": 20,
+        "3": 31
+      },
+      "T1": 0.0625,
+      "le_T2": 0.375,
+      "T3_exact": 0.484375,
+      "le_T3": 0.859375,
+      "utility": 0.6171875,
+      "mean_keep": 5.140625
+    },
+    "Pearl Medallion -> Snow Plains": {
+      "n": 64,
+      "counts": {
+        "0": 8,
+        "1": 5,
+        "2": 19,
+        "3": 32
+      },
+      "T1": 0.078125,
+      "le_T2": 0.375,
+      "T3_exact": 0.5,
+      "le_T3": 0.875,
+      "utility": 0.625,
+      "mean_keep": 5.15625
+    },
+    "Mind Stone -> Generic Rock": {
+      "n": 64,
+      "counts": {
+        "0": 10,
+        "1": 5,
+        "2": 19,
+        "3": 30
+      },
+      "T1": 0.078125,
+      "le_T2": 0.375,
+      "T3_exact": 0.46875,
+      "le_T3": 0.84375,
+      "utility": 0.609375,
+      "mean_keep": 5.140625
+    },
+    "Mind Stone -> Snow Plains": {
+      "n": 64,
+      "counts": {
+        "0": 8,
+        "1": 5,
+        "2": 19,
+        "3": 32
+      },
+      "T1": 0.078125,
+      "le_T2": 0.375,
+      "T3_exact": 0.5,
+      "le_T3": 0.875,
+      "utility": 0.625,
+      "mean_keep": 5.109375
+    },
+    "Prismatic Lens -> Generic Rock": {
+      "n": 64,
+      "counts": {
+        "0": 7,
+        "1": 4,
+        "2": 19,
+        "3": 34
+      },
+      "T1": 0.0625,
+      "le_T2": 0.359375,
+      "T3_exact": 0.53125,
+      "le_T3": 0.890625,
+      "utility": 0.625,
+      "mean_keep": 5.15625
+    },
+    "Prismatic Lens -> Snow Plains": {
+      "n": 64,
+      "counts": {
+        "0": 7,
+        "1": 5,
+        "2": 19,
+        "3": 33
+      },
+      "T1": 0.078125,
+      "le_T2": 0.375,
+      "T3_exact": 0.515625,
+      "le_T3": 0.890625,
+      "utility": 0.6328125,
+      "mean_keep": 5.15625
+    },
+    "Implements of Sacrifice -> Generic Rock": {
+      "n": 64,
+      "counts": {
+        "0": 8,
+        "1": 5,
+        "2": 19,
+        "3": 32
+      },
+      "T1": 0.078125,
+      "le_T2": 0.375,
+      "T3_exact": 0.5,
+      "le_T3": 0.875,
+      "utility": 0.625,
+      "mean_keep": 5.140625
+    },
+    "Implements of Sacrifice -> Snow Plains": {
+      "n": 64,
+      "counts": {
+        "0": 7,
+        "1": 6,
+        "2": 18,
+        "3": 33
+      },
+      "T1": 0.09375,
+      "le_T2": 0.375,
+      "T3_exact": 0.515625,
+      "le_T3": 0.890625,
+      "utility": 0.6328125,
+      "mean_keep": 5.125
+    }
+  },
+  "paired": {
+    "Liquimetal Torque -> Generic Rock": {
+      "delta_utility": 0.0,
+      "delta_utility_ci95_normal": [
+        0.0,
+        0.0
+      ],
+      "delta_le_T2": 0.0,
+      "delta_le_T3": 0.0,
+      "turn_outcome": {
+        "better": 0,
+        "worse": 0,
+        "same": 64
+      },
+      "le_T2_flips": {
+        "improved": 0,
+        "worsened": 0
+      },
+      "le_T3_flips": {
+        "improved": 0,
+        "worsened": 0
+      }
+    },
+    "Liquimetal Torque -> Snow Plains": {
+      "delta_utility": 0.0,
+      "delta_utility_ci95_normal": [
+        -0.021825933692158274,
+        0.021825933692158274
+      ],
+      "delta_le_T2": 0.0,
+      "delta_le_T3": 0.0,
+      "turn_outcome": {
+        "better": 1,
+        "worse": 1,
+        "same": 62
+      },
+      "le_T2_flips": {
+        "improved": 0,
+        "worsened": 0
+      },
+      "le_T3_flips": {
+        "improved": 1,
+        "worsened": 1
+      }
+    },
+    "Pearl Medallion -> Generic Rock": {
+      "delta_utility": 0.0,
+      "delta_utility_ci95_normal": [
+        -0.021825933692158274,
+        0.021825933692158274
+      ],
+      "delta_le_T2": 0.0,
+      "delta_le_T3": 0.0,
+      "turn_outcome": {
+        "better": 1,
+        "worse": 2,
+        "same": 61
+      },
+      "le_T2_flips": {
+        "improved": 0,
+        "worsened": 0
+      },
+      "le_T3_flips": {
+        "improved": 1,
+        "worsened": 1
+      }
+    },
+    "Pearl Medallion -> Snow Plains": {
+      "delta_utility": 0.0078125,
+      "delta_utility_ci95_normal": [
+        -0.007499718629219172,
+        0.023124718629219172
+      ],
+      "delta_le_T2": 0.0,
+      "delta_le_T3": 0.015625,
+      "turn_outcome": {
+        "better": 1,
+        "worse": 0,
+        "same": 63
+      },
+      "le_T2_flips": {
+        "improved": 0,
+        "worsened": 0
+      },
+      "le_T3_flips": {
+        "improved": 1,
+        "worsened": 0
+      }
+    },
+    "Mind Stone -> Generic Rock": {
+      "delta_utility": -0.0078125,
+      "delta_utility_ci95_normal": [
+        -0.023124718629219172,
+        0.007499718629219172
+      ],
+      "delta_le_T2": 0.0,
+      "delta_le_T3": -0.015625,
+      "turn_outcome": {
+        "better": 0,
+        "worse": 1,
+        "same": 63
+      },
+      "le_T2_flips": {
+        "improved": 0,
+        "worsened": 0
+      },
+      "le_T3_flips": {
+        "improved": 0,
+        "worsened": 1
+      }
+    },
+    "Mind Stone -> Snow Plains": {
+      "delta_utility": 0.0078125,
+      "delta_utility_ci95_normal": [
+        -0.007499718629219172,
+        0.023124718629219172
+      ],
+      "delta_le_T2": 0.0,
+      "delta_le_T3": 0.015625,
+      "turn_outcome": {
+        "better": 1,
+        "worse": 0,
+        "same": 63
+      },
+      "le_T2_flips": {
+        "improved": 0,
+        "worsened": 0
+      },
+      "le_T3_flips": {
+        "improved": 1,
+        "worsened": 0
+      }
+    },
+    "Prismatic Lens -> Generic Rock": {
+      "delta_utility": 0.0078125,
+      "delta_utility_ci95_normal": [
+        -0.018848996973791554,
+        0.034473996973791554
+      ],
+      "delta_le_T2": -0.015625,
+      "delta_le_T3": 0.03125,
+      "turn_outcome": {
+        "better": 2,
+        "worse": 1,
+        "same": 61
+      },
+      "le_T2_flips": {
+        "improved": 0,
+        "worsened": 1
+      },
+      "le_T3_flips": {
+        "improved": 2,
+        "worsened": 0
+      }
+    },
+    "Prismatic Lens -> Snow Plains": {
+      "delta_utility": 0.015625,
+      "delta_utility_ci95_normal": [
+        -0.005857196718714243,
+        0.03710719671871424
+      ],
+      "delta_le_T2": 0.0,
+      "delta_le_T3": 0.03125,
+      "turn_outcome": {
+        "better": 2,
+        "worse": 0,
+        "same": 62
+      },
+      "le_T2_flips": {
+        "improved": 0,
+        "worsened": 0
+      },
+      "le_T3_flips": {
+        "improved": 2,
+        "worsened": 0
+      }
+    },
+    "Implements of Sacrifice -> Generic Rock": {
+      "delta_utility": 0.0078125,
+      "delta_utility_ci95_normal": [
+        -0.007499718629219172,
+        0.023124718629219172
+      ],
+      "delta_le_T2": 0.0,
+      "delta_le_T3": 0.015625,
+      "turn_outcome": {
+        "better": 1,
+        "worse": 0,
+        "same": 63
+      },
+      "le_T2_flips": {
+        "improved": 0,
+        "worsened": 0
+      },
+      "le_T3_flips": {
+        "improved": 1,
+        "worsened": 0
+      }
+    },
+    "Implements of Sacrifice -> Snow Plains": {
+      "delta_utility": 0.015625,
+      "delta_utility_ci95_normal": [
+        -0.014999437258438345,
+        0.046249437258438345
+      ],
+      "delta_le_T2": 0.0,
+      "delta_le_T3": 0.03125,
+      "turn_outcome": {
+        "better": 3,
+        "worse": 1,
+        "same": 60
+      },
+      "le_T2_flips": {
+        "improved": 1,
+        "worsened": 1
+      },
+      "le_T3_flips": {
+        "improved": 2,
+        "worsened": 0
+      }
+    }
+  }
+}
