@@ -1,0 +1,30 @@
+name: DACK v0.76 CRN Tooth single games
+
+on:
+  push:
+    branches: [dack-simulator-v0.75-current99]
+    paths:
+      - .github/workflows/dack_v076_crn_tooth_single.yml
+
+jobs:
+  paired:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        game: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Run one Tooth CRN game
+        run: |
+          mkdir -p crn
+          python dack_artifact_crn_v076.py --target "Tooth of Ramos" --start ${{ matrix.game }} --games 1 --out crn/tooth_${{ matrix.game }}.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tooth-single-${{ matrix.game }}
+          path: crn/*.json
+          retention-days: 14
