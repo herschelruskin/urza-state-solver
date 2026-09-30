@@ -1,0 +1,32 @@
+name: DACK v0.76 CRN artifact sanity N64
+
+on:
+  push:
+    branches: [dack-simulator-v0.75-current99]
+    paths:
+      - .github/workflows/dack_v076_crn_sanity_n64.yml
+
+jobs:
+  paired:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 32
+      matrix:
+        target: ["Prismatic Lens","Pearl Medallion","Implements of Sacrifice","Tooth of Ramos"]
+        start: [0,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Run CRN paired shard
+        run: |
+          mkdir -p crn
+          SAFE=$(echo "${{ matrix.target }}" | tr ' ' '_' | tr -d "'")
+          python dack_artifact_crn_v076.py --target "${{ matrix.target }}" --start ${{ matrix.start }} --games 4 --out crn/${SAFE}_${{ matrix.start }}.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: crn-${{ strategy.job-index }}
+          path: crn/*.json
+          retention-days: 14
