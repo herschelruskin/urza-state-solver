@@ -1,0 +1,39 @@
+name: DACK v0.76 recover final threes controls
+
+on:
+  push:
+    branches: [dack-simulator-v0.75-current99]
+    paths:
+      - .github/workflows/dack_v076_recover_final_controls.yml
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        include:
+          - {target: "Moonsilver Key", game: 18, replacement: "Generic Rock"}
+          - {target: "Moonsilver Key", game: 18, replacement: "Snow Plains"}
+          - {target: "Everflowing Chalice", game: 17, replacement: "Generic Rock"}
+          - {target: "Everflowing Chalice", game: 17, replacement: "Snow Plains"}
+          - {target: "Everflowing Chalice", game: 18, replacement: "Generic Rock"}
+          - {target: "Everflowing Chalice", game: 18, replacement: "Snow Plains"}
+          - {target: "Jeweled Amulet", game: 18, replacement: "Generic Rock"}
+          - {target: "Jeweled Amulet", game: 18, replacement: "Snow Plains"}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run single control
+        run: |
+          mkdir -p recovery
+          python dack_artifact_recover_single_v076.py --target "${{ matrix.target }}" --game ${{ matrix.game }} --replacement "${{ matrix.replacement }}" --out recovery/result.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: final-control-${{ strategy.job-index }}
+          path: recovery/result.json
+          retention-days: 14
