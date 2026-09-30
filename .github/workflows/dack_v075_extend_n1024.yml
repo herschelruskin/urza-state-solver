@@ -1,0 +1,70 @@
+name: DACK v0.75 current-99 extend N512 to N1024
+
+on:
+  push:
+    branches:
+      - dack-simulator-v0.75-current99
+    paths:
+      - .github/workflows/dack_v075_extend_n1024.yml
+
+permissions:
+  contents: write
+
+jobs:
+  simulate_extension:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        shard: [32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run selftest
+        run: python dack_v075_current99.py
+      - name: Run deterministic extension shard
+        run: |
+          mkdir -p shard
+          python dack_current99_batch.py --shard ${{ matrix.shard }} --games 16 --out shard/shard_${{ matrix.shard }}.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-current99-n1024-extension-shard-${{ matrix.shard }}
+          path: shard/shard_${{ matrix.shard }}.json
+          retention-days: 14
+
+  pool_and_combine:
+    needs: simulate_extension
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-current99-n1024-extension-shard-*
+          path: shards
+          merge-multiple: true
+      - name: Pool N512 extension
+        run: |
+          python pool_dack_current99.py --glob 'shards/*.json' --json-out results/dack_v075_current99_extension_512b.json --csv-out results/dack_v075_current99_extension_512b_games.csv
+      - name: Combine with frozen N512 baseline
+        run: |
+          python combine_dack_current99.py --base results/dack_v075_current99_n512.json --extension results/dack_v075_current99_extension_512b.json --out results/dack_v075_current99_n1024.json
+      - name: Commit pooled checkpoint
+        run: |
+          git config user.name "DACK Simulator Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -f results/dack_v075_current99_extension_512b.json results/dack_v075_current99_extension_512b_games.csv results/dack_v075_current99_n1024.json
+          git commit -m "Extend frozen current-99 baseline to N=1024" || exit 0
+          git pull --rebase origin dack-simulator-v0.75-current99
+          git push
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-current99-pooled-n1024
+          path: |
+            results/dack_v075_current99_extension_512b.json
+            results/dack_v075_current99_extension_512b_games.csv
+            results/dack_v075_current99_n1024.json
+          retention-days: 30
