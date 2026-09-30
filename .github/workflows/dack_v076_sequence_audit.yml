@@ -1,0 +1,23 @@
+name: DACK v0.76 creature-sequence audit
+
+on:
+  push:
+    branches:
+      - dack-simulator-v0.75-current99
+    paths:
+      - dack_v076_creature_sequences.py
+      - dack_current99_batch_v076.py
+      - .github/workflows/dack_v076_sequence_audit.yml
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Sequence selftest
+        run: python dack_v076_creature_sequences.py
+      - name: Tiny deterministic validation
+        run: python dack_current99_batch_v076.py --shard 0 --games 2 --out /tmp/v076_smoke.json
