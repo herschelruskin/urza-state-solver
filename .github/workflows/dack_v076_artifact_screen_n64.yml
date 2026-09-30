@@ -1,0 +1,56 @@
+name: DACK v0.76 artifact benchmark N64
+
+on:
+  push:
+    branches: [dack-simulator-v0.75-current99]
+    paths:
+      - .github/workflows/dack_v076_artifact_screen_n64.yml
+
+permissions:
+  contents: write
+
+jobs:
+  paired:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 32
+      matrix:
+        group: [twos, threes]
+        start: [0,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - name: Run paired artifact shard
+        run: |
+          mkdir -p paired
+          python dack_artifact_paired_v076.py --group ${{ matrix.group }} --start ${{ matrix.start }} --games 4 --out paired/${{ matrix.group }}_${{ matrix.start }}.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: artifact-${{ matrix.group }}-${{ matrix.start }}
+          path: paired/${{ matrix.group }}_${{ matrix.start }}.json
+          retention-days: 14
+
+  pool_twos:
+    needs: paired
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: {pattern: 'artifact-twos-*', path: paired, merge-multiple: true}
+      - run: python pool_dack_artifact_paired_v076.py --glob 'paired/*.json' --out results/dack_v076_artifact_twos_n64.json
+      - uses: actions/upload-artifact@v4
+        with: {name: dack-v076-artifact-twos-n64, path: results/dack_v076_artifact_twos_n64.json}
+
+  pool_threes:
+    needs: paired
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: {pattern: 'artifact-threes-*', path: paired, merge-multiple: true}
+      - run: python pool_dack_artifact_paired_v076.py --glob 'paired/*.json' --out results/dack_v076_artifact_threes_n64.json
+      - uses: actions/upload-artifact@v4
+        with: {name: dack-v076-artifact-threes-n64, path: results/dack_v076_artifact_threes_n64.json}
