@@ -1,0 +1,99 @@
+{
+  "compatibility_signature": {
+    "engine": "v0.75-current99",
+    "policy": "stable_lambda_0.5_frozen_continuation",
+    "lambda": 0.5,
+    "min_keep": 1,
+    "actual_seat_before_mulligans": true,
+    "mulligan_eval_beam": 60,
+    "screen_samples": 8,
+    "refine_samples": 16,
+    "refine_margin": 0.125,
+    "bottom_finalists": 12,
+    "gameplay_beam": 240,
+    "max_turn": 3,
+    "continuation": {
+      "0": 0,
+      "1": 0.06171875,
+      "2": 0.19234,
+      "3": 0.31419,
+      "4": 0.42268,
+      "5": 0.51025,
+      "6": 0.55603
+    },
+    "seed_base": 7502405001,
+    "deck_sha256": "762fddd131b67f2ccb9d3f60e02bd97909f19565ab452bafe0f8a5b000fe7265"
+  },
+  "n": 1024,
+  "base_n": 512,
+  "extension_n": 512,
+  "utility_lambda_0_5": 0.6201171875,
+  "summary": {
+    "T1": {
+      "count": 50,
+      "rate": 0.048828125,
+      "ci95": [
+        0.03723190173798176,
+        0.06379677143875295
+      ]
+    },
+    "T2_exact": {
+      "count": 369,
+      "rate": 0.3603515625,
+      "ci95": [
+        0.33151811538997,
+        0.39022885487901937
+      ]
+    },
+    "le_T2": {
+      "count": 419,
+      "rate": 0.4091796875,
+      "ci95": [
+        0.3794585327909337,
+        0.4395797066147727
+      ]
+    },
+    "T3_exact": {
+      "count": 432,
+      "rate": 0.421875,
+      "ci95": [
+        0.39197385697737364,
+        0.4523601124038792
+      ]
+    },
+    "le_T3": {
+      "count": 851,
+      "rate": 0.8310546875,
+      "ci95": [
+        0.8068767649896229,
+        0.8527580397573187
+      ]
+    },
+    "fail_T3": {
+      "count": 173,
+      "rate": 0.1689453125,
+      "ci95": [
+        0.14724196024268146,
+        0.19312323501037718
+      ]
+    }
+  },
+  "mean_keep": 5.1806640625,
+  "keep_counts": {
+    "7": 201,
+    "6": 268,
+    "5": 269,
+    "4": 148,
+    "3": 81,
+    "2": 53,
+    "1": 4
+  },
+  "seat_counts": {
+    "0": 266,
+    "1": 276,
+    "2": 233,
+    "3": 249
+  },
+  "base_source": "results/dack_v075_current99_n512.json",
+  "extension_source": "results/dack_v075_current99_extension_512b.json"
+}

@@ -1,0 +1,257 @@
+{
+  "compatibility_signature": {
+    "engine": "v0.75-current99",
+    "policy": "stable_lambda_0.5_frozen_continuation",
+    "lambda": 0.5,
+    "min_keep": 1,
+    "actual_seat_before_mulligans": true,
+    "mulligan_eval_beam": 60,
+    "screen_samples": 8,
+    "refine_samples": 16,
+    "refine_margin": 0.125,
+    "bottom_finalists": 12,
+    "gameplay_beam": 240,
+    "max_turn": 3,
+    "continuation": {
+      "0": 0.0,
+      "1": 0.06171875,
+      "2": 0.19234,
+      "3": 0.31419,
+      "4": 0.42268,
+      "5": 0.51025,
+      "6": 0.55603
+    },
+    "seed_base": 7502405001,
+    "deck_sha256": "762fddd131b67f2ccb9d3f60e02bd97909f19565ab452bafe0f8a5b000fe7265"
+  },
+  "n": 512,
+  "shards": 32,
+  "summary": {
+    "T1": {
+      "count": 23,
+      "rate": 0.044921875,
+      "ci95": [
+        0.030117718759024466,
+        0.06650394273875553
+      ]
+    },
+    "T2_exact": {
+      "count": 190,
+      "rate": 0.37109375,
+      "ci95": [
+        0.33035334729761556,
+        0.4137540761309402
+      ]
+    },
+    "le_T2": {
+      "count": 213,
+      "rate": 0.416015625,
+      "ci95": [
+        0.37410155791100497,
+        0.45918055129244795
+      ]
+    },
+    "T3_exact": {
+      "count": 208,
+      "rate": 0.40625,
+      "ci95": [
+        0.3645597190580231,
+        0.4493365888900174
+      ]
+    },
+    "le_T3": {
+      "count": 421,
+      "rate": 0.822265625,
+      "ci95": [
+        0.7867885863654592,
+        0.8529428550631516
+      ]
+    },
+    "fail_T3": {
+      "count": 91,
+      "rate": 0.177734375,
+      "ci95": [
+        0.14705714493684846,
+        0.21321141363454083
+      ]
+    }
+  },
+  "mean_keep": 5.20703125,
+  "keep_counts": {
+    "7": 106,
+    "6": 136,
+    "5": 126,
+    "4": 75,
+    "3": 41,
+    "2": 27,
+    "1": 1
+  },
+  "seat_counts": {
+    "0": 145,
+    "1": 134,
+    "2": 119,
+    "3": 114
+  },
+  "source_shards": [
+    {
+      "shard": 32,
+      "games": 16,
+      "elapsed_seconds": 398.7047357559204
+    },
+    {
+      "shard": 33,
+      "games": 16,
+      "elapsed_seconds": 489.321013212204
+    },
+    {
+      "shard": 34,
+      "games": 16,
+      "elapsed_seconds": 491.1281270980835
+    },
+    {
+      "shard": 35,
+      "games": 16,
+      "elapsed_seconds": 413.87220001220703
+    },
+    {
+      "shard": 36,
+      "games": 16,
+      "elapsed_seconds": 408.00450444221497
+    },
+    {
+      "shard": 37,
+      "games": 16,
+      "elapsed_seconds": 432.6162223815918
+    },
+    {
+      "shard": 38,
+      "games": 16,
+      "elapsed_seconds": 150.77063822746277
+    },
+    {
+      "shard": 39,
+      "games": 16,
+      "elapsed_seconds": 309.02584958076477
+    },
+    {
+      "shard": 40,
+      "games": 16,
+      "elapsed_seconds": 167.49476432800293
+    },
+    {
+      "shard": 41,
+      "games": 16,
+      "elapsed_seconds": 436.9682614803314
+    },
+    {
+      "shard": 42,
+      "games": 16,
+      "elapsed_seconds": 306.456179857254
+    },
+    {
+      "shard": 43,
+      "games": 16,
+      "elapsed_seconds": 206.1387333869934
+    },
+    {
+      "shard": 44,
+      "games": 16,
+      "elapsed_seconds": 346.3147280216217
+    },
+    {
+      "shard": 45,
+      "games": 16,
+      "elapsed_seconds": 379.73437905311584
+    },
+    {
+      "shard": 46,
+      "games": 16,
+      "elapsed_seconds": 352.5310740470886
+    },
+    {
+      "shard": 47,
+      "games": 16,
+      "elapsed_seconds": 320.93218636512756
+    },
+    {
+      "shard": 48,
+      "games": 16,
+      "elapsed_seconds": 358.055237531662
+    },
+    {
+      "shard": 49,
+      "games": 16,
+      "elapsed_seconds": 327.3921823501587
+    },
+    {
+      "shard": 50,
+      "games": 16,
+      "elapsed_seconds": 237.2439203262329
+    },
+    {
+      "shard": 51,
+      "games": 16,
+      "elapsed_seconds": 326.7385573387146
+    },
+    {
+      "shard": 52,
+      "games": 16,
+      "elapsed_seconds": 305.8213984966278
+    },
+    {
+      "shard": 53,
+      "games": 16,
+      "elapsed_seconds": 354.9049596786499
+    },
+    {
+      "shard": 54,
+      "games": 16,
+      "elapsed_seconds": 575.9826812744141
+    },
+    {
+      "shard": 55,
+      "games": 16,
+      "elapsed_seconds": 199.96534276008606
+    },
+    {
+      "shard": 56,
+      "games": 16,
+      "elapsed_seconds": 391.41813921928406
+    },
+    {
+      "shard": 57,
+      "games": 16,
+      "elapsed_seconds": 336.21985960006714
+    },
+    {
+      "shard": 58,
+      "games": 16,
+      "elapsed_seconds": 309.268417596817
+    },
+    {
+      "shard": 59,
+      "games": 16,
+      "elapsed_seconds": 330.528208732605
+    },
+    {
+      "shard": 60,
+      "games": 16,
+      "elapsed_seconds": 547.3987829685211
+    },
+    {
+      "shard": 61,
+      "games": 16,
+      "elapsed_seconds": 311.97100162506104
+    },
+    {
+      "shard": 62,
+      "games": 16,
+      "elapsed_seconds": 207.98481488227844
+    },
+    {
+      "shard": 63,
+      "games": 16,
+      "elapsed_seconds": 325.8553190231323
+    }
+  ]
+}
