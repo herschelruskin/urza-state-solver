@@ -1,0 +1,29 @@
+name: Export DACK simulator source bundle
+
+on:
+  push:
+    branches: [dack-simulator-v0.75-current99]
+    paths:
+      - .github/workflows/export_dack_source_bundle.yml
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bundle simulator source
+        run: |
+          mkdir -p export
+          cp dack_v0740_oracle_mana_audit.py export/
+          cp dack_v075_current99.py export/
+          cp dack_v076_creature_sequences.py export/
+          cp dack_current99_batch_v076.py export/
+          cp dack_artifact_paired_v076.py export/
+          cp dack_artifact_crn_v076.py export/
+          tar -czf dack_simulator_source_bundle.tar.gz -C export .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-simulator-source-bundle
+          path: dack_simulator_source_bundle.tar.gz
+          retention-days: 7
