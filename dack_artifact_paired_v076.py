@@ -24,7 +24,7 @@ _old_tap=d.tap_mana_actions
 def tap_mana_actions(s):
     out=list(_old_tap(s))
     for i,p in enumerate(s.battlefield):
-        if p.name==GENERIC and not p.tapped:
+        if d.effective_name(p)==GENERIC and not p.tapped:
             bf=list(s.battlefield); bf[i]=replace(p,tapped=True)
             out.append(replace(s,battlefield=tuple(bf),c=s.c+1))
     seen=set(); z=[]
@@ -33,6 +33,19 @@ def tap_mana_actions(s):
         if k not in seen: seen.add(k); z.append(q)
     return z
 d.tap_mana_actions=tap_mana_actions
+
+# Score the abstract benchmark exactly like an untapped reusable one-mana rock so beam
+# selection does not penalize it merely because it lacks a printed card name.
+_old_score=d.score
+def score(s):
+    z=_old_score(s)
+    for p in s.battlefield:
+        if d.effective_name(p)==GENERIC and not p.tapped:
+            z+=24
+    # Remove the extra battlefield-bank heuristic mismatch conservatively only for
+    # on-board Generic Rock. The exact comparison still comes from legal search actions.
+    return z
+d.score=score
 
 # Mycosynth Gardens may legally copy the benchmark at MV2.
 _old_v03=d.v03_actions
