@@ -1,0 +1,61 @@
+name: DACK paired weak-land to Plains extension N384
+
+on:
+  push:
+    branches:
+      - dack-simulator-v0.75-current99
+    paths:
+      - .github/workflows/dack_land_to_plains_paired_extend384.yml
+
+permissions:
+  contents: write
+
+jobs:
+  paired:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 32
+      matrix:
+        start: [128,132,136,140,144,148,152,156,160,164,168,172,176,180,184,188,192,196,200,204,208,212,216,220,224,228,232,236,240,244,248,252,256,260,264,268,272,276,280,284,288,292,296,300,304,308,312,316,320,324,328,332,336,340,344,348,352,356,360,364,368,372,376,380,384,388,392,396,400,404,408,412,416,420,424,428,432,436,440,444,448,452,456,460,464,468,472,476,480,484,488,492,496,500,504,508]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run paired four-game shard
+        run: |
+          mkdir -p paired
+          python dack_land_paired.py --start ${{ matrix.start }} --games 4 --out paired/paired_${{ matrix.start }}.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-land-paired-ext-${{ matrix.start }}
+          path: paired/paired_${{ matrix.start }}.json
+          retention-days: 14
+
+  pool:
+    needs: paired
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-land-paired-ext-*
+          path: paired
+          merge-multiple: true
+      - name: Pool paired extension
+        run: python pool_dack_land_paired.py --glob 'paired/*.json' --out results/dack_land_to_plains_paired_extension_n384.json
+      - name: Commit result
+        run: |
+          git config user.name "DACK Simulator Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -f results/dack_land_to_plains_paired_extension_n384.json
+          git commit -m "Add paired weak-land to Plains N=384 extension" || exit 0
+          git pull --rebase origin dack-simulator-v0.75-current99
+          git push
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-land-paired-extension-n384
+          path: results/dack_land_to_plains_paired_extension_n384.json
+          retention-days: 30
