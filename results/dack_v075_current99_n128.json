@@ -1,0 +1,174 @@
+{
+  "compatibility_signature": {
+    "engine": "v0.75-current99",
+    "policy": "stable_lambda_0.5_frozen_continuation",
+    "lambda": 0.5,
+    "min_keep": 1,
+    "actual_seat_before_mulligans": true,
+    "mulligan_eval_beam": 60,
+    "screen_samples": 8,
+    "refine_samples": 16,
+    "refine_margin": 0.125,
+    "bottom_finalists": 12,
+    "gameplay_beam": 240,
+    "max_turn": 3,
+    "continuation": {
+      "0": 0,
+      "1": 0.06171875,
+      "2": 0.19234,
+      "3": 0.31419,
+      "4": 0.42268,
+      "5": 0.51025,
+      "6": 0.55603
+    },
+    "seed_base": 7502405001,
+    "deck_sha256": "762fddd131b67f2ccb9d3f60e02bd97909f19565ab452bafe0f8a5b000fe7265"
+  },
+  "n": 128,
+  "shards": 8,
+  "utility_lambda_0_5": 0.66796875,
+  "summary": {
+    "T1": {
+      "count": 3,
+      "rate": 0.0234375,
+      "ci95": [
+        0.008002416396755481,
+        0.06664374505143222
+      ]
+    },
+    "T2_exact": {
+      "count": 54,
+      "rate": 0.421875,
+      "ci95": [
+        0.3398211233888366,
+        0.5084815260288991
+      ]
+    },
+    "le_T2": {
+      "count": 57,
+      "rate": 0.4453125,
+      "ci95": [
+        0.36205524949299805,
+        0.5317566050994169
+      ]
+    },
+    "T3_exact": {
+      "count": 57,
+      "rate": 0.4453125,
+      "ci95": [
+        0.36205524949299805,
+        0.5317566050994169
+      ]
+    },
+    "le_T3": {
+      "count": 114,
+      "rate": 0.890625,
+      "ci95": [
+        0.8247655486183226,
+        0.9337212042929989
+      ]
+    },
+    "fail_T3": {
+      "count": 14,
+      "rate": 0.109375,
+      "ci95": [
+        0.06627879570700111,
+        0.17523445138167731
+      ]
+    }
+  },
+  "mean_keep": 5.2734375,
+  "keep_counts": {
+    "2": 4,
+    "3": 10,
+    "4": 16,
+    "5": 37,
+    "6": 39,
+    "7": 22
+  },
+  "seat_counts": {
+    "0": 32,
+    "1": 31,
+    "2": 24,
+    "3": 41
+  },
+  "shard_counts": [
+    {
+      "shard": 0,
+      "games": 16,
+      "counts": {
+        "0": 1,
+        "1": 1,
+        "2": 8,
+        "3": 6
+      }
+    },
+    {
+      "shard": 1,
+      "games": 16,
+      "counts": {
+        "0": 2,
+        "2": 4,
+        "3": 10
+      }
+    },
+    {
+      "shard": 2,
+      "games": 16,
+      "counts": {
+        "0": 1,
+        "2": 6,
+        "3": 9
+      }
+    },
+    {
+      "shard": 3,
+      "games": 16,
+      "counts": {
+        "0": 2,
+        "1": 1,
+        "2": 8,
+        "3": 5
+      }
+    },
+    {
+      "shard": 4,
+      "games": 16,
+      "counts": {
+        "0": 2,
+        "2": 7,
+        "3": 7
+      }
+    },
+    {
+      "shard": 5,
+      "games": 16,
+      "counts": {
+        "0": 3,
+        "2": 6,
+        "3": 7
+      }
+    },
+    {
+      "shard": 6,
+      "games": 16,
+      "counts": {
+        "0": 2,
+        "1": 1,
+        "2": 8,
+        "3": 5
+      }
+    },
+    {
+      "shard": 7,
+      "games": 16,
+      "counts": {
+        "0": 1,
+        "2": 7,
+        "3": 8
+      }
+    }
+  ],
+  "workflow_run_id": 36663102322,
+  "note": "All 8 simulation shards completed successfully. Pool calculation succeeded; the workflow's final git-add step failed only because results/ is gitignored. This file was committed directly afterward."
+}
