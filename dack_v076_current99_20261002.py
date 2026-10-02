@@ -11,6 +11,8 @@ Prospective KCI/Bucknard/Kozilek's Command changes are intentionally NOT include
 from dataclasses import replace
 import dack_v075_current99 as v
 
+# Validate the exact inherited v0.75 artifact semantics before mutating its deck globals.
+assert v.selftest()
 d=v.d
 
 CURRENT_DECK = [
@@ -130,8 +132,7 @@ def clear_caches():
 clear_caches()
 
 def selftest():
-    # Preserve the complete inherited v0.75 rules smoke first.
-    assert v.selftest()
+    # Inherited v0.75 artifact semantics were validated at module import before deck mutation.
     assert len(d.DECK)==99 and d.DECK.count("Snow-Covered Plains")==13
     assert "Homeward Path" not in d.DECK and "Manifold Key" not in d.DECK
     assert "Giant's Boulder" in d.DECK and "Mouth of Ronom" in d.DECK
