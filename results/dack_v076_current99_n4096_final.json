@@ -1,0 +1,622 @@
+{
+  "compatibility_signature": {
+    "engine": "v0.76-current99-20261002",
+    "policy": "stable_lambda_0.5_frozen_continuation",
+    "lambda": 0.5,
+    "min_keep": 1,
+    "actual_seat_before_mulligans": true,
+    "mulligan_eval_beam": 60,
+    "screen_samples": 8,
+    "refine_samples": 16,
+    "refine_margin": 0.125,
+    "bottom_finalists": 12,
+    "gameplay_beam": 240,
+    "max_turn": 3,
+    "seed_base": 7604096001,
+    "continuation": {
+      "0": 0.0,
+      "1": 0.06171875,
+      "2": 0.19234,
+      "3": 0.31419,
+      "4": 0.42268,
+      "5": 0.51025,
+      "6": 0.55603
+    },
+    "deck_sha256": "5dd6f3faf0929a96c79edd2ecbb304aaa32ed61a87429f2c799293292a901ceb",
+    "prospective_changes_included": false
+  },
+  "n": 4096,
+  "shards": 256,
+  "summary": {
+    "T1": {
+      "count": 149,
+      "n": 4096,
+      "rate": 0.036376953125,
+      "pct": 3.6376953125,
+      "ci95": [
+        0.031063905459610283,
+        0.042558809431301095
+      ]
+    },
+    "T2_exact": {
+      "count": 1434,
+      "n": 4096,
+      "rate": 0.35009765625,
+      "pct": 35.009765625,
+      "ci95": [
+        0.33563641524602106,
+        0.36483980747278866
+      ]
+    },
+    "le_T2": {
+      "count": 1583,
+      "n": 4096,
+      "rate": 0.386474609375,
+      "pct": 38.6474609375,
+      "ci95": [
+        0.3716752802406457,
+        0.4014866799617101
+      ]
+    },
+    "T3_exact": {
+      "count": 1851,
+      "n": 4096,
+      "rate": 0.451904296875,
+      "pct": 45.1904296875,
+      "ci95": [
+        0.43671522316529043,
+        0.4671834997591485
+      ]
+    },
+    "le_T3": {
+      "count": 3434,
+      "n": 4096,
+      "rate": 0.83837890625,
+      "pct": 83.837890625,
+      "ci95": [
+        0.8267897325948298,
+        0.8493339731245998
+      ]
+    },
+    "fail_T3": {
+      "count": 662,
+      "n": 4096,
+      "rate": 0.16162109375,
+      "pct": 16.162109375,
+      "ci95": [
+        0.1506660268754002,
+        0.17321026740517015
+      ]
+    }
+  },
+  "utility_lambda_0_5": 0.6124267578125,
+  "mulligans": {
+    "mean_keep": 5.114013671875,
+    "median_keep": 5.0,
+    "keep_counts": {
+      "7": 756,
+      "6": 1076,
+      "5": 1052,
+      "4": 600,
+      "3": 339,
+      "2": 249,
+      "1": 24
+    },
+    "keep_percent": {
+      "7": 18.45703125,
+      "6": 26.26953125,
+      "5": 25.68359375,
+      "4": 14.6484375,
+      "3": 8.2763671875,
+      "2": 6.0791015625,
+      "1": 0.5859375
+    },
+    "strata": [
+      {
+        "keep_n": 7,
+        "mulligans": 0,
+        "n": 756,
+        "share": 0.1845703125,
+        "T1": 0.056878306878306875,
+        "T2_exact": 0.5687830687830688,
+        "le_T2": 0.6256613756613757,
+        "T3_exact": 0.2962962962962963,
+        "le_T3": 0.921957671957672,
+        "fail_T3": 0.07804232804232804
+      },
+      {
+        "keep_n": 6,
+        "mulligans": 1,
+        "n": 1076,
+        "share": 0.2626953125,
+        "T1": 0.041821561338289966,
+        "T2_exact": 0.42379182156133827,
+        "le_T2": 0.4656133828996282,
+        "T3_exact": 0.4646840148698885,
+        "le_T3": 0.9302973977695167,
+        "fail_T3": 0.06970260223048327
+      },
+      {
+        "keep_n": 5,
+        "mulligans": 2,
+        "n": 1052,
+        "share": 0.2568359375,
+        "T1": 0.03802281368821293,
+        "T2_exact": 0.31844106463878324,
+        "le_T2": 0.3564638783269962,
+        "T3_exact": 0.5484790874524715,
+        "le_T3": 0.9049429657794676,
+        "fail_T3": 0.09505703422053231
+      },
+      {
+        "keep_n": 4,
+        "mulligans": 3,
+        "n": 600,
+        "share": 0.146484375,
+        "T1": 0.02666666666666667,
+        "T2_exact": 0.235,
+        "le_T2": 0.26166666666666666,
+        "T3_exact": 0.5433333333333333,
+        "le_T3": 0.805,
+        "fail_T3": 0.195
+      },
+      {
+        "keep_n": 3,
+        "mulligans": 4,
+        "n": 339,
+        "share": 0.082763671875,
+        "T1": 0.011799410029498525,
+        "T2_exact": 0.17404129793510326,
+        "le_T2": 0.18584070796460178,
+        "T3_exact": 0.4837758112094395,
+        "le_T3": 0.6696165191740413,
+        "fail_T3": 0.3303834808259587
+      },
+      {
+        "keep_n": 2,
+        "mulligans": 5,
+        "n": 249,
+        "share": 0.060791015625,
+        "T1": 0.004016064257028112,
+        "T2_exact": 0.05220883534136546,
+        "le_T2": 0.05622489959839357,
+        "T3_exact": 0.23293172690763053,
+        "le_T3": 0.2891566265060241,
+        "fail_T3": 0.7108433734939759
+      },
+      {
+        "keep_n": 1,
+        "mulligans": 6,
+        "n": 24,
+        "share": 0.005859375,
+        "T1": 0.0,
+        "T2_exact": 0.0,
+        "le_T2": 0.0,
+        "T3_exact": 0.08333333333333333,
+        "le_T3": 0.08333333333333333,
+        "fail_T3": 0.9166666666666666
+      }
+    ]
+  },
+  "seat_counts": {
+    "0": 1023,
+    "1": 1040,
+    "2": 1028,
+    "3": 1005
+  },
+  "seat_strata": [
+    {
+      "seat": 0,
+      "n": 1023,
+      "T1": 0.03812316715542522,
+      "le_T2": 0.3509286412512219,
+      "le_T3": 0.83088954056696
+    },
+    {
+      "seat": 1,
+      "n": 1040,
+      "T1": 0.03365384615384615,
+      "le_T2": 0.39326923076923076,
+      "le_T3": 0.8336538461538462
+    },
+    {
+      "seat": 2,
+      "n": 1028,
+      "T1": 0.03599221789883268,
+      "le_T2": 0.4036964980544747,
+      "le_T3": 0.8501945525291829
+    },
+    {
+      "seat": 3,
+      "n": 1005,
+      "T1": 0.03781094527363184,
+      "le_T2": 0.39800995024875624,
+      "le_T3": 0.8388059701492537
+    }
+  ],
+  "card_analytics": {
+    "definition": "Appearances are in the final London kept hand after bottoming. Raw winning appearances answer frequency; normalized le_T3_when_kept is associative and is not a card-ablation causal effect.",
+    "stable_normalized_min_kept_presence": 100,
+    "raw_top_20": [
+      {
+        "card": "Snow-Covered Plains",
+        "winning_kept_copy_appearances": 2551,
+        "winning_kept_game_presence": 1962,
+        "kept_game_presence_all": 2253,
+        "le_T3_when_kept": 0.8708388814913449,
+        "lift_pp": 3.245997524134492
+      },
+      {
+        "card": "Lion's Eye Diamond",
+        "winning_kept_copy_appearances": 605,
+        "winning_kept_game_presence": 605,
+        "kept_game_presence_all": 669,
+        "le_T3_when_kept": 0.9043348281016442,
+        "lift_pp": 6.595592185164422
+      },
+      {
+        "card": "Mana Vault",
+        "winning_kept_copy_appearances": 568,
+        "winning_kept_game_presence": 568,
+        "kept_game_presence_all": 655,
+        "le_T3_when_kept": 0.867175572519084,
+        "lift_pp": 2.879666626908395
+      },
+      {
+        "card": "Enlightened Tutor",
+        "winning_kept_copy_appearances": 518,
+        "winning_kept_game_presence": 518,
+        "kept_game_presence_all": 565,
+        "le_T3_when_kept": 0.9168141592920354,
+        "lift_pp": 7.843525304203536
+      },
+      {
+        "card": "Sol Ring",
+        "winning_kept_copy_appearances": 504,
+        "winning_kept_game_presence": 504,
+        "kept_game_presence_all": 572,
+        "le_T3_when_kept": 0.8811188811188811,
+        "lift_pp": 4.273997486888115
+      },
+      {
+        "card": "Grim Monolith",
+        "winning_kept_copy_appearances": 469,
+        "winning_kept_game_presence": 469,
+        "kept_game_presence_all": 532,
+        "le_T3_when_kept": 0.881578947368421,
+        "lift_pp": 4.320004111842102
+      },
+      {
+        "card": "Ancient Tomb",
+        "winning_kept_copy_appearances": 414,
+        "winning_kept_game_presence": 414,
+        "kept_game_presence_all": 473,
+        "le_T3_when_kept": 0.8752642706131079,
+        "lift_pp": 3.6885364363107853
+      },
+      {
+        "card": "Urza's Saga",
+        "winning_kept_copy_appearances": 406,
+        "winning_kept_game_presence": 406,
+        "kept_game_presence_all": 440,
+        "le_T3_when_kept": 0.9227272727272727,
+        "lift_pp": 8.434836647727273
+      },
+      {
+        "card": "City of Traitors",
+        "winning_kept_copy_appearances": 373,
+        "winning_kept_game_presence": 373,
+        "kept_game_presence_all": 437,
+        "le_T3_when_kept": 0.8535469107551488,
+        "lift_pp": 1.5168004505148769
+      },
+      {
+        "card": "Moonsilver Key",
+        "winning_kept_copy_appearances": 337,
+        "winning_kept_game_presence": 337,
+        "kept_game_presence_all": 373,
+        "le_T3_when_kept": 0.903485254691689,
+        "lift_pp": 6.510634844168905
+      },
+      {
+        "card": "Tezzeret, Cruel Captain",
+        "winning_kept_copy_appearances": 323,
+        "winning_kept_game_presence": 323,
+        "kept_game_presence_all": 363,
+        "le_T3_when_kept": 0.8898071625344353,
+        "lift_pp": 5.142825628443526
+      },
+      {
+        "card": "Razorgrass Ambush",
+        "winning_kept_copy_appearances": 320,
+        "winning_kept_game_presence": 320,
+        "kept_game_presence_all": 375,
+        "le_T3_when_kept": 0.8533333333333334,
+        "lift_pp": 1.4954427083333388
+      },
+      {
+        "card": "Remote Farm",
+        "winning_kept_copy_appearances": 314,
+        "winning_kept_game_presence": 314,
+        "kept_game_presence_all": 362,
+        "le_T3_when_kept": 0.8674033149171271,
+        "lift_pp": 2.9024408667127077
+      },
+      {
+        "card": "Lotus Petal",
+        "winning_kept_copy_appearances": 298,
+        "winning_kept_game_presence": 298,
+        "kept_game_presence_all": 352,
+        "le_T3_when_kept": 0.8465909090909091,
+        "lift_pp": 0.8212002840909061
+      },
+      {
+        "card": "Gemstone Caverns",
+        "winning_kept_copy_appearances": 286,
+        "winning_kept_game_presence": 286,
+        "kept_game_presence_all": 323,
+        "le_T3_when_kept": 0.8854489164086687,
+        "lift_pp": 4.707001015866874
+      },
+      {
+        "card": "Mox Diamond",
+        "winning_kept_copy_appearances": 271,
+        "winning_kept_game_presence": 271,
+        "kept_game_presence_all": 304,
+        "le_T3_when_kept": 0.8914473684210527,
+        "lift_pp": 5.3068462171052655
+      },
+      {
+        "card": "Chrome Mox",
+        "winning_kept_copy_appearances": 257,
+        "winning_kept_game_presence": 257,
+        "kept_game_presence_all": 297,
+        "le_T3_when_kept": 0.8653198653198653,
+        "lift_pp": 2.6940959069865267
+      },
+      {
+        "card": "Mox Opal",
+        "winning_kept_copy_appearances": 256,
+        "winning_kept_game_presence": 256,
+        "kept_game_presence_all": 292,
+        "le_T3_when_kept": 0.8767123287671232,
+        "lift_pp": 3.833342251712324
+      },
+      {
+        "card": "Ruins of Trokair",
+        "winning_kept_copy_appearances": 250,
+        "winning_kept_game_presence": 250,
+        "kept_game_presence_all": 293,
+        "le_T3_when_kept": 0.8532423208191127,
+        "lift_pp": 1.4863414569112665
+      },
+      {
+        "card": "Crystal Vein",
+        "winning_kept_copy_appearances": 226,
+        "winning_kept_game_presence": 226,
+        "kept_game_presence_all": 280,
+        "le_T3_when_kept": 0.8071428571428572,
+        "lift_pp": -3.123604910714284
+      }
+    ],
+    "normalized_best_15": [
+      {
+        "card": "Floating Shield",
+        "kept_n": 118,
+        "le_T3_when_kept": 0.9491525423728814,
+        "lift_pp": 11.077363612288138,
+        "winning_presence": 112
+      },
+      {
+        "card": "Campfire",
+        "kept_n": 106,
+        "le_T3_when_kept": 0.9433962264150944,
+        "lift_pp": 10.501732016509436,
+        "winning_presence": 100
+      },
+      {
+        "card": "Chains of Custody",
+        "kept_n": 106,
+        "le_T3_when_kept": 0.9245283018867925,
+        "lift_pp": 8.614939563679247,
+        "winning_presence": 98
+      },
+      {
+        "card": "Pentarch Ward",
+        "kept_n": 104,
+        "le_T3_when_kept": 0.9230769230769231,
+        "lift_pp": 8.469801682692314,
+        "winning_presence": 96
+      },
+      {
+        "card": "Urza's Saga",
+        "kept_n": 440,
+        "le_T3_when_kept": 0.9227272727272727,
+        "lift_pp": 8.434836647727273,
+        "winning_presence": 406
+      },
+      {
+        "card": "Mouth of Ronom",
+        "kept_n": 182,
+        "le_T3_when_kept": 0.9175824175824175,
+        "lift_pp": 7.920351133241754,
+        "winning_presence": 167
+      },
+      {
+        "card": "Enlightened Tutor",
+        "kept_n": 565,
+        "le_T3_when_kept": 0.9168141592920354,
+        "lift_pp": 7.843525304203536,
+        "winning_presence": 518
+      },
+      {
+        "card": "Swords to Plowshares",
+        "kept_n": 118,
+        "le_T3_when_kept": 0.9152542372881356,
+        "lift_pp": 7.68753310381356,
+        "winning_presence": 108
+      },
+      {
+        "card": "Static Prison",
+        "kept_n": 141,
+        "le_T3_when_kept": 0.9148936170212766,
+        "lift_pp": 7.651471077127658,
+        "winning_presence": 129
+      },
+      {
+        "card": "Charitable Levy",
+        "kept_n": 139,
+        "le_T3_when_kept": 0.9136690647482014,
+        "lift_pp": 7.5290158498201425,
+        "winning_presence": 127
+      },
+      {
+        "card": "Void Mirror",
+        "kept_n": 110,
+        "le_T3_when_kept": 0.9090909090909091,
+        "lift_pp": 7.0712002840909065,
+        "winning_presence": 100
+      },
+      {
+        "card": "Lion's Eye Diamond",
+        "kept_n": 669,
+        "le_T3_when_kept": 0.9043348281016442,
+        "lift_pp": 6.595592185164422,
+        "winning_presence": 605
+      },
+      {
+        "card": "Deafening Silence",
+        "kept_n": 114,
+        "le_T3_when_kept": 0.9035087719298246,
+        "lift_pp": 6.512986567982459,
+        "winning_presence": 103
+      },
+      {
+        "card": "Trinisphere",
+        "kept_n": 114,
+        "le_T3_when_kept": 0.9035087719298246,
+        "lift_pp": 6.512986567982459,
+        "winning_presence": 103
+      },
+      {
+        "card": "Moonsilver Key",
+        "kept_n": 373,
+        "le_T3_when_kept": 0.903485254691689,
+        "lift_pp": 6.510634844168905,
+        "winning_presence": 337
+      }
+    ],
+    "normalized_worst_15": [
+      {
+        "card": "Crystal Vein",
+        "kept_n": 280,
+        "le_T3_when_kept": 0.8071428571428572,
+        "lift_pp": -3.123604910714284,
+        "winning_presence": 226
+      },
+      {
+        "card": "Tooth of Ramos",
+        "kept_n": 219,
+        "le_T3_when_kept": 0.817351598173516,
+        "lift_pp": -2.102730807648401,
+        "winning_presence": 179
+      },
+      {
+        "card": "Untaidake, the Cloud Keeper",
+        "kept_n": 212,
+        "le_T3_when_kept": 0.8254716981132075,
+        "lift_pp": -1.290720813679247,
+        "winning_presence": 175
+      },
+      {
+        "card": "Path to Exile",
+        "kept_n": 115,
+        "le_T3_when_kept": 0.8260869565217391,
+        "lift_pp": -1.2291949728260865,
+        "winning_presence": 95
+      },
+      {
+        "card": "Eiganjo, Seat of the Empire",
+        "kept_n": 203,
+        "le_T3_when_kept": 0.8325123152709359,
+        "lift_pp": -0.5866590979064057,
+        "winning_presence": 169
+      },
+      {
+        "card": "Idolized",
+        "kept_n": 106,
+        "le_T3_when_kept": 0.839622641509434,
+        "lift_pp": 0.12437352594339979,
+        "winning_presence": 89
+      },
+      {
+        "card": "Fellwar Stone",
+        "kept_n": 217,
+        "le_T3_when_kept": 0.8433179723502304,
+        "lift_pp": 0.4939066100230427,
+        "winning_presence": 183
+      },
+      {
+        "card": "The Mind Stone",
+        "kept_n": 187,
+        "le_T3_when_kept": 0.8449197860962567,
+        "lift_pp": 0.6540879846256731,
+        "winning_presence": 158
+      },
+      {
+        "card": "The Mycosynth Gardens",
+        "kept_n": 214,
+        "le_T3_when_kept": 0.8457943925233645,
+        "lift_pp": 0.7415486273364524,
+        "winning_presence": 181
+      },
+      {
+        "card": "Lotus Petal",
+        "kept_n": 352,
+        "le_T3_when_kept": 0.8465909090909091,
+        "lift_pp": 0.8212002840909061,
+        "winning_presence": 298
+      },
+      {
+        "card": "Liquimetal Torque",
+        "kept_n": 224,
+        "le_T3_when_kept": 0.8482142857142857,
+        "lift_pp": 0.9835379464285698,
+        "winning_presence": 190
+      },
+      {
+        "card": "Super State",
+        "kept_n": 101,
+        "le_T3_when_kept": 0.8514851485148515,
+        "lift_pp": 1.3106242264851464,
+        "winning_presence": 86
+      },
+      {
+        "card": "Emeria's Call",
+        "kept_n": 197,
+        "le_T3_when_kept": 0.8527918781725888,
+        "lift_pp": 1.4412971922588835,
+        "winning_presence": 168
+      },
+      {
+        "card": "Jeweled Amulet",
+        "kept_n": 231,
+        "le_T3_when_kept": 0.8528138528138528,
+        "lift_pp": 1.4434946563852802,
+        "winning_presence": 197
+      },
+      {
+        "card": "Ruins of Trokair",
+        "kept_n": 293,
+        "le_T3_when_kept": 0.8532423208191127,
+        "lift_pp": 1.4863414569112665,
+        "winning_presence": 250
+      }
+    ]
+  },
+  "runtime": {
+    "sum_shard_seconds": 100061.63170576096,
+    "mean_shard_seconds": 390.86574885062873,
+    "max_shard_seconds": 710.3783497810364
+  }
+}
