@@ -57,6 +57,24 @@ d.WHITE_LANDS=frozenset(set(d.WHITE_LANDS)|{"Snow-Covered Plains"})
 d.GUARANTEED_WHITE_LANDS=frozenset(set(d.GUARANTEED_WHITE_LANDS)|{"Snow-Covered Plains"})
 d.LAND_TUTOR_TARGETS=tuple(dict.fromkeys(tuple(d.LAND_TUTOR_TARGETS)+("Snow-Covered Plains","Mouth of Ronom")))
 
+# Keep the historical deterministic land-tutor heuristic exactly equivalent after Plains -> Snow-Covered Plains.
+def land_tutor_choice(s,to_battlefield_tapped=False):
+    avail=set(s.library)
+    white_now=s.w+s.any+s.restricted_dack_white
+    white_sources=sum(x in {
+        "Snow-Covered Plains","Ancient Den","Eiganjo, Seat of the Empire","Shefet Dunes",
+        "City of Brass","Mana Confluence","Gemstone Mine","Starting Town","Tarnished Citadel"
+    } for x in s.hand)
+    if white_now+white_sources<2:
+        for x in ("Ancient Den","Snow-Covered Plains","City of Brass","Mana Confluence",
+                  "Gemstone Mine","Starting Town","Shefet Dunes"):
+            if x in avail: return x
+    for x in ("Ancient Tomb","City of Traitors","Crystal Vein","Remote Farm","Ruins of Trokair",
+              "Urza's Saga","The Mycosynth Gardens","Ancient Den","Snow-Covered Plains"):
+        if x in avail: return x
+    return next((x for x in d.LAND_TUTOR_TARGETS if x in avail),None)
+d.land_tutor_choice=land_tutor_choice
+
 def _dedupe(states):
     seen=set(); out=[]
     for q in states:
@@ -159,8 +177,7 @@ def selftest():
     s=d.State(1,(),(),(d.Perm("Giant's Boulder"),),c=1)
     assert any(q.any>=1 for q in d.utility_actions(s))
 
-    # Moonsilver can fetch the current basic.
-    s=d.State(1,(),("Snow-Covered Plains",),(d.Perm("Moonsilver Key"),),c=1)
+    # Land tutor heuristic and Moonsilver both recognize the current basic.\n    s=d.State(1,(),("Snow-Covered Plains","Mouth of Ronom"))\n    assert d.land_tutor_choice(s)=="Snow-Covered Plains"\n    assert d.score(d.State(1,(),(),(d.Perm("Snow-Covered Plains"),)))==d.score(d.State(1,(),(),(d.Perm("Plains"),)))\n\n    # Moonsilver can fetch the current basic.\n    s=d.State(1,(),("Snow-Covered Plains",),(d.Perm("Moonsilver Key"),),c=1)
     assert any("Snow-Covered Plains" in q.hand for q in d.v03_actions(s))
 
     # Dack exact WW+4 and combo-creature contamination invariants remain intact.
