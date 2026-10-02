@@ -1,4 +1,4 @@
-name: DACK current-99 exact N4096 2026-10-02 final-r2
+name: DACK current-99 exact N4096 2026-10-02 final-r3
 
 on:
   push:
@@ -71,7 +71,7 @@ jobs:
           git push origin HEAD:dack-current99-4096-20261002
       - uses: actions/upload-artifact@v4
         with:
-          name: dack-current99-n4096-pooled-final-r2
+          name: dack-current99-n4096-pooled-final-r3
           path: |
             results/dack_v076_current99_n4096_final.json
             results/dack_v076_current99_n4096_final_games.csv
