@@ -175,9 +175,15 @@ def selftest():
           if any(d.effective_name(p)=="Giant's Boulder" for p in q.battlefield)]
     assert outs and len({q.library for q in outs})>=6
     s=d.State(1,(),(),(d.Perm("Giant's Boulder"),),c=1)
-    assert any(q.any>=1 for q in d.utility_actions(s))
+    assert any(q.any>=1 for q in d.special_actions(s))
 
-    # Land tutor heuristic and Moonsilver both recognize the current basic.\n    s=d.State(1,(),("Snow-Covered Plains","Mouth of Ronom"))\n    assert d.land_tutor_choice(s)=="Snow-Covered Plains"\n    assert d.score(d.State(1,(),(),(d.Perm("Snow-Covered Plains"),)))==d.score(d.State(1,(),(),(d.Perm("Plains"),)))\n\n    # Moonsilver can fetch the current basic.\n    s=d.State(1,(),("Snow-Covered Plains",),(d.Perm("Moonsilver Key"),),c=1)
+    # Land tutor heuristic and Moonsilver both recognize the current basic.
+    s=d.State(1,(),("Snow-Covered Plains","Mouth of Ronom"))
+    assert d.land_tutor_choice(s)=="Snow-Covered Plains"
+    assert d.score(d.State(1,(),(),(d.Perm("Snow-Covered Plains"),)))==d.score(d.State(1,(),(),(d.Perm("Plains"),)))
+
+    # Moonsilver can fetch the current basic.
+    s=d.State(1,(),("Snow-Covered Plains",),(d.Perm("Moonsilver Key"),),c=1)
     assert any("Snow-Covered Plains" in q.hand for q in d.v03_actions(s))
 
     # Dack exact WW+4 and combo-creature contamination invariants remain intact.
