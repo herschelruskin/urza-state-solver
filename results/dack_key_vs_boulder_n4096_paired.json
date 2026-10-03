@@ -1,0 +1,287 @@
+{
+  "comparison": "Manifold Key vs Giant's Boulder",
+  "design": {
+    "paired": true,
+    "n_pairs": 4096,
+    "one_card_change": "Giant's Boulder -> Manifold Key",
+    "same_game_ids": true,
+    "same_seeds": true,
+    "same_seats": true,
+    "same_mulligan_policy": true,
+    "same_gameplay_beam": true,
+    "same_max_turn": true,
+    "boulder_baseline_reused": true,
+    "compatibility_signature_key": {
+      "engine": "v0.76-current99-20261002",
+      "comparison": "Giant's Boulder -> Manifold Key",
+      "arm": "Manifold Key",
+      "baseline_arm": "Giant's Boulder",
+      "policy": "stable_lambda_0.5_frozen_continuation",
+      "lambda": 0.5,
+      "min_keep": 1,
+      "actual_seat_before_mulligans": true,
+      "mulligan_eval_beam": 60,
+      "screen_samples": 8,
+      "refine_samples": 16,
+      "refine_margin": 0.125,
+      "bottom_finalists": 12,
+      "gameplay_beam": 240,
+      "max_turn": 3,
+      "seed_base": 7604096001,
+      "continuation": {
+        "0": 0.0,
+        "1": 0.06171875,
+        "2": 0.19234,
+        "3": 0.31419,
+        "4": 0.42268,
+        "5": 0.51025,
+        "6": 0.55603
+      },
+      "boulder_deck_sha256": "5dd6f3faf0929a96c79edd2ecbb304aaa32ed61a87429f2c799293292a901ceb",
+      "key_deck_sha256": "1956e3d959ca68e535764e285d19f0650d87d5a64c63f9827c43bfb81d6df3a1",
+      "paired_to_baseline_file": "results/dack_v076_current99_n4096_final_games.csv"
+    }
+  },
+  "arms": {
+    "Manifold Key": {
+      "n": 4096,
+      "T1": {
+        "count": 147,
+        "n": 4096,
+        "rate": 0.035888671875,
+        "pct": 3.5888671875,
+        "ci95": [
+          0.030613091018468288,
+          0.04203397638944247
+        ]
+      },
+      "T2_exact": {
+        "count": 1458,
+        "n": 4096,
+        "rate": 0.35595703125,
+        "pct": 35.595703125,
+        "ci95": [
+          0.34143519554749824,
+          0.3707487969673189
+        ]
+      },
+      "le_T2": {
+        "count": 1605,
+        "n": 4096,
+        "rate": 0.391845703125,
+        "pct": 39.1845703125,
+        "ci95": [
+          0.3770040005105089,
+          0.4068900820048538
+        ]
+      },
+      "T3_exact": {
+        "count": 1829,
+        "n": 4096,
+        "rate": 0.446533203125,
+        "pct": 44.6533203125,
+        "ci95": [
+          0.43136593109210175,
+          0.4618006695193304
+        ]
+      },
+      "le_T3": {
+        "count": 3434,
+        "n": 4096,
+        "rate": 0.83837890625,
+        "pct": 83.837890625,
+        "ci95": [
+          0.8267897325948298,
+          0.8493339731245998
+        ]
+      },
+      "fail_T3": {
+        "count": 662,
+        "n": 4096,
+        "rate": 0.16162109375,
+        "pct": 16.162109375,
+        "ci95": [
+          0.1506660268754002,
+          0.17321026740517015
+        ]
+      },
+      "utility_lambda_0_5": 0.6151123046875,
+      "mean_keep": 5.1494140625,
+      "keep_counts": {
+        "7": 771,
+        "6": 1105,
+        "5": 1043,
+        "4": 593,
+        "3": 330,
+        "2": 234,
+        "1": 20
+      }
+    },
+    "Giant's Boulder": {
+      "n": 4096,
+      "T1": {
+        "count": 149,
+        "n": 4096,
+        "rate": 0.036376953125,
+        "pct": 3.6376953125,
+        "ci95": [
+          0.031063905459610283,
+          0.042558809431301095
+        ]
+      },
+      "T2_exact": {
+        "count": 1434,
+        "n": 4096,
+        "rate": 0.35009765625,
+        "pct": 35.009765625,
+        "ci95": [
+          0.33563641524602106,
+          0.36483980747278866
+        ]
+      },
+      "le_T2": {
+        "count": 1583,
+        "n": 4096,
+        "rate": 0.386474609375,
+        "pct": 38.6474609375,
+        "ci95": [
+          0.3716752802406457,
+          0.4014866799617101
+        ]
+      },
+      "T3_exact": {
+        "count": 1851,
+        "n": 4096,
+        "rate": 0.451904296875,
+        "pct": 45.1904296875,
+        "ci95": [
+          0.43671522316529043,
+          0.4671834997591485
+        ]
+      },
+      "le_T3": {
+        "count": 3434,
+        "n": 4096,
+        "rate": 0.83837890625,
+        "pct": 83.837890625,
+        "ci95": [
+          0.8267897325948298,
+          0.8493339731245998
+        ]
+      },
+      "fail_T3": {
+        "count": 662,
+        "n": 4096,
+        "rate": 0.16162109375,
+        "pct": 16.162109375,
+        "ci95": [
+          0.1506660268754002,
+          0.17321026740517015
+        ]
+      },
+      "utility_lambda_0_5": 0.6124267578125,
+      "mean_keep": 5.114013671875,
+      "keep_counts": {
+        "7": 756,
+        "6": 1076,
+        "5": 1052,
+        "4": 600,
+        "3": 339,
+        "2": 249,
+        "1": 24
+      }
+    }
+  },
+  "paired_deltas_key_minus_boulder": {
+    "T1": {
+      "endpoint": "T1",
+      "key_minus_boulder_rate": -0.00048828125,
+      "key_minus_boulder_pp": -0.048828125,
+      "paired_se": 0.0006905761218565,
+      "paired_ci95_rate": [
+        -0.0018417855774220835,
+        0.0008652230774220835
+      ],
+      "paired_ci95_pp": [
+        -0.18417855774220834,
+        0.08652230774220836
+      ],
+      "key_only_success": 3,
+      "boulder_only_success": 5,
+      "both_success": 144,
+      "neither_success": 3944,
+      "discordant_pairs": 8,
+      "agreement_rate": 0.998046875
+    },
+    "le_T2": {
+      "endpoint": "le_T2",
+      "key_minus_boulder_rate": 0.00537109375,
+      "key_minus_boulder_pp": 0.537109375,
+      "paired_se": 0.0026284562734470917,
+      "paired_ci95_rate": [
+        0.00021941411910533608,
+        0.010522773380894664
+      ],
+      "paired_ci95_pp": [
+        0.021941411910533608,
+        1.0522773380894663
+      ],
+      "key_only_success": 69,
+      "boulder_only_success": 47,
+      "both_success": 1536,
+      "neither_success": 2444,
+      "discordant_pairs": 116,
+      "agreement_rate": 0.9716796875
+    },
+    "le_T3": {
+      "endpoint": "le_T3",
+      "key_minus_boulder_rate": 0.0,
+      "key_minus_boulder_pp": 0.0,
+      "paired_se": 0.0026969505797831057,
+      "paired_ci95_rate": [
+        -0.005285926004459305,
+        0.005285926004459305
+      ],
+      "paired_ci95_pp": [
+        -0.5285926004459305,
+        0.5285926004459305
+      ],
+      "key_only_success": 61,
+      "boulder_only_success": 61,
+      "both_success": 3373,
+      "neither_success": 601,
+      "discordant_pairs": 122,
+      "agreement_rate": 0.97021484375
+    }
+  },
+  "utility_lambda_0_5_delta": {
+    "mean_delta": 0.002685546875,
+    "se": 0.0020714297491965434,
+    "ci95": [
+      -0.0013743808299300619,
+      0.006745474579930062
+    ]
+  },
+  "mean_keep_delta": {
+    "mean_delta": 0.035400390625,
+    "se": 0.007588426365551437,
+    "ci95": [
+      0.020527348249185007,
+      0.05027343300081499
+    ]
+  },
+  "win_timing_pairs": {
+    "key_faster": 114,
+    "boulder_faster": 104,
+    "same_timing": 3878,
+    "key_faster_pct": 2.783203125,
+    "boulder_faster_pct": 2.5390625,
+    "same_timing_pct": 94.677734375
+  },
+  "runtime": {
+    "key_shards": 128,
+    "sum_key_shard_seconds": 98776.07765364647,
+    "mean_key_shard_seconds": 771.688106669113,
+    "max_key_shard_seconds": 1256.9078495502472
+  }
+}
