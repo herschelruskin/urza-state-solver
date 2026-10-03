@@ -72,7 +72,7 @@ def key_selftest():
     assert d.COSTS["Manifold Key"]==(1,0,0)
     # 1,T: untap another artifact must remain live in the current engine.
     s=d.State(1,(),(),(d.Perm("Manifold Key"),d.Perm("Mana Vault",True)),c=1)
-    outs=d.special_actions(s)
+    outs=d.utility_actions(s)
     assert any(
         any(d.effective_name(p)=="Mana Vault" and not p.tapped for p in q.battlefield)
         and any(d.effective_name(p)=="Manifold Key" and p.tapped for p in q.battlefield)
