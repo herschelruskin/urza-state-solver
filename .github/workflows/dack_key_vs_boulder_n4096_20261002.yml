@@ -1,4 +1,4 @@
-name: DACK paired Key vs Boulder N4096 2026-10-02 r2
+name: DACK paired Key vs Boulder N4096 2026-10-02 r3
 
 on:
   push:
@@ -9,6 +9,10 @@ on:
 
 permissions:
   contents: write
+
+concurrency:
+  group: dack-key-vs-boulder-4096-20261002
+  cancel-in-progress: true
 
 jobs:
   simulate:
