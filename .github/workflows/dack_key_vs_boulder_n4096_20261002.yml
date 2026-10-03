@@ -25,7 +25,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Run exact Manifold Key functionality selftest
-        run: python -c "import dack_key_vs_boulder_4096_batch as b; assert b.key_selftest(); print('key selftest: PASS')"
+        run: python -c "import dack_key_vs_boulder_4096_batch as b; assert b.key_selftest(); print('key selftest PASS')"
       - name: Run deterministic 32-game Key shard
         run: |
           mkdir -p shard
