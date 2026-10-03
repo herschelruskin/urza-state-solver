@@ -1,0 +1,36 @@
+name: DACK full-deck accel smoke 2026-10-03
+
+on:
+  push:
+    branches:
+      - dack-full-deck-accel-calibration-20261003
+    paths:
+      - .github/workflows/dack_full_deck_accel_smoke.yml
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        variant: ["current__Tooth_of_Ramos_vs_Generic","current__Coalition_Relic_vs_Generic","current__Prismatic_Lens_vs_Generic","current__Pearl_Medallion_vs_Generic","current__Liquimetal_Torque_vs_Generic","current__Mind_Stone_vs_Generic","current__Giants_Boulder_vs_Generic","current__Moonsilver_Key_vs_Generic","current__Candelabra_vs_Generic","current__Implements_vs_Generic","current__Jeweled_Amulet_vs_Generic","current__Basalt_Monolith_vs_Generic","current__The_Mind_Stone_vs_Generic","current__Everflowing_Chalice_vs_Generic","prospect__Helm_over_Implements","prospect__KCI_over_Pearl","prospect__Inspiring_Statuary_over_Implements","prospect__Marble_Diamond_over_Implements","prospect__Sonic_Screwdriver_over_Implements","prospect__Urzas_Incubator_over_Implements","prospect__Worn_Powerstone_over_Implements","prospect__Chromatic_Lantern_over_Implements","prospect__Honor_Worn_Shaku_over_Implements","prospect__Component_Pouch_over_Implements","prospect__Oketras_Monument_over_Implements","prospect__Cloud_Key_over_Implements","prospect__Pentad_Prism_over_Implements","prospect__Thran_Dynamo_over_Implements","prospect__Extraplanar_Lens_over_Implements","prospect__Bucknard_over_Liquimetal","prospect__Kozileks_Command_over_Implements","package__KCI_Bucknard_over_Pearl_Liquimetal","package__Two_Keys_over_Boulder_Candelabra"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Module selftest
+        run: python dack_v077_full_deck_accel.py
+      - name: One-game variant smoke
+        run: |
+          mkdir -p smoke
+          python dack_full_deck_accel_n512_batch.py \
+            --variant "${{ matrix.variant }}" \
+            --shard 0 \
+            --games 1 \
+            --out "smoke/${{ matrix.variant }}.json"
