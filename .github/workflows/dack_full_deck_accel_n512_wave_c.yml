@@ -1,0 +1,88 @@
+name: DACK full-deck accel N512 wave C special
+
+on:
+  push:
+    branches:
+      - dack-full-deck-accel-calibration-20261003
+    paths:
+      - .github/workflows/dack_full_deck_accel_n512_wave_c.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dack-full-deck-accel-n512-wave-c
+  cancel-in-progress: true
+
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 32
+      matrix:
+        variant:
+          - "prospect__Component_Pouch_over_Implements"
+          - "prospect__Pentad_Prism_over_Implements"
+          - "prospect__Extraplanar_Lens_over_Implements"
+          - "prospect__Bucknard_over_Liquimetal"
+          - "prospect__Kozileks_Command_over_Implements"
+          - "package__KCI_Bucknard_over_Pearl_Liquimetal"
+          - "package__Two_Keys_over_Boulder_Candelabra"
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run paired full-deck shard
+        run: |
+          mkdir -p shard
+          python dack_full_deck_accel_n512_batch.py \
+            --variant "${{ matrix.variant }}" \
+            --shard ${{ matrix.shard }} \
+            --games 32 \
+            --out "shard/${{ matrix.variant }}__${{ matrix.shard }}.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "dack-accel-c-${{ matrix.variant }}-${{ matrix.shard }}"
+          path: "shard/${{ matrix.variant }}__${{ matrix.shard }}.json"
+          retention-days: 14
+
+  pool:
+    needs: simulate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-accel-c-*
+          path: shards
+          merge-multiple: true
+      - name: Pool wave C
+        run: |
+          mkdir -p results
+          python pool_dack_full_deck_accel_n512.py \
+            --glob 'shards/*.json' \
+            --baseline-games results/dack_v076_current99_n4096_final_games.csv \
+            --expected-games 512 \
+            --variants 'prospect__Component_Pouch_over_Implements;prospect__Pentad_Prism_over_Implements;prospect__Extraplanar_Lens_over_Implements;prospect__Bucknard_over_Liquimetal;prospect__Kozileks_Command_over_Implements;package__KCI_Bucknard_over_Pearl_Liquimetal;package__Two_Keys_over_Boulder_Candelabra' \
+            --json-out results/dack_full_deck_accel_n512_wave_c.json \
+            --csv-out results/dack_full_deck_accel_n512_wave_c.csv
+      - name: Commit results
+        run: |
+          git config user.name "DACK Simulator Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -f results/dack_full_deck_accel_n512_wave_c.json results/dack_full_deck_accel_n512_wave_c.csv
+          git commit -m "Add full-deck acceleration N512 wave C results" || exit 0
+          git pull --rebase origin dack-full-deck-accel-calibration-20261003
+          git push origin HEAD:dack-full-deck-accel-calibration-20261003
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-full-deck-accel-n512-wave-c-pooled
+          path: |
+            results/dack_full_deck_accel_n512_wave_c.json
+            results/dack_full_deck_accel_n512_wave_c.csv
+          retention-days: 30
