@@ -1,0 +1,95 @@
+name: DACK full-deck accel N512 wave A current
+
+on:
+  push:
+    branches:
+      - dack-full-deck-accel-calibration-20261003
+    paths:
+      - .github/workflows/dack_full_deck_accel_n512_wave_a.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dack-full-deck-accel-n512-wave-a
+  cancel-in-progress: true
+
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 32
+      matrix:
+        variant:
+          - "current__Tooth_of_Ramos_vs_Generic"
+          - "current__Coalition_Relic_vs_Generic"
+          - "current__Prismatic_Lens_vs_Generic"
+          - "current__Pearl_Medallion_vs_Generic"
+          - "current__Liquimetal_Torque_vs_Generic"
+          - "current__Mind_Stone_vs_Generic"
+          - "current__Giants_Boulder_vs_Generic"
+          - "current__Moonsilver_Key_vs_Generic"
+          - "current__Candelabra_vs_Generic"
+          - "current__Implements_vs_Generic"
+          - "current__Jeweled_Amulet_vs_Generic"
+          - "current__Basalt_Monolith_vs_Generic"
+          - "current__The_Mind_Stone_vs_Generic"
+          - "current__Everflowing_Chalice_vs_Generic"
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run paired full-deck shard
+        run: |
+          mkdir -p shard
+          python dack_full_deck_accel_n512_batch.py \
+            --variant "${{ matrix.variant }}" \
+            --shard ${{ matrix.shard }} \
+            --games 32 \
+            --out "shard/${{ matrix.variant }}__${{ matrix.shard }}.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "dack-accel-a-${{ matrix.variant }}-${{ matrix.shard }}"
+          path: "shard/${{ matrix.variant }}__${{ matrix.shard }}.json"
+          retention-days: 14
+
+  pool:
+    needs: simulate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-accel-a-*
+          path: shards
+          merge-multiple: true
+      - name: Pool wave A
+        run: |
+          mkdir -p results
+          python pool_dack_full_deck_accel_n512.py \
+            --glob 'shards/*.json' \
+            --baseline-games results/dack_v076_current99_n4096_final_games.csv \
+            --expected-games 512 \
+            --variants 'current__Tooth_of_Ramos_vs_Generic;current__Coalition_Relic_vs_Generic;current__Prismatic_Lens_vs_Generic;current__Pearl_Medallion_vs_Generic;current__Liquimetal_Torque_vs_Generic;current__Mind_Stone_vs_Generic;current__Giants_Boulder_vs_Generic;current__Moonsilver_Key_vs_Generic;current__Candelabra_vs_Generic;current__Implements_vs_Generic;current__Jeweled_Amulet_vs_Generic;current__Basalt_Monolith_vs_Generic;current__The_Mind_Stone_vs_Generic;current__Everflowing_Chalice_vs_Generic' \
+            --json-out results/dack_full_deck_accel_n512_wave_a.json \
+            --csv-out results/dack_full_deck_accel_n512_wave_a.csv
+      - name: Commit results
+        run: |
+          git config user.name "DACK Simulator Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -f results/dack_full_deck_accel_n512_wave_a.json results/dack_full_deck_accel_n512_wave_a.csv
+          git commit -m "Add full-deck acceleration N512 wave A results" || exit 0
+          git pull --rebase origin dack-full-deck-accel-calibration-20261003
+          git push origin HEAD:dack-full-deck-accel-calibration-20261003
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-full-deck-accel-n512-wave-a-pooled
+          path: |
+            results/dack_full_deck_accel_n512_wave_a.json
+            results/dack_full_deck_accel_n512_wave_a.csv
+          retention-days: 30
