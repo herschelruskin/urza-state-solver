@@ -1,0 +1,491 @@
+{
+  "design": {
+    "paired": true,
+    "n_pairs_per_variant": 512,
+    "baseline": "frozen v0.76 exact current-99 N4096 games restricted to game_id 0..511",
+    "same_seed_seat_policy": true,
+    "purpose": "natural full-deck revalidation of historical forced-opening acceleration screens"
+  },
+  "baseline_summary": {
+    "n": 512,
+    "T1": 0.03515625,
+    "T2_exact": 0.357421875,
+    "le_T2": 0.392578125,
+    "T3_exact": 0.439453125,
+    "le_T3": 0.83203125,
+    "fail_T3": 0.16796875,
+    "utility_lambda_0_5": 0.6123046875,
+    "mean_keep": 5.08984375
+  },
+  "variants": {
+    "package__Final4_Buck_KCI_Manifold_Voltaic": {
+      "kind": "package_vs_current",
+      "replace": [
+        [
+          "Liquimetal Torque",
+          "Bucknard's Everfull Purse"
+        ],
+        [
+          "Pearl Medallion",
+          "Krark-Clan Ironworks"
+        ],
+        [
+          "Giant's Boulder",
+          "Manifold Key"
+        ],
+        [
+          "Candelabra of Tawnos",
+          "Voltaic Key"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.404296875,
+        "le_T2": 0.439453125,
+        "T3_exact": 0.40234375,
+        "le_T3": 0.841796875,
+        "fail_T3": 0.158203125,
+        "utility_lambda_0_5": 0.640625,
+        "mean_keep": 5.310546875
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "variant-minus-current",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": 0.0,
+          "ci95_pp": [
+            -1.0837962748725007,
+            1.0837962748725007
+          ],
+          "favored_only": 4,
+          "reference_only": 4,
+          "discordant": 8
+        },
+        "le_T2": {
+          "delta_pp": 4.6875,
+          "ci95_pp": [
+            2.008664499491675,
+            7.366335500508326
+          ],
+          "favored_only": 37,
+          "reference_only": 13,
+          "discordant": 50
+        },
+        "le_T3": {
+          "delta_pp": 0.9765625,
+          "ci95_pp": [
+            -1.2887782186585897,
+            3.24190321865859
+          ],
+          "favored_only": 20,
+          "reference_only": 15,
+          "discordant": 35
+        }
+      },
+      "reported_utility_delta": {
+        "delta": 0.0283203125,
+        "ci95": [
+          0.00810258919288755,
+          0.04853803580711245
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": 0.220703125,
+        "ci95": [
+          0.14600167102388834,
+          0.29540457897611166
+        ]
+      },
+      "timing": {
+        "named_option_faster": 50,
+        "reference_faster": 26,
+        "same": 436
+      },
+      "sum_variant_shard_seconds": 12059.56463932991,
+      "deck_sha256": "3e257d0244bd3f79ca11905301abcff9f14c63f9a36d1d8f42685c4f2cf22dd0"
+    },
+    "ablate__Final4_revert_Buck_to_Liquimetal": {
+      "kind": "package_vs_current",
+      "replace": [
+        [
+          "Pearl Medallion",
+          "Krark-Clan Ironworks"
+        ],
+        [
+          "Giant's Boulder",
+          "Manifold Key"
+        ],
+        [
+          "Candelabra of Tawnos",
+          "Voltaic Key"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.037109375,
+        "T2_exact": 0.375,
+        "le_T2": 0.412109375,
+        "T3_exact": 0.427734375,
+        "le_T3": 0.83984375,
+        "fail_T3": 0.16015625,
+        "utility_lambda_0_5": 0.6259765625,
+        "mean_keep": 5.203125
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "variant-minus-current",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": 0.1953125,
+          "ci95_pp": [
+            -0.4681583855330476,
+            0.8587833855330476
+          ],
+          "favored_only": 2,
+          "reference_only": 1,
+          "discordant": 3
+        },
+        "le_T2": {
+          "delta_pp": 1.953125,
+          "ci95_pp": [
+            0.006635960958562351,
+            3.899614039041438
+          ],
+          "favored_only": 18,
+          "reference_only": 8,
+          "discordant": 26
+        },
+        "le_T3": {
+          "delta_pp": 0.78125,
+          "ci95_pp": [
+            -1.2452153813059155,
+            2.8077153813059157
+          ],
+          "favored_only": 16,
+          "reference_only": 12,
+          "discordant": 28
+        }
+      },
+      "reported_utility_delta": {
+        "delta": 0.013671875,
+        "ci95": [
+          -0.0018477588407646503,
+          0.02919150884076465
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": 0.11328125,
+        "ci95": [
+          0.05703993892919335,
+          0.16952256107080665
+        ]
+      },
+      "timing": {
+        "named_option_faster": 33,
+        "reference_faster": 18,
+        "same": 461
+      },
+      "sum_variant_shard_seconds": 13122.249820709229,
+      "deck_sha256": "1a245346bec3beb5a76dcb14c561290062047f3a0707dfd9f1497e5a052e5a59"
+    },
+    "ablate__Final4_revert_KCI_to_Pearl": {
+      "kind": "package_vs_current",
+      "replace": [
+        [
+          "Liquimetal Torque",
+          "Bucknard's Everfull Purse"
+        ],
+        [
+          "Giant's Boulder",
+          "Manifold Key"
+        ],
+        [
+          "Candelabra of Tawnos",
+          "Voltaic Key"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.033203125,
+        "T2_exact": 0.40234375,
+        "le_T2": 0.435546875,
+        "T3_exact": 0.40234375,
+        "le_T3": 0.837890625,
+        "fail_T3": 0.162109375,
+        "utility_lambda_0_5": 0.63671875,
+        "mean_keep": 5.30859375
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "variant-minus-current",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": -0.1953125,
+          "ci95_pp": [
+            -1.2089696405873689,
+            0.8183446405873689
+          ],
+          "favored_only": 3,
+          "reference_only": 4,
+          "discordant": 7
+        },
+        "le_T2": {
+          "delta_pp": 4.296875,
+          "ci95_pp": [
+            1.724865008588924,
+            6.8688849914110754
+          ],
+          "favored_only": 34,
+          "reference_only": 12,
+          "discordant": 46
+        },
+        "le_T3": {
+          "delta_pp": 0.5859375,
+          "ci95_pp": [
+            -1.6146768046023965,
+            2.7865518046023965
+          ],
+          "favored_only": 18,
+          "reference_only": 15,
+          "discordant": 33
+        }
+      },
+      "reported_utility_delta": {
+        "delta": 0.0244140625,
+        "ci95": [
+          0.005085373960318388,
+          0.043742751039681615
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": 0.21875,
+        "ci95": [
+          0.14793944236613668,
+          0.28956055763386335
+        ]
+      },
+      "timing": {
+        "named_option_faster": 46,
+        "reference_faster": 25,
+        "same": 441
+      },
+      "sum_variant_shard_seconds": 13257.103567838669,
+      "deck_sha256": "d45d8afb31dbb3e73fd917fc0bc401c6f32314bd71271ebac0181b6888c62c36"
+    },
+    "ablate__Final4_revert_Manifold_to_Boulder": {
+      "kind": "package_vs_current",
+      "replace": [
+        [
+          "Liquimetal Torque",
+          "Bucknard's Everfull Purse"
+        ],
+        [
+          "Pearl Medallion",
+          "Krark-Clan Ironworks"
+        ],
+        [
+          "Candelabra of Tawnos",
+          "Voltaic Key"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.037109375,
+        "T2_exact": 0.404296875,
+        "le_T2": 0.44140625,
+        "T3_exact": 0.40234375,
+        "le_T3": 0.84375,
+        "fail_T3": 0.15625,
+        "utility_lambda_0_5": 0.642578125,
+        "mean_keep": 5.294921875
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "variant-minus-current",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": 0.1953125,
+          "ci95_pp": [
+            -0.8183446405873689,
+            1.2089696405873689
+          ],
+          "favored_only": 4,
+          "reference_only": 3,
+          "discordant": 7
+        },
+        "le_T2": {
+          "delta_pp": 4.8828125,
+          "ci95_pp": [
+            2.347467577270288,
+            7.4181574227297125
+          ],
+          "favored_only": 35,
+          "reference_only": 10,
+          "discordant": 45
+        },
+        "le_T3": {
+          "delta_pp": 1.171875,
+          "ci95_pp": [
+            -1.060116777313656,
+            3.4038667773136564
+          ],
+          "favored_only": 20,
+          "reference_only": 14,
+          "discordant": 34
+        }
+      },
+      "reported_utility_delta": {
+        "delta": 0.0302734375,
+        "ci95": [
+          0.010817573002853086,
+          0.04972930199714691
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": 0.205078125,
+        "ci95": [
+          0.13702007703497449,
+          0.2731361729650255
+        ]
+      },
+      "timing": {
+        "named_option_faster": 49,
+        "reference_faster": 21,
+        "same": 442
+      },
+      "sum_variant_shard_seconds": 14404.934394598007,
+      "deck_sha256": "0098bf7fbdbea17bde0b6d6be8d8bb42bc3d35e87a9d390e6cfd66e1c9fc668d"
+    },
+    "ablate__Final4_revert_Voltaic_to_Candelabra": {
+      "kind": "package_vs_current",
+      "replace": [
+        [
+          "Liquimetal Torque",
+          "Bucknard's Everfull Purse"
+        ],
+        [
+          "Pearl Medallion",
+          "Krark-Clan Ironworks"
+        ],
+        [
+          "Giant's Boulder",
+          "Manifold Key"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.40625,
+        "le_T2": 0.44140625,
+        "T3_exact": 0.4140625,
+        "le_T3": 0.85546875,
+        "fail_T3": 0.14453125,
+        "utility_lambda_0_5": 0.6484375,
+        "mean_keep": 5.314453125
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "variant-minus-current",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": 0.0,
+          "ci95_pp": [
+            -0.9385951065665277,
+            0.9385951065665277
+          ],
+          "favored_only": 3,
+          "reference_only": 3,
+          "discordant": 6
+        },
+        "le_T2": {
+          "delta_pp": 4.8828125,
+          "ci95_pp": [
+            2.4060564995319575,
+            7.359568500468042
+          ],
+          "favored_only": 34,
+          "reference_only": 9,
+          "discordant": 43
+        },
+        "le_T3": {
+          "delta_pp": 2.34375,
+          "ci95_pp": [
+            0.11870707529442193,
+            4.568792924705578
+          ],
+          "favored_only": 23,
+          "reference_only": 11,
+          "discordant": 34
+        }
+      },
+      "reported_utility_delta": {
+        "delta": 0.0361328125,
+        "ci95": [
+          0.017329047480477457,
+          0.05493657751952254
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": 0.224609375,
+        "ci95": [
+          0.15767125300188467,
+          0.29154749699811533
+        ]
+      },
+      "timing": {
+        "named_option_faster": 51,
+        "reference_faster": 19,
+        "same": 442
+      },
+      "sum_variant_shard_seconds": 13065.195334672928,
+      "deck_sha256": "278776ac944cf366cce938fc159aedb83e9e7c2192d4635e7eff7e6c0a807a78"
+    }
+  }
+}
