@@ -1,0 +1,86 @@
+name: DACK provisional final-four N512
+
+on:
+  push:
+    branches:
+      - dack-full-deck-accel-calibration-20261003
+    paths:
+      - .github/workflows/dack_final4_n512.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dack-final4-n512
+  cancel-in-progress: true
+
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 32
+      matrix:
+        variant:
+          - "package__Final4_Buck_KCI_Manifold_Voltaic"
+          - "ablate__Final4_revert_Buck_to_Liquimetal"
+          - "ablate__Final4_revert_KCI_to_Pearl"
+          - "ablate__Final4_revert_Manifold_to_Boulder"
+          - "ablate__Final4_revert_Voltaic_to_Candelabra"
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run paired full-deck shard
+        run: |
+          mkdir -p shard
+          python dack_full_deck_accel_n512_batch.py \
+            --variant "${{ matrix.variant }}" \
+            --shard ${{ matrix.shard }} \
+            --games 32 \
+            --out "shard/${{ matrix.variant }}__${{ matrix.shard }}.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "dack-final4-${{ matrix.variant }}-${{ matrix.shard }}"
+          path: "shard/${{ matrix.variant }}__${{ matrix.shard }}.json"
+          retention-days: 14
+
+  pool:
+    needs: simulate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-final4-*
+          path: shards
+          merge-multiple: true
+      - name: Pool final-four screen
+        run: |
+          mkdir -p results
+          python pool_dack_full_deck_accel_n512.py \
+            --glob 'shards/*.json' \
+            --baseline-games results/dack_v076_current99_n4096_final_games.csv \
+            --expected-games 512 \
+            --variants 'package__Final4_Buck_KCI_Manifold_Voltaic;ablate__Final4_revert_Buck_to_Liquimetal;ablate__Final4_revert_KCI_to_Pearl;ablate__Final4_revert_Manifold_to_Boulder;ablate__Final4_revert_Voltaic_to_Candelabra' \
+            --json-out results/dack_final4_n512.json \
+            --csv-out results/dack_final4_n512.csv
+      - name: Commit results
+        run: |
+          git config user.name "DACK Simulator Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -f results/dack_final4_n512.json results/dack_final4_n512.csv
+          git commit -m "Add provisional final-four N512 results" || exit 0
+          git pull --rebase origin dack-full-deck-accel-calibration-20261003
+          git push origin HEAD:dack-full-deck-accel-calibration-20261003
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-final4-n512-pooled
+          path: |
+            results/dack_final4_n512.json
+            results/dack_final4_n512.csv
+          retention-days: 30
