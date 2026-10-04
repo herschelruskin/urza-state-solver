@@ -76,6 +76,28 @@ VARIANTS={
     "package__Two_Keys_over_Boulder_Candelabra":{"kind":"package_vs_current","replace":[
         ("Giant's Boulder","Manifold Key"),("Candelabra of Tawnos","Voltaic Key")
     ]},
+
+    # Provisional four-card package and one-pair reversion ablations.
+    "package__Final4_Buck_KCI_Manifold_Voltaic":{"kind":"package_vs_current","replace":[
+        ("Liquimetal Torque","Bucknard's Everfull Purse"),("Pearl Medallion","Krark-Clan Ironworks"),
+        ("Giant's Boulder","Manifold Key"),("Candelabra of Tawnos","Voltaic Key")
+    ]},
+    "ablate__Final4_revert_Buck_to_Liquimetal":{"kind":"package_vs_current","replace":[
+        ("Pearl Medallion","Krark-Clan Ironworks"),("Giant's Boulder","Manifold Key"),
+        ("Candelabra of Tawnos","Voltaic Key")
+    ]},
+    "ablate__Final4_revert_KCI_to_Pearl":{"kind":"package_vs_current","replace":[
+        ("Liquimetal Torque","Bucknard's Everfull Purse"),("Giant's Boulder","Manifold Key"),
+        ("Candelabra of Tawnos","Voltaic Key")
+    ]},
+    "ablate__Final4_revert_Manifold_to_Boulder":{"kind":"package_vs_current","replace":[
+        ("Liquimetal Torque","Bucknard's Everfull Purse"),("Pearl Medallion","Krark-Clan Ironworks"),
+        ("Candelabra of Tawnos","Voltaic Key")
+    ]},
+    "ablate__Final4_revert_Voltaic_to_Candelabra":{"kind":"package_vs_current","replace":[
+        ("Liquimetal Torque","Bucknard's Everfull Purse"),("Pearl Medallion","Krark-Clan Ironworks"),
+        ("Giant's Boulder","Manifold Key")
+    ]},
 }
 
 def build_deck(variant):
