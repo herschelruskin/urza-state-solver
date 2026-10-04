@@ -1,0 +1,625 @@
+{
+  "design": {
+    "paired": true,
+    "n_pairs_per_variant": 512,
+    "baseline": "frozen v0.76 exact current-99 N4096 games restricted to game_id 0..511",
+    "same_seed_seat_policy": true,
+    "purpose": "natural full-deck revalidation of historical forced-opening acceleration screens"
+  },
+  "baseline_summary": {
+    "n": 512,
+    "T1": 0.03515625,
+    "T2_exact": 0.357421875,
+    "le_T2": 0.392578125,
+    "T3_exact": 0.439453125,
+    "le_T3": 0.83203125,
+    "fail_T3": 0.16796875,
+    "utility_lambda_0_5": 0.6123046875,
+    "mean_keep": 5.08984375
+  },
+  "variants": {
+    "prospect__Component_Pouch_over_Implements": {
+      "kind": "prospect_vs_current",
+      "replace": [
+        [
+          "Implements of Sacrifice",
+          "Component Pouch"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.033203125,
+        "T2_exact": 0.359375,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.42578125,
+        "le_T3": 0.818359375,
+        "fail_T3": 0.181640625,
+        "utility_lambda_0_5": 0.60546875,
+        "mean_keep": 5.078125
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "variant-minus-current",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": -0.1953125,
+          "ci95_pp": [
+            -0.5781179657304794,
+            0.1874929657304793
+          ],
+          "favored_only": 0,
+          "reference_only": 1,
+          "discordant": 1
+        },
+        "le_T2": {
+          "delta_pp": 0.0,
+          "ci95_pp": [
+            -1.3273739292834041,
+            1.3273739292834041
+          ],
+          "favored_only": 6,
+          "reference_only": 6,
+          "discordant": 12
+        },
+        "le_T3": {
+          "delta_pp": -1.3671875,
+          "ci95_pp": [
+            -2.510598789924052,
+            -0.22377621007594797
+          ],
+          "favored_only": 1,
+          "reference_only": 8,
+          "discordant": 9
+        }
+      },
+      "reported_utility_delta": {
+        "delta": -0.0068359375,
+        "ci95": [
+          -0.01639708035634934,
+          0.002725205356349342
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": -0.01171875,
+        "ci95": [
+          -0.04924880279247414,
+          0.025811302792474143
+        ]
+      },
+      "timing": {
+        "named_option_faster": 7,
+        "reference_faster": 13,
+        "same": 492
+      },
+      "sum_variant_shard_seconds": 16060.890416622162,
+      "deck_sha256": "6510b9d1f3ba9d463224ff3909756fd5ad57df660472ff624f8ffa2ffca6e910"
+    },
+    "prospect__Pentad_Prism_over_Implements": {
+      "kind": "prospect_vs_current",
+      "replace": [
+        [
+          "Implements of Sacrifice",
+          "Pentad Prism"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.080078125
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "variant-minus-current",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": 0.0,
+          "ci95_pp": [
+            0.0,
+            0.0
+          ],
+          "favored_only": 0,
+          "reference_only": 0,
+          "discordant": 0
+        },
+        "le_T2": {
+          "delta_pp": 0.0,
+          "ci95_pp": [
+            -1.2117210721879794,
+            1.2117210721879794
+          ],
+          "favored_only": 5,
+          "reference_only": 5,
+          "discordant": 10
+        },
+        "le_T3": {
+          "delta_pp": 0.0,
+          "ci95_pp": [
+            -1.0837962748725007,
+            1.0837962748725007
+          ],
+          "favored_only": 4,
+          "reference_only": 4,
+          "discordant": 8
+        }
+      },
+      "reported_utility_delta": {
+        "delta": 0.0,
+        "ci95": [
+          -0.008986363982342427,
+          0.008986363982342427
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": -0.009765625,
+        "ci95": [
+          -0.04016779408480199,
+          0.020636544084801988
+        ]
+      },
+      "timing": {
+        "named_option_faster": 9,
+        "reference_faster": 7,
+        "same": 496
+      },
+      "sum_variant_shard_seconds": 15430.10726737976,
+      "deck_sha256": "dffcb99072d26ac72478c6a35d6b255908595655f0396fccac7ccef97cc1e8ce"
+    },
+    "prospect__Extraplanar_Lens_over_Implements": {
+      "kind": "prospect_vs_current",
+      "replace": [
+        [
+          "Implements of Sacrifice",
+          "Extraplanar Lens"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.435546875,
+        "le_T3": 0.828125,
+        "fail_T3": 0.171875,
+        "utility_lambda_0_5": 0.6103515625,
+        "mean_keep": 5.06640625
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "variant-minus-current",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": 0.0,
+          "ci95_pp": [
+            0.0,
+            0.0
+          ],
+          "favored_only": 0,
+          "reference_only": 0,
+          "discordant": 0
+        },
+        "le_T2": {
+          "delta_pp": 0.0,
+          "ci95_pp": [
+            -1.433727707585419,
+            1.433727707585419
+          ],
+          "favored_only": 7,
+          "reference_only": 7,
+          "discordant": 14
+        },
+        "le_T3": {
+          "delta_pp": -0.390625,
+          "ci95_pp": [
+            -1.6018726511610448,
+            0.8206226511610449
+          ],
+          "favored_only": 4,
+          "reference_only": 6,
+          "discordant": 10
+        }
+      },
+      "reported_utility_delta": {
+        "delta": -0.001953125,
+        "ci95": [
+          -0.012445570837377386,
+          0.008539320837377386
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": -0.0234375,
+        "ci95": [
+          -0.0632068335334989,
+          0.01633183353349891
+        ]
+      },
+      "timing": {
+        "named_option_faster": 11,
+        "reference_faster": 10,
+        "same": 491
+      },
+      "sum_variant_shard_seconds": 16238.804410457611,
+      "deck_sha256": "b01353e40c7243b32917bc029eacace97903d714d66ee9e0978ff7e2755be75b"
+    },
+    "prospect__Bucknard_over_Liquimetal": {
+      "kind": "prospect_vs_current",
+      "replace": [
+        [
+          "Liquimetal Torque",
+          "Bucknard's Everfull Purse"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.0390625,
+        "T2_exact": 0.392578125,
+        "le_T2": 0.431640625,
+        "T3_exact": 0.419921875,
+        "le_T3": 0.8515625,
+        "fail_T3": 0.1484375,
+        "utility_lambda_0_5": 0.6416015625,
+        "mean_keep": 5.201171875
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "variant-minus-current",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": 0.390625,
+          "ci95_pp": [
+            -0.5473588430001841,
+            1.3286088430001841
+          ],
+          "favored_only": 4,
+          "reference_only": 2,
+          "discordant": 6
+        },
+        "le_T2": {
+          "delta_pp": 3.90625,
+          "ci95_pp": [
+            1.8349954438844611,
+            5.977504556115538
+          ],
+          "favored_only": 25,
+          "reference_only": 5,
+          "discordant": 30
+        },
+        "le_T3": {
+          "delta_pp": 1.953125,
+          "ci95_pp": [
+            0.16384794029272698,
+            3.7424020597072727
+          ],
+          "favored_only": 16,
+          "reference_only": 6,
+          "discordant": 22
+        }
+      },
+      "reported_utility_delta": {
+        "delta": 0.029296875,
+        "ci95": [
+          0.013239606153719607,
+          0.04535414384628039
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": 0.111328125,
+        "ci95": [
+          0.06336871670567772,
+          0.15928753329432227
+        ]
+      },
+      "timing": {
+        "named_option_faster": 36,
+        "reference_faster": 10,
+        "same": 466
+      },
+      "sum_variant_shard_seconds": 15431.161016464233,
+      "deck_sha256": "9baed631173c32911b179d4f13ff81d6bbf73982e1850a41755c17f5183e53ed"
+    },
+    "prospect__Kozileks_Command_over_Implements": {
+      "kind": "prospect_vs_current",
+      "replace": [
+        [
+          "Implements of Sacrifice",
+          "Kozilek's Command"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.359375,
+        "le_T2": 0.39453125,
+        "T3_exact": 0.431640625,
+        "le_T3": 0.826171875,
+        "fail_T3": 0.173828125,
+        "utility_lambda_0_5": 0.6103515625,
+        "mean_keep": 5.083984375
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "variant-minus-current",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": 0.0,
+          "ci95_pp": [
+            0.0,
+            0.0
+          ],
+          "favored_only": 0,
+          "reference_only": 0,
+          "discordant": 0
+        },
+        "le_T2": {
+          "delta_pp": 0.1953125,
+          "ci95_pp": [
+            -0.9541023032893251,
+            1.3447273032893252
+          ],
+          "favored_only": 5,
+          "reference_only": 4,
+          "discordant": 9
+        },
+        "le_T3": {
+          "delta_pp": -0.5859375,
+          "ci95_pp": [
+            -1.4412462387747234,
+            0.26937123877472346
+          ],
+          "favored_only": 1,
+          "reference_only": 4,
+          "discordant": 5
+        }
+      },
+      "reported_utility_delta": {
+        "delta": -0.001953125,
+        "ci95": [
+          -0.010079832878764095,
+          0.006173582878764095
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": -0.005859375,
+        "ci95": [
+          -0.03903983421339111,
+          0.027321084213391113
+        ]
+      },
+      "timing": {
+        "named_option_faster": 6,
+        "reference_faster": 6,
+        "same": 500
+      },
+      "sum_variant_shard_seconds": 17091.126462459564,
+      "deck_sha256": "e138b53a014a6924416841e857d08621ede3182a327db42d8f58c359224a67af"
+    },
+    "package__KCI_Bucknard_over_Pearl_Liquimetal": {
+      "kind": "package_vs_current",
+      "replace": [
+        [
+          "Pearl Medallion",
+          "Krark-Clan Ironworks"
+        ],
+        [
+          "Liquimetal Torque",
+          "Bucknard's Everfull Purse"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.40234375,
+        "le_T2": 0.4375,
+        "T3_exact": 0.404296875,
+        "le_T3": 0.841796875,
+        "fail_T3": 0.158203125,
+        "utility_lambda_0_5": 0.6396484375,
+        "mean_keep": 5.208984375
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "variant-minus-current",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": 0.0,
+          "ci95_pp": [
+            -0.9385951065665277,
+            0.9385951065665277
+          ],
+          "favored_only": 3,
+          "reference_only": 3,
+          "discordant": 6
+        },
+        "le_T2": {
+          "delta_pp": 4.4921875,
+          "ci95_pp": [
+            2.1941688891150646,
+            6.790206110884936
+          ],
+          "favored_only": 30,
+          "reference_only": 7,
+          "discordant": 37
+        },
+        "le_T3": {
+          "delta_pp": 0.9765625,
+          "ci95_pp": [
+            -1.0851862231818488,
+            3.0383112231818488
+          ],
+          "favored_only": 17,
+          "reference_only": 12,
+          "discordant": 29
+        }
+      },
+      "reported_utility_delta": {
+        "delta": 0.02734375,
+        "ci95": [
+          0.009323217904514538,
+          0.04536428209548546
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": 0.119140625,
+        "ci95": [
+          0.06471661826734827,
+          0.17356463173265174
+        ]
+      },
+      "timing": {
+        "named_option_faster": 41,
+        "reference_faster": 16,
+        "same": 455
+      },
+      "sum_variant_shard_seconds": 15385.2624604702,
+      "deck_sha256": "2b7105e31b42a51e660f2249e85caec6c4069ea786e830fae15ab8134ebc0af6"
+    },
+    "package__Two_Keys_over_Boulder_Candelabra": {
+      "kind": "package_vs_current",
+      "replace": [
+        [
+          "Giant's Boulder",
+          "Manifold Key"
+        ],
+        [
+          "Candelabra of Tawnos",
+          "Voltaic Key"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.033203125,
+        "T2_exact": 0.376953125,
+        "le_T2": 0.41015625,
+        "T3_exact": 0.42578125,
+        "le_T3": 0.8359375,
+        "fail_T3": 0.1640625,
+        "utility_lambda_0_5": 0.623046875,
+        "mean_keep": 5.171875
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "variant-minus-current",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": -0.1953125,
+          "ci95_pp": [
+            -0.5781179657304794,
+            0.1874929657304793
+          ],
+          "favored_only": 0,
+          "reference_only": 1,
+          "discordant": 1
+        },
+        "le_T2": {
+          "delta_pp": 1.7578125,
+          "ci95_pp": [
+            0.09453842156906742,
+            3.421086578430933
+          ],
+          "favored_only": 14,
+          "reference_only": 5,
+          "discordant": 19
+        },
+        "le_T3": {
+          "delta_pp": 0.390625,
+          "ci95_pp": [
+            -1.322672647587113,
+            2.1039226475871127
+          ],
+          "favored_only": 11,
+          "reference_only": 9,
+          "discordant": 20
+        }
+      },
+      "reported_utility_delta": {
+        "delta": 0.0107421875,
+        "ci95": [
+          -0.002076262585918436,
+          0.023560637585918434
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": 0.08203125,
+        "ci95": [
+          0.03287737174050574,
+          0.13118512825949424
+        ]
+      },
+      "timing": {
+        "named_option_faster": 23,
+        "reference_faster": 14,
+        "same": 475
+      },
+      "sum_variant_shard_seconds": 14483.724813461304,
+      "deck_sha256": "d390c0032b5fe1bfb4897c441a59adde88c43f54ccf3b93cb9766c6e16eb1107"
+    }
+  }
+}
