@@ -1,0 +1,1212 @@
+{
+  "design": {
+    "paired": true,
+    "n_pairs_per_variant": 512,
+    "baseline": "frozen v0.76 exact current-99 N4096 games restricted to game_id 0..511",
+    "same_seed_seat_policy": true,
+    "purpose": "natural full-deck revalidation of historical forced-opening acceleration screens"
+  },
+  "baseline_summary": {
+    "n": 512,
+    "T1": 0.03515625,
+    "T2_exact": 0.357421875,
+    "le_T2": 0.392578125,
+    "T3_exact": 0.439453125,
+    "le_T3": 0.83203125,
+    "fail_T3": 0.16796875,
+    "utility_lambda_0_5": 0.6123046875,
+    "mean_keep": 5.08984375
+  },
+  "variants": {
+    "current__Tooth_of_Ramos_vs_Generic": {
+      "kind": "current_vs_generic",
+      "replace": [
+        [
+          "Tooth of Ramos",
+          "Generic 2C Rock"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.36328125,
+        "le_T2": 0.3984375,
+        "T3_exact": 0.431640625,
+        "le_T3": 0.830078125,
+        "fail_T3": 0.169921875,
+        "utility_lambda_0_5": 0.6142578125,
+        "mean_keep": 5.087890625
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "current-minus-generic",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": -0.0,
+          "ci95_pp": [
+            -0.0,
+            -0.0
+          ],
+          "favored_only": 0,
+          "reference_only": 0,
+          "discordant": 0
+        },
+        "le_T2": {
+          "delta_pp": -0.5859375,
+          "ci95_pp": [
+            -1.734353897191438,
+            0.562478897191438
+          ],
+          "favored_only": 3,
+          "reference_only": 6,
+          "discordant": 9
+        },
+        "le_T3": {
+          "delta_pp": 0.1953125,
+          "ci95_pp": [
+            -0.9541023032893251,
+            1.3447273032893252
+          ],
+          "favored_only": 5,
+          "reference_only": 4,
+          "discordant": 9
+        }
+      },
+      "reported_utility_delta": {
+        "delta": -0.001953125,
+        "ci95": [
+          -0.010519613237935564,
+          0.006613363237935564
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": 0.001953125,
+        "ci95": [
+          -0.03167034373264932,
+          0.03557659373264932
+        ]
+      },
+      "timing": {
+        "named_option_faster": 7,
+        "reference_faster": 10,
+        "same": 495
+      },
+      "sum_variant_shard_seconds": 15777.83874630928,
+      "deck_sha256": "0faa6590ad570ca0ac170ebbaeb32f4560389db57c6ea8637d8651db5c137bbb"
+    },
+    "current__Coalition_Relic_vs_Generic": {
+      "kind": "current_vs_generic",
+      "replace": [
+        [
+          "Coalition Relic",
+          "Generic 2C Rock"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.361328125,
+        "le_T2": 0.396484375,
+        "T3_exact": 0.431640625,
+        "le_T3": 0.828125,
+        "fail_T3": 0.171875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.109375
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "current-minus-generic",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": -0.0,
+          "ci95_pp": [
+            -0.0,
+            -0.0
+          ],
+          "favored_only": 0,
+          "reference_only": 0,
+          "discordant": 0
+        },
+        "le_T2": {
+          "delta_pp": -0.390625,
+          "ci95_pp": [
+            -1.3286088430001841,
+            0.5473588430001841
+          ],
+          "favored_only": 2,
+          "reference_only": 4,
+          "discordant": 6
+        },
+        "le_T3": {
+          "delta_pp": 0.390625,
+          "ci95_pp": [
+            -1.0427026161286026,
+            1.8239526161286026
+          ],
+          "favored_only": 8,
+          "reference_only": 6,
+          "discordant": 14
+        }
+      },
+      "reported_utility_delta": {
+        "delta": -0.0,
+        "ci95": [
+          -0.008986363982342427,
+          0.008986363982342427
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": -0.01953125,
+        "ci95": [
+          -0.058571369930690106,
+          0.019508869930690106
+        ]
+      },
+      "timing": {
+        "named_option_faster": 9,
+        "reference_faster": 10,
+        "same": 493
+      },
+      "sum_variant_shard_seconds": 15680.082767486572,
+      "deck_sha256": "dd1b026d3feeac076fc9ff82d7b46c24d405b60805e9055410e2258aaf2b3c2d"
+    },
+    "current__Prismatic_Lens_vs_Generic": {
+      "kind": "current_vs_generic",
+      "replace": [
+        [
+          "Prismatic Lens",
+          "Generic 2C Rock"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.037109375,
+        "T2_exact": 0.365234375,
+        "le_T2": 0.40234375,
+        "T3_exact": 0.43359375,
+        "le_T3": 0.8359375,
+        "fail_T3": 0.1640625,
+        "utility_lambda_0_5": 0.619140625,
+        "mean_keep": 5.060546875
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "current-minus-generic",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": -0.1953125,
+          "ci95_pp": [
+            -0.5781179657304794,
+            0.1874929657304793
+          ],
+          "favored_only": 0,
+          "reference_only": 1,
+          "discordant": 1
+        },
+        "le_T2": {
+          "delta_pp": -0.9765625,
+          "ci95_pp": [
+            -2.1229794764850882,
+            0.1698544764850882
+          ],
+          "favored_only": 2,
+          "reference_only": 7,
+          "discordant": 9
+        },
+        "le_T3": {
+          "delta_pp": -0.390625,
+          "ci95_pp": [
+            -1.9229701460143633,
+            1.1417201460143633
+          ],
+          "favored_only": 7,
+          "reference_only": 9,
+          "discordant": 16
+        }
+      },
+      "reported_utility_delta": {
+        "delta": -0.0068359375,
+        "ci95": [
+          -0.017825969886449453,
+          0.004154094886449451
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": 0.029296875,
+        "ci95": [
+          -0.009885123484050594,
+          0.0684788734840506
+        ]
+      },
+      "timing": {
+        "named_option_faster": 7,
+        "reference_faster": 15,
+        "same": 490
+      },
+      "sum_variant_shard_seconds": 16521.854564905167,
+      "deck_sha256": "3182d9db881cee123fe180b534eba79bdb08d667e44aada47ff17a3d64a3d6b3"
+    },
+    "current__Pearl_Medallion_vs_Generic": {
+      "kind": "current_vs_generic",
+      "replace": [
+        [
+          "Pearl Medallion",
+          "Generic 2C Rock"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.365234375,
+        "le_T2": 0.400390625,
+        "T3_exact": 0.443359375,
+        "le_T3": 0.84375,
+        "fail_T3": 0.15625,
+        "utility_lambda_0_5": 0.6220703125,
+        "mean_keep": 5.095703125
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "current-minus-generic",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": -0.0,
+          "ci95_pp": [
+            -0.0,
+            -0.0
+          ],
+          "favored_only": 0,
+          "reference_only": 0,
+          "discordant": 0
+        },
+        "le_T2": {
+          "delta_pp": -0.78125,
+          "ci95_pp": [
+            -2.1068944511166303,
+            0.5443944511166303
+          ],
+          "favored_only": 4,
+          "reference_only": 8,
+          "discordant": 12
+        },
+        "le_T3": {
+          "delta_pp": -1.171875,
+          "ci95_pp": [
+            -2.495354425253798,
+            0.15160442525379778
+          ],
+          "favored_only": 3,
+          "reference_only": 9,
+          "discordant": 12
+        }
+      },
+      "reported_utility_delta": {
+        "delta": -0.009765625,
+        "ci95": [
+          -0.01986819047920544,
+          0.00033694047920543833
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": -0.005859375,
+        "ci95": [
+          -0.03578236548660907,
+          0.024063615486609072
+        ]
+      },
+      "timing": {
+        "named_option_faster": 6,
+        "reference_faster": 16,
+        "same": 490
+      },
+      "sum_variant_shard_seconds": 16468.974628448486,
+      "deck_sha256": "180863999604f2749d3897079bfca6606651fce6c6162f3a5fcedbf1a0cf29ee"
+    },
+    "current__Liquimetal_Torque_vs_Generic": {
+      "kind": "current_vs_generic",
+      "replace": [
+        [
+          "Liquimetal Torque",
+          "Generic 2C Rock"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.369140625,
+        "le_T2": 0.404296875,
+        "T3_exact": 0.421875,
+        "le_T3": 0.826171875,
+        "fail_T3": 0.173828125,
+        "utility_lambda_0_5": 0.615234375,
+        "mean_keep": 5.087890625
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "current-minus-generic",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": -0.0,
+          "ci95_pp": [
+            -0.0,
+            -0.0
+          ],
+          "favored_only": 0,
+          "reference_only": 0,
+          "discordant": 0
+        },
+        "le_T2": {
+          "delta_pp": -1.171875,
+          "ci95_pp": [
+            -2.2508979869453056,
+            -0.09285201305469451
+          ],
+          "favored_only": 1,
+          "reference_only": 7,
+          "discordant": 8
+        },
+        "le_T3": {
+          "delta_pp": 0.5859375,
+          "ci95_pp": [
+            -0.6839104486517431,
+            1.8557854486517429
+          ],
+          "favored_only": 7,
+          "reference_only": 4,
+          "discordant": 11
+        }
+      },
+      "reported_utility_delta": {
+        "delta": -0.0029296875,
+        "ci95": [
+          -0.011705765452991625,
+          0.005846390452991625
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": 0.001953125,
+        "ci95": [
+          -0.030785337568423568,
+          0.03469158756842357
+        ]
+      },
+      "timing": {
+        "named_option_faster": 7,
+        "reference_faster": 11,
+        "same": 494
+      },
+      "sum_variant_shard_seconds": 17049.84116911888,
+      "deck_sha256": "09cb2275cf1fcb00998e49052197bfab73b8945d051ee590ec006440171a71ba"
+    },
+    "current__Mind_Stone_vs_Generic": {
+      "kind": "current_vs_generic",
+      "replace": [
+        [
+          "Mind Stone",
+          "Generic 2C Rock"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.365234375,
+        "le_T2": 0.400390625,
+        "T3_exact": 0.42578125,
+        "le_T3": 0.826171875,
+        "fail_T3": 0.173828125,
+        "utility_lambda_0_5": 0.61328125,
+        "mean_keep": 5.091796875
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "current-minus-generic",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": -0.0,
+          "ci95_pp": [
+            -0.0,
+            -0.0
+          ],
+          "favored_only": 0,
+          "reference_only": 0,
+          "discordant": 0
+        },
+        "le_T2": {
+          "delta_pp": -0.78125,
+          "ci95_pp": [
+            -1.7173976575336183,
+            0.1548976575336182
+          ],
+          "favored_only": 1,
+          "reference_only": 5,
+          "discordant": 6
+        },
+        "le_T3": {
+          "delta_pp": 0.5859375,
+          "ci95_pp": [
+            -0.6839104486517431,
+            1.8557854486517429
+          ],
+          "favored_only": 7,
+          "reference_only": 4,
+          "discordant": 11
+        }
+      },
+      "reported_utility_delta": {
+        "delta": -0.0009765625,
+        "ci95": [
+          -0.00887556363218144,
+          0.00692243863218144
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": -0.001953125,
+        "ci95": [
+          -0.03601047382152653,
+          0.03210422382152653
+        ]
+      },
+      "timing": {
+        "named_option_faster": 8,
+        "reference_faster": 9,
+        "same": 495
+      },
+      "sum_variant_shard_seconds": 14680.508397579193,
+      "deck_sha256": "0308984ff132ba945f55625ef78e49152377c141780c1d372137d5ee7c94e8fe"
+    },
+    "current__Giants_Boulder_vs_Generic": {
+      "kind": "current_vs_generic",
+      "replace": [
+        [
+          "Giant's Boulder",
+          "Generic 2C Rock"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.033203125,
+        "T2_exact": 0.373046875,
+        "le_T2": 0.40625,
+        "T3_exact": 0.43359375,
+        "le_T3": 0.83984375,
+        "fail_T3": 0.16015625,
+        "utility_lambda_0_5": 0.623046875,
+        "mean_keep": 5.138671875
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "current-minus-generic",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": 0.1953125,
+          "ci95_pp": [
+            -0.1874929657304793,
+            0.5781179657304794
+          ],
+          "favored_only": 1,
+          "reference_only": 0,
+          "discordant": 1
+        },
+        "le_T2": {
+          "delta_pp": -1.3671875,
+          "ci95_pp": [
+            -2.743667271242403,
+            0.009292271242403345
+          ],
+          "favored_only": 3,
+          "reference_only": 10,
+          "discordant": 13
+        },
+        "le_T3": {
+          "delta_pp": -0.78125,
+          "ci95_pp": [
+            -2.213376671119978,
+            0.650876671119978
+          ],
+          "favored_only": 5,
+          "reference_only": 9,
+          "discordant": 14
+        }
+      },
+      "reported_utility_delta": {
+        "delta": -0.0107421875,
+        "ci95": [
+          -0.02203846846700736,
+          0.0005540934670073584
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": -0.048828125,
+        "ci95": [
+          -0.09248024786425146,
+          -0.005176002135748536
+        ]
+      },
+      "timing": {
+        "named_option_faster": 8,
+        "reference_faster": 16,
+        "same": 488
+      },
+      "sum_variant_shard_seconds": 14964.32282280922,
+      "deck_sha256": "edcaff7200863df0639a7b6c2b0155cf25147b1716009c1c578ef7d266b9922c"
+    },
+    "current__Moonsilver_Key_vs_Generic": {
+      "kind": "current_vs_generic",
+      "replace": [
+        [
+          "Moonsilver Key",
+          "Generic 2C Rock"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.359375,
+        "le_T2": 0.39453125,
+        "T3_exact": 0.416015625,
+        "le_T3": 0.810546875,
+        "fail_T3": 0.189453125,
+        "utility_lambda_0_5": 0.6025390625,
+        "mean_keep": 5.00390625
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "current-minus-generic",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": -0.0,
+          "ci95_pp": [
+            -0.0,
+            -0.0
+          ],
+          "favored_only": 0,
+          "reference_only": 0,
+          "discordant": 0
+        },
+        "le_T2": {
+          "delta_pp": -0.1953125,
+          "ci95_pp": [
+            -2.032900465110454,
+            1.6422754651104539
+          ],
+          "favored_only": 11,
+          "reference_only": 12,
+          "discordant": 23
+        },
+        "le_T3": {
+          "delta_pp": 2.1484375,
+          "ci95_pp": [
+            0.4886152756133369,
+            3.808259724386663
+          ],
+          "favored_only": 15,
+          "reference_only": 4,
+          "discordant": 19
+        }
+      },
+      "reported_utility_delta": {
+        "delta": 0.009765625,
+        "ci95": [
+          -0.004024150439386118,
+          0.02355540043938612
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": 0.0859375,
+        "ci95": [
+          0.03960303061639025,
+          0.13227196938360974
+        ]
+      },
+      "timing": {
+        "named_option_faster": 22,
+        "reference_faster": 15,
+        "same": 475
+      },
+      "sum_variant_shard_seconds": 16154.64028763771,
+      "deck_sha256": "7230fd2fefb6f0390d3b8e6406f1c75a4e2c48857d4b84945f982c550c245217"
+    },
+    "current__Candelabra_vs_Generic": {
+      "kind": "current_vs_generic",
+      "replace": [
+        [
+          "Candelabra of Tawnos",
+          "Generic 2C Rock"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.361328125,
+        "le_T2": 0.396484375,
+        "T3_exact": 0.42578125,
+        "le_T3": 0.822265625,
+        "fail_T3": 0.177734375,
+        "utility_lambda_0_5": 0.609375,
+        "mean_keep": 5.115234375
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "current-minus-generic",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": -0.0,
+          "ci95_pp": [
+            -0.0,
+            -0.0
+          ],
+          "favored_only": 0,
+          "reference_only": 0,
+          "discordant": 0
+        },
+        "le_T2": {
+          "delta_pp": -0.390625,
+          "ci95_pp": [
+            -1.4738919482109527,
+            0.6926419482109527
+          ],
+          "favored_only": 3,
+          "reference_only": 5,
+          "discordant": 8
+        },
+        "le_T3": {
+          "delta_pp": 0.9765625,
+          "ci95_pp": [
+            -0.03369404792054383,
+            1.986819047920544
+          ],
+          "favored_only": 6,
+          "reference_only": 1,
+          "discordant": 7
+        }
+      },
+      "reported_utility_delta": {
+        "delta": 0.0029296875,
+        "ci95": [
+          -0.004965682324722701,
+          0.010825057324722701
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": -0.025390625,
+        "ci95": [
+          -0.0576027937872019,
+          0.0068215437872019
+        ]
+      },
+      "timing": {
+        "named_option_faster": 8,
+        "reference_faster": 6,
+        "same": 498
+      },
+      "sum_variant_shard_seconds": 14099.267401695251,
+      "deck_sha256": "a62aba8016a4f61b6f57f83429338ffca22411394b262ffe10c6b42ab9e51d28"
+    },
+    "current__Implements_vs_Generic": {
+      "kind": "current_vs_generic",
+      "replace": [
+        [
+          "Implements of Sacrifice",
+          "Generic 2C Rock"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.361328125,
+        "le_T2": 0.396484375,
+        "T3_exact": 0.42578125,
+        "le_T3": 0.822265625,
+        "fail_T3": 0.177734375,
+        "utility_lambda_0_5": 0.609375,
+        "mean_keep": 5.0859375
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "current-minus-generic",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": -0.0,
+          "ci95_pp": [
+            -0.0,
+            -0.0
+          ],
+          "favored_only": 0,
+          "reference_only": 0,
+          "discordant": 0
+        },
+        "le_T2": {
+          "delta_pp": -0.390625,
+          "ci95_pp": [
+            -1.6018726511610448,
+            0.8206226511610449
+          ],
+          "favored_only": 4,
+          "reference_only": 6,
+          "discordant": 10
+        },
+        "le_T3": {
+          "delta_pp": 0.9765625,
+          "ci95_pp": [
+            -0.1698544764850882,
+            2.1229794764850882
+          ],
+          "favored_only": 7,
+          "reference_only": 2,
+          "discordant": 9
+        }
+      },
+      "reported_utility_delta": {
+        "delta": 0.0029296875,
+        "ci95": [
+          -0.006255130626719091,
+          0.012114505626719091
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": 0.00390625,
+        "ci95": [
+          -0.03441023794383773,
+          0.04222273794383773
+        ]
+      },
+      "timing": {
+        "named_option_faster": 9,
+        "reference_faster": 8,
+        "same": 495
+      },
+      "sum_variant_shard_seconds": 16108.017855882645,
+      "deck_sha256": "2b3ad8fddf4a68c4d1baf6f9828e92b691c25f4d00b94b6fc4df8863855ec6a7"
+    },
+    "current__Jeweled_Amulet_vs_Generic": {
+      "kind": "current_vs_generic",
+      "replace": [
+        [
+          "Jeweled Amulet",
+          "Generic 2C Rock"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.033203125,
+        "T2_exact": 0.3515625,
+        "le_T2": 0.384765625,
+        "T3_exact": 0.447265625,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6083984375,
+        "mean_keep": 5.091796875
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "current-minus-generic",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": 0.1953125,
+          "ci95_pp": [
+            -0.1874929657304793,
+            0.5781179657304794
+          ],
+          "favored_only": 1,
+          "reference_only": 0,
+          "discordant": 1
+        },
+        "le_T2": {
+          "delta_pp": 0.78125,
+          "ci95_pp": [
+            -0.5443944511166303,
+            2.1068944511166303
+          ],
+          "favored_only": 8,
+          "reference_only": 4,
+          "discordant": 12
+        },
+        "le_T3": {
+          "delta_pp": -0.0,
+          "ci95_pp": [
+            -1.2117210721879794,
+            1.2117210721879794
+          ],
+          "favored_only": 5,
+          "reference_only": 5,
+          "discordant": 10
+        }
+      },
+      "reported_utility_delta": {
+        "delta": 0.00390625,
+        "ci95": [
+          -0.005473588430001841,
+          0.013286088430001841
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": -0.001953125,
+        "ci95": [
+          -0.03423998877163913,
+          0.030333738771639127
+        ]
+      },
+      "timing": {
+        "named_option_faster": 14,
+        "reference_faster": 8,
+        "same": 490
+      },
+      "sum_variant_shard_seconds": 16383.878484487534,
+      "deck_sha256": "9a5688e0b97855103873e32cd2824605ba91df1185698888054b2e6d970a044b"
+    },
+    "current__Basalt_Monolith_vs_Generic": {
+      "kind": "current_vs_generic",
+      "replace": [
+        [
+          "Basalt Monolith",
+          "Generic 2C Rock"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.3671875,
+        "le_T2": 0.40234375,
+        "T3_exact": 0.423828125,
+        "le_T3": 0.826171875,
+        "fail_T3": 0.173828125,
+        "utility_lambda_0_5": 0.6142578125,
+        "mean_keep": 5.048828125
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "current-minus-generic",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": -0.0,
+          "ci95_pp": [
+            -0.0,
+            -0.0
+          ],
+          "favored_only": 0,
+          "reference_only": 0,
+          "discordant": 0
+        },
+        "le_T2": {
+          "delta_pp": -0.9765625,
+          "ci95_pp": [
+            -2.244602513300088,
+            0.2914775133000884
+          ],
+          "favored_only": 3,
+          "reference_only": 8,
+          "discordant": 11
+        },
+        "le_T3": {
+          "delta_pp": 0.5859375,
+          "ci95_pp": [
+            -1.0835319301251967,
+            2.2554069301251967
+          ],
+          "favored_only": 11,
+          "reference_only": 8,
+          "discordant": 19
+        }
+      },
+      "reported_utility_delta": {
+        "delta": -0.001953125,
+        "ci95": [
+          -0.013123357728915807,
+          0.009217107728915807
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": 0.041015625,
+        "ci95": [
+          -0.004345274618546342,
+          0.08637652461854634
+        ]
+      },
+      "timing": {
+        "named_option_faster": 12,
+        "reference_faster": 16,
+        "same": 484
+      },
+      "sum_variant_shard_seconds": 15107.780133485794,
+      "deck_sha256": "f2689e546db1ffdbe4b77328577f22bcaebec31ce049a5e019c90a66549c3a51"
+    },
+    "current__The_Mind_Stone_vs_Generic": {
+      "kind": "current_vs_generic",
+      "replace": [
+        [
+          "The Mind Stone",
+          "Generic 2C Rock"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.365234375,
+        "le_T2": 0.400390625,
+        "T3_exact": 0.431640625,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6162109375,
+        "mean_keep": 5.087890625
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "current-minus-generic",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": -0.0,
+          "ci95_pp": [
+            -0.0,
+            -0.0
+          ],
+          "favored_only": 0,
+          "reference_only": 0,
+          "discordant": 0
+        },
+        "le_T2": {
+          "delta_pp": -0.78125,
+          "ci95_pp": [
+            -1.8629274140484569,
+            0.30042741404845713
+          ],
+          "favored_only": 2,
+          "reference_only": 6,
+          "discordant": 8
+        },
+        "le_T3": {
+          "delta_pp": -0.0,
+          "ci95_pp": [
+            -1.433727707585419,
+            1.433727707585419
+          ],
+          "favored_only": 7,
+          "reference_only": 7,
+          "discordant": 14
+        }
+      },
+      "reported_utility_delta": {
+        "delta": -0.00390625,
+        "ci95": [
+          -0.012886229353485032,
+          0.005073729353485032
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": 0.001953125,
+        "ci95": [
+          -0.034599510521467675,
+          0.038505760521467675
+        ]
+      },
+      "timing": {
+        "named_option_faster": 9,
+        "reference_faster": 13,
+        "same": 490
+      },
+      "sum_variant_shard_seconds": 16168.301265716553,
+      "deck_sha256": "4df69b238b6657ac22cc8a5030f6b5b2ec84ce2e40d986dac0656fdb3229dda0"
+    },
+    "current__Everflowing_Chalice_vs_Generic": {
+      "kind": "current_vs_generic",
+      "replace": [
+        [
+          "Everflowing Chalice",
+          "Generic 2C Rock"
+        ]
+      ],
+      "simulated_variant_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.361328125,
+        "le_T2": 0.396484375,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.8359375,
+        "fail_T3": 0.1640625,
+        "utility_lambda_0_5": 0.6162109375,
+        "mean_keep": 5.111328125
+      },
+      "current_baseline_arm": {
+        "n": 512,
+        "T1": 0.03515625,
+        "T2_exact": 0.357421875,
+        "le_T2": 0.392578125,
+        "T3_exact": 0.439453125,
+        "le_T3": 0.83203125,
+        "fail_T3": 0.16796875,
+        "utility_lambda_0_5": 0.6123046875,
+        "mean_keep": 5.08984375
+      },
+      "reported_orientation": "current-minus-generic",
+      "reported_delta": {
+        "T1": {
+          "delta_pp": -0.0,
+          "ci95_pp": [
+            -0.0,
+            -0.0
+          ],
+          "favored_only": 0,
+          "reference_only": 0,
+          "discordant": 0
+        },
+        "le_T2": {
+          "delta_pp": -0.390625,
+          "ci95_pp": [
+            -1.3286088430001841,
+            0.5473588430001841
+          ],
+          "favored_only": 2,
+          "reference_only": 4,
+          "discordant": 6
+        },
+        "le_T3": {
+          "delta_pp": -0.390625,
+          "ci95_pp": [
+            -1.6018726511610448,
+            0.8206226511610449
+          ],
+          "favored_only": 4,
+          "reference_only": 6,
+          "discordant": 10
+        }
+      },
+      "reported_utility_delta": {
+        "delta": -0.00390625,
+        "ci95": [
+          -0.012027663031066305,
+          0.004215163031066305
+        ]
+      },
+      "reported_mean_keep_delta": {
+        "delta_cards": -0.021484375,
+        "ci95": [
+          -0.055056631352407015,
+          0.012087881352407015
+        ]
+      },
+      "timing": {
+        "named_option_faster": 5,
+        "reference_faster": 10,
+        "same": 497
+      },
+      "sum_variant_shard_seconds": 16079.635967731476,
+      "deck_sha256": "707e1784e67088ba848e2cdeb0a20f2e66117fa90277ac2ddf8e2f0c18adc38a"
+    }
+  }
+}
