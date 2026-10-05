@@ -1,0 +1,84 @@
+name: DACK core3 fourth-card N512
+
+on:
+  push:
+    branches:
+      - dack-full-deck-accel-calibration-20261003
+    paths:
+      - .github/workflows/dack_core3_fourth_n512.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dack-core3-fourth-n512
+  cancel-in-progress: true
+
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 32
+      matrix:
+        variant:
+          - "ablate__Final4_revert_Voltaic_to_Candelabra"
+          - "package__Core3_plus_Voltaic_over_Basalt"
+          - "package__Core3_plus_CloudKey_over_TheMindStone"
+          - "package__Core3_plus_Extraplanar_over_TheMindStone"
+          - "package__Core3_plus_Helm_over_Coalition"
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run paired full-deck shard
+        run: |
+          mkdir -p shard
+          python dack_full_deck_accel_n512_batch.py \
+            --variant "${{ matrix.variant }}" \
+            --shard ${{ matrix.shard }} \
+            --games 32 \
+            --out "shard/result_${{ strategy.job-index }}.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "dack-core3-fourth-${{ strategy.job-index }}"
+          path: "shard/*.json"
+          retention-days: 14
+
+  pool:
+    needs: simulate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-core3-fourth-*
+          path: shards
+          merge-multiple: true
+      - name: Pool paired fourth-card tests
+        run: |
+          mkdir -p results
+          python pool_dack_core3_fourth_n512.py \
+            --glob 'shards/*.json' \
+            --expected-games 512 \
+            --json-out results/dack_core3_fourth_n512.json \
+            --csv-out results/dack_core3_fourth_n512.csv
+      - name: Commit results
+        run: |
+          git config user.name "DACK Simulator Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -f results/dack_core3_fourth_n512.json results/dack_core3_fourth_n512.csv
+          git commit -m "Add core3 fourth-card N512 results" || exit 0
+          git pull --rebase origin dack-full-deck-accel-calibration-20261003
+          git push origin HEAD:dack-full-deck-accel-calibration-20261003
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-core3-fourth-n512-pooled
+          path: |
+            results/dack_core3_fourth_n512.json
+            results/dack_core3_fourth_n512.csv
+          retention-days: 30
