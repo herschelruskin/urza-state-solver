@@ -98,6 +98,24 @@ VARIANTS={
         ("Liquimetal Torque","Bucknard's Everfull Purse"),("Pearl Medallion","Krark-Clan Ironworks"),
         ("Giant's Boulder","Manifold Key")
     ]},
+
+    # Core3 + fourth-card promotion tests.
+    "package__Core3_plus_Voltaic_over_Basalt":{"kind":"package_vs_current","replace":[
+        ("Liquimetal Torque","Bucknard's Everfull Purse"),("Pearl Medallion","Krark-Clan Ironworks"),
+        ("Giant's Boulder","Manifold Key"),("Basalt Monolith","Voltaic Key")
+    ]},
+    "package__Core3_plus_CloudKey_over_TheMindStone":{"kind":"package_vs_current","replace":[
+        ("Liquimetal Torque","Bucknard's Everfull Purse"),("Pearl Medallion","Krark-Clan Ironworks"),
+        ("Giant's Boulder","Manifold Key"),("The Mind Stone","Cloud Key")
+    ]},
+    "package__Core3_plus_Extraplanar_over_TheMindStone":{"kind":"package_vs_current","replace":[
+        ("Liquimetal Torque","Bucknard's Everfull Purse"),("Pearl Medallion","Krark-Clan Ironworks"),
+        ("Giant's Boulder","Manifold Key"),("The Mind Stone","Extraplanar Lens")
+    ]},
+    "package__Core3_plus_Helm_over_Coalition":{"kind":"package_vs_current","replace":[
+        ("Liquimetal Torque","Bucknard's Everfull Purse"),("Pearl Medallion","Krark-Clan Ironworks"),
+        ("Giant's Boulder","Manifold Key"),("Coalition Relic","Helm of Awakening")
+    ]},
 }
 
 def build_deck(variant):
