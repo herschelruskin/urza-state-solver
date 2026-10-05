@@ -1,0 +1,130 @@
+name: DACK core2 broad slot search N128
+
+on:
+  push:
+    branches:
+      - dack-full-deck-accel-calibration-20261003
+    paths:
+      - .github/workflows/dack_core2_slot_search_n128.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dack-core2-slot-search-n128
+  cancel-in-progress: true
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run fixed core2 baseline
+        run: |
+          mkdir -p shard
+          python dack_core2_slot_search_n128.py \
+            --candidate "__BASE__" \
+            --cut "__NONE__" \
+            --shard ${{ matrix.shard }} \
+            --games 64 \
+            --out "shard/CORE2_BASE__${{ matrix.shard }}.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "dack-core2-base-${{ matrix.shard }}"
+          path: "shard/*.json"
+          retention-days: 14
+
+  grid:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 32
+      matrix:
+        candidate:
+          - "Manifold Key"
+          - "Voltaic Key"
+          - "Helm of Awakening"
+          - "Inspiring Statuary"
+          - "Sonic Screwdriver"
+          - "Marble Diamond"
+          - "Pentad Prism"
+          - "Extraplanar Lens"
+          - "Cloud Key"
+          - "Kozilek's Command"
+        cut:
+          - "Giant's Boulder"
+          - "Prismatic Lens"
+          - "Mind Stone"
+          - "The Mind Stone"
+          - "Everflowing Chalice"
+          - "Implements of Sacrifice"
+          - "Tooth of Ramos"
+          - "Coalition Relic"
+          - "Basalt Monolith"
+          - "Jeweled Amulet"
+        shard: [0, 1]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run core2 candidate/cut shard
+        run: |
+          mkdir -p shard
+          SAFE_CANDIDATE=$(printf '%s' "${{ matrix.candidate }}" | tr " /'"" '_____')
+          SAFE_CUT=$(printf '%s' "${{ matrix.cut }}" | tr " /'"" '_____')
+          python dack_core2_slot_search_n128.py \
+            --candidate "${{ matrix.candidate }}" \
+            --cut "${{ matrix.cut }}" \
+            --shard ${{ matrix.shard }} \
+            --games 64 \
+            --out "shard/${SAFE_CANDIDATE}__OVER__${SAFE_CUT}__${{ matrix.shard }}.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "dack-core2-grid-${{ strategy.job-index }}"
+          path: "shard/*.json"
+          retention-days: 14
+
+  pool:
+    needs: [baseline, grid]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-core2-*
+          path: shards
+          merge-multiple: true
+      - name: Pool broad paired search
+        run: |
+          mkdir -p results
+          python pool_dack_core2_slot_search_n128.py \
+            --glob 'shards/*.json' \
+            --expected-games 128 \
+            --json-out results/dack_core2_slot_search_n128.json \
+            --csv-out results/dack_core2_slot_search_n128.csv
+      - name: Commit results
+        run: |
+          git config user.name "DACK Simulator Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -f results/dack_core2_slot_search_n128.json results/dack_core2_slot_search_n128.csv
+          git commit -m "Add broad core2 slot-search N128 results" || exit 0
+          git pull --rebase origin dack-full-deck-accel-calibration-20261003
+          git push origin HEAD:dack-full-deck-accel-calibration-20261003
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-core2-slot-search-n128-pooled
+          path: |
+            results/dack_core2_slot_search_n128.json
+            results/dack_core2_slot_search_n128.csv
+          retention-days: 30
