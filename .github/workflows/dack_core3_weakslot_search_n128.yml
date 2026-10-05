@@ -1,0 +1,131 @@
+name: DACK core3 weak-slot search N128
+
+on:
+  push:
+    branches:
+      - dack-full-deck-accel-calibration-20261003
+    paths:
+      - .github/workflows/dack_core3_weakslot_search_n128.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dack-core3-weakslot-search-n128
+  cancel-in-progress: true
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run core3 baseline
+        run: |
+          mkdir -p shard
+          python dack_core3_weakslot_search_n128.py \
+            --candidate "__BASE__" \
+            --cut "__NONE__" \
+            --shard ${{ matrix.shard }} \
+            --games 64 \
+            --out "shard/core3_base_${{ matrix.shard }}.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "dack-core3-weak-base-${{ matrix.shard }}"
+          path: "shard/*.json"
+          retention-days: 14
+
+  grid:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 32
+      matrix:
+        candidate:
+          - "Helm of Awakening"
+          - "Inspiring Statuary"
+          - "Marble Diamond"
+          - "Sonic Screwdriver"
+          - "Urza's Incubator"
+          - "Worn Powerstone"
+          - "Chromatic Lantern"
+          - "Honor-Worn Shaku"
+          - "Component Pouch"
+          - "Oketra's Monument"
+          - "Cloud Key"
+          - "Pentad Prism"
+          - "Thran Dynamo"
+          - "Extraplanar Lens"
+          - "Kozilek's Command"
+          - "Voltaic Key"
+        cut:
+          - "Prismatic Lens"
+          - "The Mind Stone"
+          - "Everflowing Chalice"
+          - "Mind Stone"
+          - "Tooth of Ramos"
+          - "Basalt Monolith"
+          - "Implements of Sacrifice"
+        shard: [0, 1]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run weak-slot candidate shard
+        run: |
+          mkdir -p shard
+          python dack_core3_weakslot_search_n128.py \
+            --candidate "${{ matrix.candidate }}" \
+            --cut "${{ matrix.cut }}" \
+            --shard ${{ matrix.shard }} \
+            --games 64 \
+            --out "shard/result_${{ strategy.job-index }}.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "dack-core3-weak-grid-${{ strategy.job-index }}"
+          path: "shard/*.json"
+          retention-days: 14
+
+  pool:
+    needs: [baseline, grid]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-core3-weak-*
+          path: shards
+          merge-multiple: true
+      - name: Pool weak-slot search
+        run: |
+          mkdir -p results
+          python pool_dack_core3_weakslot_search_n128.py \
+            --glob 'shards/*.json' \
+            --expected-games 128 \
+            --json-out results/dack_core3_weakslot_search_n128.json \
+            --csv-out results/dack_core3_weakslot_search_n128.csv
+      - name: Commit results
+        run: |
+          git config user.name "DACK Simulator Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -f results/dack_core3_weakslot_search_n128.json results/dack_core3_weakslot_search_n128.csv
+          git commit -m "Add core3 weak-slot search N128 results" || exit 0
+          git pull --rebase origin dack-full-deck-accel-calibration-20261003
+          git push origin HEAD:dack-full-deck-accel-calibration-20261003
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-core3-weakslot-search-n128-pooled
+          path: |
+            results/dack_core3_weakslot_search_n128.json
+            results/dack_core3_weakslot_search_n128.csv
+          retention-days: 30
