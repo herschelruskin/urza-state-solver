@@ -80,14 +80,12 @@ jobs:
       - name: Run core2 candidate/cut shard
         run: |
           mkdir -p shard
-          SAFE_CANDIDATE=$(printf '%s' "${{ matrix.candidate }}" | tr " /'"" '_____')
-          SAFE_CUT=$(printf '%s' "${{ matrix.cut }}" | tr " /'"" '_____')
           python dack_core2_slot_search_n128.py \
             --candidate "${{ matrix.candidate }}" \
             --cut "${{ matrix.cut }}" \
             --shard ${{ matrix.shard }} \
             --games 64 \
-            --out "shard/${SAFE_CANDIDATE}__OVER__${SAFE_CUT}__${{ matrix.shard }}.json"
+            --out "shard/grid_${{ strategy.job-index }}.json"
       - uses: actions/upload-artifact@v4
         with:
           name: "dack-core2-grid-${{ strategy.job-index }}"
