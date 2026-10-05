@@ -1,0 +1,245 @@
+{
+  "design": {
+    "paired": true,
+    "n_pairs": 1024,
+    "three_card_package": "Bucknard's Everfull Purse + Krark-Clan Ironworks + Manifold Key; keep Candelabra of Tawnos",
+    "four_card_package": "Bucknard's Everfull Purse + Krark-Clan Ironworks + Manifold Key + Voltaic Key; cut Candelabra of Tawnos",
+    "same_game_ids_seeds_seats": true,
+    "baseline": "frozen v0.76 current-99 first 1024 games"
+  },
+  "three_card_summary": {
+    "n": 1024,
+    "T1": 0.04296875,
+    "T2_exact": 0.384765625,
+    "le_T2": 0.427734375,
+    "T3_exact": 0.42578125,
+    "le_T3": 0.853515625,
+    "fail_T3": 0.146484375,
+    "utility_lambda_0_5": 0.640625,
+    "mean_keep": 5.2880859375
+  },
+  "four_card_summary": {
+    "n": 1024,
+    "T1": 0.041015625,
+    "T2_exact": 0.388671875,
+    "le_T2": 0.4296875,
+    "T3_exact": 0.4169921875,
+    "le_T3": 0.8466796875,
+    "fail_T3": 0.1533203125,
+    "utility_lambda_0_5": 0.63818359375,
+    "mean_keep": 5.2783203125
+  },
+  "direct_three_minus_four": {
+    "T1": {
+      "three_minus_four_rate": 0.001953125,
+      "three_minus_four_pp": 0.1953125,
+      "paired_se": 0.001953125,
+      "paired_ci95_pp": [
+        -0.1874929657304793,
+        0.5781179657304794
+      ],
+      "three_only_success": 3,
+      "four_only_success": 1,
+      "both_success": 41,
+      "neither_success": 979,
+      "discordant_pairs": 4
+    },
+    "le_T2": {
+      "three_minus_four_rate": -0.001953125,
+      "three_minus_four_pp": -0.1953125,
+      "paired_se": 0.006331646400540725,
+      "paired_ci95_pp": [
+        -1.4362923907902492,
+        1.0456673907902492
+      ],
+      "three_only_success": 20,
+      "four_only_success": 22,
+      "both_success": 418,
+      "neither_success": 564,
+      "discordant_pairs": 42
+    },
+    "le_T3": {
+      "three_minus_four_rate": 0.0068359375,
+      "three_minus_four_pp": 0.68359375,
+      "paired_se": 0.005608594896591519,
+      "paired_ci95_pp": [
+        -0.4156706501194525,
+        1.7828581501194527
+      ],
+      "three_only_success": 20,
+      "four_only_success": 13,
+      "both_success": 854,
+      "neither_success": 137,
+      "discordant_pairs": 33
+    }
+  },
+  "utility_three_minus_four": {
+    "mean_delta": 0.00244140625,
+    "se": 0.0047608905775516205,
+    "ci95": [
+      -0.006889767816337274,
+      0.011772580316337274
+    ]
+  },
+  "mean_keep_three_minus_four": {
+    "mean_delta": 0.009765625,
+    "se": 0.015321226708323933,
+    "ci95": [
+      -0.020263427547288073,
+      0.039794677547288076
+    ]
+  },
+  "win_timing": {
+    "three_faster": 36,
+    "four_faster": 32,
+    "same": 956
+  },
+  "vs_current": {
+    "three_card": {
+      "summary": {
+        "n": 1024,
+        "T1": 0.04296875,
+        "T2_exact": 0.384765625,
+        "le_T2": 0.427734375,
+        "T3_exact": 0.42578125,
+        "le_T3": 0.853515625,
+        "fail_T3": 0.146484375,
+        "utility_lambda_0_5": 0.640625,
+        "mean_keep": 5.2880859375
+      },
+      "delta_vs_current": {
+        "T1": {
+          "three_minus_four_rate": 0.001953125,
+          "three_minus_four_pp": 0.1953125,
+          "paired_se": 0.002762810790315445,
+          "paired_ci95_pp": [
+            -0.34618846451169155,
+            0.7368134645116916
+          ],
+          "three_only_success": 5,
+          "four_only_success": 3,
+          "both_success": 39,
+          "neither_success": 977,
+          "discordant_pairs": 8
+        },
+        "le_T2": {
+          "three_minus_four_rate": 0.044921875,
+          "three_minus_four_pp": 4.4921875,
+          "paired_se": 0.008513912491360357,
+          "paired_ci95_pp": [
+            2.8234913149408016,
+            6.160883685059199
+          ],
+          "three_only_success": 62,
+          "four_only_success": 16,
+          "both_success": 376,
+          "neither_success": 570,
+          "discordant_pairs": 78
+        },
+        "le_T3": {
+          "three_minus_four_rate": 0.0244140625,
+          "three_minus_four_pp": 2.44140625,
+          "paired_se": 0.007840075261738402,
+          "paired_ci95_pp": [
+            0.9047797350909295,
+            3.97803276490907
+          ],
+          "three_only_success": 45,
+          "four_only_success": 20,
+          "both_success": 829,
+          "neither_success": 130,
+          "discordant_pairs": 65
+        }
+      },
+      "utility_delta_vs_current": {
+        "mean_delta": 0.03466796875,
+        "se": 0.006482368376833478,
+        "ci95": [
+          0.021962760196885013,
+          0.04737317730311499
+        ]
+      },
+      "mean_keep_delta_vs_current": {
+        "mean_delta": 0.2275390625,
+        "se": 0.024832639467629057,
+        "ci95": [
+          0.17886798350237915,
+          0.27621014149762085
+        ]
+      }
+    },
+    "four_card": {
+      "summary": {
+        "n": 1024,
+        "T1": 0.041015625,
+        "T2_exact": 0.388671875,
+        "le_T2": 0.4296875,
+        "T3_exact": 0.4169921875,
+        "le_T3": 0.8466796875,
+        "fail_T3": 0.1533203125,
+        "utility_lambda_0_5": 0.63818359375,
+        "mean_keep": 5.2783203125
+      },
+      "delta_vs_current": {
+        "T1": {
+          "three_minus_four_rate": 0.0,
+          "three_minus_four_pp": 0.0,
+          "paired_se": 0.0027634855517836366,
+          "paired_ci95_pp": [
+            -0.5416332153292726,
+            0.5416332153292726
+          ],
+          "three_only_success": 4,
+          "four_only_success": 4,
+          "both_success": 38,
+          "neither_success": 978,
+          "discordant_pairs": 8
+        },
+        "le_T2": {
+          "three_minus_four_rate": 0.046875,
+          "three_minus_four_pp": 4.6875,
+          "paired_se": 0.00946014608782193,
+          "paired_ci95_pp": [
+            2.833345437938153,
+            6.541654562061846
+          ],
+          "three_only_success": 72,
+          "four_only_success": 24,
+          "both_success": 368,
+          "neither_success": 560,
+          "discordant_pairs": 96
+        },
+        "le_T3": {
+          "three_minus_four_rate": 0.017578125,
+          "three_minus_four_pp": 1.7578125,
+          "paired_se": 0.008499885544711807,
+          "paired_ci95_pp": [
+            0.09186554596522373,
+            3.4237594540347764
+          ],
+          "three_only_success": 47,
+          "four_only_success": 29,
+          "both_success": 820,
+          "neither_success": 128,
+          "discordant_pairs": 76
+        }
+      },
+      "utility_delta_vs_current": {
+        "mean_delta": 0.0322265625,
+        "se": 0.007241737710850906,
+        "ci95": [
+          0.018033017401246687,
+          0.04642010759875331
+        ]
+      },
+      "mean_keep_delta_vs_current": {
+        "mean_delta": 0.2177734375,
+        "se": 0.02757323922622479,
+        "ci95": [
+          0.16373088167949235,
+          0.27181599332050765
+        ]
+      }
+    }
+  }
+}
