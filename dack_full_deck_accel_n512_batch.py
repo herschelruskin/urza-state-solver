@@ -116,6 +116,20 @@ VARIANTS={
         ("Liquimetal Torque","Bucknard's Everfull Purse"),("Pearl Medallion","Krark-Clan Ironworks"),
         ("Giant's Boulder","Manifold Key"),("Coalition Relic","Helm of Awakening")
     ]},
+
+    # Weak-slot promotions after N128 broad search.
+    "package__Core3_plus_Incubator_over_Prismatic":{"kind":"package_vs_current","replace":[
+        ("Liquimetal Torque","Bucknard's Everfull Purse"),("Pearl Medallion","Krark-Clan Ironworks"),
+        ("Giant's Boulder","Manifold Key"),("Prismatic Lens","Urza's Incubator")
+    ]},
+    "package__Core3_plus_Lantern_over_Everflowing":{"kind":"package_vs_current","replace":[
+        ("Liquimetal Torque","Bucknard's Everfull Purse"),("Pearl Medallion","Krark-Clan Ironworks"),
+        ("Giant's Boulder","Manifold Key"),("Everflowing Chalice","Chromatic Lantern")
+    ]},
+    "package__Core3_plus_Sonic_over_Everflowing":{"kind":"package_vs_current","replace":[
+        ("Liquimetal Torque","Bucknard's Everfull Purse"),("Pearl Medallion","Krark-Clan Ironworks"),
+        ("Giant's Boulder","Manifold Key"),("Everflowing Chalice","Sonic Screwdriver")
+    ]},
 }
 
 def build_deck(variant):
