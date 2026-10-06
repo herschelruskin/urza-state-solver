@@ -551,6 +551,17 @@ def selftest():
     lib=tuple(d.COMBO_CREATURES)
     s=d.State(1,(),lib,(d.Perm("Urza's Incubator",aux="INCUBATOR:Human"),),w=2,c=2)
     assert d.can_cast_dack(s), "Incubator Human reduction missing"
+    s=d.State(1,(),lib,(d.Perm("Urza's Incubator",aux="INCUBATOR:Human"),),w=2,c=1)
+    assert not d.can_cast_dack(s), "Incubator reduced more than two generic"
+    # The Human choice is made only as Incubator enters; a Gardens copy does not make
+    # a new creature-type choice and therefore must not inherit the source's Human choice.
+    s=d.State(1,(),lib,(d.Perm("The Mycosynth Gardens",aux="COPY:Urza's Incubator"),),w=2,c=2)
+    assert not d.can_cast_dack(s), "Gardens copy incorrectly inherited Incubator choice"
+    assert "Urza's Incubator" not in d.MOONSILVER_MANA_ARTIFACTS, "Incubator is not a mana-ability target"
+    s=d.State(1,("Urza's Incubator",),lib,c=3)
+    inc_out=[q for q in d.cast_actions(s)
+             if any(p.name=="Urza's Incubator" and p.aux=="INCUBATOR:Human" for p in q.battlefield)]
+    assert inc_out, "Incubator cast did not record Human as-enter choice"
     s=d.State(1,(),lib,(d.Perm("Oketra's Monument"),),w=2,c=3)
     assert d.can_cast_dack(s), "Oketra reduction missing"
     s=d.State(1,(),lib,(d.Perm("Inspiring Statuary"),d.Perm(GENERIC_A)),w=2,c=2)
