@@ -1,0 +1,99 @@
+name: DACK compact reproducibility audit N128
+
+on:
+  push:
+    branches:
+      - dack-full-deck-accel-calibration-20261003
+    paths:
+      - .github/workflows/dack_repro_audit_n128.yml
+
+permissions:
+  contents: write
+
+jobs:
+  independent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        variant:
+          - "ablate__Final4_revert_Voltaic_to_Candelabra"
+          - "package__Core3_plus_Incubator_over_Prismatic"
+          - "package__Core3_plus_Lantern_over_Everflowing"
+          - "package__Core3_plus_Sonic_over_Everflowing"
+        shard: [0,1,2,3]
+    env:
+      PYTHONHASHSEED: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run independent compact shard
+        run: |
+          mkdir -p out
+          python dack_core3_weak_promotions_n512_compact.py \
+            --variant "${{ matrix.variant }}" \
+            --shard ${{ matrix.shard }} \
+            --games 32 \
+            --out "out/ind_${{ strategy.job-index }}.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "dack-repro-ind-${{ strategy.job-index }}"
+          path: "out/*.json"
+
+  bundled:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        shard: [0,1,2,3]
+    env:
+      PYTHONHASHSEED: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run bundled compact shard
+        run: |
+          mkdir -p out
+          python dack_core3_promotions_compact_n512.py \
+            --shard ${{ matrix.shard }} \
+            --games 32 \
+            --out "out/bun_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: "dack-repro-bun-${{ matrix.shard }}"
+          path: "out/*.json.gz"
+
+  compare:
+    needs: [independent,bundled]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-repro-*
+          path: audit
+          merge-multiple: true
+      - name: Compare exact rows
+        run: |
+          mkdir -p results
+          python compare_dack_repro_audit.py \
+            --ind-glob 'audit/ind_*.json' \
+            --bun-glob 'audit/bun_*.json.gz' \
+            --out results/dack_repro_audit_n128.json
+      - name: Commit audit
+        if: always()
+        run: |
+          git config user.name "DACK Simulator Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -f results/dack_repro_audit_n128.json || true
+          git commit -m "Add DACK compact reproducibility audit" || exit 0
+          git pull --rebase origin dack-full-deck-accel-calibration-20261003
+          git push origin HEAD:dack-full-deck-accel-calibration-20261003
