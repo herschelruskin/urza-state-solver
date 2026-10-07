@@ -1,0 +1,28 @@
+name: DACK app foundation smoke
+
+on:
+  push:
+    branches:
+      - dack-app-foundation-20261007
+    paths:
+      - dack_simulator/src/dacksim/**
+      - dack_simulator/validation/app_foundation_smoke.py
+      - dack_simulator/pyproject.toml
+      - .github/workflows/dack_app_foundation_smoke.yml
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run app foundation smoke
+        run: python dack_simulator/validation/app_foundation_smoke.py
+      - name: Packaging smoke
+        run: |
+          python -m pip install --quiet ./dack_simulator
+          dacksim init-db /tmp/dack_app_smoke.sqlite
+          dacksim stats /tmp/dack_app_smoke.sqlite
