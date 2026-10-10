@@ -1,0 +1,82 @@
+name: DACK Jeweled Lotus and Mana Crypt paired N1024
+
+on:
+  push:
+    branches:
+      - dack-lotus-crypt-n1024-20261010
+    paths:
+      - .github/workflows/dack_lotus_crypt_n1024.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dack-lotus-crypt-n1024-20261010
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify full-engine Jeweled Lotus and Mana Crypt semantics
+        run: python dack_lotus_crypt_n1024.py --audit
+
+  simulate:
+    needs: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 24
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run matched baseline Lotus Crypt shard
+        run: |
+          mkdir -p shard
+          python dack_lotus_crypt_n1024.py \
+            --shard ${{ matrix.shard }} \
+            --games 16 \
+            --out "shard/dack_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-lotus-crypt-shard-${{ matrix.shard }}
+          path: shard/*.json.gz
+          retention-days: 30
+
+  pool:
+    needs: simulate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-lotus-crypt-shard-*
+          path: shards
+          merge-multiple: true
+      - name: Pool and validate matched N1024 comparison
+        run: |
+          mkdir -p results
+          python pool_dack_lotus_crypt_n1024.py \
+            --glob 'shards/*.json.gz' --expected 1024 \
+            --out results/dack_lotus_crypt_n1024.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-lotus-crypt-n1024-pooled
+          path: |
+            results/dack_lotus_crypt_n1024.json
+            results/dack_lotus_crypt_n1024.csv
+          retention-days: 30
