@@ -1,0 +1,23 @@
+name: DACK Lotus Oracle tap-cost audit
+
+on:
+  push:
+    branches:
+      - dack-lotus-crypt-n1024-20261010
+    paths:
+      - .github/workflows/dack_lotus_oracle_audit.yml
+
+permissions:
+  contents: read
+
+jobs:
+  oracle-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify Jeweled Lotus taps and Gardens copy cannot activate tapped
+        run: python dack_lotus_crypt_n1024.py --audit
