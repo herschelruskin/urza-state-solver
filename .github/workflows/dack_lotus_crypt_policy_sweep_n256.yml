@@ -1,0 +1,73 @@
+name: DACK Lotus Crypt mulligan and tutor policy N256
+on:
+  push:
+    branches:
+      - dack-lotus-crypt-policy-sweep-20261010
+    paths:
+      - .github/workflows/dack_lotus_crypt_policy_sweep_n256.yml
+permissions:
+  contents: read
+concurrency:
+  group: dack-lotus-crypt-policy-sweep-n256
+  cancel-in-progress: false
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate original engine, Lotus and Crypt, tutor preference
+        run: python dack_lotus_crypt_policy_sweep_n256.py --audit
+  simulate:
+    needs: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 24
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run five policy arms on same eight shuffled game IDs
+        run: |
+          mkdir -p shard
+          python dack_lotus_crypt_policy_sweep_n256.py \
+            --shard ${{ matrix.shard }} --games 8 \
+            --out "shard/policy_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-policy-sweep-shard-${{ matrix.shard }}
+          path: shard/*.json.gz
+          retention-days: 30
+  pool:
+    needs: simulate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-policy-sweep-shard-*
+          path: shards
+          merge-multiple: true
+      - name: Verify N256 and pool paired policy results
+        run: |
+          mkdir -p results
+          python pool_dack_lotus_crypt_policy_sweep_n256.py \
+            --glob 'shards/*.json.gz' --expected 256 \
+            --out results/dack_lotus_crypt_policy_sweep_n256.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-lotus-crypt-policy-sweep-n256-pooled
+          path: results/dack_lotus_crypt_policy_sweep_n256.json
+          retention-days: 30
