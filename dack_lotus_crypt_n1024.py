@@ -54,10 +54,11 @@ _original_tap=d.tap_mana_actions
 def tap_mana_actions(s):
     out=list(_original_tap(s))
     for i,p in enumerate(s.battlefield):
+        # Both Mana Crypt and Jeweled Lotus require tapping.
+        # A freshly created, tapped Gardens copy of Lotus cannot sacrifice.
+        if p.tapped: continue
         n=d.effective_name(p)
-        # Crypt has a tap cost; Lotus DOES NOT. In particular, a tapped
-        # Mycosynth Gardens copy of Lotus may sacrifice itself immediately.
-        if n=="Mana Crypt" and not p.tapped:
+        if n=="Mana Crypt":
             bf=list(s.battlefield)
             bf[i]=replace(p,tapped=True)
             out.append(replace(s,battlefield=tuple(bf),c=s.c+2))
@@ -95,8 +96,8 @@ _original_score=d.score
 def score(s):
     x=_original_score(s)
     for p in s.battlefield:
-        if d.effective_name(p)=="Mana Crypt" and not p.tapped: x+=48
-        # A tapped Gardens copy of Lotus can still sacrifice for WWW.
+        if p.tapped: continue
+        if d.effective_name(p)=="Mana Crypt": x+=48
         if d.effective_name(p)=="Jeweled Lotus": x+=72
     return x
 d.score=score
@@ -141,15 +142,15 @@ def validate():
     outs=d.v03_actions(s)
     assert any(any(p.aux=="COPY:Mana Crypt" and p.tapped
                    for p in q.battlefield) for q in outs)
-    # A tapped Lotus-copy still has an untapped-cost-free sacrifice ability.
+    # Lotus requires {T}. A tapped Gardens copy cannot sacrifice until untapped.
     s=d.State(1,(),lib,(d.Perm("The Mycosynth Gardens",True,
                              aux="COPY:Jeweled Lotus"),))
-    q=[x for x in d.tap_mana_actions(s) if x.restricted_dack_white==3]
-    assert q and not q[0].battlefield,"tapped Gardens Lotus sacrifice missing"
-    # Exact all-mana-from-two-cards T1: Gardens -> copy Lotus -> sacrifice both.
-    s=d.State(1,("Jeweled Lotus","The Mycosynth Gardens"),lib)
-    w=d.search_turn(s,beam=240,depth=24)
-    assert d.can_cast_dack(w),"Gardens+Lotus two-card T1 win is pruned"
+    assert not any(x.restricted_dack_white>0 for x in d.tap_mana_actions(s)), (
+        "Tapped Gardens copy illegally sacrifices Jeweled Lotus")
+    s=d.State(1,(),lib,(d.Perm("The Mycosynth Gardens",False,
+                             aux="COPY:Jeweled Lotus"),))
+    assert any(x.restricted_dack_white==3 for x in d.tap_mana_actions(s)), (
+        "Untapped Gardens copy must activate Lotus")
     print("LOTUS_CRYPT_AUDIT_PASS",flush=True)
 
 def run(shard,games,outpath):
