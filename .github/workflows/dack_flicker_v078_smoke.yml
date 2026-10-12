@@ -1,0 +1,25 @@
+name: Dack flicker v0.78 T1-T3 smoke
+on:
+  push:
+    branches:
+      - dack-flicker-current100-t1t3-20261012
+    paths:
+      - 'dack_flicker_*.py'
+      - 'dack_flicker_current100_20261012.txt'
+      - '.github/workflows/dack_flicker_v078_smoke.yml'
+  workflow_dispatch:
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile new code
+        run: python -m py_compile dack_flicker_v078.py dack_flicker_t1t3_batch.py
+      - name: Focused mechanical audit
+        run: python dack_flicker_t1t3_batch.py --audit
+      - name: One full-deck deployment game (tiny integration smoke)
+        run: python dack_flicker_t1t3_batch.py --variant baseline --shard 0 --games 1 --beam 60 --out /tmp/dack_flicker_smoke.json.gz
