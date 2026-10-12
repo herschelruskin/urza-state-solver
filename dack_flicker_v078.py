@@ -60,6 +60,7 @@ BATTLEFRONT_COST = (3,1,0)
 ELIGIBLE_BATTLEFRONT = {
     "Arcane Signet", "Basalt Monolith", "Blind Obedience", "Chrome Mox",
     "Cursed Totem", "Deafening Silence", "Defense Grid", "Disruptor Flute",
+    "Charitable Levy",
     "Fellwar Stone", "Gleaming Splendor", "Grim Monolith", "Jeweled Amulet",
     "Lion's Eye Diamond", "Lotus Petal", "Manifold Key", "Mind Stone",
     "Mirage Mirror", "Moonsilver Key", "Mox Diamond", "Mox Opal",
@@ -200,6 +201,11 @@ def special_actions(s):
         elif n=="Staff of Compleation":
             bf=list(s.battlefield);bf[i]=replace(p,tapped=True)
             out.append(d.draw(replace(s,battlefield=tuple(bf)),1))
+            # Copy the non-mana draw ability with Rings for {2}.
+            if any(d.effective_name(x)=="Rings of Brighthearth" for x in s.battlefield):
+                for paid in d.pay_options(s,2):
+                    bb=list(paid.battlefield);bb[i]=replace(bb[i],tapped=True)
+                    out.append(d.draw(replace(paid,battlefield=tuple(bb)),2))
         elif n=="Throne of Eldraine":
             # Cost is 3 mana of the chosen color, NOT its own restricted 4W.
             for paid in d.pay_options(s,3,0,0):
@@ -207,6 +213,12 @@ def special_actions(s):
                 if used!=3: continue
                 bf=list(paid.battlefield);bf[i]=replace(bf[i],tapped=True)
                 out.append(d.draw(replace(paid,battlefield=tuple(bf)),2))
+                # Copy Throne's draw-two ability if another two generic mana
+                # is available; Rings-copy payment is not restricted by Throne.
+                if any(d.effective_name(x)=="Rings of Brighthearth" for x in s.battlefield):
+                    for copied in d.pay_options(paid,2):
+                        bb=list(copied.battlefield);bb[i]=replace(bb[i],tapped=True)
+                        out.append(d.draw(replace(copied,battlefield=tuple(bb)),4))
     # Mind Stone: {1}, T, sacrifice: draw one. Consumes the mana rock.
     for i,p in enumerate(s.battlefield):
         if d.effective_name(p)!="Mind Stone" or p.tapped:continue
@@ -225,6 +237,12 @@ def special_actions(s):
     if any(d.effective_name(x)=="Gleaming Splendor" for x in s.battlefield):
         for paid in d.pay_options(s,2,1):
             out.append(d.draw(paid,1))
+            if any(d.effective_name(x)=="Rings of Brighthearth" for x in s.battlefield):
+                for copied in d.pay_options(paid,2):
+                    # Both copies target us and an opponent. That opponent
+                    # draws their 2nd card on our turn, triggering one Treasure.
+                    out.append(replace(d.draw(copied,2),
+                                  treasures=copied.treasures+1))
     # Staff: {5} to untap; non-mana ability can be used multiple times.
     for i,p in enumerate(s.battlefield):
         if d.effective_name(p)!="Staff of Compleation" or not p.tapped:continue
@@ -518,6 +536,26 @@ def selftest():
     s=d.State(2,(),("Plains","Sol Ring"),battlefield=(d.Perm("The One Ring"),))
     q=[z for z in d.special_actions(s) if z.hand==("Plains",)]
     assert q and any(z.battlefield[0].counters==1 for z in q)
+    # Every mana-producer card in the frozen deck must have a behavior
+    # that can generate mana in a suitable witness state.
+    representative={"Ancient Den","Ancient Tomb","Arcane Signet",
+        "Basalt Monolith","Blast Zone","Cavern of Souls","Chrome Mox",
+        "City of Traitors","Command Beacon","Crystal Vein",
+        "Eiganjo, Seat of the Empire","Emergence Zone","Fellwar Stone",
+        "Fomori Vault","Gemstone Caverns","Great Hall of the Citadel",
+        "Grim Monolith","Jeweled Amulet","Mana Vault","Mind Stone",
+        "Mishra's Workshop","Mox Diamond","Petrified Hamlet",
+        "Plains","Prismatic Lens","Remote Farm","Ruins of Trokair",
+        "Sol Ring","Staff of Compleation","Talon Gates of Madara",
+        "The Mind Stone","The Mycosynth Gardens","Throne of Eldraine",
+        "Urza's Cave","Urza's Saga"}
+    assert representative <= set(BASE_DECK)
+    for mana_name in representative - {"Jeweled Amulet"}:
+        witness=d.State(2,(),(),battlefield=(d.Perm(mana_name,False,
+                     2 if mana_name=="Remote Farm" else 1),))
+        assert any(z.w+z.c+z.any+z.restricted_artifact+
+                   z.restricted_legend+z.restricted_dack_white > 0
+                   for z in d.tap_mana_actions(witness)),mana_name
     # Fomori Vault converts a card and 3 mana into top-X selection.
     ss=d.State(2,("Plains",),("Mana Vault","Arcane Signet","Sol Ring"),
         battlefield=(d.Perm("Fomori Vault"),d.Perm("Mind Stone")),c=3)
