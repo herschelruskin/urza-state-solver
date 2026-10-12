@@ -79,8 +79,8 @@ def pool(files,expected_n,expected_variant=None):
         "keep_hand_sizes":dict(sorted(Counter(r["keep_n"] for r in all_rows).items(),reverse=True)),
         "starting_seats":dict(sorted(Counter(r["seat"] for r in all_rows).items())),
         "notes":["Marginal estimates from 1024 four-player-seat-seeded goldfish games.",
-                 "These are Dack deployment rates, NOT 4-player cEDH match wins.",
-                 "Abdel + Radiant Solar simultaneously in hand blocks the provisional counted cast.",
+                 "Dack cast counts as a goldfish win when the provisional combo-hand condition holds; not 4-player match wins.",
+                 "Abdel + Radiant Solar simultaneously in hand blocks the provisional assumed-win Dack cast.",
                  "Opponent-facing interaction absent; Smothering Tithe assumes 3 treasures/cycle.",
                  "Old London continuation values are retained for paired comparisons."]
     }
