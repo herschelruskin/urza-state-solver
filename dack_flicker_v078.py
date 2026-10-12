@@ -196,13 +196,13 @@ def special_actions(s):
     # Rings + Basalt: pay {3} to untap Basalt, copy for {2}; tap
     # Basalt between the two untap resolutions. Requires {2} external
     # resources before starting, but then produces unlimited colorless.
-    if (any(d.effective_name(p)=="Rings of Brighthearth" for p in s.battlefield)
+    if (s.c < 12 and
+        any(d.effective_name(p)=="Rings of Brighthearth" for p in s.battlefield)
         and any(d.effective_name(p)=="Basalt Monolith" and not p.tapped for p in s.battlefield)):
         for paid in d.pay_options(s,2):
-            bf=list(paid.battlefield)
-            # A finite, explicit 12C proxy is sufficient for casting 4WW
-            # during the T1-T3 objective; it is NOT a combo-win assertion.
-            out.append(replace(paid,battlefield=tuple(bf),c=paid.c+12))
+            # Cap the infinite-colorless representation at 12C, avoiding
+            # arbitrarily many distinct mana-pool states in bounded search.
+            out.append(replace(paid,c=12))
     # Mirage Mirror copying a nonlegendary mana source until end of turn.
     for i,p in enumerate(s.battlefield):
         if p.name!="Mirage Mirror" or p.aux or p.tapped:
@@ -213,7 +213,7 @@ def special_actions(s):
             if target not in {"Ancient Tomb","City of Traitors","Crystal Vein",
                               "Sol Ring","Mana Vault","Grim Monolith","Basalt Monolith",
                               "Arcane Signet","Fellwar Stone","Mox Diamond",
-                              "Mind Stone","The Mind Stone"}:
+                              "Mind Stone"}:
                 continue
             for paid in d.pay_options(s,2):
                 bf=list(paid.battlefield)
@@ -330,6 +330,19 @@ def selftest():
     assert not d.is_artifact_perm("Smothering Tithe")
     assert all(c in d.CARD_ID for c in BASE_DECK)
     assert all(c in d.LANDS for c in NEW_LANDS)
+    # Chrome Mox can imprint flicker creatures, but not Radiant Solar.
+    ss=d.State(1,("Chrome Mox","Felidar Guardian","Radiant Solar"),())
+    casts=[q for q in d.cast_actions(ss) if any(x.name=="Chrome Mox" for x in q.battlefield)]
+    assert any("Felidar Guardian" in q.exile for q in casts)
+    assert all("Radiant Solar" not in q.exile for q in casts)
+    # Thorn taxes artifact spells, including Sol Ring, by one generic mana.
+    ss=d.State(1,("Sol Ring",),(),battlefield=(d.Perm("Thorn of Amethyst"),),c=1)
+    assert not any(any(x.name=="Sol Ring" for x in q.battlefield) for q in d.cast_actions(ss))
+    # Rings + Basalt cannot supply colorless without two extra mana.
+    ss=d.State(1,(),(),battlefield=(d.Perm("Rings of Brighthearth"),d.Perm("Basalt Monolith")))
+    assert not any(q.c==12 for q in d.special_actions(ss))
+    ss=replace(ss,c=2)
+    assert any(q.c==12 for q in d.special_actions(ss))
     # Creature commander must not be taxed by Thorn.
     s=d.State(1,(),(),battlefield=(d.Perm("Thorn of Amethyst"),),w=2,c=4)
     assert d.can_cast_dack(s)
