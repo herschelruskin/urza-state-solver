@@ -126,6 +126,20 @@ d.RAMP_PROTECTED = frozenset(set(d.RAMP_PROTECTED) | {
 })
 d.MOONSILVER_MANA_ARTIFACTS = frozenset(set(d.MOONSILVER_MANA_ARTIFACTS) | {"Throne of Eldraine", "Staff of Compleation"})
 
+# One-purpose life ledger for Staff activations. The older deployment solver's
+# State has no life field. Distinguishable sentinel entries in State.exile
+# represent the paid life; they are not real exiled MTG cards.
+STAFF_LIFE2="__STAFF_PAID_LIFE_2__"
+STAFF_LIFE4="__STAFF_PAID_LIFE_4__"
+def staff_life_spent(s):
+    return 2*s.exile.count(STAFF_LIFE2)+4*s.exile.count(STAFF_LIFE4)
+def staff_can_pay(s,amt):
+    return staff_life_spent(s)+amt<40
+_previous_key=d.key
+def key(s):
+    return (_previous_key(s),staff_life_spent(s))
+d.key=key
+
 # Dack is a creature and is NOT taxed by Thorn of Amethyst.
 # The inherited v0.74 oracle-corrected cast evaluator already excludes Thorn.
 _previous_can_cast = d.can_cast_dack
@@ -169,10 +183,11 @@ def tap_mana_actions(s):
             # For this phase it is only used to pay for Dack.
             out.append(replace(s,battlefield=tuple(bf),
                                restricted_dack_white=s.restricted_dack_white+4))
-        elif n == "Staff of Compleation":
+        elif n == "Staff of Compleation" and staff_can_pay(s,2):
             bf = list(s.battlefield); bf[i] = replace(p,tapped=True)
-            # Pay 2 life, T: add one mana of any color. Life excluded from T1-T3.
-            out.append(replace(s,battlefield=tuple(bf),w=s.w+1))
+            # Pay 2 life and tap: one white (optimally chosen in mono-white).
+            out.append(replace(s,battlefield=tuple(bf),w=s.w+1,
+                               exile=s.exile+(STAFF_LIFE2,)))
     return d._dedupe(out) if hasattr(d,"_dedupe") else engine._dedupe(out)
 d.tap_mana_actions = tap_mana_actions
 
@@ -198,14 +213,16 @@ def special_actions(s):
                     bb=list(paid.battlefield)
                     bb[i]=replace(bb[i],tapped=True,counters=p.counters+2)
                     out.append(d.draw(replace(paid,battlefield=tuple(bb)),2*p.counters+3))
-        elif n=="Staff of Compleation":
+        elif n=="Staff of Compleation" and staff_can_pay(s,4):
             bf=list(s.battlefield);bf[i]=replace(p,tapped=True)
-            out.append(d.draw(replace(s,battlefield=tuple(bf)),1))
-            # Copy the non-mana draw ability with Rings for {2}.
+            out.append(d.draw(replace(s,battlefield=tuple(bf),
+                                      exile=s.exile+(STAFF_LIFE4,)),1))
+            # Copy draw activation for {2} without paying life twice.
             if any(d.effective_name(x)=="Rings of Brighthearth" for x in s.battlefield):
                 for paid in d.pay_options(s,2):
                     bb=list(paid.battlefield);bb[i]=replace(bb[i],tapped=True)
-                    out.append(d.draw(replace(paid,battlefield=tuple(bb)),2))
+                    out.append(d.draw(replace(paid,battlefield=tuple(bb),
+                                      exile=paid.exile+(STAFF_LIFE4,)),2))
         elif n=="Throne of Eldraine":
             # Cost is 3 mana of the chosen color, NOT its own restricted 4W.
             for paid in d.pay_options(s,3,0,0):
@@ -373,6 +390,8 @@ def battlefront_actions(s):
         cost_g+=1
     if any(p.name=="Trinisphere" for p in s.battlefield):
         cost_g=max(cost_g,3-cost_w)
+    if any(p.name=="Charitable Levy" for p in s.battlefield):
+        cost_g+=1
     results=[]
     for paid in d.pay_options(s,cost_g,cost_w):
         if not d.payment_stax_ok(s,paid):continue
@@ -494,6 +513,12 @@ def selftest():
     assert not battlefront_actions(d.State(1,("United Battlefront",),bf_top,w=1,c=2))
     assert not battlefront_actions(d.State(1,("United Battlefront",),bf_top,w=0,c=4))
     assert battlefront_actions(d.State(1,("United Battlefront",),bf_top,w=1,c=3))
+    # Battlefront costs five total under Levy, not four.
+    tax=(d.Perm("Charitable Levy"),)
+    assert not battlefront_actions(d.State(1,("United Battlefront",),bf_top,
+                                             battlefield=tax,w=1,c=3))
+    assert battlefront_actions(d.State(1,("United Battlefront",),bf_top,
+                                         battlefield=tax,w=1,c=4))
     # Tithe creates no mana on entry: only an opponent cycle adds the modeled 3.
     no_tithe=d.State(1,(),(),treasures=1)
     tithe=replace(no_tithe,battlefield=(d.Perm("Smothering Tithe"),))
@@ -572,6 +597,10 @@ def selftest():
     assert not any(len(q.hand)>0 for q in d.special_actions(s))
     s=replace(s,c=0,w=3)
     assert any(len(q.hand)==2 for q in d.special_actions(s))
+    # Staff can pay 4 life to draw at most nine times in 40-life goldfish.
+    assert staff_can_pay(d.State(1,(),(),exile=(STAFF_LIFE4,)*8),4)
+    assert not staff_can_pay(d.State(1,(),(),exile=(STAFF_LIFE4,)*9),4)
+    assert not staff_can_pay(d.State(1,(),(),exile=(STAFF_LIFE4,)*9),2*2)
     # Staff draws one card and taps; it does not require mana for that mode.
     s=d.State(1,(),("Mana Vault",),battlefield=(d.Perm("Staff of Compleation"),))
     assert any("Mana Vault" in q.hand and q.battlefield[0].tapped
