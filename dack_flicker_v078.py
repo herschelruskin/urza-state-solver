@@ -573,6 +573,28 @@ def selftest():
     # Staff is a zero-mana activation with a life payment, not a {1} tax.
     s=d.State(2,(),(),battlefield=(d.Perm("Staff of Compleation"),))
     assert any(q.w==1 for q in d.tap_mana_actions(s))
+    # Draw engines must be reached from their actual cast-in-hand
+    # actions, not just work when pre-seeded onto the battlefield.
+    ring_start=d.State(1,("The One Ring",),("Mana Vault","Plains"),
+                       c=4)
+    ring_casts=[q for q in d.cast_actions(ring_start)
+                if any(p.name=="The One Ring" for p in q.battlefield)]
+    assert ring_casts, "The One Ring cannot be cast from hand"
+    assert any("Mana Vault" in z.hand
+        for q in ring_casts for z in d.special_actions(q)), (
+        "The One Ring cast -> tap -> actual draw path missing")
+    throne_start=d.State(2,("Throne of Eldraine",),("Sol Ring","Mana Vault"),
+                        c=5)
+    throne_casts=[q for q in d.cast_actions(throne_start)
+                  if any(p.name=="Throne of Eldraine" for p in q.battlefield)]
+    assert throne_casts, "Throne of Eldraine cannot be cast from hand"
+    assert any(z.restricted_dack_white==4 for q in throne_casts
+        for z in d.tap_mana_actions(q)), (
+        "Throne of Eldraine cast -> four restricted white missing")
+    throne_draw_start=d.State(2,(),("Sol Ring","Mana Vault"),
+                        battlefield=(d.Perm("Throne of Eldraine"),),w=3)
+    assert any(len(z.hand)==2 for z in d.special_actions(throne_draw_start)), (
+        "Throne of Eldraine three-white -> draw-two path missing")
     # The One Ring places burden counter BEFORE drawing.
     s=d.State(2,(),("Plains","Sol Ring"),battlefield=(d.Perm("The One Ring"),))
     q=[z for z in d.special_actions(s) if z.hand==("Plains",)]
