@@ -1,0 +1,18 @@
+Matched-seed N1024 flicker 5-for-5 ramp package comparison (2026-10-12).
+
+Variants:
+  baseline: frozen current100 list + latest post-baseline Mirage Mirror LED/Petal + Tooth Ramos tapped-sac engine fixes.
+  ramp_restore5: baseline swaps
+    The One Ring -> Coalition Relic
+    Throne of Eldraine -> Implements of Sacrifice
+    Staff of Compleation -> Tooth of Ramos
+    Mirage Mirror -> Everflowing Chalice
+    Rings of Brighthearth -> Bucknard's Everfull Purse
+
+Both decks are legal 99-card Dack flicker lists and preserve all eight combo creatures, all lands, protection/removal, inherited v0.77 mulligans and beam 240.
+64 shards of 32 games, two per-game paired variants for each id 0..1023.
+Seed scheme 7604096001 + game_id * 1000003; same seat (0..3), same pseudo-random draws before deck substitutions.
+Goal: assumed Dack goldfish wins at T1, cumulative T2 and T3, with unchanged provisional Abdel+Solar both-in-hand exclusion.
+Partner outcomes and paired differences with approximate 95% CIs will be pooled by dack_flicker_ramp5_pair_pool.py.
+Expected workflow: .github/workflows/dack_flicker_ramp5_pair_n1024.yml
+The original 1024-game baseline remains frozen as an independent historical result; do not compare it to this new edited-engine ablation without acknowledging the Mirage/Tooth changes.
