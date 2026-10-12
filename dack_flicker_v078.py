@@ -258,14 +258,18 @@ def special_actions(s):
     # Gleaming Splendor: {2}{W}, target ourselves and one opponent, draw one.
     # Opponent's card is not modeled as a resource on OUR turn.
     if any(d.effective_name(x)=="Gleaming Splendor" for x in s.battlefield):
+        tithe=any(d.effective_name(x)=="Smothering Tithe" for x in s.battlefield)
         for paid in d.pay_options(s,2,1):
-            out.append(d.draw(paid,1))
+            # Choose self + one opponent: their draw grants us one Tithe
+            # Treasure if Tithe is present under the established no-pay policy.
+            out.append(replace(d.draw(paid,1),
+                      treasures=paid.treasures+(1 if tithe else 0)))
             if any(d.effective_name(x)=="Rings of Brighthearth" for x in s.battlefield):
                 for copied in d.pay_options(paid,2):
-                    # Both copies target us and an opponent. That opponent
-                    # draws their 2nd card on our turn, triggering one Treasure.
+                    # The same opponent draws twice in our turn: one
+                    # Splendor trigger, plus two Tithe draws if present.
                     out.append(replace(d.draw(copied,2),
-                                  treasures=copied.treasures+1))
+                                  treasures=copied.treasures+1+(2 if tithe else 0)))
     # Staff: {5} to untap; non-mana ability can be used multiple times.
     for i,p in enumerate(s.battlefield):
         if d.effective_name(p)!="Staff of Compleation" or not p.tapped:continue
@@ -654,6 +658,11 @@ def selftest():
     # Gleaming Splendor is real draw, not merely passive Treasures.
     s=d.State(1,(),("Plains",),battlefield=(d.Perm("Gleaming Splendor"),),w=1,c=2)
     assert any("Plains" in q.hand for q in d.special_actions(s))
+    # Gleaming plus Tithe: our activated self/opponent draw makes a
+    # Treasure for the opponent draw in addition to passive cycles.
+    sb=d.State(2,(),("Plains",),battlefield=(
+        d.Perm("Gleaming Splendor"),d.Perm("Smothering Tithe")),w=1,c=2)
+    assert any("Plains" in z.hand and z.treasures==1 for z in d.special_actions(sb))
     # Untap Staff costs FIVE generic, never five life.
     s=d.State(1,(),(),battlefield=(d.Perm("Staff of Compleation",True),),c=5)
     assert any(not q.battlefield[0].tapped and q.c==0 for q in d.special_actions(s))
