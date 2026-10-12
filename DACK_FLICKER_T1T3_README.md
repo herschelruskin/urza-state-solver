@@ -41,8 +41,10 @@ This experiment is isolated on branch `dack-flicker-current100-t1t3-20261012`, f
 ## Limitations (must not misrepresent as match win rates)
 
 - Opponents' spells, counters, removal, and interaction are not modeled.
-- Smothering Tithe has **zero guaranteed opponent-paid Treasures** in the conservative
-  goldfish; multiplayer yield requires a separate scenario model.
+- Smothering Tithe generates **exactly three modeled Treasures per completed opponent turn cycle**
+  (one per opponent), per the user's four-player assumption. It produces none on its entry
+  turn. This is a scenario assumption, not a guarantee that every real opponent declines
+  the tax. Gleaming Splendor's existing independent +1 Treasure/cycle remains active.
 - Other cards whose value depends entirely on opponents (e.g., Cursed Totem, Blind
   Obedience, Defense Grid) are retained in the deck but cannot be credited with wins.
 - The eight creatures' ETB/combo graph and later turn-four-plus card advantage are
