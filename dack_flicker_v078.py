@@ -236,19 +236,16 @@ def special_actions(s):
                     for copied in d.pay_options(paid,2):
                         bb=list(copied.battlefield);bb[i]=replace(bb[i],tapped=True)
                         out.append(d.draw(replace(copied,battlefield=tuple(bb)),4))
-    # Mind Stone: {1}, T, sacrifice: draw one. Consumes the mana rock.
-    for i,p in enumerate(s.battlefield):
-        if d.effective_name(p)!="Mind Stone" or p.tapped:continue
-        for paid in d.pay_options(s,1):
-            bf=list(paid.battlefield);src=bf.pop(i)
-            out.append(d.draw(replace(paid,battlefield=tuple(bf),
-                         grave=paid.grave+(src.name,)),1))
-            # Rings copies the already-activated draw ability even after sacrifice.
-            if any(d.effective_name(x)=="Rings of Brighthearth" for x in s.battlefield):
-                for pcopy in d.pay_options(s,3):
-                    bb=list(pcopy.battlefield); bb.pop(i)
-                    out.append(d.draw(replace(pcopy,battlefield=tuple(bb),
-                               grave=pcopy.grave+("Mind Stone",)),2))
+    # Mind Stone's ordinary {1},tap,sacrifice-to-draw is already modeled
+    # by the inherited utility_actions. Only add the Rings copied ability
+    # here, avoiding duplicate search branches for normal activations.
+    if any(d.effective_name(x)=="Rings of Brighthearth" for x in s.battlefield):
+        for i,p in enumerate(s.battlefield):
+            if d.effective_name(p)!="Mind Stone" or p.tapped:continue
+            for pcopy in d.pay_options(s,3):
+                bb=list(pcopy.battlefield);src=bb.pop(i)
+                out.append(d.draw(replace(pcopy,battlefield=tuple(bb),
+                           grave=pcopy.grave+(src.name,)),2))
     # Gleaming Splendor: {2}{W}, target ourselves and one opponent, draw one.
     # Opponent's card is not modeled as a resource on OUR turn.
     if any(d.effective_name(x)=="Gleaming Splendor" for x in s.battlefield):
@@ -620,10 +617,11 @@ def selftest():
         d.Perm("Voltaic Key"),d.Perm("Arcane Signet",True)),c=3)
     assert any(not q.battlefield[1].tapped and not q.battlefield[2].tapped
         for q in d.utility_actions(ss))
-    # Mind Stone sac-for-draw is correct and removes itself.
+    # Mind Stone sac-for-draw comes from the already-correct inherited
+    # utility engine; do not model it twice in special_actions.
     s=d.State(1,(),("Plains",),battlefield=(d.Perm("Mind Stone"),),c=1)
     assert any("Plains" in q.hand and "Mind Stone" in q.grave
-               and not q.battlefield for q in d.special_actions(s))
+               and not q.battlefield for q in d.utility_actions(s))
     # Gleaming Splendor is real draw, not merely passive Treasures.
     s=d.State(1,(),("Plains",),battlefield=(d.Perm("Gleaming Splendor"),),w=1,c=2)
     assert any("Plains" in q.hand for q in d.special_actions(s))
