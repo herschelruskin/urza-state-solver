@@ -1,0 +1,80 @@
+name: Dack flicker 5-card ramp restoration paired N1024
+on:
+  push:
+    branches: [dack-flicker-current100-t1t3-20261012]
+    paths:
+      - 'dack_flicker_ramp5_n1024.launch'
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Mechanical/variant audit
+        run: python dack_flicker_t1t3_batch.py --audit
+      - name: Pooler validation regression
+        run: python dack_flicker_pool_1024.py --selftest
+  game:
+    needs: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        variant: [baseline, ramp_restore5]
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run 32 games with identical per-game seed IDs in both variants
+        shell: bash
+        run: |
+          mkdir -p shards
+          python dack_flicker_t1t3_batch.py \
+            --variant "${{ matrix.variant }}" \
+            --shard "${{ matrix.shard }}" \
+            --games 32 --beam 240 \
+            --out "shards/${{ matrix.variant }}_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-ramp5-${{ matrix.variant }}-${{ matrix.shard }}
+          path: shards/${{ matrix.variant }}_${{ matrix.shard }}.json.gz
+          retention-days: 45
+          if-no-files-found: error
+  paired:
+    needs: [audit, game]
+    if: ${{ always() && needs.audit.result == 'success' && needs.game.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Retrieve 64 independent simulation shards
+        uses: actions/download-artifact@v4
+        with:
+          pattern: dack-ramp5-*
+          path: artifact-root
+      - name: Arrange shards by variant
+        shell: bash
+        run: |
+          mkdir -p shards/baseline shards/ramp_restore5
+          for i in $(seq 0 31); do
+            cp "artifact-root/dack-ramp5-baseline-$i/baseline_$i.json.gz" "shards/baseline/shard_$i.json.gz"
+            cp "artifact-root/dack-ramp5-ramp_restore5-$i/ramp_restore5_$i.json.gz" "shards/ramp_restore5/shard_$i.json.gz"
+          done
+      - name: Pair all 1024 seeds and compare T1/T2/T3
+        run: |
+          python dack_flicker_ramp5_pair_pool.py --root shards --n 1024 --out dack_flicker_ramp5_paired_n1024.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-flicker-ramp5-n1024-paired-final
+          path: dack_flicker_ramp5_paired_n1024.json
+          retention-days: 60
+          if-no-files-found: error
