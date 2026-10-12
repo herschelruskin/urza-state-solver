@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Sharded T1-T3 cast-availability benchmark for the Oct-12 Dack flicker list.
 
-Output reports early Dack CAST availability, not complete combo wins.
+Output reports assumed combo wins at legal Dack CAST, except the provisional Abdel+Solar hand pair.
 Keeps the established v0.77 conditional-draw London mulligan policy frozen,
 so comparisons are paired. All opponent-dependent gameplay is excluded.
 """
@@ -52,7 +52,7 @@ def main():
     counts=Counter(str(x["win_turn"]) for x in rows)
     payload={
         "schema":"dack_flicker_t1t3_deployment_v078",
-        "objective":"earliest Dack cast with provisional Abdel+Radiant Solar hand-pair condition; no flicker combo resolution",
+        "objective":"earliest goldfish win: cast Dack with mana and without Abdel+Radiant Solar both in hand; assume combo wins",
         "deck_sha256":hashlib.sha256("\n".join(deck).encode()).hexdigest(),
         "variant":args.variant,"seed_base":batch.CONFIG["seed_base"],
         "seed_scheme":"seed_base + game_id * 1000003",
@@ -62,7 +62,7 @@ def main():
         "limitations":["No opponent interactions or protection probabilities",
                        "Smothering Tithe generates 3 Treasures per completed opponent cycle",
                        "Fomori Vault selection modeled; The Mind Stone harness deferred to post-T3 engine",
-                       "Dack creature-combo resolution is not modeled",
+                       "Dack cast assumed to immediately win if Abdel+Radiant Solar are not both in hand; combo mechanics not resolved",
                        "Staff life payments tracked; other sources of life loss ignored",
                        "Abdel+Radiant Solar in hand is the sole provisional blocking condition",
                        "Legacy mulligan continuation calibrated for an older deck"],
