@@ -1,0 +1,115 @@
+name: Dack flicker matched T1-T3 benchmark (up to N1024)
+on:
+  push:
+    branches: [dack-flicker-current100-t1t3-20261012]
+    paths:
+      - '.github/workflows/dack_flicker_t1t3_n1024.yml'
+  workflow_dispatch:
+    inputs:
+      variant:
+        description: 'Exact 99-card baseline or a matched Battlefront substitution'
+        required: true
+        type: choice
+        default: baseline
+        options:
+          - baseline
+          - battlefront_over_prismatic
+          - battlefront_over_amulet
+      mode:
+        description: 'Smoke (N4) or 1024 game full run'
+        required: true
+        type: choice
+        default: smoke
+        options:
+          - smoke
+          - full
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      shards: ${{ steps.shards.outputs.shards }}
+      games_per_shard: ${{ steps.shards.outputs.games_per_shard }}
+      expected: ${{ steps.shards.outputs.expected }}
+      beam: ${{ steps.shards.outputs.beam }}
+    steps:
+      - name: Freeze shard/beam plan
+        id: shards
+        shell: bash
+        run: |
+          MODE="${{ inputs.mode || 'smoke' }}"
+          if [ "$MODE" = "full" ]; then
+            echo 'shards=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]' >> "$GITHUB_OUTPUT"
+            echo 'games_per_shard=32' >> "$GITHUB_OUTPUT"
+            echo 'expected=1024' >> "$GITHUB_OUTPUT"
+            echo 'beam=240' >> "$GITHUB_OUTPUT"
+          elif [ "$MODE" = "smoke" ]; then
+            echo 'shards=[0,1]' >> "$GITHUB_OUTPUT"
+            echo 'games_per_shard=2' >> "$GITHUB_OUTPUT"
+            echo 'expected=4' >> "$GITHUB_OUTPUT"
+            echo 'beam=60' >> "$GITHUB_OUTPUT"
+          else
+            echo "Unsupported mode: $MODE" >&2
+            exit 1
+          fi
+  shard:
+    needs: plan
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        shard: ${{ fromJSON(needs.plan.outputs.shards) }}
+    timeout-minutes: 120
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit before simulations
+        run: python dack_flicker_t1t3_batch.py --audit
+      - name: Run reproducibly seeded shard
+        shell: bash
+        run: |
+          mkdir -p shards
+          python dack_flicker_t1t3_batch.py \
+            --variant "${{ inputs.variant || 'baseline' }}" \
+            --shard "${{ matrix.shard }}" \
+            --games "${{ needs.plan.outputs.games_per_shard }}" \
+            --beam "${{ needs.plan.outputs.beam }}" \
+            --out "shards/shard_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-${{ inputs.variant || 'baseline' }}-shard-${{ matrix.shard }}
+          path: shards/shard_${{ matrix.shard }}.json.gz
+          if-no-files-found: error
+          retention-days: 30
+  pool:
+    needs: [plan,shard]
+    if: ${{ always() && needs.shard.result == 'success' }}
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Pooler self-test
+        run: python dack_flicker_pool_1024.py --selftest
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-${{ inputs.variant || 'baseline' }}-shard-*
+          merge-multiple: true
+          path: shards
+      - name: Verify deck hashes, seeds, disjoint game IDs, and all rows
+        run: |
+          python dack_flicker_pool_1024.py \
+            --glob 'shards/*.json.gz' \
+            --expected "${{ needs.plan.outputs.expected }}" \
+            --variant "${{ inputs.variant || 'baseline' }}" \
+            --out dack_flicker_pooled_report.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-${{ inputs.variant || 'baseline' }}-pooled-${{ needs.plan.outputs.expected }}
+          path: dack_flicker_pooled_report.json
+          if-no-files-found: error
+          retention-days: 60
