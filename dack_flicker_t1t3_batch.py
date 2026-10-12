@@ -10,7 +10,7 @@ from collections import Counter
 import dack_flicker_v078 as fork
 import dack_full_deck_accel_n512_batch as batch
 
-VARIANTS=("baseline","battlefront_over_prismatic","battlefront_over_amulet")
+VARIANTS=("baseline","battlefront_over_prismatic","battlefront_over_amulet","ramp_restore5")
 batch.build_deck=fork.build_deck
 batch.CONFIG.update({
     "engine":"v0.78-flicker-current100-deployment-only",
@@ -23,6 +23,11 @@ def audit():
     assert len(fork.build_deck("battlefront_over_prismatic"))==99
     assert fork.BASE_DECK.count("United Battlefront")==0
     assert fork.build_deck("battlefront_over_prismatic").count("United Battlefront")==1
+    assert len(fork.build_deck("ramp_restore5"))==99
+    assert set(fork.build_deck("ramp_restore5"))-set(fork.BASE_DECK)=={
+        new for _,new in fork.RAMP_RESTORE5_SWAPS}
+    assert set(fork.BASE_DECK)-set(fork.build_deck("ramp_restore5"))=={
+        old for old,_ in fork.RAMP_RESTORE5_SWAPS}
     for v in VARIANTS:
         assert len(set(fork.build_deck(v)))==87
     print("DACK_FLICKER_V078_RUNNER_AUDIT_PASS",flush=True)
