@@ -168,7 +168,16 @@ def _legacy_cast_thorn_correct(s):
 # Register actual land output (these 4 lands are not in the legacy tap table).
 _original_tap = d.tap_mana_actions
 def tap_mana_actions(s):
-    out = list(_original_tap(s))
+    # A Mycosynth Gardens COPY of Chrome Mox does not copy its exiled
+    # imprinted card; it therefore cannot produce mana.
+    out = []
+    for q in _original_tap(s):
+        fake = any(
+            p.name=="The Mycosynth Gardens" and p.aux=="COPY:Chrome Mox"
+            and not p.tapped and i<len(q.battlefield)
+            and q.battlefield[i].tapped
+            for i,p in enumerate(s.battlefield))
+        if not fake:out.append(q)
     for i,p in enumerate(s.battlefield):
         if p.tapped:
             continue
@@ -622,6 +631,9 @@ def selftest():
     sf=d.State(2,("Plains",),("Mana Vault","Arcane Signet"),
         battlefield=(d.Perm("Fomori Vault"),d.Perm("Sol Ring")),c=2)
     assert not any("Mana Vault" in q.hand for q in d.special_actions(sf))
+    # A Gardens copy of Chrome Mox has no imprinted card, so cannot add W.
+    copied=d.State(1,(),(),battlefield=(d.Perm("The Mycosynth Gardens",aux="COPY:Chrome Mox"),))
+    assert not any(q.w>0 for q in d.tap_mana_actions(copied))
     # Mirage Mirror resumes ordinary untapping after copied Monolith text expires.
     sm=d.State(1,(),(),battlefield=(d.Perm("Mirage Mirror",True,aux="COPY:Mana Vault"),))
     sn=d.untap_and_begin(sm)
