@@ -280,9 +280,19 @@ def utility_actions(s):
     return engine._dedupe(out)
 d.utility_actions=utility_actions
 
-# Tithe's opponent-tax payments cannot be inferred from a goldfish.
-# Conservative early-deployment baseline: zero guaranteed Treasures from Tithe.
-# The later multiplayer phase will evaluate explicit opponent-payment scenarios.
+# Four-player goldfish assumption, explicitly requested: when Tithe survives
+# across a complete opponent cycle, add exactly three Treasures (one per opponent).
+# Preserve the inherited independent Gleaming Splendor assumption (+1 per cycle).
+# No Treasures are produced immediately upon casting Tithe.
+_base_opponent_cycle = d.add_opponent_cycle_resources
+TITHE_TREASURES_PER_CYCLE = 3
+def add_opponent_cycle_resources(s):
+    had_tithe = any(d.effective_name(p) == "Smothering Tithe" for p in s.battlefield)
+    q = _base_opponent_cycle(s)
+    if had_tithe:
+        q = replace(q, treasures=q.treasures + TITHE_TREASURES_PER_CYCLE)
+    return q
+d.add_opponent_cycle_resources = add_opponent_cycle_resources
 
 def _front_hit(s,card):
     """Resolve Battlefront putting a card onto battlefield without casting."""
@@ -371,7 +381,22 @@ def selftest():
     assert not d.chrome_mox_allowed("The One Ring")
     assert not d.chrome_mox_allowed("Radiant Solar")
     assert all(d.chrome_mox_allowed(c) for c in WHITE_IMPRINTS)
+    # 3 generic + 1 white = exactly FOUR total mana. White is mandatory.
     assert BATTLEFRONT_COST==(3,1,0)
+    assert sum(BATTLEFRONT_COST)==4
+    bf_top=("Sol Ring","Arcane Signet","Plains","Felidar Guardian",
+            "The One Ring","Prismatic Lens","Blind Obedience")
+    assert not battlefront_actions(d.State(1,("United Battlefront",),bf_top,w=1,c=2))
+    assert not battlefront_actions(d.State(1,("United Battlefront",),bf_top,w=0,c=4))
+    assert battlefront_actions(d.State(1,("United Battlefront",),bf_top,w=1,c=3))
+    # Tithe creates no mana on entry: only an opponent cycle adds the modeled 3.
+    no_tithe=d.State(1,(),(),treasures=1)
+    tithe=replace(no_tithe,battlefield=(d.Perm("Smothering Tithe"),))
+    assert add_opponent_cycle_resources(no_tithe).treasures==1
+    assert tithe.treasures==1
+    assert add_opponent_cycle_resources(tithe).treasures==4
+    both=replace(tithe,battlefield=(d.Perm("Smothering Tithe"),d.Perm("Gleaming Splendor")))
+    assert add_opponent_cycle_resources(both).treasures==5
     assert "The One Ring" not in ELIGIBLE_BATTLEFRONT
     assert "Throne of Eldraine" not in ELIGIBLE_BATTLEFRONT
     assert all(c not in ELIGIBLE_BATTLEFRONT for c in CREATURES)
