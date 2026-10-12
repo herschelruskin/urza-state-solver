@@ -37,8 +37,10 @@ This experiment is isolated on branch `dack-flicker-current100-t1t3-20261012`, f
   assumption; {2}{W} targeted ability can draw one for us, and Rings may copy it.
 - Charitable Levy: its noncreature tax, third spell counter, sacrifice to draw and
   tapped-Plains tutoring are handled by the inherited oracle-audited engine.
-- Staff of Compleation can draw by tapping (4 life cost ignored for this goldfish),
-  make colored mana by tapping (2 life), and untap for {5}.
+- Staff of Compleation can draw by tapping (costs 4 life),
+  make colored mana by tapping (costs 2 life), and untap for {5}.
+  These Staff-specific life payments are tracked against an initial 40-life
+  budget; other life payments/damage remain untracked in this goldfish.
 - Throne's draw-two costs {3} **paid entirely in chosen-color white mana**; Rings
   can copy its activated draw ability for {2}.
 - Throne of Eldraine: taps for four **restricted** white toward monowhite Dack; its
@@ -65,9 +67,9 @@ This experiment is isolated on branch `dack-flicker-current100-t1t3-20261012`, f
   Obedience, Defense Grid) are retained in the deck but cannot be credited with wins.
 - The eight creatures' ETB/combo graph and later turn-four-plus card advantage are
   intentionally not solved here.
-- Life loss from Staff's paid-life activations (and other card costs) is not tracked
-  in this initial T1-T3 acceleration goldfish; unlimited-life abstractions cannot be
-  used to claim match wins.
+- Staff paid life is tracked using a dedicated state ledger to prevent
+  infinite draw via repeated untaps. Other life costs/damage remain
+  outside this early deployment model, so match win rates are not inferred.
 - The Mind Stone's {5}{W} harness and ensuing end-step flicker are deferred to
   turn-four-plus modelling. In T1-T3, its indestructible {W} mana mode is implemented.
 - Opponent-cast spells triggering Charitable Levy are not simulated; only our spells
