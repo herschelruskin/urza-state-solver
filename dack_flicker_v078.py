@@ -556,6 +556,26 @@ def selftest():
         assert any(z.w+z.c+z.any+z.restricted_artifact+
                    z.restricted_legend+z.restricted_dack_white > 0
                    for z in d.tap_mana_actions(witness)),mana_name
+    # Conditional acceleration: these require specific supporting permanents.
+    s=d.State(1,(),(),battlefield=(d.Perm("Lotus Petal"),))
+    assert any(q.w>=1 and "Lotus Petal" in q.grave for q in d.tap_mana_actions(s))
+    s=d.State(1,(),(),battlefield=(d.Perm("Lion's Eye Diamond"),))
+    assert any(q.w>=3 for q in d.tap_mana_actions(s))
+    s=d.State(1,(),(),battlefield=(d.Perm("Mox Opal"),d.Perm("Sol Ring"),d.Perm("Arcane Signet")))
+    assert any(q.w+q.any>=1 for q in d.tap_mana_actions(s))
+    s=d.State(1,(),(),battlefield=(d.Perm("Krark-Clan Ironworks"),d.Perm("Sol Ring")))
+    assert any(q.c>=2 and "Sol Ring" in q.grave for q in d.utility_actions(s))
+    s=d.State(1,(),(),battlefield=(d.Perm("Jeweled Amulet",False,1,aux="W"),))
+    assert any(q.w>=1 for q in d.tap_mana_actions(s))
+    # Throne's draw ability requires three WHITE, never three colorless.
+    s=d.State(2,(),("Plains","Sol Ring"),battlefield=(d.Perm("Throne of Eldraine"),),c=3)
+    assert not any(len(q.hand)>0 for q in d.special_actions(s))
+    s=replace(s,c=0,w=3)
+    assert any(len(q.hand)==2 for q in d.special_actions(s))
+    # Staff draws one card and taps; it does not require mana for that mode.
+    s=d.State(1,(),("Mana Vault",),battlefield=(d.Perm("Staff of Compleation"),))
+    assert any("Mana Vault" in q.hand and q.battlefield[0].tapped
+               for q in d.special_actions(s))
     # Fomori Vault converts a card and 3 mana into top-X selection.
     ss=d.State(2,("Plains",),("Mana Vault","Arcane Signet","Sol Ring"),
         battlefield=(d.Perm("Fomori Vault"),d.Perm("Mind Stone")),c=3)
