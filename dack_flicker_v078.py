@@ -183,6 +183,14 @@ def special_actions(s):
             burden=p.counters+1
             bf[i]=replace(p,tapped=True,counters=burden)
             out.append(d.draw(replace(s,battlefield=tuple(bf)),burden))
+            # Copy Ring's activated ability with Rings for {2}. The copy
+            # resolves first (draw after counter n+1), then the original
+            # (draw after counter n+2): 2*n+3 cards in total.
+            if any(d.effective_name(x)=="Rings of Brighthearth" for x in s.battlefield):
+                for paid in d.pay_options(s,2):
+                    bb=list(paid.battlefield)
+                    bb[i]=replace(bb[i],tapped=True,counters=p.counters+2)
+                    out.append(d.draw(replace(paid,battlefield=tuple(bb)),2*p.counters+3))
         elif n=="Staff of Compleation":
             bf=list(s.battlefield);bf[i]=replace(p,tapped=True)
             out.append(d.draw(replace(s,battlefield=tuple(bf)),1))
@@ -203,6 +211,26 @@ def special_actions(s):
             # Cap the infinite-colorless representation at 12C, avoiding
             # arbitrarily many distinct mana-pool states in bounded search.
             out.append(replace(paid,c=12))
+    # Fomori Vault: {3}, T, discard; see X cards (our artifact count),
+    # choose one, randomly bottom the others. No card-count gain.
+    for fi,f in enumerate(s.battlefield):
+        if f.name!="Fomori Vault" or f.tapped or not s.hand:
+            continue
+        X=sum(d.is_artifact_perm(d.effective_name(x)) for x in s.battlefield)+s.treasures
+        if X<1:continue
+        for paid in d.pay_options(s,3):
+            top=paid.library[:X]
+            if not top:continue
+            for discard in sorted(set(paid.hand)):
+                hh=list(paid.hand);hh.remove(discard)
+                for take in sorted(set(top)):
+                    remaining=list(top);remaining.remove(take)
+                    rnd=random.Random(d._stable_seed(tuple(remaining)+tuple(paid.library[X:]),0xF0A0))
+                    rnd.shuffle(remaining)
+                    bf=list(paid.battlefield);bf[fi]=replace(bf[fi],tapped=True)
+                    out.append(replace(paid,hand=d.sort_hand(hh+[take]),
+                            grave=paid.grave+(discard,),battlefield=tuple(bf),
+                            library=tuple(paid.library[X:])+tuple(remaining)))
     # Mirage Mirror copying a nonlegendary mana source until end of turn.
     for i,p in enumerate(s.battlefield):
         if p.name!="Mirage Mirror" or p.aux or p.tapped:
@@ -230,6 +258,27 @@ def untap_and_begin(s):
     return replace(s,battlefield=tuple(replace(p,aux="") if p.name=="Mirage Mirror" and
         p.aux.startswith("COPY:") else p for p in s.battlefield))
 d.untap_and_begin=untap_and_begin
+
+# Rings can copy Voltaic Key's ability for {2}: the original untaps
+# another artifact while the copy untaps the tapped Key itself.
+# This converts finite colorless into repeatable untaps, including colored
+# rocks and The One Ring. Manifold Key cannot target itself.
+_base_utility=d.utility_actions
+def utility_actions(s):
+    out=list(_base_utility(s))
+    if any(d.effective_name(p)=="Rings of Brighthearth" for p in s.battlefield):
+        for ki,key in enumerate(s.battlefield):
+            if key.name!="Voltaic Key" or key.tapped:continue
+            for ti,target in enumerate(s.battlefield):
+                if ti==ki or not target.tapped or not d.is_artifact_perm(d.effective_name(target)):
+                    continue
+                for paid in d.pay_options(s,3):
+                    bf=list(paid.battlefield)
+                    bf[ki]=replace(bf[ki],tapped=False)
+                    bf[ti]=replace(bf[ti],tapped=False)
+                    out.append(replace(paid,battlefield=tuple(bf)))
+    return engine._dedupe(out)
+d.utility_actions=utility_actions
 
 # Tithe's opponent-tax payments cannot be inferred from a goldfish.
 # Conservative early-deployment baseline: zero guaranteed Treasures from Tithe.
@@ -357,6 +406,21 @@ def selftest():
     s=d.State(2,(),("Plains","Sol Ring"),battlefield=(d.Perm("The One Ring"),))
     q=[z for z in d.special_actions(s) if z.hand==("Plains",)]
     assert q and any(z.battlefield[0].counters==1 for z in q)
+    # Fomori Vault converts a card and 3 mana into top-X selection.
+    ss=d.State(2,("Plains",),("Mana Vault","Arcane Signet","Sol Ring"),
+        battlefield=(d.Perm("Fomori Vault"),d.Perm("Mind Stone")),c=3)
+    assert any("Mana Vault" in q.hand and "Plains" in q.grave
+        for q in d.special_actions(ss))
+    # Rings can copy Ring to draw three on a zero-burden activation.
+    ss=d.State(2,(),("Plains","Sol Ring","Mana Vault"),
+        battlefield=(d.Perm("Rings of Brighthearth"),d.Perm("The One Ring")),c=2)
+    assert any(q.battlefield[1].counters==2 and len(q.hand)==3
+        for q in d.special_actions(ss))
+    # Rings/Voltaic untaps itself (as well as the selected tapped rock).
+    ss=d.State(2,(),(),battlefield=(d.Perm("Rings of Brighthearth"),
+        d.Perm("Voltaic Key"),d.Perm("Arcane Signet",True)),c=3)
+    assert any(not q.battlefield[1].tapped and not q.battlefield[2].tapped
+        for q in d.utility_actions(ss))
     # Battlefront 3W can hit two eligible permanents directly into play.
     s=d.State(2,("United Battlefront",),
         ("Sol Ring","Arcane Signet","Plains","Felidar Guardian","The One Ring","Prismatic Lens","Blind Obedience"),
