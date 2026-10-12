@@ -1,0 +1,12 @@
+DACK FLICKER — N=1024 BASELINE GOLD FISH ASSUMED WIN BENCHMARK
+Requested 2026-10-12.
+Trigger GitHub Actions dack_flicker_t1t3_n1024.yml once on commit.
+Frozen deck: dack_flicker_current100_20261012.txt
+Variant: baseline
+Mode: full (1024 = 32 shards x 32)
+Beam: 240
+Seed base: 7604096001
+London mulligan continuation: frozen v0.77.
+Success: legal Dack casting with Abdel Adrian + Radiant Solar not both stranded in hand.
+Goldfish cast-to-win assumption: no opponent responses.
+Independent validation: exact and cumulative T1-T3, full row integrity and Wilson CI.
