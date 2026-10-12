@@ -50,6 +50,7 @@ PERMANENT_COSTS = {
     "Rings of Brighthearth": (3,0,0), "Smothering Tithe": (3,1,0),
     "Staff of Compleation": (3,0,0), "The One Ring": (4,0,0),
     "Throne of Eldraine": (5,0,0), "Mind Stone": (2,0,0),
+    "Charitable Levy": (1,1,0), "Disruptor Flute": (2,0,0),
 }
 # Sorcery speed spells with modeled effects are NOT inserted into COSTS:
 # legacy default would incorrectly put a sorcery onto the battlefield.
@@ -97,6 +98,11 @@ d.DECK = list(BASE_DECK)
 # This test measures CAST availability, not whether the new flicker combo wins.
 d.COMBO_CREATURES = frozenset()
 d.AURAS = frozenset()
+# Provisional NEW combo failure: both these key creatures must be in hand.
+# One in hand alone does not invalidate the new flicker pile.
+COMBO_HAND_BLOCK_PAIR = frozenset({"Abdel Adrian, Gorion's Ward", "Radiant Solar"})
+def combo_hand_blocked(s):
+    return COMBO_HAND_BLOCK_PAIR.issubset(set(s.hand))
 d.chrome_mox_allowed = lambda card: card in WHITE_IMPRINTS
 d.LANDS = frozenset(set(d.LANDS) | NEW_LANDS)
 d.COSTS.update(PERMANENT_COSTS)
@@ -115,6 +121,7 @@ for card in set(BASE_DECK) | {"United Battlefront"}:
 d.RAMP_PROTECTED = frozenset(set(d.RAMP_PROTECTED) | {
     "The One Ring", "Throne of Eldraine", "Staff of Compleation",
     "Rings of Brighthearth", "Mirage Mirror", "Smothering Tithe",
+    "Charitable Levy", "Disruptor Flute",
 })
 d.MOONSILVER_MANA_ARTIFACTS = frozenset(set(d.MOONSILVER_MANA_ARTIFACTS) | {"Throne of Eldraine", "Staff of Compleation"})
 
@@ -122,10 +129,20 @@ d.MOONSILVER_MANA_ARTIFACTS = frozenset(set(d.MOONSILVER_MANA_ARTIFACTS) | {"Thr
 # Original v0.77's can_cast_dack added one generic despite the creature type.
 _previous_can_cast = d.can_cast_dack
 def can_cast_dack(s):
+    # A true creature-combo restriction, separate from the mana calculation.
+    # This deliberately does NOT require all eight creatures in the library.
+    if combo_hand_blocked(s): return False
     if any(p.name == "Thorn of Amethyst" for p in s.battlefield):
         s = replace(s, battlefield=tuple(p for p in s.battlefield if p.name != "Thorn of Amethyst"))
     return _previous_can_cast(s)
 d.can_cast_dack = can_cast_dack
+# London bottom preference: do not keep both bridge pieces stranded in hand.
+_previous_bottom_priority=d.bottom_priority
+def bottom_priority(card,seven):
+    if COMBO_HAND_BLOCK_PAIR.issubset(set(seven)) and card in COMBO_HAND_BLOCK_PAIR:
+        return max(80,_previous_bottom_priority(card,seven))
+    return _previous_bottom_priority(card,seven)
+d.bottom_priority=bottom_priority
 
 # Correct Thorn: every NONCREATURE spell costs one more, including artifacts.
 # Legacy _cast_actions_ranked applies Thorn only when "not art".
@@ -201,6 +218,30 @@ def special_actions(s):
                 if used!=3: continue
                 bf=list(paid.battlefield);bf[i]=replace(bf[i],tapped=True)
                 out.append(d.draw(replace(paid,battlefield=tuple(bf)),2))
+    # Mind Stone: {1}, T, sacrifice: draw one. Consumes the mana rock.
+    for i,p in enumerate(s.battlefield):
+        if d.effective_name(p)!="Mind Stone" or p.tapped:continue
+        for paid in d.pay_options(s,1):
+            bf=list(paid.battlefield);src=bf.pop(i)
+            out.append(d.draw(replace(paid,battlefield=tuple(bf),
+                         grave=paid.grave+(src.name,)),1))
+            # Rings copies the already-activated draw ability even after sacrifice.
+            if any(d.effective_name(x)=="Rings of Brighthearth" for x in s.battlefield):
+                for pcopy in d.pay_options(s,3):
+                    bb=list(pcopy.battlefield); bb.pop(i)
+                    out.append(d.draw(replace(pcopy,battlefield=tuple(bb),
+                               grave=pcopy.grave+("Mind Stone",)),2))
+    # Gleaming Splendor: {2}{W}, target ourselves and one opponent, draw one.
+    # Opponent's card is not modeled as a resource on OUR turn.
+    if any(d.effective_name(x)=="Gleaming Splendor" for x in s.battlefield):
+        for paid in d.pay_options(s,2,1):
+            out.append(d.draw(paid,1))
+    # Staff: {5} to untap; non-mana ability can be used multiple times.
+    for i,p in enumerate(s.battlefield):
+        if d.effective_name(p)!="Staff of Compleation" or not p.tapped:continue
+        for paid in d.pay_options(s,5):
+            bf=list(paid.battlefield);bf[i]=replace(bf[i],tapped=False)
+            out.append(replace(paid,battlefield=tuple(bf)))
     # Rings + Basalt: pay {3} to untap Basalt, copy for {2}; tap
     # Basalt between the two untap resolutions. Requires {2} external
     # resources before starting, but then produces unlimited colorless.
@@ -350,8 +391,55 @@ def battlefront_actions(s):
                 results.extend(states)
     return engine._dedupe(results)
 
+def _charitable_levy_reaction(s, q):
+    # Levy triggers only for spells CAST while already on the battlefield.
+    # It does not trigger from Battlefront's put-onto-battlefield effects.
+    if q.spells<=s.spells or q.noncreature_spells<=s.noncreature_spells:
+        return q
+    idx=next((i for i,p in enumerate(s.battlefield)
+              if d.effective_name(p)=="Charitable Levy"),None)
+    if idx is None:return q
+    # It may have been sacrificed as part of a spell cost; then no trigger.
+    qi=next((i for i,p in enumerate(q.battlefield)
+             if d.effective_name(p)=="Charitable Levy"),None)
+    if qi is None:return q
+    bf=list(q.battlefield)
+    counters=bf[qi].counters+1
+    if counters<3:
+        bf[qi]=replace(bf[qi],counters=counters)
+        return replace(q,battlefield=tuple(bf))
+    # Third noncreature cast: Levy sacrifices, draws one, and optionally
+    # searches a basic Plains directly onto the battlefield tapped.
+    bf.pop(qi)
+    z=d.draw(replace(q,battlefield=tuple(bf),
+                      grave=q.grave+("Charitable Levy",)),1)
+    if "Plains" in z.library:
+        lib=list(z.library);lib.remove("Plains")
+        bf2=list(z.battlefield)+[d.Perm("Plains",True,0,s.turn)]
+        return replace(z,library=d.shuffled_unknown(lib),battlefield=tuple(bf2))
+    return z
+
 def cast_actions(s):
-    return engine._dedupe(_legacy_cast_thorn_correct(s)+battlefront_actions(s))
+    levy=any(d.effective_name(p)=="Charitable Levy" for p in s.battlefield)
+    raw=[]
+    # Correct general noncreature tax for Charitable Levy. The inherited
+    # cost engine does not model it. Avoid double charging in special branches.
+    changed={}
+    if levy:
+        try:
+            for name, (g,w,cc) in tuple(d.COSTS.items()):
+                if name != "Charitable Levy":
+                    changed[name]=(g,w,cc)
+                    d.COSTS[name]=(g+1,w,cc)
+            raw=_legacy_cast_thorn_correct(s)
+        finally:
+            d.COSTS.update(changed)
+    else:
+        raw=_legacy_cast_thorn_correct(s)
+    raw+=battlefront_actions(s)
+    if levy:
+        raw=[_charitable_levy_reaction(s,q) for q in raw]
+    return engine._dedupe(raw)
 d.cast_actions = cast_actions
 
 def build_deck(variant="baseline"):
@@ -375,6 +463,11 @@ def install(variant="baseline"):
 def selftest():
     assert len(BASE_DECK)==99
     assert "Radiant Solar" not in WHITE_IMPRINTS
+    assert not combo_hand_blocked(d.State(1,("Abdel Adrian, Gorion's Ward",),()))
+    assert not combo_hand_blocked(d.State(1,("Radiant Solar",),()))
+    assert combo_hand_blocked(d.State(1,("Abdel Adrian, Gorion's Ward","Radiant Solar"),()))
+    assert not can_cast_dack(d.State(1,("Abdel Adrian, Gorion's Ward","Radiant Solar"),(),w=2,c=4))
+    assert can_cast_dack(d.State(1,("Abdel Adrian, Gorion's Ward",),(),w=2,c=4))
     assert all(c in WHITE_IMPRINTS for c in CREATURES if c!="Radiant Solar")
     assert all(c in WHITE_IMPRINTS for c in MDFC)
     assert not d.chrome_mox_allowed("Ancient Den")
@@ -446,6 +539,21 @@ def selftest():
         d.Perm("Voltaic Key"),d.Perm("Arcane Signet",True)),c=3)
     assert any(not q.battlefield[1].tapped and not q.battlefield[2].tapped
         for q in d.utility_actions(ss))
+    # Mind Stone sac-for-draw is correct and removes itself.
+    s=d.State(1,(),("Plains",),battlefield=(d.Perm("Mind Stone"),),c=1)
+    assert any("Plains" in q.hand and "Mind Stone" in q.grave
+               and not q.battlefield for q in d.special_actions(s))
+    # Gleaming Splendor is real draw, not merely passive Treasures.
+    s=d.State(1,(),("Plains",),battlefield=(d.Perm("Gleaming Splendor"),),w=1,c=2)
+    assert any("Plains" in q.hand for q in d.special_actions(s))
+    # Untap Staff costs FIVE generic, never five life.
+    s=d.State(1,(),(),battlefield=(d.Perm("Staff of Compleation",True),),c=5)
+    assert any(not q.battlefield[0].tapped and q.c==0 for q in d.special_actions(s))
+    # Levy collects cast noncreature spells, then draws and finds Plains on third.
+    s=d.State(1,("Sol Ring",),("Plains","Arcane Signet"),
+              battlefield=(d.Perm("Charitable Levy",False,2),),c=2)
+    assert any("Charitable Levy" in q.grave and "Plains" in q.hand
+               for q in d.cast_actions(s))
     # Battlefront 3W can hit two eligible permanents directly into play.
     s=d.State(2,("United Battlefront",),
         ("Sol Ring","Arcane Signet","Plains","Felidar Guardian","The One Ring","Prismatic Lens","Blind Obedience"),
