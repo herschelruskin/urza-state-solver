@@ -3,7 +3,7 @@ on:
   push:
     branches: [dack-flicker-current100-t1t3-20261012]
     paths:
-      - '.github/workflows/dack_flicker_t1t3_n1024.yml'
+      - 'dack_flicker_t1t3_n1024.launch'
   workflow_dispatch:
     inputs:
       variant:
@@ -36,7 +36,7 @@ jobs:
         id: shards
         shell: bash
         run: |
-          MODE="${{ inputs.mode || 'smoke' }}"
+          MODE="${{ inputs.mode || 'full' }}"
           if [ "$MODE" = "full" ]; then
             echo 'shards=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]' >> "$GITHUB_OUTPUT"
             echo 'games_per_shard=32' >> "$GITHUB_OUTPUT"
