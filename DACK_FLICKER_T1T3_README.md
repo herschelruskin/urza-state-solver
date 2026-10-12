@@ -98,3 +98,26 @@ verifying deck hashes, unique game IDs, and the same seed mapping.
 `.github/workflows/dack_flicker_v078_smoke.yml` runs code compilation,
 unit-style mechanical assertions, and an actual full-deck one-game integration
 smoke on each fork update. Old baseline files and branches are not edited.
+
+## Frozen, repeatable benchmark automation
+
+- `.github/workflows/dack_flicker_t1t3_n1024.yml` runs automatically in
+  four-game smoke mode when first added, and supports manual `workflow_dispatch`.
+- Choose `mode=full`, `variant=baseline` for N=1024 at beam=240; manual full runs
+  split into 32 shards of 32 seeded games with max six shards in parallel.
+- Supported comparison variants are `battlefront_over_prismatic` and
+  `battlefront_over_amulet`. United Battlefront remains {3}{W} = four total.
+- Shards are uploaded separately so partial outputs are recoverable. The pool job
+  runs only when all shards succeeded; it rejects mixed policies, deck hashes, beams,
+  seeds, duplicated game IDs, missing rows, or non-contiguous game IDs.
+- `dack_flicker_pool_1024.py` produces exact/cumulative T1-T3 proportions,
+  Wilson 95% confidence intervals, seat and mulligan distributions.
+- The pooled rates are deployment goldfish frequencies with the provisional
+  Abdel+Radiant Solar hand-pair blocker, not four-player win rates.
+- Recent audit fixes: prevent Fomori Vault from financing its own {3}, reset
+  Mirage Mirror copying a Monolith before the next untap, disallow white from
+  un-imprinted Gardens copies of Chrome Mox, track Staff paid life, and include
+  incremental Tithe Treasures on opponent draws induced by Gleaming Splendor.
+- The old continuation thresholds were originally calibrated on a different
+  (Boonweaver) deck. Rerun/optimize mulligan policy after collecting baseline
+  data, not by silently changing thresholds inside matched comparisons.
