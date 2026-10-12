@@ -55,6 +55,15 @@ PERMANENT_COSTS = {
 # Sorcery speed spells with modeled effects are NOT inserted into COSTS:
 # legacy default would incorrectly put a sorcery onto the battlefield.
 BATTLEFRONT_COST = (3,1,0)
+# Five-card ramp ablation: fixed from the documented old legal Boonweaver
+# acceleration package. Opponent-free 99-card flicker shell is otherwise exact.
+RAMP_RESTORE5_SWAPS = (
+    ("The One Ring", "Coalition Relic"),
+    ("Throne of Eldraine", "Implements of Sacrifice"),
+    ("Staff of Compleation", "Tooth of Ramos"),
+    ("Mirage Mirror", "Everflowing Chalice"),
+    ("Rings of Brighthearth", "Bucknard's Everfull Purse"),
+)
 # Oracle {X} counts as 0 when Battlefront checks mana value.
 # These are the noncreature/nonland permanents with costs <=3.
 ELIGIBLE_BATTLEFRONT = {
@@ -500,6 +509,10 @@ def build_deck(variant="baseline"):
         cards[cards.index("Prismatic Lens")]="United Battlefront"
     elif variant=="battlefront_over_amulet":
         cards[cards.index("Jeweled Amulet")]="United Battlefront"
+    elif variant=="ramp_restore5":
+        for remove,add in RAMP_RESTORE5_SWAPS:
+            assert cards.count(remove)==1 and add not in cards, (remove,add)
+            cards[cards.index(remove)]=add
     else:
         raise ValueError(variant)
     assert len(cards)==99
@@ -512,6 +525,58 @@ def install(variant="baseline"):
 
 def selftest():
     assert len(BASE_DECK)==99
+    ablated=build_deck("ramp_restore5")
+    assert len(ablated)==99 and len(set(ablated))==87
+    assert all(ablated.count(new)==1 and old not in ablated
+               for old,new in RAMP_RESTORE5_SWAPS)
+    assert all(ablated.count(x)==1 for x in CREATURES)
+    assert "Mana Crypt" not in ablated and "Jeweled Lotus" not in ablated
+    # All five additions are castable, have Oracle-relevant actions,
+    # and are recognized as legitimate battlefield artifacts.
+    assert all(d.is_artifact_perm(new) for old,new in RAMP_RESTORE5_SWAPS)
+    assert d.COSTS["Bucknard's Everfull Purse"]==(2,0,0)
+    assert d.COSTS["Coalition Relic"]==(3,0,0)
+    assert d.COSTS["Implements of Sacrifice"]==(2,0,0)
+    assert d.COSTS["Tooth of Ramos"]==(3,0,0)
+    assert d.COSTS["Everflowing Chalice"]==(0,0,0)
+    for name, cost in [("Bucknard's Everfull Purse",2),("Coalition Relic",3),
+                       ("Implements of Sacrifice",2),("Tooth of Ramos",3),
+                       ("Everflowing Chalice",2)]:
+        st=d.State(1,(name,),(),c=cost)
+        assert any(p.name==name for q in d.cast_actions(st) for p in q.battlefield),name
+    # Relic produces one any-color mana when tapped, or banks a counter for
+    # next first main phase, where it releases as a usable mana.
+    st=d.State(1,(),(),battlefield=(d.Perm("Coalition Relic"),))
+    assert any(q.any>=1 for q in d.tap_mana_actions(st))
+    charged=[q for q in d.special_actions(st)
+             if q.battlefield[0].counters>=1]
+    assert charged and any(d.begin_first_main(d.untap_and_begin(q)).any>=1
+                           for q in charged)
+    # Implements costs {1}, T and sacrifice, then generates exactly WW.
+    st=d.State(1,(),(),battlefield=(d.Perm("Implements of Sacrifice"),),c=1)
+    assert any(q.w==2 and q.c==0 and
+               "Implements of Sacrifice" in q.grave
+               for q in d.utility_actions(st))
+    # Tooth produces W when tapped, and can be sacrificed for another W
+    # even after its tap ability was used this turn.
+    st=d.State(1,(),(),battlefield=(d.Perm("Tooth of Ramos"),))
+    tapped=[q for q in d.tap_mana_actions(st) if q.w==1]
+    assert tapped
+    assert any(q.w==2 and not q.battlefield and
+               "Tooth of Ramos" in q.grave
+               for t in tapped for q in d.tap_mana_actions(t))
+    # Everflowing Chalice kicked once for {2} enters with one counter, T:C.
+    st=d.State(1,("Everflowing Chalice",),(),c=2)
+    kicked=[q for q in d.cast_actions(st)
+            if any(p.name=="Everflowing Chalice" and p.counters==1 for p in q.battlefield)]
+    assert kicked
+    assert any(z.c==1 for q in kicked for z in d.tap_mana_actions(q))
+    # Bucknard's {1},T makes d4 treasures and passes control, so the
+    # artifact disappears from our battlefield after the activation.
+    st=d.State(1,(),(),battlefield=(d.Perm("Bucknard's Everfull Purse"),),c=1)
+    assert any(1<=q.treasures<=4 and not any(
+               p.name=="Bucknard's Everfull Purse" for p in q.battlefield)
+               for q in d.utility_actions(st))
     assert "Radiant Solar" not in WHITE_IMPRINTS
     assert not combo_hand_blocked(d.State(1,("Abdel Adrian, Gorion's Ward",),()))
     assert not combo_hand_blocked(d.State(1,("Radiant Solar",),()))
