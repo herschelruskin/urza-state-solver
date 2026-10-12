@@ -13,8 +13,9 @@ This experiment is isolated on branch `dack-flicker-current100-t1t3-20261012`, f
   simultaneously in hand** prevents a counted Dack deployment. A lone combo creature in
   hand does not block it. This is a provisional simplification, not a proof the pile wins.
 - A positive `win_turn=1/2/3` means the solver can assemble Dack's {4}{W}{W} payment
-  **without the provisional pair-in-hand block**. It is not a full combo win rate, a
-  protected-cast rate, or a literal unconditional casting-availability rate.
+  **without the provisional pair-in-hand block**. Under our explicit working assumption,
+  this legal cast immediately wins in the goldfish. Its outcome is called an assumed
+  goldfish win, not a multiplayer match win rate or a complete ETB-stack proof.
 
 ## New early-deployment mechanics
 
@@ -112,8 +113,9 @@ smoke on each fork update. Old baseline files and branches are not edited.
   seeds, duplicated game IDs, missing rows, or non-contiguous game IDs.
 - `dack_flicker_pool_1024.py` produces exact/cumulative T1-T3 proportions,
   Wilson 95% confidence intervals, seat and mulligan distributions.
-- The pooled rates are deployment goldfish frequencies with the provisional
-  Abdel+Radiant Solar hand-pair blocker, not four-player win rates.
+- The pooled rates are *assumed goldfish win* frequencies: legal Dack casting
+  implies successful combo unless Abdel and Radiant Solar are both in hand.
+  This is not an opponent-interaction-adjusted four-player match win rate.
 - Recent audit fixes: prevent Fomori Vault from financing its own {3}, reset
   Mirage Mirror copying a Monolith before the next untap, disallow white from
   un-imprinted Gardens copies of Chrome Mox, track Staff paid life, and include
