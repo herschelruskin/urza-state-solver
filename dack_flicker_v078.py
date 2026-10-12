@@ -206,6 +206,15 @@ def tap_mana_actions(s):
             # Pay 2 life and tap: one white (optimally chosen in mono-white).
             out.append(replace(s,battlefield=tuple(bf),w=s.w+1,
                                exile=s.exile+(STAFF_LIFE2,)))
+    # Oracle correction for Tooth of Ramos: its sacrifice-to-add-W ability
+    # has no tap cost. The legacy engine only exposed that ability on
+    # untapped artifacts. After tapping Tooth for W, it can still be
+    # sacrificed for a second W in the same turn.
+    for i,p in enumerate(s.battlefield):
+        if p.tapped and d.effective_name(p)=="Tooth of Ramos":
+            bf=list(s.battlefield);bf.pop(i)
+            out.append(replace(s,battlefield=tuple(bf),w=s.w+1,
+                               grave=s.grave+(p.name,)))
     return d._dedupe(out) if hasattr(d,"_dedupe") else engine._dedupe(out)
 d.tap_mana_actions = tap_mana_actions
 
