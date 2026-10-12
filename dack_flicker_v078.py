@@ -309,15 +309,18 @@ def special_actions(s):
                     out.append(replace(paid,hand=d.sort_hand(hh+[take]),
                             grave=paid.grave+(discard,),battlefield=tuple(bf),
                             library=tuple(paid.library[X:])+tuple(remaining)))
-    # Mirage Mirror copying a nonlegendary mana source until end of turn.
+    # Mirage Mirror copying legal artifact/land targets for {2}.
+    # LED and Petal copies resolve their real discard/sacrifice costs
+    # via the inherited source-name-aware mana engine.
     for i,p in enumerate(s.battlefield):
-        if p.name!="Mirage Mirror" or p.aux or p.tapped:
+        if p.name!="Mirage Mirror" or p.aux:
             continue
         for ti,t in enumerate(s.battlefield):
             if i==ti:continue
             target=d.effective_name(t)
             if target not in {"Ancient Tomb","City of Traitors","Crystal Vein",
                               "Sol Ring","Mana Vault","Grim Monolith","Basalt Monolith",
+                              "Lion's Eye Diamond","Lotus Petal",
                               "Arcane Signet","Fellwar Stone","Mox Diamond",
                               "Mind Stone"}:
                 continue
@@ -660,6 +663,33 @@ def selftest():
     # A Gardens copy of Chrome Mox has no imprinted card, so cannot add W.
     copied=d.State(1,(),(),battlefield=(d.Perm("The Mycosynth Gardens",aux="COPY:Chrome Mox"),))
     assert not any(q.w>0 for q in d.tap_mana_actions(copied))
+    # Copy Mana Vault, Grim and Basalt then tap the copied source for 3C
+    # on that same turn, after paying the Mirror's own {2} activation.
+    for target in ("Mana Vault","Grim Monolith","Basalt Monolith"):
+        start=d.State(2,(),(),battlefield=(d.Perm("Mirage Mirror"),
+                         d.Perm(target)),c=2)
+        copies=[q for q in d.special_actions(start)
+            if q.battlefield[0].aux=="COPY:"+target and q.c==0]
+        assert copies,("Mirror cannot copy",target)
+        assert any(q.c==3 and q.battlefield[0].tapped
+                   for pcopy in copies for q in d.tap_mana_actions(pcopy)),target
+    # Mirror -> LED costs {2}, then sacs the MIRROR and discards hand,
+    # adding 3 white while leaving the original LED on the battlefield.
+    start=d.State(2,("Plains",),(),battlefield=(d.Perm("Mirage Mirror"),
+                  d.Perm("Lion's Eye Diamond")),c=2)
+    copies=[q for q in d.special_actions(start)
+            if q.battlefield[0].aux=="COPY:Lion's Eye Diamond" and q.c==0]
+    assert copies,"Mirror LED copy action is missing"
+    payoffs=[q for pcopy in copies for q in d.tap_mana_actions(pcopy)]
+    assert any(q.w==3 and not q.hand and "Plains" in q.grave and
+               "Mirage Mirror" in q.grave and len(q.battlefield)==1 and
+               q.battlefield[0].name=="Lion's Eye Diamond" for q in payoffs)
+    # Activating Mirror while tapped is legal, even though the copied
+    # Vault's tap ability is unusable unless Mirror becomes untapped.
+    tapped=d.State(2,(),(),battlefield=(d.Perm("Mirage Mirror",True),
+                         d.Perm("Mana Vault")),c=2)
+    assert any(z.battlefield[0].aux=="COPY:Mana Vault" and
+               z.battlefield[0].tapped for z in d.special_actions(tapped))
     # Mirage Mirror resumes ordinary untapping after copied Monolith text expires.
     sm=d.State(1,(),(),battlefield=(d.Perm("Mirage Mirror",True,aux="COPY:Mana Vault"),))
     sn=d.untap_and_begin(sm)
