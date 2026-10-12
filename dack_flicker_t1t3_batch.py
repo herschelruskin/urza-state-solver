@@ -60,7 +60,7 @@ def main():
         "counts":dict(counts),"elapsed_sec":round(time.time()-start,3),
         "mulligan_policy":batch.CONFIG["policy"],
         "limitations":["No opponent interactions or protection probabilities",
-                       "Opponent-paid Smothering Tithe is zero guaranteed Treasures",
+                       "Smothering Tithe generates 3 Treasures per completed opponent cycle",
                        "Fomori Vault filtering and post-T3 draw not yet modeled",
                        "Dack creature-combo resolution is not modeled",
                        "Legacy mulligan continuation calibrated for an older deck"],
