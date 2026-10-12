@@ -122,7 +122,7 @@ for card in set(BASE_DECK) | {"United Battlefront"}:
 d.RAMP_PROTECTED = frozenset(set(d.RAMP_PROTECTED) | {
     "The One Ring", "Throne of Eldraine", "Staff of Compleation",
     "Rings of Brighthearth", "Mirage Mirror", "Smothering Tithe",
-    "Charitable Levy", "Disruptor Flute",
+    "Charitable Levy", "Disruptor Flute", "United Battlefront",
 })
 d.MOONSILVER_MANA_ARTIFACTS = frozenset(set(d.MOONSILVER_MANA_ARTIFACTS) | {"Throne of Eldraine", "Staff of Compleation"})
 
