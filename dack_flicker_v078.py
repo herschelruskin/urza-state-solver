@@ -125,8 +125,8 @@ d.RAMP_PROTECTED = frozenset(set(d.RAMP_PROTECTED) | {
 })
 d.MOONSILVER_MANA_ARTIFACTS = frozenset(set(d.MOONSILVER_MANA_ARTIFACTS) | {"Throne of Eldraine", "Staff of Compleation"})
 
-# Correct Thorn: Dack is a creature and is NOT taxed by Thorn of Amethyst.
-# Original v0.77's can_cast_dack added one generic despite the creature type.
+# Dack is a creature and is NOT taxed by Thorn of Amethyst.
+# The inherited v0.74 oracle-corrected cast evaluator already excludes Thorn.
 _previous_can_cast = d.can_cast_dack
 def can_cast_dack(s):
     # A true creature-combo restriction, separate from the mana calculation.
@@ -144,22 +144,11 @@ def bottom_priority(card,seven):
     return _previous_bottom_priority(card,seven)
 d.bottom_priority=bottom_priority
 
-# Correct Thorn: every NONCREATURE spell costs one more, including artifacts.
-# Legacy _cast_actions_ranked applies Thorn only when "not art".
-# Temporarily add {1} to artifact cost metadata only while legacy cast runs.
+# The inherited oracle-audited engine already handles BOTH Thorn and
+# Charitable Levy tax on noncreature spells; never apply those taxes twice.
 _previous_cast = d.cast_actions
 def _legacy_cast_thorn_correct(s):
-    if not any(p.name == "Thorn of Amethyst" for p in s.battlefield):
-        return _previous_cast(s)
-    changed = {}
-    try:
-        for name, (g,w,cc) in tuple(d.COSTS.items()):
-            if is_artifact_perm(name):
-                changed[name] = (g,w,cc)
-                d.COSTS[name] = (g+1,w,cc)
-        return _previous_cast(s)
-    finally:
-        d.COSTS.update(changed)
+    return _previous_cast(s)
 
 # Register actual land output (these 4 lands are not in the legacy tap table).
 _original_tap = d.tap_mana_actions
@@ -391,54 +380,59 @@ def battlefront_actions(s):
                 results.extend(states)
     return engine._dedupe(results)
 
-def _charitable_levy_reaction(s, q):
-    # Levy triggers only for spells CAST while already on the battlefield.
-    # It does not trigger from Battlefront's put-onto-battlefield effects.
-    if q.spells<=s.spells or q.noncreature_spells<=s.noncreature_spells:
-        return q
-    idx=next((i for i,p in enumerate(s.battlefield)
-              if d.effective_name(p)=="Charitable Levy"),None)
-    if idx is None:return q
-    # It may have been sacrificed as part of a spell cost; then no trigger.
-    qi=next((i for i,p in enumerate(q.battlefield)
-             if d.effective_name(p)=="Charitable Levy"),None)
-    if qi is None:return q
+# The inherited v0.74-v0.77 spell engine already applies Levy tax,
+# counter accumulation, draw, and Plains-to-battlefield. Do not duplicate.
+# Only genuinely new sorcery/cantrip branches are added here.
+def _cast_cantrip_actions(s):
+    costs={"Scout's Warning":(0,1),"Abeyance":(1,1)}
+    out=[]
+    levy=any(d.effective_name(p)=="Charitable Levy" for p in s.battlefield)
+    thorn=any(d.effective_name(p)=="Thorn of Amethyst" for p in s.battlefield)
+    trini=any(d.effective_name(p)=="Trinisphere" for p in s.battlefield)
+    for card,(g,w) in costs.items():
+        if card not in s.hand or not d.stax_allows(s,card):continue
+        if thorn:g+=1
+        if levy:g+=1
+        if trini:g=max(g,3-w)
+        for paid in d.pay_options(s,g,w):
+            if not d.payment_stax_ok(s,paid):continue
+            h=list(paid.hand);h.remove(card)
+            q=d.draw(replace(paid,hand=d.sort_hand(h),
+                       grave=paid.grave+(card,),spells=paid.spells+1,
+                       noncreature_spells=paid.noncreature_spells+1,
+                       nonartifact_spells=paid.nonartifact_spells+1),1)
+            # Levy triggered by casting the cantrip: its trigger resolves
+            # before the spell, but both draws are represented in net state.
+            if levy:
+                q=_apply_new_noncreature_levy_trigger(s,q)
+            out.append(q)
+    return out
+
+def _apply_new_noncreature_levy_trigger(s,q):
+    ix=next((i for i,x in enumerate(q.battlefield)
+             if d.effective_name(x)=="Charitable Levy"),None)
+    if ix is None:return q
     bf=list(q.battlefield)
-    counters=bf[qi].counters+1
-    if counters<3:
-        bf[qi]=replace(bf[qi],counters=counters)
+    counter=bf[ix].counters+1
+    if counter<3:
+        bf[ix]=replace(bf[ix],counters=counter)
         return replace(q,battlefield=tuple(bf))
-    # Third noncreature cast: Levy sacrifices, draws one, and optionally
-    # searches a basic Plains directly onto the battlefield tapped.
-    bf.pop(qi)
-    z=d.draw(replace(q,battlefield=tuple(bf),
-                      grave=q.grave+("Charitable Levy",)),1)
-    if "Plains" in z.library:
-        lib=list(z.library);lib.remove("Plains")
-        bf2=list(z.battlefield)+[d.Perm("Plains",True,0,s.turn)]
-        return replace(z,library=d.shuffled_unknown(lib),battlefield=tuple(bf2))
-    return z
+    bf.pop(ix)
+    q=d.draw(replace(q,battlefield=tuple(bf),
+                     grave=q.grave+("Charitable Levy",)),1)
+    if "Plains" in q.library:
+        lib=list(q.library);lib.remove("Plains")
+        return replace(q,library=d.shuffled_unknown(lib),
+                   battlefield=q.battlefield+(d.Perm("Plains",True,0,s.turn),))
+    return q
 
 def cast_actions(s):
-    levy=any(d.effective_name(p)=="Charitable Levy" for p in s.battlefield)
-    raw=[]
-    # Correct general noncreature tax for Charitable Levy. The inherited
-    # cost engine does not model it. Avoid double charging in special branches.
-    changed={}
-    if levy:
-        try:
-            for name, (g,w,cc) in tuple(d.COSTS.items()):
-                if name != "Charitable Levy":
-                    changed[name]=(g,w,cc)
-                    d.COSTS[name]=(g+1,w,cc)
-            raw=_legacy_cast_thorn_correct(s)
-        finally:
-            d.COSTS.update(changed)
-    else:
-        raw=_legacy_cast_thorn_correct(s)
-    raw+=battlefront_actions(s)
-    if levy:
-        raw=[_charitable_levy_reaction(s,q) for q in raw]
+    raw=list(_previous_cast(s))
+    # Battlefront itself is a noncreature spell and triggers Levy.
+    for z in battlefront_actions(s):
+        raw.append(_apply_new_noncreature_levy_trigger(s,z)
+                   if any(p.name=="Charitable Levy" for p in s.battlefield) else z)
+    raw.extend(_cast_cantrip_actions(s))
     return engine._dedupe(raw)
 d.cast_actions = cast_actions
 
@@ -549,11 +543,19 @@ def selftest():
     # Untap Staff costs FIVE generic, never five life.
     s=d.State(1,(),(),battlefield=(d.Perm("Staff of Compleation",True),),c=5)
     assert any(not q.battlefield[0].tapped and q.c==0 for q in d.special_actions(s))
-    # Levy collects cast noncreature spells, then draws and finds Plains on third.
+    # Inherited Levy handles costs/triggers once, not twice.
     s=d.State(1,("Sol Ring",),("Plains","Arcane Signet"),
               battlefield=(d.Perm("Charitable Levy",False,2),),c=2)
     assert any("Charitable Levy" in q.grave and "Plains" in q.hand
                for q in d.cast_actions(s))
+    # Test at exactly the threshold to catch accidental double spell taxes.
+    ss=d.State(1,("Sol Ring",),(),battlefield=(d.Perm("Thorn of Amethyst"),),c=2)
+    assert any(p.name=="Sol Ring" for q in d.cast_actions(ss) for p in q.battlefield)
+    # Two real cantrips: Scout's Warning W, Abeyance 1W.
+    ss=d.State(1,("Scout's Warning",),("Mana Vault",),w=1)
+    assert any("Mana Vault" in q.hand for q in d.cast_actions(ss))
+    ss=d.State(1,("Abeyance",),("Plains",),w=1,c=1)
+    assert any("Plains" in q.hand for q in d.cast_actions(ss))
     # Battlefront 3W can hit two eligible permanents directly into play.
     s=d.State(2,("United Battlefront",),
         ("Sol Ring","Arcane Signet","Plains","Felidar Guardian","The One Ring","Prismatic Lens","Blind Obedience"),
