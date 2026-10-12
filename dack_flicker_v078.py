@@ -281,6 +281,9 @@ def special_actions(s):
         X=sum(d.is_artifact_perm(d.effective_name(x)) for x in s.battlefield)+s.treasures
         if X<1:continue
         for paid in d.pay_options(s,3):
+            # The Vault itself must remain untapped after paying the
+            # activation cost; it cannot finance its own {3} then tap again.
+            if paid.battlefield[fi].tapped:continue
             top=paid.library[:X]
             if not top:continue
             for discard in sorted(set(paid.hand)):
@@ -314,11 +317,12 @@ d.special_actions=special_actions
 
 _old_untap = d.untap_and_begin
 def untap_and_begin(s):
-    s = _old_untap(s)
-    # Mirror's copy effect expires at end of previous turn; don't grant
-    # permanent copied mana production on the next turn.
-    return replace(s,battlefield=tuple(replace(p,aux="") if p.name=="Mirage Mirror" and
+    # Copy expiration occurs at the END of the previous turn, before the
+    # normal untap step. Otherwise a Mirror copied into Mana Vault/Monolith
+    # erroneously skips untapping forever.
+    s=replace(s,battlefield=tuple(replace(p,aux="") if p.name=="Mirage Mirror" and
         p.aux.startswith("COPY:") else p for p in s.battlefield))
+    return _old_untap(s)
 d.untap_and_begin=untap_and_begin
 
 # Rings can copy Voltaic Key's ability for {2}: the original untaps
@@ -364,8 +368,10 @@ def _front_hit(s,card):
             hand=list(s.hand);hand.remove(imprint)
             bf=d.artifact_enters_bf(s.battlefield,d.Perm(card,False,0,s.turn))
             outputs.append(replace(s,hand=d.sort_hand(hand),exile=s.exile+(imprint,),battlefield=bf))
-        # Without a white imprint it is a zero-mana artifact, not a white source.
-        if outputs:return outputs
+        # The inherited Chrome Mox mana method assumes an imprinted white
+        # spell. Until un-imprinted Mox is represented as a distinct artifact
+        # state, omit this non-mana Battlefront hit instead of falsely granting W.
+        return outputs
     if card=="Mox Diamond":
         outputs=[]
         for land in sorted(set(s.hand)&set(d.LANDS)):
@@ -612,6 +618,17 @@ def selftest():
         battlefield=(d.Perm("Rings of Brighthearth"),d.Perm("The One Ring")),c=2)
     assert any(q.battlefield[1].counters==2 and len(q.hand)==3
         for q in d.special_actions(ss))
+    # Vault cannot spend its own mana to pay {3} then activate.
+    sf=d.State(2,("Plains",),("Mana Vault","Arcane Signet"),
+        battlefield=(d.Perm("Fomori Vault"),d.Perm("Sol Ring")),c=2)
+    assert not any("Mana Vault" in q.hand for q in d.special_actions(sf))
+    # Mirage Mirror resumes ordinary untapping after copied Monolith text expires.
+    sm=d.State(1,(),(),battlefield=(d.Perm("Mirage Mirror",True,aux="COPY:Mana Vault"),))
+    sn=d.untap_and_begin(sm)
+    assert sn.battlefield[0].aux=="" and not sn.battlefield[0].tapped
+    # Battlefront Chrome Mox with no eligible imprint is NEVER a white source.
+    so=d.State(1,(),())
+    assert _front_hit(so,"Chrome Mox")==[]
     # Rings/Voltaic untaps itself (as well as the selected tapped rock).
     ss=d.State(2,(),(),battlefield=(d.Perm("Rings of Brighthearth"),
         d.Perm("Voltaic Key"),d.Perm("Arcane Signet",True)),c=3)
