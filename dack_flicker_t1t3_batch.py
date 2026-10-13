@@ -10,7 +10,8 @@ from collections import Counter
 import dack_flicker_v078 as fork
 import dack_full_deck_accel_n512_batch as batch
 
-VARIANTS=("baseline","battlefront_over_prismatic","battlefront_over_amulet","ramp_restore5")
+VARIANTS=("baseline","battlefront_over_prismatic","battlefront_over_amulet","ramp_restore5",
+          "single_ramp_0","single_ramp_1","single_ramp_2","single_ramp_3","single_ramp_4")
 batch.build_deck=fork.build_deck
 batch.CONFIG.update({
     "engine":"v0.78-flicker-current100-deployment-only",
