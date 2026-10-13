@@ -1,0 +1,76 @@
+name: Dack flicker five individual ramp swaps matched N512
+on:
+  push:
+    branches: [dack-flicker-current100-t1t3-20261012]
+    paths: ['dack_flicker_single_swap_n512.launch']
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python dack_flicker_t1t3_batch.py --audit
+      - run: python dack_flicker_pool_1024.py --selftest
+  game:
+    needs: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        variant: [baseline, single_ramp_0, single_ramp_1, single_ramp_2, single_ramp_3, single_ramp_4]
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run paired-seeded independent deck variant
+        shell: bash
+        run: |
+          mkdir -p shards
+          python dack_flicker_t1t3_batch.py \
+            --variant "${{ matrix.variant }}" \
+            --shard "${{ matrix.shard }}" --games 32 --beam 240 \
+            --out "shards/${{ matrix.variant }}_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-single-${{ matrix.variant }}-${{ matrix.shard }}
+          path: shards/${{ matrix.variant }}_${{ matrix.shard }}.json.gz
+          retention-days: 30
+          if-no-files-found: error
+  pool:
+    needs: [audit,game]
+    if: ${{ always() && needs.audit.result == 'success' && needs.game.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Download all matched 512-game samples
+        uses: actions/download-artifact@v4
+        with:
+          pattern: dack-single-*
+          path: artifact-root
+      - name: Partition shards into exact variant folders
+        shell: bash
+        run: |
+          for v in baseline single_ramp_0 single_ramp_1 single_ramp_2 single_ramp_3 single_ramp_4; do
+            mkdir -p "shards/$v"
+            for i in $(seq 0 15); do
+              cp "artifact-root/dack-single-$v-$i/$v"_"$i.json.gz" "shards/$v/shard_$i.json.gz"
+            done
+          done
+      - name: Strict pooled paired card-by-card outcome audit
+        run: python dack_flicker_single_swap_pool.py --root shards --n 512 --out dack_flicker_single_swap_n512.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-flicker-single-swaps-n512-final
+          path: dack_flicker_single_swap_n512.json
+          retention-days: 60
+          if-no-files-found: error
