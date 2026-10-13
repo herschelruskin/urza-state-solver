@@ -522,6 +522,12 @@ def build_deck(variant="baseline"):
         for remove,add in RAMP_RESTORE5_SWAPS:
             assert cards.count(remove)==1 and add not in cards, (remove,add)
             cards[cards.index(remove)]=add
+    elif variant.startswith("single_ramp_"):
+        idx=int(variant.removeprefix("single_ramp_"))
+        assert 0 <= idx < len(RAMP_RESTORE5_SWAPS),variant
+        remove,add=RAMP_RESTORE5_SWAPS[idx]
+        assert cards.count(remove)==1 and add not in cards,(remove,add)
+        cards[cards.index(remove)]=add
     else:
         raise ValueError(variant)
     assert len(cards)==99
@@ -539,6 +545,12 @@ def selftest():
     assert all(ablated.count(new)==1 and old not in ablated
                for old,new in RAMP_RESTORE5_SWAPS)
     assert all(ablated.count(x)==1 for x in CREATURES)
+    for i,(old,new) in enumerate(RAMP_RESTORE5_SWAPS):
+        single=build_deck(f"single_ramp_{i}")
+        assert len(single)==99 and len(set(single))==87
+        assert single.count(new)==1 and old not in single
+        assert {x for x in BASE_DECK if x not in single}=={old}
+        assert {x for x in single if x not in BASE_DECK}=={new}
     assert "Mana Crypt" not in ablated and "Jeweled Lotus" not in ablated
     # All five additions are castable, have Oracle-relevant actions,
     # and are recognized as legitimate battlefield artifacts.
