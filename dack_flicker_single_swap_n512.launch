@@ -1,0 +1,12 @@
+Individual-card N512 matched-seed follow-up to successful 5-for-5 N1024 ramp experiment.
+Same deck engine, same action implementations, beam 240 and v0.77 inherited mulligan policy.
+Six independent variants each run 512 games on game IDs 0..511, allowing paired outcomes.
+Five single-card substitutions:
+0: The One Ring -> Coalition Relic
+1: Throne of Eldraine -> Implements of Sacrifice
+2: Staff of Compleation -> Tooth of Ramos
+3: Mirage Mirror -> Everflowing Chalice
+4: Rings of Brighthearth -> Bucknard's Everfull Purse
+Baseline: unchanged legal 99-card flicker deck.
+Produces paired per-card marginal T1, T2 and T3 improvements and 95% confidence intervals.
+Caution: individual effects may be nonadditive and do not include protection/interaction utility.
