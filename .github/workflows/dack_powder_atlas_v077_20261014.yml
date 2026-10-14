@@ -1,0 +1,25 @@
+name: Dack Boonweaver Powder Atlas v077 paired smoke
+on:
+  push:
+    branches: [dack-boonweaver-powder-atlas-20261014]
+    paths:
+      - 'dack_powder_atlas_v077_20261014.py'
+      - '.github/workflows/dack_powder_atlas_v077_20261014.yml'
+  workflow_dispatch:
+jobs:
+  paired:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Smoke exact game engine and card rules
+        run: python -u dack_powder_atlas_v077_20261014.py --n 8 --beam 160 --screen-beam 40 --out powder_atlas_smoke_n8.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-boonweaver-powder-atlas-n8
+          path: powder_atlas_smoke_n8.json
+          if-no-files-found: warn
