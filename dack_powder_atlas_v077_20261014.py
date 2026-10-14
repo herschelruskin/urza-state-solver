@@ -41,7 +41,7 @@ def build_deck(name):
     assert len(cards)==99
     return tuple(cards)
 
-for name in ("Serum Powder","Planar Atlas"):
+for name in set(BASE)|{"Serum Powder","Planar Atlas"}:
     if name not in d.CARD_ID:
         cid=max(d.CARD_ID.values())+1
         d.CARD_ID[name]=cid;d.ID_CARD[cid]=name
