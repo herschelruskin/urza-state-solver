@@ -108,34 +108,45 @@ def blind_pre_candidates(state,seat,beam,limit=4):
         ranked.extend(vals[:limit])
     return False,ranked,{str(k):len(v) for k,v in candidates.items()}
 
-def post_activation_T2(s,roll,beam):
-    """Resolve a known die AFTER the activation, and play adaptively."""
+def activation_templates(s):
+    """Commit mana payment and KCI response choice before rolling.
+
+    Setting the roll to one here is purely a placeholder for generating legal
+    paid postactivation states. The chosen state is reused identically across
+    all four die faces, changing *only* the rolled Treasure count.
+    """
+    set_roll(1)
+    opts=[q for q in ORIG_UTIL(s) if activated(s,q)]
+    assert opts,(s,"Purse not activatable")
+    # Preserve different payments and KCI responses: these are distinct
+    # pre-roll policies. Do NOT choose a different one for each outcome.
+    distinct={}
+    for q in opts:
+        distinct[d.key(q)]=q
+    return sorted(distinct.values(),key=d.score,reverse=True)
+
+def post_activation_T2(committed_one_treasure_state,roll,beam):
+    """Adapt to the realized roll AFTER precommitting payment/KCI response."""
+    assert 1<=roll<=4
     set_roll(roll)
     d.utility_actions=ORIG_UTIL
-    # Distinct legal KCI and ordinary handoff resolutions may both be chosen
-    # postactivation, but there is no die-dependent choice before activation.
-    acts=ORIG_UTIL(s)
-    after=[q for q in acts if activated(s,q)]
-    assert after,(s,"purse not activatable")
-    successes=[]
-    for start in after:
-        if d.can_cast_dack(start):
-            return True
-        wins,fr=d.search_turn_frontier_many([start],beam=beam,
-                                             depth=24 if s.turn==1 else 24)
-        if wins:return True
-        if s.turn==2:continue
-        fr.sort(key=d.score,reverse=True)
-        t2=[]
-        for q in fr[:beam]:
-            q=d.untap_and_begin(replace(q,turn=2))
-            q=d.add_opponent_cycle_resources(q)
-            for u in d.mana_vault_upkeep_options(q):
-                t2.append(d.begin_first_main(d.saga_advance(d.draw(u,1))))
-        if not t2:continue
-        wins,_=d.search_turn_frontier_many(t2,beam=beam,depth=24)
-        if wins:return True
-    return False
+    start=replace(committed_one_treasure_state,
+                  treasures=committed_one_treasure_state.treasures+roll-1)
+    if d.can_cast_dack(start):
+        return True
+    wins,fr=d.search_turn_frontier_many([start],beam=beam,depth=24)
+    if wins:return True
+    if start.turn==2:return False
+    fr.sort(key=d.score,reverse=True)
+    t2=[]
+    for q in fr[:beam]:
+        q=d.untap_and_begin(replace(q,turn=2))
+        q=d.add_opponent_cycle_resources(q)
+        for u in d.mana_vault_upkeep_options(q):
+            t2.append(d.begin_first_main(d.saga_advance(d.draw(u,1))))
+    if not t2:return False
+    wins,_=d.search_turn_frontier_many(t2,beam=beam,depth=24)
+    return bool(wins)
 
 def blind_T2(gid,beam=160,limit=4):
     """Expected chance success, no die clairvoyance in activation commitment."""
@@ -146,12 +157,15 @@ def blind_T2(gid,beam=160,limit=4):
                 "evaluated":0,"chosen":None,"roll_successes":4}
     best=(0.,None,0)
     for s in candidates:
-        hits=0
-        for die in (1,2,3,4):
-            hits+=int(post_activation_T2(s,die,beam))
-        expected=hits/4
-        if expected>best[0]:
-            best=(expected,s.turn,hits)
+        # Both payment and the KCI response are chosen before the die roll.
+        for committed in activation_templates(s):
+            hits=0
+            for die in (1,2,3,4):
+                hits+=int(post_activation_T2(committed,die,beam))
+            expected=hits/4
+            if expected>best[0]:
+                best=(expected,s.turn,hits)
+            if best[0]==1:break
         if best[0]==1:break
     set_roll(2)
     return {"gid":gid,"prob_T2":best[0],"keep_n":keep,
@@ -183,10 +197,22 @@ def selftest():
     st=d.State(1,(),tuple(root.COMBO),battlefield=(d.Perm(PURSE),),c=1)
     q=[x for x in ORIG_UTIL(st) if activated(st,x)]
     assert q and all(z.treasures==2 for z in q),(q,"neutral roll not fixed")
+    templates=activation_templates(st)
+    assert templates and all(t.treasures==1 for t in templates)
     for die in (1,2,3,4):
         set_roll(die)
         q=[x for x in ORIG_UTIL(st) if activated(st,x)]
         assert q and all(z.treasures==die for z in q)
+        for committed in templates:
+            resolved=replace(committed,treasures=committed.treasures+die-1)
+            assert resolved.treasures==die
+    # With KCI present, the on-stack sacrifice response must be committed
+    # before the d4 resolves. Both response/nonresponse templates are retained.
+    st_kci=d.State(1,(),tuple(root.COMBO),
+                   battlefield=(d.Perm(PURSE),d.Perm("Krark-Clan Ironworks")),c=1)
+    kci_templates=activation_templates(st_kci)
+    assert any(PURSE in q.grave for q in kci_templates),"missing KCI response"
+    assert any(PURSE not in q.grave for q in kci_templates),"missing normal handoff"
     # Activation remains a real paid action (1 generic) and source is gone;
     # it is never both on our battlefield and giving us treasures.
     set_roll(2)
