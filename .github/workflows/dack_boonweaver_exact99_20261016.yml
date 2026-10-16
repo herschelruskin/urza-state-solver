@@ -1,0 +1,85 @@
+name: Dack Boonweaver Oct 16 exact99 matched N1024
+on:
+  push:
+    branches: [dack-boonweaver-exact99-20261016]
+    paths:
+      - 'dack_boonweaver_exact99_20261016.py'
+      - 'dack_boonweaver_exact99_pool_20261016.py'
+      - '.github/workflows/dack_boonweaver_exact99_20261016.yml'
+  workflow_dispatch:
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile both tools
+        run: python -m py_compile dack_boonweaver_exact99_20261016.py dack_boonweaver_exact99_pool_20261016.py
+      - name: Check card rules, combo library restriction, mana and card count
+        run: python -u dack_boonweaver_exact99_20261016.py --audit
+      - name: Check pooler
+        run: python -u dack_boonweaver_exact99_pool_20261016.py --selftest
+      - name: Natural full-list current single game smoke
+        run: python -u dack_boonweaver_exact99_20261016.py --variant current --shard 0 --games 1 --beam 80 --out smoke_current.json.gz
+      - name: Natural full-list Oct 10 single game smoke
+        run: python -u dack_boonweaver_exact99_20261016.py --variant oct10 --shard 0 --games 1 --beam 80 --out smoke_oct10.json.gz
+  shard:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        variant: [current, oct10]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run frozen N1024 dataset shard
+        shell: bash
+        run: |
+          mkdir -p shards
+          python -u dack_boonweaver_exact99_20261016.py \
+            --variant "${{ matrix.variant }}" \
+            --shard "${{ matrix.shard }}" \
+            --games 32 \
+            --beam 240 \
+            --out "shards/${{ matrix.variant }}_shard_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: boon-${{ matrix.variant }}-shard-${{ matrix.shard }}
+          path: shards/*.json.gz
+          retention-days: 30
+          if-no-files-found: error
+  pool:
+    needs: [smoke, shard]
+    if: ${{ needs.shard.result == 'success' && needs.smoke.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: boon-*-shard-*
+          merge-multiple: true
+          path: shards
+      - name: Verify exact hashes, per-variant game IDs, seed pairs and pool percentages
+        run: |
+          python -u dack_boonweaver_exact99_pool_20261016.py \
+            --glob 'shards/*.json.gz' --expected 1024 --beam 240 \
+            --out boonweaver_exact99_pooled_20261016.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: boonweaver-exact99-oct16-pooled-n1024
+          path: boonweaver_exact99_pooled_20261016.json
+          retention-days: 90
+          if-no-files-found: error
