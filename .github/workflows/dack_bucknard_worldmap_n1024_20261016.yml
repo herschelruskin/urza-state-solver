@@ -1,0 +1,127 @@
+name: Dack Bucknard vs World Map N1024 confirmation
+on:
+  push:
+    branches: [dack-bucknard-worldmap-confirm-n1024-20261016]
+    paths:
+      - 'dack_bucknard_worldmap_n1024_pool_20261016.py'
+      - '.github/workflows/dack_bucknard_worldmap_n1024_20261016.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and audit exact single-card substitution
+        run: |
+          python -m py_compile dack_bucknard_minimal_swaps_20261016.py dack_bucknard_worldmap_n1024_pool_20261016.py
+          python -u dack_bucknard_minimal_swaps_20261016.py --audit
+          python -u dack_bucknard_worldmap_n1024_pool_20261016.py --selftest
+      - name: Download independent first-half game zero
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p previous
+          gh run download 38931616641 --repo "${{ github.repository }}" \
+            --name buck-buck_worldmap-0 --dir previous
+          test -s previous/buck_worldmap_shard_0.json.gz
+      - name: Replay exact Bucknard game 0 with archived first-half parity check
+        run: |
+          python -u dack_bucknard_minimal_swaps_20261016.py \
+            --variant buck_worldmap --shard 0 --games 1 \
+            --beam 240 --out new_smoke.json.gz
+          python - <<'PY'
+          import gzip,json
+          with gzip.open("previous/buck_worldmap_shard_0.json.gz","rt") as f:before=json.load(f)
+          with gzip.open("new_smoke.json.gz","rt") as f:after=json.load(f)
+          assert before["deck_sha256"]==after["deck_sha256"],"deck hash drift"
+          first,now=before["rows"][0],after["rows"][0]
+          for k in ("game_id","seed","seat","keep_n","win_turn","audit"):
+              assert first[k]==now[k],(k,first[k],now[k])
+          print("BUCKNARD_FIRST_HALF_SEED_PARITY_PASS",flush=True)
+          PY
+  shard:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        shard: [16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run new 32-game matching shard IDs 512-1023
+        run: |
+          mkdir -p new_buck
+          python -u dack_bucknard_minimal_swaps_20261016.py \
+            --variant buck_worldmap --shard "${{ matrix.shard }}" \
+            --games 32 --beam 240 \
+            --out "new_buck/buck_worldmap_shard_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: buck1024-shard-${{ matrix.shard }}
+          path: new_buck/*.json.gz
+          retention-days: 60
+          if-no-files-found: error
+  pool:
+    needs: [smoke,shard]
+    if: ${{ needs.shard.result == 'success' && needs.smoke.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: buck1024-shard-*
+          merge-multiple: true
+          path: new_buck
+      - name: Download exact 1024-game baseline and original first 512 Bucknard games
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p baseline old_buck
+          gh run download 38912678782 --repo "${{ github.repository }}" \
+            --pattern 'boon-current-shard-*' --dir baseline
+          gh run download 38931616641 --repo "${{ github.repository }}" \
+            --pattern 'buck-buck_worldmap-*' --dir old_buck
+          test "$(find baseline -name '*.json.gz' | wc -l)" -eq 32
+          test "$(find old_buck -name '*.json.gz' | wc -l)" -eq 16
+          test "$(find new_buck -name '*.json.gz' | wc -l)" -eq 16
+      - name: Hash and seed integrity, paired deltas, discordant games, exact McNemar
+        run: |
+          python -u dack_bucknard_worldmap_n1024_pool_20261016.py \
+            --baseline 'baseline/**/*.json.gz' \
+            --first-half 'old_buck/**/*.json.gz' \
+            --second-half 'new_buck/**/*.json.gz' \
+            --out bucknard_worldmap_n1024_confirmed.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bucknard-worldmap-confirmed-n1024-results
+          path: bucknard_worldmap_n1024_confirmed.json
+          retention-days: 90
+          if-no-files-found: error
+      - name: Commit complete results for direct retrieval
+        run: |
+          mkdir -p benchmark_results
+          cp bucknard_worldmap_n1024_confirmed.json \
+            benchmark_results/bucknard_worldmap_n1024_confirmed.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/bucknard_worldmap_n1024_confirmed.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish 1024-pair confirmed Bucknard vs World Map results'
+            git push
+          fi
