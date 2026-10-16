@@ -1,0 +1,47 @@
+name: Publish Boonweaver pooled results
+on:
+  push:
+    branches: [dack-boonweaver-exact99-20261016]
+    paths:
+      - '.github/workflows/publish_boonweaver_pooled_20261016.yml'
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Retrieve completed corrected benchmark artifact
+        run: |
+          mkdir -p pooled_artifact
+          gh run download 38912678782 --repo "${{ github.repository }}" --name boonweaver-exact99-oct16-pooled-n1024 --dir pooled_artifact
+          test -s pooled_artifact/boonweaver_exact99_pooled_20261016.json
+      - name: Verify and publish pooled result JSON
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          p=pathlib.Path("pooled_artifact/boonweaver_exact99_pooled_20261016.json")
+          d=json.loads(p.read_text())
+          assert d["status"]=="PASS" and d["n_per_variant"]==1024 and d["beam"]==240
+          assert set(d["variants"])=={"current","oct10"}
+          pathlib.Path("benchmark_results").mkdir(exist_ok=True)
+          target=pathlib.Path("benchmark_results/boonweaver_exact99_pooled_20261016.json")
+          target.write_text(json.dumps(d,indent=2)+"\n")
+          for name,v in d["variants"].items():
+              print(name,v["cumulative_pct"])
+          print("paired delta:",d["paired_current_minus_oct10"])
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add benchmark_results/boonweaver_exact99_pooled_20261016.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish verified Oct 16 exact99 N1024 paired benchmark results"
+            git push
+          fi
