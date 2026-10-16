@@ -1,0 +1,113 @@
+name: Boonweaver Plains and Battlefront paired N512
+on:
+  push:
+    branches: [dack-plains-battlefront-swaps-20261016]
+    paths:
+      - 'dack_plains_battlefront_ablation_20261016.py'
+      - 'dack_plains_battlefront_pool_20261016.py'
+      - '.github/workflows/dack_plains_battlefront_20261016.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile regression runner and paired pooler
+        run: python -m py_compile dack_plains_battlefront_ablation_20261016.py dack_plains_battlefront_pool_20261016.py
+      - name: Validate seven exact deck substitutions, 2C rock, Bucknard, Staff
+        run: python -u dack_plains_battlefront_ablation_20261016.py --audit
+      - name: Validate paired pooler
+        run: python -u dack_plains_battlefront_pool_20261016.py --selftest
+      - name: Smoke new Plains and generic-rock single games
+        run: |
+          python -u dack_plains_battlefront_ablation_20261016.py \
+            --variant map_plains --shard 0 --games 1 --beam 100 --out smoke_map_plains.json.gz
+          python -u dack_plains_battlefront_ablation_20261016.py \
+            --variant battlefront_generic --shard 0 --games 1 --beam 100 --out smoke_battlefront_generic.json.gz
+  shard:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 14
+      matrix:
+        variant: [map_plains, partition_plains, tithe_plains, double_plains, battlefront_generic, buck_double_plains, buck_battlefront_generic]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run matched 32-game shard
+        run: |
+          mkdir -p shards
+          python -u dack_plains_battlefront_ablation_20261016.py \
+            --variant "${{ matrix.variant }}" \
+            --shard "${{ matrix.shard }}" \
+            --games 32 --beam 240 \
+            --out "shards/${{ matrix.variant }}_shard_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plainstest-${{ matrix.variant }}-${{ matrix.shard }}
+          path: shards/*.json.gz
+          retention-days: 30
+          if-no-files-found: error
+  pool:
+    needs: [smoke, shard]
+    if: ${{ needs.shard.result == 'success' && needs.smoke.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: plainstest-*
+          merge-multiple: true
+          path: shards
+      - name: Fetch previous N1024 baseline and N512 Bucknard reference artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p baseline buck_reference
+          gh run download 38912678782 --repo "${{ github.repository }}" \
+            --pattern 'boon-current-shard-*' --dir baseline
+          gh run download 38931616641 --repo "${{ github.repository }}" \
+            --pattern 'buck-buck_worldmap-*' --dir buck_reference
+          test "$(find baseline -name '*.json.gz' | wc -l)" -eq 32
+          test "$(find buck_reference -name '*.json.gz' | wc -l)" -eq 16
+      - name: Verify deck hashes, complete IDs and calculate seven paired comparisons
+        run: |
+          python -u dack_plains_battlefront_pool_20261016.py \
+            --baseline 'baseline/**/*.json.gz' \
+            --buck 'buck_reference/**/*.json.gz' \
+            --shards shards --n 512 --beam 240 \
+            --out plains_battlefront_pooled_20261016.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plains-battlefront-n512-pooled
+          path: plains_battlefront_pooled_20261016.json
+          retention-days: 90
+          if-no-files-found: error
+      - name: Commit pooled machine-readable results
+        run: |
+          mkdir -p benchmark_results
+          cp plains_battlefront_pooled_20261016.json \
+            benchmark_results/plains_battlefront_pooled_20261016.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/plains_battlefront_pooled_20261016.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish paired N512 Plains and Battlefront optimization results'
+            git push
+          fi
