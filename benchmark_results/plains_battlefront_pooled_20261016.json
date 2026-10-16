@@ -1,0 +1,691 @@
+{
+  "status": "PASS",
+  "n_per_arm": 512,
+  "beam": 240,
+  "baseline_run_id": 38912678782,
+  "buck_reference_run_id": 38931616641,
+  "baseline_current": {
+    "sha": "3a10a02e1aae070645129fa85ed94240f1ae9d5447e3711f7621f92064d9f129",
+    "summary": {
+      "n": 512,
+      "counts": {
+        "0": 83,
+        "1": 32,
+        "2": 208,
+        "3": 189
+      },
+      "cumulative_pct": {
+        "by_T1": 6.25,
+        "by_T2": 46.875,
+        "by_T3": 83.7891
+      },
+      "Wilson95pct": {
+        "by_T1": [
+          4.462,
+          8.69
+        ],
+        "by_T2": [
+          42.592,
+          51.205
+        ],
+        "by_T3": [
+          80.347,
+          86.728
+        ]
+      },
+      "mean_keep": 5.5078
+    }
+  },
+  "reference_buck_worldmap": {
+    "sha": "f130ff4c9c0fbc888525070877fe820caba03e836e0be66ec60ea3410e950068",
+    "summary": {
+      "n": 512,
+      "counts": {
+        "0": 73,
+        "1": 36,
+        "2": 223,
+        "3": 180
+      },
+      "cumulative_pct": {
+        "by_T1": 7.0312,
+        "by_T2": 50.5859,
+        "by_T3": 85.7422
+      },
+      "Wilson95pct": {
+        "by_T1": [
+          5.122,
+          9.581
+        ],
+        "by_T2": [
+          46.267,
+          54.896
+        ],
+        "by_T3": [
+          82.447,
+          88.505
+        ]
+      },
+      "mean_keep": 5.5957
+    },
+    "paired_delta_vs_current": {
+      "by_T1": {
+        "delta_pp": 0.7812,
+        "paired_normal_95pct_pp": [
+          0.018,
+          1.545
+        ],
+        "two_sided_p_approx": 0.044867,
+        "better_only": 4,
+        "worse_only": 0
+      },
+      "by_T2": {
+        "delta_pp": 3.7109,
+        "paired_normal_95pct_pp": [
+          1.533,
+          5.889
+        ],
+        "two_sided_p_approx": 0.000837,
+        "better_only": 26,
+        "worse_only": 7
+      },
+      "by_T3": {
+        "delta_pp": 1.9531,
+        "paired_normal_95pct_pp": [
+          0.007,
+          3.9
+        ],
+        "two_sided_p_approx": 0.049224,
+        "better_only": 18,
+        "worse_only": 8
+      }
+    }
+  },
+  "variants": {
+    "map_plains": {
+      "swaps": [
+        [
+          "World Map",
+          "Plains"
+        ]
+      ],
+      "sha": "6ae27f71380023722e771e3d807937a72e4ec0a9b5966fe0a33bf217a9c2b1ac",
+      "summary": {
+        "n": 512,
+        "counts": {
+          "0": 82,
+          "1": 31,
+          "2": 212,
+          "3": 187
+        },
+        "cumulative_pct": {
+          "by_T1": 6.0547,
+          "by_T2": 47.4609,
+          "by_T3": 83.9844
+        },
+        "Wilson95pct": {
+          "by_T1": [
+            4.298,
+            8.466
+          ],
+          "by_T2": [
+            43.171,
+            51.789
+          ],
+          "by_T3": [
+            80.556,
+            86.906
+          ]
+        },
+        "mean_keep": 5.541
+      },
+      "paired_vs_current": {
+        "by_T1": {
+          "delta_pp": -0.1953,
+          "paired_normal_95pct_pp": [
+            -0.578,
+            0.188
+          ],
+          "two_sided_p_approx": 0.317311,
+          "better_only": 0,
+          "worse_only": 1
+        },
+        "by_T2": {
+          "delta_pp": 0.5859,
+          "paired_normal_95pct_pp": [
+            -0.897,
+            2.069
+          ],
+          "two_sided_p_approx": 0.438757,
+          "better_only": 9,
+          "worse_only": 6
+        },
+        "by_T3": {
+          "delta_pp": 0.1953,
+          "paired_normal_95pct_pp": [
+            -1.289,
+            1.679
+          ],
+          "two_sided_p_approx": 0.796435,
+          "better_only": 8,
+          "worse_only": 7
+        }
+      },
+      "primary_T2_Holm_p_approx": 1
+    },
+    "partition_plains": {
+      "swaps": [
+        [
+          "Soul Partition",
+          "Plains"
+        ]
+      ],
+      "sha": "3650f47b98af869c2b0b370e304ff658ecd30f2073b6daa94acd72351320a320",
+      "summary": {
+        "n": 512,
+        "counts": {
+          "0": 81,
+          "1": 32,
+          "2": 207,
+          "3": 192
+        },
+        "cumulative_pct": {
+          "by_T1": 6.25,
+          "by_T2": 46.6797,
+          "by_T3": 84.1797
+        },
+        "Wilson95pct": {
+          "by_T1": [
+            4.462,
+            8.69
+          ],
+          "by_T2": [
+            42.399,
+            51.01
+          ],
+          "by_T3": [
+            80.766,
+            87.085
+          ]
+        },
+        "mean_keep": 5.5605
+      },
+      "paired_vs_current": {
+        "by_T1": {
+          "delta_pp": 0.0,
+          "paired_normal_95pct_pp": [
+            -0.542,
+            0.542
+          ],
+          "two_sided_p_approx": 1.0,
+          "better_only": 1,
+          "worse_only": 1
+        },
+        "by_T2": {
+          "delta_pp": -0.1953,
+          "paired_normal_95pct_pp": [
+            -1.865,
+            1.475
+          ],
+          "two_sided_p_approx": 0.818711,
+          "better_only": 9,
+          "worse_only": 10
+        },
+        "by_T3": {
+          "delta_pp": 0.3906,
+          "paired_normal_95pct_pp": [
+            -0.936,
+            1.718
+          ],
+          "two_sided_p_approx": 0.563957,
+          "better_only": 7,
+          "worse_only": 5
+        }
+      },
+      "primary_T2_Holm_p_approx": 1
+    },
+    "tithe_plains": {
+      "swaps": [
+        [
+          "Mana Tithe",
+          "Plains"
+        ]
+      ],
+      "sha": "3f28648f685476da30215859e636d93d2637c263511d6ed426395e61efec6086",
+      "summary": {
+        "n": 512,
+        "counts": {
+          "0": 83,
+          "1": 31,
+          "2": 206,
+          "3": 192
+        },
+        "cumulative_pct": {
+          "by_T1": 6.0547,
+          "by_T2": 46.2891,
+          "by_T3": 83.7891
+        },
+        "Wilson95pct": {
+          "by_T1": [
+            4.298,
+            8.466
+          ],
+          "by_T2": [
+            42.014,
+            50.62
+          ],
+          "by_T3": [
+            80.347,
+            86.728
+          ]
+        },
+        "mean_keep": 5.5254
+      },
+      "paired_vs_current": {
+        "by_T1": {
+          "delta_pp": -0.1953,
+          "paired_normal_95pct_pp": [
+            -0.578,
+            0.188
+          ],
+          "two_sided_p_approx": 0.317311,
+          "better_only": 0,
+          "worse_only": 1
+        },
+        "by_T2": {
+          "delta_pp": -0.5859,
+          "paired_normal_95pct_pp": [
+            -2.069,
+            0.897
+          ],
+          "two_sided_p_approx": 0.438757,
+          "better_only": 6,
+          "worse_only": 9
+        },
+        "by_T3": {
+          "delta_pp": 0.0,
+          "paired_normal_95pct_pp": [
+            -1.626,
+            1.626
+          ],
+          "two_sided_p_approx": 1.0,
+          "better_only": 9,
+          "worse_only": 9
+        }
+      },
+      "primary_T2_Holm_p_approx": 1
+    },
+    "double_plains": {
+      "swaps": [
+        [
+          "Soul Partition",
+          "Plains"
+        ],
+        [
+          "Mana Tithe",
+          "Plains"
+        ]
+      ],
+      "sha": "f2b642d25d893a992b9eef27d70bb62e998840c8d6bc4a747ae5b149ef0e4f1e",
+      "summary": {
+        "n": 512,
+        "counts": {
+          "0": 82,
+          "1": 29,
+          "2": 206,
+          "3": 195
+        },
+        "cumulative_pct": {
+          "by_T1": 5.6641,
+          "by_T2": 45.8984,
+          "by_T3": 83.9844
+        },
+        "Wilson95pct": {
+          "by_T1": [
+            3.972,
+            8.016
+          ],
+          "by_T2": [
+            41.629,
+            50.229
+          ],
+          "by_T3": [
+            80.556,
+            86.906
+          ]
+        },
+        "mean_keep": 5.5684
+      },
+      "paired_vs_current": {
+        "by_T1": {
+          "delta_pp": -0.5859,
+          "paired_normal_95pct_pp": [
+            -1.248,
+            0.076
+          ],
+          "two_sided_p_approx": 0.082661,
+          "better_only": 0,
+          "worse_only": 3
+        },
+        "by_T2": {
+          "delta_pp": -0.9766,
+          "paired_normal_95pct_pp": [
+            -2.966,
+            1.013
+          ],
+          "two_sided_p_approx": 0.335959,
+          "better_only": 11,
+          "worse_only": 16
+        },
+        "by_T3": {
+          "delta_pp": 0.1953,
+          "paired_normal_95pct_pp": [
+            -1.561,
+            1.951
+          ],
+          "two_sided_p_approx": 0.827418,
+          "better_only": 11,
+          "worse_only": 10
+        }
+      },
+      "primary_T2_Holm_p_approx": 1
+    },
+    "battlefront_generic": {
+      "swaps": [
+        [
+          "United Battlefront",
+          "Generic 2C Rock"
+        ]
+      ],
+      "sha": "e2bff7f160864f0e68a051d39a4ca0293da386d8f0c5ca9e177cf190eccd493f",
+      "summary": {
+        "n": 512,
+        "counts": {
+          "0": 87,
+          "1": 33,
+          "2": 204,
+          "3": 188
+        },
+        "cumulative_pct": {
+          "by_T1": 6.4453,
+          "by_T2": 46.2891,
+          "by_T3": 83.0078
+        },
+        "Wilson95pct": {
+          "by_T1": [
+            4.626,
+            8.913
+          ],
+          "by_T2": [
+            42.014,
+            50.62
+          ],
+          "by_T3": [
+            79.512,
+            86.012
+          ]
+        },
+        "mean_keep": 5.5098
+      },
+      "paired_vs_current": {
+        "by_T1": {
+          "delta_pp": 0.1953,
+          "paired_normal_95pct_pp": [
+            -0.188,
+            0.578
+          ],
+          "two_sided_p_approx": 0.317311,
+          "better_only": 1,
+          "worse_only": 0
+        },
+        "by_T2": {
+          "delta_pp": -0.5859,
+          "paired_normal_95pct_pp": [
+            -1.734,
+            0.562
+          ],
+          "two_sided_p_approx": 0.317311,
+          "better_only": 3,
+          "worse_only": 6
+        },
+        "by_T3": {
+          "delta_pp": -0.7812,
+          "paired_normal_95pct_pp": [
+            -2.406,
+            0.843
+          ],
+          "two_sided_p_approx": 0.345831,
+          "better_only": 7,
+          "worse_only": 11
+        }
+      },
+      "primary_T2_Holm_p_approx": 1
+    },
+    "buck_double_plains": {
+      "swaps": [
+        [
+          "World Map",
+          "Bucknard's Everfull Purse"
+        ],
+        [
+          "Soul Partition",
+          "Plains"
+        ],
+        [
+          "Mana Tithe",
+          "Plains"
+        ]
+      ],
+      "sha": "1925ef5b438e4da6e7ff5cced88707cd28bbe9dbf765ef9c487a8b87a0dccc74",
+      "summary": {
+        "n": 512,
+        "counts": {
+          "0": 75,
+          "1": 33,
+          "2": 224,
+          "3": 180
+        },
+        "cumulative_pct": {
+          "by_T1": 6.4453,
+          "by_T2": 50.1953,
+          "by_T3": 85.3516
+        },
+        "Wilson95pct": {
+          "by_T1": [
+            4.626,
+            8.913
+          ],
+          "by_T2": [
+            45.879,
+            54.509
+          ],
+          "by_T3": [
+            82.026,
+            88.151
+          ]
+        },
+        "mean_keep": 5.6289
+      },
+      "paired_vs_current": {
+        "by_T1": {
+          "delta_pp": 0.1953,
+          "paired_normal_95pct_pp": [
+            -0.661,
+            1.052
+          ],
+          "two_sided_p_approx": 0.654973,
+          "better_only": 3,
+          "worse_only": 2
+        },
+        "by_T2": {
+          "delta_pp": 3.3203,
+          "paired_normal_95pct_pp": [
+            0.653,
+            5.987
+          ],
+          "two_sided_p_approx": 0.014675,
+          "better_only": 33,
+          "worse_only": 16
+        },
+        "by_T3": {
+          "delta_pp": 1.5625,
+          "paired_normal_95pct_pp": [
+            -0.601,
+            3.726
+          ],
+          "two_sided_p_approx": 0.156893,
+          "better_only": 20,
+          "worse_only": 12
+        }
+      },
+      "paired_vs_buck_worldmap": {
+        "by_T1": {
+          "delta_pp": -0.5859,
+          "paired_normal_95pct_pp": [
+            -1.248,
+            0.076
+          ],
+          "two_sided_p_approx": 0.082661,
+          "better_only": 0,
+          "worse_only": 3
+        },
+        "by_T2": {
+          "delta_pp": -0.3906,
+          "paired_normal_95pct_pp": [
+            -2.489,
+            1.708
+          ],
+          "two_sided_p_approx": 0.715232,
+          "better_only": 14,
+          "worse_only": 16
+        },
+        "by_T3": {
+          "delta_pp": -0.3906,
+          "paired_normal_95pct_pp": [
+            -1.923,
+            1.142
+          ],
+          "two_sided_p_approx": 0.617333,
+          "better_only": 7,
+          "worse_only": 9
+        }
+      },
+      "primary_T2_Holm_p_approx": 0.08805
+    },
+    "buck_battlefront_generic": {
+      "swaps": [
+        [
+          "World Map",
+          "Bucknard's Everfull Purse"
+        ],
+        [
+          "United Battlefront",
+          "Generic 2C Rock"
+        ]
+      ],
+      "sha": "179bd37884b3a3fcb5e639b3492d8cb276dd6ab3b3cc1d120b8f8b2f57902eae",
+      "summary": {
+        "n": 512,
+        "counts": {
+          "0": 83,
+          "1": 35,
+          "2": 221,
+          "3": 173
+        },
+        "cumulative_pct": {
+          "by_T1": 6.8359,
+          "by_T2": 50.0,
+          "by_T3": 83.7891
+        },
+        "Wilson95pct": {
+          "by_T1": [
+            4.956,
+            9.359
+          ],
+          "by_T2": [
+            45.685,
+            54.315
+          ],
+          "by_T3": [
+            80.347,
+            86.728
+          ]
+        },
+        "mean_keep": 5.582
+      },
+      "paired_vs_current": {
+        "by_T1": {
+          "delta_pp": 0.5859,
+          "paired_normal_95pct_pp": [
+            -0.269,
+            1.441
+          ],
+          "two_sided_p_approx": 0.179372,
+          "better_only": 4,
+          "worse_only": 1
+        },
+        "by_T2": {
+          "delta_pp": 3.125,
+          "paired_normal_95pct_pp": [
+            0.778,
+            5.472
+          ],
+          "two_sided_p_approx": 0.009048,
+          "better_only": 27,
+          "worse_only": 11
+        },
+        "by_T3": {
+          "delta_pp": 0.0,
+          "paired_normal_95pct_pp": [
+            -2.234,
+            2.234
+          ],
+          "two_sided_p_approx": 1.0,
+          "better_only": 17,
+          "worse_only": 17
+        }
+      },
+      "paired_vs_buck_worldmap": {
+        "by_T1": {
+          "delta_pp": -0.1953,
+          "paired_normal_95pct_pp": [
+            -0.859,
+            0.468
+          ],
+          "two_sided_p_approx": 0.563957,
+          "better_only": 1,
+          "worse_only": 2
+        },
+        "by_T2": {
+          "delta_pp": -0.5859,
+          "paired_normal_95pct_pp": [
+            -1.967,
+            0.795
+          ],
+          "two_sided_p_approx": 0.405522,
+          "better_only": 5,
+          "worse_only": 8
+        },
+        "by_T3": {
+          "delta_pp": -1.9531,
+          "paired_normal_95pct_pp": [
+            -3.377,
+            -0.529
+          ],
+          "two_sided_p_approx": 0.00717,
+          "better_only": 2,
+          "worse_only": 12
+        }
+      },
+      "primary_T2_Holm_p_approx": 0.063336
+    }
+  },
+  "limitations": [
+    "Focused Dack-cast goldfish, not competitive match win rate",
+    "No opponent interaction (Soul Partition and Mana Tithe excluded as protection value)",
+    "All simulations inherited frozen pre-free-mulligan continuation thresholds",
+    "Deterministic random seeds paired by game ID; deck changes alter shuffle ordering",
+    "Approximate paired CIs conditional on solver, no guarantee of exact search completeness",
+    "The World Map->Bucknard reference is archived N512 exact-corrected implementation",
+    "Seven tested variants; no combo/aura pieces removed"
+  ]
+}
