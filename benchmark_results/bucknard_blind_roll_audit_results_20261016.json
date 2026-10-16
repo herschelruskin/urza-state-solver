@@ -1,0 +1,58 @@
+{
+  "status": "PASS",
+  "design": "Bucknard pre-roll commitment uses expectation across 1-4 outcomes rather than realized die; limited candidate beam-policy search",
+  "original_baseline_run": 38912678782,
+  "original_oracle_bucknard_n1024_run": 38961531770,
+  "original_oracle_T2_pct": 47.9492,
+  "original_baseline_T2_pct": 44.4336,
+  "original_oracle_delta_pp": 3.5156,
+  "methods": {
+    "blind_T2": "Search T1-T2 with Bucknard activations withheld; collect highest ranked eligible states (max 4 per turn); choose a single state maximizing mean success over rolls 1,2,3,4; only after roll permit adaptations. Mulligans evaluated assuming neutral 2 Treasures.",
+    "neutral_fixed2": "Full original T1-T3 solver and mulligan policy with Bucknard deterministically creating 2 Treasures (no random-state roll fishing). This is a stress test, not d4 expected value.",
+    "baseline": "Original Oct 16 World Map deck, exact matching game IDs and initial shuffle seeds."
+  },
+  "blind_T2_n128": {
+    "games": 128,
+    "baseline_T2_pct": 39.8438,
+    "bucknard_T2_pct": 42.5781,
+    "delta_pp": 2.7344,
+    "paired_95pct_pp": [
+      -1.156,
+      6.625
+    ],
+    "baseline_success_count": 51,
+    "expected_success_games": 54.5,
+    "probability_1_count": 53,
+    "probability_partial_count": 5,
+    "probability_0_count": 70,
+    "mean_candidate_evaluated": 0.172,
+    "chosen_activation_turn_counts": {
+      "None": 123,
+      "2": 4,
+      "1": 1
+    }
+  },
+  "neutral_fixed2_n512": {
+    "games": 512,
+    "baseline_T2_pct": 46.875,
+    "bucknard_T2_pct": 47.6562,
+    "delta_pp": 0.7812,
+    "paired_95pct_pp": [
+      -0.544,
+      2.107
+    ],
+    "baseline_success_count": 240
+  },
+  "audited_shards": {
+    "blind": 16,
+    "neutral_fixed2": 16
+  },
+  "limitations": [
+    "Blind policy is approximate top-K chance-aware candidate search, not exact full imperfect-information solver",
+    "Candidate selection uses known library order already present in old goldfish; does not separately blind future draws",
+    "After first activation of Bucknard, postroll beam search is adaptive as it should be",
+    "Additional copied Bucknard activations after the first use the same forced outcome, a rare approximation",
+    "No opponent interaction or post-Dack win-line proof",
+    "Partial expected-success outcomes are averaged over four die faces and paired with original binary baseline"
+  ]
+}
