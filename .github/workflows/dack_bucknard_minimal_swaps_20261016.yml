@@ -1,0 +1,128 @@
+name: Bucknard minimal single swaps paired N512
+on:
+  push:
+    branches: [dack-bucknard-minimal-swaps-20261016]
+    paths:
+      - 'dack_bucknard_minimal_swaps_20261016.py'
+      - 'dack_bucknard_minimal_swaps_pool_20261016.py'
+      - '.github/workflows/dack_bucknard_minimal_swaps_20261016.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile runner and pooler
+        run: python -m py_compile dack_bucknard_minimal_swaps_20261016.py dack_bucknard_minimal_swaps_pool_20261016.py
+      - name: Verify 1-for-1 deck count, Purse d4, KCI response, combo protection and Staff rules
+        run: python -u dack_bucknard_minimal_swaps_20261016.py --audit
+      - name: Check pooler
+        run: python -u dack_bucknard_minimal_swaps_pool_20261016.py --selftest
+      - name: Download original baseline game zero for parity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p baseline_smoke
+          gh run download 38912678782 --repo "${{ github.repository }}" --name boon-current-shard-0 --dir baseline_smoke
+          test -s baseline_smoke/current_shard_0.json.gz
+      - name: Re-simulate original baseline game zero to verify exact parity
+        run: |
+          python -u dack_bucknard_minimal_swaps_20261016.py \
+            --variant current --shard 0 --games 1 --beam 240 --out smoke_current.json.gz
+          python - <<'PY'
+          import gzip,json
+          with gzip.open("baseline_smoke/current_shard_0.json.gz","rt") as f:old=json.load(f)
+          with gzip.open("smoke_current.json.gz","rt") as f:new=json.load(f)
+          assert old["deck_sha256"]==new["deck_sha256"],"baseline deck hash changed"
+          a,b=old["rows"][0],new["rows"][0]
+          for k in ("game_id","seat","seed","win_turn","keep_n","audit"):
+              assert a[k]==b[k],(k,a[k],b[k])
+          print("BUCKNARD_BASELINE_SEED_PARITY_PASS",flush=True)
+          PY
+      - name: Direct single-game Bucknard over Tooth execution
+        run: |
+          python -u dack_bucknard_minimal_swaps_20261016.py \
+            --variant buck_tooth --shard 0 --games 1 --beam 80 --out smoke_buck_tooth.json.gz
+  shard:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        variant: [buck_tooth, buck_implements, buck_battlefront, buck_worldmap]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Simulate exact minimal one-card swap
+        run: |
+          mkdir -p shards
+          python -u dack_bucknard_minimal_swaps_20261016.py \
+            --variant "${{ matrix.variant }}" \
+            --shard "${{ matrix.shard }}" \
+            --games 32 --beam 240 \
+            --out "shards/${{ matrix.variant }}_shard_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: buck-${{ matrix.variant }}-${{ matrix.shard }}
+          path: shards/*.json.gz
+          retention-days: 30
+          if-no-files-found: error
+  pool:
+    needs: [smoke, shard]
+    if: ${{ needs.shard.result == 'success' && needs.smoke.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: buck-*
+          merge-multiple: true
+          path: shards
+      - name: Download completed Oct 16 baseline shards
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p baseline
+          gh run download 38912678782 --repo "${{ github.repository }}" \
+            --pattern 'boon-current-shard-*' --dir baseline
+          find baseline -name '*.json.gz' | wc -l
+      - name: Audit hashes and IDs; calculate paired T1/T2/T3 changes
+        run: |
+          python -u dack_bucknard_minimal_swaps_pool_20261016.py \
+            --baseline-glob 'baseline/**/*.json.gz' \
+            --arms-dir shards --expected 512 --beam 240 \
+            --out bucknard_minimal_swaps_pooled_20261016.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bucknard-minimal-swaps-n512-pooled
+          path: bucknard_minimal_swaps_pooled_20261016.json
+          retention-days: 90
+          if-no-files-found: error
+      - name: Publish machine-readable summary on current branch
+        run: |
+          mkdir -p benchmark_results
+          cp bucknard_minimal_swaps_pooled_20261016.json \
+            benchmark_results/bucknard_minimal_swaps_pooled_20261016.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/bucknard_minimal_swaps_pooled_20261016.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish paired N512 minimal Bucknard swap results'
+            git push
+          fi
