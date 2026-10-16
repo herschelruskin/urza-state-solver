@@ -1,0 +1,137 @@
+name: Bucknard outcome-blind T2 audit
+on:
+  push:
+    branches: [dack-bucknard-blind-roll-audit-20261016]
+    paths:
+      - 'dack_bucknard_blind_roll_audit_20261016.py'
+      - 'dack_bucknard_blind_roll_pool_20261016.py'
+      - '.github/workflows/dack_bucknard_blind_roll_audit_20261016.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile chance-aware search and pooled report
+        run: python -m py_compile dack_bucknard_blind_roll_audit_20261016.py dack_bucknard_blind_roll_pool_20261016.py
+      - name: Verify roll independence, card movement, cost and the four die faces
+        run: python -u dack_bucknard_blind_roll_audit_20261016.py --audit
+      - name: Run outcome-blind one-game end-to-end smoke
+        run: |
+          python -u dack_bucknard_blind_roll_audit_20261016.py \
+            --mode blind_T2 --shard 0 --games 1 --beam 80 \
+            --candidate-limit 4 --out blind_smoke.json.gz
+          python -u dack_bucknard_blind_roll_audit_20261016.py \
+            --mode neutral_fixed2 --shard 0 --games 1 --beam 240 \
+            --out neutral_smoke.json.gz
+  blind:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Chance-aware precommitment across 4 die faces, 8 games
+        run: |
+          mkdir -p blind
+          python -u dack_bucknard_blind_roll_audit_20261016.py \
+            --mode blind_T2 --shard "${{ matrix.shard }}" --games 8 \
+            --beam 80 --candidate-limit 4 \
+            --out "blind/blind_shard_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: buck-blind-${{ matrix.shard }}
+          path: blind/*.json.gz
+          retention-days: 60
+          if-no-files-found: error
+  neutral:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Fixed two-Treasure no-fishing stress control, 32 games
+        run: |
+          mkdir -p neutral
+          python -u dack_bucknard_blind_roll_audit_20261016.py \
+            --mode neutral_fixed2 --shard "${{ matrix.shard }}" --games 32 \
+            --beam 240 --out "neutral/neutral_shard_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: buck-neutral-${{ matrix.shard }}
+          path: neutral/*.json.gz
+          retention-days: 60
+          if-no-files-found: error
+  pool:
+    needs: [smoke,blind,neutral]
+    if: ${{ needs.smoke.result == 'success' && needs.blind.result == 'success' && needs.neutral.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: buck-blind-*
+          merge-multiple: true
+          path: blind
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: buck-neutral-*
+          merge-multiple: true
+          path: neutral
+      - name: Download paired original Oct16 baseline
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p baseline
+          gh run download 38912678782 --repo "${{ github.repository }}" \
+            --pattern 'boon-current-shard-*' --dir baseline
+          test "$(find baseline -name '*.json.gz' | wc -l)" -eq 32
+      - name: Aggregate blind T2 and fixed two-roll controls with matched IDs
+        run: |
+          python -u dack_bucknard_blind_roll_pool_20261016.py \
+            --baseline 'baseline/**/*.json.gz' --blind 'blind/*.json.gz' \
+            --neutral 'neutral/*.json.gz' --blind-n 128 --neutral-n 512 \
+            --out bucknard_blind_roll_audit_results_20261016.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bucknard-outcome-blind-audit-pooled
+          path: bucknard_blind_roll_audit_results_20261016.json
+          retention-days: 90
+          if-no-files-found: error
+      - name: Publish strict policy audit results
+        run: |
+          mkdir -p benchmark_results
+          cp bucknard_blind_roll_audit_results_20261016.json benchmark_results/bucknard_blind_roll_audit_results_20261016.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/bucknard_blind_roll_audit_results_20261016.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish first outcome-blind Bucknard activation policy audit'
+            git push
+          fi
