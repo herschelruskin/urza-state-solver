@@ -32,7 +32,8 @@ def load_jsons(pattern,variant,expected,beam):
             assert r["seed"]==7604096001+gid*1000003,(path,gid)
             assert 0<=r["win_turn"]<=3
             assert 1<=r["keep_n"]<=7
-        rows.extend(x["rows"])
+        # The reference run has 1024 games; take precisely IDs 0..511.
+        rows.extend(z for z in x["rows"] if int(z["game_id"])<expected)
     assert len(hashes)==1,(variant,hashes)
     assert len(rows)==expected,(variant,len(rows),expected)
     ids=[int(x["game_id"]) for x in rows]
