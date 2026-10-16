@@ -1,0 +1,316 @@
+{
+  "status": "PASS",
+  "design": "Matched N=512 independent per-game random draws under original exact99 engine; one card replaced",
+  "baseline_run": 38912678782,
+  "n_per_arm": 512,
+  "beam": 240,
+  "baseline_deck_sha": "3a10a02e1aae070645129fa85ed94240f1ae9d5447e3711f7621f92064d9f129",
+  "baseline": {
+    "n": 512,
+    "counts": {
+      "0": 83,
+      "1": 32,
+      "2": 208,
+      "3": 189
+    },
+    "cumulative_pct": {
+      "by_T1": 6.25,
+      "by_T2": 46.875,
+      "by_T3": 83.7891
+    },
+    "Wilson95pct": {
+      "by_T1": [
+        4.462,
+        8.69
+      ],
+      "by_T2": [
+        42.592,
+        51.205
+      ],
+      "by_T3": [
+        80.347,
+        86.728
+      ]
+    },
+    "mean_keep": 5.5078
+  },
+  "variants": {
+    "buck_tooth": {
+      "cut": "Tooth of Ramos",
+      "add": "Bucknard's Everfull Purse",
+      "deck_sha256": "211582e2d252595c4aae8cc694d402daf1ad806164d0994e829da370a3739c41",
+      "summary": {
+        "n": 512,
+        "counts": {
+          "0": 75,
+          "1": 33,
+          "2": 211,
+          "3": 193
+        },
+        "cumulative_pct": {
+          "by_T1": 6.4453,
+          "by_T2": 47.6562,
+          "by_T3": 85.3516
+        },
+        "Wilson95pct": {
+          "by_T1": [
+            4.626,
+            8.913
+          ],
+          "by_T2": [
+            43.364,
+            51.984
+          ],
+          "by_T3": [
+            82.026,
+            88.151
+          ]
+        },
+        "mean_keep": 5.623
+      },
+      "paired_delta_vs_current": {
+        "by_T1": {
+          "delta_pp": 0.1953,
+          "paired_95pct_pp": [
+            -0.468,
+            0.859
+          ],
+          "p_approx": 0.563957,
+          "improved_only": 2,
+          "baseline_only": 1
+        },
+        "by_T2": {
+          "delta_pp": 0.7812,
+          "paired_95pct_pp": [
+            -1.316,
+            2.879
+          ],
+          "p_approx": 0.465412,
+          "improved_only": 17,
+          "baseline_only": 13
+        },
+        "by_T3": {
+          "delta_pp": 1.5625,
+          "paired_95pct_pp": [
+            0.135,
+            2.99
+          ],
+          "p_approx": 0.031905,
+          "improved_only": 11,
+          "baseline_only": 3
+        }
+      },
+      "primary_T2_Holm_p_approx": 0.465412
+    },
+    "buck_implements": {
+      "cut": "Implements of Sacrifice",
+      "add": "Bucknard's Everfull Purse",
+      "deck_sha256": "8114d11cbd9589ce2fcfa816e400c2cbd94a6a5c2721e431912b71dcbc8d6ea7",
+      "summary": {
+        "n": 512,
+        "counts": {
+          "0": 80,
+          "1": 35,
+          "2": 217,
+          "3": 180
+        },
+        "cumulative_pct": {
+          "by_T1": 6.8359,
+          "by_T2": 49.2188,
+          "by_T3": 84.375
+        },
+        "Wilson95pct": {
+          "by_T1": [
+            4.956,
+            9.359
+          ],
+          "by_T2": [
+            44.91,
+            53.539
+          ],
+          "by_T3": [
+            80.975,
+            87.263
+          ]
+        },
+        "mean_keep": 5.6602
+      },
+      "paired_delta_vs_current": {
+        "by_T1": {
+          "delta_pp": 0.5859,
+          "paired_95pct_pp": [
+            -0.269,
+            1.441
+          ],
+          "p_approx": 0.179372,
+          "improved_only": 4,
+          "baseline_only": 1
+        },
+        "by_T2": {
+          "delta_pp": 2.3438,
+          "paired_95pct_pp": [
+            0.255,
+            4.433
+          ],
+          "p_approx": 0.027872,
+          "improved_only": 21,
+          "baseline_only": 9
+        },
+        "by_T3": {
+          "delta_pp": 0.5859,
+          "paired_95pct_pp": [
+            -1.084,
+            2.255
+          ],
+          "p_approx": 0.49152,
+          "improved_only": 11,
+          "baseline_only": 8
+        }
+      },
+      "primary_T2_Holm_p_approx": 0.083616
+    },
+    "buck_battlefront": {
+      "cut": "United Battlefront",
+      "add": "Bucknard's Everfull Purse",
+      "deck_sha256": "3019e1f62a08a64cecc94a2faff0aca962391d4134ddb3629b8c5e2ebe3ad163",
+      "summary": {
+        "n": 512,
+        "counts": {
+          "0": 79,
+          "1": 35,
+          "2": 218,
+          "3": 180
+        },
+        "cumulative_pct": {
+          "by_T1": 6.8359,
+          "by_T2": 49.4141,
+          "by_T3": 84.5703
+        },
+        "Wilson95pct": {
+          "by_T1": [
+            4.956,
+            9.359
+          ],
+          "by_T2": [
+            45.104,
+            53.733
+          ],
+          "by_T3": [
+            81.185,
+            87.441
+          ]
+        },
+        "mean_keep": 5.6465
+      },
+      "paired_delta_vs_current": {
+        "by_T1": {
+          "delta_pp": 0.5859,
+          "paired_95pct_pp": [
+            -0.562,
+            1.734
+          ],
+          "p_approx": 0.317311,
+          "improved_only": 6,
+          "baseline_only": 3
+        },
+        "by_T2": {
+          "delta_pp": 2.5391,
+          "paired_95pct_pp": [
+            0.219,
+            4.859
+          ],
+          "p_approx": 0.031978,
+          "improved_only": 25,
+          "baseline_only": 12
+        },
+        "by_T3": {
+          "delta_pp": 0.7812,
+          "paired_95pct_pp": [
+            -1.095,
+            2.657
+          ],
+          "p_approx": 0.414368,
+          "improved_only": 14,
+          "baseline_only": 10
+        }
+      },
+      "primary_T2_Holm_p_approx": 0.083616
+    },
+    "buck_worldmap": {
+      "cut": "World Map",
+      "add": "Bucknard's Everfull Purse",
+      "deck_sha256": "f130ff4c9c0fbc888525070877fe820caba03e836e0be66ec60ea3410e950068",
+      "summary": {
+        "n": 512,
+        "counts": {
+          "0": 73,
+          "1": 36,
+          "2": 223,
+          "3": 180
+        },
+        "cumulative_pct": {
+          "by_T1": 7.0312,
+          "by_T2": 50.5859,
+          "by_T3": 85.7422
+        },
+        "Wilson95pct": {
+          "by_T1": [
+            5.122,
+            9.581
+          ],
+          "by_T2": [
+            46.267,
+            54.896
+          ],
+          "by_T3": [
+            82.447,
+            88.505
+          ]
+        },
+        "mean_keep": 5.5957
+      },
+      "paired_delta_vs_current": {
+        "by_T1": {
+          "delta_pp": 0.7812,
+          "paired_95pct_pp": [
+            0.018,
+            1.545
+          ],
+          "p_approx": 0.044867,
+          "improved_only": 4,
+          "baseline_only": 0
+        },
+        "by_T2": {
+          "delta_pp": 3.7109,
+          "paired_95pct_pp": [
+            1.533,
+            5.889
+          ],
+          "p_approx": 0.000837,
+          "improved_only": 26,
+          "baseline_only": 7
+        },
+        "by_T3": {
+          "delta_pp": 1.9531,
+          "paired_95pct_pp": [
+            0.007,
+            3.9
+          ],
+          "p_approx": 0.049224,
+          "improved_only": 18,
+          "baseline_only": 8
+        }
+      },
+      "primary_T2_Holm_p_approx": 0.00335
+    }
+  },
+  "limitations": [
+    "Goldfish: successful Dack cast with all three Boonweaver combo creatures in library",
+    "Staff proliferate corrected, life costs included",
+    "One free multiplayer London mulligan, provisional inherited continuation thresholds",
+    "Bucknard d4 sampled deterministically per complete state and game seed",
+    "Bucknard control passed away after activation; with KCI, sacrifice in response modeled",
+    "Opponent interaction, protection and post-Dack combo resolution not simulated",
+    "Four separate single swaps, no two-card/land-count package tested here"
+  ]
+}
