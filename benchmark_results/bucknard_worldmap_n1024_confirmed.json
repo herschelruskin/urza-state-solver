@@ -1,0 +1,364 @@
+{
+  "status": "PASS",
+  "design": "Exact one-card swap World Map -> Bucknard's Everfull Purse",
+  "n_paired_games": 1024,
+  "beam": 240,
+  "deck_hashes": {
+    "baseline": "3a10a02e1aae070645129fa85ed94240f1ae9d5447e3711f7621f92064d9f129",
+    "bucknard": "f130ff4c9c0fbc888525070877fe820caba03e836e0be66ec60ea3410e950068"
+  },
+  "sources": {
+    "baseline_run": 38912678782,
+    "bucknard_first512_run": 38931616641,
+    "bucknard_second512_run": "this workflow"
+  },
+  "shards_audited": {
+    "baseline": 32,
+    "first_512": 16,
+    "second_512": 16
+  },
+  "full": {
+    "baseline": {
+      "n": 1024,
+      "counts": {
+        "0": 157,
+        "1": 50,
+        "2": 405,
+        "3": 412
+      },
+      "cumulative_pct": {
+        "by_T1": 4.8828,
+        "by_T2": 44.4336,
+        "by_T3": 84.668
+      },
+      "wilson95_pct": {
+        "by_T1": [
+          3.723,
+          6.38
+        ],
+        "by_T2": [
+          41.417,
+          47.492
+        ],
+        "by_T3": [
+          82.332,
+          86.745
+        ]
+      },
+      "mean_keep": 5.4873
+    },
+    "bucknard": {
+      "n": 1024,
+      "counts": {
+        "0": 136,
+        "1": 56,
+        "2": 435,
+        "3": 397
+      },
+      "cumulative_pct": {
+        "by_T1": 5.4688,
+        "by_T2": 47.9492,
+        "by_T3": 86.7188
+      },
+      "wilson95_pct": {
+        "by_T1": [
+          4.235,
+          7.035
+        ],
+        "by_T2": [
+          44.903,
+          51.011
+        ],
+        "by_T3": [
+          84.502,
+          88.661
+        ]
+      },
+      "mean_keep": 5.6045
+    },
+    "paired_bucknard_minus_baseline": {
+      "at_or_before_turn": {
+        "by_T1": {
+          "change_pp": 0.5859,
+          "paired_normal_95pct_pp": [
+            0.118,
+            1.054
+          ],
+          "buck_only": 6,
+          "baseline_only": 0,
+          "both_or_neither": 1018,
+          "mcnemar_exact_two_sided_p": 0.03125
+        },
+        "by_T2": {
+          "change_pp": 3.5156,
+          "paired_normal_95pct_pp": [
+            1.999,
+            5.032
+          ],
+          "buck_only": 50,
+          "baseline_only": 14,
+          "both_or_neither": 960,
+          "mcnemar_exact_two_sided_p": 7e-06
+        },
+        "by_T3": {
+          "change_pp": 2.0508,
+          "paired_normal_95pct_pp": [
+            0.662,
+            3.439
+          ],
+          "buck_only": 37,
+          "baseline_only": 16,
+          "both_or_neither": 971,
+          "mcnemar_exact_two_sided_p": 0.005486
+        }
+      },
+      "individual_turn_transitions": {
+        "0->0": 120,
+        "0->1": 1,
+        "0->2": 14,
+        "0->3": 22,
+        "1->1": 50,
+        "2->0": 3,
+        "2->1": 3,
+        "2->2": 388,
+        "2->3": 11,
+        "3->0": 13,
+        "3->1": 2,
+        "3->2": 33,
+        "3->3": 364
+      }
+    }
+  },
+  "first_512": {
+    "baseline": {
+      "n": 512,
+      "counts": {
+        "0": 83,
+        "1": 32,
+        "2": 208,
+        "3": 189
+      },
+      "cumulative_pct": {
+        "by_T1": 6.25,
+        "by_T2": 46.875,
+        "by_T3": 83.7891
+      },
+      "wilson95_pct": {
+        "by_T1": [
+          4.462,
+          8.69
+        ],
+        "by_T2": [
+          42.592,
+          51.205
+        ],
+        "by_T3": [
+          80.347,
+          86.728
+        ]
+      },
+      "mean_keep": 5.5078
+    },
+    "bucknard": {
+      "n": 512,
+      "counts": {
+        "0": 73,
+        "1": 36,
+        "2": 223,
+        "3": 180
+      },
+      "cumulative_pct": {
+        "by_T1": 7.0312,
+        "by_T2": 50.5859,
+        "by_T3": 85.7422
+      },
+      "wilson95_pct": {
+        "by_T1": [
+          5.122,
+          9.581
+        ],
+        "by_T2": [
+          46.267,
+          54.896
+        ],
+        "by_T3": [
+          82.447,
+          88.505
+        ]
+      },
+      "mean_keep": 5.5957
+    },
+    "paired_bucknard_minus_baseline": {
+      "at_or_before_turn": {
+        "by_T1": {
+          "change_pp": 0.7812,
+          "paired_normal_95pct_pp": [
+            0.018,
+            1.545
+          ],
+          "buck_only": 4,
+          "baseline_only": 0,
+          "both_or_neither": 508,
+          "mcnemar_exact_two_sided_p": 0.125
+        },
+        "by_T2": {
+          "change_pp": 3.7109,
+          "paired_normal_95pct_pp": [
+            1.533,
+            5.889
+          ],
+          "buck_only": 26,
+          "baseline_only": 7,
+          "both_or_neither": 479,
+          "mcnemar_exact_two_sided_p": 0.001319
+        },
+        "by_T3": {
+          "change_pp": 1.9531,
+          "paired_normal_95pct_pp": [
+            0.007,
+            3.9
+          ],
+          "buck_only": 18,
+          "baseline_only": 8,
+          "both_or_neither": 486,
+          "mcnemar_exact_two_sided_p": 0.075519
+        }
+      },
+      "individual_turn_transitions": {
+        "0->0": 65,
+        "0->1": 1,
+        "0->2": 7,
+        "0->3": 10,
+        "1->1": 32,
+        "2->0": 1,
+        "2->1": 2,
+        "2->2": 199,
+        "2->3": 6,
+        "3->0": 7,
+        "3->1": 1,
+        "3->2": 17,
+        "3->3": 164
+      }
+    }
+  },
+  "second_512": {
+    "baseline": {
+      "n": 512,
+      "counts": {
+        "0": 74,
+        "1": 18,
+        "2": 197,
+        "3": 223
+      },
+      "cumulative_pct": {
+        "by_T1": 3.5156,
+        "by_T2": 41.9922,
+        "by_T3": 85.5469
+      },
+      "wilson95_pct": {
+        "by_T1": [
+          2.235,
+          5.488
+        ],
+        "by_T2": [
+          37.792,
+          46.311
+        ],
+        "by_T3": [
+          82.236,
+          88.328
+        ]
+      },
+      "mean_keep": 5.4668
+    },
+    "bucknard": {
+      "n": 512,
+      "counts": {
+        "0": 63,
+        "1": 20,
+        "2": 212,
+        "3": 217
+      },
+      "cumulative_pct": {
+        "by_T1": 3.9062,
+        "by_T2": 45.3125,
+        "by_T3": 87.6953
+      },
+      "wilson95_pct": {
+        "by_T1": [
+          2.543,
+          5.956
+        ],
+        "by_T2": [
+          41.051,
+          49.643
+        ],
+        "by_T3": [
+          84.566,
+          90.263
+        ]
+      },
+      "mean_keep": 5.6133
+    },
+    "paired_bucknard_minus_baseline": {
+      "at_or_before_turn": {
+        "by_T1": {
+          "change_pp": 0.3906,
+          "paired_normal_95pct_pp": [
+            -0.15,
+            0.931
+          ],
+          "buck_only": 2,
+          "baseline_only": 0,
+          "both_or_neither": 510,
+          "mcnemar_exact_two_sided_p": 0.5
+        },
+        "by_T2": {
+          "change_pp": 3.3203,
+          "paired_normal_95pct_pp": [
+            1.206,
+            5.434
+          ],
+          "buck_only": 24,
+          "baseline_only": 7,
+          "both_or_neither": 481,
+          "mcnemar_exact_two_sided_p": 0.003327
+        },
+        "by_T3": {
+          "change_pp": 2.1484,
+          "paired_normal_95pct_pp": [
+            0.166,
+            4.131
+          ],
+          "buck_only": 19,
+          "baseline_only": 8,
+          "both_or_neither": 485,
+          "mcnemar_exact_two_sided_p": 0.052239
+        }
+      },
+      "individual_turn_transitions": {
+        "0->0": 55,
+        "0->2": 7,
+        "0->3": 12,
+        "1->1": 18,
+        "2->0": 2,
+        "2->1": 1,
+        "2->2": 189,
+        "2->3": 5,
+        "3->0": 6,
+        "3->1": 1,
+        "3->2": 16,
+        "3->3": 200
+      }
+    }
+  },
+  "caveats": [
+    "Goldfish Dack deployment with 3 combo creatures remaining in library, not live-game win rate",
+    "Search beam width 240 and provisional older mulligan continuation thresholds",
+    "Bucknard modeled as {1}, tap, roll d4, make resulting Treasures and transfer control",
+    "KCI may sacrifice Bucknard while the activated ability is on stack",
+    "Random roll is deterministic by game/solver state; matches prior validated runner",
+    "MTG combat/interaction and post-Dack Boonweaver combo not simulated",
+    "No independent engine replication; paired CI conditional on solver accuracy"
+  ]
+}
