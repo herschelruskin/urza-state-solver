@@ -1,0 +1,112 @@
+{
+  "status": "PASS",
+  "n_per_variant": 1024,
+  "beam": 240,
+  "decks_sha256": {
+    "current": "3a10a02e1aae070645129fa85ed94240f1ae9d5447e3711f7621f92064d9f129",
+    "oct10": "0c41146df7ca49d4d9f5c2cdb09022f059a0f5d77a4ff0830e0c1573475373e5"
+  },
+  "variants": {
+    "current": {
+      "n": 1024,
+      "counts": {
+        "0": 157,
+        "1": 50,
+        "2": 405,
+        "3": 412
+      },
+      "exact_pct": {
+        "T1": 4.8828,
+        "T2": 39.5508,
+        "T3": 40.2344
+      },
+      "cumulative_pct": {
+        "by_T1": 4.8828,
+        "by_T2": 44.4336,
+        "by_T3": 84.668
+      },
+      "ci_pct": {
+        "by_T1_Wilson95pct": [
+          3.723,
+          6.38
+        ],
+        "by_T2_Wilson95pct": [
+          41.417,
+          47.492
+        ],
+        "by_T3_Wilson95pct": [
+          82.332,
+          86.745
+        ]
+      },
+      "mean_keep": 5.4873,
+      "free_mull_fraction": 0.80859
+    },
+    "oct10": {
+      "n": 1024,
+      "counts": {
+        "0": 125,
+        "1": 48,
+        "2": 466,
+        "3": 385
+      },
+      "exact_pct": {
+        "T1": 4.6875,
+        "T2": 45.5078,
+        "T3": 37.5977
+      },
+      "cumulative_pct": {
+        "by_T1": 4.6875,
+        "by_T2": 50.1953,
+        "by_T3": 87.793
+      },
+      "ci_pct": {
+        "by_T1_Wilson95pct": [
+          3.554,
+          6.16
+        ],
+        "by_T2_Wilson95pct": [
+          47.138,
+          53.251
+        ],
+        "by_T3_Wilson95pct": [
+          85.645,
+          89.658
+        ]
+      },
+      "mean_keep": 5.709,
+      "free_mull_fraction": 0.77832
+    }
+  },
+  "paired_current_minus_oct10": {
+    "by_T1_pctpoints": {
+      "delta": 0.1953,
+      "paired_normal_95pct": [
+        -1.661,
+        2.052
+      ]
+    },
+    "by_T2_pctpoints": {
+      "delta": -5.7617,
+      "paired_normal_95pct": [
+        -9.938,
+        -1.585
+      ]
+    },
+    "by_T3_pctpoints": {
+      "delta": -3.125,
+      "paired_normal_95pct": [
+        -5.997,
+        -0.253
+      ]
+    }
+  },
+  "caveats": [
+    "Goldfish Dack deployment only; no opponent interaction",
+    "Three creature combo pieces mandatory in library",
+    "4-player free mulligan, but continuation values from older non-free benchmark",
+    "Smothering Tithe modeled as 3 treasures per opponent cycle",
+    "No exact post-Dack Boonweaver aura/trigger combo proof",
+    "Approximate paired normal intervals ignore solver/model misspecification"
+  ]
+}
