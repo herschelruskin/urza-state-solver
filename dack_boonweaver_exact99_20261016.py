@@ -222,6 +222,10 @@ _existing_dack_check=d.can_cast_dack
 def can_cast_dack(s):
     if not COMBO.issubset(set(s.library)):
         return False
+    # A Chapter-III tutor currently pending on the stack must resolve
+    # before a sorcery-speed commander cast is possible.
+    if any(p.name=="Urza's Saga" and p.aux=="SAGA3" for p in s.battlefield):
+        return False
     return _existing_dack_check(s)
 d.can_cast_dack=can_cast_dack
 
@@ -254,6 +258,85 @@ def utility_actions(s):
                 ))
     return m._dedupe(out)
 d.utility_actions=utility_actions
+
+# Staff of Compleation: {T}, pay 3 life: proliferate. The inherited v0.78
+# layer models Staff's mana/draw/untap but not proliferate. Extend its
+# *existing* life ledger; do not bypass the 40-life cap or reset past payments.
+STAFF_LIFE3="__STAFF_PAID_LIFE_3__"
+_base_staff_life_spent = newer.staff_life_spent
+def staff_life_spent(s):
+    return _base_staff_life_spent(s)+3*s.exile.count(STAFF_LIFE3)
+newer.staff_life_spent=staff_life_spent
+
+# A permanent may have loyalty counters (Tezzeret) or its named counter
+# kind stored in .counters (Saga lore, Remote Farm depletion, Chalice charge,
+# Jeweled Amulet charge, Coalition Relic charge, etc.). Choosing a permanent
+# adds one of *each* kind already present, not a counter where there was none.
+def proliferate_options(s):
+    eligible=[
+        i for i,p in enumerate(s.battlefield)
+        if p.counters>0 or (p.name=="Tezzeret, Cruel Captain" and p.loyalty>0)
+    ]
+    out=[]
+    # Early T1-T3 deck states ordinarily have few counters. Avoid an
+    # unbounded 2^N action explosion in pathological states: selecting every
+    # eligible permanent is legal, as is selecting any one; enumerate all
+    # subsets when N<=8. This is a stated beam-search approximation above 8.
+    masks=(range(1,1<<len(eligible)) if len(eligible)<=8 else
+           [1<<i for i in range(len(eligible))]+[(1<<len(eligible))-1])
+    for mask in masks:
+        bf=list(s.battlefield)
+        for bit,idx in enumerate(eligible):
+            if not (mask>>bit)&1:continue
+            p=bf[idx]
+            newc=p.counters+(1 if p.counters>0 else 0)
+            newloyalty=p.loyalty+(1 if p.name=="Tezzeret, Cruel Captain" and p.loyalty>0 else 0)
+            aux=p.aux
+            # Adding a third lore counter triggers Urza's Saga chapter III
+            # immediately. The inherited saga_tutor_actions resolves the
+            # search and sacrifices Saga; don't synthesize a free tutor.
+            if p.name=="Urza's Saga" and p.counters<3<=newc:
+                aux="SAGA3"
+            bf[idx]=replace(p,counters=newc,loyalty=newloyalty,aux=aux)
+        out.append(replace(s,battlefield=tuple(bf)))
+    return out
+
+_prev_special_actions=d.special_actions
+def special_actions(s):
+    out=list(_prev_special_actions(s))
+    if not newer.staff_can_pay(s,3):
+        return out
+    for i,p in enumerate(s.battlefield):
+        if d.effective_name(p)!="Staff of Compleation" or p.tapped:
+            continue
+        bf=list(s.battlefield)
+        bf[i]=replace(p,tapped=True)
+        paid=replace(s,battlefield=tuple(bf),
+                     exile=s.exile+(STAFF_LIFE3,))
+        out.extend(proliferate_options(paid))
+    return m._dedupe(out)
+d.special_actions=special_actions
+
+# A proliferated Jeweled Amulet with two or more charge counters spends only
+# one charge counter when tapped for mana. Legacy code set all charges to zero.
+_prev_tap_actions=d.tap_mana_actions
+def tap_mana_actions(s):
+    raw=_prev_tap_actions(s)
+    changed=[]
+    for q in raw:
+        for i,p in enumerate(s.battlefield):
+            if (d.effective_name(p)!="Jeweled Amulet" or
+                p.tapped or p.counters<=1 or
+                len(q.battlefield)!=len(s.battlefield)):
+                continue
+            after=q.battlefield[i]
+            if (after.name==p.name and after.tapped and after.counters==0):
+                bf=list(q.battlefield)
+                bf[i]=replace(after,counters=p.counters-1)
+                q=replace(q,battlefield=tuple(bf))
+        changed.append(q)
+    return m._dedupe(changed)
+d.tap_mana_actions=tap_mana_actions
 
 def install(variant):
     deck=VARIANTS[variant]
@@ -328,8 +411,67 @@ def audit():
     assert not any("Ancient Tomb" in q.hand for q in x)
     x=d.utility_actions(replace(s,c=3))
     assert any("Ancient Tomb" in q.hand for q in x)
+    # Staff proliferate must tap, pay 3 life, and may selectively place
+    # exactly one additional counter on each chosen counter-bearing permanent.
+    proof_lib=tuple(sorted(COMBO))+("Lion's Eye Diamond","Sol Ring")
+    st=d.State(2,(),proof_lib,battlefield=(
+        d.Perm("Staff of Compleation"),
+        d.Perm("Urza's Saga",False,2),
+        d.Perm("Remote Farm",False,2),
+        d.Perm("Everflowing Chalice",False,1),
+        d.Perm("Jeweled Amulet",False,1,aux="W"),
+        d.Perm("Tezzeret, Cruel Captain",False,0,loyalty=4),
+    ))
+    pro=[q for q in d.special_actions(st)
+         if STAFF_LIFE3 in q.exile]
+    assert pro and all(q.battlefield[0].tapped for q in pro)
+    assert all(newer.staff_life_spent(q)==3 for q in pro)
+    # One target only, without accidentally proliferating other permanents.
+    assert any(q.battlefield[1].counters==2 and q.battlefield[2].counters==3
+               and q.battlefield[3].counters==1 and q.battlefield[5].loyalty==4
+               for q in pro)
+    # All targets, including Tezzeret loyalty and Saga Chapter III.
+    allhit=[q for q in pro
+            if q.battlefield[1].counters==3 and q.battlefield[1].aux=="SAGA3"
+            and q.battlefield[2].counters==3
+            and q.battlefield[3].counters==2
+            and q.battlefield[4].counters==2
+            and q.battlefield[5].loyalty==5]
+    assert allhit
+    assert not d.can_cast_dack(replace(allhit[0],w=2,c=4))
+    resolved=[z for q in allhit for z in d.saga_tutor_actions(q)]
+    assert any("Urza's Saga" not in [p.name for p in z.battlefield]
+               and "Lion's Eye Diamond" in [p.name for p in z.battlefield]
+               for z in resolved)
+    # Remote Farm gains an extra usable depletion counter.
+    rf=next(q for q in pro if q.battlefield[2].counters==3)
+    rr=d.tap_mana_actions(rf)
+    assert any(q.w==2 and q.battlefield[2].counters==2 for q in rr)
+    # Chalice adds C equal to its *post-proliferation* counters.
+    ec=next(q for q in pro if q.battlefield[3].counters==2)
+    assert any(q.c==2 for q in d.tap_mana_actions(ec))
+    # Proliferated Jeweled Amulet keeps its other charge after one tap.
+    amulet=next(q for q in pro if q.battlefield[4].counters==2)
+    assert any(q.w==1 and q.battlefield[4].counters==1
+               for q in d.tap_mana_actions(amulet))
+    # Ruins of Trokair has NO depletion counters to proliferate.
+    r=d.State(2,(),(),battlefield=(d.Perm("Ruins of Trokair"),))
+    assert not proliferate_options(r)
+    # Old staff life expenses count toward the common budget.
+    almost=d.State(2,(),proof_lib,
+                   battlefield=(d.Perm("Staff of Compleation"),),
+                   exile=(newer.STAFF_LIFE4,)*9)
+    assert newer.staff_life_spent(almost)==36
+    assert not newer.staff_can_pay(replace(almost,exile=almost.exile+(STAFF_LIFE3,)),3)
+    assert not any(STAFF_LIFE3 in q.exile and q.exile!=almost.exile
+                   for q in d.special_actions(replace(almost,exile=almost.exile+(STAFF_LIFE3,))))
+    # 4-player Tithe contributes 3 Treasures, Splendor adds a separate 1.
+    alone=d.State(2,(),(),battlefield=(d.Perm("Smothering Tithe"),))
+    with_splendor=replace(alone,battlefield=alone.battlefield+(d.Perm("Gleaming Splendor"),))
+    assert d.add_opponent_cycle_resources(alone).treasures==3
+    assert d.add_opponent_cycle_resources(with_splendor).treasures==4
     assert len(VARIANTS)==2
-    print("BOONWEAVER_EXACT99_AUDIT_PASS",flush=True)
+    print("BOONWEAVER_EXACT99_STAFF_PROLIFERATE_AUDIT_PASS",flush=True)
 
 def main():
     p=argparse.ArgumentParser()
