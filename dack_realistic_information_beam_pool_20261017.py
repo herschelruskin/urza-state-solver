@@ -40,7 +40,7 @@ def stats(rows):
             "cumulative_pct":{f"by_T{t}":round(100*sum(ct[k] for k in range(1,t+1))/n,4)
                               for t in (1,2,3)},
             "mean_keep":round(sum(q["keep_n"] for q in rows.values())/n,4),
-            "mean_rollout_calls":round(sum(q["planning_counts"]["rollout_calls"] for q in rows.values())/n,2)}
+            "mean_rollout_calls":round(sum(q["planning_counts"]["rollout_calls"] for q in rows.values())/n,2) if all("planning_counts" in q for q in rows.values()) else None}
 
 def paired(buck,base):
     n=len(base);out={}
