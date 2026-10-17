@@ -79,11 +79,29 @@ def lookahead_T2_T3_value(state,j):
         score+=min(0.025,max(0.,top_known_state_score(max(front,key=top_known_state_score))/24000.))
     return score
 
+def v2_post_roll_value(template,die):
+    """Value precommitted Bucknard under the SAME T2+T3 objective as a pass."""
+    assert 1<=die<=4
+    outcome=v1.replace(template,treasures=template.treasures+die-1)
+    fair.overridden_roll(1)
+    d.utility_actions=fair.utility_without_roll
+    try:
+        wins,front=d.search_turn_frontier_many([outcome],
+            beam=v1.PARAMS["rollout_beam"],depth=v1.PARAMS["rollout_depth"])
+    finally:
+        d.utility_actions=fair.ORIG_UTILITY
+    v1.COUNTERS["rollout_calls"]+=1
+    if wins:return 1.6  # Real immediate win beats any possible future payoff.
+    if not front:return v1.public_score(outcome)/5000.
+    return max((v1.expected_future_value(q) for q in
+                v1.short_list(front,2)),default=0.)
+
 def activate_v2(draws=3,t3_samples=2,t2_continuations=2):
     global LEVEL3,T2_CONTINUATIONS
     LEVEL3=int(t3_samples);T2_CONTINUATIONS=int(t2_continuations)
     assert LEVEL3>=1 and T2_CONTINUATIONS>=1
     v1.one_future_sample_value=lookahead_T2_T3_value
+    v1.post_roll_value=v2_post_roll_value
 
 def selftest():
     v1.audit()
