@@ -146,13 +146,12 @@ def turnstart(pre,turn):
         return d.draw(pre,1)
     q=d.untap_and_begin(replace(pre,turn=turn))
     q=d.add_opponent_cycle_resources(q)
-    opts=[]
-    for u in d.mana_vault_upkeep_options(q):
-        opts.append(d.begin_first_main(d.saga_advance(d.draw(u,1))))
-    # Upkeep options require decisions before the next draw, too. The
-    # scorer does not read future topdeck; choose a single candidate.
-    return max(opts,key=heuristic) if opts else d.begin_first_main(
-        d.saga_advance(d.draw(q,1)))
+    # Commit the upkeep Mana Vault payments/untaps before revealing the draw.
+    # In the legacy engine the beam could compare *different drawn cards*
+    # across upkeep choices. The selection key below never sees the draw.
+    opts=list(d.mana_vault_upkeep_options(q))
+    chosen=max(opts,key=heuristic) if opts else q
+    return d.begin_first_main(d.saga_advance(d.draw(chosen,1)))
 
 def simulate(variant,gid,beam,cap):
     # Initial mulligan RNG is identical to the historical pair.
