@@ -30,7 +30,7 @@ ORIG_SHUFFLE=d.shuffled_unknown
 ORIG_ROLL=prior.ORIG_ROLL
 ORIG_UTIL=prior.ORIG_UTIL
 SEED_BASE=prior.SEED_BASE
-VARIANTS={"fair_d4":prior.VARIANT,"strict_current":"current","strict_buck":prior.VARIANT}
+VARIANTS={"control_current":"current","fair_d4":prior.VARIANT,"strict_current":"current","strict_buck":prior.VARIANT}
 
 def uniform_seed(*parts):
     data="|".join(str(x) for x in parts).encode("utf8")
@@ -93,6 +93,17 @@ def prepare(gid,variant):
     prior.set_roll(2) # unknown dice cannot leak into mulligan simulator
     seed,seat,state,keep,audit=prior.pregame(gid)
     return seed,seat,state,keep,audit
+
+def control_current(gid,beam):
+    """Exact same realized shuffle, mulligans, beam and seeds as fair_d4."""
+    seed,seat,state,keep,audit=prepare(gid,"current")
+    # This is the historical multi-frontier search, rerun under game-seeded
+    # shuffle. It remains a conditional upper bound with future-draw oracle.
+    outcome=d._win_turn_from_unknown_order(state.hand,state.library,seat,
+                                           beam=beam,max_turn=2)
+    return {"game_id":gid,"seat":seat,"keep_n":keep,
+            "win_T2":int(bool(outcome)),"expected_prob_T2":float(bool(outcome)),
+            "rolled":None,"commitment_turn":None,"choices_evaluated":0}
 
 def fair_d4(gid,beam,k):
     seed,seat,state,keep,audit=prepare(gid,prior.VARIANT)
@@ -198,6 +209,7 @@ def main():
     for j in range(args.games):
         gid=args.shard*args.games+j
         r=(fair_d4(gid,args.beam,args.candidate_limit) if args.mode=="fair_d4"
+           else control_current(gid,args.beam) if args.mode=="control_current"
            else strict_T2(gid,args.beam,args.candidate_limit,VARIANTS[args.mode]))
         rows.append(r)
         print("FAIR_RANDOM_GAME",args.mode,json.dumps(r),flush=True)
