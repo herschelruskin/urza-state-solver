@@ -1,0 +1,132 @@
+name: Dack Realistic Information Beam vs Full Beam pilot
+on:
+  push:
+    branches: [dack-realistic-information-beam-20261017]
+    paths:
+      - 'dack_realistic_information_beam_20261017.py'
+      - 'dack_realistic_information_beam_pool_20261017.py'
+      - '.github/workflows/dack_realistic_information_beam_20261017.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and prove hidden-order invariance
+        run: |
+          python -m py_compile dack_realistic_information_beam_20261017.py dack_realistic_information_beam_pool_20261017.py
+          python -u dack_realistic_information_beam_20261017.py --audit
+      - name: Run first paired realistic-beam game
+        run: |
+          python -u dack_realistic_information_beam_20261017.py \
+            --variant current --games 1 --shard 0 --beam 90 \
+            --pass-cap 5 --buck-cap 2 --draw-samples 2 \
+            --rollout-beam 24 --rollout-depth 10 \
+            --out smoke_current.json.gz
+          python -u dack_realistic_information_beam_20261017.py \
+            --variant buck_worldmap --games 1 --shard 0 --beam 90 \
+            --pass-cap 5 --buck-cap 2 --draw-samples 2 \
+            --rollout-beam 24 --rollout-depth 10 \
+            --out smoke_buck.json.gz
+      - name: Compare paired game identity and ensure valid outcomes
+        run: |
+          python - <<'PY'
+          import gzip,json
+          with gzip.open('smoke_current.json.gz','rt') as f:a=json.load(f)
+          with gzip.open('smoke_buck.json.gz','rt') as f:b=json.load(f)
+          x=a['rows'][0];y=b['rows'][0]
+          assert x['seed']==y['seed'] and x['seat']==y['seat']
+          assert x['game_id']==y['game_id']==0
+          assert x['win_turn'] in range(4) and y['win_turn'] in range(4)
+          assert x['rolls']==[] and all(1<=v<=4 for v in y['rolls'])
+          assert x['planning_counts']['turn_commitments']>=1
+          print('REALISTIC_BEAM_PAIRED_SMOKE_PASS',flush=True)
+          PY
+  shard:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      max-parallel: 14
+      matrix:
+        variant: [current, buck_worldmap]
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Evaluate 4 games with expected-draw rollouts and fair Bucknard d4
+        run: |
+          mkdir -p shards
+          python -u dack_realistic_information_beam_20261017.py \
+            --variant "${{ matrix.variant }}" --shard "${{ matrix.shard }}" --games 4 \
+            --beam 120 --pass-cap 7 --buck-cap 3 \
+            --draw-samples 3 --rollout-beam 42 --rollout-depth 14 \
+            --out "shards/${{ matrix.variant }}_shard_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: realistic-beam-${{ matrix.variant }}-${{ matrix.shard }}
+          path: shards/*.json.gz
+          retention-days: 60
+          if-no-files-found: error
+  pool:
+    needs: [smoke,shard]
+    if: ${{ needs.smoke.result == 'success' && needs.shard.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: realistic-beam-*
+          path: shards
+      - name: Fetch matched frozen Full Beam World Map and Bucknard archives
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p old_current old_buck
+          gh run download 38912678782 --repo "${{ github.repository }}" \
+            --pattern 'boon-current-shard-*' --dir old_current
+          gh run download 38931616641 --repo "${{ github.repository }}" \
+            --pattern 'buck-buck_worldmap-*' --dir old_buck
+      - name: Pool paired rates, confidence intervals, card and random-roll checks
+        run: |
+          python -u dack_realistic_information_beam_pool_20261017.py \
+            --shards shards --oracle-base 'old_current/**/*.json.gz' \
+            --oracle-buck 'old_buck/**/*.json.gz' \
+            --n 64 --beam 120 --pass-cap 7 --draw-samples 3 \
+            --rollout-beam 42 --rollout-depth 14 \
+            --out dack_realistic_beam_n64_pilot_20261017.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-realistic-beam-n64-pooled
+          path: dack_realistic_beam_n64_pilot_20261017.json
+          retention-days: 90
+          if-no-files-found: error
+      - name: Publish paired realistic-beam results
+        run: |
+          mkdir -p benchmark_results
+          cp dack_realistic_beam_n64_pilot_20261017.json \
+            benchmark_results/dack_realistic_beam_n64_pilot_20261017.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_realistic_beam_n64_pilot_20261017.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish information-set realistic beam paired N64 pilot'
+            git pull --rebase origin dack-realistic-information-beam-20261017
+            git push
+          fi
