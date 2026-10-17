@@ -10,6 +10,8 @@ on:
 permissions:
   contents: write
   actions: read
+env:
+  PYTHONHASHSEED: '0'
 jobs:
   smoke:
     runs-on: ubuntu-latest
