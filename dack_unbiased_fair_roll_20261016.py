@@ -78,6 +78,9 @@ def evaluate_commitments(candidates,beam,k):
 
 def sampled_result(gid,best):
     expected,committed,outcomes=best
+    if committed is None:
+        return {"rolled":None,"expected_prob_T2":0.,
+                "win_T2":0,"commitment_turn":None}
     # Critically: draw once, and only AFTER the fixed commitment has been
     # selected by the expectation. No search branch observes it in advance.
     seed=SEED_BASE+int(gid)*1000003
