@@ -1,0 +1,109 @@
+name: Dack unbiased d4 and hidden-draw N512 pilot
+on:
+  push:
+    branches: [dack-unbiased-stochastic-and-hidden-20261016]
+    paths:
+      - 'dack_unbiased_fair_roll_20261016.py'
+      - 'dack_unbiased_fair_roll_pool_20261016.py'
+      - '.github/workflows/dack_unbiased_fair_roll_20261016.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and validate independency of random events
+        run: |
+          python -m py_compile dack_unbiased_fair_roll_20261016.py dack_unbiased_fair_roll_pool_20261016.py
+          python -u dack_unbiased_fair_roll_20261016.py --audit
+      - name: Run complete 4-arm one-game smoke
+        run: |
+          for mode in control_current fair_d4 strict_current strict_buck; do
+            python -u dack_unbiased_fair_roll_20261016.py \
+              --mode "$mode" --shard 0 --games 1 --beam 120 \
+              --candidate-limit 8 --out "$mode.json.gz"
+          done
+      - name: Assert no stochastic foreknowledge / all four modes return valid rows
+        run: |
+          python - <<'PY'
+          import gzip,json
+          for mode in ("control_current","fair_d4","strict_current","strict_buck"):
+              with gzip.open(f"{mode}.json.gz","rt") as f:d=json.load(f)
+              assert d["mode"]==mode and d["games"]==1 and d["beam"]==120
+              assert 0<=d["rows"][0]["win_T2"]<=1
+              assert d["rows"][0]["game_id"]==0
+          print("FOUR_MODE_SMOKE_PASS",flush=True)
+          PY
+  shard:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        mode: [control_current, fair_d4, strict_current, strict_buck]
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Matched 32-game stochastic and nonclairvoyance shard
+        run: |
+          mkdir -p shards
+          python -u dack_unbiased_fair_roll_20261016.py \
+            --mode "${{ matrix.mode }}" --shard "${{ matrix.shard }}" --games 32 \
+            --beam 120 --candidate-limit 8 \
+            --out "shards/${{ matrix.mode }}_shard_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fair-d4-${{ matrix.mode }}-${{ matrix.shard }}
+          path: shards/*.json.gz
+          retention-days: 60
+          if-no-files-found: error
+  pool:
+    needs: [smoke,shard]
+    if: ${{ needs.smoke.result == 'success' && needs.shard.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: fair-d4-*
+          merge-multiple: true
+          path: shards
+      - name: Validate hashes and IDs; compute paired effects and roll histogram
+        run: |
+          python -u dack_unbiased_fair_roll_pool_20261016.py \
+            --dir shards --games 512 --beam 120 \
+            --out dack_unbiased_fair_roll_pooled_20261016.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-unbiased-d4-and-hidden-draw-n512-results
+          path: dack_unbiased_fair_roll_pooled_20261016.json
+          retention-days: 90
+          if-no-files-found: error
+      - name: Publish complete paired pilot results
+        run: |
+          mkdir -p benchmark_results
+          cp dack_unbiased_fair_roll_pooled_20261016.json \
+            benchmark_results/dack_unbiased_fair_roll_pooled_20261016.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_unbiased_fair_roll_pooled_20261016.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish fair-d4 and T1 commitment matched N512 benchmark'
+            git push
+          fi
