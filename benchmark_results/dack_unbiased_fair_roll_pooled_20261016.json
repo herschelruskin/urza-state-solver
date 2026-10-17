@@ -1,0 +1,149 @@
+{
+  "status": "PASS",
+  "n_per_arm": 512,
+  "beam": 120,
+  "design": "Matched-seed World Map versus Bucknard trial, independently sampled d4 with commitment before revealing die, plus restricted T1-pass no-future-draw sensitivity",
+  "variants": {
+    "control_current": {
+      "summary": {
+        "n": 512,
+        "T2_count": 239,
+        "T2_pct": 46.6797,
+        "mean_keep": 5.5195,
+        "Purse_commitment_games": 0,
+        "d4_distribution_when_committed": {
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 0
+        },
+        "mean_precommit_expected_T2_pct": 46.6797,
+        "mean_pre_roll_choices_evaluated": 0.0
+      },
+      "shards": 16,
+      "deck_sha256": "3a10a02e1aae070645129fa85ed94240f1ae9d5447e3711f7621f92064d9f129"
+    },
+    "fair_d4": {
+      "summary": {
+        "n": 512,
+        "T2_count": 245,
+        "T2_pct": 47.8516,
+        "mean_keep": 5.5215,
+        "Purse_commitment_games": 17,
+        "d4_distribution_when_committed": {
+          "1": 4,
+          "2": 5,
+          "3": 4,
+          "4": 4
+        },
+        "mean_precommit_expected_T2_pct": 48.1445,
+        "mean_pre_roll_choices_evaluated": 0.4395
+      },
+      "shards": 16,
+      "deck_sha256": "f130ff4c9c0fbc888525070877fe820caba03e836e0be66ec60ea3410e950068"
+    },
+    "strict_current": {
+      "summary": {
+        "n": 512,
+        "T2_count": 87,
+        "T2_pct": 16.9922,
+        "mean_keep": 5.5195,
+        "Purse_commitment_games": 0,
+        "d4_distribution_when_committed": {
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 0
+        },
+        "mean_precommit_expected_T2_pct": 16.9922,
+        "mean_pre_roll_choices_evaluated": 0.0
+      },
+      "shards": 16,
+      "deck_sha256": "3a10a02e1aae070645129fa85ed94240f1ae9d5447e3711f7621f92064d9f129"
+    },
+    "strict_buck": {
+      "summary": {
+        "n": 512,
+        "T2_count": 93,
+        "T2_pct": 18.1641,
+        "mean_keep": 5.5215,
+        "Purse_commitment_games": 16,
+        "d4_distribution_when_committed": {
+          "1": 5,
+          "2": 2,
+          "3": 6,
+          "4": 3
+        },
+        "mean_precommit_expected_T2_pct": 18.3105,
+        "mean_pre_roll_choices_evaluated": 0.3926
+      },
+      "shards": 16,
+      "deck_sha256": "f130ff4c9c0fbc888525070877fe820caba03e836e0be66ec60ea3410e950068"
+    }
+  },
+  "paired": {
+    "blind_d4_vs_current": {
+      "delta_pp": 1.1719,
+      "paired_normal_95pct_pp": [
+        -0.258,
+        2.602
+      ],
+      "buck_only": 10,
+      "current_only": 4,
+      "discordant": 14,
+      "mcnemar_exact_two_sided_p": 0.17956543
+    },
+    "strict_buck_vs_strict_current": {
+      "delta_pp": 1.1719,
+      "paired_normal_95pct_pp": [
+        -0.036,
+        2.379
+      ],
+      "buck_only": 8,
+      "current_only": 2,
+      "discordant": 10,
+      "mcnemar_exact_two_sided_p": 0.109375
+    },
+    "blind_d4_vs_strict_buck": {
+      "delta_pp": 29.6875,
+      "paired_normal_95pct_pp": [
+        25.726,
+        33.649
+      ],
+      "buck_only": 152,
+      "current_only": 0,
+      "discordant": 152,
+      "mcnemar_exact_two_sided_p": 0.0
+    },
+    "current_multi_frontier_vs_strict_current": {
+      "delta_pp": 29.6875,
+      "paired_normal_95pct_pp": [
+        25.726,
+        33.649
+      ],
+      "buck_only": 152,
+      "current_only": 0,
+      "discordant": 152,
+      "mcnemar_exact_two_sided_p": 0.0
+    }
+  },
+  "integrity": {
+    "fair_d4_rolled_count": 17,
+    "shuffles_game_seeded_not_global_multiset_seed": true,
+    "known_random_cards_absent": [
+      "Component Pouch"
+    ],
+    "deck_hashes_verified": true
+  },
+  "limits": [
+    "Goldfish Dack-cast proxy, not interactive win probability",
+    "Search still has access to sampled library ordering during in-turn card-selection and tutor/draw action comparisons",
+    "Fair d4 candidate solver uses top 8 per turn and beam 120 rather than exhaustive optimal policy",
+    "Strict comparison commits one heuristic-best T1 pass line before T2 draw; deliberately conservative",
+    "Strict comparison suppresses T1 Bucknard activation; do not equate its absolute percentages with optimum",
+    "One d4 sampled per committed Bucknard activation, not after pre-roll beam selection",
+    "Game-seeded shuffle is independent across games but repeated same-multiset shuffles in same game use same order",
+    "Mulligans evaluated using neutral die and inherited provisional continuation thresholds",
+    "Monte Carlo uncertainty remains, particularly if few games use Bucknard"
+  ]
+}
