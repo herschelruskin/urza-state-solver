@@ -31,8 +31,60 @@ m=root.m
 PURSE=trial.NEW
 ORIG_ROLL=m._roll
 ORIG_UTILITY=d.utility_actions
+ORIG_CAST=d.cast_actions
+ORIG_SCRY_DRAW=m._scry_draw_relevant
 SEED_BASE=7604096001
 BEAM_DEFAULT=160
+
+def visible_scry_order(library,amount):
+    """Pick a legal scry keep/bottom order using ONLY the revealed top X.
+
+    Avoids a hindsight choice about any unknown card AFTER the scry.
+    This intentionally prioritizes fast mana over generic future card quality.
+    """
+    n=min(max(0,int(amount)),len(library))
+    shown=list(library[:n])
+    tail=tuple(library[n:])
+    def rank(card):
+        # Combo creatures must remain in library and most Auras are unusable.
+        if card in root.COMBO:return -100
+        if card in d.AURAS:return -70
+        if card in {"Lion's Eye Diamond","Mana Vault","Sol Ring","Lotus Petal",
+                     "Mox Diamond","Chrome Mox","Mox Opal","Ancient Tomb",
+                     "City of Traitors","Crystal Vein"}:return 100
+        if card in d.RAMP_PROTECTED:return 70
+        if card in d.LANDS or card in {"Emeria's Call","Razorgrass Ambush"}:return 55
+        return 5
+    good=sorted((card for card in shown if rank(card)>=0),
+                key=lambda c:(-rank(c),c))
+    bad=sorted((card for card in shown if rank(card)<0),
+               key=lambda c:(rank(c),c))
+    return tuple(good)+tail+tuple(bad)
+
+def honest_kozilek_scry_draw(base,X):
+    # Kozilek's Command scry-X, then draw 1. Card selection is made only
+    # from the X actually revealed by scry. It must not optimize using the
+    # hidden card below those X cards when all are bottomed.
+    lib=visible_scry_order(base.library,X)
+    return [d.draw(replace(base,library=lib),1)]
+
+def honest_boulder_casts(s):
+    raw=ORIG_CAST(s)
+    name="Giant's Boulder"
+    if name not in s.hand:return raw
+    before=sum(p.name==name for p in s.battlefield)
+    intended=visible_scry_order(s.library,2)
+    out=[]
+    for q in raw:
+        after=sum(p.name==name for p in q.battlefield)
+        if after>before and q.library!=intended:
+            continue
+        out.append(q)
+    return out
+
+def install_honest_scry():
+    m._scry_draw_relevant=honest_kozilek_scry_draw
+    d.cast_actions=honest_boulder_casts
 
 def overridden_roll(k):
     assert 1<=k<=4
@@ -205,6 +257,20 @@ def audit():
     assert any(PURSE in q.grave for q in a)
     assert any(PURSE not in q.grave for q in a)
     assert not any(is_buck_activation(st,q) for q in utility_without_roll(st))
+    # Scry may use its shown top X, but cannot optimize using cards below.
+    lib1=("Boonweaver Giant","Sol Ring","Mana Vault","Plains")
+    lib2=("Boonweaver Giant","Sol Ring","Plains","Mana Vault")
+    c1=visible_scry_order(lib1,2)
+    c2=visible_scry_order(lib2,2)
+    assert c1[0]==c2[0]=="Sol Ring"
+    assert c1[1]==lib1[2] and c2[1]==lib2[2], "unseen cards rearranged"
+    assert c1[-1]==c2[-1]=="Boonweaver Giant"
+    assert sum(Counter(c1).values())==len(lib1)
+    install_honest_scry()
+    st_scry=d.State(1,(),lib1)
+    corrected=honest_kozilek_scry_draw(st_scry,2)
+    assert len(corrected)==1
+    assert corrected[0].hand==("Sol Ring",), "scry draw wrong"
     # A blind score cannot read the unknown library ordering.
     st1=replace(st,library=("Plains","Sol Ring","Ancient Tomb"))
     st2=replace(st,library=("Ancient Tomb","Plains","Sol Ring"))
@@ -230,6 +296,7 @@ def main():
     assert a.games>0 and a.shard>=0 and a.beam>=40 and a.candidates>=1
     root.install(a.variant)
     d._WIN_CACHE.clear()
+    install_honest_scry()
     start=time.time();rows=[]
     for i in range(a.games):
         gid=a.shard*a.games+i
