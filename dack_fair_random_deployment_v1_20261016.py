@@ -154,14 +154,15 @@ def turnstart(pre,turn):
     return d.begin_first_main(d.saga_advance(d.draw(chosen,1)))
 
 def simulate(variant,gid,beam,cap):
-    # Initial mulligan RNG is identical to the historical pair.
-    root.install(variant)
+    # Deck is installed once for this shard (see main): repeatedly resetting
+    # the deck/cache for every game greatly slows the exact same policy.
+    assert tuple(d.DECK)==trial.VARIANTS[variant], "deck not installed"
     seed=SEED_BASE+int(gid)*1000003
     m.set_trial_seed(seed)
     chooser=random.Random(seed)
     seat=chooser.randrange(4)
     overridden_roll(2)  # neutral die in conditional mulligan EV, not oracle roll
-    d._WIN_CACHE.clear()
+    # Win-cache keys are stable under this neutral-die mulligan proxy.
     first,keep_n,keep_audit=root.choose_hand_with_free(chooser,seat)
     # Actual independent die stream, not state-dependent hash.
     trial_seed=int.from_bytes(hashlib.sha256(
@@ -227,6 +228,8 @@ def main():
     audit()
     if a.audit:return
     assert a.games>0 and a.shard>=0 and a.beam>=40 and a.candidates>=1
+    root.install(a.variant)
+    d._WIN_CACHE.clear()
     start=time.time();rows=[]
     for i in range(a.games):
         gid=a.shard*a.games+i
