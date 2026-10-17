@@ -1,0 +1,220 @@
+{
+  "status": "PASS",
+  "n_per_deck": 32,
+  "method": "Realistic v2 is a two-step chance-aware horizon (T2 + T3, T2 weight 1, T3 0.5); v1 is one-step and heuristic fallback.",
+  "settings_v2": {
+    "beam": 120,
+    "pass_cap": 9,
+    "buck_cap": 3,
+    "draw_samples": 3,
+    "rollout_beam": 42,
+    "rollout_depth": 18,
+    "t3_samples": 2,
+    "t2_continuations": 2
+  },
+  "settings_v1": {
+    "beam": 120,
+    "pass_cap": 7,
+    "buck_cap": 3,
+    "draw_samples": 3,
+    "rollout_beam": 42,
+    "rollout_depth": 14
+  },
+  "arms": {
+    "current": {
+      "v2": {
+        "n": 32,
+        "counts": {
+          "0": 13,
+          "3": 10,
+          "2": 8,
+          "1": 1
+        },
+        "by_turn_pct": {
+          "T1": 3.125,
+          "T2": 28.125,
+          "T3": 59.375
+        },
+        "mean_rollout_calls": 131.41
+      },
+      "v1": {
+        "n": 32,
+        "counts": {
+          "0": 15,
+          "3": 9,
+          "2": 7,
+          "1": 1
+        },
+        "by_turn_pct": {
+          "T1": 3.125,
+          "T2": 25.0,
+          "T3": 53.125
+        },
+        "mean_rollout_calls": 34.88
+      },
+      "v2_minus_v1": {
+        "T1": {
+          "delta_pp": 0.0,
+          "paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "new_only": 0,
+          "old_only": 0
+        },
+        "T2": {
+          "delta_pp": 3.125,
+          "paired_95pct_pp": [
+            -3.0,
+            9.25
+          ],
+          "new_only": 1,
+          "old_only": 0
+        },
+        "T3": {
+          "delta_pp": 6.25,
+          "paired_95pct_pp": [
+            -6.0,
+            18.5
+          ],
+          "new_only": 3,
+          "old_only": 1
+        }
+      },
+      "new_shards": 8,
+      "old_shards": 16
+    },
+    "buck_worldmap": {
+      "v2": {
+        "n": 32,
+        "counts": {
+          "0": 12,
+          "2": 9,
+          "3": 10,
+          "1": 1
+        },
+        "by_turn_pct": {
+          "T1": 3.125,
+          "T2": 31.25,
+          "T3": 62.5
+        },
+        "mean_rollout_calls": 130.47
+      },
+      "v1": {
+        "n": 32,
+        "counts": {
+          "0": 16,
+          "2": 8,
+          "3": 7,
+          "1": 1
+        },
+        "by_turn_pct": {
+          "T1": 3.125,
+          "T2": 28.125,
+          "T3": 50.0
+        },
+        "mean_rollout_calls": 36.97
+      },
+      "v2_minus_v1": {
+        "T1": {
+          "delta_pp": 0.0,
+          "paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "new_only": 0,
+          "old_only": 0
+        },
+        "T2": {
+          "delta_pp": 3.125,
+          "paired_95pct_pp": [
+            -3.0,
+            9.25
+          ],
+          "new_only": 1,
+          "old_only": 0
+        },
+        "T3": {
+          "delta_pp": 12.5,
+          "paired_95pct_pp": [
+            0.858,
+            24.142
+          ],
+          "new_only": 4,
+          "old_only": 0
+        }
+      },
+      "new_shards": 8,
+      "old_shards": 16
+    }
+  },
+  "effects": {
+    "buck_minus_worldmap_v2": {
+      "T1": {
+        "delta_pp": 0.0,
+        "paired_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "new_only": 0,
+        "old_only": 0
+      },
+      "T2": {
+        "delta_pp": 3.125,
+        "paired_95pct_pp": [
+          -7.597,
+          13.847
+        ],
+        "new_only": 2,
+        "old_only": 1
+      },
+      "T3": {
+        "delta_pp": 3.125,
+        "paired_95pct_pp": [
+          -7.597,
+          13.847
+        ],
+        "new_only": 2,
+        "old_only": 1
+      }
+    },
+    "buck_minus_worldmap_v1": {
+      "T1": {
+        "delta_pp": 0.0,
+        "paired_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "new_only": 0,
+        "old_only": 0
+      },
+      "T2": {
+        "delta_pp": 3.125,
+        "paired_95pct_pp": [
+          -7.597,
+          13.847
+        ],
+        "new_only": 2,
+        "old_only": 1
+      },
+      "T3": {
+        "delta_pp": -3.125,
+        "paired_95pct_pp": [
+          -19.553,
+          13.303
+        ],
+        "new_only": 3,
+        "old_only": 4
+      }
+    }
+  },
+  "limitations": [
+    "N32 exploratory pilot; uncertainty of small effects remains high",
+    "V2 changes planning horizon and rollout depth/pass-cap, not a pure horizon ablation",
+    "Within-turn future-card peek after tutor/draw still possible",
+    "Known-top-card information not explicitly tracked",
+    "Mulligan continuation policy remains inherited",
+    "Future Bucknard activations in hypothetical rollouts are disabled",
+    "Goldfish Dack deployment proxy and no opponent action simulation"
+  ]
+}
