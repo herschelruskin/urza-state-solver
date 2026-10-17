@@ -1,0 +1,119 @@
+name: Dack fair-random Bucknard and draw-oracle audit N256
+on:
+  push:
+    branches: [dack-fair-random-deployment-v1-20261016]
+    paths:
+      - 'dack_fair_random_deployment_v1_20261016.py'
+      - 'dack_fair_random_deployment_v1_pool.py'
+      - '.github/workflows/dack_fair_random_deployment_v1_20261016.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile both fair execution and pooling programs
+        run: python -m py_compile dack_fair_random_deployment_v1_20261016.py dack_fair_random_deployment_v1_pool.py
+      - name: Verify fair-randomness and no-oracle transition invariants
+        run: python -u dack_fair_random_deployment_v1_20261016.py --audit
+      - name: One game of each paired execution mode with independent d4
+        run: |
+          python -u dack_fair_random_deployment_v1_20261016.py \
+            --variant current --shard 0 --games 1 --beam 80 --candidates 8 \
+            --out smoke_current.json.gz
+          python -u dack_fair_random_deployment_v1_20261016.py \
+            --variant buck_worldmap --shard 0 --games 1 --beam 80 --candidates 8 \
+            --out smoke_bucknard.json.gz
+          python - <<'PY'
+          import gzip,json
+          with gzip.open("smoke_current.json.gz","rt") as f:a=json.load(f)
+          with gzip.open("smoke_bucknard.json.gz","rt") as f:b=json.load(f)
+          assert a["rows"][0]["seed"]==b["rows"][0]["seed"]
+          assert a["rows"][0]["seat"]==b["rows"][0]["seat"]
+          print("FAIR_RANDOM_MATCHED_SEED_SMOKE_PASS",flush=True)
+          PY
+  shard:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 14
+      matrix:
+        variant: [current, buck_worldmap]
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run 16 complete games with no hidden future-draw choices
+        run: |
+          mkdir -p shards
+          python -u dack_fair_random_deployment_v1_20261016.py \
+            --variant "${{ matrix.variant }}" --shard "${{ matrix.shard }}" \
+            --games 16 --beam 160 --candidates 8 \
+            --out "shards/${{ matrix.variant }}_shard_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fair-dack-${{ matrix.variant }}-${{ matrix.shard }}
+          path: shards/*.json.gz
+          retention-days: 60
+          if-no-files-found: error
+  pool:
+    needs: [smoke,shard]
+    if: ${{ needs.smoke.result == 'success' && needs.shard.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: fair-dack-*
+          path: shards
+      - name: Download historical matched oracle-game references
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p oracle_base oracle_buck
+          gh run download 38912678782 --repo "${{ github.repository }}" \
+            --pattern 'boon-current-shard-*' --dir oracle_base
+          gh run download 38931616641 --repo "${{ github.repository }}" \
+            --pattern 'buck-buck_worldmap-*' --dir oracle_buck
+      - name: Aggregate non-oracle policies and independent d4 histogram
+        run: |
+          python -u dack_fair_random_deployment_v1_pool.py \
+            --baseline 'shards/fair-dack-current-*/*.json.gz' \
+            --buck 'shards/fair-dack-buck_worldmap-*/*.json.gz' \
+            --oracle-base 'oracle_base/**/*.json.gz' \
+            --oracle-buck 'oracle_buck/**/*.json.gz' \
+            --n 256 --beam 160 --candidate-cap 8 \
+            --out fair_random_deployment_v1_n256.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-fair-random-deployment-n256-results
+          path: fair_random_deployment_v1_n256.json
+          retention-days: 90
+          if-no-files-found: error
+      - name: Publish honest decision policy results
+        run: |
+          mkdir -p benchmark_results
+          cp fair_random_deployment_v1_n256.json \
+            benchmark_results/fair_random_deployment_v1_n256.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/fair_random_deployment_v1_n256.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish paired fair-random Dack no-oracle deployment experiment'
+            git push
+          fi
