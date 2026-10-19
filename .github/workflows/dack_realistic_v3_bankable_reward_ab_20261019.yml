@@ -1,0 +1,114 @@
+name: Dack Bankable Reward AB on T2 Failure Games
+on:
+  push:
+    branches: [dack-realistic-information-beam-20261017]
+    paths:
+      - 'dack_realistic_v3_bankable_reward_ab_20261019.py'
+      - '.github/workflows/dack_realistic_v3_bankable_reward_ab_20261019.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile stable continuation A-B and validate frozen v2
+        run: |
+          python -m py_compile dack_realistic_v3_bankable_reward_ab_20261019.py
+          python -u dack_realistic_information_beam_v2_20261017.py --audit
+  compare:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 7
+      matrix:
+        include:
+          - {variant: current, gid: 0}
+          - {variant: current, gid: 1}
+          - {variant: current, gid: 22}
+          - {variant: buck_worldmap, gid: 0}
+          - {variant: buck_worldmap, gid: 1}
+          - {variant: buck_worldmap, gid: 22}
+          - {variant: buck_worldmap, gid: 31}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Exact matched v2 vs shaped v3 game replay
+        run: |
+          mkdir -p comparisons
+          python -u dack_realistic_v3_bankable_reward_ab_20261019.py \
+            --variant "${{ matrix.variant }}" --gid "${{ matrix.gid }}" \
+            --out "comparisons/${{ matrix.variant }}_${{ matrix.gid }}.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: realistic-reward-ab-${{ matrix.variant }}-${{ matrix.gid }}
+          path: comparisons/*.json
+          retention-days: 90
+          if-no-files-found: error
+  pool:
+    needs: [smoke,compare]
+    if: ${{ needs.smoke.result == 'success' && needs.compare.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: realistic-reward-ab-*
+          merge-multiple: true
+          path: comparisons
+      - name: Report successful recoveries and regressions
+        run: |
+          python - <<'PY'
+          import glob,json,pathlib
+          xs=[json.load(open(x)) for x in glob.glob('comparisons/*.json')]
+          assert len(xs)==7,len(xs)
+          summary={}
+          for variant in ('current','buck_worldmap'):
+              a=sorted((z for z in xs if z['variant']==variant),key=lambda x:x['game_id'])
+              summary[variant]={
+                'cases':len(a),
+                'T2_recovered':sum(x['T2_recovered'] for x in a),
+                'T3_recovered':sum(x['T3_recovered'] for x in a),
+                'lost_T3':sum(x['lost_T3'] for x in a),
+                'details':[{'gid':x['game_id'],
+                     'v2_win_turn':x['baseline_v2']['win_turn'],
+                     'v3_win_turn':x['shaped_v3']['win_turn'],
+                     'same_mulligan':x['baseline_v2']['keep_n']==x['shaped_v3']['keep_n'],
+                     'v2_rollout_calls':x['baseline_v2']['rollout_calls'],
+                     'v3_rollout_calls':x['shaped_v3']['rollout_calls']}
+                    for x in a]}
+          result={'status':'PASS','selected_cases':7,'by_deck':summary,
+               'note':'Bankable resource and unsaturated non-win gradient A-B only; selected games not statistical WR estimate'}
+          pathlib.Path('result.json').write_text(json.dumps(result,indent=2)+'\n')
+          print('DACK_REALISTIC_BANKABLE_REWARD_AB_POOL_PASS',json.dumps(result),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-realistic-bankable-reward-ab-summary
+          path: result.json
+          retention-days: 90
+      - name: Publish A-B diagnostic
+        run: |
+          mkdir -p benchmark_results
+          cp result.json benchmark_results/dack_v3_bankable_reward_ab_selected_failures_20261019.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_v3_bankable_reward_ab_selected_failures_20261019.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish bankable reward shaping pilot on missed Dack games'
+            git pull --rebase origin dack-realistic-information-beam-20261017
+            git push
+          fi
