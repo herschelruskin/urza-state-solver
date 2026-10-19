@@ -15,7 +15,7 @@ VARIANTS=("current","buck_worldmap")
 HASH={"current":"3a10a02e1aae070645129fa85ed94240f1ae9d5447e3711f7621f92064d9f129",
       "buck_worldmap":"f130ff4c9c0fbc888525070877fe820caba03e836e0be66ec60ea3410e950068"}
 SEED_BASE=7604096001
-SCHEMA={"full_current":"boonweaver_exact99_20261016",
+SCHEMA={"full_current":"boonweaver_exact99_t1t3_oct16",
         "full_buck":"bucknard_minimal_swaps_20261016",
         "v1":"realistic_info_beam_v1",
         "v2":"realistic_info_beam_v2"}
