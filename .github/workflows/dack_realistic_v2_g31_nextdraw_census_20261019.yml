@@ -1,0 +1,92 @@
+name: Dack G31 Full Next Draw Reward Census
+on:
+  push:
+    branches: [dack-realistic-information-beam-20261017]
+    paths:
+      - 'dack_realistic_v2_g31_nextdraw_census_20261019.py'
+      - '.github/workflows/dack_realistic_v2_g31_nextdraw_census_20261019.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  census:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    strategy:
+      fail-fast: false
+      matrix:
+        rank: [1,2]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Exhaustively score every next-card identity by frequency
+        run: |
+          mkdir -p census
+          python -m py_compile dack_realistic_v2_g31_nextdraw_census_20261019.py
+          python -u dack_realistic_v2_g31_nextdraw_census_20261019.py \
+            --rank "${{ matrix.rank }}" --tails 1 --beam 120 \
+            --out "census/rank${{ matrix.rank }}.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-g31-nextdraw-rank-${{ matrix.rank }}
+          path: census/*.json
+          retention-days: 90
+          if-no-files-found: error
+  pool:
+    needs: census
+    if: ${{ needs.census.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-g31-nextdraw-rank-*
+          merge-multiple: true
+          path: census
+      - name: Compare ex ante T2 win probabilities and resource ranking
+        run: |
+          python - <<'PY'
+          import glob,json,pathlib
+          rows=[json.load(open(f)) for f in glob.glob('census/*.json')]
+          assert len(rows)==2
+          a,b=sorted(rows,key=lambda x:x['candidate_rank'])
+          assert a['deck_count']==b['deck_count']
+          out={'status':'PASS','game_id':31,'deck':'buck_worldmap',
+               'hypothesis':'Was reward misranking guaranteed next-turn mana, or did hindsight identify a low-probability lucky draw?',
+               'rank1':{k:v for k,v in a.items() if k not in ('all_draw_outcomes','T2_win_draws')},
+               'rank2':{k:v for k,v in b.items() if k not in ('all_draw_outcomes','T2_win_draws')},
+               'probability_rank2_minus_rank1':b['T2_win_probability_over_all_cards']-a['T2_win_probability_over_all_cards'],
+               'rank1_win_cards':a['T2_win_draws'],
+               'rank2_win_cards':b['T2_win_draws'],
+               'caveat':'One independently shuffled tail per unique draw, inherited within-turn beam and card-choice policy; this is a census of top-card identity, not an exact perfect-information-free POMDP value'}
+          pathlib.Path('report.json').write_text(json.dumps(out,indent=2)+'\n')
+          print('DACK_G31_NEXTDRAW_CENSUS_PASS',json.dumps({
+            'rank1_T2':a['T2_win_probability_over_all_cards'],
+            'rank2_T2':b['T2_win_probability_over_all_cards'],
+            'rank1_reward':a['forecast_reward_v2'],
+            'rank2_reward':b['forecast_reward_v2']}),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-g31-full-nextdraw-census-report
+          path: report.json
+          retention-days: 90
+          if-no-files-found: error
+      - name: Publish candidate reward census
+        run: |
+          mkdir -p benchmark_results
+          cp report.json benchmark_results/dack_realistic_g31_nextdraw_reward_census_20261019.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_realistic_g31_nextdraw_reward_census_20261019.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish g31 exhaustive next-draw reward census'
+            git pull --rebase origin dack-realistic-information-beam-20261017
+            git push
+          fi
