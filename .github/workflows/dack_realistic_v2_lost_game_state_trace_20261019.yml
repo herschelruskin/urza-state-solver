@@ -1,0 +1,109 @@
+name: Dack Realistic Beam Lost-Turn State Reward Trace
+on:
+  push:
+    branches: [dack-realistic-information-beam-20261017]
+    paths:
+      - 'dack_realistic_v2_lost_game_state_trace_20261019.py'
+      - '.github/workflows/dack_realistic_v2_lost_game_state_trace_20261019.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        include:
+          - {variant: current, gid: 0}
+          - {variant: current, gid: 1}
+          - {variant: current, gid: 22}
+          - {variant: buck_worldmap, gid: 0}
+          - {variant: buck_worldmap, gid: 22}
+          - {variant: buck_worldmap, gid: 31}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile exact T1 candidate tracing
+        run: python -m py_compile dack_realistic_v2_lost_game_state_trace_20261019.py
+      - name: Trace chosen T1 states and oracle label actual T2 draw
+        run: |
+          mkdir -p traced
+          python -u dack_realistic_v2_lost_game_state_trace_20261019.py \
+            --variant "${{ matrix.variant }}" --gid "${{ matrix.gid }}" --candidate-count 24 \
+            --oracle-beam 120 --out "traced/${{ matrix.variant }}_${{ matrix.gid }}.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-lost-state-${{ matrix.variant }}-${{ matrix.gid }}
+          path: traced/*.json
+          retention-days: 90
+          if-no-files-found: error
+  pool:
+    needs: trace
+    if: ${{ needs.trace.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-lost-state-*
+          merge-multiple: true
+          path: traced
+      - name: Aggregate first-winning rank, reward ordering and persistent-mana gaps
+        run: |
+          python - <<'PY'
+          import glob,json,pathlib
+          x=[json.load(open(f)) for f in glob.glob('traced/*.json')]
+          assert len(x)==6,len(x)
+          cases=[]
+          for a in sorted(x,key=lambda z:(z['variant'],z['game_id'])):
+              winners=[q for q in a['candidates'] if q['t2_winnable_given_actual_draw']]
+              scores=[q['prior_T2_T3_reward'] for q in a['candidates']]
+              cases.append({'variant':a['variant'],'game_id':a['game_id'],
+                'seat':a['seat'],'keep_n':a['keep_n'],
+                'hand':a['start_hand'],'actual_unseen_top':a['start_library_top_for_audit'],
+                'pregame_choices':len(a['pregame_alternatives']),
+                'frontier':a['t1_frontier_count'],
+                'top9_winners':a['top9_unbiased_actual_T2_hits'],
+                'top24_winners':a['top24_unbiased_actual_T2_hits'],
+                'first_winning_rank':a['first_T2_winning_rank'],
+                'best_winner':(min(winners,key=lambda w:w['rank']) if winners else None),
+                'top_two':[{k:q[k] for k in ('rank','prior_T2_T3_reward',
+                  'score_in_turn','score_next_turn_before_draw','t2_winnable_given_actual_draw','snapshot')}
+                  for q in a['candidates'][:2]]})
+          o={'status':'PASS','cases':cases,
+             'limitations':['Only top24 candidates traced',
+               'Oracle actual next draw labels for diagnosis, not selection',
+               'No actual full-beam action history',
+               'In-turn score can include floating mana which expires']}
+          pathlib.Path('report.json').write_text(json.dumps(o,indent=2)+'\n')
+          print('DACK_LOST_GAME_REWARD_TRACE_PASS',
+            json.dumps([{k:v for k,v in c.items() if k not in ('best_winner','top_two')}
+              for c in cases]),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-lost-game-reward-trace-summary
+          path: report.json
+          retention-days: 90
+          if-no-files-found: error
+      - name: Publish report
+        run: |
+          mkdir -p benchmark_results
+          cp report.json benchmark_results/dack_lost_game_reward_trace_20261019.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_lost_game_reward_trace_20261019.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish lost-game detailed reward traces'
+            git pull --rebase origin dack-realistic-information-beam-20261017
+            git push
+          fi
