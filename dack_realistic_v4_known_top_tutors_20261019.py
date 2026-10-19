@@ -123,7 +123,12 @@ def audit():
     successors=d.cast_actions(base)
     tutors=[q for q in successors if q.grave.count("Enlightened Tutor")>0]
     assert tutors,("no Enlightened Tutor cast in audit")
-    assert all(known_top(q)==q.library[0] for q in tutors)
+    assert all(known_top(q)==q.library[0] for q in tutors), [
+        {"head":q.library[:3],"known":known_top(q),
+         "hand":q.hand,"grave":q.grave,
+         "old_len":len(base.library),"new_len":len(q.library),
+         "registry_size":len(KNOWN),"mapped_keys":list(KNOWN.keys())[:8]}
+        for q in tutors]
     first=tutors[0]
     v1.configure(v2.SEED_BASE,3,9,3,42,18)
     q1=v1.hypothetical_next_start(first,0)
