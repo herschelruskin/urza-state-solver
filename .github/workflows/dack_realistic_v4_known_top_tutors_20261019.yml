@@ -1,0 +1,118 @@
+name: Dack Realistic Beam Known-Top Tutor Recovery Audit
+on:
+  push:
+    branches: [dack-realistic-information-beam-20261017]
+    paths:
+      - 'dack_realistic_v4_known_top_tutors_20261019.py'
+      - '.github/workflows/dack_realistic_v4_known_top_tutors_20261019.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile code and verify legitimate tutor topdeck identity
+        run: |
+          python -m py_compile dack_realistic_v4_known_top_tutors_20261019.py
+          python -u dack_realistic_v4_known_top_tutors_20261019.py --audit
+  replay:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 7
+      matrix:
+        include:
+          - {variant: current, gid: 0}
+          - {variant: current, gid: 1}
+          - {variant: current, gid: 22}
+          - {variant: buck_worldmap, gid: 0}
+          - {variant: buck_worldmap, gid: 1}
+          - {variant: buck_worldmap, gid: 22}
+          - {variant: buck_worldmap, gid: 31}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Replay realistic v2 failure with explicit known-top cards
+        run: |
+          mkdir -p trials
+          python -u dack_realistic_v4_known_top_tutors_20261019.py \
+            --variant "${{ matrix.variant }}" --gid "${{ matrix.gid }}" \
+            --out "trials/${{ matrix.variant }}_${{ matrix.gid }}.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: known-tutor-replay-${{ matrix.variant }}-${{ matrix.gid }}
+          path: trials/*.json
+          retention-days: 90
+          if-no-files-found: error
+  pool:
+    needs: [smoke,replay]
+    if: ${{ needs.smoke.result == 'success' && needs.replay.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: known-tutor-replay-*
+          merge-multiple: true
+          path: trials
+      - name: Verify per-game recovery with explicit known-top observation
+        run: |
+          python - <<'PY'
+          import glob,json,pathlib
+          games=[json.load(open(x)) for x in glob.glob('trials/*.json')]
+          assert len(games)==7,len(games)
+          results={}
+          for variant in ('current','buck_worldmap'):
+              a=sorted((x for x in games if x['variant']==variant),key=lambda y:y['game_id'])
+              results[variant]={
+                'cases':len(a),
+                'T2_recovered':sum(x['T2_recovered'] for x in a),
+                'T3_recovered':sum(x['T3_recovered'] for x in a),
+                'replays':[{'gid':x['game_id'],
+                            'frozen_v2_win_turn':x['frozen_v2_win_turn'],
+                            'known_top_v4_win_turn':x['known_top_v4']['win_turn'],
+                            'T2_recovered':x['T2_recovered'],
+                            'T3_recovered':x['T3_recovered']}
+                           for x in a]}
+          out={'status':'PASS','n_selected_cases':7,
+            'description':'Legitimately known top card from Enlightened/Loyal Tutor is used in future rollouts; reserve up to 3 candidate slots for known-top states',
+            'by_deck':results,
+            'limitations':['Selected failures, not population win rate',
+                           'Known top tracking by library tuple identity is incomplete',
+                           'This test also changes candidate slot selection',
+                           'Unobserved within-turn shuffle and draw lookahead remains',
+                           'Full-beam hindsight reference is not optimal real play']}
+          pathlib.Path('known_top_report.json').write_text(json.dumps(out,indent=2)+'\n')
+          print('DACK_KNOWN_TOP_RECOVERY_REPORT_PASS',json.dumps(out),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-known-top-tutor-recovery-n7
+          path: known_top_report.json
+          retention-days: 90
+      - name: Publish known-top diagnostic
+        run: |
+          mkdir -p benchmark_results
+          cp known_top_report.json benchmark_results/dack_known_top_tutor_recovery_n7_20261019.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_known_top_tutor_recovery_n7_20261019.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Report known-top tutor recovery among missed realistic beam games'
+            git pull --rebase origin dack-realistic-information-beam-20261017
+            git push
+          fi
