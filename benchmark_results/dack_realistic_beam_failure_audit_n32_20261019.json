@@ -1,0 +1,3092 @@
+{
+  "status": "PASS",
+  "date": "2026-10-19",
+  "n_paired": 32,
+  "design": "Exact same game IDs Full Beam vs Realistic v1 vs Realistic v2, turn thresholds and per-game failure cases",
+  "arm_results": {
+    "current": {
+      "n": 32,
+      "win_rates": {
+        "full_beam": {
+          "T1": 3.125,
+          "T2": 37.5,
+          "T3": 71.875,
+          "win_turn_counts": {
+            "0": 9,
+            "1": 1,
+            "2": 11,
+            "3": 11
+          }
+        },
+        "realistic_v1": {
+          "T1": 3.125,
+          "T2": 25.0,
+          "T3": 53.125,
+          "win_turn_counts": {
+            "0": 15,
+            "1": 1,
+            "2": 7,
+            "3": 9
+          }
+        },
+        "realistic_v2": {
+          "T1": 3.125,
+          "T2": 28.125,
+          "T3": 59.375,
+          "win_turn_counts": {
+            "0": 13,
+            "1": 1,
+            "2": 8,
+            "3": 10
+          }
+        },
+        "realistic_v1_all64": {
+          "T1": 4.688,
+          "T2": 21.875,
+          "T3": 50.0,
+          "win_turn_counts": {
+            "0": 32,
+            "1": 3,
+            "2": 11,
+            "3": 18
+          }
+        }
+      },
+      "full_minus_v2": {
+        "by_T1": {
+          "both": 1,
+          "high_only": 0,
+          "low_only": 0,
+          "neither": 31,
+          "high_minus_low_pp": 0.0,
+          "paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "high_only_ids": [],
+          "low_only_ids": []
+        },
+        "by_T2": {
+          "both": 9,
+          "high_only": 3,
+          "low_only": 0,
+          "neither": 20,
+          "high_minus_low_pp": 9.375,
+          "paired_95pct_pp": [
+            -0.886,
+            19.636
+          ],
+          "high_only_ids": [
+            0,
+            1,
+            22
+          ],
+          "low_only_ids": []
+        },
+        "by_T3": {
+          "both": 19,
+          "high_only": 4,
+          "low_only": 0,
+          "neither": 9,
+          "high_minus_low_pp": 12.5,
+          "paired_95pct_pp": [
+            0.858,
+            24.142
+          ],
+          "high_only_ids": [
+            0,
+            1,
+            11,
+            17
+          ],
+          "low_only_ids": []
+        }
+      },
+      "v2_minus_v1": {
+        "by_T1": {
+          "both": 1,
+          "high_only": 0,
+          "low_only": 0,
+          "neither": 31,
+          "high_minus_low_pp": 0.0,
+          "paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "high_only_ids": [],
+          "low_only_ids": []
+        },
+        "by_T2": {
+          "both": 8,
+          "high_only": 1,
+          "low_only": 0,
+          "neither": 23,
+          "high_minus_low_pp": 3.125,
+          "paired_95pct_pp": [
+            -3.0,
+            9.25
+          ],
+          "high_only_ids": [
+            18
+          ],
+          "low_only_ids": []
+        },
+        "by_T3": {
+          "both": 16,
+          "high_only": 3,
+          "low_only": 1,
+          "neither": 12,
+          "high_minus_low_pp": 6.25,
+          "paired_95pct_pp": [
+            -6.0,
+            18.5
+          ],
+          "high_only_ids": [
+            10,
+            19,
+            30
+          ],
+          "low_only_ids": [
+            11
+          ]
+        }
+      },
+      "full_minus_v1": {
+        "by_T1": {
+          "both": 1,
+          "high_only": 0,
+          "low_only": 0,
+          "neither": 31,
+          "high_minus_low_pp": 0.0,
+          "paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "high_only_ids": [],
+          "low_only_ids": []
+        },
+        "by_T2": {
+          "both": 8,
+          "high_only": 4,
+          "low_only": 0,
+          "neither": 20,
+          "high_minus_low_pp": 12.5,
+          "paired_95pct_pp": [
+            0.858,
+            24.142
+          ],
+          "high_only_ids": [
+            0,
+            1,
+            18,
+            22
+          ],
+          "low_only_ids": []
+        },
+        "by_T3": {
+          "both": 17,
+          "high_only": 6,
+          "low_only": 0,
+          "neither": 9,
+          "high_minus_low_pp": 18.75,
+          "paired_95pct_pp": [
+            5.01,
+            32.49
+          ],
+          "high_only_ids": [
+            0,
+            1,
+            10,
+            17,
+            19,
+            30
+          ],
+          "low_only_ids": []
+        }
+      },
+      "v1_64_meta": {
+        "n": 64,
+        "mean_keep": 5.5,
+        "mean_planning_rollouts": 35.16,
+        "mean_pass_candidates_by_turn": {
+          "1": 6.33,
+          "2": 5.39,
+          "3": 3.42
+        },
+        "total_bucknard_rolls": 0,
+        "bucknard_roll_histogram": {
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 0
+        }
+      },
+      "v2_meta": {
+        "n": 32,
+        "mean_keep": 5.656,
+        "mean_planning_rollouts": 131.41,
+        "mean_pass_candidates_by_turn": {
+          "1": 8.12,
+          "2": 5.78,
+          "3": 3.41
+        },
+        "total_bucknard_rolls": 0,
+        "bucknard_roll_histogram": {
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 0
+        }
+      },
+      "gap_categories": {
+        "full_T2_but_v2_not": {
+          "n": 3,
+          "ids": [
+            0,
+            1,
+            22
+          ],
+          "no_bucknard_rolls_in_v2": 3,
+          "same_mulligan_keep_size_as_full": 3,
+          "mean_v2_rollouts": 162,
+          "mean_v2_T1_pass_candidates": 9
+        },
+        "full_T3_but_v2_not": {
+          "n": 4,
+          "ids": [
+            0,
+            1,
+            11,
+            17
+          ],
+          "no_bucknard_rolls_in_v2": 4,
+          "same_mulligan_keep_size_as_full": 4,
+          "mean_v2_rollouts": 137.25,
+          "mean_v2_T1_pass_candidates": 7.5
+        },
+        "v1_T3_failure_recovered_v2": {
+          "n": 3,
+          "ids": [
+            10,
+            19,
+            30
+          ],
+          "no_bucknard_rolls_in_v2": 3,
+          "same_mulligan_keep_size_as_full": 3,
+          "mean_v2_rollouts": 150,
+          "mean_v2_T1_pass_candidates": 8.67
+        },
+        "v2_lost_v1_T3": {
+          "n": 1,
+          "ids": [
+            11
+          ],
+          "no_bucknard_rolls_in_v2": 1,
+          "same_mulligan_keep_size_as_full": 1,
+          "mean_v2_rollouts": 93,
+          "mean_v2_T1_pass_candidates": 5
+        }
+      },
+      "per_game_trace_summaries": [
+        {
+          "id": 0,
+          "seat": 3,
+          "full": 2,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 4,
+          "keep_v1": 4,
+          "keep_v2": 4,
+          "full_T2_but_v2_not": true,
+          "full_T3_but_v2_not": true,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.00947
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.01574
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.0484
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 1,
+          "seat": 2,
+          "full": 2,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": true,
+          "full_T3_but_v2_not": true,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.0105
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.01669
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.0594
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 2,
+          "seat": 2,
+          "full": 0,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 4,
+          "keep_v1": 4,
+          "keep_v2": 4,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.00893
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.01659
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.0594
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 3,
+          "seat": 1,
+          "full": 3,
+          "v1": 3,
+          "v2": 3,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.3435
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.5
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 4,
+          "seat": 0,
+          "full": 0,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 5,
+          "keep_v1": 5,
+          "keep_v2": 5,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.0099
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.0143
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.0508
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 5,
+          "seat": 0,
+          "full": 0,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 2,
+          "keep_v1": 2,
+          "keep_v2": 2,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 3,
+              "buck_plans": 0,
+              "pass_value": 0.00475
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 2,
+              "buck_plans": 0,
+              "pass_value": 0.00648
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 5,
+              "buck_plans": 0,
+              "pass_value": 0.0244
+            }
+          ],
+          "v2_rollouts": 51,
+          "v2_rolls": []
+        },
+        {
+          "id": 6,
+          "seat": 2,
+          "full": 3,
+          "v1": 3,
+          "v2": 3,
+          "keep_full": 4,
+          "keep_v1": 4,
+          "keep_v2": 4,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 1.00406
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.01859
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 130,
+          "v2_rolls": []
+        },
+        {
+          "id": 7,
+          "seat": 1,
+          "full": 3,
+          "v1": 3,
+          "v2": 3,
+          "keep_full": 5,
+          "keep_v1": 5,
+          "keep_v2": 5,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.51158
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.5
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 8,
+          "seat": 3,
+          "full": 0,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.01303
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.01578
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.05
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 9,
+          "seat": 0,
+          "full": 0,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 6,
+          "keep_v1": 6,
+          "keep_v2": 6,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.00649
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.01285
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.0376
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 10,
+          "seat": 1,
+          "full": 3,
+          "v1": 0,
+          "v2": 3,
+          "keep_full": 5,
+          "keep_v1": 5,
+          "keep_v2": 5,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": true,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 8,
+              "buck_plans": 0,
+              "pass_value": 0.00829
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.5
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 147,
+          "v2_rolls": []
+        },
+        {
+          "id": 11,
+          "seat": 1,
+          "full": 3,
+          "v1": 3,
+          "v2": 0,
+          "keep_full": 5,
+          "keep_v1": 5,
+          "keep_v2": 5,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": true,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": true,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 5,
+              "buck_plans": 0,
+              "pass_value": 0.34119
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 6,
+              "buck_plans": 0,
+              "pass_value": 0.1777
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.0596
+            }
+          ],
+          "v2_rollouts": 93,
+          "v2_rolls": []
+        },
+        {
+          "id": 12,
+          "seat": 3,
+          "full": 0,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 5,
+          "keep_v1": 5,
+          "keep_v2": 5,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.50717
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 8,
+              "buck_plans": 0,
+              "pass_value": 0.01133
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 8,
+              "buck_plans": 0,
+              "pass_value": 0.0408
+            }
+          ],
+          "v2_rollouts": 147,
+          "v2_rolls": []
+        },
+        {
+          "id": 13,
+          "seat": 1,
+          "full": 2,
+          "v1": 2,
+          "v2": 2,
+          "keep_full": 6,
+          "keep_v1": 6,
+          "keep_v2": 6,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.84089
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 123,
+          "v2_rolls": []
+        },
+        {
+          "id": 14,
+          "seat": 2,
+          "full": 2,
+          "v1": 2,
+          "v2": 2,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.09625
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 135,
+          "v2_rolls": []
+        },
+        {
+          "id": 15,
+          "seat": 2,
+          "full": 2,
+          "v1": 2,
+          "v2": 2,
+          "keep_full": 6,
+          "keep_v1": 6,
+          "keep_v2": 6,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 1.5
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 47,
+          "v2_rolls": []
+        },
+        {
+          "id": 16,
+          "seat": 2,
+          "full": 2,
+          "v1": 2,
+          "v2": 2,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 6,
+              "buck_plans": 0,
+              "pass_value": 1.5
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 54,
+          "v2_rolls": []
+        },
+        {
+          "id": 17,
+          "seat": 3,
+          "full": 3,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": true,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 7,
+              "buck_plans": 0,
+              "pass_value": 0.00807
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.01481
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.06
+            }
+          ],
+          "v2_rollouts": 132,
+          "v2_rolls": []
+        },
+        {
+          "id": 18,
+          "seat": 3,
+          "full": 2,
+          "v1": 3,
+          "v2": 2,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 1.5
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 115,
+          "v2_rolls": []
+        },
+        {
+          "id": 19,
+          "seat": 1,
+          "full": 3,
+          "v1": 0,
+          "v2": 3,
+          "keep_full": 5,
+          "keep_v1": 5,
+          "keep_v2": 5,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": true,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.26056
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.5
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 20,
+          "seat": 2,
+          "full": 1,
+          "v1": 1,
+          "v2": 1,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 0,
+          "v2_rolls": []
+        },
+        {
+          "id": 21,
+          "seat": 0,
+          "full": 0,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 2,
+          "keep_v1": 2,
+          "keep_v2": 2,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 6,
+              "buck_plans": 0,
+              "pass_value": 0.006
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 7,
+              "buck_plans": 0,
+              "pass_value": 0.01244
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 6,
+              "buck_plans": 0,
+              "pass_value": 0.0448
+            }
+          ],
+          "v2_rollouts": 111,
+          "v2_rolls": []
+        },
+        {
+          "id": 22,
+          "seat": 0,
+          "full": 2,
+          "v1": 3,
+          "v2": 3,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": true,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.17735
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.5
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 23,
+          "seat": 3,
+          "full": 0,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 5,
+          "keep_v1": 5,
+          "keep_v2": 5,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.00667
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 8,
+              "buck_plans": 0,
+              "pass_value": 0.01081
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.0356
+            }
+          ],
+          "v2_rollouts": 153,
+          "v2_rolls": []
+        },
+        {
+          "id": 24,
+          "seat": 0,
+          "full": 3,
+          "v1": 3,
+          "v2": 3,
+          "keep_full": 6,
+          "keep_v1": 6,
+          "keep_v2": 6,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.25975
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.5
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 25,
+          "seat": 1,
+          "full": 2,
+          "v1": 2,
+          "v2": 2,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 1.5
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 123,
+          "v2_rolls": []
+        },
+        {
+          "id": 26,
+          "seat": 3,
+          "full": 3,
+          "v1": 3,
+          "v2": 3,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.51222
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.5
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 27,
+          "seat": 0,
+          "full": 0,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 4,
+          "keep_v1": 4,
+          "keep_v2": 4,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.01036
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 8,
+              "buck_plans": 0,
+              "pass_value": 0.01289
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.048
+            }
+          ],
+          "v2_rollouts": 159,
+          "v2_rolls": []
+        },
+        {
+          "id": 28,
+          "seat": 1,
+          "full": 2,
+          "v1": 2,
+          "v2": 2,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 1.5
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 111,
+          "v2_rolls": []
+        },
+        {
+          "id": 29,
+          "seat": 1,
+          "full": 3,
+          "v1": 3,
+          "v2": 3,
+          "keep_full": 6,
+          "keep_v1": 6,
+          "keep_v2": 6,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.25694
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.5
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 30,
+          "seat": 2,
+          "full": 3,
+          "v1": 0,
+          "v2": 3,
+          "keep_full": 5,
+          "keep_v1": 5,
+          "keep_v2": 5,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": true,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.51106
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 2,
+              "buck_plans": 0,
+              "pass_value": 0.5
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 141,
+          "v2_rolls": []
+        },
+        {
+          "id": 31,
+          "seat": 3,
+          "full": 2,
+          "v1": 2,
+          "v2": 2,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.75829
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 127,
+          "v2_rolls": []
+        }
+      ],
+      "audited_rows": {
+        "full": 32,
+        "v1": 64,
+        "v2": 32
+      }
+    },
+    "buck_worldmap": {
+      "n": 32,
+      "win_rates": {
+        "full_beam": {
+          "T1": 3.125,
+          "T2": 43.75,
+          "T3": 81.25,
+          "win_turn_counts": {
+            "0": 6,
+            "1": 1,
+            "2": 13,
+            "3": 12
+          }
+        },
+        "realistic_v1": {
+          "T1": 3.125,
+          "T2": 28.125,
+          "T3": 50.0,
+          "win_turn_counts": {
+            "0": 16,
+            "1": 1,
+            "2": 8,
+            "3": 7
+          }
+        },
+        "realistic_v2": {
+          "T1": 3.125,
+          "T2": 31.25,
+          "T3": 62.5,
+          "win_turn_counts": {
+            "0": 12,
+            "1": 1,
+            "2": 9,
+            "3": 10
+          }
+        },
+        "realistic_v1_all64": {
+          "T1": 6.25,
+          "T2": 25.0,
+          "T3": 51.562,
+          "win_turn_counts": {
+            "0": 31,
+            "1": 4,
+            "2": 12,
+            "3": 17
+          }
+        }
+      },
+      "full_minus_v2": {
+        "by_T1": {
+          "both": 1,
+          "high_only": 0,
+          "low_only": 0,
+          "neither": 31,
+          "high_minus_low_pp": 0.0,
+          "paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "high_only_ids": [],
+          "low_only_ids": []
+        },
+        "by_T2": {
+          "both": 10,
+          "high_only": 4,
+          "low_only": 0,
+          "neither": 18,
+          "high_minus_low_pp": 12.5,
+          "paired_95pct_pp": [
+            0.858,
+            24.142
+          ],
+          "high_only_ids": [
+            0,
+            1,
+            22,
+            31
+          ],
+          "low_only_ids": []
+        },
+        "by_T3": {
+          "both": 20,
+          "high_only": 6,
+          "low_only": 0,
+          "neither": 6,
+          "high_minus_low_pp": 18.75,
+          "paired_95pct_pp": [
+            5.01,
+            32.49
+          ],
+          "high_only_ids": [
+            0,
+            1,
+            11,
+            12,
+            17,
+            31
+          ],
+          "low_only_ids": []
+        }
+      },
+      "v2_minus_v1": {
+        "by_T1": {
+          "both": 1,
+          "high_only": 0,
+          "low_only": 0,
+          "neither": 31,
+          "high_minus_low_pp": 0.0,
+          "paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "high_only_ids": [],
+          "low_only_ids": []
+        },
+        "by_T2": {
+          "both": 9,
+          "high_only": 1,
+          "low_only": 0,
+          "neither": 22,
+          "high_minus_low_pp": 3.125,
+          "paired_95pct_pp": [
+            -3.0,
+            9.25
+          ],
+          "high_only_ids": [
+            18
+          ],
+          "low_only_ids": []
+        },
+        "by_T3": {
+          "both": 16,
+          "high_only": 4,
+          "low_only": 0,
+          "neither": 12,
+          "high_minus_low_pp": 12.5,
+          "paired_95pct_pp": [
+            0.858,
+            24.142
+          ],
+          "high_only_ids": [
+            10,
+            18,
+            19,
+            22
+          ],
+          "low_only_ids": []
+        }
+      },
+      "full_minus_v1": {
+        "by_T1": {
+          "both": 1,
+          "high_only": 0,
+          "low_only": 0,
+          "neither": 31,
+          "high_minus_low_pp": 0.0,
+          "paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "high_only_ids": [],
+          "low_only_ids": []
+        },
+        "by_T2": {
+          "both": 9,
+          "high_only": 5,
+          "low_only": 0,
+          "neither": 18,
+          "high_minus_low_pp": 15.625,
+          "paired_95pct_pp": [
+            2.843,
+            28.407
+          ],
+          "high_only_ids": [
+            0,
+            1,
+            18,
+            22,
+            31
+          ],
+          "low_only_ids": []
+        },
+        "by_T3": {
+          "both": 16,
+          "high_only": 10,
+          "low_only": 0,
+          "neither": 6,
+          "high_minus_low_pp": 31.25,
+          "paired_95pct_pp": [
+            14.933,
+            47.567
+          ],
+          "high_only_ids": [
+            0,
+            1,
+            10,
+            11,
+            12,
+            17,
+            18,
+            19,
+            22,
+            31
+          ],
+          "low_only_ids": []
+        }
+      },
+      "v1_64_meta": {
+        "n": 64,
+        "mean_keep": 5.469,
+        "mean_planning_rollouts": 39.52,
+        "mean_pass_candidates_by_turn": {
+          "1": 6.23,
+          "2": 5.2,
+          "3": 3.3
+        },
+        "total_bucknard_rolls": 3,
+        "bucknard_roll_histogram": {
+          "1": 1,
+          "2": 0,
+          "3": 1,
+          "4": 1
+        }
+      },
+      "v2_meta": {
+        "n": 32,
+        "mean_keep": 5.562,
+        "mean_planning_rollouts": 130.47,
+        "mean_pass_candidates_by_turn": {
+          "1": 8,
+          "2": 5.78,
+          "3": 3.09
+        },
+        "total_bucknard_rolls": 1,
+        "bucknard_roll_histogram": {
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 1
+        }
+      },
+      "gap_categories": {
+        "full_T2_but_v2_not": {
+          "n": 4,
+          "ids": [
+            0,
+            1,
+            22,
+            31
+          ],
+          "no_bucknard_rolls_in_v2": 4,
+          "same_mulligan_keep_size_as_full": 4,
+          "mean_v2_rollouts": 160,
+          "mean_v2_T1_pass_candidates": 9
+        },
+        "full_T3_but_v2_not": {
+          "n": 6,
+          "ids": [
+            0,
+            1,
+            11,
+            12,
+            17,
+            31
+          ],
+          "no_bucknard_rolls_in_v2": 6,
+          "same_mulligan_keep_size_as_full": 5,
+          "mean_v2_rollouts": 141.67,
+          "mean_v2_T1_pass_candidates": 8
+        },
+        "v1_T3_failure_recovered_v2": {
+          "n": 4,
+          "ids": [
+            10,
+            18,
+            19,
+            22
+          ],
+          "no_bucknard_rolls_in_v2": 4,
+          "same_mulligan_keep_size_as_full": 3,
+          "mean_v2_rollouts": 147.5,
+          "mean_v2_T1_pass_candidates": 8.75
+        },
+        "v2_lost_v1_T3": {
+          "n": 0,
+          "ids": [],
+          "no_bucknard_rolls_in_v2": 0,
+          "same_mulligan_keep_size_as_full": 0,
+          "mean_v2_rollouts": null,
+          "mean_v2_T1_pass_candidates": null
+        }
+      },
+      "per_game_trace_summaries": [
+        {
+          "id": 0,
+          "seat": 3,
+          "full": 2,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 4,
+          "keep_v1": 4,
+          "keep_v2": 4,
+          "full_T2_but_v2_not": true,
+          "full_T3_but_v2_not": true,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.00894
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.01437
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.0484
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 1,
+          "seat": 2,
+          "full": 2,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": true,
+          "full_T3_but_v2_not": true,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.01082
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.17767
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.0594
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 2,
+          "seat": 2,
+          "full": 2,
+          "v1": 2,
+          "v2": 2,
+          "keep_full": 4,
+          "keep_v1": 4,
+          "keep_v2": 4,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 6,
+              "buck_plans": 0,
+              "pass_value": 0.00968
+            },
+            {
+              "turn": 2,
+              "die": 4,
+              "phase": "post-roll win",
+              "pass_candidates": 9,
+              "buck_plans": 4
+            }
+          ],
+          "v2_rollouts": 205,
+          "v2_rolls": [
+            4
+          ]
+        },
+        {
+          "id": 3,
+          "seat": 1,
+          "full": 3,
+          "v1": 3,
+          "v2": 3,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.34239
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.5
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 4,
+          "seat": 0,
+          "full": 0,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 5,
+          "keep_v1": 5,
+          "keep_v2": 5,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.17718
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.17541
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.0508
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 5,
+          "seat": 0,
+          "full": 0,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 2,
+          "keep_v1": 2,
+          "keep_v2": 2,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 2,
+              "buck_plans": 0,
+              "pass_value": 0.00453
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 2,
+              "buck_plans": 0,
+              "pass_value": 0.00993
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 4,
+              "buck_plans": 0,
+              "pass_value": 0.02
+            }
+          ],
+          "v2_rollouts": 36,
+          "v2_rolls": []
+        },
+        {
+          "id": 6,
+          "seat": 2,
+          "full": 3,
+          "v1": 3,
+          "v2": 3,
+          "keep_full": 4,
+          "keep_v1": 4,
+          "keep_v2": 4,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.67485
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.17889
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 126,
+          "v2_rolls": []
+        },
+        {
+          "id": 7,
+          "seat": 1,
+          "full": 3,
+          "v1": 3,
+          "v2": 3,
+          "keep_full": 4,
+          "keep_v1": 4,
+          "keep_v2": 4,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.51019
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.5
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 8,
+          "seat": 3,
+          "full": 0,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.01306
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.01511
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.05
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 9,
+          "seat": 0,
+          "full": 2,
+          "v1": 2,
+          "v2": 2,
+          "keep_full": 4,
+          "keep_v1": 4,
+          "keep_v2": 4,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 1.5
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 87,
+          "v2_rolls": []
+        },
+        {
+          "id": 10,
+          "seat": 1,
+          "full": 3,
+          "v1": 0,
+          "v2": 3,
+          "keep_full": 7,
+          "keep_v1": 5,
+          "keep_v2": 5,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": true,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 8,
+              "buck_plans": 0,
+              "pass_value": 0.00829
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.5
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 147,
+          "v2_rolls": []
+        },
+        {
+          "id": 11,
+          "seat": 1,
+          "full": 3,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 5,
+          "keep_v1": 5,
+          "keep_v2": 5,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": true,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 5,
+              "buck_plans": 0,
+              "pass_value": 0.4246
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 6,
+              "buck_plans": 0,
+              "pass_value": 0.1777
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.0596
+            }
+          ],
+          "v2_rollouts": 93,
+          "v2_rolls": []
+        },
+        {
+          "id": 12,
+          "seat": 3,
+          "full": 3,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 6,
+          "keep_v1": 5,
+          "keep_v2": 5,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": true,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.50567
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 8,
+              "buck_plans": 0,
+              "pass_value": 0.01226
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 8,
+              "buck_plans": 0,
+              "pass_value": 0.0408
+            }
+          ],
+          "v2_rollouts": 147,
+          "v2_rolls": []
+        },
+        {
+          "id": 13,
+          "seat": 1,
+          "full": 2,
+          "v1": 2,
+          "v2": 2,
+          "keep_full": 6,
+          "keep_v1": 6,
+          "keep_v2": 6,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.84089
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 123,
+          "v2_rolls": []
+        },
+        {
+          "id": 14,
+          "seat": 2,
+          "full": 2,
+          "v1": 2,
+          "v2": 2,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.84275
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 111,
+          "v2_rolls": []
+        },
+        {
+          "id": 15,
+          "seat": 2,
+          "full": 2,
+          "v1": 2,
+          "v2": 2,
+          "keep_full": 6,
+          "keep_v1": 6,
+          "keep_v2": 6,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 1.5
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 51,
+          "v2_rolls": []
+        },
+        {
+          "id": 16,
+          "seat": 2,
+          "full": 2,
+          "v1": 2,
+          "v2": 2,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 6,
+              "buck_plans": 0,
+              "pass_value": 1.5
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 62,
+          "v2_rolls": []
+        },
+        {
+          "id": 17,
+          "seat": 3,
+          "full": 3,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": true,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 7,
+              "buck_plans": 0,
+              "pass_value": 0.0914
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.0153
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.06
+            }
+          ],
+          "v2_rollouts": 132,
+          "v2_rolls": []
+        },
+        {
+          "id": 18,
+          "seat": 3,
+          "full": 2,
+          "v1": 0,
+          "v2": 2,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": true,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 1.5
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 119,
+          "v2_rolls": []
+        },
+        {
+          "id": 19,
+          "seat": 1,
+          "full": 3,
+          "v1": 0,
+          "v2": 3,
+          "keep_full": 5,
+          "keep_v1": 5,
+          "keep_v2": 5,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": true,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.25983
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.5
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 20,
+          "seat": 2,
+          "full": 1,
+          "v1": 1,
+          "v2": 1,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 0,
+          "v2_rolls": []
+        },
+        {
+          "id": 21,
+          "seat": 0,
+          "full": 0,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 2,
+          "keep_v1": 2,
+          "keep_v2": 2,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 6,
+              "buck_plans": 0,
+              "pass_value": 0.006
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 7,
+              "buck_plans": 0,
+              "pass_value": 0.01352
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 6,
+              "buck_plans": 0,
+              "pass_value": 0.0448
+            }
+          ],
+          "v2_rollouts": 111,
+          "v2_rolls": []
+        },
+        {
+          "id": 22,
+          "seat": 0,
+          "full": 2,
+          "v1": 0,
+          "v2": 3,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": true,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": true,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.34532
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.5
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 23,
+          "seat": 3,
+          "full": 0,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 5,
+          "keep_v1": 5,
+          "keep_v2": 5,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.00736
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 8,
+              "buck_plans": 0,
+              "pass_value": 0.01004
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.0356
+            }
+          ],
+          "v2_rollouts": 155,
+          "v2_rolls": []
+        },
+        {
+          "id": 24,
+          "seat": 0,
+          "full": 3,
+          "v1": 3,
+          "v2": 3,
+          "keep_full": 6,
+          "keep_v1": 6,
+          "keep_v2": 6,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.50975
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.5
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 25,
+          "seat": 1,
+          "full": 2,
+          "v1": 2,
+          "v2": 2,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 1.5
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 123,
+          "v2_rolls": []
+        },
+        {
+          "id": 26,
+          "seat": 3,
+          "full": 3,
+          "v1": 3,
+          "v2": 3,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.51229
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.5
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 27,
+          "seat": 0,
+          "full": 0,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 4,
+          "keep_v1": 4,
+          "keep_v2": 4,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.01192
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 8,
+              "buck_plans": 0,
+              "pass_value": 0.01341
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.048
+            }
+          ],
+          "v2_rollouts": 159,
+          "v2_rolls": []
+        },
+        {
+          "id": 28,
+          "seat": 1,
+          "full": 2,
+          "v1": 2,
+          "v2": 2,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 1.5
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 111,
+          "v2_rolls": []
+        },
+        {
+          "id": 29,
+          "seat": 1,
+          "full": 3,
+          "v1": 3,
+          "v2": 3,
+          "keep_full": 6,
+          "keep_v1": 6,
+          "keep_v2": 6,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.42567
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.5
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 162,
+          "v2_rolls": []
+        },
+        {
+          "id": 30,
+          "seat": 2,
+          "full": 3,
+          "v1": 3,
+          "v2": 3,
+          "keep_full": 5,
+          "keep_v1": 5,
+          "keep_v2": 5,
+          "full_T2_but_v2_not": false,
+          "full_T3_but_v2_not": false,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.51039
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 2,
+              "buck_plans": 0,
+              "pass_value": 0.33926
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "pre-roll win",
+              "pass_candidates": 0,
+              "buck_plans": 0
+            }
+          ],
+          "v2_rollouts": 141,
+          "v2_rolls": []
+        },
+        {
+          "id": 31,
+          "seat": 3,
+          "full": 2,
+          "v1": 0,
+          "v2": 0,
+          "keep_full": 7,
+          "keep_v1": 7,
+          "keep_v2": 7,
+          "full_T2_but_v2_not": true,
+          "full_T3_but_v2_not": true,
+          "v1_T3_failure_recovered_v2": false,
+          "v2_lost_v1_T3": false,
+          "v2_turn_audit": [
+            {
+              "turn": 1,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.84331
+            },
+            {
+              "turn": 2,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.02044
+            },
+            {
+              "turn": 3,
+              "die": null,
+              "phase": "expected-draw pass",
+              "pass_candidates": 9,
+              "buck_plans": 0,
+              "pass_value": 0.07
+            }
+          ],
+          "v2_rollouts": 154,
+          "v2_rolls": []
+        }
+      ],
+      "audited_rows": {
+        "full": 32,
+        "v1": 64,
+        "v2": 32
+      }
+    }
+  },
+  "interpretation_constraints": [
+    "Failure classification is descriptive: a Full-only success does not prove illicit hindsight.",
+    "Realistic v2 and Full Beam use different beam widths and future-planning budgets.",
+    "Full Beam and Realistic Beam use different mulligan evaluations on Bucknard; keep_n differences can confound comparisons.",
+    "Game scripts lack complete action traces; no reliable card-by-card root cause can be inferred from these archives alone.",
+    "Most Realistic v2 game outcomes do not activate Bucknard; no-roll games do not imply equivalent performance in both arms.",
+    "An oracle can pick the best turn-1 path conditioned on the exact unseen turn-2 draw even with zero tutors.",
+    "Post-scry/tutorial revealed cards and shuffle/draw action boundaries are not completely information-safe.",
+    "Do not promote this audit or small-N differences to a calibrated live-game win rate."
+  ]
+}
