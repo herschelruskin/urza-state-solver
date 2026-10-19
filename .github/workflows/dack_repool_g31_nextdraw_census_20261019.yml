@@ -1,0 +1,69 @@
+name: Recover Dack G31 Exact Next-Draw Census
+on:
+  push:
+    branches: [dack-realistic-information-beam-20261017]
+    paths:
+      - '.github/workflows/dack_repool_g31_nextdraw_census_20261019.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  pool:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve both successful G31 card-outcome census shards
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p census
+          gh run download 39326983301 --repo "${{ github.repository }}" \
+            --pattern 'dack-g31-nextdraw-rank-*' --dir census
+          test "$(find census -name '*.json' | wc -l)" -eq 2
+      - name: Verify per-candidate denominators and publish results
+        run: |
+          python - <<'PY'
+          import glob,json,pathlib
+          rows=[json.load(open(f)) for f in glob.glob('census/**/*.json',recursive=True)]
+          assert len(rows)==2
+          a,b=sorted(rows,key=lambda x:x['candidate_rank'])
+          assert a['status']==b['status']=='PASS'
+          assert a['game_id']==b['game_id']==31
+          result={
+            'status':'PASS','game_id':31,
+            'purpose':'Independent exhaustive multiset T2 next-card census for competing turn-1 decisions',
+            'rank1':{k:v for k,v in a.items() if k not in ('all_draw_outcomes','T2_win_draws')},
+            'rank2':{k:v for k,v in b.items() if k not in ('all_draw_outcomes','T2_win_draws')},
+            'probability_rank2_minus_rank1':b['T2_win_probability_over_all_cards']-a['T2_win_probability_over_all_cards'],
+            'rank1_win_cards':a['T2_win_draws'],
+            'rank2_win_cards':b['T2_win_draws'],
+            'remaining_library_sizes':{'rank1':a['deck_count'],'rank2':b['deck_count']},
+            'caveat':'Each line can tutor/draw different cards and therefore has its own library size; full next-card identity census uses one independent randomized tail per draw, finite beam within a turn, no opponent interaction, not a full policy value'
+          }
+          assert result['rank1']['deck_count']>0 and result['rank2']['deck_count']>0
+          pathlib.Path('report.json').write_text(json.dumps(result,indent=2)+'\n')
+          print('DACK_G31_NEXTDRAW_RECOVERED_PASS',json.dumps({
+            'rank1_T2':a['T2_win_probability_over_all_cards'],
+            'rank2_T2':b['T2_win_probability_over_all_cards'],
+            'deck_counts':result['remaining_library_sizes'],
+            'prior_rewards':[a['forecast_reward_v2'],b['forecast_reward_v2']]}),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-g31-recovered-reward-census
+          path: report.json
+          retention-days: 90
+      - name: Publish diagnostic
+        run: |
+          mkdir -p benchmark_results
+          cp report.json benchmark_results/dack_realistic_g31_nextdraw_reward_census_20261019.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_realistic_g31_nextdraw_reward_census_20261019.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish candidate reward vs exhaustive next-draw T2 chance comparison'
+            git pull --rebase origin dack-realistic-information-beam-20261017
+            git push
+          fi
