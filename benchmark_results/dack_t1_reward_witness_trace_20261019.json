@@ -1,0 +1,702 @@
+{
+  "status": "PASS",
+  "design": "T1 top24 per game, actual next T2 draw used strictly to label counterfactual deployment, never for decisions",
+  "results": {
+    "current": {
+      "cases": 3,
+      "found_T2_witness_top9": 0,
+      "found_T2_witness_top24": 2,
+      "selected_a_T2_witness": 0,
+      "details": [
+        {
+          "gid": 0,
+          "initial_keep": [
+            "Enlightened Tutor",
+            "Krark-Clan Ironworks",
+            "Plains",
+            "The Mycosynth Gardens"
+          ],
+          "top9_witness_count": 0,
+          "top24_witness_count": 2,
+          "selected_actual_T2": 0,
+          "selected_heuristic_score": 192,
+          "selected_stable_score": 100,
+          "witnesses": [
+            {
+              "original_rank": 18,
+              "stable_score_rank": 15,
+              "score": 100,
+              "stable_score": 82,
+              "state": {
+                "hand": [
+                  "Krark-Clan Ironworks"
+                ],
+                "battlefield": [
+                  "Mox Diamond*",
+                  "The Mycosynth Gardens*"
+                ],
+                "floating": {
+                  "w": 0,
+                  "c": 1,
+                  "any": 0,
+                  "legend": 0,
+                  "artifact": 0
+                },
+                "treasures": 0,
+                "spawn": 0,
+                "land_played": true,
+                "actual_next_draw_AUDIT_ONLY": "Lion's Eye Diamond"
+              }
+            },
+            {
+              "original_rank": 22,
+              "stable_score_rank": 17,
+              "score": 82,
+              "stable_score": 82,
+              "state": {
+                "hand": [
+                  "Krark-Clan Ironworks"
+                ],
+                "battlefield": [
+                  "Mox Diamond*",
+                  "The Mycosynth Gardens"
+                ],
+                "floating": {
+                  "w": 0,
+                  "c": 0,
+                  "any": 0,
+                  "legend": 0,
+                  "artifact": 0
+                },
+                "treasures": 0,
+                "spawn": 0,
+                "land_played": true,
+                "actual_next_draw_AUDIT_ONLY": "Lion's Eye Diamond"
+              }
+            }
+          ]
+        },
+        {
+          "gid": 1,
+          "initial_keep": [
+            "Ancient Den",
+            "Deafening Silence",
+            "Enlightened Tutor",
+            "Gemstone Caverns",
+            "Great Hall of the Citadel",
+            "Plains",
+            "Sheltered by Ghosts"
+          ],
+          "top9_witness_count": 0,
+          "top24_witness_count": 5,
+          "selected_actual_T2": 0,
+          "selected_heuristic_score": 207,
+          "selected_stable_score": 115,
+          "witnesses": [
+            {
+              "original_rank": 14,
+              "stable_score_rank": 14,
+              "score": 161,
+              "stable_score": 115,
+              "state": {
+                "hand": [
+                  "Cavern of Souls",
+                  "Great Hall of the Citadel",
+                  "Plains",
+                  "Sheltered by Ghosts"
+                ],
+                "battlefield": [
+                  "Gemstone Caverns*:1",
+                  "Ancient Den*"
+                ],
+                "floating": {
+                  "w": 0,
+                  "c": 0,
+                  "any": 1,
+                  "legend": 0,
+                  "artifact": 0
+                },
+                "treasures": 0,
+                "spawn": 0,
+                "land_played": true,
+                "actual_next_draw_AUDIT_ONLY": "Lion's Eye Diamond"
+              }
+            },
+            {
+              "original_rank": 15,
+              "stable_score_rank": 15,
+              "score": 161,
+              "stable_score": 115,
+              "state": {
+                "hand": [
+                  "Ancient Den",
+                  "Great Hall of the Citadel",
+                  "Plains",
+                  "Sheltered by Ghosts"
+                ],
+                "battlefield": [
+                  "Gemstone Caverns*:1",
+                  "Cavern of Souls*"
+                ],
+                "floating": {
+                  "w": 0,
+                  "c": 0,
+                  "any": 0,
+                  "legend": 0,
+                  "artifact": 0
+                },
+                "treasures": 0,
+                "spawn": 0,
+                "land_played": true,
+                "actual_next_draw_AUDIT_ONLY": "Lion's Eye Diamond"
+              }
+            },
+            {
+              "original_rank": 16,
+              "stable_score_rank": 16,
+              "score": 161,
+              "stable_score": 115,
+              "state": {
+                "hand": [
+                  "Ancient Den",
+                  "Cavern of Souls",
+                  "Great Hall of the Citadel",
+                  "Sheltered by Ghosts"
+                ],
+                "battlefield": [
+                  "Gemstone Caverns*:1",
+                  "Plains*"
+                ],
+                "floating": {
+                  "w": 0,
+                  "c": 0,
+                  "any": 1,
+                  "legend": 0,
+                  "artifact": 0
+                },
+                "treasures": 0,
+                "spawn": 0,
+                "land_played": true,
+                "actual_next_draw_AUDIT_ONLY": "Lion's Eye Diamond"
+              }
+            },
+            {
+              "original_rank": 19,
+              "stable_score_rank": 19,
+              "score": 133,
+              "stable_score": 115,
+              "state": {
+                "hand": [
+                  "Ancient Den",
+                  "Great Hall of the Citadel",
+                  "Plains",
+                  "Sheltered by Ghosts"
+                ],
+                "battlefield": [
+                  "Gemstone Caverns*:1",
+                  "Cavern of Souls*"
+                ],
+                "floating": {
+                  "w": 0,
+                  "c": 1,
+                  "any": 0,
+                  "legend": 0,
+                  "artifact": 0
+                },
+                "treasures": 0,
+                "spawn": 0,
+                "land_played": true,
+                "actual_next_draw_AUDIT_ONLY": "Lion's Eye Diamond"
+              }
+            },
+            {
+              "original_rank": 20,
+              "stable_score_rank": 20,
+              "score": 133,
+              "stable_score": 115,
+              "state": {
+                "hand": [
+                  "Ancient Den",
+                  "Cavern of Souls",
+                  "Plains",
+                  "Sheltered by Ghosts"
+                ],
+                "battlefield": [
+                  "Gemstone Caverns*:1",
+                  "Great Hall of the Citadel*"
+                ],
+                "floating": {
+                  "w": 0,
+                  "c": 1,
+                  "any": 0,
+                  "legend": 0,
+                  "artifact": 0
+                },
+                "treasures": 0,
+                "spawn": 0,
+                "land_played": true,
+                "actual_next_draw_AUDIT_ONLY": "Lion's Eye Diamond"
+              }
+            }
+          ]
+        },
+        {
+          "gid": 22,
+          "initial_keep": [
+            "Deafening Silence",
+            "Homeward Path",
+            "Moonsilver Key",
+            "Mox Diamond",
+            "Ruins of Trokair",
+            "United Battlefront",
+            "Urza's Cave"
+          ],
+          "top9_witness_count": 0,
+          "top24_witness_count": 0,
+          "selected_actual_T2": 0,
+          "selected_heuristic_score": 151,
+          "selected_stable_score": 87,
+          "witnesses": []
+        }
+      ]
+    },
+    "buck_worldmap": {
+      "cases": 4,
+      "found_T2_witness_top9": 1,
+      "found_T2_witness_top24": 3,
+      "selected_a_T2_witness": 0,
+      "details": [
+        {
+          "gid": 0,
+          "initial_keep": [
+            "Enlightened Tutor",
+            "Krark-Clan Ironworks",
+            "Plains",
+            "The Mycosynth Gardens"
+          ],
+          "top9_witness_count": 0,
+          "top24_witness_count": 2,
+          "selected_actual_T2": 0,
+          "selected_heuristic_score": 192,
+          "selected_stable_score": 100,
+          "witnesses": [
+            {
+              "original_rank": 18,
+              "stable_score_rank": 15,
+              "score": 100,
+              "stable_score": 82,
+              "state": {
+                "hand": [
+                  "Krark-Clan Ironworks"
+                ],
+                "battlefield": [
+                  "Mox Diamond*",
+                  "The Mycosynth Gardens*"
+                ],
+                "floating": {
+                  "w": 0,
+                  "c": 1,
+                  "any": 0,
+                  "legend": 0,
+                  "artifact": 0
+                },
+                "treasures": 0,
+                "spawn": 0,
+                "land_played": true,
+                "actual_next_draw_AUDIT_ONLY": "Lion's Eye Diamond"
+              }
+            },
+            {
+              "original_rank": 22,
+              "stable_score_rank": 17,
+              "score": 82,
+              "stable_score": 82,
+              "state": {
+                "hand": [
+                  "Krark-Clan Ironworks"
+                ],
+                "battlefield": [
+                  "Mox Diamond*",
+                  "The Mycosynth Gardens"
+                ],
+                "floating": {
+                  "w": 0,
+                  "c": 0,
+                  "any": 0,
+                  "legend": 0,
+                  "artifact": 0
+                },
+                "treasures": 0,
+                "spawn": 0,
+                "land_played": true,
+                "actual_next_draw_AUDIT_ONLY": "Lion's Eye Diamond"
+              }
+            }
+          ]
+        },
+        {
+          "gid": 1,
+          "initial_keep": [
+            "Ancient Den",
+            "Deafening Silence",
+            "Enlightened Tutor",
+            "Gemstone Caverns",
+            "Great Hall of the Citadel",
+            "Plains",
+            "Sheltered by Ghosts"
+          ],
+          "top9_witness_count": 0,
+          "top24_witness_count": 5,
+          "selected_actual_T2": 0,
+          "selected_heuristic_score": 207,
+          "selected_stable_score": 115,
+          "witnesses": [
+            {
+              "original_rank": 14,
+              "stable_score_rank": 14,
+              "score": 161,
+              "stable_score": 115,
+              "state": {
+                "hand": [
+                  "Cavern of Souls",
+                  "Great Hall of the Citadel",
+                  "Plains",
+                  "Sheltered by Ghosts"
+                ],
+                "battlefield": [
+                  "Gemstone Caverns*:1",
+                  "Ancient Den*"
+                ],
+                "floating": {
+                  "w": 0,
+                  "c": 0,
+                  "any": 1,
+                  "legend": 0,
+                  "artifact": 0
+                },
+                "treasures": 0,
+                "spawn": 0,
+                "land_played": true,
+                "actual_next_draw_AUDIT_ONLY": "Lion's Eye Diamond"
+              }
+            },
+            {
+              "original_rank": 15,
+              "stable_score_rank": 15,
+              "score": 161,
+              "stable_score": 115,
+              "state": {
+                "hand": [
+                  "Ancient Den",
+                  "Great Hall of the Citadel",
+                  "Plains",
+                  "Sheltered by Ghosts"
+                ],
+                "battlefield": [
+                  "Gemstone Caverns*:1",
+                  "Cavern of Souls*"
+                ],
+                "floating": {
+                  "w": 0,
+                  "c": 0,
+                  "any": 0,
+                  "legend": 0,
+                  "artifact": 0
+                },
+                "treasures": 0,
+                "spawn": 0,
+                "land_played": true,
+                "actual_next_draw_AUDIT_ONLY": "Lion's Eye Diamond"
+              }
+            },
+            {
+              "original_rank": 16,
+              "stable_score_rank": 16,
+              "score": 161,
+              "stable_score": 115,
+              "state": {
+                "hand": [
+                  "Ancient Den",
+                  "Cavern of Souls",
+                  "Great Hall of the Citadel",
+                  "Sheltered by Ghosts"
+                ],
+                "battlefield": [
+                  "Gemstone Caverns*:1",
+                  "Plains*"
+                ],
+                "floating": {
+                  "w": 0,
+                  "c": 0,
+                  "any": 1,
+                  "legend": 0,
+                  "artifact": 0
+                },
+                "treasures": 0,
+                "spawn": 0,
+                "land_played": true,
+                "actual_next_draw_AUDIT_ONLY": "Lion's Eye Diamond"
+              }
+            },
+            {
+              "original_rank": 19,
+              "stable_score_rank": 19,
+              "score": 133,
+              "stable_score": 115,
+              "state": {
+                "hand": [
+                  "Ancient Den",
+                  "Great Hall of the Citadel",
+                  "Plains",
+                  "Sheltered by Ghosts"
+                ],
+                "battlefield": [
+                  "Gemstone Caverns*:1",
+                  "Cavern of Souls*"
+                ],
+                "floating": {
+                  "w": 0,
+                  "c": 1,
+                  "any": 0,
+                  "legend": 0,
+                  "artifact": 0
+                },
+                "treasures": 0,
+                "spawn": 0,
+                "land_played": true,
+                "actual_next_draw_AUDIT_ONLY": "Lion's Eye Diamond"
+              }
+            },
+            {
+              "original_rank": 20,
+              "stable_score_rank": 20,
+              "score": 133,
+              "stable_score": 115,
+              "state": {
+                "hand": [
+                  "Ancient Den",
+                  "Cavern of Souls",
+                  "Plains",
+                  "Sheltered by Ghosts"
+                ],
+                "battlefield": [
+                  "Gemstone Caverns*:1",
+                  "Great Hall of the Citadel*"
+                ],
+                "floating": {
+                  "w": 0,
+                  "c": 1,
+                  "any": 0,
+                  "legend": 0,
+                  "artifact": 0
+                },
+                "treasures": 0,
+                "spawn": 0,
+                "land_played": true,
+                "actual_next_draw_AUDIT_ONLY": "Lion's Eye Diamond"
+              }
+            }
+          ]
+        },
+        {
+          "gid": 22,
+          "initial_keep": [
+            "Deafening Silence",
+            "Homeward Path",
+            "Moonsilver Key",
+            "Mox Diamond",
+            "Ruins of Trokair",
+            "United Battlefront",
+            "Urza's Cave"
+          ],
+          "top9_witness_count": 0,
+          "top24_witness_count": 0,
+          "selected_actual_T2": 0,
+          "selected_heuristic_score": 151,
+          "selected_stable_score": 87,
+          "witnesses": []
+        },
+        {
+          "gid": 31,
+          "initial_keep": [
+            "Ancient Tomb",
+            "Emergence Zone",
+            "Mana Vault",
+            "Mantle of the Ancients",
+            "Plains",
+            "Staff of Compleation",
+            "Twinblade Blessing"
+          ],
+          "top9_witness_count": 2,
+          "top24_witness_count": 5,
+          "selected_actual_T2": 0,
+          "selected_heuristic_score": 172,
+          "selected_stable_score": 126,
+          "witnesses": [
+            {
+              "original_rank": 2,
+              "stable_score_rank": 1,
+              "score": 182,
+              "stable_score": 164,
+              "state": {
+                "hand": [
+                  "Emergence Zone",
+                  "Mantle of the Ancients",
+                  "Orim's Chant",
+                  "Plains",
+                  "Staff of Compleation",
+                  "Twinblade Blessing"
+                ],
+                "battlefield": [
+                  "Ancient Tomb*",
+                  "Mana Vault"
+                ],
+                "floating": {
+                  "w": 0,
+                  "c": 1,
+                  "any": 0,
+                  "legend": 0,
+                  "artifact": 0
+                },
+                "treasures": 0,
+                "spawn": 0,
+                "land_played": true,
+                "actual_next_draw_AUDIT_ONLY": "Chrome Mox"
+              }
+            },
+            {
+              "original_rank": 9,
+              "stable_score_rank": 5,
+              "score": 140,
+              "stable_score": 140,
+              "state": {
+                "hand": [
+                  "Ancient Tomb",
+                  "Emergence Zone",
+                  "Mantle of the Ancients",
+                  "Orim's Chant",
+                  "Staff of Compleation",
+                  "Twinblade Blessing"
+                ],
+                "battlefield": [
+                  "Plains*",
+                  "Mana Vault"
+                ],
+                "floating": {
+                  "w": 0,
+                  "c": 0,
+                  "any": 0,
+                  "legend": 0,
+                  "artifact": 0
+                },
+                "treasures": 0,
+                "spawn": 0,
+                "land_played": true,
+                "actual_next_draw_AUDIT_ONLY": "Chrome Mox"
+              }
+            },
+            {
+              "original_rank": 10,
+              "stable_score_rank": 6,
+              "score": 140,
+              "stable_score": 140,
+              "state": {
+                "hand": [
+                  "Ancient Tomb",
+                  "Mantle of the Ancients",
+                  "Orim's Chant",
+                  "Plains",
+                  "Staff of Compleation",
+                  "Twinblade Blessing"
+                ],
+                "battlefield": [
+                  "Emergence Zone*",
+                  "Mana Vault"
+                ],
+                "floating": {
+                  "w": 0,
+                  "c": 0,
+                  "any": 0,
+                  "legend": 0,
+                  "artifact": 0
+                },
+                "treasures": 0,
+                "spawn": 0,
+                "land_played": true,
+                "actual_next_draw_AUDIT_ONLY": "Chrome Mox"
+              }
+            },
+            {
+              "original_rank": 18,
+              "stable_score_rank": 24,
+              "score": 124,
+              "stable_score": 60,
+              "state": {
+                "hand": [
+                  "Ancient Tomb",
+                  "Emergence Zone",
+                  "Mana Vault",
+                  "Mantle of the Ancients",
+                  "Orim's Chant",
+                  "Staff of Compleation",
+                  "Twinblade Blessing"
+                ],
+                "battlefield": [
+                  "Plains*"
+                ],
+                "floating": {
+                  "w": 1,
+                  "c": 0,
+                  "any": 0,
+                  "legend": 0,
+                  "artifact": 0
+                },
+                "treasures": 0,
+                "spawn": 0,
+                "land_played": true,
+                "actual_next_draw_AUDIT_ONLY": "Chrome Mox"
+              }
+            },
+            {
+              "original_rank": 21,
+              "stable_score_rank": 19,
+              "score": 120,
+              "stable_score": 84,
+              "state": {
+                "hand": [
+                  "Emergence Zone",
+                  "Mana Vault",
+                  "Mantle of the Ancients",
+                  "Orim's Chant",
+                  "Plains",
+                  "Staff of Compleation",
+                  "Twinblade Blessing"
+                ],
+                "battlefield": [
+                  "Ancient Tomb*"
+                ],
+                "floating": {
+                  "w": 0,
+                  "c": 2,
+                  "any": 0,
+                  "legend": 0,
+                  "artifact": 0
+                },
+                "treasures": 0,
+                "spawn": 0,
+                "land_played": true,
+                "actual_next_draw_AUDIT_ONLY": "Chrome Mox"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "limits": [
+    "Actual draw check is an oracle diagnostic, not a proposed policy",
+    "Only top24 preexisting beam states analyzed; a winner may exist elsewhere",
+    "T2 probe suppresses Bucknard die; cannot attribute Bucknard-only win lines",
+    "Shaped score is a turn-reset counterfactual, not proven optimal"
+  ]
+}
