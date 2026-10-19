@@ -1,0 +1,79 @@
+{
+  "status": "PASS",
+  "selected_cases": 7,
+  "by_deck": {
+    "current": {
+      "cases": 3,
+      "T2_recovered": 0,
+      "T3_recovered": 0,
+      "lost_T3": 1,
+      "details": [
+        {
+          "gid": 0,
+          "v2_win_turn": 0,
+          "v3_win_turn": 0,
+          "same_mulligan": true,
+          "v2_rollout_calls": 162,
+          "v3_rollout_calls": 162
+        },
+        {
+          "gid": 1,
+          "v2_win_turn": 0,
+          "v3_win_turn": 0,
+          "same_mulligan": true,
+          "v2_rollout_calls": 162,
+          "v3_rollout_calls": 162
+        },
+        {
+          "gid": 22,
+          "v2_win_turn": 3,
+          "v3_win_turn": 0,
+          "same_mulligan": true,
+          "v2_rollout_calls": 162,
+          "v3_rollout_calls": 162
+        }
+      ]
+    },
+    "buck_worldmap": {
+      "cases": 4,
+      "T2_recovered": 0,
+      "T3_recovered": 0,
+      "lost_T3": 1,
+      "details": [
+        {
+          "gid": 0,
+          "v2_win_turn": 0,
+          "v3_win_turn": 0,
+          "same_mulligan": true,
+          "v2_rollout_calls": 162,
+          "v3_rollout_calls": 162
+        },
+        {
+          "gid": 1,
+          "v2_win_turn": 0,
+          "v3_win_turn": 0,
+          "same_mulligan": true,
+          "v2_rollout_calls": 162,
+          "v3_rollout_calls": 162
+        },
+        {
+          "gid": 22,
+          "v2_win_turn": 3,
+          "v3_win_turn": 0,
+          "same_mulligan": true,
+          "v2_rollout_calls": 162,
+          "v3_rollout_calls": 162
+        },
+        {
+          "gid": 31,
+          "v2_win_turn": 0,
+          "v3_win_turn": 0,
+          "same_mulligan": true,
+          "v2_rollout_calls": 154,
+          "v3_rollout_calls": 154
+        }
+      ]
+    }
+  },
+  "note": "Bankable resource and unsaturated non-win gradient A-B only; selected games not statistical WR estimate"
+}
