@@ -1,0 +1,210 @@
+{
+  "status": "PASS",
+  "n_per_deck": 32,
+  "design": "Matched-seed v5 twelve-draw Monte Carlo reward vs v4 three-draw Monte Carlo, same chance-aware beam and known-top information",
+  "arms": {
+    "current": {
+      "v4": {
+        "games": 32,
+        "T1": 3.125,
+        "T2": 31.25,
+        "T3": 68.75,
+        "mean_keep": 5.656,
+        "mean_rollout_calls": 128.31
+      },
+      "v5": {
+        "games": 32,
+        "T1": 3.125,
+        "T2": 25.0,
+        "T3": 59.375,
+        "mean_keep": 5.656,
+        "mean_rollout_calls": 497.81
+      },
+      "v5_minus_v4": {
+        "T1": {
+          "delta_pp": 0.0,
+          "paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v5_only": [],
+          "v4_only": []
+        },
+        "T2": {
+          "delta_pp": -6.25,
+          "paired_95pct_pp": [
+            -14.771,
+            2.271
+          ],
+          "v5_only": [],
+          "v4_only": [
+            1,
+            31
+          ]
+        },
+        "T3": {
+          "delta_pp": -9.375,
+          "paired_95pct_pp": [
+            -19.636,
+            0.886
+          ],
+          "v5_only": [],
+          "v4_only": [
+            0,
+            1,
+            17
+          ]
+        }
+      },
+      "artifact_shards": [
+        8,
+        8
+      ]
+    },
+    "buck_worldmap": {
+      "v4": {
+        "games": 32,
+        "T1": 3.125,
+        "T2": 34.375,
+        "T3": 71.875,
+        "mean_keep": 5.562,
+        "mean_rollout_calls": 127.62
+      },
+      "v5": {
+        "games": 32,
+        "T1": 3.125,
+        "T2": 34.375,
+        "T3": 65.625,
+        "mean_keep": 5.562,
+        "mean_rollout_calls": 481.5
+      },
+      "v5_minus_v4": {
+        "T1": {
+          "delta_pp": 0.0,
+          "paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v5_only": [],
+          "v4_only": []
+        },
+        "T2": {
+          "delta_pp": 0.0,
+          "paired_95pct_pp": [
+            -8.801,
+            8.801
+          ],
+          "v5_only": [
+            31
+          ],
+          "v4_only": [
+            1
+          ]
+        },
+        "T3": {
+          "delta_pp": -6.25,
+          "paired_95pct_pp": [
+            -18.5,
+            6.0
+          ],
+          "v5_only": [
+            31
+          ],
+          "v4_only": [
+            0,
+            1,
+            17
+          ]
+        }
+      },
+      "artifact_shards": [
+        8,
+        8
+      ]
+    }
+  },
+  "effects": {
+    "buck_minus_worldmap_v5": {
+      "T1": {
+        "delta_pp": 0.0,
+        "paired_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "v5_only": [],
+        "v4_only": []
+      },
+      "T2": {
+        "delta_pp": 9.375,
+        "paired_95pct_pp": [
+          -0.886,
+          19.636
+        ],
+        "v5_only": [
+          2,
+          9,
+          31
+        ],
+        "v4_only": []
+      },
+      "T3": {
+        "delta_pp": 6.25,
+        "paired_95pct_pp": [
+          -2.271,
+          14.771
+        ],
+        "v5_only": [
+          2,
+          9
+        ],
+        "v4_only": []
+      }
+    },
+    "buck_minus_worldmap_v4": {
+      "T1": {
+        "delta_pp": 0.0,
+        "paired_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "v5_only": [],
+        "v4_only": []
+      },
+      "T2": {
+        "delta_pp": 3.125,
+        "paired_95pct_pp": [
+          -7.597,
+          13.847
+        ],
+        "v5_only": [
+          2,
+          9
+        ],
+        "v4_only": [
+          31
+        ]
+      },
+      "T3": {
+        "delta_pp": 3.125,
+        "paired_95pct_pp": [
+          -7.597,
+          13.847
+        ],
+        "v5_only": [
+          2,
+          9
+        ],
+        "v4_only": [
+          31
+        ]
+      }
+    }
+  },
+  "limitations": [
+    "N32 is too small to settle 1-3pp differences",
+    "V5 includes more future-draw samples and may still be systematically biased by finite beam",
+    "Known-top tracking still partial",
+    "In-turn hidden draw lookahead remains in legacy action generators",
+    "No full combat interaction or post-Dack combo proof"
+  ]
+}
