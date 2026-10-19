@@ -1,0 +1,198 @@
+{
+  "status": "PASS",
+  "n_per_deck": 32,
+  "design": "Forecast-only beam 42/depth18 (v6) versus beam96/depth24 (v7), identical actual beam120/stratified next-card distribution/knowledge flags",
+  "arms": {
+    "current": {
+      "v6": {
+        "n": 32,
+        "by_turn_pct": {
+          "T1": 3.125,
+          "T2": 28.125,
+          "T3": 68.75
+        },
+        "mean_keep": 5.656,
+        "mean_forecast_rollouts": 471.03
+      },
+      "v7": {
+        "n": 32,
+        "by_turn_pct": {
+          "T1": 3.125,
+          "T2": 28.125,
+          "T3": 68.75
+        },
+        "mean_keep": 5.656,
+        "mean_forecast_rollouts": 471.03
+      },
+      "v7_minus_v6": {
+        "T1": {
+          "delta_pp": 0.0,
+          "paired_normal_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v7_only": [],
+          "v6_only": []
+        },
+        "T2": {
+          "delta_pp": 0.0,
+          "paired_normal_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v7_only": [],
+          "v6_only": []
+        },
+        "T3": {
+          "delta_pp": 0.0,
+          "paired_normal_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v7_only": [],
+          "v6_only": []
+        }
+      },
+      "shard_counts": [
+        8,
+        8
+      ]
+    },
+    "buck_worldmap": {
+      "v6": {
+        "n": 32,
+        "by_turn_pct": {
+          "T1": 3.125,
+          "T2": 37.5,
+          "T3": 75.0
+        },
+        "mean_keep": 5.562,
+        "mean_forecast_rollouts": 459.22
+      },
+      "v7": {
+        "n": 32,
+        "by_turn_pct": {
+          "T1": 3.125,
+          "T2": 37.5,
+          "T3": 75.0
+        },
+        "mean_keep": 5.562,
+        "mean_forecast_rollouts": 459.22
+      },
+      "v7_minus_v6": {
+        "T1": {
+          "delta_pp": 0.0,
+          "paired_normal_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v7_only": [],
+          "v6_only": []
+        },
+        "T2": {
+          "delta_pp": 0.0,
+          "paired_normal_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v7_only": [],
+          "v6_only": []
+        },
+        "T3": {
+          "delta_pp": 0.0,
+          "paired_normal_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v7_only": [],
+          "v6_only": []
+        }
+      },
+      "shard_counts": [
+        8,
+        8
+      ]
+    }
+  },
+  "deck_swap": {
+    "v7_buck_minus_current": {
+      "T1": {
+        "delta_pp": 0.0,
+        "paired_normal_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "v7_only": [],
+        "v6_only": []
+      },
+      "T2": {
+        "delta_pp": 9.375,
+        "paired_normal_95pct_pp": [
+          -0.886,
+          19.636
+        ],
+        "v7_only": [
+          2,
+          9,
+          31
+        ],
+        "v6_only": []
+      },
+      "T3": {
+        "delta_pp": 6.25,
+        "paired_normal_95pct_pp": [
+          -2.271,
+          14.771
+        ],
+        "v7_only": [
+          2,
+          9
+        ],
+        "v6_only": []
+      }
+    },
+    "v6_buck_minus_current": {
+      "T1": {
+        "delta_pp": 0.0,
+        "paired_normal_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "v7_only": [],
+        "v6_only": []
+      },
+      "T2": {
+        "delta_pp": 9.375,
+        "paired_normal_95pct_pp": [
+          -0.886,
+          19.636
+        ],
+        "v7_only": [
+          2,
+          9,
+          31
+        ],
+        "v6_only": []
+      },
+      "T3": {
+        "delta_pp": 6.25,
+        "paired_normal_95pct_pp": [
+          -2.271,
+          14.771
+        ],
+        "v7_only": [
+          2,
+          9
+        ],
+        "v6_only": []
+      }
+    }
+  },
+  "limitations": [
+    "N32 preliminary, uncertainty for small differences remains high",
+    "Forecast widths/depth changed together, not a pure single-variable effect",
+    "Within-turn action generation can still inspect unknown subsequent cards",
+    "Known-top detection still only covers selected tutors",
+    "Goldfish Dack deployment, not interactive 4-player win rate"
+  ]
+}
