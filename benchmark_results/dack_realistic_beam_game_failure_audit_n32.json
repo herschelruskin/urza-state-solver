@@ -1,0 +1,851 @@
+{
+  "status": "PASS",
+  "n_per_deck": 32,
+  "method": "Paired complete game outcomes, same IDs and deck hashes, archived Full Beam vs Realistic Beam v1 and v2. No actual gameplay replays.",
+  "arms": {
+    "current": {
+      "matched_games": 32,
+      "files": {
+        "full": 32,
+        "v1": 32,
+        "v2": 16
+      },
+      "same_keep_count_full_v2": 32,
+      "turn_comparison": {
+        "T2": {
+          "turn": 2,
+          "full_pct": 37.5,
+          "v1_pct": 25.0,
+          "v2_pct": 28.125,
+          "counts": {
+            "both_success": 9,
+            "full_only": 3,
+            "realistic_only": 0,
+            "both_miss": 20
+          },
+          "ids": {
+            "both_success": [
+              13,
+              14,
+              15,
+              16,
+              18,
+              20,
+              25,
+              28,
+              31
+            ],
+            "full_only": [
+              0,
+              1,
+              22
+            ],
+            "realistic_only": [],
+            "both_miss": [
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              17,
+              19,
+              21,
+              23,
+              24,
+              26,
+              27,
+              29,
+              30
+            ]
+          },
+          "fail_or_recovered_cases": [
+            {
+              "game_id": 0,
+              "kind": "full_only",
+              "full_turn": 2,
+              "v1_turn": 0,
+              "v2_turn": 0,
+              "full_keep": 4,
+              "v2_keep": 4,
+              "mulligan_same_keep": true,
+              "v2_rolls": [],
+              "v2_rollout_calls": 162,
+              "v2_turn_choices": [
+                {
+                  "turn": 1,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 2,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 3,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                }
+              ]
+            },
+            {
+              "game_id": 1,
+              "kind": "full_only",
+              "full_turn": 2,
+              "v1_turn": 0,
+              "v2_turn": 0,
+              "full_keep": 7,
+              "v2_keep": 7,
+              "mulligan_same_keep": true,
+              "v2_rolls": [],
+              "v2_rollout_calls": 162,
+              "v2_turn_choices": [
+                {
+                  "turn": 1,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 2,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 3,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                }
+              ]
+            },
+            {
+              "game_id": 22,
+              "kind": "full_only",
+              "full_turn": 2,
+              "v1_turn": 3,
+              "v2_turn": 3,
+              "full_keep": 7,
+              "v2_keep": 7,
+              "mulligan_same_keep": true,
+              "v2_rolls": [],
+              "v2_rollout_calls": 162,
+              "v2_turn_choices": [
+                {
+                  "turn": 1,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 2,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 3,
+                  "phase": "pre-roll win",
+                  "pass_candidates": 0,
+                  "buck_plans": 0,
+                  "die": null
+                }
+              ]
+            }
+          ]
+        },
+        "T3": {
+          "turn": 3,
+          "full_pct": 71.875,
+          "v1_pct": 53.125,
+          "v2_pct": 59.375,
+          "counts": {
+            "both_success": 19,
+            "full_only": 4,
+            "realistic_only": 0,
+            "both_miss": 9
+          },
+          "ids": {
+            "both_success": [
+              3,
+              6,
+              7,
+              10,
+              13,
+              14,
+              15,
+              16,
+              18,
+              19,
+              20,
+              22,
+              24,
+              25,
+              26,
+              28,
+              29,
+              30,
+              31
+            ],
+            "full_only": [
+              0,
+              1,
+              11,
+              17
+            ],
+            "realistic_only": [],
+            "both_miss": [
+              2,
+              4,
+              5,
+              8,
+              9,
+              12,
+              21,
+              23,
+              27
+            ]
+          },
+          "fail_or_recovered_cases": [
+            {
+              "game_id": 0,
+              "kind": "full_only",
+              "full_turn": 2,
+              "v1_turn": 0,
+              "v2_turn": 0,
+              "full_keep": 4,
+              "v2_keep": 4,
+              "mulligan_same_keep": true,
+              "v2_rolls": [],
+              "v2_rollout_calls": 162,
+              "v2_turn_choices": [
+                {
+                  "turn": 1,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 2,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 3,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                }
+              ]
+            },
+            {
+              "game_id": 1,
+              "kind": "full_only",
+              "full_turn": 2,
+              "v1_turn": 0,
+              "v2_turn": 0,
+              "full_keep": 7,
+              "v2_keep": 7,
+              "mulligan_same_keep": true,
+              "v2_rolls": [],
+              "v2_rollout_calls": 162,
+              "v2_turn_choices": [
+                {
+                  "turn": 1,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 2,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 3,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                }
+              ]
+            },
+            {
+              "game_id": 11,
+              "kind": "full_only",
+              "full_turn": 3,
+              "v1_turn": 3,
+              "v2_turn": 0,
+              "full_keep": 5,
+              "v2_keep": 5,
+              "mulligan_same_keep": true,
+              "v2_rolls": [],
+              "v2_rollout_calls": 93,
+              "v2_turn_choices": [
+                {
+                  "turn": 1,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 5,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 2,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 6,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 3,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                }
+              ]
+            },
+            {
+              "game_id": 17,
+              "kind": "full_only",
+              "full_turn": 3,
+              "v1_turn": 0,
+              "v2_turn": 0,
+              "full_keep": 7,
+              "v2_keep": 7,
+              "mulligan_same_keep": true,
+              "v2_rolls": [],
+              "v2_rollout_calls": 132,
+              "v2_turn_choices": [
+                {
+                  "turn": 1,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 7,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 2,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 3,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "buck_worldmap": {
+      "matched_games": 32,
+      "files": {
+        "full": 16,
+        "v1": 32,
+        "v2": 16
+      },
+      "same_keep_count_full_v2": 30,
+      "turn_comparison": {
+        "T2": {
+          "turn": 2,
+          "full_pct": 43.75,
+          "v1_pct": 28.125,
+          "v2_pct": 31.25,
+          "counts": {
+            "both_success": 10,
+            "full_only": 4,
+            "realistic_only": 0,
+            "both_miss": 18
+          },
+          "ids": {
+            "both_success": [
+              2,
+              9,
+              13,
+              14,
+              15,
+              16,
+              18,
+              20,
+              25,
+              28
+            ],
+            "full_only": [
+              0,
+              1,
+              22,
+              31
+            ],
+            "realistic_only": [],
+            "both_miss": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              10,
+              11,
+              12,
+              17,
+              19,
+              21,
+              23,
+              24,
+              26,
+              27,
+              29,
+              30
+            ]
+          },
+          "fail_or_recovered_cases": [
+            {
+              "game_id": 0,
+              "kind": "full_only",
+              "full_turn": 2,
+              "v1_turn": 0,
+              "v2_turn": 0,
+              "full_keep": 4,
+              "v2_keep": 4,
+              "mulligan_same_keep": true,
+              "v2_rolls": [],
+              "v2_rollout_calls": 162,
+              "v2_turn_choices": [
+                {
+                  "turn": 1,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 2,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 3,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                }
+              ]
+            },
+            {
+              "game_id": 1,
+              "kind": "full_only",
+              "full_turn": 2,
+              "v1_turn": 0,
+              "v2_turn": 0,
+              "full_keep": 7,
+              "v2_keep": 7,
+              "mulligan_same_keep": true,
+              "v2_rolls": [],
+              "v2_rollout_calls": 162,
+              "v2_turn_choices": [
+                {
+                  "turn": 1,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 2,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 3,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                }
+              ]
+            },
+            {
+              "game_id": 22,
+              "kind": "full_only",
+              "full_turn": 2,
+              "v1_turn": 0,
+              "v2_turn": 3,
+              "full_keep": 7,
+              "v2_keep": 7,
+              "mulligan_same_keep": true,
+              "v2_rolls": [],
+              "v2_rollout_calls": 162,
+              "v2_turn_choices": [
+                {
+                  "turn": 1,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 2,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 3,
+                  "phase": "pre-roll win",
+                  "pass_candidates": 0,
+                  "buck_plans": 0,
+                  "die": null
+                }
+              ]
+            },
+            {
+              "game_id": 31,
+              "kind": "full_only",
+              "full_turn": 2,
+              "v1_turn": 0,
+              "v2_turn": 0,
+              "full_keep": 7,
+              "v2_keep": 7,
+              "mulligan_same_keep": true,
+              "v2_rolls": [],
+              "v2_rollout_calls": 154,
+              "v2_turn_choices": [
+                {
+                  "turn": 1,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 2,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 3,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                }
+              ]
+            }
+          ]
+        },
+        "T3": {
+          "turn": 3,
+          "full_pct": 81.25,
+          "v1_pct": 50.0,
+          "v2_pct": 62.5,
+          "counts": {
+            "both_success": 20,
+            "full_only": 6,
+            "realistic_only": 0,
+            "both_miss": 6
+          },
+          "ids": {
+            "both_success": [
+              2,
+              3,
+              6,
+              7,
+              9,
+              10,
+              13,
+              14,
+              15,
+              16,
+              18,
+              19,
+              20,
+              22,
+              24,
+              25,
+              26,
+              28,
+              29,
+              30
+            ],
+            "full_only": [
+              0,
+              1,
+              11,
+              12,
+              17,
+              31
+            ],
+            "realistic_only": [],
+            "both_miss": [
+              4,
+              5,
+              8,
+              21,
+              23,
+              27
+            ]
+          },
+          "fail_or_recovered_cases": [
+            {
+              "game_id": 0,
+              "kind": "full_only",
+              "full_turn": 2,
+              "v1_turn": 0,
+              "v2_turn": 0,
+              "full_keep": 4,
+              "v2_keep": 4,
+              "mulligan_same_keep": true,
+              "v2_rolls": [],
+              "v2_rollout_calls": 162,
+              "v2_turn_choices": [
+                {
+                  "turn": 1,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 2,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 3,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                }
+              ]
+            },
+            {
+              "game_id": 1,
+              "kind": "full_only",
+              "full_turn": 2,
+              "v1_turn": 0,
+              "v2_turn": 0,
+              "full_keep": 7,
+              "v2_keep": 7,
+              "mulligan_same_keep": true,
+              "v2_rolls": [],
+              "v2_rollout_calls": 162,
+              "v2_turn_choices": [
+                {
+                  "turn": 1,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 2,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 3,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                }
+              ]
+            },
+            {
+              "game_id": 11,
+              "kind": "full_only",
+              "full_turn": 3,
+              "v1_turn": 0,
+              "v2_turn": 0,
+              "full_keep": 5,
+              "v2_keep": 5,
+              "mulligan_same_keep": true,
+              "v2_rolls": [],
+              "v2_rollout_calls": 93,
+              "v2_turn_choices": [
+                {
+                  "turn": 1,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 5,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 2,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 6,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 3,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                }
+              ]
+            },
+            {
+              "game_id": 12,
+              "kind": "full_only",
+              "full_turn": 3,
+              "v1_turn": 0,
+              "v2_turn": 0,
+              "full_keep": 6,
+              "v2_keep": 5,
+              "mulligan_same_keep": false,
+              "v2_rolls": [],
+              "v2_rollout_calls": 147,
+              "v2_turn_choices": [
+                {
+                  "turn": 1,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 2,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 8,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 3,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 8,
+                  "buck_plans": 0,
+                  "die": null
+                }
+              ]
+            },
+            {
+              "game_id": 17,
+              "kind": "full_only",
+              "full_turn": 3,
+              "v1_turn": 0,
+              "v2_turn": 0,
+              "full_keep": 7,
+              "v2_keep": 7,
+              "mulligan_same_keep": true,
+              "v2_rolls": [],
+              "v2_rollout_calls": 132,
+              "v2_turn_choices": [
+                {
+                  "turn": 1,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 7,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 2,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 3,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                }
+              ]
+            },
+            {
+              "game_id": 31,
+              "kind": "full_only",
+              "full_turn": 2,
+              "v1_turn": 0,
+              "v2_turn": 0,
+              "full_keep": 7,
+              "v2_keep": 7,
+              "mulligan_same_keep": true,
+              "v2_rolls": [],
+              "v2_rollout_calls": 154,
+              "v2_turn_choices": [
+                {
+                  "turn": 1,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 2,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                },
+                {
+                  "turn": 3,
+                  "phase": "expected-draw pass",
+                  "pass_candidates": 9,
+                  "buck_plans": 0,
+                  "die": null
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "limitations": [
+    "An outcome difference alone does not prove its cause is turn-boundary clairvoyance",
+    "This report does not replay per-game action histories, so cannot attribute individual losses to tutor/shuffle/selection",
+    "V2 rollouts have a shorter beam and deeper but still limited planning horizon compared with Full Beam",
+    "Some v2 mulligan choices can differ because deck includes Bucknard, causing confounding",
+    "Small N32 sample; avoid treating percentage-point differences as calibrated win rates"
+  ]
+}
