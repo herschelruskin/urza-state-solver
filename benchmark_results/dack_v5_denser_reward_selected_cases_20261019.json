@@ -1,0 +1,167 @@
+{
+  "status": "PASS",
+  "scope": "Selected historical misses only; not an unbiased winrate estimate",
+  "reward": "Monte Carlo averaged 12 unknown next draws and 6 for T3; legit known-top tutor observations tracked; T2 weighting A/B 1.5 vs 2.5",
+  "results": {
+    "current:balanced": {
+      "n": 3,
+      "recovered_T2": [],
+      "recovered_T3": [],
+      "lost_T3": [],
+      "cases": [
+        {
+          "variant": "current",
+          "gid": 0,
+          "policy": "balanced",
+          "v2_turn": 0,
+          "v5_turn": 0,
+          "keep": 4,
+          "rollout_calls": 594,
+          "reward_states": 18
+        },
+        {
+          "variant": "current",
+          "gid": 1,
+          "policy": "balanced",
+          "v2_turn": 0,
+          "v5_turn": 0,
+          "keep": 7,
+          "rollout_calls": 594,
+          "reward_states": 18
+        },
+        {
+          "variant": "current",
+          "gid": 22,
+          "policy": "balanced",
+          "v2_turn": 3,
+          "v5_turn": 3,
+          "keep": 7,
+          "rollout_calls": 590,
+          "reward_states": 18
+        }
+      ]
+    },
+    "buck_worldmap:balanced": {
+      "n": 3,
+      "recovered_T2": [
+        31
+      ],
+      "recovered_T3": [
+        31
+      ],
+      "lost_T3": [],
+      "cases": [
+        {
+          "variant": "buck_worldmap",
+          "gid": 0,
+          "policy": "balanced",
+          "v2_turn": 0,
+          "v5_turn": 0,
+          "keep": 4,
+          "rollout_calls": 594,
+          "reward_states": 18
+        },
+        {
+          "variant": "buck_worldmap",
+          "gid": 1,
+          "policy": "balanced",
+          "v2_turn": 0,
+          "v5_turn": 0,
+          "keep": 7,
+          "rollout_calls": 594,
+          "reward_states": 18
+        },
+        {
+          "variant": "buck_worldmap",
+          "gid": 31,
+          "policy": "balanced",
+          "v2_turn": 0,
+          "v5_turn": 2,
+          "keep": 7,
+          "rollout_calls": 524,
+          "reward_states": 9
+        }
+      ]
+    },
+    "current:t2_heavy": {
+      "n": 3,
+      "recovered_T2": [],
+      "recovered_T3": [],
+      "lost_T3": [],
+      "cases": [
+        {
+          "variant": "current",
+          "gid": 0,
+          "policy": "t2_heavy",
+          "v2_turn": 0,
+          "v5_turn": 0,
+          "keep": 4,
+          "rollout_calls": 594,
+          "reward_states": 18
+        },
+        {
+          "variant": "current",
+          "gid": 1,
+          "policy": "t2_heavy",
+          "v2_turn": 0,
+          "v5_turn": 0,
+          "keep": 7,
+          "rollout_calls": 594,
+          "reward_states": 18
+        },
+        {
+          "variant": "current",
+          "gid": 22,
+          "policy": "t2_heavy",
+          "v2_turn": 3,
+          "v5_turn": 3,
+          "keep": 7,
+          "rollout_calls": 590,
+          "reward_states": 18
+        }
+      ]
+    },
+    "buck_worldmap:t2_heavy": {
+      "n": 3,
+      "recovered_T2": [
+        31
+      ],
+      "recovered_T3": [
+        31
+      ],
+      "lost_T3": [],
+      "cases": [
+        {
+          "variant": "buck_worldmap",
+          "gid": 0,
+          "policy": "t2_heavy",
+          "v2_turn": 0,
+          "v5_turn": 0,
+          "keep": 4,
+          "rollout_calls": 594,
+          "reward_states": 18
+        },
+        {
+          "variant": "buck_worldmap",
+          "gid": 1,
+          "policy": "t2_heavy",
+          "v2_turn": 0,
+          "v5_turn": 0,
+          "keep": 7,
+          "rollout_calls": 594,
+          "reward_states": 18
+        },
+        {
+          "variant": "buck_worldmap",
+          "gid": 31,
+          "policy": "t2_heavy",
+          "v2_turn": 0,
+          "v5_turn": 2,
+          "keep": 7,
+          "rollout_calls": 524,
+          "reward_states": 9
+        }
+      ]
+    }
+  }
+}
