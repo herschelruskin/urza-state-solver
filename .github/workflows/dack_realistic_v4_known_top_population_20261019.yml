@@ -1,0 +1,141 @@
+name: Dack Realistic Known-Top Population N32
+on:
+  push:
+    branches: [dack-realistic-information-beam-20261017]
+    paths:
+      - 'dack_realistic_v4_known_top_population_20261019.py'
+      - '.github/workflows/dack_realistic_v4_known_top_population_20261019.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and validate knowledge boundaries and matched sample
+        run: |
+          python -m py_compile dack_realistic_v4_known_top_population_20261019.py
+          python -u dack_realistic_v4_known_top_population_20261019.py \
+             --variant current --shard 0 --games 1 --out smoke_current.json.gz
+          python - <<'PY'
+          import gzip,json
+          with gzip.open('smoke_current.json.gz','rt') as f:d=json.load(f)
+          assert d['schema']=='dack_known_top_population_v4'
+          assert d['variant']=='current' and d['rows'][0]['game_id']==0
+          assert d['rows'][0]['win_turn'] in range(4)
+          print('DACK_KNOWN_TOP_POPULATION_SMOKE_PASS',flush=True)
+          PY
+  shards:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        variant: [current,buck_worldmap]
+        shard: [0,1,2,3,4,5,6,7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Four unbiased matched sample games
+        run: |
+          mkdir -p v4
+          python -u dack_realistic_v4_known_top_population_20261019.py \
+            --variant "${{ matrix.variant }}" --shard "${{ matrix.shard }}" --games 4 \
+            --out "v4/${{ matrix.variant }}_shard_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: known-top-pop-${{ matrix.variant }}-${{ matrix.shard }}
+          path: v4/*.json.gz
+          retention-days: 90
+          if-no-files-found: error
+  pool:
+    needs: [smoke,shards]
+    if: ${{ needs.smoke.result == 'success' && needs.shards.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: known-top-pop-*
+          merge-multiple: true
+          path: v4
+      - name: Download frozen matched v2 artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p v2
+          gh run download 39056076511 --repo "${{ github.repository }}" \
+            --pattern 'dack-beam-v2-*' --dir v2
+          test "$(find v2 -name '*.json.gz' | wc -l)" -eq 16
+      - name: Paired population v4 versus frozen v2 results
+        run: |
+          python - <<'PY'
+          import glob,gzip,json,math,pathlib,collections
+          hashes={'current':'3a10a02e1aae070645129fa85ed94240f1ae9d5447e3711f7621f92064d9f129',
+            'buck_worldmap':'f130ff4c9c0fbc888525070877fe820caba03e836e0be66ec60ea3410e950068'}
+          def read(pattern,name,schema):
+              result={}
+              for file in glob.glob(pattern,recursive=True):
+                  with gzip.open(file,'rt') as f:d=json.load(f)
+                  if d['variant']!=name:continue
+                  assert d['schema']==schema and d['deck_sha256']==hashes[name]
+                  assert len(d['rows'])==d['games']
+                  for row in d['rows']:
+                      gid=row['game_id']
+                      assert gid not in result
+                      result[gid]=row
+              assert set(result)==set(range(32)),(name,schema,len(result))
+              return result
+          result={'status':'PASS','n_per_arm':32,'arms':{},
+            'limitations':['Small unselected pilot, not calibrated population rate',
+             'Known-top v4 is narrowly scoped tuple-identity metadata',
+             'In-turn hidden draw lookahead still exists',
+             'V4 changes candidate reservation as well as knowledge handling']}
+          for name in hashes:
+              v4=read('v4/**/*.json.gz',name,'dack_known_top_population_v4')
+              v2=read('v2/**/*.json.gz',name,'realistic_info_beam_v2')
+              a={}
+              for t in (1,2,3):
+                  won4=sum(0<v4[j]['win_turn']<=t for j in range(32))
+                  won2=sum(0<v2[j]['win_turn']<=t for j in range(32))
+                  delta=[int(0<v4[j]['win_turn']<=t)-int(0<v2[j]['win_turn']<=t) for j in range(32)]
+                  mean=sum(delta)/32
+                  se=math.sqrt(sum((x-mean)**2 for x in delta)/(32*31))
+                  a['T'+str(t)]={'v4_pct':round(100*won4/32,4),'v2_pct':round(100*won2/32,4),
+                    'delta_pp':round(100*mean,4),'paired_95pct_pp':[round(100*(mean-1.96*se),3),round(100*(mean+1.96*se),3)],
+                    'v4_only':[j for j in range(32) if delta[j]>0],
+                    'v2_only':[j for j in range(32) if delta[j]<0]}
+              result['arms'][name]=a
+          pathlib.Path('report.json').write_text(json.dumps(result,indent=2)+'\n')
+          print('DACK_KNOWN_TOP_UNSELECTED_PAIRED_REPORT_PASS',json.dumps(result),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-known-top-population-n32-results
+          path: report.json
+          retention-days: 90
+          if-no-files-found: error
+      - name: Publish population result
+        run: |
+          mkdir -p benchmark_results
+          cp report.json benchmark_results/dack_known_top_population_n32_20261019.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_known_top_population_n32_20261019.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish unselected known-top v4 versus v2 N32 outcomes'
+            git pull --rebase origin dack-realistic-information-beam-20261017
+            git push
+          fi
