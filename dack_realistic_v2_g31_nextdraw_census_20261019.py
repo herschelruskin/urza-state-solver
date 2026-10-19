@@ -28,6 +28,8 @@ def setup():
     v2.selftest();root.install(variant);fair.install_honest_scry()
     v2.activate_v2(draws=3,t3_samples=2,t2_continuations=2)
     seed=v2.SEED_BASE+gid*1000003
+    v1.configure(seed,rollout_draws=3,pass_cap=9,buck_cap=3,
+                 rollout_beam=42,rollout_depth=18)
     m.set_trial_seed(seed);rng=random.Random(seed);seat=rng.randrange(4)
     fair.overridden_roll(2)
     hand,keep,_=root.choose_hand_with_free(rng,seat)
