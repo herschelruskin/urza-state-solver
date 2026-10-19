@@ -1,0 +1,126 @@
+name: Dack Realistic Beam Reward Forensics
+on:
+  push:
+    branches: [dack-realistic-information-beam-20261017]
+    paths:
+      - 'dack_realistic_reward_forensic_trace_20261019.py'
+      - '.github/workflows/dack_realistic_reward_forensic_trace_20261019.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and verify exact decision-trace reproduction
+        run: |
+          python -m py_compile dack_realistic_reward_forensic_trace_20261019.py
+          python -u dack_realistic_reward_forensic_trace_20261019.py \
+            --variant current --gid 0 --probe 9 --out smoke0.json
+      - name: Assert traced failed game remains a failure under the original policy
+        run: |
+          python - <<'PY'
+          import json
+          s=json.load(open('smoke0.json'))
+          assert s['status']=='PASS' and s['gameplay_v2']['win_turn']==0
+          assert s['frontier_counts']['candidate_probe']>=1
+          assert s['selected_state']['oracle_T2_if_next_card_revealed'] in (True,False)
+          print("DACK_REWARD_TRACE_SMOKE_PASS",flush=True)
+          PY
+  trace:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        include:
+          - {variant: current, gid: 0}
+          - {variant: current, gid: 1}
+          - {variant: current, gid: 22}
+          - {variant: buck_worldmap, gid: 0}
+          - {variant: buck_worldmap, gid: 1}
+          - {variant: buck_worldmap, gid: 31}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Offline replay sampled-planning and hidden-next-card counterfactuals
+        run: |
+          mkdir -p forensic
+          python -u dack_realistic_reward_forensic_trace_20261019.py \
+            --variant "${{ matrix.variant }}" --gid "${{ matrix.gid }}" --probe 18 \
+            --out "forensic/${{ matrix.variant }}_${{ matrix.gid }}.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-reward-forensic-${{ matrix.variant }}-${{ matrix.gid }}
+          path: forensic/*.json
+          retention-days: 90
+          if-no-files-found: error
+  pool:
+    needs: [smoke,trace]
+    if: ${{ needs.smoke.result == 'success' && needs.trace.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-reward-forensic-*
+          merge-multiple: true
+          path: forensic
+      - name: Collect trace evidence and summarize cause categories
+        run: |
+          python - <<'PY'
+          import json,glob,pathlib
+          a=[json.load(open(f)) for f in sorted(glob.glob('forensic/*.json'))]
+          assert len(a)==6,len(a)
+          summary=[]
+          for x in a:
+              assert x['debug_no_policy_change'] is True
+              summary.append({
+                  "variant":x['variant'],"gid":x['game_id'],
+                  "draw":x['selected_state']['true_next_draw'],
+                  "sampled_draws":x['sampled_hypothetical_next_cards'],
+                  "frontier_size":x['frontier_counts']['end_states'],
+                  "T2_winning_ends_top9":x['best_T2_in_top9'],
+                  "T2_winning_ends_top18":x['best_T2_in_top36'],
+                  "selected_T2_works":x['selected_T2_works'],
+                  "T2_winning_upkeep_committed":x['best_T2_committed_upkeep_top36'],
+                  "end_step_float_bias_top9":x['average_score_inflation_top9']})
+          output={"status":"PASS","source":"Post-hoc actual-draw tests NEVER used to choose policy",
+                  "cases":summary,
+                  "full_traces":"Individual JSON artifacts in this workflow",
+                  "limits":["Actual draw probe is for diagnosis and cannot be used as live reward",
+                            "Only top18 of pass-state reservoir evaluated at oracle T2",
+                            "Different T1 pregame options and full-beam 240 vs 120 can also affect outcomes"]}
+          pathlib.Path('reward_forensics_summary.json').write_text(json.dumps(output,indent=2)+'\n')
+          print('DACK_REWARD_FORENSICS_POOL_PASS',json.dumps(summary),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-reward-forensics-summary
+          path: reward_forensics_summary.json
+          retention-days: 90
+          if-no-files-found: error
+      - name: Publish small forensic summary
+        run: |
+          mkdir -p benchmark_results
+          cp reward_forensics_summary.json benchmark_results/dack_reward_forensics_summary_20261019.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_reward_forensics_summary_20261019.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish Dack reward bias and hidden-draw forensic summary'
+            git pull --rebase origin dack-realistic-information-beam-20261017
+            git push
+          fi
