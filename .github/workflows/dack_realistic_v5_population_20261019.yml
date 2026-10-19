@@ -4,6 +4,7 @@ on:
     branches: [dack-realistic-reward-distribution-20261019]
     paths:
       - 'dack_realistic_v5_population_20261019.py'
+      - 'dack_realistic_v5_denser_reward_20261019.py'
       - 'dack_realistic_v5_population_pool_20261019.py'
       - '.github/workflows/dack_realistic_v5_population_20261019.yml'
   workflow_dispatch:
