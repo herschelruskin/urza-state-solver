@@ -1,0 +1,959 @@
+{
+  "status": "PASS",
+  "cases": [
+    {
+      "variant": "buck_worldmap",
+      "game_id": 0,
+      "seat": 3,
+      "keep_n": 4,
+      "hand": [
+        "Enlightened Tutor",
+        "Krark-Clan Ironworks",
+        "Plains",
+        "The Mycosynth Gardens"
+      ],
+      "actual_unseen_top": [
+        "Mox Diamond",
+        "The Mind Stone",
+        "Scroll Rack",
+        "Mind Stone"
+      ],
+      "pregame_choices": 1,
+      "frontier": 35,
+      "top9_winners": 0,
+      "top24_winners": 2,
+      "first_winning_rank": 18,
+      "best_winner": {
+        "rank": 18,
+        "in_cap9": false,
+        "in_cap24": true,
+        "t2_winnable_given_actual_draw": true,
+        "prior_T2_T3_reward": 0.0085556,
+        "score_in_turn": 100,
+        "score_next_turn_before_draw": 82.0,
+        "snapshot": {
+          "turn": 1,
+          "hand": [
+            "Krark-Clan Ironworks"
+          ],
+          "top_unknown_for_audit": [
+            "Lion's Eye Diamond",
+            "Urza's Saga",
+            "Orim's Chant"
+          ],
+          "board": [
+            {
+              "name": "Mox Diamond",
+              "tapped": true,
+              "counters": 0,
+              "aux": ""
+            },
+            {
+              "name": "The Mycosynth Gardens",
+              "tapped": true,
+              "counters": 0,
+              "aux": ""
+            }
+          ],
+          "mana": {
+            "white": 0,
+            "colorless": 1,
+            "flexible": 0,
+            "restricted_artifact": 0,
+            "restricted_legend": 0,
+            "restricted_dack_white": 0
+          },
+          "treasures": 0,
+          "spawn": 0,
+          "land_played": true,
+          "library_size": 94,
+          "resource_score": 100.0
+        }
+      },
+      "top_two": [
+        {
+          "rank": 1,
+          "prior_T2_T3_reward": 0.0089444,
+          "score_in_turn": 192,
+          "score_next_turn_before_draw": 100.0,
+          "t2_winnable_given_actual_draw": false,
+          "snapshot": {
+            "turn": 1,
+            "hand": [
+              "Enlightened Tutor",
+              "Krark-Clan Ironworks"
+            ],
+            "top_unknown_for_audit": [
+              "The Mind Stone",
+              "Scroll Rack",
+              "Mind Stone"
+            ],
+            "board": [
+              {
+                "name": "Plains",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              },
+              {
+                "name": "Mox Diamond",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              }
+            ],
+            "mana": {
+              "white": 2,
+              "colorless": 0,
+              "flexible": 0,
+              "restricted_artifact": 0,
+              "restricted_legend": 0,
+              "restricted_dack_white": 0
+            },
+            "treasures": 0,
+            "spawn": 0,
+            "land_played": true,
+            "library_size": 94,
+            "resource_score": 192.0
+          }
+        },
+        {
+          "rank": 2,
+          "prior_T2_T3_reward": 0.0085556,
+          "score_in_turn": 164,
+          "score_next_turn_before_draw": 82.0,
+          "t2_winnable_given_actual_draw": false,
+          "snapshot": {
+            "turn": 1,
+            "hand": [
+              "Enlightened Tutor",
+              "Krark-Clan Ironworks"
+            ],
+            "top_unknown_for_audit": [
+              "The Mind Stone",
+              "Scroll Rack",
+              "Mind Stone"
+            ],
+            "board": [
+              {
+                "name": "Mox Diamond",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              },
+              {
+                "name": "The Mycosynth Gardens",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              }
+            ],
+            "mana": {
+              "white": 1,
+              "colorless": 1,
+              "flexible": 0,
+              "restricted_artifact": 0,
+              "restricted_legend": 0,
+              "restricted_dack_white": 0
+            },
+            "treasures": 0,
+            "spawn": 0,
+            "land_played": true,
+            "library_size": 94,
+            "resource_score": 164.0
+          }
+        }
+      ]
+    },
+    {
+      "variant": "buck_worldmap",
+      "game_id": 22,
+      "seat": 0,
+      "keep_n": 7,
+      "hand": [
+        "Deafening Silence",
+        "Homeward Path",
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Ruins of Trokair",
+        "United Battlefront",
+        "Urza's Cave"
+      ],
+      "actual_unseen_top": [
+        "Orim's Chant",
+        "Mox Opal",
+        "Boonweaver Giant",
+        "Cavern of Souls"
+      ],
+      "pregame_choices": 1,
+      "frontier": 55,
+      "top9_winners": 0,
+      "top24_winners": 0,
+      "first_winning_rank": null,
+      "best_winner": null,
+      "top_two": [
+        {
+          "rank": 1,
+          "prior_T2_T3_reward": 0.3442639,
+          "score_in_turn": 169,
+          "score_next_turn_before_draw": 87.0,
+          "t2_winnable_given_actual_draw": false,
+          "snapshot": {
+            "turn": 1,
+            "hand": [
+              "Deafening Silence",
+              "Moonsilver Key",
+              "Orim's Chant",
+              "Ruins of Trokair",
+              "United Battlefront"
+            ],
+            "top_unknown_for_audit": [
+              "Mox Opal",
+              "Boonweaver Giant",
+              "Cavern of Souls"
+            ],
+            "board": [
+              {
+                "name": "Mox Diamond",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              },
+              {
+                "name": "Urza's Cave",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              }
+            ],
+            "mana": {
+              "white": 1,
+              "colorless": 1,
+              "flexible": 0,
+              "restricted_artifact": 0,
+              "restricted_legend": 0,
+              "restricted_dack_white": 0
+            },
+            "treasures": 0,
+            "spawn": 0,
+            "land_played": true,
+            "library_size": 91,
+            "resource_score": 169.0
+          }
+        },
+        {
+          "rank": 2,
+          "prior_T2_T3_reward": 0.2618194,
+          "score_in_turn": 169,
+          "score_next_turn_before_draw": 87.0,
+          "t2_winnable_given_actual_draw": false,
+          "snapshot": {
+            "turn": 1,
+            "hand": [
+              "Deafening Silence",
+              "Moonsilver Key",
+              "Orim's Chant",
+              "United Battlefront",
+              "Urza's Cave"
+            ],
+            "top_unknown_for_audit": [
+              "Mox Opal",
+              "Boonweaver Giant",
+              "Cavern of Souls"
+            ],
+            "board": [
+              {
+                "name": "Homeward Path",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              },
+              {
+                "name": "Mox Diamond",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              }
+            ],
+            "mana": {
+              "white": 1,
+              "colorless": 1,
+              "flexible": 0,
+              "restricted_artifact": 0,
+              "restricted_legend": 0,
+              "restricted_dack_white": 0
+            },
+            "treasures": 0,
+            "spawn": 0,
+            "land_played": true,
+            "library_size": 91,
+            "resource_score": 169.0
+          }
+        }
+      ]
+    },
+    {
+      "variant": "buck_worldmap",
+      "game_id": 31,
+      "seat": 3,
+      "keep_n": 7,
+      "hand": [
+        "Ancient Tomb",
+        "Emergence Zone",
+        "Mana Vault",
+        "Mantle of the Ancients",
+        "Plains",
+        "Staff of Compleation",
+        "Twinblade Blessing"
+      ],
+      "actual_unseen_top": [
+        "Orim's Chant",
+        "Chrome Mox",
+        "Petrified Hamlet",
+        "Remote Farm"
+      ],
+      "pregame_choices": 1,
+      "frontier": 31,
+      "top9_winners": 2,
+      "top24_winners": 5,
+      "first_winning_rank": 2,
+      "best_winner": {
+        "rank": 2,
+        "in_cap9": true,
+        "in_cap24": true,
+        "t2_winnable_given_actual_draw": true,
+        "prior_T2_T3_reward": 0.1789722,
+        "score_in_turn": 182,
+        "score_next_turn_before_draw": 164.0,
+        "snapshot": {
+          "turn": 1,
+          "hand": [
+            "Emergence Zone",
+            "Mantle of the Ancients",
+            "Orim's Chant",
+            "Plains",
+            "Staff of Compleation",
+            "Twinblade Blessing"
+          ],
+          "top_unknown_for_audit": [
+            "Chrome Mox",
+            "Petrified Hamlet",
+            "Remote Farm"
+          ],
+          "board": [
+            {
+              "name": "Ancient Tomb",
+              "tapped": true,
+              "counters": 0,
+              "aux": ""
+            },
+            {
+              "name": "Mana Vault",
+              "tapped": false,
+              "counters": 0,
+              "aux": ""
+            }
+          ],
+          "mana": {
+            "white": 0,
+            "colorless": 1,
+            "flexible": 0,
+            "restricted_artifact": 0,
+            "restricted_legend": 0,
+            "restricted_dack_white": 0
+          },
+          "treasures": 0,
+          "spawn": 0,
+          "land_played": true,
+          "library_size": 91,
+          "resource_score": 182.0
+        }
+      },
+      "top_two": [
+        {
+          "rank": 1,
+          "prior_T2_T3_reward": 0.4292917,
+          "score_in_turn": 214,
+          "score_next_turn_before_draw": 150.0,
+          "t2_winnable_given_actual_draw": false,
+          "snapshot": {
+            "turn": 1,
+            "hand": [
+              "Emergence Zone",
+              "Mantle of the Ancients",
+              "Plains",
+              "Twinblade Blessing"
+            ],
+            "top_unknown_for_audit": [
+              "Petrified Hamlet",
+              "Remote Farm",
+              "Silence"
+            ],
+            "board": [
+              {
+                "name": "Ancient Tomb",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              },
+              {
+                "name": "Mana Vault",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              },
+              {
+                "name": "Staff of Compleation",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              },
+              {
+                "name": "Chrome Mox",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              }
+            ],
+            "mana": {
+              "white": 1,
+              "colorless": 1,
+              "flexible": 0,
+              "restricted_artifact": 0,
+              "restricted_legend": 0,
+              "restricted_dack_white": 0
+            },
+            "treasures": 0,
+            "spawn": 0,
+            "land_played": true,
+            "library_size": 90,
+            "resource_score": 214.0
+          }
+        },
+        {
+          "rank": 2,
+          "prior_T2_T3_reward": 0.1789722,
+          "score_in_turn": 182,
+          "score_next_turn_before_draw": 164.0,
+          "t2_winnable_given_actual_draw": true,
+          "snapshot": {
+            "turn": 1,
+            "hand": [
+              "Emergence Zone",
+              "Mantle of the Ancients",
+              "Orim's Chant",
+              "Plains",
+              "Staff of Compleation",
+              "Twinblade Blessing"
+            ],
+            "top_unknown_for_audit": [
+              "Chrome Mox",
+              "Petrified Hamlet",
+              "Remote Farm"
+            ],
+            "board": [
+              {
+                "name": "Ancient Tomb",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              },
+              {
+                "name": "Mana Vault",
+                "tapped": false,
+                "counters": 0,
+                "aux": ""
+              }
+            ],
+            "mana": {
+              "white": 0,
+              "colorless": 1,
+              "flexible": 0,
+              "restricted_artifact": 0,
+              "restricted_legend": 0,
+              "restricted_dack_white": 0
+            },
+            "treasures": 0,
+            "spawn": 0,
+            "land_played": true,
+            "library_size": 91,
+            "resource_score": 182.0
+          }
+        }
+      ]
+    },
+    {
+      "variant": "current",
+      "game_id": 0,
+      "seat": 3,
+      "keep_n": 4,
+      "hand": [
+        "Enlightened Tutor",
+        "Krark-Clan Ironworks",
+        "Plains",
+        "The Mycosynth Gardens"
+      ],
+      "actual_unseen_top": [
+        "Mox Diamond",
+        "The Mind Stone",
+        "Scroll Rack",
+        "Mind Stone"
+      ],
+      "pregame_choices": 1,
+      "frontier": 35,
+      "top9_winners": 0,
+      "top24_winners": 2,
+      "first_winning_rank": 18,
+      "best_winner": {
+        "rank": 18,
+        "in_cap9": false,
+        "in_cap24": true,
+        "t2_winnable_given_actual_draw": true,
+        "prior_T2_T3_reward": 0.0086944,
+        "score_in_turn": 100,
+        "score_next_turn_before_draw": 82.0,
+        "snapshot": {
+          "turn": 1,
+          "hand": [
+            "Krark-Clan Ironworks"
+          ],
+          "top_unknown_for_audit": [
+            "Lion's Eye Diamond",
+            "Expedition Map",
+            "Erode"
+          ],
+          "board": [
+            {
+              "name": "Mox Diamond",
+              "tapped": true,
+              "counters": 0,
+              "aux": ""
+            },
+            {
+              "name": "The Mycosynth Gardens",
+              "tapped": true,
+              "counters": 0,
+              "aux": ""
+            }
+          ],
+          "mana": {
+            "white": 0,
+            "colorless": 1,
+            "flexible": 0,
+            "restricted_artifact": 0,
+            "restricted_legend": 0,
+            "restricted_dack_white": 0
+          },
+          "treasures": 0,
+          "spawn": 0,
+          "land_played": true,
+          "library_size": 94,
+          "resource_score": 100.0
+        }
+      },
+      "top_two": [
+        {
+          "rank": 1,
+          "prior_T2_T3_reward": 0.0094722,
+          "score_in_turn": 192,
+          "score_next_turn_before_draw": 100.0,
+          "t2_winnable_given_actual_draw": false,
+          "snapshot": {
+            "turn": 1,
+            "hand": [
+              "Enlightened Tutor",
+              "Krark-Clan Ironworks"
+            ],
+            "top_unknown_for_audit": [
+              "The Mind Stone",
+              "Scroll Rack",
+              "Mind Stone"
+            ],
+            "board": [
+              {
+                "name": "Plains",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              },
+              {
+                "name": "Mox Diamond",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              }
+            ],
+            "mana": {
+              "white": 2,
+              "colorless": 0,
+              "flexible": 0,
+              "restricted_artifact": 0,
+              "restricted_legend": 0,
+              "restricted_dack_white": 0
+            },
+            "treasures": 0,
+            "spawn": 0,
+            "land_played": true,
+            "library_size": 94,
+            "resource_score": 192.0
+          }
+        },
+        {
+          "rank": 2,
+          "prior_T2_T3_reward": 0.0086944,
+          "score_in_turn": 164,
+          "score_next_turn_before_draw": 82.0,
+          "t2_winnable_given_actual_draw": false,
+          "snapshot": {
+            "turn": 1,
+            "hand": [
+              "Enlightened Tutor",
+              "Krark-Clan Ironworks"
+            ],
+            "top_unknown_for_audit": [
+              "The Mind Stone",
+              "Scroll Rack",
+              "Mind Stone"
+            ],
+            "board": [
+              {
+                "name": "Mox Diamond",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              },
+              {
+                "name": "The Mycosynth Gardens",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              }
+            ],
+            "mana": {
+              "white": 1,
+              "colorless": 1,
+              "flexible": 0,
+              "restricted_artifact": 0,
+              "restricted_legend": 0,
+              "restricted_dack_white": 0
+            },
+            "treasures": 0,
+            "spawn": 0,
+            "land_played": true,
+            "library_size": 94,
+            "resource_score": 164.0
+          }
+        }
+      ]
+    },
+    {
+      "variant": "current",
+      "game_id": 1,
+      "seat": 2,
+      "keep_n": 7,
+      "hand": [
+        "Ancient Den",
+        "Deafening Silence",
+        "Enlightened Tutor",
+        "Gemstone Caverns",
+        "Great Hall of the Citadel",
+        "Plains",
+        "Sheltered by Ghosts"
+      ],
+      "actual_unseen_top": [
+        "Cavern of Souls",
+        "Floating Shield",
+        "March of Otherworldly Light",
+        "Staff of Compleation"
+      ],
+      "pregame_choices": 7,
+      "frontier": 33,
+      "top9_winners": 0,
+      "top24_winners": 5,
+      "first_winning_rank": 14,
+      "best_winner": {
+        "rank": 14,
+        "in_cap9": false,
+        "in_cap24": true,
+        "t2_winnable_given_actual_draw": true,
+        "prior_T2_T3_reward": 0.0105,
+        "score_in_turn": 161,
+        "score_next_turn_before_draw": 115.0,
+        "snapshot": {
+          "turn": 1,
+          "hand": [
+            "Cavern of Souls",
+            "Great Hall of the Citadel",
+            "Plains",
+            "Sheltered by Ghosts"
+          ],
+          "top_unknown_for_audit": [
+            "Lion's Eye Diamond",
+            "Mishra's Workshop",
+            "Hardlight Containment"
+          ],
+          "board": [
+            {
+              "name": "Gemstone Caverns",
+              "tapped": true,
+              "counters": 1,
+              "aux": ""
+            },
+            {
+              "name": "Ancient Den",
+              "tapped": true,
+              "counters": 0,
+              "aux": ""
+            }
+          ],
+          "mana": {
+            "white": 0,
+            "colorless": 0,
+            "flexible": 1,
+            "restricted_artifact": 0,
+            "restricted_legend": 0,
+            "restricted_dack_white": 0
+          },
+          "treasures": 0,
+          "spawn": 0,
+          "land_played": true,
+          "library_size": 91,
+          "resource_score": 161.0
+        }
+      },
+      "top_two": [
+        {
+          "rank": 1,
+          "prior_T2_T3_reward": 0.0105,
+          "score_in_turn": 207,
+          "score_next_turn_before_draw": 115.0,
+          "t2_winnable_given_actual_draw": false,
+          "snapshot": {
+            "turn": 1,
+            "hand": [
+              "Cavern of Souls",
+              "Enlightened Tutor",
+              "Great Hall of the Citadel",
+              "Plains",
+              "Sheltered by Ghosts"
+            ],
+            "top_unknown_for_audit": [
+              "Floating Shield",
+              "March of Otherworldly Light",
+              "Staff of Compleation"
+            ],
+            "board": [
+              {
+                "name": "Gemstone Caverns",
+                "tapped": true,
+                "counters": 1,
+                "aux": ""
+              },
+              {
+                "name": "Ancient Den",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              }
+            ],
+            "mana": {
+              "white": 1,
+              "colorless": 0,
+              "flexible": 1,
+              "restricted_artifact": 0,
+              "restricted_legend": 0,
+              "restricted_dack_white": 0
+            },
+            "treasures": 0,
+            "spawn": 0,
+            "land_played": true,
+            "library_size": 91,
+            "resource_score": 207.0
+          }
+        },
+        {
+          "rank": 2,
+          "prior_T2_T3_reward": 0.0105,
+          "score_in_turn": 207,
+          "score_next_turn_before_draw": 115.0,
+          "t2_winnable_given_actual_draw": false,
+          "snapshot": {
+            "turn": 1,
+            "hand": [
+              "Ancient Den",
+              "Enlightened Tutor",
+              "Great Hall of the Citadel",
+              "Plains",
+              "Sheltered by Ghosts"
+            ],
+            "top_unknown_for_audit": [
+              "Floating Shield",
+              "March of Otherworldly Light",
+              "Staff of Compleation"
+            ],
+            "board": [
+              {
+                "name": "Gemstone Caverns",
+                "tapped": true,
+                "counters": 1,
+                "aux": ""
+              },
+              {
+                "name": "Cavern of Souls",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              }
+            ],
+            "mana": {
+              "white": 0,
+              "colorless": 0,
+              "flexible": 1,
+              "restricted_artifact": 0,
+              "restricted_legend": 0,
+              "restricted_dack_white": 1
+            },
+            "treasures": 0,
+            "spawn": 0,
+            "land_played": true,
+            "library_size": 91,
+            "resource_score": 207.0
+          }
+        }
+      ]
+    },
+    {
+      "variant": "current",
+      "game_id": 22,
+      "seat": 0,
+      "keep_n": 7,
+      "hand": [
+        "Deafening Silence",
+        "Homeward Path",
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Ruins of Trokair",
+        "United Battlefront",
+        "Urza's Cave"
+      ],
+      "actual_unseen_top": [
+        "Orim's Chant",
+        "Mox Opal",
+        "Boonweaver Giant",
+        "Cavern of Souls"
+      ],
+      "pregame_choices": 1,
+      "frontier": 55,
+      "top9_winners": 0,
+      "top24_winners": 0,
+      "first_winning_rank": null,
+      "best_winner": null,
+      "top_two": [
+        {
+          "rank": 1,
+          "prior_T2_T3_reward": 0.0088056,
+          "score_in_turn": 169,
+          "score_next_turn_before_draw": 87.0,
+          "t2_winnable_given_actual_draw": false,
+          "snapshot": {
+            "turn": 1,
+            "hand": [
+              "Deafening Silence",
+              "Moonsilver Key",
+              "Orim's Chant",
+              "Ruins of Trokair",
+              "United Battlefront"
+            ],
+            "top_unknown_for_audit": [
+              "Mox Opal",
+              "Boonweaver Giant",
+              "Cavern of Souls"
+            ],
+            "board": [
+              {
+                "name": "Mox Diamond",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              },
+              {
+                "name": "Urza's Cave",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              }
+            ],
+            "mana": {
+              "white": 1,
+              "colorless": 1,
+              "flexible": 0,
+              "restricted_artifact": 0,
+              "restricted_legend": 0,
+              "restricted_dack_white": 0
+            },
+            "treasures": 0,
+            "spawn": 0,
+            "land_played": true,
+            "library_size": 91,
+            "resource_score": 169.0
+          }
+        },
+        {
+          "rank": 2,
+          "prior_T2_T3_reward": 0.0100833,
+          "score_in_turn": 169,
+          "score_next_turn_before_draw": 87.0,
+          "t2_winnable_given_actual_draw": false,
+          "snapshot": {
+            "turn": 1,
+            "hand": [
+              "Deafening Silence",
+              "Moonsilver Key",
+              "Orim's Chant",
+              "United Battlefront",
+              "Urza's Cave"
+            ],
+            "top_unknown_for_audit": [
+              "Mox Opal",
+              "Boonweaver Giant",
+              "Cavern of Souls"
+            ],
+            "board": [
+              {
+                "name": "Homeward Path",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              },
+              {
+                "name": "Mox Diamond",
+                "tapped": true,
+                "counters": 0,
+                "aux": ""
+              }
+            ],
+            "mana": {
+              "white": 1,
+              "colorless": 1,
+              "flexible": 0,
+              "restricted_artifact": 0,
+              "restricted_legend": 0,
+              "restricted_dack_white": 0
+            },
+            "treasures": 0,
+            "spawn": 0,
+            "land_played": true,
+            "library_size": 91,
+            "resource_score": 169.0
+          }
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Only top24 candidates traced",
+    "Oracle actual next draw labels for diagnosis, not selection",
+    "No actual full-beam action history",
+    "In-turn score can include floating mana which expires"
+  ]
+}
