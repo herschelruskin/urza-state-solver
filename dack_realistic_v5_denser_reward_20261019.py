@@ -65,8 +65,12 @@ def dense_future_value(state):
 
 def play(variant,gid,policy,draws):
     root.install(variant)
-    fair.install_honest_scry()
+    # v4.audit() has already installed honest scry BENEATH the tutor
+    # observation wrapper. Reinstalling it here would silently erase
+    # d.cast_actions=known_cast_actions and lose all known-top evidence.
     v4.install()
+    assert v4.ACTIVE and d.cast_actions is v4.known_cast_actions
+    assert d.key is v4.knowledge_key
     v4.KNOWN.clear()
     v2.activate_v2(draws=3,t3_samples=2,t2_continuations=2)
     set_reward(draws,policy)
@@ -85,8 +89,9 @@ def play(variant,gid,policy,draws):
 def selftest():
     v4.audit()
     root.install("current")
-    fair.install_honest_scry()
     v4.install()
+    assert d.cast_actions is v4.known_cast_actions, "tutor wrapper overwritten"
+    assert d.key is v4.knowledge_key
     set_reward(12,"balanced")
     # Real next-card order MUST NOT affect the reward estimator.
     v1.configure(v2.SEED_BASE,3,9,3,42,18)
