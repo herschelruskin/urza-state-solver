@@ -1,0 +1,121 @@
+name: Dack V6 Stratified Draw Reward N32
+on:
+  push:
+    branches: [dack-realistic-v6-stratified-reward-20261019]
+    paths:
+      - 'dack_realistic_v6_stratified_reward_20261019.py'
+      - 'dack_realistic_v6_stratified_pool_20261019.py'
+      - '.github/workflows/dack_v6_stratified_reward_n32_20261019.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit no unseen-next-card leakage and normalize probability weights
+        run: |
+          python -m py_compile dack_realistic_v6_stratified_reward_20261019.py dack_realistic_v6_stratified_pool_20261019.py
+          python -u dack_realistic_v6_stratified_reward_20261019.py --audit
+      - name: Full-game paired smoke with known-top tutors
+        run: |
+          for variant in current buck_worldmap; do
+            python -u dack_realistic_v6_stratified_reward_20261019.py \
+              --variant "$variant" --shard 0 --games 1 \
+              --draws 12 --next-draws 6 --out "smoke_$variant.json.gz"
+          done
+      - name: Verify the two arms use the same initial seed and exact 99-card deck
+        run: |
+          python - <<'PY'
+          import gzip,json
+          with gzip.open('smoke_current.json.gz','rt') as f:a=json.load(f)
+          with gzip.open('smoke_buck_worldmap.json.gz','rt') as f:b=json.load(f)
+          assert a['rows'][0]['game_id']==b['rows'][0]['game_id']==0
+          assert a['seed_base']==b['seed_base']==7604096001
+          assert a['deck_sha256']!=b['deck_sha256']
+          assert a['rows'][0]['win_turn'] in range(4)
+          assert b['rows'][0]['win_turn'] in range(4)
+          print('DACK_V6_PAIRED_SMOKE_PASS')
+          PY
+  shards:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        variant: [current,buck_worldmap]
+        shard: [0,1,2,3,4,5,6,7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run 4 matched games of chance-weighted stratified draw policy
+        run: |
+          mkdir -p v6
+          python -u dack_realistic_v6_stratified_reward_20261019.py \
+            --variant "${{ matrix.variant }}" --shard "${{ matrix.shard }}" --games 4 \
+            --draws 12 --next-draws 6 \
+            --out "v6/${{ matrix.variant }}_shard_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v6-stratified-${{ matrix.variant }}-${{ matrix.shard }}
+          path: v6/*.json.gz
+          retention-days: 90
+          if-no-files-found: error
+  pool:
+    needs: [smoke,shards]
+    if: ${{ needs.smoke.result == 'success' && needs.shards.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v6-stratified-*
+          merge-multiple: true
+          path: v6
+      - name: Download complete paired v4/v5 matched-game archives
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p v4 v5
+          gh run download 39327079657 --repo "${{ github.repository }}" \
+            --pattern 'known-top-pop-*' --dir v4
+          gh run download 39328690011 --repo "${{ github.repository }}" \
+            --pattern 'dack-v5-pop-*' --dir v5
+          test "$(find v4 -name '*.json.gz' | wc -l)" -eq 16
+          test "$(find v5 -name '*.json.gz' | wc -l)" -eq 16
+          test "$(find v6 -name '*.json.gz' | wc -l)" -eq 16
+      - name: Pool unbiased paired deployment rates and confidence intervals
+        run: |
+          python -u dack_realistic_v6_stratified_pool_20261019.py \
+            --v4 v4 --v5 v5 --v6 v6 --out dack_v6_n32.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v6-stratified-n32-results
+          path: dack_v6_n32.json
+          retention-days: 90
+          if-no-files-found: error
+      - name: Publish unique V6 comparison artifact
+        run: |
+          mkdir -p benchmark_results
+          cp dack_v6_n32.json benchmark_results/dack_v6_stratified_reward_n32_20261019.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_v6_stratified_reward_n32_20261019.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish unbiased v6 stratified draw reward pilot'
+            git pull --rebase origin dack-realistic-v6-stratified-reward-20261019
+            git push
+          fi
