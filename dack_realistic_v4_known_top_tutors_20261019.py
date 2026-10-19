@@ -53,7 +53,7 @@ def known_cast_actions(state):
         for n in ("Enlightened Tutor","Loyal Tutor"):
             if (n in state.hand and n not in q.hand
                   and q.grave.count(n)>state.grave.count(n)
-                  and len(q.library)==len(state.library)-1
+                  and len(q.library)==len(state.library)
                   and q.library):
                 register_known(q.library,q.library[0])
     return successors
