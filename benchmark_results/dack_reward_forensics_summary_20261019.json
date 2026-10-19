@@ -1,0 +1,108 @@
+{
+  "status": "PASS",
+  "source": "Post-hoc actual-draw tests NEVER used to choose policy",
+  "cases": [
+    {
+      "variant": "buck_worldmap",
+      "gid": 0,
+      "draw": "The Mind Stone",
+      "sampled_draws": [
+        "United Battlefront",
+        "Lotus Petal",
+        "Plains"
+      ],
+      "frontier_size": 35,
+      "T2_winning_ends_top9": 0,
+      "T2_winning_ends_top18": 1,
+      "selected_T2_works": false,
+      "T2_winning_upkeep_committed": 1,
+      "end_step_float_bias_top9": 59.111
+    },
+    {
+      "variant": "buck_worldmap",
+      "gid": 1,
+      "draw": "Floating Shield",
+      "sampled_draws": [
+        "Staff of Compleation",
+        "Lotus Petal",
+        "Ruins of Trokair"
+      ],
+      "frontier_size": 33,
+      "T2_winning_ends_top9": 0,
+      "T2_winning_ends_top18": 3,
+      "selected_T2_works": false,
+      "T2_winning_upkeep_committed": 3,
+      "end_step_float_bias_top9": 70.444
+    },
+    {
+      "variant": "buck_worldmap",
+      "gid": 31,
+      "draw": "Petrified Hamlet",
+      "sampled_draws": [
+        "Enlightened Tutor",
+        "Tezzeret, Cruel Captain",
+        "Everflowing Chalice"
+      ],
+      "frontier_size": 31,
+      "T2_winning_ends_top9": 2,
+      "T2_winning_ends_top18": 4,
+      "selected_T2_works": false,
+      "T2_winning_upkeep_committed": 4,
+      "end_step_float_bias_top9": 40.444
+    },
+    {
+      "variant": "current",
+      "gid": 0,
+      "draw": "The Mind Stone",
+      "sampled_draws": [
+        "Untaidake, the Cloud Keeper",
+        "Lunarch Mantle",
+        "Plains"
+      ],
+      "frontier_size": 35,
+      "T2_winning_ends_top9": 0,
+      "T2_winning_ends_top18": 1,
+      "selected_T2_works": false,
+      "T2_winning_upkeep_committed": 1,
+      "end_step_float_bias_top9": 59.111
+    },
+    {
+      "variant": "current",
+      "gid": 1,
+      "draw": "Floating Shield",
+      "sampled_draws": [
+        "Static Prison",
+        "Lunarch Mantle",
+        "Scroll Rack"
+      ],
+      "frontier_size": 33,
+      "T2_winning_ends_top9": 0,
+      "T2_winning_ends_top18": 3,
+      "selected_T2_works": false,
+      "T2_winning_upkeep_committed": 3,
+      "end_step_float_bias_top9": 70.444
+    },
+    {
+      "variant": "current",
+      "gid": 22,
+      "draw": "Mox Opal",
+      "sampled_draws": [
+        "Command Beacon",
+        "March of Otherworldly Light",
+        "Soul Partition"
+      ],
+      "frontier_size": 55,
+      "T2_winning_ends_top9": 0,
+      "T2_winning_ends_top18": 0,
+      "selected_T2_works": false,
+      "T2_winning_upkeep_committed": 0,
+      "end_step_float_bias_top9": 72.0
+    }
+  ],
+  "full_traces": "Individual JSON artifacts in this workflow",
+  "limits": [
+    "Actual draw probe is for diagnosis and cannot be used as live reward",
+    "Only top18 of pass-state reservoir evaluated at oracle T2",
+    "Different T1 pregame options and full-beam 240 vs 120 can also affect outcomes"
+  ]
+}
