@@ -1,0 +1,77 @@
+{
+  "status": "PASS",
+  "n_selected_cases": 7,
+  "description": "Legitimately known top card from Enlightened/Loyal Tutor is used in future rollouts; reserve up to 3 candidate slots for known-top states",
+  "by_deck": {
+    "current": {
+      "cases": 3,
+      "T2_recovered": 1,
+      "T3_recovered": 2,
+      "replays": [
+        {
+          "gid": 0,
+          "frozen_v2_win_turn": 0,
+          "known_top_v4_win_turn": 3,
+          "T2_recovered": false,
+          "T3_recovered": true
+        },
+        {
+          "gid": 1,
+          "frozen_v2_win_turn": 0,
+          "known_top_v4_win_turn": 2,
+          "T2_recovered": true,
+          "T3_recovered": true
+        },
+        {
+          "gid": 22,
+          "frozen_v2_win_turn": 3,
+          "known_top_v4_win_turn": 3,
+          "T2_recovered": false,
+          "T3_recovered": false
+        }
+      ]
+    },
+    "buck_worldmap": {
+      "cases": 4,
+      "T2_recovered": 1,
+      "T3_recovered": 2,
+      "replays": [
+        {
+          "gid": 0,
+          "frozen_v2_win_turn": 0,
+          "known_top_v4_win_turn": 3,
+          "T2_recovered": false,
+          "T3_recovered": true
+        },
+        {
+          "gid": 1,
+          "frozen_v2_win_turn": 0,
+          "known_top_v4_win_turn": 2,
+          "T2_recovered": true,
+          "T3_recovered": true
+        },
+        {
+          "gid": 22,
+          "frozen_v2_win_turn": 3,
+          "known_top_v4_win_turn": 3,
+          "T2_recovered": false,
+          "T3_recovered": false
+        },
+        {
+          "gid": 31,
+          "frozen_v2_win_turn": 0,
+          "known_top_v4_win_turn": 0,
+          "T2_recovered": false,
+          "T3_recovered": false
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "Selected failures, not population win rate",
+    "Known top tracking by library tuple identity is incomplete",
+    "This test also changes candidate slot selection",
+    "Unobserved within-turn shuffle and draw lookahead remains",
+    "Full-beam hindsight reference is not optimal real play"
+  ]
+}
