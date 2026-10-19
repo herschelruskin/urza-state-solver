@@ -1,0 +1,130 @@
+name: Dack T1 Failure Reward Counterfactual Traces
+on:
+  push:
+    branches: [dack-realistic-information-beam-20261017]
+    paths:
+      - 'dack_t1_future_draw_counterfactual_trace_20261019.py'
+      - '.github/workflows/dack_t1_future_draw_counterfactual_trace_20261019.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile exact-T1 witness tracer and ensure frozen v2 audits pass
+        run: |
+          python -m py_compile dack_t1_future_draw_counterfactual_trace_20261019.py
+          python -u dack_realistic_information_beam_v2_20261017.py --audit
+  cases:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 7
+      matrix:
+        include:
+          - {variant: current, gid: 0}
+          - {variant: current, gid: 1}
+          - {variant: current, gid: 22}
+          - {variant: buck_worldmap, gid: 0}
+          - {variant: buck_worldmap, gid: 1}
+          - {variant: buck_worldmap, gid: 22}
+          - {variant: buck_worldmap, gid: 31}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Examine top24 T1 states against actual T2 card for diagnostics only
+        run: |
+          mkdir -p traces
+          python -u dack_t1_future_draw_counterfactual_trace_20261019.py \
+            --variant "${{ matrix.variant }}" --gid "${{ matrix.gid }}" --max-candidates 24 \
+            --out "traces/${{ matrix.variant }}_${{ matrix.gid }}.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: t1-reward-trace-${{ matrix.variant }}-${{ matrix.gid }}
+          path: traces/*.json
+          retention-days: 90
+          if-no-files-found: error
+  aggregate:
+    needs: [smoke,cases]
+    if: ${{ needs.smoke.result == 'success' && needs.cases.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: t1-reward-trace-*
+          merge-multiple: true
+          path: traces
+      - name: Separate missing-witness beam limitations from reward ranking failures
+        run: |
+          python - <<'PY'
+          import json,glob,pathlib
+          data=[json.load(open(x)) for x in sorted(glob.glob('traces/*.json'))]
+          assert len(data)==7,len(data)
+          summary={}
+          for variant in ('current','buck_worldmap'):
+              arms=sorted([x for x in data if x['variant']==variant],key=lambda x:x['game_id'])
+              summary[variant]={
+                'cases':len(arms),
+                'found_T2_witness_top9':sum(x['top9_T2_witness_count']>0 for x in arms),
+                'found_T2_witness_top24':sum(x['top24_T2_witness_count']>0 for x in arms),
+                'selected_a_T2_witness':sum(x['chosen_v2']['actual_T2_cast_if_committed_AUDIT_ONLY'] for x in arms),
+                'details':[{'gid':x['game_id'],
+                            'initial_keep':x['kept_hand'],
+                            'top9_witness_count':x['top9_T2_witness_count'],
+                            'top24_witness_count':x['top24_T2_witness_count'],
+                            'selected_actual_T2':x['chosen_v2']['actual_T2_cast_if_committed_AUDIT_ONLY'],
+                            'selected_heuristic_score':x['chosen_v2']['original_heuristic_score'],
+                            'selected_stable_score':x['chosen_v2']['score_after_floating_mana_expires'],
+                            'witnesses':[{'original_rank':q['rank_by_original_score'],
+                                         'stable_score_rank':q['rank_by_stable_score'],
+                                         'score':q['original_heuristic_score'],
+                                         'stable_score':q['score_after_floating_mana_expires'],
+                                         'state':q['state']} for q in x['all_candidates']
+                                        if q['actual_T2_cast_if_committed_AUDIT_ONLY']]
+                           } for x in arms]
+              }
+          out={'status':'PASS',
+               'design':'T1 top24 per game, actual next T2 draw used strictly to label counterfactual deployment, never for decisions',
+               'results':summary,
+               'limits':['Actual draw check is an oracle diagnostic, not a proposed policy',
+                         'Only top24 preexisting beam states analyzed; a winner may exist elsewhere',
+                         'T2 probe suppresses Bucknard die; cannot attribute Bucknard-only win lines',
+                         'Shaped score is a turn-reset counterfactual, not proven optimal']}
+          pathlib.Path('reward_trace_summary.json').write_text(json.dumps(out,indent=2)+'\n')
+          print('DACK_T1_FAILURE_REWARD_TRACE_POOL_PASS',json.dumps({v:{k:s[k] for k in
+                ('cases','found_T2_witness_top9','found_T2_witness_top24','selected_a_T2_witness')}
+                for v,s in summary.items()}),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-t1-reward-witness-trace-summary
+          path: reward_trace_summary.json
+          retention-days: 90
+          if-no-files-found: error
+      - name: Publish trace audit
+        run: |
+          mkdir -p benchmark_results
+          cp reward_trace_summary.json benchmark_results/dack_t1_reward_witness_trace_20261019.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_t1_reward_witness_trace_20261019.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Report actual T2 witness candidates in realistic beam failures'
+            git pull --rebase origin dack-realistic-information-beam-20261017
+            git push
+          fi
