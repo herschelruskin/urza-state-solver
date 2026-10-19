@@ -1,0 +1,296 @@
+{
+  "status": "PASS",
+  "n_per_arm": 32,
+  "design": "Independent matched-game comparison. v6 replaces IID draw samples with frequency-weighted stratified unseen draws; v4 known-top 3-sample and v5 known-top corrected 12-sample preserved.",
+  "arms": {
+    "current": {
+      "v4": {
+        "T1": 3.125,
+        "T2": 31.25,
+        "T3": 68.75,
+        "mean_keep": 5.656,
+        "rollout_calls_mean": 128.31
+      },
+      "v5": {
+        "T1": 3.125,
+        "T2": 28.125,
+        "T3": 68.75,
+        "mean_keep": 5.656,
+        "rollout_calls_mean": 487.12
+      },
+      "v6": {
+        "T1": 3.125,
+        "T2": 28.125,
+        "T3": 68.75,
+        "mean_keep": 5.656,
+        "rollout_calls_mean": 471.03
+      },
+      "v6_minus_v4": {
+        "T1": {
+          "delta_pp": 0.0,
+          "normal_paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "only_first": [],
+          "only_second": []
+        },
+        "T2": {
+          "delta_pp": -3.125,
+          "normal_paired_95pct_pp": [
+            -9.25,
+            3.0
+          ],
+          "only_first": [],
+          "only_second": [
+            31
+          ]
+        },
+        "T3": {
+          "delta_pp": 0.0,
+          "normal_paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "only_first": [],
+          "only_second": []
+        }
+      },
+      "v6_minus_v5": {
+        "T1": {
+          "delta_pp": 0.0,
+          "normal_paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "only_first": [],
+          "only_second": []
+        },
+        "T2": {
+          "delta_pp": 0.0,
+          "normal_paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "only_first": [],
+          "only_second": []
+        },
+        "T3": {
+          "delta_pp": 0.0,
+          "normal_paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "only_first": [],
+          "only_second": []
+        }
+      }
+    },
+    "buck_worldmap": {
+      "v4": {
+        "T1": 3.125,
+        "T2": 34.375,
+        "T3": 71.875,
+        "mean_keep": 5.562,
+        "rollout_calls_mean": 127.62
+      },
+      "v5": {
+        "T1": 3.125,
+        "T2": 37.5,
+        "T3": 75.0,
+        "mean_keep": 5.562,
+        "rollout_calls_mean": 471.31
+      },
+      "v6": {
+        "T1": 3.125,
+        "T2": 37.5,
+        "T3": 75.0,
+        "mean_keep": 5.562,
+        "rollout_calls_mean": 459.22
+      },
+      "v6_minus_v4": {
+        "T1": {
+          "delta_pp": 0.0,
+          "normal_paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "only_first": [],
+          "only_second": []
+        },
+        "T2": {
+          "delta_pp": 3.125,
+          "normal_paired_95pct_pp": [
+            -3.0,
+            9.25
+          ],
+          "only_first": [
+            31
+          ],
+          "only_second": []
+        },
+        "T3": {
+          "delta_pp": 3.125,
+          "normal_paired_95pct_pp": [
+            -3.0,
+            9.25
+          ],
+          "only_first": [
+            31
+          ],
+          "only_second": []
+        }
+      },
+      "v6_minus_v5": {
+        "T1": {
+          "delta_pp": 0.0,
+          "normal_paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "only_first": [],
+          "only_second": []
+        },
+        "T2": {
+          "delta_pp": 0.0,
+          "normal_paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "only_first": [],
+          "only_second": []
+        },
+        "T3": {
+          "delta_pp": 0.0,
+          "normal_paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "only_first": [],
+          "only_second": []
+        }
+      }
+    }
+  },
+  "deck_swap_effects": {
+    "v4": {
+      "T1": {
+        "delta_pp": 0.0,
+        "normal_paired_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "only_first": [],
+        "only_second": []
+      },
+      "T2": {
+        "delta_pp": 3.125,
+        "normal_paired_95pct_pp": [
+          -7.597,
+          13.847
+        ],
+        "only_first": [
+          2,
+          9
+        ],
+        "only_second": [
+          31
+        ]
+      },
+      "T3": {
+        "delta_pp": 3.125,
+        "normal_paired_95pct_pp": [
+          -7.597,
+          13.847
+        ],
+        "only_first": [
+          2,
+          9
+        ],
+        "only_second": [
+          31
+        ]
+      }
+    },
+    "v5": {
+      "T1": {
+        "delta_pp": 0.0,
+        "normal_paired_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "only_first": [],
+        "only_second": []
+      },
+      "T2": {
+        "delta_pp": 9.375,
+        "normal_paired_95pct_pp": [
+          -0.886,
+          19.636
+        ],
+        "only_first": [
+          2,
+          9,
+          31
+        ],
+        "only_second": []
+      },
+      "T3": {
+        "delta_pp": 6.25,
+        "normal_paired_95pct_pp": [
+          -2.271,
+          14.771
+        ],
+        "only_first": [
+          2,
+          9
+        ],
+        "only_second": []
+      }
+    },
+    "v6": {
+      "T1": {
+        "delta_pp": 0.0,
+        "normal_paired_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "only_first": [],
+        "only_second": []
+      },
+      "T2": {
+        "delta_pp": 9.375,
+        "normal_paired_95pct_pp": [
+          -0.886,
+          19.636
+        ],
+        "only_first": [
+          2,
+          9,
+          31
+        ],
+        "only_second": []
+      },
+      "T3": {
+        "delta_pp": 6.25,
+        "normal_paired_95pct_pp": [
+          -2.271,
+          14.771
+        ],
+        "only_first": [
+          2,
+          9
+        ],
+        "only_second": []
+      }
+    }
+  },
+  "limitations": [
+    "Small N32, differences may be noise",
+    "Within-turn inherited oracle still can access unknown future draws",
+    "Known-top v4 tracking only Enlightened / Loyal Tutor and may miss other info",
+    "Finite beam 120 for gameplay and 42 for counterfactual future rollout",
+    "Stratified weights are ex ante correct, policy value still approximate",
+    "Goldfish deployment proxy, not full interactive cEDH game outcome"
+  ]
+}
