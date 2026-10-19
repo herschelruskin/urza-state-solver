@@ -1,0 +1,176 @@
+{
+  "status": "PASS",
+  "game_id": 31,
+  "variant": "buck_worldmap",
+  "method": "Each legal T1 plan enumerated its own remaining library multiset; full conditional T2 deploy search follows a counterfactual draw",
+  "rank1": {
+    "status": "PASS",
+    "variant": "buck_worldmap",
+    "game_id": 31,
+    "candidate_rank": 1,
+    "meta": {
+      "seat": 3,
+      "keep": 7,
+      "opening_hand": [
+        "Ancient Tomb",
+        "Emergence Zone",
+        "Mana Vault",
+        "Mantle of the Ancients",
+        "Plains",
+        "Staff of Compleation",
+        "Twinblade Blessing"
+      ],
+      "actual_future_t2_card_for_audit": "Petrified Hamlet"
+    },
+    "sampled_tails_per_unique_card": 1,
+    "beam": 120,
+    "top_board": [
+      {
+        "card": "Ancient Tomb",
+        "tapped": true
+      },
+      {
+        "card": "Mana Vault",
+        "tapped": true
+      },
+      {
+        "card": "Staff of Compleation",
+        "tapped": true
+      },
+      {
+        "card": "Chrome Mox",
+        "tapped": true
+      }
+    ],
+    "hand": [
+      "Emergence Zone",
+      "Mantle of the Ancients",
+      "Plains",
+      "Twinblade Blessing"
+    ],
+    "score": 214,
+    "forecast_reward_v2": 0.4292916666666667,
+    "deck_count": 90,
+    "unique_draws": 82,
+    "T2_win_probability_over_all_cards": 0.011111111111111112,
+    "note": "Oracle draw is used only for verifying historical particular outcome, never for deciding plan; this census estimates ex-ante success by full deck multiset"
+  },
+  "rank2": {
+    "status": "PASS",
+    "variant": "buck_worldmap",
+    "game_id": 31,
+    "candidate_rank": 2,
+    "meta": {
+      "seat": 3,
+      "keep": 7,
+      "opening_hand": [
+        "Ancient Tomb",
+        "Emergence Zone",
+        "Mana Vault",
+        "Mantle of the Ancients",
+        "Plains",
+        "Staff of Compleation",
+        "Twinblade Blessing"
+      ],
+      "actual_future_t2_card_for_audit": "Petrified Hamlet"
+    },
+    "sampled_tails_per_unique_card": 1,
+    "beam": 120,
+    "top_board": [
+      {
+        "card": "Ancient Tomb",
+        "tapped": true
+      },
+      {
+        "card": "Mana Vault",
+        "tapped": false
+      }
+    ],
+    "hand": [
+      "Emergence Zone",
+      "Mantle of the Ancients",
+      "Orim's Chant",
+      "Plains",
+      "Staff of Compleation",
+      "Twinblade Blessing"
+    ],
+    "score": 182,
+    "forecast_reward_v2": 0.17897222222222223,
+    "deck_count": 91,
+    "unique_draws": 83,
+    "T2_win_probability_over_all_cards": 0.10989010989010989,
+    "note": "Oracle draw is used only for verifying historical particular outcome, never for deciding plan; this census estimates ex-ante success by full deck multiset"
+  },
+  "probability_rank2_minus_rank1": 0.098779,
+  "rank1_successful_draws": {
+    "Lion's Eye Diamond": {
+      "copies": 1,
+      "wins_per_tail": 1,
+      "tails": 1,
+      "probability": 1.0
+    }
+  },
+  "rank2_successful_draws": {
+    "Chrome Mox": {
+      "copies": 1,
+      "wins_per_tail": 1,
+      "tails": 1,
+      "probability": 1.0
+    },
+    "Eiganjo, Seat of the Empire": {
+      "copies": 1,
+      "wins_per_tail": 1,
+      "tails": 1,
+      "probability": 1.0
+    },
+    "Gleaming Splendor": {
+      "copies": 1,
+      "wins_per_tail": 1,
+      "tails": 1,
+      "probability": 1.0
+    },
+    "Great Hall of the Citadel": {
+      "copies": 1,
+      "wins_per_tail": 1,
+      "tails": 1,
+      "probability": 1.0
+    },
+    "Krark-Clan Ironworks": {
+      "copies": 1,
+      "wins_per_tail": 1,
+      "tails": 1,
+      "probability": 1.0
+    },
+    "Lion's Eye Diamond": {
+      "copies": 1,
+      "wins_per_tail": 1,
+      "tails": 1,
+      "probability": 1.0
+    },
+    "Lotus Petal": {
+      "copies": 1,
+      "wins_per_tail": 1,
+      "tails": 1,
+      "probability": 1.0
+    },
+    "Moonsilver Key": {
+      "copies": 1,
+      "wins_per_tail": 1,
+      "tails": 1,
+      "probability": 1.0
+    },
+    "Mox Diamond": {
+      "copies": 1,
+      "wins_per_tail": 1,
+      "tails": 1,
+      "probability": 1.0
+    },
+    "Tezzeret, Cruel Captain": {
+      "copies": 1,
+      "wins_per_tail": 1,
+      "tails": 1,
+      "probability": 1.0
+    }
+  },
+  "caveat": "One independently shuffled unknown tail per distinct card. Uses inherited within-turn beam, and does not fully capture known-top tutor metadata or opposition."
+}
