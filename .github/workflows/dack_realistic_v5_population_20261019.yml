@@ -1,0 +1,107 @@
+name: Dack V5 Denser Reward Population N32
+on:
+  push:
+    branches: [dack-realistic-reward-distribution-20261019]
+    paths:
+      - 'dack_realistic_v5_population_20261019.py'
+      - 'dack_realistic_v5_population_pool_20261019.py'
+      - '.github/workflows/dack_realistic_v5_population_20261019.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and execute first whole-game paired policy test
+        run: |
+          python -m py_compile dack_realistic_v5_population_20261019.py dack_realistic_v5_population_pool_20261019.py
+          python -u dack_realistic_v5_population_20261019.py \
+            --variant current --shard 0 --games 1 --draws 12 --out smoke.json.gz
+          python - <<'PY'
+          import gzip,json
+          with gzip.open('smoke.json.gz','rt') as f:q=json.load(f)
+          assert q['schema']=='dack_realistic_population_v5'
+          assert q['rows'][0]['game_id']==0 and q['rows'][0]['win_turn'] in range(4)
+          print('DACK_V5_UNSELECTED_POPULATION_SMOKE_PASS')
+          PY
+  shards:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        variant: [current, buck_worldmap]
+        shard: [0,1,2,3,4,5,6,7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Four unbiased matched games with dense hidden-draw reward
+        run: |
+          mkdir -p v5
+          python -u dack_realistic_v5_population_20261019.py \
+            --variant "${{ matrix.variant }}" --shard "${{ matrix.shard }}" --games 4 --draws 12 \
+            --out "v5/${{ matrix.variant }}_shard_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v5-pop-${{ matrix.variant }}-${{ matrix.shard }}
+          path: v5/*.json.gz
+          retention-days: 90
+          if-no-files-found: error
+  pool:
+    needs: [smoke,shards]
+    if: ${{ needs.smoke.result == 'success' && needs.shards.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v5-pop-*
+          merge-multiple: true
+          path: v5
+      - name: Download unselected frozen v4 matched games
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p v4
+          gh run download 39327079657 --repo "${{ github.repository }}" \
+            --pattern 'known-top-pop-*' --dir v4
+          test "$(find v4 -name '*.json.gz' | wc -l)" -eq 16
+          test "$(find v5 -name '*.json.gz' | wc -l)" -eq 16
+      - name: Compare cumulative T1 T2 T3 and paired game differences
+        run: |
+          python -u dack_realistic_v5_population_pool_20261019.py \
+            --n 32 --v4 v4 --v5 v5 \
+            --out dack_v5_population_n32_20261019.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v5-denser-reward-population-n32-report
+          path: dack_v5_population_n32_20261019.json
+          retention-days: 90
+          if-no-files-found: error
+      - name: Publish matched v5 reward population pilot
+        run: |
+          mkdir -p benchmark_results
+          cp dack_v5_population_n32_20261019.json \
+             benchmark_results/dack_v5_population_n32_20261019.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_v5_population_n32_20261019.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish v5 dense sampled reward population N32 comparison'
+            git pull --rebase origin dack-realistic-reward-distribution-20261019
+            git push
+          fi
