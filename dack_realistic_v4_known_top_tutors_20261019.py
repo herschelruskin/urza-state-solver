@@ -146,9 +146,13 @@ def audit():
 def play(variant,gid,with_known):
     KNOWN.clear()
     root.install(variant)
-    fair.install_honest_scry()
+    # The audit already installed the honest-scry wrapper beneath our
+    # known-tutor wrapper. Do not reinstall fair scry here or it would
+    # silently replace the instrumentation.
     v2.activate_v2(draws=3,t3_samples=2,t2_continuations=2)
-    if with_known:install()
+    if with_known:
+        assert ACTIVE and d.cast_actions is known_cast_actions
+        assert d.key is knowledge_key
     d._WIN_CACHE.clear()
     result=v1.simulate(variant,gid,120,9,3,3,42,18)
     return {"win_turn":result["win_turn"],
