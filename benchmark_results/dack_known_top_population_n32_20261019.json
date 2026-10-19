@@ -1,0 +1,94 @@
+{
+  "status": "PASS",
+  "n_per_arm": 32,
+  "arms": {
+    "current": {
+      "T1": {
+        "v4_pct": 3.125,
+        "v2_pct": 3.125,
+        "delta_pp": 0.0,
+        "paired_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "v4_only": [],
+        "v2_only": []
+      },
+      "T2": {
+        "v4_pct": 31.25,
+        "v2_pct": 28.125,
+        "delta_pp": 3.125,
+        "paired_95pct_pp": [
+          -3.0,
+          9.25
+        ],
+        "v4_only": [
+          1
+        ],
+        "v2_only": []
+      },
+      "T3": {
+        "v4_pct": 68.75,
+        "v2_pct": 59.375,
+        "delta_pp": 9.375,
+        "paired_95pct_pp": [
+          -0.886,
+          19.636
+        ],
+        "v4_only": [
+          0,
+          1,
+          17
+        ],
+        "v2_only": []
+      }
+    },
+    "buck_worldmap": {
+      "T1": {
+        "v4_pct": 3.125,
+        "v2_pct": 3.125,
+        "delta_pp": 0.0,
+        "paired_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "v4_only": [],
+        "v2_only": []
+      },
+      "T2": {
+        "v4_pct": 34.375,
+        "v2_pct": 31.25,
+        "delta_pp": 3.125,
+        "paired_95pct_pp": [
+          -3.0,
+          9.25
+        ],
+        "v4_only": [
+          1
+        ],
+        "v2_only": []
+      },
+      "T3": {
+        "v4_pct": 71.875,
+        "v2_pct": 62.5,
+        "delta_pp": 9.375,
+        "paired_95pct_pp": [
+          -0.886,
+          19.636
+        ],
+        "v4_only": [
+          0,
+          1,
+          17
+        ],
+        "v2_only": []
+      }
+    }
+  },
+  "limitations": [
+    "Small unselected pilot, not calibrated population rate",
+    "Known-top v4 is narrowly scoped tuple-identity metadata",
+    "In-turn hidden draw lookahead still exists",
+    "V4 changes candidate reservation as well as knowledge handling"
+  ]
+}
