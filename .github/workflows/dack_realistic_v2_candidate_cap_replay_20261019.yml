@@ -1,0 +1,120 @@
+name: Dack Realistic Beam v2 Candidate-Cap Replay
+on:
+  push:
+    branches: [dack-realistic-information-beam-20261017]
+    paths:
+      - 'dack_realistic_v2_candidate_cap_replay_20261019.py'
+      - '.github/workflows/dack_realistic_v2_candidate_cap_replay_20261019.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and validate exact seed plus original-cap replay
+        run: |
+          python -m py_compile dack_realistic_v2_candidate_cap_replay_20261019.py
+          python -u dack_realistic_v2_candidate_cap_replay_20261019.py \
+            --variant current --gid 0 --out smoke_current0.json
+  replay:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      max-parallel: 7
+      matrix:
+        include:
+          - {variant: current, gid: 0}
+          - {variant: current, gid: 1}
+          - {variant: current, gid: 22}
+          - {variant: buck_worldmap, gid: 0}
+          - {variant: buck_worldmap, gid: 1}
+          - {variant: buck_worldmap, gid: 22}
+          - {variant: buck_worldmap, gid: 31}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Paired replay 9 vs 24 end-state candidates
+        run: |
+          mkdir -p audit
+          python -u dack_realistic_v2_candidate_cap_replay_20261019.py \
+            --variant "${{ matrix.variant }}" --gid "${{ matrix.gid }}" \
+            --out "audit/${{ matrix.variant }}_${{ matrix.gid }}.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-cap-replay-${{ matrix.variant }}-${{ matrix.gid }}
+          path: audit/*.json
+          retention-days: 90
+          if-no-files-found: error
+  pool:
+    needs: [smoke,replay]
+    if: ${{ needs.smoke.result == 'success' && needs.replay.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-cap-replay-*
+          merge-multiple: true
+          path: audit
+      - name: Aggregate widening success and candidate attrition
+        run: |
+          python - <<'PY'
+          import glob,json,pathlib,collections
+          data=[json.load(open(f)) for f in glob.glob('audit/*.json')]
+          assert len(data)==7,len(data)
+          assert all(x['status']=='PASS' and x['baseline_v2_cap9_replay_verified'] for x in data)
+          by={}
+          for variant in ('current','buck_worldmap'):
+              a=[x for x in data if x['variant']==variant]
+              by[variant]={
+                  'cases':len(a),'cap9_T2_wins':sum(x['by_T2']['cap9'] for x in a),
+                  'cap24_T2_wins':sum(x['by_T2']['cap24'] for x in a),
+                  'cap9_T3_wins':sum(x['by_T3']['cap9'] for x in a),
+                  'cap24_T3_wins':sum(x['by_T3']['cap24'] for x in a),
+                  'recovered_T2_ids':[x['game_id'] for x in a if x['by_T2']['cap24'] and not x['by_T2']['cap9']],
+                  'recovered_T3_ids':[x['game_id'] for x in a if x['by_T3']['cap24'] and not x['by_T3']['cap9']],
+                  'cases_detail':[{'game_id':x['game_id'],'win9':x['cap9']['win_turn'],
+                                   'win24':x['cap24']['win_turn'],
+                                   'keep_n':x['hand']['keep_n'],
+                                   'rollout_calls9':x['cap9']['rollout_calls'],
+                                   'rollout_calls24':x['cap24']['rollout_calls']} for x in a]}
+          result={'status':'PASS','purpose':'Sensitivity only: Full-Beam-only T2 games, N=7 selected failures','by_deck':by,
+                  'limits':['Selected failures, not population win-rate estimate',
+                            'This test cannot prove a no-hindsight optimum',
+                            'Rollouts, intra-turn hidden-draw handling and beam depth unchanged',
+                            'Increasing cap changes search budget and line selection']}
+          pathlib.Path('report.json').write_text(json.dumps(result,indent=2)+'\n')
+          print('DACK_CAP9_VS_CAP24_PAIRED_REPORT_PASS',json.dumps(result),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-realistic-beam-cap9-cap24-diagnostic
+          path: report.json
+          retention-days: 90
+          if-no-files-found: error
+      - name: Publish immutable diagnostic report
+        run: |
+          mkdir -p benchmark_results
+          cp report.json benchmark_results/dack_realistic_v2_cap9_cap24_failure_replay_20261019.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_realistic_v2_cap9_cap24_failure_replay_20261019.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish v2 candidate-cap failure replay'
+            git pull --rebase origin dack-realistic-information-beam-20261017
+            git push
+          fi
