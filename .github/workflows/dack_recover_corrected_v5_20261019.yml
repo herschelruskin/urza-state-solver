@@ -1,0 +1,50 @@
+name: Recover Corrected Dack V5 N32 Results
+on:
+  push:
+    branches: [dack-realistic-reward-distribution-20261019]
+    paths:
+      - '.github/workflows/dack_recover_corrected_v5_20261019.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch verified corrected V5 pooled artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p recovered
+          gh run download 39328690011 --repo "${{ github.repository }}" \
+            --name dack-v5-denser-reward-population-n32-report --dir recovered
+          test -f recovered/dack_v5_population_n32_20261019.json
+      - name: Check known-top corrected N32 versus frozen V4
+        run: |
+          python - <<'PY'
+          import json
+          x=json.load(open('recovered/dack_v5_population_n32_20261019.json'))
+          assert x['status']=='PASS' and x['n_per_deck']==32
+          assert x['arms']['current']['v4']['T2']==31.25
+          assert x['arms']['current']['v5']['T2']==28.125
+          assert x['arms']['current']['v5']['T3']==68.75
+          assert x['arms']['buck_worldmap']['v5']['T2']==37.5
+          assert x['arms']['buck_worldmap']['v5']['T3']==75.0
+          print('DACK_V5_CORRECTED_REPORT_INTEGRITY_PASS')
+          PY
+      - name: Publish unique non-conflicting v5 result file
+        run: |
+          mkdir -p benchmark_results
+          cp recovered/dack_v5_population_n32_20261019.json \
+            benchmark_results/dack_v5_population_n32_KNOWNTOP_CORRECTED_20261019.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_v5_population_n32_KNOWNTOP_CORRECTED_20261019.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish corrected known-top v5 population under unambiguous unique path'
+            git pull --rebase origin dack-realistic-reward-distribution-20261019
+            git push
+          fi
