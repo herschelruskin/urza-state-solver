@@ -1,0 +1,90 @@
+{
+  "status": "PASS",
+  "purpose": "Sensitivity only: Full-Beam-only T2 games, N=7 selected failures",
+  "by_deck": {
+    "current": {
+      "cases": 3,
+      "cap9_T2_wins": 0,
+      "cap24_T2_wins": 0,
+      "cap9_T3_wins": 1,
+      "cap24_T3_wins": 1,
+      "recovered_T2_ids": [],
+      "recovered_T3_ids": [],
+      "cases_detail": [
+        {
+          "game_id": 0,
+          "win9": 0,
+          "win24": 0,
+          "keep_n": 4,
+          "rollout_calls9": 162,
+          "rollout_calls24": 390
+        },
+        {
+          "game_id": 1,
+          "win9": 0,
+          "win24": 0,
+          "keep_n": 7,
+          "rollout_calls9": 162,
+          "rollout_calls24": 432
+        },
+        {
+          "game_id": 22,
+          "win9": 3,
+          "win24": 3,
+          "keep_n": 7,
+          "rollout_calls9": 162,
+          "rollout_calls24": 432
+        }
+      ]
+    },
+    "buck_worldmap": {
+      "cases": 4,
+      "cap9_T2_wins": 0,
+      "cap24_T2_wins": 0,
+      "cap9_T3_wins": 1,
+      "cap24_T3_wins": 0,
+      "recovered_T2_ids": [],
+      "recovered_T3_ids": [],
+      "cases_detail": [
+        {
+          "game_id": 22,
+          "win9": 3,
+          "win24": 0,
+          "keep_n": 7,
+          "rollout_calls9": 162,
+          "rollout_calls24": 432
+        },
+        {
+          "game_id": 0,
+          "win9": 0,
+          "win24": 0,
+          "keep_n": 4,
+          "rollout_calls9": 162,
+          "rollout_calls24": 390
+        },
+        {
+          "game_id": 1,
+          "win9": 0,
+          "win24": 0,
+          "keep_n": 7,
+          "rollout_calls9": 162,
+          "rollout_calls24": 432
+        },
+        {
+          "game_id": 31,
+          "win9": 0,
+          "win24": 0,
+          "keep_n": 7,
+          "rollout_calls9": 154,
+          "rollout_calls24": 404
+        }
+      ]
+    }
+  },
+  "limits": [
+    "Selected failures, not population win-rate estimate",
+    "This test cannot prove a no-hindsight optimum",
+    "Rollouts, intra-turn hidden-draw handling and beam depth unchanged",
+    "Increasing cap changes search budget and line selection"
+  ]
+}
