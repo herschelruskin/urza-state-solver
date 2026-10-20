@@ -1,0 +1,99 @@
+name: Dack Gemstone Caverns Pregame Choices Census
+on:
+  push:
+    branches: [dack-realistic-v8-upkeep-ev-20261019]
+    paths:
+      - 'dack_realistic_gemstone_pregame_census_20261019.py'
+      - '.github/workflows/dack_realistic_gemstone_pregame_census_20261019.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  shards:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        variant: [current,buck_worldmap]
+        shard: [0,1,2,3,4,5,6,7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Enumerate eight real London hands and every legal Gemstone exile
+        run: |
+          mkdir -p pregame
+          python -m py_compile dack_realistic_gemstone_pregame_census_20261019.py
+          python -u dack_realistic_gemstone_pregame_census_20261019.py \
+            --variant "${{ matrix.variant }}" --shard "${{ matrix.shard }}" --games 8 \
+            --out "pregame/${{ matrix.variant }}_shard_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gemstone-pregame-${{ matrix.variant }}-${{ matrix.shard }}
+          path: pregame/*.json.gz
+          retention-days: 90
+          if-no-files-found: error
+  pool:
+    needs: shards
+    if: ${{ needs.shards.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: gemstone-pregame-*
+          merge-multiple: true
+          path: pregame
+      - name: Count eligibility, exile candidates and pregame policy choices
+        run: |
+          python - <<'PY'
+          import glob,gzip,json,pathlib
+          result={"status":"PASS","games_per_deck":64,"decks":{}}
+          for v in ("current","buck_worldmap"):
+              rows={}
+              for file in glob.glob(f"pregame/**/{v}_shard_*.json.gz",recursive=True):
+                  with gzip.open(file,"rt") as f:q=json.load(f)
+                  assert q['schema']=='dack_gemstone_pregame_census' and q['variant']==v
+                  for r in q['rows']:
+                      assert r['game_id'] not in rows
+                      rows[r['game_id']]=r
+              assert set(rows)==set(range(64)),(v,len(rows))
+              eligible=[r for r in rows.values() if r['pregame_options']>1]
+              result['decks'][v]={
+                  'eligible_games':[r['game_id'] for r in eligible],
+                  'eligible_count':len(eligible),
+                  'gemstone_seen_in_kept_hand_count':sum(r['gemstone_in_kept_hand'] for r in rows.values()),
+                  'static_deploy_count':sum(r['static_chose_deploy'] for r in rows.values()),
+                  'eligible_options':[{'game_id':r['game_id'],'options':r['pregame_options'],
+                   'opening_hand':r['opening_hand'],
+                   'exiles':r['legal_exile_choices'],
+                   'static_deploy':r['static_chose_deploy']} for r in eligible]}
+          result['limitations']=['Census only; not a changed gameplay policy',
+             'Kept hand and mulligans are inherited, not independently optimized']
+          pathlib.Path('report.json').write_text(json.dumps(result,indent=2)+'\n')
+          print('GEMSTONE_PREGAME_UNBIASED_CENSUS_PASS',json.dumps(result),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-gemstone-pregame-census-n64
+          path: report.json
+          retention-days: 90
+      - name: Publish pregame decision census
+        run: |
+          mkdir -p benchmark_results
+          cp report.json benchmark_results/dack_gemstone_pregame_census_n64_20261019.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_gemstone_pregame_census_n64_20261019.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish legal Gemstone pregame decision opportunity census'
+            git pull --rebase origin dack-realistic-v8-upkeep-ev-20261019
+            git push
+          fi
