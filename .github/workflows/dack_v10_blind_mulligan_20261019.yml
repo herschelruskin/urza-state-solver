@@ -1,0 +1,112 @@
+name: Dack V10 Hidden-Order-Blind Mulligans Matched N32
+on:
+  push:
+    branches: [dack-realistic-v10-blind-mulligans-20261019]
+    paths:
+      - 'dack_v0740_oracle_mana_audit.py'
+      - 'dack_v10_blind_mulligan_20261019.py'
+      - 'dack_v10_blind_mulligan_pool_20261019.py'
+      - '.github/workflows/dack_v10_blind_mulligan_20261019.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and prove mulligan policy hidden-order invariance
+        run: |
+          python -m py_compile dack_v0740_oracle_mana_audit.py \
+            dack_v10_blind_mulligan_20261019.py dack_v10_blind_mulligan_pool_20261019.py
+          python -u dack_v10_blind_mulligan_20261019.py --audit
+      - name: Actual game smoke after correcting sampled unseen card ordering
+        run: |
+          python -u dack_v10_blind_mulligan_20261019.py \
+            --variant current --shard 0 --games 1 --out smoke.json.gz
+          python - <<'PY'
+          import gzip,json
+          with gzip.open('smoke.json.gz','rt') as f:q=json.load(f)
+          assert q['schema']=='dack_v10_blind_mulligans'
+          assert q['rows'][0]['game_id']==0
+          assert q['rows'][0]['win_turn'] in range(4)
+          print('DACK_V10_BLIND_MULLIGAN_SMOKE_PASS')
+          PY
+  shards:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 210
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        variant: [current,buck_worldmap]
+        shard: [0,1,2,3,4,5,6,7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Four matched games with honest library-independent mulligans
+        run: |
+          mkdir -p v10
+          python -u dack_v10_blind_mulligan_20261019.py \
+            --variant "${{ matrix.variant }}" --shard "${{ matrix.shard }}" --games 4 \
+            --out "v10/${{ matrix.variant }}_shard_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v10-blind-mull-${{ matrix.variant }}-${{ matrix.shard }}
+          path: v10/*.json.gz
+          retention-days: 90
+          if-no-files-found: error
+  pool:
+    needs: [smoke,shards]
+    if: ${{ needs.smoke.result == 'success' && needs.shards.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v10-blind-mull-*
+          merge-multiple: true
+          path: v10
+      - name: Fetch matched v7 prior search experiments
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p v7
+          gh run download 39343921964 --repo "${{ github.repository }}" \
+            --pattern 'dack-v7-forecast-*' --dir v7
+          test "$(find v7 -name '*.json.gz' | wc -l)" -eq 16
+          test "$(find v10 -name '*.json.gz' | wc -l)" -eq 16
+      - name: Pool paired actual wins and differing keep depths
+        run: |
+          python -u dack_v10_blind_mulligan_pool_20261019.py \
+            --v7 v7 --v10 v10 --n 32 \
+            --out dack_v10_blind_mulligan_n32_20261019.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v10-blind-mulligan-n32-results
+          path: dack_v10_blind_mulligan_n32_20261019.json
+          retention-days: 90
+      - name: Publish information-corrected mulligan benchmark
+        run: |
+          mkdir -p benchmark_results
+          cp dack_v10_blind_mulligan_n32_20261019.json \
+            benchmark_results/dack_v10_blind_mulligan_n32_20261019.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_v10_blind_mulligan_n32_20261019.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish honest information-set mulligan simulator pilot'
+            git pull --rebase origin dack-realistic-v10-blind-mulligans-20261019
+            git push
+          fi
