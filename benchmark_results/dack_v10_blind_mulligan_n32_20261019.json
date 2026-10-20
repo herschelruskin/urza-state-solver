@@ -1,0 +1,292 @@
+{
+  "status": "PASS",
+  "n_per_deck": 32,
+  "design": "Same actual shuffle and v7 within-turn policy; v10 only canonicalizes the Monte Carlo unknown library multiset for London mulligan keep/bottom forecasts",
+  "arms": {
+    "current": {
+      "v7": {
+        "T1": 3.125,
+        "T2": 28.125,
+        "T3": 68.75
+      },
+      "v10": {
+        "T1": 3.125,
+        "T2": 34.375,
+        "T3": 71.875
+      },
+      "v10_minus_v7": {
+        "T1": {
+          "delta_pp": 0.0,
+          "paired_normal_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v10_only": [],
+          "v7_only": []
+        },
+        "T2": {
+          "delta_pp": 6.25,
+          "paired_normal_95pct_pp": [
+            -2.271,
+            14.771
+          ],
+          "v10_only": [
+            3,
+            9
+          ],
+          "v7_only": []
+        },
+        "T3": {
+          "delta_pp": 3.125,
+          "paired_normal_95pct_pp": [
+            -7.597,
+            13.847
+          ],
+          "v10_only": [
+            9,
+            11
+          ],
+          "v7_only": [
+            0
+          ]
+        }
+      },
+      "changed_keep_depth_games": [
+        0,
+        3,
+        9,
+        12,
+        26
+      ],
+      "keep_depth_differences": [
+        {
+          "gid": 0,
+          "old_keep": 4,
+          "new_keep": 5
+        },
+        {
+          "gid": 3,
+          "old_keep": 7,
+          "new_keep": 4
+        },
+        {
+          "gid": 9,
+          "old_keep": 6,
+          "new_keep": 4
+        },
+        {
+          "gid": 12,
+          "old_keep": 5,
+          "new_keep": 7
+        },
+        {
+          "gid": 26,
+          "old_keep": 7,
+          "new_keep": 5
+        }
+      ],
+      "identical_seat_count": 32
+    },
+    "buck_worldmap": {
+      "v7": {
+        "T1": 3.125,
+        "T2": 37.5,
+        "T3": 75.0
+      },
+      "v10": {
+        "T1": 3.125,
+        "T2": 40.625,
+        "T3": 68.75
+      },
+      "v10_minus_v7": {
+        "T1": {
+          "delta_pp": 0.0,
+          "paired_normal_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v10_only": [],
+          "v7_only": []
+        },
+        "T2": {
+          "delta_pp": 3.125,
+          "paired_normal_95pct_pp": [
+            -7.597,
+            13.847
+          ],
+          "v10_only": [
+            6,
+            17
+          ],
+          "v7_only": [
+            9
+          ]
+        },
+        "T3": {
+          "delta_pp": -6.25,
+          "paired_normal_95pct_pp": [
+            -21.334,
+            8.834
+          ],
+          "v10_only": [
+            5,
+            11
+          ],
+          "v7_only": [
+            0,
+            3,
+            9,
+            30
+          ]
+        }
+      },
+      "changed_keep_depth_games": [
+        0,
+        3,
+        5,
+        6,
+        9,
+        12,
+        17,
+        26,
+        30
+      ],
+      "keep_depth_differences": [
+        {
+          "gid": 0,
+          "old_keep": 4,
+          "new_keep": 5
+        },
+        {
+          "gid": 3,
+          "old_keep": 7,
+          "new_keep": 6
+        },
+        {
+          "gid": 5,
+          "old_keep": 2,
+          "new_keep": 5
+        },
+        {
+          "gid": 6,
+          "old_keep": 4,
+          "new_keep": 3
+        },
+        {
+          "gid": 9,
+          "old_keep": 4,
+          "new_keep": 6
+        },
+        {
+          "gid": 12,
+          "old_keep": 5,
+          "new_keep": 7
+        },
+        {
+          "gid": 17,
+          "old_keep": 7,
+          "new_keep": 6
+        },
+        {
+          "gid": 26,
+          "old_keep": 7,
+          "new_keep": 6
+        },
+        {
+          "gid": 30,
+          "old_keep": 5,
+          "new_keep": 2
+        }
+      ],
+      "identical_seat_count": 32
+    }
+  },
+  "deck_swap": {
+    "v10": {
+      "T1": {
+        "delta_pp": 0.0,
+        "paired_normal_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "v10_only": [],
+        "v7_only": []
+      },
+      "T2": {
+        "delta_pp": 6.25,
+        "paired_normal_95pct_pp": [
+          -8.834,
+          21.334
+        ],
+        "v10_only": [
+          2,
+          6,
+          17,
+          31
+        ],
+        "v7_only": [
+          3,
+          9
+        ]
+      },
+      "T3": {
+        "delta_pp": -3.125,
+        "paired_normal_95pct_pp": [
+          -16.997,
+          10.747
+        ],
+        "v10_only": [
+          2,
+          5
+        ],
+        "v7_only": [
+          3,
+          9,
+          30
+        ]
+      }
+    },
+    "v7": {
+      "T1": {
+        "delta_pp": 0.0,
+        "paired_normal_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "v10_only": [],
+        "v7_only": []
+      },
+      "T2": {
+        "delta_pp": 9.375,
+        "paired_normal_95pct_pp": [
+          -0.886,
+          19.636
+        ],
+        "v10_only": [
+          2,
+          9,
+          31
+        ],
+        "v7_only": []
+      },
+      "T3": {
+        "delta_pp": 6.25,
+        "paired_normal_95pct_pp": [
+          -2.271,
+          14.771
+        ],
+        "v10_only": [
+          2,
+          9
+        ],
+        "v7_only": []
+      }
+    }
+  },
+  "limitations": [
+    "Corrects one actual-order leak but mulligan evaluator still models continuation with optimistic original beam",
+    "Frozen continuation thresholds are still calibrated under older sampling assumptions",
+    "N32 exploratory, not precise enough to resolve small winrate deltas",
+    "In-turn hidden draw foresight persists inside inherited action generation"
+  ]
+}
