@@ -1,0 +1,626 @@
+{
+  "status": "PASS",
+  "n_per_deck": 32,
+  "method": "Expected T1-T3 deployment chance over twelve pregame unseen draw strata; same legal original pregame options and frozen v7 in-turn beam.",
+  "arms": {
+    "current": {
+      "v7": {
+        "T1": 3.125,
+        "T2": 28.125,
+        "T3": 68.75
+      },
+      "v9": {
+        "T1": 3.125,
+        "T2": 28.125,
+        "T3": 68.75
+      },
+      "v9_minus_v7": {
+        "T1": {
+          "delta_pp": 0.0,
+          "normal_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v9_only": [],
+          "v7_only": []
+        },
+        "T2": {
+          "delta_pp": 0.0,
+          "normal_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v9_only": [],
+          "v7_only": []
+        },
+        "T3": {
+          "delta_pp": 0.0,
+          "normal_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v9_only": [],
+          "v7_only": []
+        }
+      },
+      "pregame_alternative_game_ids": [
+        1,
+        13,
+        29
+      ],
+      "pregame_changed_game_ids": [
+        29
+      ],
+      "pregame_logs": {
+        "1": [
+          {
+            "seat": 2,
+            "hand": [
+              "Ancient Den",
+              "Deafening Silence",
+              "Enlightened Tutor",
+              "Gemstone Caverns",
+              "Great Hall of the Citadel",
+              "Plains",
+              "Sheltered by Ghosts"
+            ],
+            "options": 7,
+            "original_exile": [
+              "Deafening Silence"
+            ],
+            "ev_exile": [
+              "Deafening Silence"
+            ],
+            "changed": false,
+            "scores": [
+              {
+                "expected": 0.4362668,
+                "static": 51,
+                "exile": [],
+                "gemstone_deployed": false
+              },
+              {
+                "expected": 1.3743503,
+                "static": 78,
+                "exile": [
+                  "Ancient Den"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 1.3743679,
+                "static": 83,
+                "exile": [
+                  "Deafening Silence"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 0.0987983,
+                "static": 83,
+                "exile": [
+                  "Enlightened Tutor"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 1.3743503,
+                "static": 78,
+                "exile": [
+                  "Great Hall of the Citadel"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 1.3743503,
+                "static": 78,
+                "exile": [
+                  "Plains"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 1.3743679,
+                "static": 83,
+                "exile": [
+                  "Sheltered by Ghosts"
+                ],
+                "gemstone_deployed": true
+              }
+            ]
+          }
+        ],
+        "13": [
+          {
+            "seat": 1,
+            "hand": [
+              "Brainstone",
+              "Disruptor Flute",
+              "Gemstone Caverns",
+              "Lion's Eye Diamond",
+              "Mind Stone",
+              "Plains"
+            ],
+            "options": 6,
+            "original_exile": [
+              "Brainstone"
+            ],
+            "ev_exile": [
+              "Brainstone"
+            ],
+            "changed": false,
+            "scores": [
+              {
+                "expected": 0.6517202,
+                "static": 46,
+                "exile": [],
+                "gemstone_deployed": false
+              },
+              {
+                "expected": 1.0578578,
+                "static": 73,
+                "exile": [
+                  "Brainstone"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 1.0578578,
+                "static": 73,
+                "exile": [
+                  "Disruptor Flute"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 0.0988689,
+                "static": 73,
+                "exile": [
+                  "Lion's Eye Diamond"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 1.0578578,
+                "static": 73,
+                "exile": [
+                  "Mind Stone"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 0.1697875,
+                "static": 68,
+                "exile": [
+                  "Plains"
+                ],
+                "gemstone_deployed": true
+              }
+            ]
+          }
+        ],
+        "29": [
+          {
+            "seat": 1,
+            "hand": [
+              "Gemstone Caverns",
+              "Hardlight Containment",
+              "Mantle of the Ancients",
+              "Moonsilver Key",
+              "Mox Diamond",
+              "Urza's Saga"
+            ],
+            "options": 6,
+            "original_exile": [
+              "Hardlight Containment"
+            ],
+            "ev_exile": [],
+            "changed": true,
+            "scores": [
+              {
+                "expected": 0.307342,
+                "static": 28,
+                "exile": [],
+                "gemstone_deployed": false
+              },
+              {
+                "expected": 0.1734132,
+                "static": 73,
+                "exile": [
+                  "Hardlight Containment"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 0.1734132,
+                "static": 73,
+                "exile": [
+                  "Mantle of the Ancients"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 0.1650024,
+                "static": 73,
+                "exile": [
+                  "Moonsilver Key"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 0.2994528,
+                "static": 55,
+                "exile": [
+                  "Mox Diamond"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 0.0242208,
+                "static": 68,
+                "exile": [
+                  "Urza's Saga"
+                ],
+                "gemstone_deployed": true
+              }
+            ]
+          }
+        ]
+      },
+      "shard_count": [
+        8,
+        8
+      ]
+    },
+    "buck_worldmap": {
+      "v7": {
+        "T1": 3.125,
+        "T2": 37.5,
+        "T3": 75.0
+      },
+      "v9": {
+        "T1": 3.125,
+        "T2": 37.5,
+        "T3": 75.0
+      },
+      "v9_minus_v7": {
+        "T1": {
+          "delta_pp": 0.0,
+          "normal_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v9_only": [],
+          "v7_only": []
+        },
+        "T2": {
+          "delta_pp": 0.0,
+          "normal_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v9_only": [],
+          "v7_only": []
+        },
+        "T3": {
+          "delta_pp": 0.0,
+          "normal_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v9_only": [],
+          "v7_only": []
+        }
+      },
+      "pregame_alternative_game_ids": [
+        1,
+        13,
+        29
+      ],
+      "pregame_changed_game_ids": [
+        29
+      ],
+      "pregame_logs": {
+        "1": [
+          {
+            "seat": 2,
+            "hand": [
+              "Ancient Den",
+              "Deafening Silence",
+              "Enlightened Tutor",
+              "Gemstone Caverns",
+              "Great Hall of the Citadel",
+              "Plains",
+              "Sheltered by Ghosts"
+            ],
+            "options": 7,
+            "original_exile": [
+              "Deafening Silence"
+            ],
+            "ev_exile": [
+              "Deafening Silence"
+            ],
+            "changed": false,
+            "scores": [
+              {
+                "expected": 0.436303,
+                "static": 51,
+                "exile": [],
+                "gemstone_deployed": false
+              },
+              {
+                "expected": 1.3743503,
+                "static": 78,
+                "exile": [
+                  "Ancient Den"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 1.3743679,
+                "static": 83,
+                "exile": [
+                  "Deafening Silence"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 0.0987624,
+                "static": 83,
+                "exile": [
+                  "Enlightened Tutor"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 1.3743503,
+                "static": 78,
+                "exile": [
+                  "Great Hall of the Citadel"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 1.3743503,
+                "static": 78,
+                "exile": [
+                  "Plains"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 1.3743679,
+                "static": 83,
+                "exile": [
+                  "Sheltered by Ghosts"
+                ],
+                "gemstone_deployed": true
+              }
+            ]
+          }
+        ],
+        "13": [
+          {
+            "seat": 1,
+            "hand": [
+              "Brainstone",
+              "Disruptor Flute",
+              "Gemstone Caverns",
+              "Lion's Eye Diamond",
+              "Mind Stone",
+              "Plains"
+            ],
+            "options": 6,
+            "original_exile": [
+              "Brainstone"
+            ],
+            "ev_exile": [
+              "Brainstone"
+            ],
+            "changed": false,
+            "scores": [
+              {
+                "expected": 0.6277408,
+                "static": 46,
+                "exile": [],
+                "gemstone_deployed": false
+              },
+              {
+                "expected": 1.0481857,
+                "static": 73,
+                "exile": [
+                  "Brainstone"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 1.0481857,
+                "static": 73,
+                "exile": [
+                  "Disruptor Flute"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 0.0879148,
+                "static": 73,
+                "exile": [
+                  "Lion's Eye Diamond"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 1.0481857,
+                "static": 73,
+                "exile": [
+                  "Mind Stone"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 0.1643773,
+                "static": 68,
+                "exile": [
+                  "Plains"
+                ],
+                "gemstone_deployed": true
+              }
+            ]
+          }
+        ],
+        "29": [
+          {
+            "seat": 1,
+            "hand": [
+              "Gemstone Caverns",
+              "Hardlight Containment",
+              "Mantle of the Ancients",
+              "Moonsilver Key",
+              "Mox Diamond",
+              "Urza's Saga"
+            ],
+            "options": 6,
+            "original_exile": [
+              "Hardlight Containment"
+            ],
+            "ev_exile": [],
+            "changed": true,
+            "scores": [
+              {
+                "expected": 0.2717091,
+                "static": 28,
+                "exile": [],
+                "gemstone_deployed": false
+              },
+              {
+                "expected": 0.1388446,
+                "static": 73,
+                "exile": [
+                  "Hardlight Containment"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 0.1388446,
+                "static": 73,
+                "exile": [
+                  "Mantle of the Ancients"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 0.1292525,
+                "static": 73,
+                "exile": [
+                  "Moonsilver Key"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 0.269956,
+                "static": 55,
+                "exile": [
+                  "Mox Diamond"
+                ],
+                "gemstone_deployed": true
+              },
+              {
+                "expected": 0.0120399,
+                "static": 68,
+                "exile": [
+                  "Urza's Saga"
+                ],
+                "gemstone_deployed": true
+              }
+            ]
+          }
+        ]
+      },
+      "shard_count": [
+        8,
+        8
+      ]
+    }
+  },
+  "deck_swap": {
+    "v9": {
+      "T1": {
+        "delta_pp": 0.0,
+        "normal_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "v9_only": [],
+        "v7_only": []
+      },
+      "T2": {
+        "delta_pp": 9.375,
+        "normal_95pct_pp": [
+          -0.886,
+          19.636
+        ],
+        "v9_only": [
+          2,
+          9,
+          31
+        ],
+        "v7_only": []
+      },
+      "T3": {
+        "delta_pp": 6.25,
+        "normal_95pct_pp": [
+          -2.271,
+          14.771
+        ],
+        "v9_only": [
+          2,
+          9
+        ],
+        "v7_only": []
+      }
+    },
+    "v7": {
+      "T1": {
+        "delta_pp": 0.0,
+        "normal_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "v9_only": [],
+        "v7_only": []
+      },
+      "T2": {
+        "delta_pp": 9.375,
+        "normal_95pct_pp": [
+          -0.886,
+          19.636
+        ],
+        "v9_only": [
+          2,
+          9,
+          31
+        ],
+        "v7_only": []
+      },
+      "T3": {
+        "delta_pp": 6.25,
+        "normal_95pct_pp": [
+          -2.271,
+          14.771
+        ],
+        "v9_only": [
+          2,
+          9
+        ],
+        "v7_only": []
+      }
+    }
+  },
+  "limitations": [
+    "N32 preliminary; Gemstone appears infrequently",
+    "Known-top handling partial, original legal exile options inherited unchanged",
+    "Within-turn unknown future cards may still influence original action engine",
+    "Finite forecast beams and no opponent interaction",
+    "Goldfish Dack deployment is a proxy, not full match win probability"
+  ]
+}
