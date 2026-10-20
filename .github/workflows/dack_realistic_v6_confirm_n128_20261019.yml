@@ -1,0 +1,98 @@
+name: Dack Realistic V6 Larger Matched N128
+on:
+  push:
+    branches: [dack-realistic-v6-confirm-n128-20261019]
+    paths:
+      - 'dack_realistic_v6_confirm_n128_20261019.py'
+      - 'dack_realistic_v6_confirm_pool_20261019.py'
+      - '.github/workflows/dack_realistic_v6_confirm_n128_20261019.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and verify Realistic v6 unchanged
+        run: |
+          python -m py_compile dack_realistic_v6_confirm_n128_20261019.py dack_realistic_v6_confirm_pool_20261019.py
+          python -u dack_realistic_v6_stratified_reward_20261019.py --audit
+  shards:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        variant: [current,buck_worldmap]
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Eight matched-seed realistic deployment games per shard
+        run: |
+          mkdir -p real
+          python -u dack_realistic_v6_confirm_n128_20261019.py \
+            --variant "${{ matrix.variant }}" --shard "${{ matrix.shard }}" --games 8 \
+            --out "real/${{ matrix.variant }}_shard_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-realistic-v6-n128-${{ matrix.variant }}-${{ matrix.shard }}
+          path: real/*.json.gz
+          retention-days: 90
+          if-no-files-found: error
+  pool:
+    needs: [smoke,shards]
+    if: ${{ needs.smoke.result == 'success' && needs.shards.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-realistic-v6-n128-*
+          merge-multiple: true
+          path: real
+      - name: Fetch unchanged Full Beam reference games
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p full_current full_buck
+          gh run download 38912678782 --repo "${{ github.repository }}" \
+            --pattern 'boon-current-shard-*' --dir full_current
+          gh run download 38931616641 --repo "${{ github.repository }}" \
+            --pattern 'buck-buck_worldmap-*' --dir full_buck
+          test "$(find real -name '*.json.gz' | wc -l)" -eq 32
+      - name: Pool all matched T1 T2 T3 cumulative deployment rates
+        run: |
+          python -u dack_realistic_v6_confirm_pool_20261019.py \
+            --real real --full-current full_current --full-buck full_buck \
+            --n 128 --out dack_realistic_v6_vs_full_n128_20261019.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-realistic-v6-versus-full-n128-results
+          path: dack_realistic_v6_vs_full_n128_20261019.json
+          retention-days: 90
+      - name: Publish independent larger-sample confirmation
+        run: |
+          mkdir -p benchmark_results
+          cp dack_realistic_v6_vs_full_n128_20261019.json benchmark_results/dack_realistic_v6_vs_full_n128_20261019.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_realistic_v6_vs_full_n128_20261019.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish larger N128 chance-aware Dack confirmation'
+            git pull --rebase origin dack-realistic-v6-confirm-n128-20261019
+            git push
+          fi
