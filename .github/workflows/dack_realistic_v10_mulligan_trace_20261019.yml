@@ -1,0 +1,119 @@
+name: Dack Realistic v10 London Decision Calibration
+on:
+  push:
+    branches: [dack-realistic-v10-mulligan-diagnostics-20261019]
+    paths:
+      - 'dack_realistic_v10_mulligan_trace_20261019.py'
+      - '.github/workflows/dack_realistic_v10_mulligan_trace_20261019.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  shards:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        variant: [current,buck_worldmap]
+        shard: [0,1,2,3,4,5,6,7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Trace four real-game London choices without modifying keep policy
+        run: |
+          mkdir -p london
+          python -m py_compile dack_realistic_v10_mulligan_trace_20261019.py
+          python -u dack_realistic_v10_mulligan_trace_20261019.py \
+            --variant "${{ matrix.variant }}" --shard "${{ matrix.shard }}" --games 4 \
+            --out "london/${{ matrix.variant }}_shard_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-london-v10-${{ matrix.variant }}-${{ matrix.shard }}
+          path: london/*.json.gz
+          retention-days: 90
+          if-no-files-found: error
+  pool:
+    needs: shards
+    if: ${{ needs.shards.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-london-v10-*
+          merge-multiple: true
+          path: london
+      - name: Compare keep margin and actual outcomes in matched 32-game samples
+        run: |
+          python - <<'PY'
+          import glob,gzip,json,pathlib,collections
+          obj={'status':'PASS','n_per_deck':32,'decks':{},
+               'purpose':'Diagnostic calibration of inherited Full-Beam-scored London utility against Realistic-Beam observed deployments'}
+          for v in ('current','buck_worldmap'):
+              rows={}
+              for fn in glob.glob(f'london/**/{v}_shard_*.json.gz',recursive=True):
+                  with gzip.open(fn,'rt') as f:q=json.load(f)
+                  assert q['schema']=='dack_realistic_original_london_policy_diagnostic_v10'
+                  for r in q['rows']:
+                      assert r['game_id'] not in rows
+                      rows[r['game_id']]=r
+              assert set(rows)==set(range(32)),(v,len(rows))
+              ct=collections.Counter(r['win_turn'] for r in rows.values())
+              bins={'negative':[],'0_to_0.05':[],'0.05_to_0.15':[],'above_0.15':[]}
+              for gid,r in rows.items():
+                  margin=r['mulligan']['final_margin']
+                  key=('negative' if margin<0 else
+                       '0_to_0.05' if margin<.05 else
+                       '0.05_to_0.15' if margin<.15 else 'above_0.15')
+                  bins[key].append(gid)
+              obj['decks'][v]={
+                'T1_count':ct[1],'T2_cum_count':ct[1]+ct[2],
+                'T3_cum_count':ct[1]+ct[2]+ct[3],
+                'keep_distribution':dict(collections.Counter(str(r['keep_n']) for r in rows.values())),
+                'near_acceptance_threshold_game_ids':[gid for gid,r in rows.items()
+                    if r['keep_n']>1 and 0<=r['mulligan']['final_margin']<.05],
+                'final_acceptance_utility_bins':{
+                  b:{'game_ids':g,'n':len(g),'T2_successes':sum(0<rows[i]['win_turn']<=2 for i in g),
+                     'T3_successes':sum(0<rows[i]['win_turn']<=3 for i in g)} for b,g in bins.items()},
+                'acceptance_trace':[
+                   {'game_id':r['game_id'],'keep_n':r['keep_n'],
+                    'marginal_utility':r['mulligan']['final_margin'],
+                    'utility':r['mulligan']['final_raw'],
+                    'threshold':r['mulligan']['final_threshold'],
+                    'win_turn':r['win_turn'],'stages':len(r['mulligan']['steps'])}
+                   for r in rows.values()]}
+          obj['limitations']=[
+             'Selected accepted hands cause selection bias; do not treat bins as probability calibration',
+             'Original keep utilities are Full-Beam continuation proxies',
+             'N32 is not enough for a new optimized mulligan threshold',
+             'No mulligan policy changes in this run']
+          pathlib.Path('report.json').write_text(json.dumps(obj,indent=2)+'\n')
+          print('DACK_REALISTIC_MULLIGAN_CALIBRATION_TRACE_PASS',
+             json.dumps({v:{k:val for k,val in d.items() if k!='acceptance_trace'}
+              for v,d in obj['decks'].items()}),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-realistic-v10-mulligan-calibration-n32
+          path: report.json
+          retention-days: 90
+      - name: Publish unchanged-policy diagnostic
+        run: |
+          mkdir -p benchmark_results
+          cp report.json benchmark_results/dack_v10_mulligan_calibration_n32_20261019.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_v10_mulligan_calibration_n32_20261019.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish Realistic Beam London decision calibration audit'
+            git pull --rebase origin dack-realistic-v10-mulligan-diagnostics-20261019
+            git push
+          fi
