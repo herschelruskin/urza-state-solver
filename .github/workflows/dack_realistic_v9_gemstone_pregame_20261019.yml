@@ -1,0 +1,102 @@
+name: Dack V9 Gemstone Pregame EV Selected-Cases
+on:
+  push:
+    branches: [dack-realistic-v9-gemstone-pregame-ev-20261019]
+    paths:
+      - 'dack_realistic_v9_gemstone_pregame_ev_20261019.py'
+      - '.github/workflows/dack_realistic_v9_gemstone_pregame_20261019.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify Gemstone legal pregame alternatives and hidden-order invariance
+        run: |
+          python -m py_compile dack_realistic_v9_gemstone_pregame_ev_20261019.py
+          python -u dack_realistic_v9_gemstone_pregame_ev_20261019.py --audit
+  replay:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        variant: [current,buck_worldmap]
+        gid: [1,13,29]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compare v6 static exile against nonclairvoyant T1 pregame EV
+        run: |
+          mkdir -p gem
+          python -u dack_realistic_v9_gemstone_pregame_ev_20261019.py \
+            --variant "${{ matrix.variant }}" --gid "${{ matrix.gid }}" \
+            --early-beam 48 --out "gem/${{ matrix.variant }}_${{ matrix.gid }}.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gemstone-exile-ev-${{ matrix.variant }}-${{ matrix.gid }}
+          path: gem/*.json
+          retention-days: 90
+          if-no-files-found: error
+  pool:
+    needs: [smoke,replay]
+    if: ${{ needs.smoke.result == 'success' && needs.replay.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: gemstone-exile-ev-*
+          merge-multiple: true
+          path: gem
+      - name: Report actual pregame decision changes and recovered T2 T3 outcomes
+        run: |
+          python - <<'PY'
+          import glob,json,pathlib
+          rows=[json.load(open(fn)) for fn in glob.glob('gem/*.json')]
+          assert len(rows)==6
+          data={"status":"PASS","scope":"Three preselected Gemstone-eligible game IDs per deck; not population statistics","cases":[]}
+          for r in sorted(rows,key=lambda z:(z['variant'],z['game_id'])):
+              assert r['status']=='PASS' and r['baseline_keep']==r['v9']['keep_n']
+              data['cases'].append({"variant":r['variant'],"game_id":r['game_id'],
+                "v6_turn":r['baseline_turn'],"v9_turn":r['v9_turn'],
+                "changed_pregame":any(q['changed'] for q in r['v9']['choices']),
+                "choice_details":r['v9']['choices']})
+          data['limitations']=[
+             "Selected known Gemstone cases, so effect size is not a population estimate",
+             "One stratified first-draw sample per card category",
+             "More future-draw samples could change the estimated policy"]
+          pathlib.Path('report.json').write_text(json.dumps(data,indent=2)+'\n')
+          print('DACK_V9_GEMSTONE_SELECTED_CASES_PASS',json.dumps(data),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v9-gemstone-ev-selected-cases
+          path: report.json
+          retention-days: 90
+      - name: Publish Gemstone candidate audit
+        run: |
+          mkdir -p benchmark_results
+          cp report.json benchmark_results/dack_v9_gemstone_ev_selected_cases_20261019.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_v9_gemstone_ev_selected_cases_20261019.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish nonclairvoyant Gemstone pregame EV comparison'
+            git pull --rebase origin dack-realistic-v9-gemstone-pregame-ev-20261019
+            git push
+          fi
