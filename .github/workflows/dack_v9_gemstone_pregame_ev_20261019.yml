@@ -1,0 +1,102 @@
+name: Dack V9 Gemstone Pregame EV Matched N32
+on:
+  push:
+    branches: [dack-realistic-v9-pregame-ev-20261019]
+    paths:
+      - 'dack_v9_pregame_gemstone_ev_20261019.py'
+      - 'dack_v9_pregame_gemstone_pool_20261019.py'
+      - '.github/workflows/dack_v9_gemstone_pregame_ev_20261019.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and prove pregame policy ignores unknown top order
+        run: |
+          python -m py_compile dack_v9_pregame_gemstone_ev_20261019.py dack_v9_pregame_gemstone_pool_20261019.py
+          python -u dack_v9_pregame_gemstone_ev_20261019.py --audit
+      - name: Run one common game for program and hash validation
+        run: |
+          python -u dack_v9_pregame_gemstone_ev_20261019.py \
+            --variant current --shard 0 --games 1 --out smoke.json.gz
+  shards:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 210
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        variant: [current,buck_worldmap]
+        shard: [0,1,2,3,4,5,6,7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Four matched games with chance-aware Gemstone pregame commitment
+        run: |
+          mkdir -p v9
+          python -u dack_v9_pregame_gemstone_ev_20261019.py \
+            --variant "${{ matrix.variant }}" --shard "${{ matrix.shard }}" --games 4 \
+            --out "v9/${{ matrix.variant }}_shard_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v9-pregame-${{ matrix.variant }}-${{ matrix.shard }}
+          path: v9/*.json.gz
+          retention-days: 90
+          if-no-files-found: error
+  pool:
+    needs: [smoke,shards]
+    if: ${{ needs.smoke.result == 'success' && needs.shards.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v9-pregame-*
+          merge-multiple: true
+          path: v9
+      - name: Download exact paired v7 source game IDs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p v7
+          gh run download 39343921964 --repo "${{ github.repository }}" \
+            --pattern 'dack-v7-forecast-*' --dir v7
+          test "$(find v7 -name '*.json.gz' | wc -l)" -eq 16
+          test "$(find v9 -name '*.json.gz' | wc -l)" -eq 16
+      - name: Compare game outcomes and changed pregame commitments
+        run: |
+          python -u dack_v9_pregame_gemstone_pool_20261019.py \
+            --n 32 --v7 v7 --v9 v9 \
+            --out dack_v9_pregame_n32_20261019.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v9-gemstone-pregame-n32-report
+          path: dack_v9_pregame_n32_20261019.json
+          retention-days: 90
+      - name: Publish exact-game pregame comparison
+        run: |
+          mkdir -p benchmark_results
+          cp dack_v9_pregame_n32_20261019.json \
+             benchmark_results/dack_v9_gemstone_pregame_n32_20261019.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_v9_gemstone_pregame_n32_20261019.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish v9 Gemstone pregame policy matched results'
+            git pull --rebase origin dack-realistic-v9-pregame-ev-20261019
+            git push
+          fi
