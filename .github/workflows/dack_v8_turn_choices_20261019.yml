@@ -1,0 +1,135 @@
+name: Dack V8 Real Turn Policy Forensics
+on:
+  push:
+    branches: [dack-realistic-v8-turn-policy-audit-20261019]
+    paths:
+      - 'dack_v8_trace_turn_choices_20261019.py'
+      - '.github/workflows/dack_v8_turn_choices_20261019.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify instrumented policy uses original real turn decisions
+        run: |
+          python -m py_compile dack_v8_trace_turn_choices_20261019.py
+          python -u dack_v8_trace_turn_choices_20261019.py --audit
+      - name: Full-game trace and policy-invariance check
+        run: |
+          python -u dack_v8_trace_turn_choices_20261019.py \
+            --variant current --shard 0 --games 1 --out smoke.json.gz
+          python - <<'PY'
+          import gzip,json
+          with gzip.open('smoke.json.gz','rt') as f:q=json.load(f)
+          assert q['schema']=='dack_v8_turn_choice_audit_v1'
+          assert len(q['rows'])==1 and q['rows'][0]['game_id']==0
+          assert any(e['kind']=='pregame' for e in q['rows'][0]['events'])
+          assert all(e['selected_before_draw'] for e in q['rows'][0]['events'] if e['kind']=='upkeep')
+          print('V8_REAL_TURN_POLICY_SMOKE_PASS')
+          PY
+  shards:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 14
+      matrix:
+        variant: [current,buck_worldmap]
+        shard: [0,1,2,3,4,5,6,7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Instrument four real games and every actual turn boundary
+        run: |
+          mkdir -p audit
+          python -u dack_v8_trace_turn_choices_20261019.py \
+            --variant "${{ matrix.variant }}" --shard "${{ matrix.shard }}" --games 4 \
+            --out "audit/${{ matrix.variant }}_shard_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v8-realturn-${{ matrix.variant }}-${{ matrix.shard }}
+          path: audit/*.json.gz
+          retention-days: 90
+          if-no-files-found: error
+  pool:
+    needs: [smoke,shards]
+    if: ${{ needs.smoke.result == 'success' && needs.shards.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v8-realturn-*
+          merge-multiple: true
+          path: audit
+      - name: Identify genuine Gemstone and Mana Vault decision frequencies
+        run: |
+          python - <<'PY'
+          import collections,glob,gzip,json,pathlib
+          files=glob.glob('audit/**/*.json.gz',recursive=True)
+          assert len(files)==16,len(files)
+          out={'status':'PASS','n_per_deck':32,'arms':{}}
+          for variant in ('current','buck_worldmap'):
+              rows={}
+              for file in files:
+                  with gzip.open(file,'rt') as f:q=json.load(f)
+                  if q['variant']!=variant:continue
+                  for r in q['rows']:
+                      assert r['game_id'] not in rows
+                      rows[r['game_id']]=r
+              assert set(rows)==set(range(32))
+              pre=[(r['game_id'],e) for r in rows.values() for e in r['events'] if e['kind']=='pregame']
+              up=[(r['game_id'],e) for r in rows.values() for e in r['events'] if e['kind']=='upkeep']
+              gem=[(id,e) for id,e in pre if e['alternatives']>1]
+              vault=[(id,e) for id,e in up if e['tapped_vault_at_start']]
+              multiple=[(id,e) for id,e in vault if e['alternative_count']>1]
+              out['arms'][variant]={
+                'games':len(rows),'T1':sum(r['win_turn']==1 for r in rows.values()),
+                'T2':sum(0<r['win_turn']<=2 for r in rows.values()),
+                'T3':sum(r['win_turn']>0 for r in rows.values()),
+                'pregame_choices':len(pre),'gemstone_deploy_decisions':len(gem),
+                'gemstone_game_ids':[id for id,_ in gem],
+                'total_real_upkeep_decisions':len(up),
+                'tapped_mana_vault_upkeeps':len(vault),
+                'mana_vault_upkeeps_with_legal_alternatives':len(multiple),
+                'vault_choice_details':[{'game_id':id,'turn':e['turn'],
+                   'alternatives':e['alternative_count'],
+                   'choices':e['choice_list']} for id,e in multiple],
+                'gemstone_choice_details':[{'game_id':id,'choices':e['option_details']}
+                    for id,e in gem]}
+          pathlib.Path('report.json').write_text(json.dumps(out,indent=2)+'\n')
+          print('DACK_V8_REAL_TURN_POLICY_AUDIT_PASS',json.dumps({
+            k:{x:v for x,v in q.items() if 'details' not in x}
+            for k,q in out['arms'].items()}),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v8-turn-policy-forensics-report
+          path: report.json
+          retention-days: 90
+      - name: Publish turn-policy forensics
+        run: |
+          mkdir -p benchmark_results
+          cp report.json benchmark_results/dack_v8_turn_policy_forensics_n32_20261019.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_v8_turn_policy_forensics_n32_20261019.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish decision point frequency and exact upkeep options'
+            git pull --rebase origin dack-realistic-v8-turn-policy-audit-20261019
+            git push
+          fi
