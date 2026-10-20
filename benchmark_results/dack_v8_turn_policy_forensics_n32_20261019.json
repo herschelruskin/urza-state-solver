@@ -1,0 +1,1887 @@
+{
+  "status": "PASS",
+  "n_per_deck": 32,
+  "arms": {
+    "current": {
+      "games": 32,
+      "T1": 1,
+      "T2": 9,
+      "T3": 22,
+      "pregame_choices": 32,
+      "gemstone_deploy_decisions": 3,
+      "gemstone_game_ids": [
+        13,
+        29,
+        1
+      ],
+      "total_real_upkeep_decisions": 54,
+      "tapped_mana_vault_upkeeps": 4,
+      "mana_vault_upkeeps_with_legal_alternatives": 4,
+      "vault_choice_details": [
+        {
+          "game_id": 26,
+          "turn": 2,
+          "alternatives": 2,
+          "choices": [
+            {
+              "choice": 0,
+              "state": {
+                "turn": 2,
+                "hand": [
+                  "Emergence Zone",
+                  "Floating Shield",
+                  "Plains",
+                  "Touch the Spirit Realm",
+                  "Urza's Saga"
+                ],
+                "board": [
+                  {
+                    "card": "Plains",
+                    "tapped": false,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Mana Vault",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Basalt Monolith",
+                    "tapped": false,
+                    "counters": 0
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 91,
+                "public_score": 171
+              },
+              "vault_untapped": false,
+              "heuristic": 171,
+              "chosen": true
+            },
+            {
+              "choice": 1,
+              "state": {
+                "turn": 2,
+                "hand": [
+                  "Emergence Zone",
+                  "Floating Shield",
+                  "Plains",
+                  "Touch the Spirit Realm",
+                  "Urza's Saga"
+                ],
+                "board": [
+                  {
+                    "card": "Plains",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Mana Vault",
+                    "tapped": false,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Basalt Monolith",
+                    "tapped": true,
+                    "counters": 0
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 91,
+                "public_score": 171
+              },
+              "vault_untapped": true,
+              "heuristic": 171,
+              "chosen": false
+            }
+          ]
+        },
+        {
+          "game_id": 26,
+          "turn": 3,
+          "alternatives": 3,
+          "choices": [
+            {
+              "choice": 0,
+              "state": {
+                "turn": 3,
+                "hand": [
+                  "Emergence Zone",
+                  "Expedition Map",
+                  "Floating Shield",
+                  "Touch the Spirit Realm",
+                  "Urza's Saga"
+                ],
+                "board": [
+                  {
+                    "card": "Plains",
+                    "tapped": false,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Mana Vault",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Basalt Monolith",
+                    "tapped": false,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Plains",
+                    "tapped": false,
+                    "counters": 0
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 90,
+                "public_score": 198
+              },
+              "vault_untapped": false,
+              "heuristic": 198,
+              "chosen": true
+            },
+            {
+              "choice": 1,
+              "state": {
+                "turn": 3,
+                "hand": [
+                  "Emergence Zone",
+                  "Expedition Map",
+                  "Floating Shield",
+                  "Touch the Spirit Realm",
+                  "Urza's Saga"
+                ],
+                "board": [
+                  {
+                    "card": "Plains",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Mana Vault",
+                    "tapped": false,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Basalt Monolith",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Plains",
+                    "tapped": false,
+                    "counters": 0
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 90,
+                "public_score": 198
+              },
+              "vault_untapped": true,
+              "heuristic": 198,
+              "chosen": false
+            },
+            {
+              "choice": 2,
+              "state": {
+                "turn": 3,
+                "hand": [
+                  "Emergence Zone",
+                  "Expedition Map",
+                  "Floating Shield",
+                  "Touch the Spirit Realm",
+                  "Urza's Saga"
+                ],
+                "board": [
+                  {
+                    "card": "Plains",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Mana Vault",
+                    "tapped": false,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Basalt Monolith",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Plains",
+                    "tapped": true,
+                    "counters": 0
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 90,
+                "public_score": 198
+              },
+              "vault_untapped": true,
+              "heuristic": 198,
+              "chosen": false
+            }
+          ]
+        },
+        {
+          "game_id": 30,
+          "turn": 2,
+          "alternatives": 2,
+          "choices": [
+            {
+              "choice": 0,
+              "state": {
+                "turn": 2,
+                "hand": [
+                  "The Mind Stone"
+                ],
+                "board": [
+                  {
+                    "card": "The Mycosynth Gardens",
+                    "tapped": false,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Mana Vault",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Chrome Mox",
+                    "tapped": false,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Sol Ring",
+                    "tapped": false,
+                    "counters": 0
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 92,
+                "public_score": 146
+              },
+              "vault_untapped": false,
+              "heuristic": 146,
+              "chosen": false
+            },
+            {
+              "choice": 1,
+              "state": {
+                "turn": 2,
+                "hand": [
+                  "The Mind Stone"
+                ],
+                "board": [
+                  {
+                    "card": "The Mycosynth Gardens",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Mana Vault",
+                    "tapped": false,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Chrome Mox",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Sol Ring",
+                    "tapped": true,
+                    "counters": 0
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 92,
+                "public_score": 218
+              },
+              "vault_untapped": true,
+              "heuristic": 218,
+              "chosen": true
+            }
+          ]
+        },
+        {
+          "game_id": 31,
+          "turn": 2,
+          "alternatives": 2,
+          "choices": [
+            {
+              "choice": 0,
+              "state": {
+                "turn": 2,
+                "hand": [
+                  "Emergence Zone",
+                  "Mantle of the Ancients",
+                  "Plains",
+                  "Twinblade Blessing"
+                ],
+                "board": [
+                  {
+                    "card": "Ancient Tomb",
+                    "tapped": false,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Mana Vault",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Staff of Compleation",
+                    "tapped": false,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Chrome Mox",
+                    "tapped": false,
+                    "counters": 0
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 90,
+                "public_score": 150
+              },
+              "vault_untapped": false,
+              "heuristic": 150,
+              "chosen": false
+            },
+            {
+              "choice": 1,
+              "state": {
+                "turn": 2,
+                "hand": [
+                  "Emergence Zone",
+                  "Mantle of the Ancients",
+                  "Plains",
+                  "Twinblade Blessing"
+                ],
+                "board": [
+                  {
+                    "card": "Ancient Tomb",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Mana Vault",
+                    "tapped": false,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Staff of Compleation",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Chrome Mox",
+                    "tapped": true,
+                    "counters": 0
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 90,
+                "public_score": 222
+              },
+              "vault_untapped": true,
+              "heuristic": 222,
+              "chosen": true
+            }
+          ]
+        }
+      ],
+      "gemstone_choice_details": [
+        {
+          "game_id": 13,
+          "choices": [
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Brainstone",
+                  "Disruptor Flute",
+                  "Gemstone Caverns",
+                  "Lion's Eye Diamond",
+                  "Mind Stone",
+                  "Plains"
+                ],
+                "board": [],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 46
+              },
+              "exiled": [],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Disruptor Flute",
+                  "Lion's Eye Diamond",
+                  "Mind Stone",
+                  "Plains"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 73
+              },
+              "exiled": [
+                "Brainstone"
+              ],
+              "chosen": true
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Brainstone",
+                  "Lion's Eye Diamond",
+                  "Mind Stone",
+                  "Plains"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 73
+              },
+              "exiled": [
+                "Disruptor Flute"
+              ],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Brainstone",
+                  "Disruptor Flute",
+                  "Mind Stone",
+                  "Plains"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 73
+              },
+              "exiled": [
+                "Lion's Eye Diamond"
+              ],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Brainstone",
+                  "Disruptor Flute",
+                  "Lion's Eye Diamond",
+                  "Plains"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 73
+              },
+              "exiled": [
+                "Mind Stone"
+              ],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Brainstone",
+                  "Disruptor Flute",
+                  "Lion's Eye Diamond",
+                  "Mind Stone"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 68
+              },
+              "exiled": [
+                "Plains"
+              ],
+              "chosen": false
+            }
+          ]
+        },
+        {
+          "game_id": 29,
+          "choices": [
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Gemstone Caverns",
+                  "Hardlight Containment",
+                  "Mantle of the Ancients",
+                  "Moonsilver Key",
+                  "Mox Diamond",
+                  "Urza's Saga"
+                ],
+                "board": [],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 28
+              },
+              "exiled": [],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Mantle of the Ancients",
+                  "Moonsilver Key",
+                  "Mox Diamond",
+                  "Urza's Saga"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 73
+              },
+              "exiled": [
+                "Hardlight Containment"
+              ],
+              "chosen": true
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Hardlight Containment",
+                  "Moonsilver Key",
+                  "Mox Diamond",
+                  "Urza's Saga"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 73
+              },
+              "exiled": [
+                "Mantle of the Ancients"
+              ],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Hardlight Containment",
+                  "Mantle of the Ancients",
+                  "Mox Diamond",
+                  "Urza's Saga"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 73
+              },
+              "exiled": [
+                "Moonsilver Key"
+              ],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Hardlight Containment",
+                  "Mantle of the Ancients",
+                  "Moonsilver Key",
+                  "Urza's Saga"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 55
+              },
+              "exiled": [
+                "Mox Diamond"
+              ],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Hardlight Containment",
+                  "Mantle of the Ancients",
+                  "Moonsilver Key",
+                  "Mox Diamond"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 68
+              },
+              "exiled": [
+                "Urza's Saga"
+              ],
+              "chosen": false
+            }
+          ]
+        },
+        {
+          "game_id": 1,
+          "choices": [
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Ancient Den",
+                  "Deafening Silence",
+                  "Enlightened Tutor",
+                  "Gemstone Caverns",
+                  "Great Hall of the Citadel",
+                  "Plains",
+                  "Sheltered by Ghosts"
+                ],
+                "board": [],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 92,
+                "public_score": 51
+              },
+              "exiled": [],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Deafening Silence",
+                  "Enlightened Tutor",
+                  "Great Hall of the Citadel",
+                  "Plains",
+                  "Sheltered by Ghosts"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 92,
+                "public_score": 78
+              },
+              "exiled": [
+                "Ancient Den"
+              ],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Ancient Den",
+                  "Enlightened Tutor",
+                  "Great Hall of the Citadel",
+                  "Plains",
+                  "Sheltered by Ghosts"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 92,
+                "public_score": 83
+              },
+              "exiled": [
+                "Deafening Silence"
+              ],
+              "chosen": true
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Ancient Den",
+                  "Deafening Silence",
+                  "Great Hall of the Citadel",
+                  "Plains",
+                  "Sheltered by Ghosts"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 92,
+                "public_score": 83
+              },
+              "exiled": [
+                "Enlightened Tutor"
+              ],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Ancient Den",
+                  "Deafening Silence",
+                  "Enlightened Tutor",
+                  "Plains",
+                  "Sheltered by Ghosts"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 92,
+                "public_score": 78
+              },
+              "exiled": [
+                "Great Hall of the Citadel"
+              ],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Ancient Den",
+                  "Deafening Silence",
+                  "Enlightened Tutor",
+                  "Great Hall of the Citadel",
+                  "Sheltered by Ghosts"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 92,
+                "public_score": 78
+              },
+              "exiled": [
+                "Plains"
+              ],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Ancient Den",
+                  "Deafening Silence",
+                  "Enlightened Tutor",
+                  "Great Hall of the Citadel",
+                  "Plains"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 92,
+                "public_score": 83
+              },
+              "exiled": [
+                "Sheltered by Ghosts"
+              ],
+              "chosen": false
+            }
+          ]
+        }
+      ]
+    },
+    "buck_worldmap": {
+      "games": 32,
+      "T1": 1,
+      "T2": 12,
+      "T3": 24,
+      "pregame_choices": 32,
+      "gemstone_deploy_decisions": 3,
+      "gemstone_game_ids": [
+        13,
+        1,
+        29
+      ],
+      "total_real_upkeep_decisions": 51,
+      "tapped_mana_vault_upkeeps": 3,
+      "mana_vault_upkeeps_with_legal_alternatives": 3,
+      "vault_choice_details": [
+        {
+          "game_id": 26,
+          "turn": 2,
+          "alternatives": 2,
+          "choices": [
+            {
+              "choice": 0,
+              "state": {
+                "turn": 2,
+                "hand": [
+                  "Emergence Zone",
+                  "Floating Shield",
+                  "Plains",
+                  "Touch the Spirit Realm",
+                  "Urza's Saga"
+                ],
+                "board": [
+                  {
+                    "card": "Plains",
+                    "tapped": false,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Mana Vault",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Basalt Monolith",
+                    "tapped": false,
+                    "counters": 0
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 91,
+                "public_score": 171
+              },
+              "vault_untapped": false,
+              "heuristic": 171,
+              "chosen": true
+            },
+            {
+              "choice": 1,
+              "state": {
+                "turn": 2,
+                "hand": [
+                  "Emergence Zone",
+                  "Floating Shield",
+                  "Plains",
+                  "Touch the Spirit Realm",
+                  "Urza's Saga"
+                ],
+                "board": [
+                  {
+                    "card": "Plains",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Mana Vault",
+                    "tapped": false,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Basalt Monolith",
+                    "tapped": true,
+                    "counters": 0
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 91,
+                "public_score": 171
+              },
+              "vault_untapped": true,
+              "heuristic": 171,
+              "chosen": false
+            }
+          ]
+        },
+        {
+          "game_id": 26,
+          "turn": 3,
+          "alternatives": 3,
+          "choices": [
+            {
+              "choice": 0,
+              "state": {
+                "turn": 3,
+                "hand": [
+                  "Emergence Zone",
+                  "Expedition Map",
+                  "Floating Shield",
+                  "Touch the Spirit Realm",
+                  "Urza's Saga"
+                ],
+                "board": [
+                  {
+                    "card": "Plains",
+                    "tapped": false,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Mana Vault",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Basalt Monolith",
+                    "tapped": false,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Plains",
+                    "tapped": false,
+                    "counters": 0
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 90,
+                "public_score": 198
+              },
+              "vault_untapped": false,
+              "heuristic": 198,
+              "chosen": true
+            },
+            {
+              "choice": 1,
+              "state": {
+                "turn": 3,
+                "hand": [
+                  "Emergence Zone",
+                  "Expedition Map",
+                  "Floating Shield",
+                  "Touch the Spirit Realm",
+                  "Urza's Saga"
+                ],
+                "board": [
+                  {
+                    "card": "Plains",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Mana Vault",
+                    "tapped": false,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Basalt Monolith",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Plains",
+                    "tapped": false,
+                    "counters": 0
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 90,
+                "public_score": 198
+              },
+              "vault_untapped": true,
+              "heuristic": 198,
+              "chosen": false
+            },
+            {
+              "choice": 2,
+              "state": {
+                "turn": 3,
+                "hand": [
+                  "Emergence Zone",
+                  "Expedition Map",
+                  "Floating Shield",
+                  "Touch the Spirit Realm",
+                  "Urza's Saga"
+                ],
+                "board": [
+                  {
+                    "card": "Plains",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Mana Vault",
+                    "tapped": false,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Basalt Monolith",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Plains",
+                    "tapped": true,
+                    "counters": 0
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 90,
+                "public_score": 198
+              },
+              "vault_untapped": true,
+              "heuristic": 198,
+              "chosen": false
+            }
+          ]
+        },
+        {
+          "game_id": 30,
+          "turn": 2,
+          "alternatives": 2,
+          "choices": [
+            {
+              "choice": 0,
+              "state": {
+                "turn": 2,
+                "hand": [
+                  "The Mind Stone"
+                ],
+                "board": [
+                  {
+                    "card": "The Mycosynth Gardens",
+                    "tapped": false,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Mana Vault",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Chrome Mox",
+                    "tapped": false,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Sol Ring",
+                    "tapped": false,
+                    "counters": 0
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 92,
+                "public_score": 146
+              },
+              "vault_untapped": false,
+              "heuristic": 146,
+              "chosen": false
+            },
+            {
+              "choice": 1,
+              "state": {
+                "turn": 2,
+                "hand": [
+                  "The Mind Stone"
+                ],
+                "board": [
+                  {
+                    "card": "The Mycosynth Gardens",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Mana Vault",
+                    "tapped": false,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Chrome Mox",
+                    "tapped": true,
+                    "counters": 0
+                  },
+                  {
+                    "card": "Sol Ring",
+                    "tapped": true,
+                    "counters": 0
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 92,
+                "public_score": 218
+              },
+              "vault_untapped": true,
+              "heuristic": 218,
+              "chosen": true
+            }
+          ]
+        }
+      ],
+      "gemstone_choice_details": [
+        {
+          "game_id": 13,
+          "choices": [
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Brainstone",
+                  "Disruptor Flute",
+                  "Gemstone Caverns",
+                  "Lion's Eye Diamond",
+                  "Mind Stone",
+                  "Plains"
+                ],
+                "board": [],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 46
+              },
+              "exiled": [],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Disruptor Flute",
+                  "Lion's Eye Diamond",
+                  "Mind Stone",
+                  "Plains"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 73
+              },
+              "exiled": [
+                "Brainstone"
+              ],
+              "chosen": true
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Brainstone",
+                  "Lion's Eye Diamond",
+                  "Mind Stone",
+                  "Plains"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 73
+              },
+              "exiled": [
+                "Disruptor Flute"
+              ],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Brainstone",
+                  "Disruptor Flute",
+                  "Mind Stone",
+                  "Plains"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 73
+              },
+              "exiled": [
+                "Lion's Eye Diamond"
+              ],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Brainstone",
+                  "Disruptor Flute",
+                  "Lion's Eye Diamond",
+                  "Plains"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 73
+              },
+              "exiled": [
+                "Mind Stone"
+              ],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Brainstone",
+                  "Disruptor Flute",
+                  "Lion's Eye Diamond",
+                  "Mind Stone"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 68
+              },
+              "exiled": [
+                "Plains"
+              ],
+              "chosen": false
+            }
+          ]
+        },
+        {
+          "game_id": 1,
+          "choices": [
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Ancient Den",
+                  "Deafening Silence",
+                  "Enlightened Tutor",
+                  "Gemstone Caverns",
+                  "Great Hall of the Citadel",
+                  "Plains",
+                  "Sheltered by Ghosts"
+                ],
+                "board": [],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 92,
+                "public_score": 51
+              },
+              "exiled": [],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Deafening Silence",
+                  "Enlightened Tutor",
+                  "Great Hall of the Citadel",
+                  "Plains",
+                  "Sheltered by Ghosts"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 92,
+                "public_score": 78
+              },
+              "exiled": [
+                "Ancient Den"
+              ],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Ancient Den",
+                  "Enlightened Tutor",
+                  "Great Hall of the Citadel",
+                  "Plains",
+                  "Sheltered by Ghosts"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 92,
+                "public_score": 83
+              },
+              "exiled": [
+                "Deafening Silence"
+              ],
+              "chosen": true
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Ancient Den",
+                  "Deafening Silence",
+                  "Great Hall of the Citadel",
+                  "Plains",
+                  "Sheltered by Ghosts"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 92,
+                "public_score": 83
+              },
+              "exiled": [
+                "Enlightened Tutor"
+              ],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Ancient Den",
+                  "Deafening Silence",
+                  "Enlightened Tutor",
+                  "Plains",
+                  "Sheltered by Ghosts"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 92,
+                "public_score": 78
+              },
+              "exiled": [
+                "Great Hall of the Citadel"
+              ],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Ancient Den",
+                  "Deafening Silence",
+                  "Enlightened Tutor",
+                  "Great Hall of the Citadel",
+                  "Sheltered by Ghosts"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 92,
+                "public_score": 78
+              },
+              "exiled": [
+                "Plains"
+              ],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Ancient Den",
+                  "Deafening Silence",
+                  "Enlightened Tutor",
+                  "Great Hall of the Citadel",
+                  "Plains"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 92,
+                "public_score": 83
+              },
+              "exiled": [
+                "Sheltered by Ghosts"
+              ],
+              "chosen": false
+            }
+          ]
+        },
+        {
+          "game_id": 29,
+          "choices": [
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Gemstone Caverns",
+                  "Hardlight Containment",
+                  "Mantle of the Ancients",
+                  "Moonsilver Key",
+                  "Mox Diamond",
+                  "Urza's Saga"
+                ],
+                "board": [],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 28
+              },
+              "exiled": [],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Mantle of the Ancients",
+                  "Moonsilver Key",
+                  "Mox Diamond",
+                  "Urza's Saga"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 73
+              },
+              "exiled": [
+                "Hardlight Containment"
+              ],
+              "chosen": true
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Hardlight Containment",
+                  "Moonsilver Key",
+                  "Mox Diamond",
+                  "Urza's Saga"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 73
+              },
+              "exiled": [
+                "Mantle of the Ancients"
+              ],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Hardlight Containment",
+                  "Mantle of the Ancients",
+                  "Mox Diamond",
+                  "Urza's Saga"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 73
+              },
+              "exiled": [
+                "Moonsilver Key"
+              ],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Hardlight Containment",
+                  "Mantle of the Ancients",
+                  "Moonsilver Key",
+                  "Urza's Saga"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 55
+              },
+              "exiled": [
+                "Mox Diamond"
+              ],
+              "chosen": false
+            },
+            {
+              "state": {
+                "turn": 1,
+                "hand": [
+                  "Hardlight Containment",
+                  "Mantle of the Ancients",
+                  "Moonsilver Key",
+                  "Mox Diamond"
+                ],
+                "board": [
+                  {
+                    "card": "Gemstone Caverns",
+                    "tapped": false,
+                    "counters": 1
+                  }
+                ],
+                "w": 0,
+                "c": 0,
+                "any": 0,
+                "treasures": 0,
+                "land_played": false,
+                "library_count": 93,
+                "public_score": 68
+              },
+              "exiled": [
+                "Urza's Saga"
+              ],
+              "chosen": false
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
