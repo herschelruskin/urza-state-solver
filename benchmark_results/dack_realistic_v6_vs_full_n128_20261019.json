@@ -1,0 +1,164 @@
+{
+  "status": "PASS",
+  "n_per_deck": 128,
+  "design": "Same paired game IDs, exact decks, frozen original Full Beam=240 vs Realistic v6 gameplay=120, stratified chance-aware turn planning and independent Bucknard die",
+  "arms": {
+    "current": {
+      "realistic_v6": {
+        "n": 128,
+        "by_T1_pct": 4.6875,
+        "by_T2_pct": 33.5938,
+        "by_T3_pct": 71.0938,
+        "mean_keep": 5.461
+      },
+      "full_beam_optimistic": {
+        "n": 128,
+        "by_T1_pct": 4.6875,
+        "by_T2_pct": 39.8438,
+        "by_T3_pct": 80.4688,
+        "mean_keep": 5.461
+      },
+      "realistic_minus_full": {
+        "T1": {
+          "delta_pp": 0.0,
+          "paired_normal_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "a_only": 0,
+          "b_only": 0
+        },
+        "T2": {
+          "delta_pp": -6.25,
+          "paired_normal_95pct_pp": [
+            -10.46,
+            -2.04
+          ],
+          "a_only": 0,
+          "b_only": 8
+        },
+        "T3": {
+          "delta_pp": -9.375,
+          "paired_normal_95pct_pp": [
+            -14.444,
+            -4.306
+          ],
+          "a_only": 0,
+          "b_only": 12
+        }
+      }
+    },
+    "buck_worldmap": {
+      "realistic_v6": {
+        "n": 128,
+        "by_T1_pct": 5.4688,
+        "by_T2_pct": 35.9375,
+        "by_T3_pct": 75.7812,
+        "mean_keep": 5.461
+      },
+      "full_beam_optimistic": {
+        "n": 128,
+        "by_T1_pct": 6.25,
+        "by_T2_pct": 47.6562,
+        "by_T3_pct": 85.9375,
+        "mean_keep": 5.609
+      },
+      "realistic_minus_full": {
+        "T1": {
+          "delta_pp": -0.7812,
+          "paired_normal_95pct_pp": [
+            -2.312,
+            0.75
+          ],
+          "a_only": 0,
+          "b_only": 1
+        },
+        "T2": {
+          "delta_pp": -11.7188,
+          "paired_normal_95pct_pp": [
+            -17.313,
+            -6.125
+          ],
+          "a_only": 0,
+          "b_only": 15
+        },
+        "T3": {
+          "delta_pp": -10.1562,
+          "paired_normal_95pct_pp": [
+            -15.41,
+            -4.903
+          ],
+          "a_only": 0,
+          "b_only": 13
+        }
+      }
+    }
+  },
+  "paired_swap": {
+    "real": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "paired_normal_95pct_pp": [
+          -0.75,
+          2.312
+        ],
+        "a_only": 1,
+        "b_only": 0
+      },
+      "T2": {
+        "delta_pp": 2.3438,
+        "paired_normal_95pct_pp": [
+          -1.703,
+          6.39
+        ],
+        "a_only": 5,
+        "b_only": 2
+      },
+      "T3": {
+        "delta_pp": 4.6875,
+        "paired_normal_95pct_pp": [
+          1.011,
+          8.364
+        ],
+        "a_only": 6,
+        "b_only": 0
+      }
+    },
+    "full": {
+      "T1": {
+        "delta_pp": 1.5625,
+        "paired_normal_95pct_pp": [
+          -0.594,
+          3.719
+        ],
+        "a_only": 2,
+        "b_only": 0
+      },
+      "T2": {
+        "delta_pp": 7.8125,
+        "paired_normal_95pct_pp": [
+          2.223,
+          13.402
+        ],
+        "a_only": 12,
+        "b_only": 2
+      },
+      "T3": {
+        "delta_pp": 5.4688,
+        "paired_normal_95pct_pp": [
+          0.46,
+          10.478
+        ],
+        "a_only": 9,
+        "b_only": 2
+      }
+    }
+  },
+  "limitations": [
+    "Full Beam is intentionally clairvoyant and its absolute rates are not realistic match win probabilities",
+    "Realistic v6 still inherits within-turn hidden-information peek in certain tutor/draw action sequences",
+    "N128 is exploratory for effects of 1-3 percentage points",
+    "Goldfish Dack deployment proxy, not a full multiplayer game or combo proof",
+    "The two engines also differ in beam width and policy quality, so their gap is not solely hindsight"
+  ]
+}
