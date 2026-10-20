@@ -1,0 +1,222 @@
+{
+  "status": "PASS",
+  "games_per_deck": 64,
+  "decks": {
+    "current": {
+      "eligible_games": [
+        29,
+        13,
+        1
+      ],
+      "eligible_count": 3,
+      "gemstone_seen_in_kept_hand_count": 5,
+      "static_deploy_count": 3,
+      "eligible_options": [
+        {
+          "game_id": 29,
+          "options": 6,
+          "opening_hand": [
+            "Gemstone Caverns",
+            "Hardlight Containment",
+            "Mantle of the Ancients",
+            "Moonsilver Key",
+            "Mox Diamond",
+            "Urza's Saga"
+          ],
+          "exiles": [
+            [
+              "Hardlight Containment"
+            ],
+            [
+              "Mantle of the Ancients"
+            ],
+            [
+              "Moonsilver Key"
+            ],
+            [
+              "Mox Diamond"
+            ],
+            [
+              "Urza's Saga"
+            ]
+          ],
+          "static_deploy": true
+        },
+        {
+          "game_id": 13,
+          "options": 6,
+          "opening_hand": [
+            "Brainstone",
+            "Disruptor Flute",
+            "Gemstone Caverns",
+            "Lion's Eye Diamond",
+            "Mind Stone",
+            "Plains"
+          ],
+          "exiles": [
+            [
+              "Brainstone"
+            ],
+            [
+              "Disruptor Flute"
+            ],
+            [
+              "Lion's Eye Diamond"
+            ],
+            [
+              "Mind Stone"
+            ],
+            [
+              "Plains"
+            ]
+          ],
+          "static_deploy": true
+        },
+        {
+          "game_id": 1,
+          "options": 7,
+          "opening_hand": [
+            "Ancient Den",
+            "Deafening Silence",
+            "Enlightened Tutor",
+            "Gemstone Caverns",
+            "Great Hall of the Citadel",
+            "Plains",
+            "Sheltered by Ghosts"
+          ],
+          "exiles": [
+            [
+              "Ancient Den"
+            ],
+            [
+              "Deafening Silence"
+            ],
+            [
+              "Enlightened Tutor"
+            ],
+            [
+              "Great Hall of the Citadel"
+            ],
+            [
+              "Plains"
+            ],
+            [
+              "Sheltered by Ghosts"
+            ]
+          ],
+          "static_deploy": true
+        }
+      ]
+    },
+    "buck_worldmap": {
+      "eligible_games": [
+        29,
+        1,
+        13
+      ],
+      "eligible_count": 3,
+      "gemstone_seen_in_kept_hand_count": 4,
+      "static_deploy_count": 3,
+      "eligible_options": [
+        {
+          "game_id": 29,
+          "options": 6,
+          "opening_hand": [
+            "Gemstone Caverns",
+            "Hardlight Containment",
+            "Mantle of the Ancients",
+            "Moonsilver Key",
+            "Mox Diamond",
+            "Urza's Saga"
+          ],
+          "exiles": [
+            [
+              "Hardlight Containment"
+            ],
+            [
+              "Mantle of the Ancients"
+            ],
+            [
+              "Moonsilver Key"
+            ],
+            [
+              "Mox Diamond"
+            ],
+            [
+              "Urza's Saga"
+            ]
+          ],
+          "static_deploy": true
+        },
+        {
+          "game_id": 1,
+          "options": 7,
+          "opening_hand": [
+            "Ancient Den",
+            "Deafening Silence",
+            "Enlightened Tutor",
+            "Gemstone Caverns",
+            "Great Hall of the Citadel",
+            "Plains",
+            "Sheltered by Ghosts"
+          ],
+          "exiles": [
+            [
+              "Ancient Den"
+            ],
+            [
+              "Deafening Silence"
+            ],
+            [
+              "Enlightened Tutor"
+            ],
+            [
+              "Great Hall of the Citadel"
+            ],
+            [
+              "Plains"
+            ],
+            [
+              "Sheltered by Ghosts"
+            ]
+          ],
+          "static_deploy": true
+        },
+        {
+          "game_id": 13,
+          "options": 6,
+          "opening_hand": [
+            "Brainstone",
+            "Disruptor Flute",
+            "Gemstone Caverns",
+            "Lion's Eye Diamond",
+            "Mind Stone",
+            "Plains"
+          ],
+          "exiles": [
+            [
+              "Brainstone"
+            ],
+            [
+              "Disruptor Flute"
+            ],
+            [
+              "Lion's Eye Diamond"
+            ],
+            [
+              "Mind Stone"
+            ],
+            [
+              "Plains"
+            ]
+          ],
+          "static_deploy": true
+        }
+      ]
+    }
+  },
+  "limitations": [
+    "Census only; not a changed gameplay policy",
+    "Kept hand and mulligans are inherited, not independently optimized"
+  ]
+}
