@@ -1,0 +1,197 @@
+{
+  "status": "PASS",
+  "scope": "Three preselected Gemstone-eligible game IDs per deck; not population statistics",
+  "cases": [
+    {
+      "variant": "buck_worldmap",
+      "game_id": 1,
+      "v6_turn": 2,
+      "v9_turn": 2,
+      "changed_pregame": false,
+      "choice_details": [
+        {
+          "game_id": 1,
+          "seat": 2,
+          "options": 7,
+          "static_index": 2,
+          "ev_index": 2,
+          "static_exiled": [
+            "Deafening Silence"
+          ],
+          "ev_exiled": [
+            "Deafening Silence"
+          ],
+          "values": [
+            0.64071784,
+            1.5,
+            1.5,
+            0.02217155,
+            1.5,
+            1.5,
+            1.5
+          ],
+          "changed": false
+        }
+      ]
+    },
+    {
+      "variant": "buck_worldmap",
+      "game_id": 13,
+      "v6_turn": 2,
+      "v9_turn": 2,
+      "changed_pregame": true,
+      "choice_details": [
+        {
+          "game_id": 13,
+          "seat": 1,
+          "options": 6,
+          "static_index": 1,
+          "ev_index": 2,
+          "static_exiled": [
+            "Brainstone"
+          ],
+          "ev_exiled": [
+            "Disruptor Flute"
+          ],
+          "values": [
+            0.49071497,
+            1.08868878,
+            1.094493,
+            0.06787926,
+            1.02645305,
+            0.03409567
+          ],
+          "changed": true
+        }
+      ]
+    },
+    {
+      "variant": "buck_worldmap",
+      "game_id": 29,
+      "v6_turn": 3,
+      "v9_turn": 3,
+      "changed_pregame": true,
+      "choice_details": [
+        {
+          "game_id": 29,
+          "seat": 1,
+          "options": 6,
+          "static_index": 1,
+          "ev_index": 4,
+          "static_exiled": [
+            "Hardlight Containment"
+          ],
+          "ev_exiled": [
+            "Mox Diamond"
+          ],
+          "values": [
+            0.23476548,
+            0.09915594,
+            0.09915594,
+            0.09815085,
+            0.23476548,
+            0.00950929
+          ],
+          "changed": true
+        }
+      ]
+    },
+    {
+      "variant": "current",
+      "game_id": 1,
+      "v6_turn": 2,
+      "v9_turn": 2,
+      "changed_pregame": false,
+      "choice_details": [
+        {
+          "game_id": 1,
+          "seat": 2,
+          "options": 7,
+          "static_index": 2,
+          "ev_index": 2,
+          "static_exiled": [
+            "Deafening Silence"
+          ],
+          "ev_exiled": [
+            "Deafening Silence"
+          ],
+          "values": [
+            0.64079031,
+            1.5,
+            1.5,
+            0.02228662,
+            1.5,
+            1.5,
+            1.5
+          ],
+          "changed": false
+        }
+      ]
+    },
+    {
+      "variant": "current",
+      "game_id": 13,
+      "v6_turn": 2,
+      "v9_turn": 2,
+      "changed_pregame": true,
+      "choice_details": [
+        {
+          "game_id": 13,
+          "seat": 1,
+          "options": 6,
+          "static_index": 1,
+          "ev_index": 2,
+          "static_exiled": [
+            "Brainstone"
+          ],
+          "ev_exiled": [
+            "Disruptor Flute"
+          ],
+          "values": [
+            0.6183789,
+            1.09687522,
+            1.09687908,
+            0.06540353,
+            1.02041356,
+            0.03466324
+          ],
+          "changed": true
+        }
+      ]
+    },
+    {
+      "variant": "current",
+      "game_id": 29,
+      "v6_turn": 3,
+      "v9_turn": 3,
+      "changed_pregame": true,
+      "choice_details": [
+        {
+          "game_id": 29,
+          "seat": 1,
+          "options": 6,
+          "static_index": 1,
+          "ev_index": 0,
+          "static_exiled": [
+            "Hardlight Containment"
+          ],
+          "ev_exiled": [],
+          "values": [
+            0.23012833,
+            0.14365032,
+            0.14365032,
+            0.15226641,
+            0.22755704,
+            0.01394042
+          ],
+          "changed": true
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Selected known Gemstone cases, so effect size is not a population estimate",
+    "One stratified first-draw sample per card category",
+    "More future-draw samples could change the estimated policy"
+  ]
+}
