@@ -3140,7 +3140,12 @@ def keep_weighted_ev_seat(
         return out
 
     import random
-    base=list(unknown_lib); n=len(base)
+    # INFORMATION-SET CORRECTION (Realistic Beam v10, 2026-10-19):
+    # The remaining library is a known MULTISET, but its order is unknown.
+    # Sampling indexes from the physical shuffled library silently fed future
+    # order into London mulligan and bottoming decisions. Canonicalize ONLY
+    # the Monte Carlo draw pool, not the actual shuffled gameplay library.
+    base=sorted(unknown_lib); n=len(base)
     if n<3:
         out={"utility":0.0,"t1":0.0,"t2":0.0,"t3":0.0,"le2":0.0,"le3":0.0}
         _WEIGHTED_SEAT_CACHE[ck]=out
