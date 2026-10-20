@@ -1,0 +1,309 @@
+{
+  "status": "PASS",
+  "design": "Change only real-turn Mana Vault upkeep commitment from score-based to pre-draw stratified chance EV; all card rules, mulligans and turn-end reward remain v6",
+  "n_per_arm": 32,
+  "decks": {
+    "current": {
+      "v6": {
+        "n": 32,
+        "by_turn_pct": {
+          "T1": 3.125,
+          "T2": 28.125,
+          "T3": 68.75
+        },
+        "mean_keep": 5.656
+      },
+      "v8": {
+        "n": 32,
+        "by_turn_pct": {
+          "T1": 3.125,
+          "T2": 28.125,
+          "T3": 68.75
+        },
+        "mean_keep": 5.656
+      },
+      "v8_minus_v6": {
+        "T1": {
+          "delta_pp": 0.0,
+          "paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v8_only": [],
+          "v6_only": []
+        },
+        "T2": {
+          "delta_pp": 0.0,
+          "paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v8_only": [],
+          "v6_only": []
+        },
+        "T3": {
+          "delta_pp": 0.0,
+          "paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v8_only": [],
+          "v6_only": []
+        }
+      },
+      "upkeep_options_multiple_total": 4,
+      "upkeep_decisions_changed_total": 0,
+      "upkeep_decisions_changed_game_ids": [],
+      "upkeep_rollout_count_total": 54,
+      "upkeep_detailed_logs": {
+        "26": [
+          {
+            "turn": 2,
+            "options": 2,
+            "old_score": 171,
+            "new_score": 171,
+            "old_upkeep_choice": "(('Plains', False), ('Mana Vault', True), ('Basalt Monolith', False))",
+            "new_upkeep_choice": "(('Plains', False), ('Mana Vault', True), ('Basalt Monolith', False))",
+            "ev_values": [
+              0.501495,
+              0.501265
+            ],
+            "changed": false
+          },
+          {
+            "turn": 3,
+            "options": 3,
+            "old_score": 198,
+            "new_score": 198,
+            "old_upkeep_choice": "(('Plains', False), ('Mana Vault', True), ('Basalt Monolith', False), ('Plains', False))",
+            "new_upkeep_choice": "(('Plains', False), ('Mana Vault', True), ('Basalt Monolith', False), ('Plains', False))",
+            "ev_values": [
+              0.5,
+              0.062411,
+              0.001294
+            ],
+            "changed": false
+          }
+        ],
+        "30": [
+          {
+            "turn": 2,
+            "options": 2,
+            "old_score": 218,
+            "new_score": 218,
+            "old_upkeep_choice": "(('The Mycosynth Gardens', True), ('Mana Vault', False), ('Chrome Mox', True), ('Sol Ring', True))",
+            "new_upkeep_choice": "(('The Mycosynth Gardens', True), ('Mana Vault', False), ('Chrome Mox', True), ('Sol Ring', True))",
+            "ev_values": [
+              0.23797,
+              0.455033
+            ],
+            "changed": false
+          }
+        ],
+        "31": [
+          {
+            "turn": 2,
+            "options": 2,
+            "old_score": 222,
+            "new_score": 222,
+            "old_upkeep_choice": "(('Ancient Tomb', True), ('Mana Vault', False), ('Staff of Compleation', True), ('Chrome Mox', True))",
+            "new_upkeep_choice": "(('Ancient Tomb', True), ('Mana Vault', False), ('Staff of Compleation', True), ('Chrome Mox', True))",
+            "ev_values": [
+              0.184759,
+              0.440388
+            ],
+            "changed": false
+          }
+        ]
+      },
+      "shards": [
+        8,
+        8
+      ]
+    },
+    "buck_worldmap": {
+      "v6": {
+        "n": 32,
+        "by_turn_pct": {
+          "T1": 3.125,
+          "T2": 37.5,
+          "T3": 75.0
+        },
+        "mean_keep": 5.562
+      },
+      "v8": {
+        "n": 32,
+        "by_turn_pct": {
+          "T1": 3.125,
+          "T2": 37.5,
+          "T3": 75.0
+        },
+        "mean_keep": 5.562
+      },
+      "v8_minus_v6": {
+        "T1": {
+          "delta_pp": 0.0,
+          "paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v8_only": [],
+          "v6_only": []
+        },
+        "T2": {
+          "delta_pp": 0.0,
+          "paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v8_only": [],
+          "v6_only": []
+        },
+        "T3": {
+          "delta_pp": 0.0,
+          "paired_95pct_pp": [
+            0.0,
+            0.0
+          ],
+          "v8_only": [],
+          "v6_only": []
+        }
+      },
+      "upkeep_options_multiple_total": 3,
+      "upkeep_decisions_changed_total": 0,
+      "upkeep_decisions_changed_game_ids": [],
+      "upkeep_rollout_count_total": 42,
+      "upkeep_detailed_logs": {
+        "26": [
+          {
+            "turn": 2,
+            "options": 2,
+            "old_score": 171,
+            "new_score": 171,
+            "old_upkeep_choice": "(('Plains', False), ('Mana Vault', True), ('Basalt Monolith', False))",
+            "new_upkeep_choice": "(('Plains', False), ('Mana Vault', True), ('Basalt Monolith', False))",
+            "ev_values": [
+              0.501458,
+              0.501235
+            ],
+            "changed": false
+          },
+          {
+            "turn": 3,
+            "options": 3,
+            "old_score": 198,
+            "new_score": 198,
+            "old_upkeep_choice": "(('Plains', False), ('Mana Vault', True), ('Basalt Monolith', False), ('Plains', False))",
+            "new_upkeep_choice": "(('Plains', False), ('Mana Vault', True), ('Basalt Monolith', False), ('Plains', False))",
+            "ev_values": [
+              0.5,
+              0.062411,
+              0.001294
+            ],
+            "changed": false
+          }
+        ],
+        "30": [
+          {
+            "turn": 2,
+            "options": 2,
+            "old_score": 218,
+            "new_score": 218,
+            "old_upkeep_choice": "(('The Mycosynth Gardens', True), ('Mana Vault', False), ('Chrome Mox', True), ('Sol Ring', True))",
+            "new_upkeep_choice": "(('The Mycosynth Gardens', True), ('Mana Vault', False), ('Chrome Mox', True), ('Sol Ring', True))",
+            "ev_values": [
+              0.055875,
+              0.501177
+            ],
+            "changed": false
+          }
+        ]
+      },
+      "shards": [
+        8,
+        8
+      ]
+    }
+  },
+  "deck_swap": {
+    "v8": {
+      "T1": {
+        "delta_pp": 0.0,
+        "paired_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "v8_only": [],
+        "v6_only": []
+      },
+      "T2": {
+        "delta_pp": 9.375,
+        "paired_95pct_pp": [
+          -0.886,
+          19.636
+        ],
+        "v8_only": [
+          2,
+          9,
+          31
+        ],
+        "v6_only": []
+      },
+      "T3": {
+        "delta_pp": 6.25,
+        "paired_95pct_pp": [
+          -2.271,
+          14.771
+        ],
+        "v8_only": [
+          2,
+          9
+        ],
+        "v6_only": []
+      }
+    },
+    "v6": {
+      "T1": {
+        "delta_pp": 0.0,
+        "paired_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "v8_only": [],
+        "v6_only": []
+      },
+      "T2": {
+        "delta_pp": 9.375,
+        "paired_95pct_pp": [
+          -0.886,
+          19.636
+        ],
+        "v8_only": [
+          2,
+          9,
+          31
+        ],
+        "v6_only": []
+      },
+      "T3": {
+        "delta_pp": 6.25,
+        "paired_95pct_pp": [
+          -2.271,
+          14.771
+        ],
+        "v8_only": [
+          2,
+          9
+        ],
+        "v6_only": []
+      }
+    }
+  },
+  "limitations": [
+    "N32 exploratory; game differences are not statistically calibrated",
+    "Upkeep comparison uses 6 stratified same-turn draw scenarios",
+    "Within-turn hidden draw/action lookahead is inherited and still unresolved",
+    "Known-top tutor metadata covers only selected tutors",
+    "Goldfish Dack casting is not full interactive cEDH win rate"
+  ]
+}
