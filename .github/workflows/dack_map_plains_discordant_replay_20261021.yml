@@ -1,0 +1,86 @@
+name: Dack Map Plains 24-Game Forensic Replay
+on:
+  push:
+    branches: [dack-map-plains-discordant-forensics-20261021]
+    paths:
+      - 'dack_map_plains_discordant_replay_20261021.py'
+      - '.github/workflows/dack_map_plains_discordant_replay_20261021.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check 24 T2 discordant cases
+        run: |
+          python -m py_compile dack_map_plains_discordant_replay_20261021.py
+          python -u dack_map_plains_discordant_replay_20261021.py --audit
+  shard:
+    needs: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        shard: [0,1,2,3,4,5]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Replay mulligans and test Map search against held hand
+        run: |
+          mkdir -p shards
+          python -u dack_map_plains_discordant_replay_20261021.py \
+            --shard ${{ matrix.shard }} --chunk 4 \
+            --out "shards/disagreement_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: forensic-shard-${{ matrix.shard }}
+          path: shards/*.json.gz
+          retention-days: 30
+          if-no-files-found: error
+  pool:
+    needs: [audit,shard]
+    if: ${{ needs.shard.result == 'success' && needs.audit.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: forensic-shard-*
+          merge-multiple: true
+          path: shards
+      - name: Verify 24 replay IDs and summarize stage effects
+        run: |
+          python -u dack_map_plains_discordant_replay_20261021.py \
+            --pool --path shards --expected 24 \
+            --out dack_map_plains_forensic_n24.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: forensic-n24-published
+          path: dack_map_plains_forensic_n24.json
+          if-no-files-found: error
+      - name: Commit replay report
+        run: |
+          mkdir -p benchmark_results
+          cp dack_map_plains_forensic_n24.json benchmark_results/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_map_plains_forensic_n24.json
+          git commit -m 'Publish Map versus Plains mulligan and search replay audit'
+          git push
