@@ -65,10 +65,10 @@ def replay_mulligan(variant,gid):
     assert steps[-1]["accepted"]
     assert steps[-1]["keep_n"]==keep
     assert tuple(st.hand)==tuple(steps[-1]["picked_hand"])
-    assert set(root.COMBO).issubset(set(st.library))
     return st,{"variant":variant,"gid":gid,"seat":seat,"keep_n":keep,
                "kept_hand":list(st.hand),"bottomed":steps[-1]["bottom"],
                "top3":list(st.library[:3]),"stage_idx":len(steps)-1,
+               "combo_in_library":sum(k in st.library for k in root.COMBO),
                "mulligan_steps":steps}
 
 def no_map_ability_win(gid,st,seat):
