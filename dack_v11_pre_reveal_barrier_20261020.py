@@ -17,7 +17,7 @@ from __future__ import annotations
 import argparse,gzip,hashlib,itertools,json,random,time
 from collections import Counter
 from dataclasses import replace
-import dack_realistic_v10_blind_mulligan_20261019 as v10
+import dack_v10_blind_mulligan_20261019 as v10
 
 v7=v10.v7; v6=v7.v6; v4=v6.v4; v2=v7.v2; v1=v7.v1
 fair=v7.fair; d=v7.d; root=v7.root; m=v6.m
