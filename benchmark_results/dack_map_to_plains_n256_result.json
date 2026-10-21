@@ -1,0 +1,67 @@
+{
+  "status": "PASS",
+  "n_paired": 256,
+  "beam": 160,
+  "deck_sha": {
+    "current34": "a1c8e05dc3f9e1bcfbfbe2f7773ea4a5e62222d3440dd2f7417fd7f2f058c422",
+    "plains35": "0948b833ffa9cf4a6bde6d78cf6e4c36187b39c21cabdb47c743e1bd1fffcf70"
+  },
+  "scope": "historical full-beam Dack cast goldfish, all 3 combo creatures required in library; no opponents",
+  "change": [
+    "World Map",
+    "Plains"
+  ],
+  "current34": {
+    "counts": {
+      "0": 45,
+      "1": 16,
+      "2": 102,
+      "3": 93
+    },
+    "by_T1_pct": 6.25,
+    "by_T2_pct": 46.0938,
+    "by_T3_pct": 82.4219,
+    "mean_keep": 5.6211
+  },
+  "plains35": {
+    "counts": {
+      "0": 46,
+      "1": 14,
+      "2": 100,
+      "3": 96
+    },
+    "by_T1_pct": 5.4688,
+    "by_T2_pct": 44.5312,
+    "by_T3_pct": 82.0312,
+    "mean_keep": 5.5898
+  },
+  "paired_plains35_minus_current34": {
+    "by_T1": {
+      "delta_pp": -0.7812,
+      "paired_95pct_pp": [
+        -1.862,
+        0.299
+      ],
+      "gain_only": 0,
+      "loss_only": 2
+    },
+    "by_T2": {
+      "delta_pp": -1.5625,
+      "paired_95pct_pp": [
+        -5.316,
+        2.191
+      ],
+      "gain_only": 10,
+      "loss_only": 14
+    },
+    "by_T3": {
+      "delta_pp": -0.3906,
+      "paired_95pct_pp": [
+        -3.553,
+        2.772
+      ],
+      "gain_only": 8,
+      "loss_only": 9
+    }
+  }
+}
