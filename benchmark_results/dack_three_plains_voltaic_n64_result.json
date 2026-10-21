@@ -1,0 +1,63 @@
+{
+  "status": "PASS",
+  "n_paired": 64,
+  "beam": 160,
+  "deck_sha": {
+    "current": "a1c8e05dc3f9e1bcfbfbe2f7773ea4a5e62222d3440dd2f7417fd7f2f058c422",
+    "three_plains_voltaic": "653b6b7f9a9d82a799944a185bbf45fdb1195915960955bbf3325a1b3101bcd7"
+  },
+  "scope": "historical full-beam Dack cast with all combo creatures in library, not live game winrate",
+  "current": {
+    "counts": {
+      "0": 13,
+      "1": 4,
+      "2": 25,
+      "3": 22
+    },
+    "by_T1_pct": 6.25,
+    "by_T2_pct": 45.3125,
+    "by_T3_pct": 79.6875,
+    "mean_keep": 5.6875
+  },
+  "three_plains_voltaic": {
+    "counts": {
+      "0": 11,
+      "1": 4,
+      "2": 24,
+      "3": 25
+    },
+    "by_T1_pct": 6.25,
+    "by_T2_pct": 43.75,
+    "by_T3_pct": 82.8125,
+    "mean_keep": 5.609375
+  },
+  "paired": {
+    "by_T1": {
+      "delta_pp": 0.0,
+      "paired_95pct_pp": [
+        0.0,
+        0.0
+      ],
+      "gain_only": 0,
+      "loss_only": 0
+    },
+    "by_T2": {
+      "delta_pp": -1.5625,
+      "paired_95pct_pp": [
+        -8.454,
+        5.329
+      ],
+      "gain_only": 2,
+      "loss_only": 3
+    },
+    "by_T3": {
+      "delta_pp": 3.125,
+      "paired_95pct_pp": [
+        -4.396,
+        10.646
+      ],
+      "gain_only": 4,
+      "loss_only": 2
+    }
+  }
+}
