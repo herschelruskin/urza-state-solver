@@ -1,0 +1,88 @@
+name: Dack Three Plains Voltaic Paired N64
+on:
+  push:
+    branches: [dack-plains-voltaic-matched-20261021]
+    paths:
+      - 'dack_plains_voltaic_paired_20261021.py'
+      - '.github/workflows/dack_plains_voltaic_paired_20261021.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and verify exact decklists and supported card
+        run: |
+          python -m py_compile dack_plains_voltaic_paired_20261021.py
+          python -u dack_plains_voltaic_paired_20261021.py --audit
+      - name: One paired game smoke
+        run: python -u dack_plains_voltaic_paired_20261021.py --games 1 --beam 80 --out smoke.json.gz
+  shard:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Matched eight-game shard
+        run: |
+          mkdir -p shards
+          python -u dack_plains_voltaic_paired_20261021.py \
+            --shard ${{ matrix.shard }} --games 8 --beam 160 \
+            --out "shards/paired_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plains-key-shard-${{ matrix.shard }}
+          path: shards/*.json.gz
+          retention-days: 30
+          if-no-files-found: error
+  pool:
+    needs: [smoke, shard]
+    if: ${{ needs.shard.result == 'success' && needs.smoke.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: plains-key-shard-*
+          merge-multiple: true
+          path: shards
+      - name: Pool and audit 64 paired games
+        run: |
+          python -u dack_plains_voltaic_paired_20261021.py \
+            --pool --path shards --expected 64 \
+            --out dack_three_plains_voltaic_n64_result.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: three-plains-voltaic-n64-result
+          path: dack_three_plains_voltaic_n64_result.json
+          if-no-files-found: error
+      - name: Publish results to branch
+        run: |
+          mkdir -p benchmark_results
+          cp dack_three_plains_voltaic_n64_result.json benchmark_results/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_three_plains_voltaic_n64_result.json
+          git commit -m 'Publish matched three Plains + Voltaic Key experiment'
+          git push
