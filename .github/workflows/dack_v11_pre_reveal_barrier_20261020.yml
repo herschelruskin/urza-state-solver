@@ -1,0 +1,67 @@
+name: Dack V11 Scroll Rack Brainstone Observation Barrier
+on:
+  push:
+    branches: [dack-realistic-v11-observation-boundaries-20261020]
+    paths:
+      - 'dack_v11_pre_reveal_barrier_20261020.py'
+      - '.github/workflows/dack_v11_pre_reveal_barrier_20261020.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and assert pre-reveal Rack/Brainstone invariants
+        run: |
+          python -m py_compile dack_v11_pre_reveal_barrier_20261020.py
+          python -u dack_v11_pre_reveal_barrier_20261020.py --audit
+      - name: Test actual full-game decisions with precommitted reveal
+        run: |
+          python -u dack_v11_pre_reveal_barrier_20261020.py \
+            --variant current --games 1 --shard 0 \
+            --out smoke.json.gz
+          python - <<'PY'
+          import gzip,json
+          with gzip.open('smoke.json.gz','rt') as f:q=json.load(f)
+          assert q['schema']=='dack_v11_pre_reveal_rack_brainstone'
+          assert q['games']==1 and q['rows'][0]['win_turn'] in range(4)
+          assert all(x['obs'] in (None,'Scroll Rack','Brainstone')
+                     for x in q['rows'][0]['turn_audit'])
+          print('DACK_V11_PRE_REVEAL_GAME_SMOKE_PASS',flush=True)
+          PY
+  trial:
+    needs: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        variant: [current,buck_worldmap]
+        game: [0,1]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Paired N2 per deck test of pre-reveal barrier
+        run: |
+          mkdir -p trial
+          python -u dack_v11_pre_reveal_barrier_20261020.py \
+            --variant "${{ matrix.variant }}" --games 1 --shard "${{ matrix.game }}" \
+            --out "trial/${{ matrix.variant }}_${{ matrix.game }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v11-observation-${{ matrix.variant }}-${{ matrix.game }}
+          path: trial/*.json.gz
+          retention-days: 60
+          if-no-files-found: error
