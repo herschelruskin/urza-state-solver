@@ -1,0 +1,88 @@
+name: Dack 34 vs 35 lands Map to Plains N256
+on:
+  push:
+    branches: [dack-land35-map-plains-20261021]
+    paths:
+      - 'dack_map_to_plains_paired_20261021.py'
+      - '.github/workflows/dack_map_to_plains_paired_20261021.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and audit exact 99
+        run: |
+          python -m py_compile dack_map_to_plains_paired_20261021.py
+          python -u dack_map_to_plains_paired_20261021.py --audit
+      - name: One paired game smoke
+        run: python -u dack_map_to_plains_paired_20261021.py --games 1 --beam 80 --out smoke.json.gz
+  shard:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run sixteen paired games
+        run: |
+          mkdir -p shards
+          python -u dack_map_to_plains_paired_20261021.py \
+            --shard ${{ matrix.shard }} --games 16 --beam 160 \
+            --out "shards/map_plains_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: map-plains-shard-${{ matrix.shard }}
+          path: shards/*.json.gz
+          retention-days: 30
+          if-no-files-found: error
+  pool:
+    needs: [smoke, shard]
+    if: ${{ needs.shard.result == 'success' && needs.smoke.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: map-plains-shard-*
+          merge-multiple: true
+          path: shards
+      - name: Pool paired N256 and calculate deltas
+        run: |
+          python -u dack_map_to_plains_paired_20261021.py \
+            --pool --path shards --expected 256 \
+            --out dack_map_to_plains_n256_result.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-map-to-plains-n256-result
+          path: dack_map_to_plains_n256_result.json
+          if-no-files-found: error
+      - name: Publish
+        run: |
+          mkdir -p benchmark_results
+          cp dack_map_to_plains_n256_result.json benchmark_results/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_map_to_plains_n256_result.json
+          git commit -m 'Publish map to Plains 35-land N256 paired results'
+          git push
