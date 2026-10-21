@@ -1,0 +1,47 @@
+name: Dack Map Plains Re-Pool Saved Forensics
+on:
+  push:
+    branches: [dack-map-plains-discordant-forensics-20261021]
+    paths:
+      - 'dack_map_plains_forensic_repool_20261021.py'
+      - '.github/workflows/dack_map_plains_forensic_repool_20261021.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  repool:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Recover six saved shard artifacts from original completed simulation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p shards
+          gh run download 39630947748 --repo "${{ github.repository }}" \
+            --pattern 'forensic-shard-*' --dir shards
+          test "$(find shards -name '*.json.gz' | wc -l)" -eq 6
+      - name: Re-pool audit without recomputing games
+        run: |
+          python -m py_compile dack_map_plains_forensic_repool_20261021.py
+          python -u dack_map_plains_forensic_repool_20261021.py \
+            --path shards --out dack_map_plains_forensic_n24.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-map-plains-forensics-n24-confirmed
+          path: dack_map_plains_forensic_n24.json
+          if-no-files-found: error
+      - name: Commit confirmed forensics
+        run: |
+          mkdir -p benchmark_results
+          cp dack_map_plains_forensic_n24.json benchmark_results/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_map_plains_forensic_n24.json
+          git commit -m 'Publish complete 24-game World Map Plains mulligan forensics'
+          git push
