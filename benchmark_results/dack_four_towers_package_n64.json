@@ -1,0 +1,168 @@
+{
+  "status": "PASS",
+  "n_paired": 64,
+  "beam": 160,
+  "deck_sha": {
+    "current": "a1c8e05dc3f9e1bcfbfbe2f7773ea4a5e62222d3440dd2f7417fd7f2f058c422",
+    "four_towers_hypothetical": "111d7fe2c11c4f57f26797bfaa5b350ec4df9d1b78159d3e0f55003839333153",
+    "legal_four_lands": "7920d7b9614ae4e205a02ae6b6eb18b29181269a5cf5323c5a44908c599f6787",
+    "legal_preserve_mantle": "ce46ab290eb4cc95f402f88c5d771f6c29ec2703af4ccbd8d0472eabc7d3a618"
+  },
+  "scope": "Historical full-beam commander deployment goldfish only, no validation of post-Dack combo; 4 Command Tower variant is illegal singleton; free London EV is approximate and susceptible to mulligan sampling noise; inherited imperfect-information/oracle limits.",
+  "swaps": {
+    "nonlands": [
+      [
+        "Hardlight Containment",
+        "Pentad Prism"
+      ],
+      [
+        "Lunarch Mantle",
+        "Voltaic Key"
+      ],
+      [
+        "Basalt Monolith",
+        "Giant's Boulder"
+      ]
+    ],
+    "lands_hypothetical": "4 Plains => 4 Command Tower",
+    "lands_legal": "4 Plains => Command Tower, Mana Confluence, City of Brass, Gemstone Mine",
+    "combo_safe_caveat": "Protects Lunarch Mantle by removing Tooth of Ramos instead"
+  },
+  "current": {
+    "counts": {
+      "0": 14,
+      "1": 4,
+      "2": 25,
+      "3": 21
+    },
+    "by_T1_pct": 6.25,
+    "by_T2_pct": 45.3125,
+    "by_T3_pct": 78.125,
+    "mean_keep": 5.6406
+  },
+  "four_towers_hypothetical": {
+    "counts": {
+      "0": 10,
+      "1": 3,
+      "2": 28,
+      "3": 23
+    },
+    "by_T1_pct": 4.6875,
+    "by_T2_pct": 48.4375,
+    "by_T3_pct": 84.375,
+    "mean_keep": 5.5938
+  },
+  "legal_four_lands": {
+    "counts": {
+      "0": 11,
+      "1": 4,
+      "2": 25,
+      "3": 24
+    },
+    "by_T1_pct": 6.25,
+    "by_T2_pct": 45.3125,
+    "by_T3_pct": 82.8125,
+    "mean_keep": 5.6875
+  },
+  "legal_preserve_mantle": {
+    "counts": {
+      "0": 11,
+      "1": 4,
+      "2": 26,
+      "3": 23
+    },
+    "by_T1_pct": 6.25,
+    "by_T2_pct": 46.875,
+    "by_T3_pct": 82.8125,
+    "mean_keep": 5.6562
+  },
+  "paired": {
+    "four_towers_hypothetical_minus_current": {
+      "by_T1": {
+        "delta_pp": -1.5625,
+        "gains": 0,
+        "losses": 1,
+        "paired_95pct_pp": [
+          -4.625,
+          1.5
+        ]
+      },
+      "by_T2": {
+        "delta_pp": 3.125,
+        "gains": 4,
+        "losses": 2,
+        "paired_95pct_pp": [
+          -4.396,
+          10.646
+        ]
+      },
+      "by_T3": {
+        "delta_pp": 6.25,
+        "gains": 6,
+        "losses": 2,
+        "paired_95pct_pp": [
+          -2.343,
+          14.843
+        ]
+      }
+    },
+    "legal_four_lands_minus_current": {
+      "by_T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95pct_pp": [
+          0.0,
+          0.0
+        ]
+      },
+      "by_T2": {
+        "delta_pp": 0.0,
+        "gains": 3,
+        "losses": 3,
+        "paired_95pct_pp": [
+          -7.561,
+          7.561
+        ]
+      },
+      "by_T3": {
+        "delta_pp": 4.6875,
+        "gains": 4,
+        "losses": 1,
+        "paired_95pct_pp": [
+          -2.117,
+          11.492
+        ]
+      }
+    },
+    "legal_preserve_mantle_minus_current": {
+      "by_T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95pct_pp": [
+          0.0,
+          0.0
+        ]
+      },
+      "by_T2": {
+        "delta_pp": 1.5625,
+        "gains": 4,
+        "losses": 3,
+        "paired_95pct_pp": [
+          -6.595,
+          9.72
+        ]
+      },
+      "by_T3": {
+        "delta_pp": 4.6875,
+        "gains": 4,
+        "losses": 1,
+        "paired_95pct_pp": [
+          -2.117,
+          11.492
+        ]
+      }
+    }
+  }
+}
