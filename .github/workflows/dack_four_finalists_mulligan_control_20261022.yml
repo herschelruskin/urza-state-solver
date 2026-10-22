@@ -1,0 +1,86 @@
+name: Dack Finalist Four N512 + Mulligan Controlled N256
+on:
+  push:
+    branches: [dack-four-finalists-mulligan-control-20261022]
+    paths:
+      - 'dack_four_finalists_mulligan_control_20261022.py'
+      - '.github/workflows/dack_four_finalists_mulligan_control_20261022.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit exact candidate hashes, legal 99s, Prism and new independent seeds
+        run: |
+          python -m py_compile dack_four_finalists_mulligan_control_20261022.py
+          python -u dack_four_finalists_mulligan_control_20261022.py --audit
+  shards:
+    needs: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Simulate 16 matched N512 games, with fixed-stage diagnostic for first 256
+        run: |
+          mkdir -p shards
+          python -u dack_four_finalists_mulligan_control_20261022.py \
+            --shard ${{ matrix.shard }} --games 16 --beam 160 \
+            --out "shards/finalist4_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: finalist4-shard-${{ matrix.shard }}
+          path: shards/*.json.gz
+          if-no-files-found: error
+          retention-days: 30
+  pool:
+    needs: [audit,shards]
+    if: ${{ needs.audit.result == 'success' && needs.shards.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: finalist4-shard-*
+          merge-multiple: true
+          path: shards
+      - name: Aggregate N512 and controlled N256 matched results
+        run: |
+          python -u dack_four_finalists_mulligan_control_20261022.py \
+            --pool --expected 512 --path shards \
+            --out dack_four_finalists_mulligan_control_n512.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-four-finalists-mulligan-controlled-n512
+          path: dack_four_finalists_mulligan_control_n512.json
+          if-no-files-found: error
+      - name: Commit summary
+        run: |
+          mkdir -p benchmark_results
+          cp dack_four_finalists_mulligan_control_n512.json benchmark_results/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_four_finalists_mulligan_control_n512.json
+          git commit -m 'Publish N512 finalists with N256 fixed-stage mulligan diagnostic'
+          git push
