@@ -1,0 +1,1101 @@
+{
+  "status": "PASS",
+  "n_paired": 64,
+  "beam": 160,
+  "scope": "Historical full-beam Dack deployment only; no multiplayer or post-Dack combo validation; mulligan sampling plus oracle limitations remain; 12 exploratory candidates require confirmation on held-out seeds",
+  "reference": "current",
+  "hashes": {
+    "current": "a1c8e05dc3f9e1bcfbfbe2f7773ea4a5e62222d3440dd2f7417fd7f2f058c422",
+    "lands_only": "94fc6dcc0bc98e1a317b458cf49577e3592fc173e7dfa6d350d778dd56db76e8",
+    "ramp_only": "5f46670faefd2cc0ea24e082794b0646e7f3ce6fbddc9eab01a7ac02bacfa24f",
+    "rainbow_prism_only": "5c9a0b6c6278f06bbfbc67cb7d959e211c07d596a15d633566b71fc649d24331",
+    "full_voltaic": "7920d7b9614ae4e205a02ae6b6eb18b29181269a5cf5323c5a44908c599f6787",
+    "full_candelabra": "c05750e6173eecc0655e7e1116fed4cbee9b6caf1263175519d539f92171fddb",
+    "full_plains35": "213245cfc45a57d742a4835f48956a60f75b5b796f9875f27f3e9f525b8dd402",
+    "full_basalt_over_boulder": "36b9e64df13a8ea135f5175e7adfcf021d8d4a749aba798e4efebff2514b05b5",
+    "full_basalt_over_prism": "65175dd8afab66e7ef461ef3a9e2883d1292bde13c2bb6454454649d602d6b44",
+    "full_candelabra_over_prism": "cadb500335ef70a009110861faca1f414025e3c75b59f15c0aee817020f76b00",
+    "full_both_keys_candelabra": "e913f9b9ce12c0243ac873ccd4aea1030e740ed4cd0828815a05deb1bf539489",
+    "full_basalt_extra_tooth": "4f2a3950a258f755a69170f830544f8c8e2b97ac58c29e4caef6fd9707878312"
+  },
+  "variants": {
+    "current": {
+      "changes_vs_current": {
+        "out": [],
+        "in": []
+      },
+      "counts": {
+        "0": 14,
+        "1": 4,
+        "2": 25,
+        "3": 21
+      },
+      "by_T1_pct": 6.25,
+      "by_T2_pct": 45.3125,
+      "by_T3_pct": 78.125,
+      "weighted_T2_half_T3_pct": 61.7188,
+      "mean_keep": 5.6406
+    },
+    "lands_only": {
+      "changes_vs_current": {
+        "out": [
+          "Plains",
+          "Plains",
+          "Plains",
+          "Plains"
+        ],
+        "in": [
+          "City of Brass",
+          "Command Tower",
+          "Gemstone Mine",
+          "Mana Confluence"
+        ]
+      },
+      "counts": {
+        "0": 11,
+        "1": 4,
+        "2": 24,
+        "3": 25
+      },
+      "by_T1_pct": 6.25,
+      "by_T2_pct": 43.75,
+      "by_T3_pct": 82.8125,
+      "weighted_T2_half_T3_pct": 63.2812,
+      "mean_keep": 5.5781
+    },
+    "ramp_only": {
+      "changes_vs_current": {
+        "out": [
+          "Basalt Monolith",
+          "Hardlight Containment",
+          "Lunarch Mantle"
+        ],
+        "in": [
+          "Giant's Boulder",
+          "Pentad Prism",
+          "Voltaic Key"
+        ]
+      },
+      "counts": {
+        "0": 9,
+        "1": 3,
+        "2": 26,
+        "3": 26
+      },
+      "by_T1_pct": 4.6875,
+      "by_T2_pct": 45.3125,
+      "by_T3_pct": 85.9375,
+      "weighted_T2_half_T3_pct": 65.625,
+      "mean_keep": 5.5625
+    },
+    "rainbow_prism_only": {
+      "changes_vs_current": {
+        "out": [
+          "Hardlight Containment",
+          "Plains",
+          "Plains",
+          "Plains",
+          "Plains"
+        ],
+        "in": [
+          "City of Brass",
+          "Command Tower",
+          "Gemstone Mine",
+          "Mana Confluence",
+          "Pentad Prism"
+        ]
+      },
+      "counts": {
+        "0": 14,
+        "1": 4,
+        "2": 26,
+        "3": 20
+      },
+      "by_T1_pct": 6.25,
+      "by_T2_pct": 46.875,
+      "by_T3_pct": 78.125,
+      "weighted_T2_half_T3_pct": 62.5,
+      "mean_keep": 5.4844
+    },
+    "full_voltaic": {
+      "changes_vs_current": {
+        "out": [
+          "Basalt Monolith",
+          "Hardlight Containment",
+          "Lunarch Mantle",
+          "Plains",
+          "Plains",
+          "Plains",
+          "Plains"
+        ],
+        "in": [
+          "City of Brass",
+          "Command Tower",
+          "Gemstone Mine",
+          "Giant's Boulder",
+          "Mana Confluence",
+          "Pentad Prism",
+          "Voltaic Key"
+        ]
+      },
+      "counts": {
+        "0": 11,
+        "1": 4,
+        "2": 25,
+        "3": 24
+      },
+      "by_T1_pct": 6.25,
+      "by_T2_pct": 45.3125,
+      "by_T3_pct": 82.8125,
+      "weighted_T2_half_T3_pct": 64.0625,
+      "mean_keep": 5.6875
+    },
+    "full_candelabra": {
+      "changes_vs_current": {
+        "out": [
+          "Basalt Monolith",
+          "Hardlight Containment",
+          "Lunarch Mantle",
+          "Plains",
+          "Plains",
+          "Plains",
+          "Plains"
+        ],
+        "in": [
+          "Candelabra of Tawnos",
+          "City of Brass",
+          "Command Tower",
+          "Gemstone Mine",
+          "Giant's Boulder",
+          "Mana Confluence",
+          "Pentad Prism"
+        ]
+      },
+      "counts": {
+        "0": 12,
+        "1": 3,
+        "2": 24,
+        "3": 25
+      },
+      "by_T1_pct": 4.6875,
+      "by_T2_pct": 42.1875,
+      "by_T3_pct": 81.25,
+      "weighted_T2_half_T3_pct": 61.7188,
+      "mean_keep": 5.625
+    },
+    "full_plains35": {
+      "changes_vs_current": {
+        "out": [
+          "Basalt Monolith",
+          "Hardlight Containment",
+          "Lunarch Mantle",
+          "Plains",
+          "Plains",
+          "Plains"
+        ],
+        "in": [
+          "City of Brass",
+          "Command Tower",
+          "Gemstone Mine",
+          "Giant's Boulder",
+          "Mana Confluence",
+          "Pentad Prism"
+        ]
+      },
+      "counts": {
+        "0": 14,
+        "1": 3,
+        "2": 24,
+        "3": 23
+      },
+      "by_T1_pct": 4.6875,
+      "by_T2_pct": 42.1875,
+      "by_T3_pct": 78.125,
+      "weighted_T2_half_T3_pct": 60.1562,
+      "mean_keep": 5.6719
+    },
+    "full_basalt_over_boulder": {
+      "changes_vs_current": {
+        "out": [
+          "Hardlight Containment",
+          "Lunarch Mantle",
+          "Plains",
+          "Plains",
+          "Plains",
+          "Plains"
+        ],
+        "in": [
+          "City of Brass",
+          "Command Tower",
+          "Gemstone Mine",
+          "Mana Confluence",
+          "Pentad Prism",
+          "Voltaic Key"
+        ]
+      },
+      "counts": {
+        "0": 10,
+        "1": 4,
+        "2": 27,
+        "3": 23
+      },
+      "by_T1_pct": 6.25,
+      "by_T2_pct": 48.4375,
+      "by_T3_pct": 84.375,
+      "weighted_T2_half_T3_pct": 66.4062,
+      "mean_keep": 5.5156
+    },
+    "full_basalt_over_prism": {
+      "changes_vs_current": {
+        "out": [
+          "Hardlight Containment",
+          "Lunarch Mantle",
+          "Plains",
+          "Plains",
+          "Plains",
+          "Plains"
+        ],
+        "in": [
+          "City of Brass",
+          "Command Tower",
+          "Gemstone Mine",
+          "Giant's Boulder",
+          "Mana Confluence",
+          "Voltaic Key"
+        ]
+      },
+      "counts": {
+        "0": 10,
+        "1": 4,
+        "2": 25,
+        "3": 25
+      },
+      "by_T1_pct": 6.25,
+      "by_T2_pct": 45.3125,
+      "by_T3_pct": 84.375,
+      "weighted_T2_half_T3_pct": 64.8438,
+      "mean_keep": 5.75
+    },
+    "full_candelabra_over_prism": {
+      "changes_vs_current": {
+        "out": [
+          "Basalt Monolith",
+          "Hardlight Containment",
+          "Lunarch Mantle",
+          "Plains",
+          "Plains",
+          "Plains",
+          "Plains"
+        ],
+        "in": [
+          "Candelabra of Tawnos",
+          "City of Brass",
+          "Command Tower",
+          "Gemstone Mine",
+          "Giant's Boulder",
+          "Mana Confluence",
+          "Voltaic Key"
+        ]
+      },
+      "counts": {
+        "0": 9,
+        "1": 4,
+        "2": 23,
+        "3": 28
+      },
+      "by_T1_pct": 6.25,
+      "by_T2_pct": 42.1875,
+      "by_T3_pct": 85.9375,
+      "weighted_T2_half_T3_pct": 64.0625,
+      "mean_keep": 5.5625
+    },
+    "full_both_keys_candelabra": {
+      "changes_vs_current": {
+        "out": [
+          "Basalt Monolith",
+          "Hardlight Containment",
+          "Lunarch Mantle",
+          "Plains",
+          "Plains",
+          "Plains",
+          "Plains"
+        ],
+        "in": [
+          "Candelabra of Tawnos",
+          "City of Brass",
+          "Command Tower",
+          "Gemstone Mine",
+          "Mana Confluence",
+          "Pentad Prism",
+          "Voltaic Key"
+        ]
+      },
+      "counts": {
+        "0": 11,
+        "1": 4,
+        "2": 24,
+        "3": 25
+      },
+      "by_T1_pct": 6.25,
+      "by_T2_pct": 43.75,
+      "by_T3_pct": 82.8125,
+      "weighted_T2_half_T3_pct": 63.2812,
+      "mean_keep": 5.7031
+    },
+    "full_basalt_extra_tooth": {
+      "changes_vs_current": {
+        "out": [
+          "Hardlight Containment",
+          "Lunarch Mantle",
+          "Plains",
+          "Plains",
+          "Plains",
+          "Plains",
+          "Tooth of Ramos"
+        ],
+        "in": [
+          "City of Brass",
+          "Command Tower",
+          "Gemstone Mine",
+          "Giant's Boulder",
+          "Mana Confluence",
+          "Pentad Prism",
+          "Voltaic Key"
+        ]
+      },
+      "counts": {
+        "0": 9,
+        "1": 4,
+        "2": 23,
+        "3": 28
+      },
+      "by_T1_pct": 6.25,
+      "by_T2_pct": 42.1875,
+      "by_T3_pct": 85.9375,
+      "weighted_T2_half_T3_pct": 64.0625,
+      "mean_keep": 5.6406
+    }
+  },
+  "paired_vs_current": {
+    "lands_only": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": -1.5625,
+        "gains": 3,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -9.72,
+          6.595
+        ],
+        "discordant_keep_size_changed": 7
+      },
+      "T3": {
+        "delta_pp": 4.6875,
+        "gains": 4,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -2.117,
+          11.492
+        ],
+        "discordant_keep_size_changed": 5
+      }
+    },
+    "ramp_only": {
+      "T1": {
+        "delta_pp": -1.5625,
+        "gains": 0,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -4.625,
+          1.5
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gains": 3,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -7.561,
+          7.561
+        ],
+        "discordant_keep_size_changed": 5
+      },
+      "T3": {
+        "delta_pp": 7.8125,
+        "gains": 6,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -0.123,
+          15.748
+        ],
+        "discordant_keep_size_changed": 6
+      }
+    },
+    "rainbow_prism_only": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": 1.5625,
+        "gains": 3,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -5.329,
+          8.454
+        ],
+        "discordant_keep_size_changed": 5
+      },
+      "T3": {
+        "delta_pp": 0.0,
+        "gains": 3,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -7.561,
+          7.561
+        ],
+        "discordant_keep_size_changed": 4
+      }
+    },
+    "full_voltaic": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gains": 3,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -7.561,
+          7.561
+        ],
+        "discordant_keep_size_changed": 6
+      },
+      "T3": {
+        "delta_pp": 4.6875,
+        "gains": 4,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -2.117,
+          11.492
+        ],
+        "discordant_keep_size_changed": 4
+      }
+    },
+    "full_candelabra": {
+      "T1": {
+        "delta_pp": -1.5625,
+        "gains": 0,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -4.625,
+          1.5
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": -3.125,
+        "gains": 3,
+        "losses": 5,
+        "paired_95_ci_pp": [
+          -11.821,
+          5.571
+        ],
+        "discordant_keep_size_changed": 7
+      },
+      "T3": {
+        "delta_pp": 3.125,
+        "gains": 3,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -3.0,
+          9.25
+        ],
+        "discordant_keep_size_changed": 3
+      }
+    },
+    "full_plains35": {
+      "T1": {
+        "delta_pp": -1.5625,
+        "gains": 0,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -4.625,
+          1.5
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": -3.125,
+        "gains": 2,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -10.646,
+          4.396
+        ],
+        "discordant_keep_size_changed": 5
+      },
+      "T3": {
+        "delta_pp": 0.0,
+        "gains": 2,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -6.173,
+          6.173
+        ],
+        "discordant_keep_size_changed": 3
+      }
+    },
+    "full_basalt_over_boulder": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": 3.125,
+        "gains": 4,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -4.396,
+          10.646
+        ],
+        "discordant_keep_size_changed": 6
+      },
+      "T3": {
+        "delta_pp": 6.25,
+        "gains": 5,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -1.152,
+          13.652
+        ],
+        "discordant_keep_size_changed": 5
+      }
+    },
+    "full_basalt_over_prism": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gains": 2,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -6.173,
+          6.173
+        ],
+        "discordant_keep_size_changed": 4
+      },
+      "T3": {
+        "delta_pp": 6.25,
+        "gains": 6,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -2.343,
+          14.843
+        ],
+        "discordant_keep_size_changed": 6
+      }
+    },
+    "full_candelabra_over_prism": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": -3.125,
+        "gains": 1,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -9.25,
+          3.0
+        ],
+        "discordant_keep_size_changed": 4
+      },
+      "T3": {
+        "delta_pp": 7.8125,
+        "gains": 6,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -0.123,
+          15.748
+        ],
+        "discordant_keep_size_changed": 4
+      }
+    },
+    "full_both_keys_candelabra": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": -1.5625,
+        "gains": 2,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -8.454,
+          5.329
+        ],
+        "discordant_keep_size_changed": 5
+      },
+      "T3": {
+        "delta_pp": 4.6875,
+        "gains": 4,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -2.117,
+          11.492
+        ],
+        "discordant_keep_size_changed": 4
+      }
+    },
+    "full_basalt_extra_tooth": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": -3.125,
+        "gains": 1,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -9.25,
+          3.0
+        ],
+        "discordant_keep_size_changed": 4
+      },
+      "T3": {
+        "delta_pp": 7.8125,
+        "gains": 5,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          1.186,
+          14.439
+        ],
+        "discordant_keep_size_changed": 3
+      }
+    }
+  },
+  "paired_vs_full_voltaic": {
+    "current": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gains": 3,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -7.561,
+          7.561
+        ],
+        "discordant_keep_size_changed": 6
+      },
+      "T3": {
+        "delta_pp": -4.6875,
+        "gains": 1,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -11.492,
+          2.117
+        ],
+        "discordant_keep_size_changed": 4
+      }
+    },
+    "lands_only": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": -1.5625,
+        "gains": 3,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -9.72,
+          6.595
+        ],
+        "discordant_keep_size_changed": 7
+      },
+      "T3": {
+        "delta_pp": 0.0,
+        "gains": 3,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -7.561,
+          7.561
+        ],
+        "discordant_keep_size_changed": 5
+      }
+    },
+    "ramp_only": {
+      "T1": {
+        "delta_pp": -1.5625,
+        "gains": 0,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -4.625,
+          1.5
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gains": 4,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -8.731,
+          8.731
+        ],
+        "discordant_keep_size_changed": 7
+      },
+      "T3": {
+        "delta_pp": 3.125,
+        "gains": 2,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          -1.172,
+          7.422
+        ],
+        "discordant_keep_size_changed": 2
+      }
+    },
+    "rainbow_prism_only": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": 1.5625,
+        "gains": 2,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -3.77,
+          6.895
+        ],
+        "discordant_keep_size_changed": 3
+      },
+      "T3": {
+        "delta_pp": -4.6875,
+        "gains": 1,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -11.492,
+          2.117
+        ],
+        "discordant_keep_size_changed": 4
+      }
+    },
+    "full_candelabra": {
+      "T1": {
+        "delta_pp": -1.5625,
+        "gains": 0,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -4.625,
+          1.5
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": -3.125,
+        "gains": 2,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -10.646,
+          4.396
+        ],
+        "discordant_keep_size_changed": 5
+      },
+      "T3": {
+        "delta_pp": -1.5625,
+        "gains": 1,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -6.895,
+          3.77
+        ],
+        "discordant_keep_size_changed": 3
+      }
+    },
+    "full_plains35": {
+      "T1": {
+        "delta_pp": -1.5625,
+        "gains": 0,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -4.625,
+          1.5
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": -3.125,
+        "gains": 1,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -9.25,
+          3.0
+        ],
+        "discordant_keep_size_changed": 3
+      },
+      "T3": {
+        "delta_pp": -4.6875,
+        "gains": 0,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -9.907,
+          0.532
+        ],
+        "discordant_keep_size_changed": 1
+      }
+    },
+    "full_basalt_over_boulder": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": 3.125,
+        "gains": 3,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -3.0,
+          9.25
+        ],
+        "discordant_keep_size_changed": 4
+      },
+      "T3": {
+        "delta_pp": 1.5625,
+        "gains": 3,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -5.329,
+          8.454
+        ],
+        "discordant_keep_size_changed": 4
+      }
+    },
+    "full_basalt_over_prism": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gains": 2,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -6.173,
+          6.173
+        ],
+        "discordant_keep_size_changed": 4
+      },
+      "T3": {
+        "delta_pp": 1.5625,
+        "gains": 2,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -3.77,
+          6.895
+        ],
+        "discordant_keep_size_changed": 3
+      }
+    },
+    "full_candelabra_over_prism": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": -3.125,
+        "gains": 1,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -9.25,
+          3.0
+        ],
+        "discordant_keep_size_changed": 4
+      },
+      "T3": {
+        "delta_pp": 3.125,
+        "gains": 2,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          -1.172,
+          7.422
+        ],
+        "discordant_keep_size_changed": 1
+      }
+    },
+    "full_both_keys_candelabra": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": -1.5625,
+        "gains": 0,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -4.625,
+          1.5
+        ],
+        "discordant_keep_size_changed": 1
+      },
+      "T3": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ],
+        "discordant_keep_size_changed": 0
+      }
+    },
+    "full_basalt_extra_tooth": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ],
+        "discordant_keep_size_changed": 0
+      },
+      "T2": {
+        "delta_pp": -3.125,
+        "gains": 1,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -9.25,
+          3.0
+        ],
+        "discordant_keep_size_changed": 4
+      },
+      "T3": {
+        "delta_pp": 3.125,
+        "gains": 2,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          -1.172,
+          7.422
+        ],
+        "discordant_keep_size_changed": 2
+      }
+    }
+  },
+  "ranking_by_T2_then_weighted": [
+    "full_basalt_over_boulder",
+    "rainbow_prism_only",
+    "ramp_only",
+    "full_basalt_over_prism",
+    "full_voltaic",
+    "current",
+    "full_both_keys_candelabra",
+    "lands_only",
+    "full_basalt_extra_tooth",
+    "full_candelabra_over_prism",
+    "full_candelabra",
+    "full_plains35"
+  ]
+}
