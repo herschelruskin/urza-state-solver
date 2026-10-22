@@ -1,0 +1,88 @@
+name: Dack Rainbow Lands + Pentad Prism Corrected N64
+on:
+  push:
+    branches: [dack-rainbow-prism-rules-corrected-20261022]
+    paths:
+      - 'dack_rainbow_prism_corrected_20261022.py'
+      - '.github/workflows/dack_rainbow_prism_corrected_20261022.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit exact card swaps, 2-color sunburst, two same-turn removals
+        run: |
+          python -m py_compile dack_rainbow_prism_corrected_20261022.py
+          python -u dack_rainbow_prism_corrected_20261022.py --audit
+      - name: Four-variant game zero smoke
+        run: python -u dack_rainbow_prism_corrected_20261022.py --games 1 --beam 80 --out smoke.json.gz
+  shard:
+    needs: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        shard: [0,1,2,3,4,5,6,7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Matched 8-game 4-arm shard
+        run: |
+          mkdir -p shards
+          python -u dack_rainbow_prism_corrected_20261022.py \
+            --shard ${{ matrix.shard }} --games 8 --beam 160 \
+            --out "shards/rainbow_prism_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rainbow-prism-shard-${{ matrix.shard }}
+          path: shards/*.json.gz
+          retention-days: 30
+          if-no-files-found: error
+  pool:
+    needs: [audit,shard]
+    if: ${{ needs.shard.result == 'success' && needs.audit.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: rainbow-prism-shard-*
+          merge-multiple: true
+          path: shards
+      - name: Pool N64 paired four-arm trial
+        run: |
+          python -u dack_rainbow_prism_corrected_20261022.py \
+            --pool --path shards --expected 64 \
+            --out dack_rainbow_prism_n64.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-rainbow-prism-n64-result
+          path: dack_rainbow_prism_n64.json
+          if-no-files-found: error
+      - name: Publish results
+        run: |
+          mkdir -p benchmark_results
+          cp dack_rainbow_prism_n64.json benchmark_results/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_rainbow_prism_n64.json
+          git commit -m 'Publish rules-corrected four-arm rainbow and Pentad Prism results'
+          git push
