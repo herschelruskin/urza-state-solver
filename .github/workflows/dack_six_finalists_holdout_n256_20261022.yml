@@ -1,0 +1,86 @@
+name: Dack Six Finalists Held-Out N256
+on:
+  push:
+    branches: [dack-six-finalists-holdout-n256-20261022]
+    paths:
+      - 'dack_six_finalists_holdout_n256_20261022.py'
+      - '.github/workflows/dack_six_finalists_holdout_n256_20261022.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify fixed shortlist hashes and independent random seeds
+        run: |
+          python -m py_compile dack_six_finalists_holdout_n256_20261022.py
+          python -u dack_six_finalists_holdout_n256_20261022.py --audit
+  shards:
+    needs: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Evaluate six decks at eight matched held-out game IDs
+        run: |
+          mkdir -p shards
+          python -u dack_six_finalists_holdout_n256_20261022.py \
+            --shard ${{ matrix.shard }} --games 8 --beam 160 \
+            --out "shards/holdout_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: six-holdout-shard-${{ matrix.shard }}
+          path: shards/*.json.gz
+          if-no-files-found: error
+          retention-days: 30
+  pool:
+    needs: [audit,shards]
+    if: ${{ needs.audit.result == 'success' && needs.shards.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: six-holdout-shard-*
+          path: shards
+          merge-multiple: true
+      - name: Pool independent-seed N256 result and paired CIs
+        run: |
+          python -u dack_six_finalists_holdout_n256_20261022.py \
+            --pool --path shards --expected 256 \
+            --out dack_six_finalists_holdout_n256.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-six-finalists-heldout-n256
+          path: dack_six_finalists_holdout_n256.json
+          if-no-files-found: error
+      - name: Publish report
+        run: |
+          mkdir -p benchmark_results
+          cp dack_six_finalists_holdout_n256.json benchmark_results/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_six_finalists_holdout_n256.json
+          git commit -m 'Publish held-out independent seed Dack finalists comparison N256'
+          git push
