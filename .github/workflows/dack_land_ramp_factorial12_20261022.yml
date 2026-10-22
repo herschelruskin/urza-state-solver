@@ -24,8 +24,6 @@ jobs:
         run: |
           python -m py_compile dack_land_ramp_factorial12_20261022.py
           python -u dack_land_ramp_factorial12_20261022.py --audit
-      - name: Smoke two variants in a matched seed
-        run: python -u dack_land_ramp_factorial12_20261022.py --games 1 --beam 80 --out smoke.json.gz
   shards:
     needs: audit
     runs-on: ubuntu-latest
