@@ -32,7 +32,7 @@ VARIANTS={
  "full_plains35":sw(FULL,"Voltaic Key","Plains"),
  "full_basalt_over_boulder":sw(FULL,"Giant's Boulder","Basalt Monolith"),
  "full_basalt_over_prism":sw(FULL,"Pentad Prism","Basalt Monolith"),
- "full_implements_over_prism":sw(FULL,"Pentad Prism","Implements of Sacrifice"),
+ "full_candelabra_over_prism":sw(FULL,"Pentad Prism","Candelabra of Tawnos"),
  "full_both_keys_candelabra":sw(FULL,"Giant's Boulder","Candelabra of Tawnos"),
  "full_basalt_extra_tooth":sw(FULL,"Tooth of Ramos","Basalt Monolith"),
 }
