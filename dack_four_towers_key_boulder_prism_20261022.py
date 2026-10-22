@@ -75,7 +75,8 @@ def audit():
     assert len(CURRENT)==99 and CURRENT.count("Plains")==10
     assert all(k not in CURRENT for k in IN_NONLAND+("Command Tower",))
     assert all(k in CURRENT for k in OUT_NONLAND+("Tooth of Ramos",))
-    assert len(set(LEGAL))==len(LEGAL)
+    assert len(set(LEGAL_LANDS))==len(LEGAL_LANDS)
+    assert Counter(LEGAL)["Plains"]==6
     check_diff("four_towers_hypothetical",["Plains"]*4+list(OUT_NONLAND),
                ["Command Tower"]*4+list(IN_NONLAND))
     check_diff("legal_four_lands",["Plains"]*4+list(OUT_NONLAND),
