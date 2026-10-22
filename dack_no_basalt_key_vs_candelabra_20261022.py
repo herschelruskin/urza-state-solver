@@ -32,7 +32,7 @@ root.batch.build_deck=lambda v:VARIANTS[v]
 def deck_hash(deck):return hashlib.sha256("\n".join(deck).encode()).hexdigest()
 
 def audit():
-    pkg.audit()
+    # Self-contained audit: pkg.audit() expects its original four variant names.
     assert len(VARIANTS)==3
     assert len(BASE)==len(CANDELABRA)==len(LAND35)==99
     assert Counter(CANDELABRA)-Counter(BASE)==Counter(["Candelabra of Tawnos"])
