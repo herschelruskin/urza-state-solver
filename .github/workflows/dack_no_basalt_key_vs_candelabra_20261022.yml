@@ -1,0 +1,88 @@
+name: Dack No-Basalt Voltaic Key vs Candelabra N128
+on:
+  push:
+    branches: [dack-no-basalt-key-vs-candelabra-20261022]
+    paths:
+      - 'dack_no_basalt_key_vs_candelabra_20261022.py'
+      - '.github/workflows/dack_no_basalt_key_vs_candelabra_20261022.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate 99, singleton, Key-Candelabra rules and two-counter Prism
+        run: |
+          python -m py_compile dack_no_basalt_key_vs_candelabra_20261022.py
+          python -u dack_no_basalt_key_vs_candelabra_20261022.py --audit
+      - name: Three-variant smoke game
+        run: python -u dack_no_basalt_key_vs_candelabra_20261022.py --games 1 --beam 80 --out smoke.json.gz
+  shard:
+    needs: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Matched Key, Candelabra, and 35th Plains games
+        run: |
+          mkdir -p shards
+          python -u dack_no_basalt_key_vs_candelabra_20261022.py \
+            --shard ${{ matrix.shard }} --games 8 --beam 160 \
+            --out "shards/key_candelabra_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: key-candelabra-shard-${{ matrix.shard }}
+          path: shards/*.json.gz
+          retention-days: 30
+          if-no-files-found: error
+  pool:
+    needs: [audit,shard]
+    if: ${{ needs.audit.result == 'success' && needs.shard.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: key-candelabra-shard-*
+          merge-multiple: true
+          path: shards
+      - name: Pool exact 128 matched games
+        run: |
+          python -u dack_no_basalt_key_vs_candelabra_20261022.py \
+            --pool --path shards --expected 128 \
+            --out dack_no_basalt_key_candelabra_n128.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-no-basalt-key-candelabra-n128
+          path: dack_no_basalt_key_candelabra_n128.json
+          if-no-files-found: error
+      - name: Commit validated report
+        run: |
+          mkdir -p benchmark_results
+          cp dack_no_basalt_key_candelabra_n128.json benchmark_results/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_no_basalt_key_candelabra_n128.json
+          git commit -m 'Publish no-Basalt Voltaic vs Candelabra matched N128 deployment'
+          git push
