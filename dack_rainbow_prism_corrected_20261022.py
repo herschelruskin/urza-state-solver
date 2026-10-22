@@ -61,7 +61,12 @@ def corrected_tap(s):
             PRISM_REPAIR_WITNESSES+=1
             q=replace(q,battlefield=tuple(after))
         out.append(q)
-    return d._dedupe(out)
+    seen=set(); unique=[]
+    for state in out:
+        key=d.key(state)
+        if key not in seen:
+            seen.add(key);unique.append(state)
+    return unique
 d.tap_mana_actions=corrected_tap
 
 def sha(deck):return hashlib.sha256("\n".join(deck).encode()).hexdigest()
