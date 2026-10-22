@@ -1,0 +1,227 @@
+{
+  "status": "PASS",
+  "n": 64,
+  "beam": 160,
+  "deck_sha": {
+    "current": "a1c8e05dc3f9e1bcfbfbe2f7773ea4a5e62222d3440dd2f7417fd7f2f058c422",
+    "rainbow": "f8c1d23620fd36aa129e05c1e9bece52cab47d39e0bc3d7dd61a2b87eaccf8cb",
+    "prism": "0591b3ad9bc0224052a6432337c62f1a2c0e2c4208d935436cca36123dc0656e",
+    "rainbow_prism": "027da3dc8fae2860b21dd337829fe366a731b9b80721044fe046d258f734f80f"
+  },
+  "scope": "Historical full-beam T1-T3 Dack deployment, with corrected Pentad Prism no-tap ability. Deck selection/mulligans still subject to approximate oracle/threshold bias.",
+  "swaps": {
+    "rainbow": [
+      [
+        "Urza's Cave",
+        "Mana Confluence"
+      ],
+      [
+        "Fomori Vault",
+        "City of Brass"
+      ],
+      [
+        "Emergence Zone",
+        "Gemstone Mine"
+      ]
+    ],
+    "prism": [
+      "Implements of Sacrifice",
+      "Pentad Prism"
+    ]
+  },
+  "current": {
+    "counts": {
+      "0": 13,
+      "1": 4,
+      "2": 25,
+      "3": 22
+    },
+    "by_T1_pct": 6.25,
+    "by_T2_pct": 45.3125,
+    "by_T3_pct": 79.6875,
+    "mean_keep": 5.6875
+  },
+  "rainbow": {
+    "counts": {
+      "0": 12,
+      "1": 4,
+      "2": 22,
+      "3": 26
+    },
+    "by_T1_pct": 6.25,
+    "by_T2_pct": 40.625,
+    "by_T3_pct": 81.25,
+    "mean_keep": 5.5
+  },
+  "prism": {
+    "counts": {
+      "0": 11,
+      "1": 4,
+      "2": 22,
+      "3": 27
+    },
+    "by_T1_pct": 6.25,
+    "by_T2_pct": 40.625,
+    "by_T3_pct": 82.8125,
+    "mean_keep": 5.5781
+  },
+  "rainbow_prism": {
+    "counts": {
+      "0": 11,
+      "1": 4,
+      "2": 21,
+      "3": 28
+    },
+    "by_T1_pct": 6.25,
+    "by_T2_pct": 39.0625,
+    "by_T3_pct": 82.8125,
+    "mean_keep": 5.5469
+  },
+  "paired": {
+    "rainbow_minus_current": {
+      "by_T1": {
+        "delta_pp": 0.0,
+        "paired_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "gains": 0,
+        "losses": 0
+      },
+      "by_T2": {
+        "delta_pp": -4.6875,
+        "paired_95pct_pp": [
+          -9.907,
+          0.532
+        ],
+        "gains": 0,
+        "losses": 3
+      },
+      "by_T3": {
+        "delta_pp": 1.5625,
+        "paired_95pct_pp": [
+          -5.329,
+          8.454
+        ],
+        "gains": 3,
+        "losses": 2
+      }
+    },
+    "prism_minus_current": {
+      "by_T1": {
+        "delta_pp": 0.0,
+        "paired_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "gains": 0,
+        "losses": 0
+      },
+      "by_T2": {
+        "delta_pp": -4.6875,
+        "paired_95pct_pp": [
+          -11.492,
+          2.117
+        ],
+        "gains": 1,
+        "losses": 4
+      },
+      "by_T3": {
+        "delta_pp": 3.125,
+        "paired_95pct_pp": [
+          -1.172,
+          7.422
+        ],
+        "gains": 2,
+        "losses": 0
+      }
+    },
+    "rainbow_prism_minus_current": {
+      "by_T1": {
+        "delta_pp": 0.0,
+        "paired_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "gains": 0,
+        "losses": 0
+      },
+      "by_T2": {
+        "delta_pp": -6.25,
+        "paired_95pct_pp": [
+          -12.227,
+          -0.273
+        ],
+        "gains": 0,
+        "losses": 4
+      },
+      "by_T3": {
+        "delta_pp": 3.125,
+        "paired_95pct_pp": [
+          -3.0,
+          9.25
+        ],
+        "gains": 3,
+        "losses": 1
+      }
+    },
+    "rainbow_prism_minus_rainbow": {
+      "by_T1": {
+        "delta_pp": 0.0,
+        "paired_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "gains": 0,
+        "losses": 0
+      },
+      "by_T2": {
+        "delta_pp": -1.5625,
+        "paired_95pct_pp": [
+          -4.625,
+          1.5
+        ],
+        "gains": 0,
+        "losses": 1
+      },
+      "by_T3": {
+        "delta_pp": 1.5625,
+        "paired_95pct_pp": [
+          -3.77,
+          6.895
+        ],
+        "gains": 2,
+        "losses": 1
+      }
+    },
+    "rainbow_prism_minus_prism": {
+      "by_T1": {
+        "delta_pp": 0.0,
+        "paired_95pct_pp": [
+          0.0,
+          0.0
+        ],
+        "gains": 0,
+        "losses": 0
+      },
+      "by_T2": {
+        "delta_pp": -1.5625,
+        "paired_95pct_pp": [
+          -8.454,
+          5.329
+        ],
+        "gains": 2,
+        "losses": 3
+      },
+      "by_T3": {
+        "delta_pp": 0.0,
+        "paired_95pct_pp": [
+          -4.365,
+          4.365
+        ],
+        "gains": 1,
+        "losses": 1
+      }
+    }
+  }
+}
