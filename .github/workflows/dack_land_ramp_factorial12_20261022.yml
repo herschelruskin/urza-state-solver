@@ -1,0 +1,88 @@
+name: Dack Land Ramp Twelve-Arm Matched N64
+on:
+  push:
+    branches: [dack-land-ramp-factorial-sweep-20261022]
+    paths:
+      - 'dack_land_ramp_factorial12_20261022.py'
+      - '.github/workflows/dack_land_ramp_factorial12_20261022.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Assert exact 99, singleton, mana rules, and candidate hashes
+        run: |
+          python -m py_compile dack_land_ramp_factorial12_20261022.py
+          python -u dack_land_ramp_factorial12_20261022.py --audit
+      - name: Smoke two variants in a matched seed
+        run: python -u dack_land_ramp_factorial12_20261022.py --games 1 --beam 80 --out smoke.json.gz
+  shards:
+    needs: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Simulate twelve arms on four matched game IDs
+        run: |
+          mkdir -p shards
+          python -u dack_land_ramp_factorial12_20261022.py \
+            --shard ${{ matrix.shard }} --games 4 --beam 160 \
+            --out "shards/factorial12_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: factorial12-shard-${{ matrix.shard }}
+          path: shards/*.json.gz
+          if-no-files-found: error
+          retention-days: 30
+  pool:
+    needs: [audit,shards]
+    if: ${{ needs.audit.result == 'success' && needs.shards.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: factorial12-shard-*
+          path: shards
+          merge-multiple: true
+      - name: Pool paired N64 and rank with uncertainty
+        run: |
+          python -u dack_land_ramp_factorial12_20261022.py \
+            --pool --expected 64 --path shards \
+            --out dack_land_ramp_factorial12_n64.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-land-ramp-factorial12-n64-result
+          path: dack_land_ramp_factorial12_n64.json
+          if-no-files-found: error
+      - name: Commit report
+        run: |
+          mkdir -p benchmark_results
+          cp dack_land_ramp_factorial12_n64.json benchmark_results/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_land_ramp_factorial12_n64.json
+          git commit -m 'Publish Dack twelve-arm matched seed land ramp screening results'
+          git push
