@@ -1,0 +1,115 @@
+{
+  "status": "PASS",
+  "n_paired": 128,
+  "beam": 160,
+  "deck_hashes": {
+    "voltaic_key": "7920d7b9614ae4e205a02ae6b6eb18b29181269a5cf5323c5a44908c599f6787",
+    "candelabra": "c05750e6173eecc0655e7e1116fed4cbee9b6caf1263175519d539f92171fddb",
+    "plains35": "213245cfc45a57d742a4835f48956a60f75b5b796f9875f27f3e9f525b8dd402"
+  },
+  "scope": "Full-beam goldfish Dack casting T1-T3; mulligan continuation sampling and oracle action selection remain potentially biased; not multiplayer win or full combo validation",
+  "primary_comparison": "Candelabra of Tawnos replacing Voltaic Key in otherwise identical 34-land, Basalt-free singleton legal rainbow Dack deck; Moonsilver Key retained",
+  "third_arm": "One additional Plains replacing Voltaic Key (35 nominal lands)",
+  "voltaic_key": {
+    "counts": {
+      "0": 17,
+      "1": 7,
+      "2": 54,
+      "3": 50
+    },
+    "by_T1_pct": 5.4688,
+    "by_T2_pct": 47.6562,
+    "by_T3_pct": 86.7188,
+    "mean_keep": 5.6328
+  },
+  "candelabra": {
+    "counts": {
+      "0": 19,
+      "1": 6,
+      "2": 53,
+      "3": 50
+    },
+    "by_T1_pct": 4.6875,
+    "by_T2_pct": 46.0938,
+    "by_T3_pct": 85.1562,
+    "mean_keep": 5.625
+  },
+  "plains35": {
+    "counts": {
+      "0": 22,
+      "1": 6,
+      "2": 51,
+      "3": 49
+    },
+    "by_T1_pct": 4.6875,
+    "by_T2_pct": 44.5312,
+    "by_T3_pct": 82.8125,
+    "mean_keep": 5.6328
+  },
+  "paired": {
+    "candelabra_minus_voltaic_key": {
+      "by_T1": {
+        "delta_pp": -0.7812,
+        "gains": 0,
+        "losses": 1,
+        "paired_95pct_pp": [
+          -2.312,
+          0.75
+        ],
+        "discordant_keep_diff": 0
+      },
+      "by_T2": {
+        "delta_pp": -1.5625,
+        "gains": 3,
+        "losses": 5,
+        "paired_95pct_pp": [
+          -5.902,
+          2.777
+        ],
+        "discordant_keep_diff": 6
+      },
+      "by_T3": {
+        "delta_pp": -1.5625,
+        "gains": 1,
+        "losses": 3,
+        "paired_95pct_pp": [
+          -4.625,
+          1.5
+        ],
+        "discordant_keep_diff": 3
+      }
+    },
+    "plains35_minus_voltaic_key": {
+      "by_T1": {
+        "delta_pp": -0.7812,
+        "gains": 0,
+        "losses": 1,
+        "paired_95pct_pp": [
+          -2.312,
+          0.75
+        ],
+        "discordant_keep_diff": 0
+      },
+      "by_T2": {
+        "delta_pp": -3.125,
+        "gains": 1,
+        "losses": 5,
+        "paired_95pct_pp": [
+          -6.851,
+          0.601
+        ],
+        "discordant_keep_diff": 3
+      },
+      "by_T3": {
+        "delta_pp": -3.9062,
+        "gains": 1,
+        "losses": 6,
+        "paired_95pct_pp": [
+          -7.916,
+          0.104
+        ],
+        "discordant_keep_diff": 1
+      }
+    }
+  }
+}
