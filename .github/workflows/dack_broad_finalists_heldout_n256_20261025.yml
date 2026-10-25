@@ -1,0 +1,86 @@
+name: Dack Broad Six Held-Out N256
+on:
+  push:
+    branches: [dack-broad-finalists-heldout-n256-20261025]
+    paths:
+      - 'dack_broad_finalists_heldout_n256_20261025.py'
+      - '.github/workflows/dack_broad_finalists_heldout_n256_20261025.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check six legal finalist decks, IDs, seed independence and mana rules
+        run: |
+          python -m py_compile dack_broad_finalists_heldout_n256_20261025.py
+          python -u dack_broad_finalists_heldout_n256_20261025.py --audit
+  shards:
+    needs: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Simulate six preselected builds on 8 matched fresh seeds
+        run: |
+          mkdir -p shards
+          python -u dack_broad_finalists_heldout_n256_20261025.py \
+            --shard ${{ matrix.shard }} --games 8 --beam 160 \
+            --out "shards/broad_finalists_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-broad-heldout6-shard-${{ matrix.shard }}
+          path: shards/*.json.gz
+          retention-days: 30
+          if-no-files-found: error
+  pool:
+    needs: [audit,shards]
+    if: ${{ needs.audit.result == 'success' && needs.shards.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-broad-heldout6-shard-*
+          path: shards
+          merge-multiple: true
+      - name: Pool exact 256 matched game IDs and paired uncertainty
+        run: |
+          python -u dack_broad_finalists_heldout_n256_20261025.py \
+            --pool --path shards --expected 256 \
+            --out dack_broad_finalists_heldout_n256.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-broad-finalists-heldout-n256-report
+          path: dack_broad_finalists_heldout_n256.json
+          if-no-files-found: error
+      - name: Publish independent confirmation
+        run: |
+          mkdir -p benchmark_results
+          cp dack_broad_finalists_heldout_n256.json benchmark_results/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_broad_finalists_heldout_n256.json
+          git commit -m 'Publish independently seeded six-finalist N256 Dack speed confirmation'
+          git push
