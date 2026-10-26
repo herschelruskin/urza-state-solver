@@ -190,7 +190,7 @@ def pool(path,out):
         with gzip.open(fn,"rt",encoding="utf8") as f:q=json.load(f)
         assert q["schema"]==SCHEMA and q["deck_hash"]==HASH
         assert q["seed_base"]==SEED_BASE and q["beam"]==BEAM
-        assert q["policy_bumps"]==POLICIES
+        assert q["policy_bumps"]==json.loads(json.dumps(POLICIES)), "policy threshold mismatch"
         assert q["games"]==GAMES_PER_SHARD
         assert len(q["rows"])==q["games"]
         for j,rec in enumerate(q["rows"]):
