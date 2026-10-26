@@ -1,0 +1,1448 @@
+{
+  "status": "PASS",
+  "planned_n": 2048,
+  "validated_n": 2048,
+  "missing_ids_first50": [],
+  "missing_count": 0,
+  "shards_found": 64,
+  "shards_expected": 64,
+  "seed_base": 20261026175233,
+  "deck_hash": "a1c8e05dc3f9e1bcfbfbe2f7773ea4a5e62222d3440dd2f7417fd7f2f058c422",
+  "beam": 160,
+  "policies": {
+    "native": {
+      "7": 0.0,
+      "6": 0.0,
+      "5": 0.0,
+      "4": 0.0
+    },
+    "gentle": {
+      "7": 0.06,
+      "6": 0.035,
+      "5": 0.0,
+      "4": 0.0
+    },
+    "balanced": {
+      "7": 0.12,
+      "6": 0.07,
+      "5": 0.025,
+      "4": 0.0
+    },
+    "assertive": {
+      "7": 0.2,
+      "6": 0.12,
+      "5": 0.055,
+      "4": 0.015
+    }
+  },
+  "scope": "Goldfish T1/T2/T3 Dack casts, 99-card exact frozen deck, one free multiplayer London; optimistic engine and provisional old continuation thresholds, not full cEDH wins.",
+  "design": "Three preselected increasing bumps to existing continuation thresholds, with native-T1-positive keeps protected. Shared pre-reveal hand evaluations across all four policies. Exploratory, not re-calibrated globally optimal mulligan policy.",
+  "arms": {
+    "native": {
+      "counts": {
+        "0": 302,
+        "1": 99,
+        "2": 848,
+        "3": 799
+      },
+      "T1_pct": 4.834,
+      "T1_95_ci": [
+        3.9866,
+        5.8505
+      ],
+      "T2_pct": 46.2402,
+      "T3_pct": 85.2539,
+      "T2_plus_half_T3_exact_pct": 65.7471,
+      "mean_keep": 5.6265,
+      "keeps_by_n": {
+        "1": 5,
+        "2": 73,
+        "3": 112,
+        "4": 235,
+        "5": 397,
+        "6": 471,
+        "7": 755
+      }
+    },
+    "gentle": {
+      "counts": {
+        "0": 329,
+        "1": 110,
+        "2": 886,
+        "3": 723
+      },
+      "T1_pct": 5.3711,
+      "T1_95_ci": [
+        4.4756,
+        6.4337
+      ],
+      "T2_pct": 48.6328,
+      "T3_pct": 83.9355,
+      "T2_plus_half_T3_exact_pct": 66.2842,
+      "mean_keep": 5.4326,
+      "keeps_by_n": {
+        "1": 7,
+        "2": 88,
+        "3": 140,
+        "4": 256,
+        "5": 470,
+        "6": 460,
+        "7": 627
+      }
+    },
+    "balanced": {
+      "counts": {
+        "0": 341,
+        "1": 110,
+        "2": 897,
+        "3": 700
+      },
+      "T1_pct": 5.3711,
+      "T1_95_ci": [
+        4.4756,
+        6.4337
+      ],
+      "T2_pct": 49.1699,
+      "T3_pct": 83.3496,
+      "T2_plus_half_T3_exact_pct": 66.2598,
+      "mean_keep": 5.3149,
+      "keeps_by_n": {
+        "1": 8,
+        "2": 102,
+        "3": 157,
+        "4": 294,
+        "5": 484,
+        "6": 415,
+        "7": 588
+      }
+    },
+    "assertive": {
+      "counts": {
+        "0": 366,
+        "1": 127,
+        "2": 888,
+        "3": 667
+      },
+      "T1_pct": 6.2012,
+      "T1_95_ci": [
+        5.2364,
+        7.33
+      ],
+      "T2_pct": 49.5605,
+      "T3_pct": 82.1289,
+      "T2_plus_half_T3_exact_pct": 65.8447,
+      "mean_keep": 5.0815,
+      "keeps_by_n": {
+        "1": 8,
+        "2": 121,
+        "3": 196,
+        "4": 352,
+        "5": 521,
+        "6": 394,
+        "7": 456
+      }
+    }
+  },
+  "paired_vs_native": {
+    "gentle": {
+      "T1": {
+        "delta_pp": 0.5371,
+        "gains": 11,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          0.2205,
+          0.8537
+        ]
+      },
+      "T2": {
+        "delta_pp": 2.3926,
+        "gains": 72,
+        "losses": 23,
+        "paired_95_ci_pp": [
+          1.4653,
+          3.3198
+        ]
+      },
+      "T3": {
+        "delta_pp": -1.3184,
+        "gains": 12,
+        "losses": 39,
+        "paired_95_ci_pp": [
+          -1.9996,
+          -0.6371
+        ]
+      }
+    },
+    "balanced": {
+      "T1": {
+        "delta_pp": 0.5371,
+        "gains": 12,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          0.1927,
+          0.8815
+        ]
+      },
+      "T2": {
+        "delta_pp": 2.9297,
+        "gains": 96,
+        "losses": 36,
+        "paired_95_ci_pp": [
+          1.8372,
+          4.0222
+        ]
+      },
+      "T3": {
+        "delta_pp": -1.9043,
+        "gains": 25,
+        "losses": 64,
+        "paired_95_ci_pp": [
+          -2.8036,
+          -1.005
+        ]
+      }
+    },
+    "assertive": {
+      "T1": {
+        "delta_pp": 1.3672,
+        "gains": 29,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          0.8462,
+          1.8881
+        ]
+      },
+      "T2": {
+        "delta_pp": 3.3203,
+        "gains": 144,
+        "losses": 76,
+        "paired_95_ci_pp": [
+          1.9078,
+          4.7329
+        ]
+      },
+      "T3": {
+        "delta_pp": -3.125,
+        "gains": 41,
+        "losses": 105,
+        "paired_95_ci_pp": [
+          -4.2737,
+          -1.9763
+        ]
+      }
+    }
+  },
+  "t1_discordant_first40": {
+    "gentle": [
+      {
+        "gid": 125,
+        "native_keep": 7,
+        "candidate_keep": 6,
+        "native_hand": [
+          "Fellwar Stone",
+          "Paladin Class",
+          "Plains",
+          "Plains",
+          "Sol Ring",
+          "The Mind Stone",
+          "World Map"
+        ],
+        "candidate_hand": [
+          "Bound by Moonsilver",
+          "Charitable Levy",
+          "Lion's Eye Diamond",
+          "Mana Vault",
+          "Razorgrass Ambush",
+          "Trinisphere"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 442,
+        "native_keep": 7,
+        "candidate_keep": 4,
+        "native_hand": [
+          "Eiganjo, Seat of the Empire",
+          "Feather of Flight",
+          "Gemstone Caverns",
+          "Remote Farm",
+          "Soul Partition",
+          "The Mycosynth Gardens",
+          "Tooth of Ramos"
+        ],
+        "candidate_hand": [
+          "Crystal Vein",
+          "Lion's Eye Diamond",
+          "Mox Diamond",
+          "Plains"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 503,
+        "native_keep": 7,
+        "candidate_keep": 6,
+        "native_hand": [
+          "Charitable Levy",
+          "Grim Monolith",
+          "Lunarch Mantle",
+          "Mantle of the Ancients",
+          "Plains",
+          "Sol Ring",
+          "Static Prison"
+        ],
+        "candidate_hand": [
+          "Grim Monolith",
+          "Lion's Eye Diamond",
+          "Super State",
+          "Talon Gates of Madara",
+          "Urza's Saga",
+          "World Map"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 590,
+        "native_keep": 7,
+        "candidate_keep": 7,
+        "native_hand": [
+          "Emeria's Call",
+          "Enlightened Tutor",
+          "Feather of Flight",
+          "Plains",
+          "Portable Hole",
+          "Tezzeret, Cruel Captain",
+          "Urza's Cave"
+        ],
+        "candidate_hand": [
+          "Bucknard's Everfull Purse",
+          "Defense Grid",
+          "Lion's Eye Diamond",
+          "Mana Vault",
+          "Plains",
+          "Portable Hole",
+          "The Mind Stone"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1111,
+        "native_keep": 7,
+        "candidate_keep": 7,
+        "native_hand": [
+          "Coalition Relic",
+          "Lunarch Mantle",
+          "Mana Vault",
+          "Plains",
+          "The Mycosynth Gardens",
+          "Tooth of Ramos",
+          "Trinisphere"
+        ],
+        "candidate_hand": [
+          "Ancient Tomb",
+          "Chrome Mox",
+          "Lion's Eye Diamond",
+          "Mana Tithe",
+          "Moonsilver Key",
+          "Mox Diamond",
+          "Talon Gates of Madara"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1278,
+        "native_keep": 7,
+        "candidate_keep": 5,
+        "native_hand": [
+          "Hardlight Containment",
+          "Idolized",
+          "Krark-Clan Ironworks",
+          "Minimus Containment",
+          "Plains",
+          "Sol Ring",
+          "Urza's Saga"
+        ],
+        "candidate_hand": [
+          "Gleaming Splendor",
+          "Homeward Path",
+          "Lion's Eye Diamond",
+          "Mox Diamond",
+          "Mox Opal"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1462,
+        "native_keep": 7,
+        "candidate_keep": 7,
+        "native_hand": [
+          "Disruptor Flute",
+          "Enlightened Tutor",
+          "Fomori Vault",
+          "Mind Stone",
+          "Mishra's Workshop",
+          "Plains",
+          "Unwanted Remake"
+        ],
+        "candidate_hand": [
+          "Eiganjo, Seat of the Empire",
+          "Feather of Flight",
+          "Gemstone Caverns",
+          "Homeward Path",
+          "Lion's Eye Diamond",
+          "Mana Vault",
+          "Static Prison"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1464,
+        "native_keep": 7,
+        "candidate_keep": 7,
+        "native_hand": [
+          "Gemstone Caverns",
+          "Gleaming Splendor",
+          "Plains",
+          "Preston, the Vanisher",
+          "Scroll Rack",
+          "Sol Ring",
+          "Twinblade Blessing"
+        ],
+        "candidate_hand": [
+          "Basalt Monolith",
+          "Grim Monolith",
+          "Implements of Sacrifice",
+          "Lion's Eye Diamond",
+          "Mox Diamond",
+          "Plains",
+          "Touch the Spirit Realm"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1523,
+        "native_keep": 7,
+        "candidate_keep": 6,
+        "native_hand": [
+          "City of Traitors",
+          "March of Otherworldly Light",
+          "Razorgrass Ambush",
+          "Staff of Compleation",
+          "Super State",
+          "Tezzeret, Cruel Captain",
+          "Trinisphere"
+        ],
+        "candidate_hand": [
+          "Bucknard's Everfull Purse",
+          "Charitable Levy",
+          "Chrome Mox",
+          "Enlightened Tutor",
+          "Homeward Path",
+          "Mana Vault"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1542,
+        "native_keep": 7,
+        "candidate_keep": 6,
+        "native_hand": [
+          "Ancient Tomb",
+          "Chrome Mox",
+          "Plains",
+          "Remote Farm",
+          "Ruins of Trokair",
+          "The Mind Stone",
+          "Tooth of Ramos"
+        ],
+        "candidate_hand": [
+          "Lion's Eye Diamond",
+          "Mana Vault",
+          "Mox Diamond",
+          "Plains",
+          "Silence",
+          "Vexing Bauble"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1755,
+        "native_keep": 7,
+        "candidate_keep": 4,
+        "native_hand": [
+          "Emergence Zone",
+          "Gift of Immortality",
+          "Minimus Containment",
+          "Mishra's Workshop",
+          "Moonsilver Key",
+          "Plains",
+          "Plains"
+        ],
+        "candidate_hand": [
+          "Command Beacon",
+          "Homeward Path",
+          "Lion's Eye Diamond",
+          "The Mycosynth Gardens"
+        ],
+        "native_T1": false
+      }
+    ],
+    "balanced": [
+      {
+        "gid": 20,
+        "native_keep": 7,
+        "candidate_keep": 4,
+        "native_hand": [
+          "City of Traitors",
+          "Emergence Zone",
+          "Fellwar Stone",
+          "Moonsilver Key",
+          "Plains",
+          "Sheltered by Ghosts",
+          "Staff of Compleation"
+        ],
+        "candidate_hand": [
+          "Everflowing Chalice",
+          "Grim Monolith",
+          "Lion's Eye Diamond",
+          "The Mycosynth Gardens"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 125,
+        "native_keep": 7,
+        "candidate_keep": 6,
+        "native_hand": [
+          "Fellwar Stone",
+          "Paladin Class",
+          "Plains",
+          "Plains",
+          "Sol Ring",
+          "The Mind Stone",
+          "World Map"
+        ],
+        "candidate_hand": [
+          "Bound by Moonsilver",
+          "Charitable Levy",
+          "Lion's Eye Diamond",
+          "Mana Vault",
+          "Razorgrass Ambush",
+          "Trinisphere"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 442,
+        "native_keep": 7,
+        "candidate_keep": 4,
+        "native_hand": [
+          "Eiganjo, Seat of the Empire",
+          "Feather of Flight",
+          "Gemstone Caverns",
+          "Remote Farm",
+          "Soul Partition",
+          "The Mycosynth Gardens",
+          "Tooth of Ramos"
+        ],
+        "candidate_hand": [
+          "Crystal Vein",
+          "Lion's Eye Diamond",
+          "Mox Diamond",
+          "Plains"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 503,
+        "native_keep": 7,
+        "candidate_keep": 6,
+        "native_hand": [
+          "Charitable Levy",
+          "Grim Monolith",
+          "Lunarch Mantle",
+          "Mantle of the Ancients",
+          "Plains",
+          "Sol Ring",
+          "Static Prison"
+        ],
+        "candidate_hand": [
+          "Grim Monolith",
+          "Lion's Eye Diamond",
+          "Super State",
+          "Talon Gates of Madara",
+          "Urza's Saga",
+          "World Map"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 590,
+        "native_keep": 7,
+        "candidate_keep": 7,
+        "native_hand": [
+          "Emeria's Call",
+          "Enlightened Tutor",
+          "Feather of Flight",
+          "Plains",
+          "Portable Hole",
+          "Tezzeret, Cruel Captain",
+          "Urza's Cave"
+        ],
+        "candidate_hand": [
+          "Bucknard's Everfull Purse",
+          "Defense Grid",
+          "Lion's Eye Diamond",
+          "Mana Vault",
+          "Plains",
+          "Portable Hole",
+          "The Mind Stone"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1111,
+        "native_keep": 7,
+        "candidate_keep": 7,
+        "native_hand": [
+          "Coalition Relic",
+          "Lunarch Mantle",
+          "Mana Vault",
+          "Plains",
+          "The Mycosynth Gardens",
+          "Tooth of Ramos",
+          "Trinisphere"
+        ],
+        "candidate_hand": [
+          "Ancient Tomb",
+          "Chrome Mox",
+          "Lion's Eye Diamond",
+          "Mana Tithe",
+          "Moonsilver Key",
+          "Mox Diamond",
+          "Talon Gates of Madara"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1278,
+        "native_keep": 7,
+        "candidate_keep": 5,
+        "native_hand": [
+          "Hardlight Containment",
+          "Idolized",
+          "Krark-Clan Ironworks",
+          "Minimus Containment",
+          "Plains",
+          "Sol Ring",
+          "Urza's Saga"
+        ],
+        "candidate_hand": [
+          "Gleaming Splendor",
+          "Homeward Path",
+          "Lion's Eye Diamond",
+          "Mox Diamond",
+          "Mox Opal"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1462,
+        "native_keep": 7,
+        "candidate_keep": 7,
+        "native_hand": [
+          "Disruptor Flute",
+          "Enlightened Tutor",
+          "Fomori Vault",
+          "Mind Stone",
+          "Mishra's Workshop",
+          "Plains",
+          "Unwanted Remake"
+        ],
+        "candidate_hand": [
+          "Eiganjo, Seat of the Empire",
+          "Feather of Flight",
+          "Gemstone Caverns",
+          "Homeward Path",
+          "Lion's Eye Diamond",
+          "Mana Vault",
+          "Static Prison"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1464,
+        "native_keep": 7,
+        "candidate_keep": 7,
+        "native_hand": [
+          "Gemstone Caverns",
+          "Gleaming Splendor",
+          "Plains",
+          "Preston, the Vanisher",
+          "Scroll Rack",
+          "Sol Ring",
+          "Twinblade Blessing"
+        ],
+        "candidate_hand": [
+          "Basalt Monolith",
+          "Grim Monolith",
+          "Implements of Sacrifice",
+          "Lion's Eye Diamond",
+          "Mox Diamond",
+          "Plains",
+          "Touch the Spirit Realm"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1523,
+        "native_keep": 7,
+        "candidate_keep": 6,
+        "native_hand": [
+          "City of Traitors",
+          "March of Otherworldly Light",
+          "Razorgrass Ambush",
+          "Staff of Compleation",
+          "Super State",
+          "Tezzeret, Cruel Captain",
+          "Trinisphere"
+        ],
+        "candidate_hand": [
+          "Bucknard's Everfull Purse",
+          "Charitable Levy",
+          "Chrome Mox",
+          "Enlightened Tutor",
+          "Homeward Path",
+          "Mana Vault"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1542,
+        "native_keep": 7,
+        "candidate_keep": 6,
+        "native_hand": [
+          "Ancient Tomb",
+          "Chrome Mox",
+          "Plains",
+          "Remote Farm",
+          "Ruins of Trokair",
+          "The Mind Stone",
+          "Tooth of Ramos"
+        ],
+        "candidate_hand": [
+          "Lion's Eye Diamond",
+          "Mana Vault",
+          "Mox Diamond",
+          "Plains",
+          "Silence",
+          "Vexing Bauble"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1755,
+        "native_keep": 7,
+        "candidate_keep": 4,
+        "native_hand": [
+          "Emergence Zone",
+          "Gift of Immortality",
+          "Minimus Containment",
+          "Mishra's Workshop",
+          "Moonsilver Key",
+          "Plains",
+          "Plains"
+        ],
+        "candidate_hand": [
+          "Command Beacon",
+          "Homeward Path",
+          "Lion's Eye Diamond",
+          "The Mycosynth Gardens"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 714,
+        "native_keep": 7,
+        "candidate_keep": 6,
+        "native_hand": [
+          "Arcane Signet",
+          "Basalt Monolith",
+          "Chrome Mox",
+          "Deafening Silence",
+          "Mox Opal",
+          "Plains",
+          "Urza's Cave"
+        ],
+        "candidate_hand": [
+          "Ancient Den",
+          "Mishra's Workshop",
+          "Moonsilver Key",
+          "Plains",
+          "Staff of Compleation",
+          "Super State"
+        ],
+        "native_T1": true
+      }
+    ],
+    "assertive": [
+      {
+        "gid": 20,
+        "native_keep": 7,
+        "candidate_keep": 4,
+        "native_hand": [
+          "City of Traitors",
+          "Emergence Zone",
+          "Fellwar Stone",
+          "Moonsilver Key",
+          "Plains",
+          "Sheltered by Ghosts",
+          "Staff of Compleation"
+        ],
+        "candidate_hand": [
+          "Everflowing Chalice",
+          "Grim Monolith",
+          "Lion's Eye Diamond",
+          "The Mycosynth Gardens"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 125,
+        "native_keep": 7,
+        "candidate_keep": 6,
+        "native_hand": [
+          "Fellwar Stone",
+          "Paladin Class",
+          "Plains",
+          "Plains",
+          "Sol Ring",
+          "The Mind Stone",
+          "World Map"
+        ],
+        "candidate_hand": [
+          "Bound by Moonsilver",
+          "Charitable Levy",
+          "Lion's Eye Diamond",
+          "Mana Vault",
+          "Razorgrass Ambush",
+          "Trinisphere"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 168,
+        "native_keep": 7,
+        "candidate_keep": 5,
+        "native_hand": [
+          "Chrome Mox",
+          "Feather of Flight",
+          "Fellwar Stone",
+          "Grim Monolith",
+          "Plains",
+          "The Mind Stone",
+          "Unwanted Remake"
+        ],
+        "candidate_hand": [
+          "Ancient Tomb",
+          "Lion's Eye Diamond",
+          "Mana Vault",
+          "Staff of Compleation",
+          "Talon Gates of Madara"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 258,
+        "native_keep": 6,
+        "candidate_keep": 5,
+        "native_hand": [
+          "Crystal Vein",
+          "Fomori Vault",
+          "Plains",
+          "Plains",
+          "Ruins of Trokair",
+          "Tezzeret, Cruel Captain"
+        ],
+        "candidate_hand": [
+          "Homeward Path",
+          "Lion's Eye Diamond",
+          "Mana Vault",
+          "Mox Diamond",
+          "Plains"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 328,
+        "native_keep": 6,
+        "candidate_keep": 5,
+        "native_hand": [
+          "Coalition Relic",
+          "Eiganjo, Seat of the Empire",
+          "Plains",
+          "Scroll Rack",
+          "Sol Ring",
+          "World Map"
+        ],
+        "candidate_hand": [
+          "Lion's Eye Diamond",
+          "Orim's Chant",
+          "Petrified Hamlet",
+          "Plains",
+          "The Mycosynth Gardens"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 442,
+        "native_keep": 7,
+        "candidate_keep": 4,
+        "native_hand": [
+          "Eiganjo, Seat of the Empire",
+          "Feather of Flight",
+          "Gemstone Caverns",
+          "Remote Farm",
+          "Soul Partition",
+          "The Mycosynth Gardens",
+          "Tooth of Ramos"
+        ],
+        "candidate_hand": [
+          "Crystal Vein",
+          "Lion's Eye Diamond",
+          "Mox Diamond",
+          "Plains"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 503,
+        "native_keep": 7,
+        "candidate_keep": 6,
+        "native_hand": [
+          "Charitable Levy",
+          "Grim Monolith",
+          "Lunarch Mantle",
+          "Mantle of the Ancients",
+          "Plains",
+          "Sol Ring",
+          "Static Prison"
+        ],
+        "candidate_hand": [
+          "Grim Monolith",
+          "Lion's Eye Diamond",
+          "Super State",
+          "Talon Gates of Madara",
+          "Urza's Saga",
+          "World Map"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 556,
+        "native_keep": 7,
+        "candidate_keep": 3,
+        "native_hand": [
+          "Charitable Levy",
+          "Crystal Vein",
+          "Gift of Immortality",
+          "Lotus Petal",
+          "Plains",
+          "Razorgrass Ambush",
+          "Tezzeret, Cruel Captain"
+        ],
+        "candidate_hand": [
+          "Lion's Eye Diamond",
+          "Mana Vault",
+          "Petrified Hamlet"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 571,
+        "native_keep": 7,
+        "candidate_keep": 6,
+        "native_hand": [
+          "Chrome Mox",
+          "Defense Grid",
+          "Eiganjo, Seat of the Empire",
+          "Eldrazi Confluence",
+          "Hardlight Containment",
+          "Lion's Eye Diamond",
+          "Portable Hole"
+        ],
+        "candidate_hand": [
+          "Crystal Vein",
+          "Gemstone Caverns",
+          "Grim Monolith",
+          "Mana Vault",
+          "Plains",
+          "Tooth of Ramos"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 590,
+        "native_keep": 7,
+        "candidate_keep": 7,
+        "native_hand": [
+          "Emeria's Call",
+          "Enlightened Tutor",
+          "Feather of Flight",
+          "Plains",
+          "Portable Hole",
+          "Tezzeret, Cruel Captain",
+          "Urza's Cave"
+        ],
+        "candidate_hand": [
+          "Bucknard's Everfull Purse",
+          "Defense Grid",
+          "Lion's Eye Diamond",
+          "Mana Vault",
+          "Plains",
+          "Portable Hole",
+          "The Mind Stone"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 607,
+        "native_keep": 6,
+        "candidate_keep": 3,
+        "native_hand": [
+          "Bound by Moonsilver",
+          "City of Traitors",
+          "Coalition Relic",
+          "Gleaming Splendor",
+          "Mishra's Workshop",
+          "Touch the Spirit Realm"
+        ],
+        "candidate_hand": [
+          "Brainstone",
+          "Lion's Eye Diamond",
+          "The Mycosynth Gardens"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 718,
+        "native_keep": 5,
+        "candidate_keep": 4,
+        "native_hand": [
+          "Lotus Petal",
+          "Lunarch Mantle",
+          "Moonsilver Key",
+          "Petrified Hamlet",
+          "Plains"
+        ],
+        "candidate_hand": [
+          "Lion's Eye Diamond",
+          "Mana Vault",
+          "Prismatic Lens",
+          "Tooth of Ramos"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 807,
+        "native_keep": 7,
+        "candidate_keep": 4,
+        "native_hand": [
+          "Basalt Monolith",
+          "Deafening Silence",
+          "Floating Shield",
+          "Gemstone Caverns",
+          "Mishra's Workshop",
+          "Plains",
+          "Urza's Saga"
+        ],
+        "candidate_hand": [
+          "Charitable Levy",
+          "Implements of Sacrifice",
+          "Lion's Eye Diamond",
+          "The Mycosynth Gardens"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 948,
+        "native_keep": 7,
+        "candidate_keep": 5,
+        "native_hand": [
+          "Ancient Tomb",
+          "Bucknard's Everfull Purse",
+          "Idolized",
+          "Ruins of Trokair",
+          "Talon Gates of Madara",
+          "The Mind Stone",
+          "Unwanted Remake"
+        ],
+        "candidate_hand": [
+          "Arcane Signet",
+          "Lion's Eye Diamond",
+          "Mana Vault",
+          "Mox Diamond",
+          "Remote Farm"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 954,
+        "native_keep": 5,
+        "candidate_keep": 4,
+        "native_hand": [
+          "Blast Zone",
+          "Idolized",
+          "Lunarch Mantle",
+          "Tezzeret, Cruel Captain",
+          "Urza's Saga"
+        ],
+        "candidate_hand": [
+          "Coalition Relic",
+          "Eldrazi Confluence",
+          "Lion's Eye Diamond",
+          "The Mycosynth Gardens"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1083,
+        "native_keep": 5,
+        "candidate_keep": 4,
+        "native_hand": [
+          "Command Beacon",
+          "Ruins of Trokair",
+          "Touch the Spirit Realm",
+          "Untaidake, the Cloud Keeper",
+          "Urza's Saga"
+        ],
+        "candidate_hand": [
+          "Brainstone",
+          "Crystal Vein",
+          "Lion's Eye Diamond",
+          "Sol Ring"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1111,
+        "native_keep": 7,
+        "candidate_keep": 7,
+        "native_hand": [
+          "Coalition Relic",
+          "Lunarch Mantle",
+          "Mana Vault",
+          "Plains",
+          "The Mycosynth Gardens",
+          "Tooth of Ramos",
+          "Trinisphere"
+        ],
+        "candidate_hand": [
+          "Ancient Tomb",
+          "Chrome Mox",
+          "Lion's Eye Diamond",
+          "Mana Tithe",
+          "Moonsilver Key",
+          "Mox Diamond",
+          "Talon Gates of Madara"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1278,
+        "native_keep": 7,
+        "candidate_keep": 5,
+        "native_hand": [
+          "Hardlight Containment",
+          "Idolized",
+          "Krark-Clan Ironworks",
+          "Minimus Containment",
+          "Plains",
+          "Sol Ring",
+          "Urza's Saga"
+        ],
+        "candidate_hand": [
+          "Gleaming Splendor",
+          "Homeward Path",
+          "Lion's Eye Diamond",
+          "Mox Diamond",
+          "Mox Opal"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1348,
+        "native_keep": 7,
+        "candidate_keep": 6,
+        "native_hand": [
+          "Ancient Den",
+          "Fellwar Stone",
+          "Sheltered by Ghosts",
+          "Sol Ring",
+          "Static Prison",
+          "Touch the Spirit Realm",
+          "Urza's Saga"
+        ],
+        "candidate_hand": [
+          "Deafening Silence",
+          "Eldrazi Confluence",
+          "Grim Monolith",
+          "Lion's Eye Diamond",
+          "Plains",
+          "The Mycosynth Gardens"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1462,
+        "native_keep": 7,
+        "candidate_keep": 7,
+        "native_hand": [
+          "Disruptor Flute",
+          "Enlightened Tutor",
+          "Fomori Vault",
+          "Mind Stone",
+          "Mishra's Workshop",
+          "Plains",
+          "Unwanted Remake"
+        ],
+        "candidate_hand": [
+          "Eiganjo, Seat of the Empire",
+          "Feather of Flight",
+          "Gemstone Caverns",
+          "Homeward Path",
+          "Lion's Eye Diamond",
+          "Mana Vault",
+          "Static Prison"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1464,
+        "native_keep": 7,
+        "candidate_keep": 7,
+        "native_hand": [
+          "Gemstone Caverns",
+          "Gleaming Splendor",
+          "Plains",
+          "Preston, the Vanisher",
+          "Scroll Rack",
+          "Sol Ring",
+          "Twinblade Blessing"
+        ],
+        "candidate_hand": [
+          "Basalt Monolith",
+          "Grim Monolith",
+          "Implements of Sacrifice",
+          "Lion's Eye Diamond",
+          "Mox Diamond",
+          "Plains",
+          "Touch the Spirit Realm"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1523,
+        "native_keep": 7,
+        "candidate_keep": 6,
+        "native_hand": [
+          "City of Traitors",
+          "March of Otherworldly Light",
+          "Razorgrass Ambush",
+          "Staff of Compleation",
+          "Super State",
+          "Tezzeret, Cruel Captain",
+          "Trinisphere"
+        ],
+        "candidate_hand": [
+          "Bucknard's Everfull Purse",
+          "Charitable Levy",
+          "Chrome Mox",
+          "Enlightened Tutor",
+          "Homeward Path",
+          "Mana Vault"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1542,
+        "native_keep": 7,
+        "candidate_keep": 6,
+        "native_hand": [
+          "Ancient Tomb",
+          "Chrome Mox",
+          "Plains",
+          "Remote Farm",
+          "Ruins of Trokair",
+          "The Mind Stone",
+          "Tooth of Ramos"
+        ],
+        "candidate_hand": [
+          "Lion's Eye Diamond",
+          "Mana Vault",
+          "Mox Diamond",
+          "Plains",
+          "Silence",
+          "Vexing Bauble"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1649,
+        "native_keep": 7,
+        "candidate_keep": 5,
+        "native_hand": [
+          "Basalt Monolith",
+          "Expedition Map",
+          "Fomori Vault",
+          "Jeweled Amulet",
+          "Lion's Eye Diamond",
+          "Minimus Containment",
+          "Thorn of Amethyst"
+        ],
+        "candidate_hand": [
+          "Jeweled Amulet",
+          "Lion's Eye Diamond",
+          "Mox Diamond",
+          "Plains",
+          "Remote Farm"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1651,
+        "native_keep": 7,
+        "candidate_keep": 5,
+        "native_hand": [
+          "Deafening Silence",
+          "Eiganjo, Seat of the Empire",
+          "Krark-Clan Ironworks",
+          "Lunarch Mantle",
+          "Razorgrass Ambush",
+          "Sol Ring",
+          "Tezzeret, Cruel Captain"
+        ],
+        "candidate_hand": [
+          "Ancient Tomb",
+          "Eiganjo, Seat of the Empire",
+          "Lion's Eye Diamond",
+          "Mox Diamond",
+          "Scroll Rack"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1755,
+        "native_keep": 7,
+        "candidate_keep": 4,
+        "native_hand": [
+          "Emergence Zone",
+          "Gift of Immortality",
+          "Minimus Containment",
+          "Mishra's Workshop",
+          "Moonsilver Key",
+          "Plains",
+          "Plains"
+        ],
+        "candidate_hand": [
+          "Command Beacon",
+          "Homeward Path",
+          "Lion's Eye Diamond",
+          "The Mycosynth Gardens"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1922,
+        "native_keep": 7,
+        "candidate_keep": 6,
+        "native_hand": [
+          "Crystal Vein",
+          "Everflowing Chalice",
+          "Feather of Flight",
+          "Mana Vault",
+          "Plains",
+          "Plains",
+          "Unwanted Remake"
+        ],
+        "candidate_hand": [
+          "Bucknard's Everfull Purse",
+          "City of Traitors",
+          "Crystal Vein",
+          "Implements of Sacrifice",
+          "Lion's Eye Diamond",
+          "Portable Hole"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1923,
+        "native_keep": 7,
+        "candidate_keep": 6,
+        "native_hand": [
+          "Ancient Tomb",
+          "Fellwar Stone",
+          "Jeweled Amulet",
+          "Krark-Clan Ironworks",
+          "Lotus Petal",
+          "Tooth of Ramos",
+          "Void Mirror"
+        ],
+        "candidate_hand": [
+          "Ancient Tomb",
+          "Crystal Vein",
+          "Deafening Silence",
+          "Grim Monolith",
+          "Lion's Eye Diamond",
+          "Plains"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 1943,
+        "native_keep": 7,
+        "candidate_keep": 5,
+        "native_hand": [
+          "Basalt Monolith",
+          "Command Beacon",
+          "Expedition Map",
+          "Fellwar Stone",
+          "Minimus Containment",
+          "Plains",
+          "Sol Ring"
+        ],
+        "candidate_hand": [
+          "Ancient Tomb",
+          "Basalt Monolith",
+          "Grim Monolith",
+          "Lion's Eye Diamond",
+          "Talon Gates of Madara"
+        ],
+        "native_T1": false
+      },
+      {
+        "gid": 714,
+        "native_keep": 7,
+        "candidate_keep": 6,
+        "native_hand": [
+          "Arcane Signet",
+          "Basalt Monolith",
+          "Chrome Mox",
+          "Deafening Silence",
+          "Mox Opal",
+          "Plains",
+          "Urza's Cave"
+        ],
+        "candidate_hand": [
+          "Ancient Den",
+          "Mishra's Workshop",
+          "Moonsilver Key",
+          "Plains",
+          "Staff of Compleation",
+          "Super State"
+        ],
+        "native_T1": true
+      }
+    ]
+  }
+}
