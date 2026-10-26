@@ -1,0 +1,104 @@
+name: Dack T1 Middle Ground Paired N2048
+on:
+  push:
+    branches: [dack-t1-middle-ground-paired-n2048-20261026]
+    paths:
+      - 'dack_t1_middle_ground_n2048_20261026.py'
+      - '.github/workflows/dack_t1_middle_ground_n2048_20261026.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+concurrency:
+  group: dack-t1-middle-n2048-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile, rules/seed audit, baseline replay parity
+        run: |
+          python -m py_compile dack_t1_middle_ground_n2048_20261026.py
+          python -u dack_t1_middle_ground_n2048_20261026.py --audit
+          python -u dack_t1_middle_ground_n2048_20261026.py --parity
+      - name: New-seed four-way matched-game smoke
+        run: |
+          python - <<'PY'
+          import dack_t1_middle_ground_n2048_20261026 as q
+          q.reset_caches()
+          r=q.simulate(9999)
+          assert all(r['results'][k]['game_id']==9999 for k in q.POLICIES)
+          assert len({r['results'][k]['seed'] for k in q.POLICIES})==1
+          print('FOUR_WAY_SMOKE_PASS', {k:v['win_turn'] for k,v in r['results'].items()},flush=True)
+          PY
+  shards:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Checkpoint each paired game in local shard
+        run: |
+          mkdir -p shards
+          python -u dack_t1_middle_ground_n2048_20261026.py \
+            --shard ${{ matrix.shard }} --games 32 \
+            --out "shards/middle_shard_${{ matrix.shard }}.json.gz"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-t1-middle-n2048-shard-${{ matrix.shard }}
+          path: |
+            shards/middle_shard_${{ matrix.shard }}.json.gz
+            shards/middle_shard_${{ matrix.shard }}.jsonl
+          retention-days: 90
+          if-no-files-found: warn
+  pool:
+    needs: [smoke,shards]
+    if: ${{ always() && needs.smoke.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-t1-middle-n2048-shard-*
+          path: shards
+          merge-multiple: true
+      - name: Audit 2048 exact IDs across all four policies, pool, compute paired CI
+        run: |
+          python -u dack_t1_middle_ground_n2048_20261026.py \
+            --pool --path shards --out dack_t1_middle_ground_n2048_report.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-t1-middle-ground-n2048-report
+          path: dack_t1_middle_ground_n2048_report.json
+          retention-days: 90
+          if-no-files-found: warn
+      - name: Archive permanent results in benchmark branch
+        run: |
+          mkdir -p benchmark_results
+          cp dack_t1_middle_ground_n2048_report.json benchmark_results/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_t1_middle_ground_n2048_report.json
+          git commit -m 'Publish fully verified 2048-game middle-ground mulligan comparison'
+          git push
