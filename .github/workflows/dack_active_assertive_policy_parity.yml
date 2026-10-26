@@ -1,0 +1,51 @@
+name: Dack Active Assertive Policy Parity
+on:
+  push:
+    branches: [dack-assertive-active-default-20261026]
+    paths:
+      - 'dack_active_mulligan_policy.py'
+      - 'DACK_ACTIVE_MULLIGAN_POLICY.md'
+      - '.github/workflows/dack_active_assertive_policy_parity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-policy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Syntax, card/rules, and promoted default audit
+        run: |
+          python -m py_compile dack_active_mulligan_policy.py
+          python -u dack_active_mulligan_policy.py --audit
+      - name: Replay archived 10000-trial records under BOTH selectors
+        run: |
+          python -u dack_active_mulligan_policy.py --parity
+      - name: Non-default variant and invalid-card safety checks
+        run: |
+          python - <<'PY'
+          import dack_active_mulligan_policy as a
+          a.audit()
+          deck=list(a.FROZEN_DECK)
+          a.configure_variants({'baseline':tuple(deck),'candidate':tuple(deck)})
+          a.reset_caches()
+          x=a.simulate('baseline',game_id=0,policy=a.ACTIVE_POLICY)
+          a.reset_caches()
+          y=a.simulate('candidate',game_id=0,policy=a.ACTIVE_POLICY)
+          for key in ('win_turn','seed','seat','keep_n','hand','first3','deck_hash'):
+              assert x[key]==y[key], (key,x[key],y[key])
+          assert x['policy']==y['policy']=='assertive'
+          try:
+              a.configure_variants({'invalid':('Plains',)*99})
+          except AssertionError:
+              pass
+          else:
+              raise AssertionError('Invalid combo-deck accepted')
+          print('ACTIVE_VARIANT_PAIRED_SEED_AND_VALIDATION_PASS',flush=True)
+          PY
