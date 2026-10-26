@@ -1,0 +1,70 @@
+name: Dack T1 Middle Ground Pool Recovery
+on:
+  push:
+    branches: [dack-t1-middle-ground-pool-recovery-20261026]
+    paths:
+      - 'dack_t1_middle_ground_n2048_20261026.py'
+      - '.github/workflows/dack_t1_middle_ground_pool_recovery_20261026.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate pooler JSON key contract before downloading
+        run: |
+          python -m py_compile dack_t1_middle_ground_n2048_20261026.py
+          python - <<'PY'
+          import json
+          import dack_t1_middle_ground_n2048_20261026 as m
+          m.audit()
+          q=json.loads(json.dumps(m.POLICIES))
+          assert q == json.loads(json.dumps(m.POLICIES))
+          assert all(isinstance(k,str) for v in q.values() for k in v)
+          print("POOL_JSON_POLICY_KEYS_PASS",flush=True)
+          PY
+      - name: Download all 64 preserved completed artifacts from original run
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 40339162544
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pattern: dack-t1-middle-n2048-shard-*
+          path: shards
+          merge-multiple: true
+      - name: Reaggregate original data with exact ID and four-policy validation
+        run: |
+          python -u dack_t1_middle_ground_n2048_20261026.py \
+            --pool --path shards --out dack_t1_middle_ground_n2048_report.json
+          python - <<'PY'
+          import json
+          r=json.load(open("dack_t1_middle_ground_n2048_report.json"))
+          assert r["status"]=="PASS" and r["validated_n"]==2048
+          assert r["missing_count"]==0 and r["shards_found"]==64
+          print("RECOVERY_VERIFIED_ALL_2048", flush=True)
+          PY
+      - name: Preserve pooled summary report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dack-t1-middle-ground-n2048-validated-recovery-report
+          path: dack_t1_middle_ground_n2048_report.json
+          retention-days: 90
+          if-no-files-found: warn
+      - name: Commit permanent validated report
+        run: |
+          mkdir -p benchmark_results
+          cp dack_t1_middle_ground_n2048_report.json benchmark_results/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add benchmark_results/dack_t1_middle_ground_n2048_report.json
+          git commit -m 'Publish independently verified N2048 Dack mulligan middle ground report'
+          git push
