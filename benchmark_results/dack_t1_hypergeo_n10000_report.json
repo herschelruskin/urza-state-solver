@@ -1,0 +1,2225 @@
+{
+  "status": "PASS",
+  "planned_n": 10000,
+  "validated_n": 10000,
+  "shards_found": 250,
+  "shards_planned": 250,
+  "missing_game_ids_first_100": [],
+  "missing_game_count": 0,
+  "schema": "dack_t1_hypergeo_paired_v1",
+  "seed_base": 20261025111008,
+  "game_beam": 160,
+  "deck_hash": "a1c8e05dc3f9e1bcfbfbe2f7773ea4a5e62222d3440dd2f7417fd7f2f058c422",
+  "policy_native": "lambda=0.5 free London, frozen thresholds",
+  "policy_t1_greedy": "maximize sampled t1 across top 12 legal bottom options; keep when any T1 estimate positive; else free London mulligan through keep 1",
+  "scope": "optimistic goldfish Dack cast conditional on Boonweaver combo library, not validated combo completion or multiplayer win",
+  "arms": {
+    "native": {
+      "counts": {
+        "0": 1414,
+        "1": 538,
+        "2": 4318,
+        "3": 3730
+      },
+      "T1_pct": 5.38,
+      "T1_95_wilson_pct": [
+        4.9547,
+        5.8396
+      ],
+      "T2_pct": 48.56,
+      "T3_pct": 85.86,
+      "mean_keep_size": 5.6336
+    },
+    "t1_greedy": {
+      "counts": {
+        "0": 5632,
+        "1": 783,
+        "2": 2021,
+        "3": 1564
+      },
+      "T1_pct": 7.83,
+      "T1_95_wilson_pct": [
+        7.3195,
+        8.3729
+      ],
+      "T2_pct": 28.04,
+      "T3_pct": 43.68,
+      "mean_keep_size": 3.221
+    }
+  },
+  "paired_T1": {
+    "gains": 329,
+    "losses": 84,
+    "delta_pp": 2.45,
+    "normal_95_ci_pp": [
+      2.0546,
+      2.8454
+    ],
+    "changed_keep_size": 357
+  },
+  "t1_discordant_first_100": [
+    {
+      "gid": 6,
+      "native_hand": [
+        "Ancient Tomb",
+        "March of Otherworldly Light",
+        "Moonsilver Key",
+        "Mox Opal",
+        "Plains",
+        "Sheltered by Ghosts",
+        "Tooth of Ramos"
+      ],
+      "greedy_hand": [
+        "Command Beacon",
+        "Krark-Clan Ironworks",
+        "Lion's Eye Diamond",
+        "Mana Vault",
+        "Vexing Bauble"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 51,
+      "native_hand": [
+        "Charitable Levy",
+        "City of Traitors",
+        "Coalition Relic",
+        "Razorgrass Ambush",
+        "Sol Ring",
+        "World Map"
+      ],
+      "greedy_hand": [
+        "City of Traitors",
+        "Grim Monolith",
+        "Mox Diamond",
+        "Plains",
+        "Sol Ring"
+      ],
+      "native_keep_n": 6,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 75,
+      "native_hand": [
+        "Charitable Levy",
+        "Lion's Eye Diamond",
+        "Lotus Petal",
+        "Mox Opal",
+        "Staff of Compleation"
+      ],
+      "greedy_hand": [
+        "Gemstone Caverns",
+        "Lion's Eye Diamond",
+        "Lotus Petal",
+        "Mox Opal",
+        "Staff of Compleation"
+      ],
+      "native_keep_n": 5,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 139,
+      "native_hand": [
+        "Emeria's Call",
+        "Fellwar Stone",
+        "Lion's Eye Diamond",
+        "Scroll Rack",
+        "Sheltered by Ghosts",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "greedy_hand": [
+        "City of Traitors",
+        "Implements of Sacrifice",
+        "Lion's Eye Diamond",
+        "Lotus Petal",
+        "Staff of Compleation"
+      ],
+      "native_keep_n": 6,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 198,
+      "native_hand": [
+        "Deafening Silence",
+        "Homeward Path",
+        "Lion's Eye Diamond",
+        "Mishra's Workshop",
+        "Plains",
+        "Plains",
+        "Vexing Bauble"
+      ],
+      "greedy_hand": [
+        "Bucknard's Everfull Purse",
+        "Lion's Eye Diamond",
+        "The Mycosynth Gardens"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 3,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 221,
+      "native_hand": [
+        "Remote Farm",
+        "Scroll Rack",
+        "Silence",
+        "Urza's Saga"
+      ],
+      "greedy_hand": [
+        "Lion's Eye Diamond",
+        "The Mycosynth Gardens",
+        "Tooth of Ramos"
+      ],
+      "native_keep_n": 4,
+      "greedy_keep_n": 3,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 230,
+      "native_hand": [
+        "Everflowing Chalice",
+        "Great Hall of the Citadel",
+        "Implements of Sacrifice",
+        "Sol Ring",
+        "Touch the Spirit Realm"
+      ],
+      "greedy_hand": [
+        "City of Traitors",
+        "Lion's Eye Diamond",
+        "Mox Diamond",
+        "Remote Farm"
+      ],
+      "native_keep_n": 5,
+      "greedy_keep_n": 4,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 262,
+      "native_hand": [
+        "Bucknard's Everfull Purse",
+        "Cavern of Souls",
+        "City of Traitors",
+        "Emergence Zone",
+        "Expedition Map",
+        "Mana Tithe",
+        "Mox Opal"
+      ],
+      "greedy_hand": [
+        "Ancient Den",
+        "Basalt Monolith",
+        "Lion's Eye Diamond",
+        "Mana Vault"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 4,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 289,
+      "native_hand": [
+        "Hardlight Containment",
+        "Homeward Path",
+        "Mind Stone",
+        "Plains",
+        "Scroll Rack",
+        "Sol Ring"
+      ],
+      "greedy_hand": [
+        "Lion's Eye Diamond",
+        "Lotus Petal"
+      ],
+      "native_keep_n": 6,
+      "greedy_keep_n": 2,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 309,
+      "native_hand": [
+        "Enlightened Tutor",
+        "Great Hall of the Citadel",
+        "Mox Diamond"
+      ],
+      "greedy_hand": [
+        "Lion's Eye Diamond",
+        "Mana Vault"
+      ],
+      "native_keep_n": 3,
+      "greedy_keep_n": 2,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 409,
+      "native_hand": [
+        "Arcane Signet",
+        "Crystal Vein",
+        "Mishra's Workshop",
+        "Plains",
+        "Tooth of Ramos"
+      ],
+      "greedy_hand": [
+        "Lion's Eye Diamond",
+        "Mox Diamond",
+        "The Mycosynth Gardens"
+      ],
+      "native_keep_n": 5,
+      "greedy_keep_n": 3,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 414,
+      "native_hand": [
+        "Plains",
+        "Plains",
+        "Sol Ring",
+        "Talon Gates of Madara",
+        "Urza's Saga"
+      ],
+      "greedy_hand": [
+        "Ancient Tomb",
+        "Gleaming Splendor",
+        "Lion's Eye Diamond",
+        "Mana Vault"
+      ],
+      "native_keep_n": 5,
+      "greedy_keep_n": 4,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 420,
+      "native_hand": [
+        "Bound by Moonsilver",
+        "Chrome Mox",
+        "Moonsilver Key",
+        "Plains",
+        "Plains",
+        "Silence",
+        "World Map"
+      ],
+      "greedy_hand": [
+        "Emeria's Call",
+        "Gleaming Splendor",
+        "Lion's Eye Diamond",
+        "Mana Vault",
+        "Untaidake, the Cloud Keeper",
+        "Vexing Bauble"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 6,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 453,
+      "native_hand": [
+        "Ancient Tomb",
+        "Charitable Levy",
+        "Enlightened Tutor",
+        "Lion's Eye Diamond",
+        "Minimus Containment",
+        "Moonsilver Key",
+        "Plains"
+      ],
+      "greedy_hand": [
+        "Charitable Levy",
+        "Mana Vault",
+        "Moonsilver Key",
+        "Plains",
+        "The Mycosynth Gardens"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 470,
+      "native_hand": [
+        "Cavern of Souls",
+        "Chrome Mox",
+        "Gemstone Caverns",
+        "Hardlight Containment",
+        "Prismatic Lens",
+        "Super State",
+        "Tooth of Ramos"
+      ],
+      "greedy_hand": [
+        "Arcane Signet",
+        "Gift of Immortality",
+        "Mana Vault",
+        "Plains",
+        "Portable Hole",
+        "Remote Farm"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 6,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 479,
+      "native_hand": [
+        "Arcane Signet",
+        "Chrome Mox",
+        "City of Traitors",
+        "Command Beacon",
+        "Lotus Petal",
+        "Plains",
+        "Plains"
+      ],
+      "greedy_hand": [
+        "Enlightened Tutor",
+        "Gemstone Caverns",
+        "Gleaming Splendor",
+        "Lion's Eye Diamond",
+        "Mind Stone",
+        "Soul Partition",
+        "Trinisphere"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 7,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 480,
+      "native_hand": [
+        "Ancient Tomb",
+        "Lotus Petal",
+        "Mantle of the Ancients",
+        "Mox Diamond",
+        "Plains",
+        "Scroll Rack",
+        "Trinisphere"
+      ],
+      "greedy_hand": [
+        "Crystal Vein",
+        "Lion's Eye Diamond",
+        "Lotus Petal"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 3,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 491,
+      "native_hand": [
+        "City of Traitors",
+        "Crystal Vein",
+        "Everflowing Chalice",
+        "Expedition Map",
+        "Floating Shield",
+        "Mana Vault",
+        "The Mind Stone"
+      ],
+      "greedy_hand": [
+        "Eldrazi Confluence",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Plains",
+        "Soul Partition"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 509,
+      "native_hand": [
+        "Ancient Tomb",
+        "Arcane Signet",
+        "Chrome Mox",
+        "City of Traitors"
+      ],
+      "greedy_hand": [
+        "Lion's Eye Diamond",
+        "The Mycosynth Gardens"
+      ],
+      "native_keep_n": 4,
+      "greedy_keep_n": 2,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 511,
+      "native_hand": [
+        "Blast Zone",
+        "Charitable Levy",
+        "Lion's Eye Diamond",
+        "Minimus Containment",
+        "Plains",
+        "Razorgrass Ambush",
+        "Urza's Saga"
+      ],
+      "greedy_hand": [
+        "Everflowing Chalice",
+        "Lion's Eye Diamond",
+        "Mana Vault",
+        "Minimus Containment",
+        "Paladin Class",
+        "Plains",
+        "Plains"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 7,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 529,
+      "native_hand": [
+        "Bucknard's Everfull Purse",
+        "Chrome Mox",
+        "Great Hall of the Citadel",
+        "Plains",
+        "Scroll Rack",
+        "Silence"
+      ],
+      "greedy_hand": [
+        "Lion's Eye Diamond",
+        "Sol Ring",
+        "Urza's Saga"
+      ],
+      "native_keep_n": 6,
+      "greedy_keep_n": 3,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 576,
+      "native_hand": [
+        "Disruptor Flute",
+        "Enlightened Tutor",
+        "Gemstone Caverns",
+        "Mox Diamond",
+        "Soul Partition",
+        "Static Prison",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "greedy_hand": [
+        "Ancient Tomb",
+        "Gemstone Caverns",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Plains",
+        "Twinblade Blessing"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 6,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 602,
+      "native_hand": [
+        "Basalt Monolith",
+        "Cavern of Souls",
+        "Eldrazi Confluence",
+        "Emeria's Call",
+        "Mana Vault",
+        "Mishra's Workshop",
+        "Remote Farm"
+      ],
+      "greedy_hand": [
+        "Bucknard's Everfull Purse",
+        "Chrome Mox",
+        "Emergence Zone",
+        "Gemstone Caverns",
+        "Lion's Eye Diamond",
+        "Orim's Chant",
+        "Static Prison"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 7,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 640,
+      "native_hand": [
+        "Ancient Den",
+        "Emeria's Call",
+        "Lunarch Mantle",
+        "Mana Vault",
+        "Plains",
+        "Razorgrass Ambush",
+        "Void Mirror"
+      ],
+      "greedy_hand": [
+        "Ancient Tomb",
+        "Lion's Eye Diamond",
+        "Lotus Petal",
+        "Plains",
+        "Staff of Compleation",
+        "Super State",
+        "Unwanted Remake"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 7,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 676,
+      "native_hand": [
+        "Bucknard's Everfull Purse",
+        "Jeweled Amulet",
+        "Razorgrass Ambush",
+        "Urza's Cave"
+      ],
+      "greedy_hand": [
+        "Implements of Sacrifice",
+        "Lion's Eye Diamond",
+        "The Mycosynth Gardens"
+      ],
+      "native_keep_n": 4,
+      "greedy_keep_n": 3,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 746,
+      "native_hand": [
+        "Brainstone",
+        "Crystal Vein",
+        "Moonsilver Key",
+        "Plains",
+        "Remote Farm"
+      ],
+      "greedy_hand": [
+        "Lion's Eye Diamond",
+        "Mana Vault"
+      ],
+      "native_keep_n": 5,
+      "greedy_keep_n": 2,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 835,
+      "native_hand": [
+        "Krark-Clan Ironworks",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "greedy_hand": [
+        "City of Traitors",
+        "Gemstone Caverns",
+        "Krark-Clan Ironworks",
+        "Lion's Eye Diamond"
+      ],
+      "native_keep_n": 4,
+      "greedy_keep_n": 4,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 838,
+      "native_hand": [
+        "Enlightened Tutor",
+        "Everflowing Chalice",
+        "Gemstone Caverns",
+        "Minimus Containment",
+        "Mox Opal",
+        "Plains",
+        "Urza's Cave"
+      ],
+      "greedy_hand": [
+        "Expedition Map",
+        "Lion's Eye Diamond",
+        "Mana Vault",
+        "Plains"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 4,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 853,
+      "native_hand": [
+        "Emergence Zone",
+        "Fellwar Stone",
+        "Gemstone Caverns",
+        "Plains",
+        "Prismatic Lens",
+        "Touch the Spirit Realm"
+      ],
+      "greedy_hand": [
+        "Homeward Path",
+        "Jeweled Amulet",
+        "Lion's Eye Diamond",
+        "The Mycosynth Gardens",
+        "World Map"
+      ],
+      "native_keep_n": 6,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 891,
+      "native_hand": [
+        "Fomori Vault",
+        "Jeweled Amulet",
+        "Mox Diamond",
+        "Silence",
+        "Sol Ring",
+        "The Mycosynth Gardens",
+        "Urza's Cave"
+      ],
+      "greedy_hand": [
+        "Ancient Tomb",
+        "Coalition Relic",
+        "Implements of Sacrifice",
+        "Lion's Eye Diamond",
+        "Mana Vault"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 898,
+      "native_hand": [
+        "Brainstone",
+        "Bucknard's Everfull Purse",
+        "City of Traitors",
+        "Great Hall of the Citadel",
+        "Implements of Sacrifice",
+        "Preston, the Vanisher",
+        "Sol Ring"
+      ],
+      "greedy_hand": [
+        "Command Beacon",
+        "Gleaming Splendor",
+        "Lion's Eye Diamond",
+        "Petrified Hamlet",
+        "Sol Ring",
+        "Trinisphere"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 6,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 921,
+      "native_hand": [
+        "Crystal Vein",
+        "Eiganjo, Seat of the Empire",
+        "Expedition Map",
+        "Gemstone Caverns",
+        "The Mind Stone"
+      ],
+      "greedy_hand": [
+        "Lion's Eye Diamond",
+        "The Mycosynth Gardens"
+      ],
+      "native_keep_n": 5,
+      "greedy_keep_n": 2,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1021,
+      "native_hand": [
+        "Emeria's Call",
+        "Mana Vault",
+        "Minimus Containment",
+        "Plains",
+        "Plains",
+        "Thorn of Amethyst",
+        "Void Mirror"
+      ],
+      "greedy_hand": [
+        "Brainstone",
+        "Lion's Eye Diamond",
+        "Moonsilver Key",
+        "The Mind Stone",
+        "The Mycosynth Gardens"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1062,
+      "native_hand": [
+        "Chrome Mox",
+        "Emergence Zone",
+        "Grim Monolith",
+        "Razorgrass Ambush",
+        "Silence",
+        "Staff of Compleation",
+        "Static Prison"
+      ],
+      "greedy_hand": [
+        "Crystal Vein",
+        "Great Hall of the Citadel",
+        "Homeward Path",
+        "Lion's Eye Diamond",
+        "Silence",
+        "The Mind Stone"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 6,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1063,
+      "native_hand": [
+        "Bucknard's Everfull Purse",
+        "Everflowing Chalice",
+        "Grim Monolith",
+        "Homeward Path",
+        "Krark-Clan Ironworks",
+        "Plains",
+        "Razorgrass Ambush"
+      ],
+      "greedy_hand": [
+        "Ancient Den",
+        "Crystal Vein",
+        "Lion's Eye Diamond",
+        "Unwanted Remake"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 4,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1114,
+      "native_hand": [
+        "Chrome Mox",
+        "Disruptor Flute",
+        "Grim Monolith",
+        "Ruins of Trokair",
+        "Scroll Rack",
+        "Sol Ring"
+      ],
+      "greedy_hand": [
+        "Arcane Signet",
+        "Krark-Clan Ironworks",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Prismatic Lens"
+      ],
+      "native_keep_n": 6,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1119,
+      "native_hand": [
+        "Basalt Monolith",
+        "Blast Zone",
+        "Brainstone",
+        "Mana Tithe",
+        "Minimus Containment",
+        "Mox Opal",
+        "Razorgrass Ambush"
+      ],
+      "greedy_hand": [
+        "Bucknard's Everfull Purse",
+        "City of Traitors",
+        "Lion's Eye Diamond",
+        "Mox Opal",
+        "Plains"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1183,
+      "native_hand": [
+        "Chrome Mox",
+        "Enlightened Tutor",
+        "Implements of Sacrifice",
+        "Mind Stone",
+        "Plains",
+        "Plains",
+        "Unwanted Remake"
+      ],
+      "greedy_hand": [
+        "Eldrazi Confluence",
+        "Homeward Path",
+        "Lion's Eye Diamond",
+        "Mana Vault",
+        "Moonsilver Key",
+        "Plains"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 6,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1221,
+      "native_hand": [
+        "Crystal Vein",
+        "Fellwar Stone",
+        "Mind Stone",
+        "Moonsilver Key",
+        "Mox Opal",
+        "Petrified Hamlet",
+        "Plains"
+      ],
+      "greedy_hand": [
+        "Cavern of Souls",
+        "Fellwar Stone",
+        "Lion's Eye Diamond",
+        "Mana Vault"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 4,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1222,
+      "native_hand": [
+        "Bound by Moonsilver",
+        "Eiganjo, Seat of the Empire",
+        "Enlightened Tutor",
+        "Floating Shield",
+        "Plains",
+        "Tezzeret, Cruel Captain",
+        "Urza's Cave"
+      ],
+      "greedy_hand": [
+        "Expedition Map",
+        "Fellwar Stone",
+        "Lion's Eye Diamond",
+        "The Mycosynth Gardens",
+        "Thorn of Amethyst"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1226,
+      "native_hand": [
+        "Chrome Mox",
+        "Enlightened Tutor",
+        "Great Hall of the Citadel",
+        "Grim Monolith",
+        "Plains",
+        "Prismatic Lens",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "greedy_hand": [
+        "Chrome Mox",
+        "Great Hall of the Citadel",
+        "Lion's Eye Diamond",
+        "Lotus Petal",
+        "Mishra's Workshop",
+        "Moonsilver Key",
+        "Paladin Class"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 7,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1229,
+      "native_hand": [
+        "Ancient Den",
+        "Chrome Mox",
+        "Fomori Vault",
+        "Jeweled Amulet",
+        "Moonsilver Key",
+        "Plains",
+        "Razorgrass Ambush"
+      ],
+      "greedy_hand": [
+        "Lion's Eye Diamond",
+        "March of Otherworldly Light",
+        "Minimus Containment",
+        "Plains"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 4,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1251,
+      "native_hand": [
+        "Ancient Tomb",
+        "Gemstone Caverns",
+        "Petrified Hamlet",
+        "Ruins of Trokair",
+        "Staff of Compleation",
+        "Unwanted Remake"
+      ],
+      "greedy_hand": [
+        "Emergence Zone",
+        "Lion's Eye Diamond",
+        "Mox Diamond",
+        "Mox Opal",
+        "Plains"
+      ],
+      "native_keep_n": 6,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1265,
+      "native_hand": [
+        "Command Beacon",
+        "Mana Vault",
+        "Prismatic Lens",
+        "Tezzeret, Cruel Captain",
+        "The Mycosynth Gardens"
+      ],
+      "greedy_hand": [
+        "Command Beacon",
+        "Gemstone Caverns",
+        "Mana Vault",
+        "Tezzeret, Cruel Captain",
+        "The Mycosynth Gardens"
+      ],
+      "native_keep_n": 5,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1282,
+      "native_hand": [
+        "Ancient Tomb",
+        "Gemstone Caverns",
+        "Grim Monolith",
+        "Plains",
+        "Plains",
+        "Super State",
+        "Touch the Spirit Realm"
+      ],
+      "greedy_hand": [
+        "Fellwar Stone",
+        "Krark-Clan Ironworks",
+        "Lion's Eye Diamond",
+        "Mana Vault",
+        "Staff of Compleation"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1317,
+      "native_hand": [
+        "Arcane Signet",
+        "Brainstone",
+        "Enlightened Tutor",
+        "Fellwar Stone",
+        "Fomori Vault",
+        "Mox Diamond",
+        "Plains"
+      ],
+      "greedy_hand": [
+        "Lion's Eye Diamond",
+        "The Mycosynth Gardens"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 2,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1319,
+      "native_hand": [
+        "Coalition Relic",
+        "Fomori Vault",
+        "Mantle of the Ancients",
+        "Sol Ring",
+        "Super State",
+        "Urza's Cave"
+      ],
+      "greedy_hand": [
+        "Lion's Eye Diamond",
+        "Razorgrass Ambush",
+        "The Mycosynth Gardens"
+      ],
+      "native_keep_n": 6,
+      "greedy_keep_n": 3,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1362,
+      "native_hand": [
+        "Crystal Vein",
+        "Prismatic Lens",
+        "Sol Ring",
+        "Tezzeret, Cruel Captain"
+      ],
+      "greedy_hand": [
+        "Bucknard's Everfull Purse",
+        "City of Traitors",
+        "Lion's Eye Diamond"
+      ],
+      "native_keep_n": 4,
+      "greedy_keep_n": 3,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1445,
+      "native_hand": [
+        "Ancient Tomb",
+        "Brainstone",
+        "Fellwar Stone",
+        "Hardlight Containment",
+        "Implements of Sacrifice",
+        "Plains"
+      ],
+      "greedy_hand": [
+        "Gleaming Splendor",
+        "Lion's Eye Diamond",
+        "Mana Vault",
+        "Urza's Saga"
+      ],
+      "native_keep_n": 6,
+      "greedy_keep_n": 4,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1447,
+      "native_hand": [
+        "Coalition Relic",
+        "Razorgrass Ambush",
+        "Thorn of Amethyst",
+        "Urza's Saga"
+      ],
+      "greedy_hand": [
+        "Grim Monolith",
+        "Lion's Eye Diamond",
+        "The Mycosynth Gardens"
+      ],
+      "native_keep_n": 4,
+      "greedy_keep_n": 3,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1453,
+      "native_hand": [
+        "Blast Zone",
+        "Chrome Mox",
+        "Jeweled Amulet",
+        "Mantle of the Ancients",
+        "Mishra's Workshop",
+        "Moonsilver Key",
+        "Tooth of Ramos"
+      ],
+      "greedy_hand": [
+        "Brainstone",
+        "Lion's Eye Diamond",
+        "Mantle of the Ancients",
+        "Petrified Hamlet",
+        "Sol Ring"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1600,
+      "native_hand": [
+        "Basalt Monolith",
+        "Homeward Path",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Sol Ring",
+        "Staff of Compleation"
+      ],
+      "greedy_hand": [
+        "Eiganjo, Seat of the Empire",
+        "Gleaming Splendor",
+        "Lion's Eye Diamond",
+        "The Mycosynth Gardens",
+        "Thorn of Amethyst"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1634,
+      "native_hand": [
+        "Ancient Tomb",
+        "Defense Grid",
+        "Mantle of the Ancients",
+        "Petrified Hamlet",
+        "Plains",
+        "Tezzeret, Cruel Captain",
+        "Trinisphere"
+      ],
+      "greedy_hand": [
+        "Lion's Eye Diamond",
+        "Mana Vault"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 2,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1651,
+      "native_hand": [
+        "Crystal Vein",
+        "Mishra's Workshop",
+        "Moonsilver Key",
+        "Paladin Class",
+        "Static Prison",
+        "Super State"
+      ],
+      "greedy_hand": [
+        "Lion's Eye Diamond",
+        "Mana Vault"
+      ],
+      "native_keep_n": 6,
+      "greedy_keep_n": 2,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1703,
+      "native_hand": [
+        "Expedition Map",
+        "Fellwar Stone",
+        "Great Hall of the Citadel",
+        "Lion's Eye Diamond",
+        "Sol Ring"
+      ],
+      "greedy_hand": [
+        "City of Traitors",
+        "Expedition Map",
+        "Fellwar Stone",
+        "Lion's Eye Diamond",
+        "Sol Ring"
+      ],
+      "native_keep_n": 5,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1711,
+      "native_hand": [
+        "Chrome Mox",
+        "Expedition Map",
+        "Grim Monolith",
+        "Plains",
+        "Razorgrass Ambush",
+        "Static Prison",
+        "Unwanted Remake"
+      ],
+      "greedy_hand": [
+        "Lion's Eye Diamond",
+        "Lotus Petal",
+        "Sol Ring",
+        "Tezzeret, Cruel Captain",
+        "Urza's Saga"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1728,
+      "native_hand": [
+        "Everflowing Chalice",
+        "Fellwar Stone",
+        "Gemstone Caverns",
+        "Implements of Sacrifice",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Plains"
+      ],
+      "greedy_hand": [
+        "Ancient Tomb",
+        "Grim Monolith",
+        "Lion's Eye Diamond",
+        "Mana Vault",
+        "Mox Diamond",
+        "Orim's Chant",
+        "Plains"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 7,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1739,
+      "native_hand": [
+        "Basalt Monolith",
+        "City of Traitors",
+        "Great Hall of the Citadel",
+        "Scroll Rack",
+        "Sol Ring",
+        "Tezzeret, Cruel Captain"
+      ],
+      "greedy_hand": [
+        "Ancient Den",
+        "Charitable Levy",
+        "Plains",
+        "The Mycosynth Gardens"
+      ],
+      "native_keep_n": 6,
+      "greedy_keep_n": 4,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1766,
+      "native_hand": [
+        "Chrome Mox",
+        "Floating Shield",
+        "Krark-Clan Ironworks",
+        "Lotus Petal",
+        "March of Otherworldly Light",
+        "Sol Ring",
+        "World Map"
+      ],
+      "greedy_hand": [
+        "Arcane Signet",
+        "Implements of Sacrifice",
+        "Lion's Eye Diamond",
+        "Mox Diamond",
+        "Plains",
+        "Plains",
+        "Sol Ring"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 7,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1787,
+      "native_hand": [
+        "Coalition Relic",
+        "Floating Shield",
+        "Moonsilver Key",
+        "Petrified Hamlet",
+        "Portable Hole",
+        "Urza's Saga"
+      ],
+      "greedy_hand": [
+        "Basalt Monolith",
+        "Jeweled Amulet",
+        "Lion's Eye Diamond",
+        "Mana Vault",
+        "Urza's Cave"
+      ],
+      "native_keep_n": 6,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1814,
+      "native_hand": [
+        "Expedition Map",
+        "Homeward Path",
+        "Mana Vault",
+        "Plains",
+        "Prismatic Lens"
+      ],
+      "greedy_hand": [
+        "Brainstone",
+        "Lion's Eye Diamond",
+        "Mana Vault",
+        "Razorgrass Ambush"
+      ],
+      "native_keep_n": 5,
+      "greedy_keep_n": 4,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1815,
+      "native_hand": [
+        "Coalition Relic",
+        "Enlightened Tutor",
+        "Everflowing Chalice",
+        "Floating Shield",
+        "Razorgrass Ambush",
+        "Tezzeret, Cruel Captain",
+        "Touch the Spirit Realm"
+      ],
+      "greedy_hand": [
+        "Cavern of Souls",
+        "Disruptor Flute",
+        "Lion's Eye Diamond",
+        "Lotus Petal",
+        "Mox Opal"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1828,
+      "native_hand": [
+        "Emeria's Call",
+        "Homeward Path",
+        "Krark-Clan Ironworks",
+        "March of Otherworldly Light",
+        "Mishra's Workshop",
+        "Plains",
+        "Staff of Compleation"
+      ],
+      "greedy_hand": [
+        "Expedition Map",
+        "Lion's Eye Diamond",
+        "Plains"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 3,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1853,
+      "native_hand": [
+        "Emeria's Call",
+        "Enlightened Tutor",
+        "Plains",
+        "Razorgrass Ambush",
+        "World Map"
+      ],
+      "greedy_hand": [
+        "Lion's Eye Diamond",
+        "The Mycosynth Gardens"
+      ],
+      "native_keep_n": 5,
+      "greedy_keep_n": 2,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1855,
+      "native_hand": [
+        "Bucknard's Everfull Purse",
+        "Eiganjo, Seat of the Empire",
+        "Enlightened Tutor",
+        "Plains"
+      ],
+      "greedy_hand": [
+        "Lion's Eye Diamond",
+        "Mana Vault"
+      ],
+      "native_keep_n": 4,
+      "greedy_keep_n": 2,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1934,
+      "native_hand": [
+        "Charitable Levy",
+        "Emeria's Call",
+        "Implements of Sacrifice",
+        "Silence",
+        "Sol Ring",
+        "Trinisphere",
+        "Urza's Saga"
+      ],
+      "greedy_hand": [
+        "Blast Zone",
+        "Brainstone",
+        "Grim Monolith",
+        "Lion's Eye Diamond",
+        "Super State",
+        "The Mycosynth Gardens",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 7,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 1965,
+      "native_hand": [
+        "Brainstone",
+        "Crystal Vein",
+        "Deafening Silence",
+        "Mana Vault",
+        "Plains",
+        "Tooth of Ramos",
+        "Urza's Saga"
+      ],
+      "greedy_hand": [
+        "Eldrazi Confluence",
+        "Idolized",
+        "Plains",
+        "The Mycosynth Gardens",
+        "Touch the Spirit Realm"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2001,
+      "native_hand": [
+        "Arcane Signet",
+        "Gemstone Caverns",
+        "Gleaming Splendor",
+        "Plains",
+        "Plains",
+        "Remote Farm",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "greedy_hand": [
+        "Ancient Tomb",
+        "Lion's Eye Diamond",
+        "Petrified Hamlet",
+        "Plains",
+        "Portable Hole",
+        "Static Prison",
+        "The Mind Stone"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 7,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2002,
+      "native_hand": [
+        "Mana Vault",
+        "Plains",
+        "Tooth of Ramos"
+      ],
+      "greedy_hand": [
+        "Lion's Eye Diamond"
+      ],
+      "native_keep_n": 3,
+      "greedy_keep_n": 1,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2018,
+      "native_hand": [
+        "Bucknard's Everfull Purse",
+        "City of Traitors",
+        "Defense Grid",
+        "Mind Stone",
+        "Petrified Hamlet",
+        "Remote Farm"
+      ],
+      "greedy_hand": [
+        "Emergence Zone",
+        "Lion's Eye Diamond",
+        "Mana Vault"
+      ],
+      "native_keep_n": 6,
+      "greedy_keep_n": 3,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2041,
+      "native_hand": [
+        "Ancient Tomb",
+        "Command Beacon",
+        "Expedition Map",
+        "Gemstone Caverns",
+        "Moonsilver Key",
+        "Plains",
+        "Scroll Rack"
+      ],
+      "greedy_hand": [
+        "Lion's Eye Diamond",
+        "Mana Vault",
+        "Plains",
+        "Scroll Rack"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 4,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2049,
+      "native_hand": [
+        "City of Traitors",
+        "Command Beacon",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Plains",
+        "Static Prison",
+        "Touch the Spirit Realm"
+      ],
+      "greedy_hand": [
+        "Command Beacon",
+        "Enlightened Tutor",
+        "Feather of Flight",
+        "Lion's Eye Diamond",
+        "Plains",
+        "The Mycosynth Gardens",
+        "Unwanted Remake"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 7,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2137,
+      "native_hand": [
+        "Bucknard's Everfull Purse",
+        "Deafening Silence",
+        "Great Hall of the Citadel",
+        "Mishra's Workshop",
+        "Silence",
+        "Soul Partition"
+      ],
+      "greedy_hand": [
+        "Eldrazi Confluence",
+        "Grim Monolith",
+        "Lion's Eye Diamond",
+        "The Mind Stone",
+        "The Mycosynth Gardens"
+      ],
+      "native_keep_n": 6,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2162,
+      "native_hand": [
+        "Ancient Tomb",
+        "City of Traitors",
+        "Plains",
+        "The Mycosynth Gardens",
+        "Tooth of Ramos"
+      ],
+      "greedy_hand": [
+        "Krark-Clan Ironworks",
+        "Lion's Eye Diamond",
+        "Mana Vault",
+        "Urza's Saga"
+      ],
+      "native_keep_n": 5,
+      "greedy_keep_n": 4,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2168,
+      "native_hand": [
+        "Ancient Tomb",
+        "Arcane Signet",
+        "Eiganjo, Seat of the Empire",
+        "Lion's Eye Diamond",
+        "Mana Tithe",
+        "Plains",
+        "The Mind Stone"
+      ],
+      "greedy_hand": [
+        "Basalt Monolith",
+        "Cavern of Souls",
+        "Lion's Eye Diamond",
+        "The Mycosynth Gardens",
+        "Tooth of Ramos"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2189,
+      "native_hand": [
+        "City of Traitors",
+        "Enlightened Tutor",
+        "Minimus Containment",
+        "Mishra's Workshop",
+        "Mox Diamond",
+        "Plains",
+        "Super State"
+      ],
+      "greedy_hand": [
+        "Fellwar Stone",
+        "Lion's Eye Diamond",
+        "Portable Hole",
+        "The Mycosynth Gardens",
+        "Tooth of Ramos"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2201,
+      "native_hand": [
+        "Bucknard's Everfull Purse",
+        "Charitable Levy",
+        "City of Traitors",
+        "Eiganjo, Seat of the Empire",
+        "Gemstone Caverns",
+        "Sol Ring",
+        "Soul Partition"
+      ],
+      "greedy_hand": [
+        "Ancient Den",
+        "Grim Monolith",
+        "Hardlight Containment",
+        "Lion's Eye Diamond",
+        "Razorgrass Ambush"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2238,
+      "native_hand": [
+        "Bound by Moonsilver",
+        "Defense Grid",
+        "Erode",
+        "Mana Vault",
+        "Plains",
+        "Remote Farm",
+        "Sol Ring"
+      ],
+      "greedy_hand": [
+        "Floating Shield",
+        "Great Hall of the Citadel",
+        "Lion's Eye Diamond",
+        "Mana Tithe",
+        "Mox Diamond",
+        "Plains"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 6,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2270,
+      "native_hand": [
+        "Ancient Tomb",
+        "Bound by Moonsilver",
+        "Defense Grid",
+        "Enlightened Tutor",
+        "Homeward Path",
+        "Mana Vault",
+        "Plains"
+      ],
+      "greedy_hand": [
+        "Coalition Relic",
+        "Lion's Eye Diamond",
+        "Staff of Compleation",
+        "The Mycosynth Gardens"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 4,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2277,
+      "native_hand": [
+        "Brainstone",
+        "Bucknard's Everfull Purse",
+        "Enlightened Tutor",
+        "Erode",
+        "Plains",
+        "Talon Gates of Madara",
+        "Tooth of Ramos"
+      ],
+      "greedy_hand": [
+        "Coalition Relic",
+        "Enlightened Tutor",
+        "Fomori Vault",
+        "Lion's Eye Diamond",
+        "Lunarch Mantle",
+        "Mana Vault"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 6,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2309,
+      "native_hand": [
+        "Chrome Mox",
+        "Grim Monolith",
+        "Plains",
+        "Sol Ring",
+        "Staff of Compleation",
+        "Unwanted Remake"
+      ],
+      "greedy_hand": [
+        "Ancient Den",
+        "Emergence Zone",
+        "Lion's Eye Diamond",
+        "Mana Vault",
+        "Sol Ring"
+      ],
+      "native_keep_n": 6,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2327,
+      "native_hand": [
+        "Chrome Mox",
+        "Grim Monolith",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Staff of Compleation"
+      ],
+      "greedy_hand": [
+        "Chrome Mox",
+        "Grim Monolith",
+        "Lion's Eye Diamond",
+        "Mana Tithe",
+        "Plains"
+      ],
+      "native_keep_n": 5,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2374,
+      "native_hand": [
+        "Gleaming Splendor",
+        "Mana Vault",
+        "March of Otherworldly Light",
+        "Plains",
+        "Plains",
+        "Sheltered by Ghosts",
+        "Talon Gates of Madara"
+      ],
+      "greedy_hand": [
+        "Disruptor Flute",
+        "Lion's Eye Diamond",
+        "Prismatic Lens",
+        "Sol Ring",
+        "The Mycosynth Gardens"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2402,
+      "native_hand": [
+        "Blast Zone",
+        "Chrome Mox",
+        "Disruptor Flute",
+        "Gleaming Splendor",
+        "Moonsilver Key",
+        "Plains"
+      ],
+      "greedy_hand": [
+        "Ancient Tomb",
+        "Grim Monolith",
+        "Lion's Eye Diamond"
+      ],
+      "native_keep_n": 6,
+      "greedy_keep_n": 3,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2406,
+      "native_hand": [
+        "Lion's Eye Diamond",
+        "Sol Ring",
+        "Staff of Compleation",
+        "Talon Gates of Madara"
+      ],
+      "greedy_hand": [
+        "Lion's Eye Diamond",
+        "March of Otherworldly Light",
+        "Sol Ring",
+        "Talon Gates of Madara"
+      ],
+      "native_keep_n": 4,
+      "greedy_keep_n": 4,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2436,
+      "native_hand": [
+        "Erode",
+        "Everflowing Chalice",
+        "Great Hall of the Citadel",
+        "Plains",
+        "Sol Ring"
+      ],
+      "greedy_hand": [
+        "Chrome Mox",
+        "Lion's Eye Diamond",
+        "Plains",
+        "The Mycosynth Gardens"
+      ],
+      "native_keep_n": 5,
+      "greedy_keep_n": 4,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2439,
+      "native_hand": [
+        "Gemstone Caverns",
+        "Jeweled Amulet",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Talon Gates of Madara"
+      ],
+      "greedy_hand": [
+        "City of Traitors",
+        "Gemstone Caverns",
+        "Jeweled Amulet",
+        "Lion's Eye Diamond",
+        "Plains"
+      ],
+      "native_keep_n": 5,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2460,
+      "native_hand": [
+        "Brainstone",
+        "Emeria's Call",
+        "Enlightened Tutor",
+        "Implements of Sacrifice",
+        "Plains",
+        "Plains",
+        "Super State"
+      ],
+      "greedy_hand": [
+        "Lion's Eye Diamond",
+        "Mana Vault"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 2,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2465,
+      "native_hand": [
+        "Ancient Tomb",
+        "Defense Grid",
+        "Everflowing Chalice",
+        "Mantle of the Ancients",
+        "Mishra's Workshop",
+        "Moonsilver Key",
+        "Portable Hole"
+      ],
+      "greedy_hand": [
+        "Charitable Levy",
+        "Lion's Eye Diamond",
+        "The Mycosynth Gardens"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 3,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2476,
+      "native_hand": [
+        "March of Otherworldly Light",
+        "Orim's Chant",
+        "Plains",
+        "Plains",
+        "Prismatic Lens",
+        "Sol Ring",
+        "Tezzeret, Cruel Captain"
+      ],
+      "greedy_hand": [
+        "Emeria's Call",
+        "Implements of Sacrifice",
+        "Lion's Eye Diamond",
+        "Mox Diamond",
+        "Plains",
+        "The Mycosynth Gardens"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 6,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2521,
+      "native_hand": [
+        "Enlightened Tutor",
+        "Mana Tithe",
+        "Mishra's Workshop",
+        "Moonsilver Key",
+        "Sheltered by Ghosts",
+        "Static Prison"
+      ],
+      "greedy_hand": [
+        "Ancient Tomb",
+        "Implements of Sacrifice",
+        "Lion's Eye Diamond",
+        "Sol Ring",
+        "The Mind Stone"
+      ],
+      "native_keep_n": 6,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2549,
+      "native_hand": [
+        "Eiganjo, Seat of the Empire",
+        "Lotus Petal",
+        "Minimus Containment",
+        "Moonsilver Key",
+        "Plains",
+        "Twinblade Blessing"
+      ],
+      "greedy_hand": [
+        "Enlightened Tutor",
+        "Expedition Map",
+        "Lion's Eye Diamond",
+        "Plains"
+      ],
+      "native_keep_n": 6,
+      "greedy_keep_n": 4,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2589,
+      "native_hand": [
+        "Chrome Mox",
+        "Crystal Vein",
+        "Deafening Silence",
+        "Disruptor Flute",
+        "Homeward Path",
+        "Mox Opal",
+        "Tooth of Ramos"
+      ],
+      "greedy_hand": [
+        "Gemstone Caverns",
+        "Lion's Eye Diamond",
+        "The Mycosynth Gardens"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 3,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2617,
+      "native_hand": [
+        "Ancient Tomb",
+        "Chrome Mox",
+        "Gleaming Splendor",
+        "Plains",
+        "Razorgrass Ambush",
+        "Touch the Spirit Realm",
+        "Twinblade Blessing"
+      ],
+      "greedy_hand": [
+        "City of Traitors",
+        "Lion's Eye Diamond",
+        "Mox Diamond",
+        "Razorgrass Ambush",
+        "The Mycosynth Gardens"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2624,
+      "native_hand": [
+        "Bound by Moonsilver",
+        "Command Beacon",
+        "Enlightened Tutor",
+        "Everflowing Chalice",
+        "Homeward Path",
+        "Razorgrass Ambush",
+        "Touch the Spirit Realm"
+      ],
+      "greedy_hand": [
+        "City of Traitors",
+        "Lion's Eye Diamond",
+        "Sol Ring",
+        "Talon Gates of Madara"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 4,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2643,
+      "native_hand": [
+        "Disruptor Flute",
+        "Eiganjo, Seat of the Empire",
+        "Mana Tithe",
+        "Petrified Hamlet",
+        "Plains",
+        "Sol Ring",
+        "Tezzeret, Cruel Captain"
+      ],
+      "greedy_hand": [
+        "Ancient Tomb",
+        "Emergence Zone",
+        "Gemstone Caverns",
+        "Gift of Immortality",
+        "Mana Tithe",
+        "Super State",
+        "Trinisphere"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 7,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2672,
+      "native_hand": [
+        "Orim's Chant",
+        "Prismatic Lens",
+        "Razorgrass Ambush",
+        "Ruins of Trokair",
+        "Sol Ring",
+        "Touch the Spirit Realm"
+      ],
+      "greedy_hand": [
+        "Ancient Tomb",
+        "Lion's Eye Diamond",
+        "Sol Ring"
+      ],
+      "native_keep_n": 6,
+      "greedy_keep_n": 3,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2698,
+      "native_hand": [
+        "Arcane Signet",
+        "Brainstone",
+        "Bucknard's Everfull Purse",
+        "Lunarch Mantle",
+        "Mana Vault",
+        "Plains",
+        "Plains"
+      ],
+      "greedy_hand": [
+        "Jeweled Amulet",
+        "Lion's Eye Diamond",
+        "Mox Opal"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 3,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2710,
+      "native_hand": [
+        "Chrome Mox",
+        "Eiganjo, Seat of the Empire",
+        "Fomori Vault",
+        "Grim Monolith",
+        "Plains",
+        "Prismatic Lens",
+        "Staff of Compleation"
+      ],
+      "greedy_hand": [
+        "Ancient Tomb",
+        "Lion's Eye Diamond",
+        "Lotus Petal"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 3,
+      "native_T1": false,
+      "greedy_T1": true
+    },
+    {
+      "gid": 2733,
+      "native_hand": [
+        "Ancient Tomb",
+        "Cavern of Souls",
+        "Deafening Silence",
+        "Enlightened Tutor",
+        "Gift of Immortality",
+        "Idolized",
+        "Mox Diamond"
+      ],
+      "greedy_hand": [
+        "Lion's Eye Diamond",
+        "Mana Vault",
+        "Plains",
+        "Ruins of Trokair",
+        "The Mind Stone"
+      ],
+      "native_keep_n": 7,
+      "greedy_keep_n": 5,
+      "native_T1": false,
+      "greedy_T1": true
+    }
+  ]
+}
