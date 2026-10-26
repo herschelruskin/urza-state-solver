@@ -1,0 +1,40 @@
+name: Dack Middle Ground Publish Validated Report
+on:
+  push:
+    branches: [dack-t1-middle-ground-pool-recovery-20261026]
+    paths:
+      - '.github/workflows/dack_t1_middle_ground_publish_20261026.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 40355944543
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          name: dack-t1-middle-ground-n2048-validated-recovery-report
+          path: .
+      - name: Verify recovered pooled report and safely archive
+        run: |
+          python - <<'PY'
+          import json
+          r=json.load(open("dack_t1_middle_ground_n2048_report.json"))
+          assert r["status"]=="PASS" and r["validated_n"]==2048
+          assert r["missing_count"]==0 and r["shards_found"]==64
+          assert r["deck_hash"]=="a1c8e05dc3f9e1bcfbfbe2f7773ea4a5e62222d3440dd2f7417fd7f2f058c422"
+          assert set(r["arms"])=={"native","gentle","balanced","assertive"}
+          print("PUBLISH_VALIDATION_PASS",flush=True)
+          PY
+          mkdir -p benchmark_results
+          cp dack_t1_middle_ground_n2048_report.json benchmark_results/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f benchmark_results/dack_t1_middle_ground_n2048_report.json
+          git commit -m 'Publish fully validated N2048 middle-ground mulligan report'
+          git push
