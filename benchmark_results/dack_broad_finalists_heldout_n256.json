@@ -1,0 +1,319 @@
+{
+  "status": "PASS",
+  "n_paired": 256,
+  "beam": 160,
+  "seed_base": 99144202511255,
+  "deck_hashes": {
+    "current": "a1c8e05dc3f9e1bcfbfbe2f7773ea4a5e62222d3440dd2f7417fd7f2f058c422",
+    "full_basalt_rainbow": "36b9e64df13a8ea135f5175e7adfcf021d8d4a749aba798e4efebff2514b05b5",
+    "double_key": "04aeef22254a8469705638b05db166e7d8ff03854e8e539975f67004a0dc4a4c",
+    "voltaic_candelabra": "871a49dda2416d7c6a0a41a5f17b4e26ec6b3fd9dad76971236967a6326f395b",
+    "voltaic_sonic": "5ea4636354eeacb83ec39594448891e74b85fc60cfb5e9f13fa80796c938a1be",
+    "three_untappers": "fcce3b7fa8a3c8cdd8e8387b4599d30094a6dc997ee4b027a23d58e36c218ecf"
+  },
+  "scope": "16-arm exploratory full-beam T1-T3 Dack cast goldfish; not real-play game wins; chance/mulligan oracle inaccuracies; speed-only tests include protection spell cuts; screen winner requires held-out confirmation",
+  "variants": {
+    "current": {
+      "in": [],
+      "out": [],
+      "counts": {
+        "0": 33,
+        "1": 13,
+        "2": 103,
+        "3": 107
+      },
+      "by_T1_pct": 5.0781,
+      "by_T2_pct": 45.3125,
+      "by_T3_pct": 87.1094,
+      "T2_plus_half_T3_pct": 66.2109,
+      "mean_keep": 5.5664
+    },
+    "full_basalt_rainbow": {
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Hardlight Containment",
+        "Lunarch Mantle",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "counts": {
+        "0": 38,
+        "1": 11,
+        "2": 106,
+        "3": 101
+      },
+      "by_T1_pct": 4.2969,
+      "by_T2_pct": 45.7031,
+      "by_T3_pct": 85.1562,
+      "T2_plus_half_T3_pct": 65.4297,
+      "mean_keep": 5.5508
+    },
+    "double_key": {
+      "in": [
+        "Manifold Key",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Hardlight Containment",
+        "Lunarch Mantle"
+      ],
+      "counts": {
+        "0": 33,
+        "1": 12,
+        "2": 113,
+        "3": 98
+      },
+      "by_T1_pct": 4.6875,
+      "by_T2_pct": 48.8281,
+      "by_T3_pct": 87.1094,
+      "T2_plus_half_T3_pct": 67.9688,
+      "mean_keep": 5.6016
+    },
+    "voltaic_candelabra": {
+      "in": [
+        "Candelabra of Tawnos",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Hardlight Containment",
+        "Lunarch Mantle"
+      ],
+      "counts": {
+        "0": 36,
+        "1": 12,
+        "2": 106,
+        "3": 102
+      },
+      "by_T1_pct": 4.6875,
+      "by_T2_pct": 46.0938,
+      "by_T3_pct": 85.9375,
+      "T2_plus_half_T3_pct": 66.0156,
+      "mean_keep": 5.668
+    },
+    "voltaic_sonic": {
+      "in": [
+        "Sonic Screwdriver",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Hardlight Containment",
+        "Lunarch Mantle"
+      ],
+      "counts": {
+        "0": 30,
+        "1": 13,
+        "2": 107,
+        "3": 106
+      },
+      "by_T1_pct": 5.0781,
+      "by_T2_pct": 46.875,
+      "by_T3_pct": 88.2812,
+      "T2_plus_half_T3_pct": 67.5781,
+      "mean_keep": 5.6016
+    },
+    "three_untappers": {
+      "in": [
+        "Candelabra of Tawnos",
+        "Manifold Key",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Hardlight Containment",
+        "Lunarch Mantle",
+        "Mana Tithe"
+      ],
+      "counts": {
+        "0": 35,
+        "1": 12,
+        "2": 108,
+        "3": 101
+      },
+      "by_T1_pct": 4.6875,
+      "by_T2_pct": 46.875,
+      "by_T3_pct": 86.3281,
+      "T2_plus_half_T3_pct": 66.6016,
+      "mean_keep": 5.6953
+    }
+  },
+  "paired_vs_current": {
+    "full_basalt_rainbow": {
+      "T1": {
+        "delta_pp": -0.7812,
+        "gains": 1,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -2.312,
+          0.75
+        ],
+        "discordant_changed_keep_size": 3
+      },
+      "T2": {
+        "delta_pp": 0.3906,
+        "gains": 15,
+        "losses": 14,
+        "paired_95_ci_pp": [
+          -3.74,
+          4.521
+        ],
+        "discordant_changed_keep_size": 18
+      },
+      "T3": {
+        "delta_pp": -1.9531,
+        "gains": 7,
+        "losses": 12,
+        "paired_95_ci_pp": [
+          -5.288,
+          1.382
+        ],
+        "discordant_changed_keep_size": 12
+      }
+    },
+    "double_key": {
+      "T1": {
+        "delta_pp": -0.3906,
+        "gains": 0,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -1.156,
+          0.375
+        ],
+        "discordant_changed_keep_size": 1
+      },
+      "T2": {
+        "delta_pp": 3.5156,
+        "gains": 16,
+        "losses": 7,
+        "paired_95_ci_pp": [
+          -0.138,
+          7.169
+        ],
+        "discordant_changed_keep_size": 14
+      },
+      "T3": {
+        "delta_pp": 0.0,
+        "gains": 9,
+        "losses": 9,
+        "paired_95_ci_pp": [
+          -3.255,
+          3.255
+        ],
+        "discordant_changed_keep_size": 15
+      }
+    },
+    "voltaic_candelabra": {
+      "T1": {
+        "delta_pp": -0.3906,
+        "gains": 0,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -1.156,
+          0.375
+        ],
+        "discordant_changed_keep_size": 1
+      },
+      "T2": {
+        "delta_pp": 0.7812,
+        "gains": 11,
+        "losses": 9,
+        "paired_95_ci_pp": [
+          -2.648,
+          4.211
+        ],
+        "discordant_changed_keep_size": 16
+      },
+      "T3": {
+        "delta_pp": -1.1719,
+        "gains": 6,
+        "losses": 9,
+        "paired_95_ci_pp": [
+          -4.139,
+          1.796
+        ],
+        "discordant_changed_keep_size": 8
+      }
+    },
+    "voltaic_sonic": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 1,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -1.085,
+          1.085
+        ],
+        "discordant_changed_keep_size": 1
+      },
+      "T2": {
+        "delta_pp": 1.5625,
+        "gains": 15,
+        "losses": 11,
+        "paired_95_ci_pp": [
+          -2.344,
+          5.469
+        ],
+        "discordant_changed_keep_size": 18
+      },
+      "T3": {
+        "delta_pp": 1.1719,
+        "gains": 11,
+        "losses": 8,
+        "paired_95_ci_pp": [
+          -2.169,
+          4.513
+        ],
+        "discordant_changed_keep_size": 17
+      }
+    },
+    "three_untappers": {
+      "T1": {
+        "delta_pp": -0.3906,
+        "gains": 0,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -1.156,
+          0.375
+        ],
+        "discordant_changed_keep_size": 1
+      },
+      "T2": {
+        "delta_pp": 1.5625,
+        "gains": 14,
+        "losses": 10,
+        "paired_95_ci_pp": [
+          -2.191,
+          5.316
+        ],
+        "discordant_changed_keep_size": 16
+      },
+      "T3": {
+        "delta_pp": -0.7812,
+        "gains": 5,
+        "losses": 7,
+        "paired_95_ci_pp": [
+          -3.437,
+          1.874
+        ],
+        "discordant_changed_keep_size": 8
+      }
+    }
+  },
+  "ranking_by_T2": [
+    "double_key",
+    "voltaic_sonic",
+    "three_untappers",
+    "voltaic_candelabra",
+    "full_basalt_rainbow",
+    "current"
+  ],
+  "trial": "independent held-out 256 seeds; six preselected discovery finalists",
+  "screening_seed_base": 202610250122
+}
