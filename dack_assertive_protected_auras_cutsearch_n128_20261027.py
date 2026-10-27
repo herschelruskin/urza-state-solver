@@ -127,7 +127,7 @@ def audit():
         assert deck.count("Coalition Relic")==1,name
         assert nominal(deck) in (33,34,35),name
     assert CURRENT.count("World Map")==1 and CURRENT.count("Staff of Compleation")==1
-    assert "Staff of Compleation" not in VARIANTS["rainbow_33land_full_four_standalone_keepers"] is False
+    assert "Staff of Compleation" in VARIANTS["rainbow_33land_full_four_standalone_keepers"]
     assert "Staff of Compleation" not in VARIANTS["rainbow_map_basalt_tooth_staff_to_voltaic_manifold_prism_boulder"]
     for x in ("Command Tower","Mana Confluence","City of Brass","Gemstone Mine"):
         assert RAINBOW.count(x)==1
