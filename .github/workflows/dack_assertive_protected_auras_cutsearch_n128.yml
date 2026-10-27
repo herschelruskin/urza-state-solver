@@ -1,0 +1,104 @@
+name: Dack Assertive Locked Aura World Map Staff Cut Search N128
+on:
+  push:
+    branches: [dack-assertive-protected-auras-cutsearch-n128-20261027]
+    paths:
+      - 'dack_assertive_protected_auras_cutsearch_n128_20261027.py'
+      - '.github/workflows/dack_assertive_protected_auras_cutsearch_n128.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: dack-protected-auras-cutsearch-n128
+  cancel-in-progress: false
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify 32 distinct legal decks, two immutable auras, all staff and land-count constraints
+        run: |
+          python -m py_compile dack_assertive_protected_auras_cutsearch_n128_20261027.py
+          python -u dack_assertive_protected_auras_cutsearch_n128_20261027.py --audit
+      - name: Validate five representative preserved-aura package gameplays
+        run: python -u dack_assertive_protected_auras_cutsearch_n128_20261027.py --smoke
+  shards:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Four matched seeds across 32 protected-aura legal permutations with fsync checkpoints
+        run: |
+          mkdir -p shards
+          python -u dack_assertive_protected_auras_cutsearch_n128_20261027.py --shard ${{ matrix.shard }} --games 4 --out "shards/protected_shard_${{ matrix.shard }}.json.gz"
+      - name: Preserve partial checkpoints on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dack-locked-aura-cut-shard-${{ matrix.shard }}
+          path: |
+            shards/protected_shard_${{ matrix.shard }}.json.gz
+            shards/protected_shard_${{ matrix.shard }}.jsonl
+          retention-days: 90
+          if-no-files-found: warn
+  pool:
+    needs: [smoke, shards]
+    if: ${{ always() && needs.smoke.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-locked-aura-cut-shard-*
+          path: shards
+          merge-multiple: true
+      - name: Strictly pool all 128 paired games, 32 decks, locked auras and fixed seed hashes
+        run: |
+          python -u dack_assertive_protected_auras_cutsearch_n128_20261027.py --pool --path shards --out dack_assertive_protected_auras_cutsearch_n128_report.json
+          python - <<'PY'
+          import json
+          r=json.load(open('dack_assertive_protected_auras_cutsearch_n128_report.json'))
+          assert r['status']=='PASS' and r['n']==128 and r['missing_count']==0
+          assert r['shards_found']==32 and len(r['arms'])==32
+          assert r['locked_auras']==['Hardlight Containment','Lunarch Mantle']
+          print('PROTECTED_AURAS_CUTSEARCH_ALL_128_PASS',flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-locked-aura-cutsearch-n128-complete-report
+          path: |
+            dack_assertive_protected_auras_cutsearch_n128_report.json
+            dack_assertive_protected_auras_cutsearch_n128_report.raw.json.gz
+          retention-days: 90
+          if-no-files-found: warn
+      - name: Publish report and raw records
+        run: |
+          mkdir -p benchmark_results
+          cp dack_assertive_protected_auras_cutsearch_n128_report.json benchmark_results/
+          cp dack_assertive_protected_auras_cutsearch_n128_report.raw.json.gz benchmark_results/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f benchmark_results/dack_assertive_protected_auras_cutsearch_n128_report.json benchmark_results/dack_assertive_protected_auras_cutsearch_n128_report.raw.json.gz
+          git commit -m 'Publish strictly validated 128-game 32-arm protected-aura cut search'
+          git push
