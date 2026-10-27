@@ -5,7 +5,7 @@
 | Trial | Games recovered | Completed shards | Data status |
 |---|---:|---:|---|
 | screen20 | 60/256 | 15/64 | Partial exploratory evidence |
-| flex41 | 14/128 | 7/64 | Partial exploratory evidence |
+| flex41 | 18/128 | 9/64 | Partial exploratory evidence |
 
 ---
 
@@ -17,7 +17,7 @@
 ## Live evidence status
 
 - **screen20**: PARTIAL_60_OF_256, 20 decks × 256 matched game IDs — https://github.com/herschelruskin/urza-state-solver/actions/runs/40444150025
-- **flex41**: PARTIAL_14_OF_128, 41 decks × 128 matched game IDs — https://github.com/herschelruskin/urza-state-solver/actions/runs/40445020227
+- **flex41**: PARTIAL_18_OF_128, 41 decks × 128 matched game IDs — https://github.com/herschelruskin/urza-state-solver/actions/runs/40445020227
 
 ## Ramp-card ranking (only controlled single-card comparisons)
 

@@ -19,10 +19,10 @@
       "source_run": "https://github.com/herschelruskin/urza-state-solver/actions/runs/40445020227",
       "expected_n": 128,
       "variant_count": 41,
-      "status": "PARTIAL_14_OF_128",
-      "paired_games": 14,
+      "status": "PARTIAL_18_OF_128",
+      "paired_games": 18,
       "expected_games": 128,
-      "complete_shards": 7,
+      "complete_shards": 9,
       "expected_shards": 64,
       "source_validated_full_pool": false,
       "eligible_for_provisional_ranking": false
@@ -1694,9 +1694,9 @@
       "eligible_for_provisional_ranking": true
     },
     "flex41": {
-      "paired_games": 14,
+      "paired_games": 18,
       "expected_games": 128,
-      "complete_shards": 7,
+      "complete_shards": 9,
       "expected_shards": 64,
       "source_validated_full_pool": false,
       "eligible_for_provisional_ranking": false
