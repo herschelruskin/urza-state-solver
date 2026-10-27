@@ -1,0 +1,124 @@
+name: Dack Assertive Ramp Piece Leaderboard
+on:
+  push:
+    branches: [dack-assertive-ramp-piece-leaderboard-20261026]
+    paths:
+      - 'dack_assertive_ramp_tracker_manifest.json'
+      - 'dack_assertive_ramp_piece_leaderboard.py'
+      - '.github/workflows/dack_assertive_ramp_piece_leaderboard.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  initialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile ranking tool and initialize no-fabrication tracker
+        run: |
+          python -m py_compile dack_assertive_ramp_piece_leaderboard.py
+          python -u dack_assertive_ramp_piece_leaderboard.py --outdir ramp_leaderboard
+          python - <<'PY'
+          import json
+          r=json.load(open('ramp_leaderboard/ramp_piece_leaderboard.json'))
+          assert r['status']=='AWAITING_SCREEN_RESULTS'
+          assert len(r['cards'])==34 and len(r['direct_pairs'])==0
+          assert all(c['status']=='NOT_TESTED' for c in r['cards'])
+          import dack_assertive_ramp_piece_leaderboard as t
+          import dack_active_mulligan_policy as sim
+          original=sim.FROZEN_DECK
+          fake={'arms':{
+             'current':{'out':[],'in':[],'T2_pct':50},
+             'example':{'out':['Basalt Monolith'],'in':['Pentad Prism'],'T2_pct':75}}}
+          decks=t.reconstruct_card_decks(fake,original)
+          rows=[
+            {'gid':k,'arms':{'current':{'turn':3},'example':{'turn':2}}}
+            for k in range(4)]
+          pairs=t.make_pairs({'id':'synthetic'},fake,{'rows':rows},decks)
+          assert len(pairs)==1 and pairs[0]['removed']=='Basalt Monolith'
+          assert pairs[0]['added']=='Pentad Prism'
+          assert pairs[0]['T2']['delta_pp']==100 and pairs[0]['T3']['delta_pp']==0
+          m=json.load(open('dack_assertive_ramp_tracker_manifest.json'))
+          cards=t.card_ranking(m,pairs)
+          assert next(c for c in cards if c['card']=='Pentad Prism')['median_T2_delta_pp']==100
+          assert next(c for c in cards if c['card']=='Basalt Monolith')['median_T2_delta_pp']==-100
+          assert next(c for c in cards if c['card']=='Sol Ring')['status']=='NOT_TESTED'
+          print('RAMP_RANKING_SYNTHETIC_CONTROLLED_SWAP_PASS',flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-ramp-piece-leaderboard-template
+          path: ramp_leaderboard/
+          retention-days: 90
+      - name: Commit persistent starting card registry and ranking shell
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f ramp_leaderboard/ramp_piece_leaderboard.md ramp_leaderboard/ramp_piece_leaderboard.json ramp_leaderboard/ramp_piece_leaderboard.csv ramp_leaderboard/one_card_matched_swaps.csv
+          if ! git diff --cached --quiet; then
+            git commit -m 'Initialize Assertive ramp piece scorecard pending verified screening results'
+            git push
+          fi
+  refresh:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Download complete 20-arm Assertive summary and raw data from run 40444150025
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 40444150025
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          name: dack-assertive-ramp-screen-n256-report
+          path: input20
+      - name: Download complete 41-arm Assertive summary and raw data from run 40445020227
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 40445020227
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          name: dack-assertive-flexslots-n128-validated-report
+          path: input41
+      - name: Strictly validate raw 384 games, then publish one-card replacement effects
+        run: |
+          python -u dack_assertive_ramp_piece_leaderboard.py \
+            --core20-report input20/dack_assertive_ramp_land_key_screen_n256_report.json \
+            --core20-raw input20/dack_assertive_ramp_land_key_screen_n256_report.raw.json.gz \
+            --flex41-report input41/dack_assertive_flexslots_33to36_n128_report.json \
+            --flex41-raw input41/dack_assertive_flexslots_33to36_n128_report.raw.json.gz \
+            --outdir ramp_leaderboard
+          python - <<'PY'
+          import json
+          r=json.load(open('ramp_leaderboard/ramp_piece_leaderboard.json'))
+          assert r['status']=='COMPLETE_TWO_SCREENS'
+          assert set(r['sources'])=={'core20','flex41'}
+          assert r['sources']['core20']['n']==256
+          assert r['sources']['flex41']['n']==128
+          assert len(r['direct_pairs'])>10
+          assert any(c['direct_contexts']>0 for c in r['cards'])
+          print('RAMP_384_GAME_TWO_SCREEN_LEADERBOARD_PASS',flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-assertive-ramp-piece-leaderboard-verified
+          path: ramp_leaderboard/
+          retention-days: 90
+          if-no-files-found: warn
+      - name: Publish audited, contextual card rankings
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f ramp_leaderboard/ramp_piece_leaderboard.md ramp_leaderboard/ramp_piece_leaderboard.json ramp_leaderboard/ramp_piece_leaderboard.csv ramp_leaderboard/one_card_matched_swaps.csv
+          git commit -m 'Update Assertive ramp card rankings with two validated paired screens'
+          git push
