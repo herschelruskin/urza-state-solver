@@ -1,0 +1,111 @@
+name: Dack Assertive Flexslots 33-36 Lands N128
+on:
+  push:
+    branches: [dack-assertive-flexslots-33to36-n128-20261026]
+    paths:
+      - 'dack_assertive_flexslots_33to36_n128_20261026.py'
+      - '.github/workflows/dack_assertive_flexslots_33to36_n128_20261026.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+concurrency:
+  group: dack-assertive-flexslots-128-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate all 41 exact deck permutations, count categories, singleton and combo pieces
+        run: |
+          python -m py_compile dack_assertive_flexslots_33to36_n128_20261026.py
+          python -u dack_assertive_flexslots_33to36_n128_20261026.py --audit
+      - name: Check six representative variants on unseen same-seat seed with promoted Assertive
+        run: |
+          python -u dack_assertive_flexslots_33to36_n128_20261026.py --smoke
+  shards:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Paired 2 games across 41 distinct land/ramp variants, durable per-game checkpoint
+        run: |
+          mkdir -p shards
+          python -u dack_assertive_flexslots_33to36_n128_20261026.py \
+            --shard ${{ matrix.shard }} --games 2 \
+            --out "shards/flex_shard_${{ matrix.shard }}.json.gz"
+      - name: Upload compressed success and partial game checkpoints even on shard failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dack-assertive-flexslots-shard-${{ matrix.shard }}
+          path: |
+            shards/flex_shard_${{ matrix.shard }}.json.gz
+            shards/flex_shard_${{ matrix.shard }}.jsonl
+          retention-days: 90
+          if-no-files-found: warn
+  pool:
+    needs: [smoke, shards]
+    if: ${{ always() && needs.smoke.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-assertive-flexslots-shard-*
+          path: shards
+          merge-multiple: true
+      - name: Pool exactly 128 game IDs and 41 arms; enforce no missing/duplicate/invalid results
+        run: |
+          python -u dack_assertive_flexslots_33to36_n128_20261026.py \
+            --pool --path shards --out dack_assertive_flexslots_33to36_n128_report.json
+          python - <<'PY'
+          import json
+          r=json.load(open("dack_assertive_flexslots_33to36_n128_report.json"))
+          assert r["status"]=="PASS",r
+          assert r["validated_n"]==128 and r["missing_count"]==0
+          assert r["shards_found"]==64 and len(r["arms"])==41
+          assert r["policy"]=="assertive"
+          assert {x["nominal_lands"] for x in r["arms"].values()}=={33,34,35,36}
+          print("FLEXSLOTS_ALL_128_GAMES_41_ARMS_PASS",flush=True)
+          PY
+      - name: Save full trial report and all pooled per-game data before publishing
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dack-assertive-flexslots-n128-validated-report
+          path: |
+            dack_assertive_flexslots_33to36_n128_report.json
+            dack_assertive_flexslots_33to36_n128_report.raw.json.gz
+          retention-days: 90
+          if-no-files-found: warn
+      - name: Version permanent report and compressed raw data
+        run: |
+          mkdir -p benchmark_results
+          cp dack_assertive_flexslots_33to36_n128_report.json benchmark_results/
+          cp dack_assertive_flexslots_33to36_n128_report.raw.json.gz benchmark_results/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f benchmark_results/dack_assertive_flexslots_33to36_n128_report.json benchmark_results/dack_assertive_flexslots_33to36_n128_report.raw.json.gz
+          git commit -m 'Publish N128 Assertive 41-arm 33-to-36-land flex-slot screen'
+          git push
