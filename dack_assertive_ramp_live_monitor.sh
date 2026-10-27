@@ -56,3 +56,5 @@ for tick in $(seq 1 46); do
   fi
   if [ "$tick" -lt 46 ]; then sleep 420; fi
 done
+
+# Re-run following validated completion of both source screens on 2026-10-27.
