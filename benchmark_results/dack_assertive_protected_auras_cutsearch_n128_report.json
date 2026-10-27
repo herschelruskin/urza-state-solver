@@ -1,0 +1,1908 @@
+{
+  "schema": "dack_assertive_protected_auras_cutsearch_n128_v1",
+  "status": "PASS",
+  "n": 128,
+  "planned_n": 128,
+  "missing_count": 0,
+  "missing_ids_first50": [],
+  "shards_found": 32,
+  "policy": "assertive",
+  "beam": 160,
+  "seed_base": 99142710270201,
+  "locked_auras": [
+    "Hardlight Containment",
+    "Lunarch Mantle"
+  ],
+  "hashes": {
+    "current": "a1c8e05dc3f9e1bcfbfbe2f7773ea4a5e62222d3440dd2f7417fd7f2f058c422",
+    "four_rainbow": "94fc6dcc0bc98e1a317b458cf49577e3592fc173e7dfa6d350d778dd56db76e8",
+    "current_map_to_voltaic_key": "ac77ac2c4179a6f8584c39e9fbff1f1553199a4480348fe8dfc6b3154b5200dd",
+    "current_map_to_manifold_key": "d406c880f46925a3d222db8e296821981af590b77bd2aae40b80448780b3718f",
+    "current_map_to_pentad_prism": "2ae67b751a9f929582fbccf2521d69fc947fa8b72fc553fb3972a0a5fc4ad047",
+    "current_map_to_giants_boulder": "587b6534e05a65299306b479e460cdb34917da70da11512663532fae5ca97538",
+    "current_map_to_plains": "0948b833ffa9cf4a6bde6d78cf6e4c36187b39c21cabdb47c743e1bd1fffcf70",
+    "rainbow_map_to_voltaic_key": "1d85244d474d48f82ac1fa3bb1d254d7a12147168729450d4aaf3de95d9ad8b5",
+    "rainbow_map_to_manifold_key": "2dc38f6cd71be1baf6f2dd69276c80c749512f95b68e059fd779c3be7bfb38b3",
+    "rainbow_map_to_pentad_prism": "4d1fa0f7b1ed08faca459ee036ee9d5f0833d294d6409305d67fc516902ae261",
+    "rainbow_map_to_giants_boulder": "1f2f2c9be052c03a7991c4265861e1c953da0a265827c968bbf552c5c2e30d51",
+    "rainbow_map_to_plains": "43eb1ea58665db3cf37280ac5f38d937b402c363406aaa9d2e7f7a62c32c8cfa",
+    "rainbow_basalt_monolith_to_voltaic_key": "5fff1f0f728c820fa6ef92313da15bee554b1fbbdb2a212791504de14bbd0c85",
+    "rainbow_basalt_monolith_to_pentad_prism": "4850ec1490008b1ba9d266adfc2a6924854b3505f91035a4f655959db54bd853",
+    "rainbow_tooth_of_ramos_to_voltaic_key": "6c28ff6d00daf09129cd6f1824a8da0b940cf84d5fecd475b2c3e7df10f51e2e",
+    "rainbow_tooth_of_ramos_to_pentad_prism": "2f962f7fcf40ba353bcd04d3e064ee855bc852c3a34f99262fc657587fcb9df3",
+    "rainbow_staff_of_compleation_to_voltaic_key": "63d96415ad22dea2c37e72fce51314fff3174f6be6311fe5d63f0bf9fbc0e2fa",
+    "rainbow_staff_of_compleation_to_pentad_prism": "1afb71977b1358e53e494426934f23c8c47f41eb167e53be0a1312e67194fa7a",
+    "rainbow_map_basalt_to_voltaic_prism": "aa2234affe1736e919c0dffcf9c0090c2e289c19965fd24be20abde5caa7b6c1",
+    "rainbow_map_basalt_to_voltaic_boulder": "83cc04b520480d64920633bd55d0d78285afa4bcda7fc6c4556c113eb65bec24",
+    "rainbow_map_tooth_to_voltaic_prism": "0e686ae90b7befcd512b296174dc395753e6a7e6c6ad8c1f51b3e841106db29d",
+    "rainbow_map_staff_to_voltaic_prism": "e54eca242c10697118ef9ec4767e54a984f063b714194b77ac11643f05153d1f",
+    "rainbow_map_basalt_to_voltaic_manifold": "a61ae241ab6073788b4e3f5ce5b860db0b05a856e3f1c1544b5826e68ba10165",
+    "rainbow_map_basalt_to_prism_boulder": "01897da6dbe9c769939b84186e1a2e12ac199ec3a754e951e042ec053a7e2965",
+    "rainbow_map_basalt_tooth_to_voltaic_prism_boulder": "8ab5abe64d93420ceeef1f1412db05934fb4d8929d4d1bc156ed73381428b136",
+    "rainbow_map_tooth_staff_to_voltaic_prism_boulder": "8676f188f57fdd16d4aa3d0d81900b7fd6a92e87e506e07380b92a054a08a907",
+    "rainbow_map_basalt_staff_to_voltaic_prism_boulder": "61e68b706ab3745f016d2a815e924144b67afb03ea8c243382e3b7cc0c472ac5",
+    "rainbow_map_basalt_tooth_to_voltaic_manifold_boulder": "1f6435eb51f7b87c30f6178e8fd92d22670863250ef437c1277d7ed14acdb61b",
+    "rainbow_map_basalt_tooth_to_voltaic_manifold_prism": "f3c540c077f3f85055e8ff681118ac544bd03ad2380d4192ae68d240ee7b3769",
+    "rainbow_map_basalt_tooth_staff_to_voltaic_manifold_prism_boulder": "176ccf1cc1cd2733ed6addffe7f3598a01be2b7fe4a41482ed5f487d962a89ef",
+    "rainbow_33land_full_four_standalone_keepers": "09d335987434472fd9737bde66b03a874829c3498ae3e9111001c632c985ca34",
+    "rainbow_35land_voltaic_manifold_prism": "65e91ab178ef782bfd5be21ce737a0031c974aa57571580d4879a99d9ebf5aff"
+  },
+  "arms": {
+    "current": {
+      "counts": {
+        "0": 34,
+        "1": 7,
+        "2": 47,
+        "3": 40
+      },
+      "T1_pct": 5.4688,
+      "T2_pct": 42.1875,
+      "T3_pct": 73.4375,
+      "mean_keep": 5.0781,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": true,
+      "removed": [],
+      "added": []
+    },
+    "four_rainbow": {
+      "counts": {
+        "0": 30,
+        "1": 9,
+        "2": 47,
+        "3": 42
+      },
+      "T1_pct": 7.0312,
+      "T2_pct": 43.75,
+      "T3_pct": 76.5625,
+      "mean_keep": 5.1094,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": true,
+      "removed": [
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence"
+      ]
+    },
+    "current_map_to_voltaic_key": {
+      "counts": {
+        "0": 32,
+        "1": 7,
+        "2": 49,
+        "3": 40
+      },
+      "T1_pct": 5.4688,
+      "T2_pct": 43.75,
+      "T3_pct": 75.0,
+      "mean_keep": 5.1094,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": false,
+      "removed": [
+        "World Map"
+      ],
+      "added": [
+        "Voltaic Key"
+      ]
+    },
+    "current_map_to_manifold_key": {
+      "counts": {
+        "0": 29,
+        "1": 6,
+        "2": 49,
+        "3": 44
+      },
+      "T1_pct": 4.6875,
+      "T2_pct": 42.9688,
+      "T3_pct": 77.3438,
+      "mean_keep": 5.0156,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": false,
+      "removed": [
+        "World Map"
+      ],
+      "added": [
+        "Manifold Key"
+      ]
+    },
+    "current_map_to_pentad_prism": {
+      "counts": {
+        "0": 31,
+        "1": 6,
+        "2": 50,
+        "3": 41
+      },
+      "T1_pct": 4.6875,
+      "T2_pct": 43.75,
+      "T3_pct": 75.7812,
+      "mean_keep": 5.0391,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": false,
+      "removed": [
+        "World Map"
+      ],
+      "added": [
+        "Pentad Prism"
+      ]
+    },
+    "current_map_to_giants_boulder": {
+      "counts": {
+        "0": 32,
+        "1": 5,
+        "2": 52,
+        "3": 39
+      },
+      "T1_pct": 3.9062,
+      "T2_pct": 44.5312,
+      "T3_pct": 75.0,
+      "mean_keep": 4.9844,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": false,
+      "removed": [
+        "World Map"
+      ],
+      "added": [
+        "Giant's Boulder"
+      ]
+    },
+    "current_map_to_plains": {
+      "counts": {
+        "0": 33,
+        "1": 6,
+        "2": 52,
+        "3": 37
+      },
+      "T1_pct": 4.6875,
+      "T2_pct": 45.3125,
+      "T3_pct": 74.2188,
+      "mean_keep": 5.0703,
+      "lands": 35,
+      "staff_retained": true,
+      "worldmap_retained": false,
+      "removed": [
+        "World Map"
+      ],
+      "added": [
+        "Plains"
+      ]
+    },
+    "rainbow_map_to_voltaic_key": {
+      "counts": {
+        "0": 31,
+        "1": 9,
+        "2": 46,
+        "3": 42
+      },
+      "T1_pct": 7.0312,
+      "T2_pct": 42.9688,
+      "T3_pct": 75.7812,
+      "mean_keep": 5.0234,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": false,
+      "removed": [
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Voltaic Key"
+      ]
+    },
+    "rainbow_map_to_manifold_key": {
+      "counts": {
+        "0": 33,
+        "1": 6,
+        "2": 46,
+        "3": 43
+      },
+      "T1_pct": 4.6875,
+      "T2_pct": 40.625,
+      "T3_pct": 74.2188,
+      "mean_keep": 5.0469,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": false,
+      "removed": [
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Manifold Key"
+      ]
+    },
+    "rainbow_map_to_pentad_prism": {
+      "counts": {
+        "0": 29,
+        "1": 6,
+        "2": 51,
+        "3": 42
+      },
+      "T1_pct": 4.6875,
+      "T2_pct": 44.5312,
+      "T3_pct": 77.3438,
+      "mean_keep": 5.0234,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": false,
+      "removed": [
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism"
+      ]
+    },
+    "rainbow_map_to_giants_boulder": {
+      "counts": {
+        "0": 33,
+        "1": 5,
+        "2": 49,
+        "3": 41
+      },
+      "T1_pct": 3.9062,
+      "T2_pct": 42.1875,
+      "T3_pct": 74.2188,
+      "mean_keep": 5.0312,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": false,
+      "removed": [
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence"
+      ]
+    },
+    "rainbow_map_to_plains": {
+      "counts": {
+        "0": 32,
+        "1": 6,
+        "2": 50,
+        "3": 40
+      },
+      "T1_pct": 4.6875,
+      "T2_pct": 43.75,
+      "T3_pct": 75.0,
+      "mean_keep": 5.0703,
+      "lands": 35,
+      "staff_retained": true,
+      "worldmap_retained": false,
+      "removed": [
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence"
+      ]
+    },
+    "rainbow_basalt_monolith_to_voltaic_key": {
+      "counts": {
+        "0": 36,
+        "1": 8,
+        "2": 49,
+        "3": 35
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 44.5312,
+      "T3_pct": 71.875,
+      "mean_keep": 5.0156,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": true,
+      "removed": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Voltaic Key"
+      ]
+    },
+    "rainbow_basalt_monolith_to_pentad_prism": {
+      "counts": {
+        "0": 27,
+        "1": 7,
+        "2": 47,
+        "3": 47
+      },
+      "T1_pct": 5.4688,
+      "T2_pct": 42.1875,
+      "T3_pct": 78.9062,
+      "mean_keep": 5.0391,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": true,
+      "removed": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism"
+      ]
+    },
+    "rainbow_tooth_of_ramos_to_voltaic_key": {
+      "counts": {
+        "0": 28,
+        "1": 8,
+        "2": 48,
+        "3": 44
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 43.75,
+      "T3_pct": 78.125,
+      "mean_keep": 5.0781,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": true,
+      "removed": [
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Voltaic Key"
+      ]
+    },
+    "rainbow_tooth_of_ramos_to_pentad_prism": {
+      "counts": {
+        "0": 32,
+        "1": 6,
+        "2": 50,
+        "3": 40
+      },
+      "T1_pct": 4.6875,
+      "T2_pct": 43.75,
+      "T3_pct": 75.0,
+      "mean_keep": 4.9922,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": true,
+      "removed": [
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism"
+      ]
+    },
+    "rainbow_staff_of_compleation_to_voltaic_key": {
+      "counts": {
+        "0": 32,
+        "1": 9,
+        "2": 45,
+        "3": 42
+      },
+      "T1_pct": 7.0312,
+      "T2_pct": 42.1875,
+      "T3_pct": 75.0,
+      "mean_keep": 5.1094,
+      "lands": 34,
+      "staff_retained": false,
+      "worldmap_retained": true,
+      "removed": [
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Staff of Compleation"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Voltaic Key"
+      ]
+    },
+    "rainbow_staff_of_compleation_to_pentad_prism": {
+      "counts": {
+        "0": 32,
+        "1": 8,
+        "2": 46,
+        "3": 42
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 42.1875,
+      "T3_pct": 75.0,
+      "mean_keep": 5.0625,
+      "lands": 34,
+      "staff_retained": false,
+      "worldmap_retained": true,
+      "removed": [
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Staff of Compleation"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism"
+      ]
+    },
+    "rainbow_map_basalt_to_voltaic_prism": {
+      "counts": {
+        "0": 29,
+        "1": 7,
+        "2": 47,
+        "3": 45
+      },
+      "T1_pct": 5.4688,
+      "T2_pct": 42.1875,
+      "T3_pct": 77.3438,
+      "mean_keep": 5.0469,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": false,
+      "removed": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Voltaic Key"
+      ]
+    },
+    "rainbow_map_basalt_to_voltaic_boulder": {
+      "counts": {
+        "0": 28,
+        "1": 8,
+        "2": 47,
+        "3": 45
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 42.9688,
+      "T3_pct": 78.125,
+      "mean_keep": 5.0391,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": false,
+      "removed": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Voltaic Key"
+      ]
+    },
+    "rainbow_map_tooth_to_voltaic_prism": {
+      "counts": {
+        "0": 29,
+        "1": 6,
+        "2": 49,
+        "3": 44
+      },
+      "T1_pct": 4.6875,
+      "T2_pct": 42.9688,
+      "T3_pct": 77.3438,
+      "mean_keep": 5.0391,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": false,
+      "removed": [
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Voltaic Key"
+      ]
+    },
+    "rainbow_map_staff_to_voltaic_prism": {
+      "counts": {
+        "0": 33,
+        "1": 8,
+        "2": 47,
+        "3": 40
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 42.9688,
+      "T3_pct": 74.2188,
+      "mean_keep": 5.125,
+      "lands": 34,
+      "staff_retained": false,
+      "worldmap_retained": false,
+      "removed": [
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Staff of Compleation",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Voltaic Key"
+      ]
+    },
+    "rainbow_map_basalt_to_voltaic_manifold": {
+      "counts": {
+        "0": 28,
+        "1": 8,
+        "2": 49,
+        "3": 43
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 44.5312,
+      "T3_pct": 78.125,
+      "mean_keep": 5.0391,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": false,
+      "removed": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Manifold Key",
+        "Voltaic Key"
+      ]
+    },
+    "rainbow_map_basalt_to_prism_boulder": {
+      "counts": {
+        "0": 27,
+        "1": 7,
+        "2": 49,
+        "3": 45
+      },
+      "T1_pct": 5.4688,
+      "T2_pct": 43.75,
+      "T3_pct": 78.9062,
+      "mean_keep": 5.0859,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": false,
+      "removed": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Pentad Prism"
+      ]
+    },
+    "rainbow_map_basalt_tooth_to_voltaic_prism_boulder": {
+      "counts": {
+        "0": 28,
+        "1": 6,
+        "2": 48,
+        "3": 46
+      },
+      "T1_pct": 4.6875,
+      "T2_pct": 42.1875,
+      "T3_pct": 78.125,
+      "mean_keep": 5.0391,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": false,
+      "removed": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Voltaic Key"
+      ]
+    },
+    "rainbow_map_tooth_staff_to_voltaic_prism_boulder": {
+      "counts": {
+        "0": 31,
+        "1": 9,
+        "2": 47,
+        "3": 41
+      },
+      "T1_pct": 7.0312,
+      "T2_pct": 43.75,
+      "T3_pct": 75.7812,
+      "mean_keep": 5.0391,
+      "lands": 34,
+      "staff_retained": false,
+      "worldmap_retained": false,
+      "removed": [
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Staff of Compleation",
+        "Tooth of Ramos",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Voltaic Key"
+      ]
+    },
+    "rainbow_map_basalt_staff_to_voltaic_prism_boulder": {
+      "counts": {
+        "0": 33,
+        "1": 8,
+        "2": 46,
+        "3": 41
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 42.1875,
+      "T3_pct": 74.2188,
+      "mean_keep": 5.0859,
+      "lands": 34,
+      "staff_retained": false,
+      "worldmap_retained": false,
+      "removed": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Staff of Compleation",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Voltaic Key"
+      ]
+    },
+    "rainbow_map_basalt_tooth_to_voltaic_manifold_boulder": {
+      "counts": {
+        "0": 30,
+        "1": 6,
+        "2": 48,
+        "3": 44
+      },
+      "T1_pct": 4.6875,
+      "T2_pct": 42.1875,
+      "T3_pct": 76.5625,
+      "mean_keep": 5.1172,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": false,
+      "removed": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Manifold Key",
+        "Voltaic Key"
+      ]
+    },
+    "rainbow_map_basalt_tooth_to_voltaic_manifold_prism": {
+      "counts": {
+        "0": 30,
+        "1": 7,
+        "2": 48,
+        "3": 43
+      },
+      "T1_pct": 5.4688,
+      "T2_pct": 42.9688,
+      "T3_pct": 76.5625,
+      "mean_keep": 4.9609,
+      "lands": 34,
+      "staff_retained": true,
+      "worldmap_retained": false,
+      "removed": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Manifold Key",
+        "Pentad Prism",
+        "Voltaic Key"
+      ]
+    },
+    "rainbow_map_basalt_tooth_staff_to_voltaic_manifold_prism_boulder": {
+      "counts": {
+        "0": 33,
+        "1": 7,
+        "2": 43,
+        "3": 45
+      },
+      "T1_pct": 5.4688,
+      "T2_pct": 39.0625,
+      "T3_pct": 74.2188,
+      "mean_keep": 5.0469,
+      "lands": 34,
+      "staff_retained": false,
+      "worldmap_retained": false,
+      "removed": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Staff of Compleation",
+        "Tooth of Ramos",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Manifold Key",
+        "Pentad Prism",
+        "Voltaic Key"
+      ]
+    },
+    "rainbow_33land_full_four_standalone_keepers": {
+      "counts": {
+        "0": 30,
+        "1": 6,
+        "2": 51,
+        "3": 41
+      },
+      "T1_pct": 4.6875,
+      "T2_pct": 44.5312,
+      "T3_pct": 76.5625,
+      "mean_keep": 5.0938,
+      "lands": 33,
+      "staff_retained": true,
+      "worldmap_retained": false,
+      "removed": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Manifold Key",
+        "Pentad Prism",
+        "Voltaic Key"
+      ]
+    },
+    "rainbow_35land_voltaic_manifold_prism": {
+      "counts": {
+        "0": 30,
+        "1": 9,
+        "2": 45,
+        "3": 44
+      },
+      "T1_pct": 7.0312,
+      "T2_pct": 42.1875,
+      "T3_pct": 76.5625,
+      "mean_keep": 5.0156,
+      "lands": 35,
+      "staff_retained": false,
+      "worldmap_retained": false,
+      "removed": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Staff of Compleation",
+        "Tooth of Ramos",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Manifold Key",
+        "Pentad Prism",
+        "Voltaic Key"
+      ]
+    }
+  },
+  "paired_vs_current": {
+    "four_rainbow": {
+      "T1": {
+        "delta_pp": 1.5625,
+        "gains": 2,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          -0.594,
+          3.719
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.5625,
+        "gains": 5,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -2.777,
+          5.902
+        ]
+      },
+      "T3": {
+        "delta_pp": 3.125,
+        "gains": 9,
+        "losses": 5,
+        "paired_95_ci_pp": [
+          -2.601,
+          8.851
+        ]
+      }
+    },
+    "current_map_to_voltaic_key": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.5625,
+        "gains": 3,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -1.5,
+          4.625
+        ]
+      },
+      "T3": {
+        "delta_pp": 1.5625,
+        "gains": 4,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -2.193,
+          5.318
+        ]
+      }
+    },
+    "current_map_to_manifold_key": {
+      "T1": {
+        "delta_pp": -0.7812,
+        "gains": 1,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -3.44,
+          1.878
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.7812,
+        "gains": 5,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -3.829,
+          5.391
+        ]
+      },
+      "T3": {
+        "delta_pp": 3.9062,
+        "gains": 8,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -1.147,
+          8.959
+        ]
+      }
+    },
+    "current_map_to_pentad_prism": {
+      "T1": {
+        "delta_pp": -0.7812,
+        "gains": 1,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -3.44,
+          1.878
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.5625,
+        "gains": 4,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -2.193,
+          5.318
+        ]
+      },
+      "T3": {
+        "delta_pp": 2.3438,
+        "gains": 8,
+        "losses": 5,
+        "paired_95_ci_pp": [
+          -3.184,
+          7.871
+        ]
+      }
+    },
+    "current_map_to_giants_boulder": {
+      "T1": {
+        "delta_pp": -1.5625,
+        "gains": 0,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -3.719,
+          0.594
+        ]
+      },
+      "T2": {
+        "delta_pp": 2.3438,
+        "gains": 5,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -1.703,
+          6.39
+        ]
+      },
+      "T3": {
+        "delta_pp": 1.5625,
+        "gains": 6,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -3.291,
+          6.416
+        ]
+      }
+    },
+    "current_map_to_plains": {
+      "T1": {
+        "delta_pp": -0.7812,
+        "gains": 1,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -3.44,
+          1.878
+        ]
+      },
+      "T2": {
+        "delta_pp": 3.125,
+        "gains": 5,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -0.601,
+          6.851
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.7812,
+        "gains": 6,
+        "losses": 5,
+        "paired_95_ci_pp": [
+          -4.315,
+          5.878
+        ]
+      }
+    },
+    "rainbow_map_to_voltaic_key": {
+      "T1": {
+        "delta_pp": 1.5625,
+        "gains": 2,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          -0.594,
+          3.719
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.7812,
+        "gains": 5,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -3.829,
+          5.391
+        ]
+      },
+      "T3": {
+        "delta_pp": 2.3438,
+        "gains": 10,
+        "losses": 7,
+        "paired_95_ci_pp": [
+          -3.981,
+          8.669
+        ]
+      }
+    },
+    "rainbow_map_to_manifold_key": {
+      "T1": {
+        "delta_pp": -0.7812,
+        "gains": 1,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -3.44,
+          1.878
+        ]
+      },
+      "T2": {
+        "delta_pp": -1.5625,
+        "gains": 3,
+        "losses": 5,
+        "paired_95_ci_pp": [
+          -5.902,
+          2.777
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.7812,
+        "gains": 8,
+        "losses": 7,
+        "paired_95_ci_pp": [
+          -5.171,
+          6.734
+        ]
+      }
+    },
+    "rainbow_map_to_pentad_prism": {
+      "T1": {
+        "delta_pp": -0.7812,
+        "gains": 1,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -3.44,
+          1.878
+        ]
+      },
+      "T2": {
+        "delta_pp": 2.3438,
+        "gains": 6,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -2.25,
+          6.937
+        ]
+      },
+      "T3": {
+        "delta_pp": 3.9062,
+        "gains": 10,
+        "losses": 5,
+        "paired_95_ci_pp": [
+          -2.009,
+          9.821
+        ]
+      }
+    },
+    "rainbow_map_to_giants_boulder": {
+      "T1": {
+        "delta_pp": -1.5625,
+        "gains": 0,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -3.719,
+          0.594
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gains": 3,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -3.766,
+          3.766
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.7812,
+        "gains": 7,
+        "losses": 6,
+        "paired_95_ci_pp": [
+          -4.76,
+          6.322
+        ]
+      }
+    },
+    "rainbow_map_to_plains": {
+      "T1": {
+        "delta_pp": -0.7812,
+        "gains": 1,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -3.44,
+          1.878
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.5625,
+        "gains": 4,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -2.193,
+          5.318
+        ]
+      },
+      "T3": {
+        "delta_pp": 1.5625,
+        "gains": 7,
+        "losses": 5,
+        "paired_95_ci_pp": [
+          -3.756,
+          6.881
+        ]
+      }
+    },
+    "rainbow_basalt_monolith_to_voltaic_key": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "gains": 1,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          -0.75,
+          2.312
+        ]
+      },
+      "T2": {
+        "delta_pp": 2.3438,
+        "gains": 6,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -2.25,
+          6.937
+        ]
+      },
+      "T3": {
+        "delta_pp": -1.5625,
+        "gains": 7,
+        "losses": 9,
+        "paired_95_ci_pp": [
+          -7.706,
+          4.581
+        ]
+      }
+    },
+    "rainbow_basalt_monolith_to_pentad_prism": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gains": 2,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -3.075,
+          3.075
+        ]
+      },
+      "T3": {
+        "delta_pp": 5.4688,
+        "gains": 9,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          0.46,
+          10.478
+        ]
+      }
+    },
+    "rainbow_tooth_of_ramos_to_voltaic_key": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "gains": 1,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          -0.75,
+          2.312
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.5625,
+        "gains": 6,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -3.291,
+          6.416
+        ]
+      },
+      "T3": {
+        "delta_pp": 4.6875,
+        "gains": 11,
+        "losses": 5,
+        "paired_95_ci_pp": [
+          -1.407,
+          10.782
+        ]
+      }
+    },
+    "rainbow_tooth_of_ramos_to_pentad_prism": {
+      "T1": {
+        "delta_pp": -0.7812,
+        "gains": 1,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -3.44,
+          1.878
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.5625,
+        "gains": 6,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -3.291,
+          6.416
+        ]
+      },
+      "T3": {
+        "delta_pp": 1.5625,
+        "gains": 9,
+        "losses": 7,
+        "paired_95_ci_pp": [
+          -4.581,
+          7.706
+        ]
+      }
+    },
+    "rainbow_staff_of_compleation_to_voltaic_key": {
+      "T1": {
+        "delta_pp": 1.5625,
+        "gains": 2,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          -0.594,
+          3.719
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gains": 4,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -4.348,
+          4.348
+        ]
+      },
+      "T3": {
+        "delta_pp": 1.5625,
+        "gains": 9,
+        "losses": 7,
+        "paired_95_ci_pp": [
+          -4.581,
+          7.706
+        ]
+      }
+    },
+    "rainbow_staff_of_compleation_to_pentad_prism": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "gains": 2,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -1.878,
+          3.44
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gains": 4,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -4.348,
+          4.348
+        ]
+      },
+      "T3": {
+        "delta_pp": 1.5625,
+        "gains": 8,
+        "losses": 6,
+        "paired_95_ci_pp": [
+          -4.183,
+          7.308
+        ]
+      }
+    },
+    "rainbow_map_basalt_to_voltaic_prism": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gains": 3,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -3.766,
+          3.766
+        ]
+      },
+      "T3": {
+        "delta_pp": 3.9062,
+        "gains": 8,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -1.147,
+          8.959
+        ]
+      }
+    },
+    "rainbow_map_basalt_to_voltaic_boulder": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "gains": 1,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          -0.75,
+          2.312
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.7812,
+        "gains": 4,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -3.284,
+          4.846
+        ]
+      },
+      "T3": {
+        "delta_pp": 4.6875,
+        "gains": 11,
+        "losses": 5,
+        "paired_95_ci_pp": [
+          -1.407,
+          10.782
+        ]
+      }
+    },
+    "rainbow_map_tooth_to_voltaic_prism": {
+      "T1": {
+        "delta_pp": -0.7812,
+        "gains": 1,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -3.44,
+          1.878
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.7812,
+        "gains": 6,
+        "losses": 5,
+        "paired_95_ci_pp": [
+          -4.315,
+          5.878
+        ]
+      },
+      "T3": {
+        "delta_pp": 3.9062,
+        "gains": 10,
+        "losses": 5,
+        "paired_95_ci_pp": [
+          -2.009,
+          9.821
+        ]
+      }
+    },
+    "rainbow_map_staff_to_voltaic_prism": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "gains": 2,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -1.878,
+          3.44
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.7812,
+        "gains": 5,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -3.829,
+          5.391
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.7812,
+        "gains": 8,
+        "losses": 7,
+        "paired_95_ci_pp": [
+          -5.171,
+          6.734
+        ]
+      }
+    },
+    "rainbow_map_basalt_to_voltaic_manifold": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "gains": 1,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          -0.75,
+          2.312
+        ]
+      },
+      "T2": {
+        "delta_pp": 2.3438,
+        "gains": 5,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -1.703,
+          6.39
+        ]
+      },
+      "T3": {
+        "delta_pp": 4.6875,
+        "gains": 8,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -0.105,
+          9.48
+        ]
+      }
+    },
+    "rainbow_map_basalt_to_prism_boulder": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 1,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -2.174,
+          2.174
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.5625,
+        "gains": 6,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -3.291,
+          6.416
+        ]
+      },
+      "T3": {
+        "delta_pp": 5.4688,
+        "gains": 11,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -0.409,
+          11.346
+        ]
+      }
+    },
+    "rainbow_map_basalt_tooth_to_voltaic_prism_boulder": {
+      "T1": {
+        "delta_pp": -0.7812,
+        "gains": 0,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -2.312,
+          0.75
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gains": 6,
+        "losses": 6,
+        "paired_95_ci_pp": [
+          -5.325,
+          5.325
+        ]
+      },
+      "T3": {
+        "delta_pp": 4.6875,
+        "gains": 11,
+        "losses": 5,
+        "paired_95_ci_pp": [
+          -1.407,
+          10.782
+        ]
+      }
+    },
+    "rainbow_map_tooth_staff_to_voltaic_prism_boulder": {
+      "T1": {
+        "delta_pp": 1.5625,
+        "gains": 2,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          -0.594,
+          3.719
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.5625,
+        "gains": 5,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -2.777,
+          5.902
+        ]
+      },
+      "T3": {
+        "delta_pp": 2.3438,
+        "gains": 7,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -2.738,
+          7.426
+        ]
+      }
+    },
+    "rainbow_map_basalt_staff_to_voltaic_prism_boulder": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "gains": 2,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -1.878,
+          3.44
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gains": 5,
+        "losses": 5,
+        "paired_95_ci_pp": [
+          -4.861,
+          4.861
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.7812,
+        "gains": 8,
+        "losses": 7,
+        "paired_95_ci_pp": [
+          -5.171,
+          6.734
+        ]
+      }
+    },
+    "rainbow_map_basalt_tooth_to_voltaic_manifold_boulder": {
+      "T1": {
+        "delta_pp": -0.7812,
+        "gains": 0,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -2.312,
+          0.75
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gains": 4,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -4.348,
+          4.348
+        ]
+      },
+      "T3": {
+        "delta_pp": 3.125,
+        "gains": 9,
+        "losses": 5,
+        "paired_95_ci_pp": [
+          -2.601,
+          8.851
+        ]
+      }
+    },
+    "rainbow_map_basalt_tooth_to_voltaic_manifold_prism": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 2,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -3.075,
+          3.075
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.7812,
+        "gains": 4,
+        "losses": 3,
+        "paired_95_ci_pp": [
+          -3.284,
+          4.846
+        ]
+      },
+      "T3": {
+        "delta_pp": 3.125,
+        "gains": 10,
+        "losses": 6,
+        "paired_95_ci_pp": [
+          -3.0,
+          9.25
+        ]
+      }
+    },
+    "rainbow_map_basalt_tooth_staff_to_voltaic_manifold_prism_boulder": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 2,
+        "losses": 2,
+        "paired_95_ci_pp": [
+          -3.075,
+          3.075
+        ]
+      },
+      "T2": {
+        "delta_pp": -3.125,
+        "gains": 4,
+        "losses": 8,
+        "paired_95_ci_pp": [
+          -8.422,
+          2.172
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.7812,
+        "gains": 5,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -3.829,
+          5.391
+        ]
+      }
+    },
+    "rainbow_33land_full_four_standalone_keepers": {
+      "T1": {
+        "delta_pp": -0.7812,
+        "gains": 0,
+        "losses": 1,
+        "paired_95_ci_pp": [
+          -2.312,
+          0.75
+        ]
+      },
+      "T2": {
+        "delta_pp": 2.3438,
+        "gains": 7,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -2.738,
+          7.426
+        ]
+      },
+      "T3": {
+        "delta_pp": 3.125,
+        "gains": 10,
+        "losses": 6,
+        "paired_95_ci_pp": [
+          -3.0,
+          9.25
+        ]
+      }
+    },
+    "rainbow_35land_voltaic_manifold_prism": {
+      "T1": {
+        "delta_pp": 1.5625,
+        "gains": 2,
+        "losses": 0,
+        "paired_95_ci_pp": [
+          -0.594,
+          3.719
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gains": 7,
+        "losses": 7,
+        "paired_95_ci_pp": [
+          -5.752,
+          5.752
+        ]
+      },
+      "T3": {
+        "delta_pp": 3.125,
+        "gains": 8,
+        "losses": 4,
+        "paired_95_ci_pp": [
+          -2.172,
+          8.422
+        ]
+      }
+    }
+  },
+  "scope": "Experimental optimistic beam160 Dack-casting proxy, 32 fixed 99-card decks, both Hardlight Containment and Lunarch Mantle always retained; no post-Dack combo validation. Multiple comparisons / n128 require independent followup.",
+  "rank_by_T2_then_T3": [
+    "current_map_to_plains",
+    "rainbow_map_basalt_to_voltaic_manifold",
+    "rainbow_map_to_pentad_prism",
+    "rainbow_33land_full_four_standalone_keepers",
+    "current_map_to_giants_boulder",
+    "rainbow_basalt_monolith_to_voltaic_key",
+    "rainbow_map_basalt_to_prism_boulder",
+    "rainbow_tooth_of_ramos_to_voltaic_key",
+    "four_rainbow",
+    "current_map_to_pentad_prism",
+    "rainbow_map_tooth_staff_to_voltaic_prism_boulder",
+    "current_map_to_voltaic_key",
+    "rainbow_map_to_plains",
+    "rainbow_tooth_of_ramos_to_pentad_prism",
+    "rainbow_map_basalt_to_voltaic_boulder",
+    "current_map_to_manifold_key",
+    "rainbow_map_tooth_to_voltaic_prism",
+    "rainbow_map_basalt_tooth_to_voltaic_manifold_prism",
+    "rainbow_map_to_voltaic_key",
+    "rainbow_map_staff_to_voltaic_prism",
+    "rainbow_basalt_monolith_to_pentad_prism",
+    "rainbow_map_basalt_tooth_to_voltaic_prism_boulder",
+    "rainbow_map_basalt_to_voltaic_prism",
+    "rainbow_35land_voltaic_manifold_prism",
+    "rainbow_map_basalt_tooth_to_voltaic_manifold_boulder",
+    "rainbow_staff_of_compleation_to_pentad_prism",
+    "rainbow_staff_of_compleation_to_voltaic_key",
+    "rainbow_map_basalt_staff_to_voltaic_prism_boulder",
+    "rainbow_map_to_giants_boulder",
+    "current",
+    "rainbow_map_to_manifold_key",
+    "rainbow_map_basalt_tooth_staff_to_voltaic_manifold_prism_boulder"
+  ]
+}
