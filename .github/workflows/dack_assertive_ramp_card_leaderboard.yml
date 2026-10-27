@@ -1,0 +1,97 @@
+name: Dack Assertive Ramp Card Evidence Ledger
+on:
+  push:
+    branches: [dack-assertive-ramp-card-leaderboard-20261026]
+    paths:
+      - 'dack_assertive_ramp_card_leaderboard.py'
+      - '.github/workflows/dack_assertive_ramp_card_leaderboard.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+env:
+  PYTHONHASHSEED: '0'
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+jobs:
+  ledger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and establish policy/evidence inputs
+        run: |
+          python -m py_compile dack_assertive_ramp_card_leaderboard.py
+          python - <<'PY'
+          import dack_assertive_ramp_card_leaderboard as m
+          assert len(m.screen20.VARIANTS)==20
+          assert len(m.flex41.VARIANTS)==41
+          assert m.screen20.POLICY==m.flex41.POLICY=="assertive"
+          assert m.screen20.SEED_BASE!=m.flex41.SEED_BASE
+          assert m.screen20.CUR==m.flex41.CUR
+          print("RAMP_LEDGER_SOURCE_CONSISTENCY_PASS",flush=True)
+          PY
+      - name: Download available validated reports only, never partial data
+        id: recover
+        env:
+          GH_REPO: herschelruskin/urza-state-solver
+        run: |
+          mkdir -p imported/screen20 imported/flex41
+          args=""
+          if [ "$(gh api repos/$GH_REPO/actions/runs/40444150025 --jq .conclusion)" = "success" ]; then
+            gh run download 40444150025 --repo "$GH_REPO" \
+              --name dack-assertive-ramp-screen-n256-report --dir imported/screen20
+            test -s imported/screen20/dack_assertive_ramp_land_key_screen_n256_report.json
+            test -s imported/screen20/dack_assertive_ramp_land_key_screen_n256_report.raw.json.gz
+            args="$args --screen20-report imported/screen20/dack_assertive_ramp_land_key_screen_n256_report.json"
+            args="$args --screen20-raw imported/screen20/dack_assertive_ramp_land_key_screen_n256_report.raw.json.gz"
+          fi
+          if [ "$(gh api repos/$GH_REPO/actions/runs/40445020227 --jq .conclusion)" = "success" ]; then
+            gh run download 40445020227 --repo "$GH_REPO" \
+              --name dack-assertive-flexslots-n128-validated-report --dir imported/flex41
+            test -s imported/flex41/dack_assertive_flexslots_33to36_n128_report.json
+            test -s imported/flex41/dack_assertive_flexslots_33to36_n128_report.raw.json.gz
+            args="$args --flex41-report imported/flex41/dack_assertive_flexslots_33to36_n128_report.json"
+            args="$args --flex41-raw imported/flex41/dack_assertive_flexslots_33to36_n128_report.raw.json.gz"
+          fi
+          echo "options=$args" >> "$GITHUB_OUTPUT"
+          echo "Available validated inputs: $args"
+      - name: Build inventory and rank only completed matched Assertive trials
+        env:
+          OPTIONS: ${{ steps.recover.outputs.options }}
+        run: |
+          python -u dack_assertive_ramp_card_leaderboard.py $OPTIONS \
+            --out benchmark_results/dack_assertive_ramp_card_tracker.json \
+            --md DACK_ASSERTIVE_RAMP_CARD_LEADERBOARD.md
+          python - <<'PY'
+          import json
+          r=json.load(open("benchmark_results/dack_assertive_ramp_card_tracker.json"))
+          assert r["active_policy"]=="assertive"
+          assert len(r["tracked_ramp_inventory"])>=20
+          assert all(x["status"] in ("VALIDATED","WAITING_FOR_POOLED_RESULT") for x in r["screen_status"].values())
+          if not any(x["status"]=="VALIDATED" for x in r["screen_status"].values()):
+              assert r["exploratory_card_ranking"]==[]
+          print("RAMP_LEDGER_VALIDATION_PASS",r["single_swap_comparison_count"],flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-assertive-ramp-evidence-ledger
+          path: |
+            benchmark_results/dack_assertive_ramp_card_tracker.json
+            DACK_ASSERTIVE_RAMP_CARD_LEADERBOARD.md
+          retention-days: 90
+          if-no-files-found: warn
+      - name: Version and publish full evidence ledger
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f benchmark_results/dack_assertive_ramp_card_tracker.json DACK_ASSERTIVE_RAMP_CARD_LEADERBOARD.md
+          if ! git diff --cached --quiet; then
+            git commit -m 'Update Dack Assertive ramp evidence inventory and card rankings'
+            git push
+          else
+            echo "Ledger already current"
+          fi
