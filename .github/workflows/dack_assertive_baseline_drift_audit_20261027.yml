@@ -1,0 +1,44 @@
+name: Dack Assertive Protected Baseline Same Seed Replay Audit
+on:
+  push:
+    branches: [dack-assertive-protected-baseline-replay-audit-20261027]
+    paths:
+      - 'dack_assertive_baseline_drift_audit_20261027.py'
+      - '.github/workflows/dack_assertive_baseline_drift_audit_20261027.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Syntax, reference availability, 128-game archive and protected auras
+        run: |
+          python -m py_compile dack_assertive_baseline_drift_audit_20261027.py
+          test -s benchmark_results/dack_assertive_heldout_n10000_report.raw.json.gz
+          test -s benchmark_results/dack_assertive_protected_auras_cutsearch_n128_report.raw.json.gz
+          test -s benchmark_results/dack_assertive_heldout_n10000_report.json
+          test -s benchmark_results/dack_assertive_protected_auras_cutsearch_n128_report.json
+      - name: Exact seed replay from both archived datasets within protected-aura environment
+        run: python -u dack_assertive_baseline_drift_audit_20261027.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-assertive-same-seed-baseline-audit
+          path: benchmark_results/dack_assertive_baseline_drift_audit_20261027.json
+          retention-days: 90
+          if-no-files-found: warn
+      - name: Publish reproducible replay proof
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f benchmark_results/dack_assertive_baseline_drift_audit_20261027.json
+          git commit -m 'Archive exact same-seed replay proof for Assertive protected-run baseline'
+          git push
