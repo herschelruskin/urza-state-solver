@@ -4,7 +4,7 @@
 
 | Trial | Games recovered | Completed shards | Data status |
 |---|---:|---:|---|
-| screen20 | 244/256 | 61/64 | Partial exploratory evidence |
+| screen20 | 252/256 | 63/64 | Partial exploratory evidence |
 | flex41 | 70/128 | 35/64 | Partial exploratory evidence |
 
 ---
@@ -16,25 +16,25 @@
 
 ## Live evidence status
 
-- **screen20**: PARTIAL_244_OF_256, 20 decks × 256 matched game IDs — https://github.com/herschelruskin/urza-state-solver/actions/runs/40444150025
+- **screen20**: PARTIAL_252_OF_256, 20 decks × 256 matched game IDs — https://github.com/herschelruskin/urza-state-solver/actions/runs/40444150025
 - **flex41**: PARTIAL_70_OF_128, 41 decks × 128 matched game IDs — https://github.com/herschelruskin/urza-state-solver/actions/runs/40445020227
 
 ## Ramp-card ranking (only controlled single-card comparisons)
 
 | Rank | Card | Observed context-weighted T2 signal (pp) | Matched contexts | Trial sets | Positive / negative contexts |
 |---:|---|---:|---:|---:|---:|
-| 1 | Giant's Boulder | +1.33 | 32 | 2 | 21 / 11 |
+| 1 | Giant's Boulder | +1.25 | 32 | 2 | 21 / 11 |
 | 2 | Plains | +1.10 | 52 | 2 | 30 / 17 |
-| 3 | Voltaic Key | +1.03 | 27 | 2 | 16 / 8 |
-| 4 | Hardlight Containment | +0.82 | 1 | 1 | 1 / 0 |
-| 5 | Tooth of Ramos | +0.77 | 18 | 2 | 11 / 6 |
-| 6 | Manifold Key | +0.10 | 37 | 2 | 16 / 16 |
-| 7 | Pentad Prism | +0.09 | 22 | 2 | 10 / 9 |
-| 8 | Basalt Monolith | -0.12 | 37 | 2 | 17 / 17 |
-| 9 | Lunarch Mantle | -0.51 | 20 | 2 | 6 / 13 |
+| 3 | Voltaic Key | +1.07 | 27 | 2 | 16 / 8 |
+| 4 | Hardlight Containment | +0.79 | 1 | 1 | 1 / 0 |
+| 5 | Tooth of Ramos | +0.75 | 18 | 2 | 11 / 6 |
+| 6 | Pentad Prism | +0.13 | 22 | 2 | 10 / 9 |
+| 7 | Manifold Key | +0.10 | 37 | 2 | 16 / 16 |
+| 8 | Basalt Monolith | -0.06 | 37 | 2 | 17 / 17 |
+| 9 | Lunarch Mantle | -0.53 | 20 | 2 | 6 / 13 |
 | 10 | World Map | -0.84 | 29 | 1 | 9 / 17 |
-| 11 | Implements of Sacrifice | -2.05 | 1 | 1 | 0 / 1 |
-| 12 | Candelabra of Tawnos | -3.33 | 24 | 2 | 0 / 22 |
+| 11 | Implements of Sacrifice | -1.98 | 1 | 1 | 0 / 1 |
+| 12 | Candelabra of Tawnos | -3.32 | 24 | 2 | 0 / 22 |
 
 **Interpretation:** The score averages results across the *observed replacement options and deck backgrounds*, not the intrinsic value of a card. Contexts share hands and games; the displayed score has **no valid pooled confidence interval**. Strong claims require a held-out card comparison.
 
@@ -59,8 +59,8 @@
 | Lunarch Mantle over Tooth of Ramos | flex41: full35_minus_voltaic_key → safe35_minus_voltaic_key | +4.29 | -0.49 to +9.06 | 70 |
 | Lunarch Mantle over Tooth of Ramos | flex41: full36_no_key_boulder → safe36_no_key_boulder | +4.29 | -3.11 to +11.68 | 70 |
 | Pentad Prism over Voltaic Key | flex41: current_map_to_voltaic_key → current_map_to_pentad_prism | +4.29 | -3.11 to +11.68 | 70 |
-| Lunarch Mantle over Candelabra of Tawnos | screen20: full_candelabra_instead_tooth → full_preserve_mantle | +4.10 | +0.19 to +8.01 | 244 |
-| Giant's Boulder over Tooth of Ramos | screen20: full_2keys_instead_boulder → full_3keys_instead_tooth | +3.69 | -0.47 to +7.85 | 244 |
+| Lunarch Mantle over Candelabra of Tawnos | screen20: full_candelabra_instead_tooth → full_preserve_mantle | +3.97 | +0.18 to +7.75 | 252 |
+| Giant's Boulder over Tooth of Ramos | screen20: full_2keys_instead_boulder → full_3keys_instead_tooth | +3.57 | -0.45 to +7.60 | 252 |
 | Plains over World Map | flex41: current → current35_minus_world_map | +2.86 | -4.02 to +9.73 | 70 |
 | Pentad Prism over Basalt Monolith | flex41: current → current_basalt_to_pentad_prism | +2.86 | -5.09 to +10.81 | 70 |
 | Voltaic Key over Basalt Monolith | flex41: current → current_basalt_to_voltaic_key | +2.86 | -5.09 to +10.81 | 70 |
