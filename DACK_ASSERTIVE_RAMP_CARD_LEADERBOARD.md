@@ -1,13 +1,23 @@
 # Dack Assertive ramp-piece leaderboard
 
+**LIVE SCREENING STATUS — not a finalized card ranking.** The provisional table only appears once at least 24 completed matched games from a screen are available. Both screens preserve the same frozen Assertive mulligan policy, and all numbers are conditional on the optimistic goldfish Dack-cast model.
+
+| Trial | Games recovered | Completed shards | Data status |
+|---|---:|---:|---|
+| screen20 | 16/256 | 4/64 | Partial exploratory evidence |
+| flex41 | 2/128 | 1/64 | Partial exploratory evidence |
+
+---
+
+
 **Primary metric:** probability of Dack cast by T2 under the promoted Assertive London policy, with T1 and T3 tracked as checks.
 
 > All results are optimistic full-beam goldfish Dack-cast rates, not verified complete combo lines or multiplayer wins. Small-sample rankings are exploratory and susceptible to winner's curse.
 
 ## Live evidence status
 
-- **screen20**: WAITING_FOR_POOLED_RESULT, 20 decks × 256 matched game IDs — https://github.com/herschelruskin/urza-state-solver/actions/runs/40444150025
-- **flex41**: WAITING_FOR_POOLED_RESULT, 41 decks × 128 matched game IDs — https://github.com/herschelruskin/urza-state-solver/actions/runs/40445020227
+- **screen20**: PARTIAL_16_OF_256, 20 decks × 256 matched game IDs — https://github.com/herschelruskin/urza-state-solver/actions/runs/40444150025
+- **flex41**: PARTIAL_2_OF_128, 41 decks × 128 matched game IDs — https://github.com/herschelruskin/urza-state-solver/actions/runs/40445020227
 
 ## Ramp-card ranking (only controlled single-card comparisons)
 

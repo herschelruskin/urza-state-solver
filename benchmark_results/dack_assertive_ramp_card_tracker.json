@@ -7,13 +7,25 @@
       "source_run": "https://github.com/herschelruskin/urza-state-solver/actions/runs/40444150025",
       "expected_n": 256,
       "variant_count": 20,
-      "status": "WAITING_FOR_POOLED_RESULT"
+      "status": "PARTIAL_16_OF_256",
+      "paired_games": 16,
+      "expected_games": 256,
+      "complete_shards": 4,
+      "expected_shards": 64,
+      "source_validated_full_pool": false,
+      "eligible_for_provisional_ranking": false
     },
     "flex41": {
       "source_run": "https://github.com/herschelruskin/urza-state-solver/actions/runs/40445020227",
       "expected_n": 128,
       "variant_count": 41,
-      "status": "WAITING_FOR_POOLED_RESULT"
+      "status": "PARTIAL_2_OF_128",
+      "paired_games": 2,
+      "expected_games": 128,
+      "complete_shards": 1,
+      "expected_shards": 64,
+      "source_validated_full_pool": false,
+      "eligible_for_provisional_ranking": false
     }
   },
   "comparison_rules": {
@@ -315,6 +327,27 @@
         },
         "note": "Historical Standard policy, different fixed 34-land deck; CI crosses zero."
       }
+    }
+  },
+  "live_note": "Interim ranks are based only on completed shard artifacts, NOT a complete independent replicate.",
+  "minimum_paired_games_for_provisional_rank": 24,
+  "preliminary_card_effects_are_not_causal": true,
+  "live_progress": {
+    "screen20": {
+      "paired_games": 16,
+      "expected_games": 256,
+      "complete_shards": 4,
+      "expected_shards": 64,
+      "source_validated_full_pool": false,
+      "eligible_for_provisional_ranking": false
+    },
+    "flex41": {
+      "paired_games": 2,
+      "expected_games": 128,
+      "complete_shards": 1,
+      "expected_shards": 64,
+      "source_validated_full_pool": false,
+      "eligible_for_provisional_ranking": false
     }
   }
 }
