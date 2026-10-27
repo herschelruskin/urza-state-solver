@@ -1,0 +1,70 @@
+{
+  "status": "PASS",
+  "explanation": "The 10000-game policy, baseline deck, and protected screen use identical source rules, and selected original/protected game IDs replay exactly.",
+  "source_baseline_hash": "a1c8e05dc3f9e1bcfbfbe2f7773ea4a5e62222d3440dd2f7417fd7f2f058c422",
+  "beam": 160,
+  "policy": "assertive",
+  "reference": {
+    "N": 10000,
+    "by_T2": 50.27,
+    "by_T3": 83.15
+  },
+  "protected": {
+    "N": 128,
+    "by_T2": 42.1875,
+    "by_T3": 73.4375,
+    "counts": {
+      "3": 40,
+      "2": 47,
+      "0": 34,
+      "1": 7
+    },
+    "mean_keep": 5.0781
+  },
+  "reference_replayed_ids": [
+    0,
+    1,
+    8,
+    23,
+    75
+  ],
+  "protected_replayed_ids": [
+    0,
+    1,
+    8,
+    23,
+    75,
+    127
+  ],
+  "protected_seat_breakdown": {
+    "1": {
+      "n": 33,
+      "by_T1": 2,
+      "by_T2": 13,
+      "by_T3": 27,
+      "total_keep": 170
+    },
+    "2": {
+      "n": 31,
+      "by_T1": 1,
+      "by_T2": 13,
+      "by_T3": 25,
+      "total_keep": 152
+    },
+    "0": {
+      "n": 29,
+      "by_T1": 0,
+      "by_T2": 9,
+      "by_T3": 16,
+      "total_keep": 150
+    },
+    "3": {
+      "n": 35,
+      "by_T1": 4,
+      "by_T2": 19,
+      "by_T3": 26,
+      "total_keep": 178
+    }
+  },
+  "limitation": "Only selected game IDs are exactly replayed; no proof of absence of every simulator flaw. The N128 screen's unusually low T3 is a statistical outlier worth rechecking with larger fresh seeds."
+}
