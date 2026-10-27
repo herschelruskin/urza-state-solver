@@ -1,0 +1,35 @@
+card,role,planned_direct_swap_contexts,suites,status,notes
+Plains,land,52,"core20,flex41",PLANNED_DIRECT_EVIDENCE,33 to 36 nominal lands tested
+Basalt Monolith,ramp_flex,37,"core20,flex41",PLANNED_DIRECT_EVIDENCE,retest as incumbent or addition
+Manifold Key,untapper,37,"core20,flex41",PLANNED_DIRECT_EVIDENCE,competes with Boulder / World Map / land slots
+Giant's Boulder,ramp_flex,32,"core20,flex41",PLANNED_DIRECT_EVIDENCE,"tests relative to Basalt, key and land"
+World Map,tutor_flex,29,flex41,PLANNED_DIRECT_EVIDENCE,card-advantage / land access; not pure mana
+Voltaic Key,untapper,27,"core20,flex41",PLANNED_DIRECT_EVIDENCE,Mana Vault/Monolith utility
+Candelabra of Tawnos,untapper,24,"core20,flex41",PLANNED_DIRECT_EVIDENCE,land untap; synergy with Ancient Tomb
+Pentad Prism,ramp_flex,22,"core20,flex41",PLANNED_DIRECT_EVIDENCE,correct no-tap 2-counter sunburst
+Lunarch Mantle,combo_flex,20,"core20,flex41",PLANNED_DIRECT_EVIDENCE,sacrifice outlet possibility; Dack-cast proxy does not price its combo role
+Tooth of Ramos,ramp_flex,18,"core20,flex41",PLANNED_DIRECT_EVIDENCE,flex rock / potential sacrifice outlet
+Hardlight Containment,combo_flex,1,core20,PLANNED_DIRECT_EVIDENCE,auras can affect full combo; goldfish cast metric incomplete
+Implements of Sacrifice,ramp_flex,1,core20,PLANNED_DIRECT_EVIDENCE,one-time mana conversion
+Ancient Tomb,core_land,0,,NOT_DIRECTLY_VARIED,reference/core; not directly varied
+Bucknard's Everfull Purse,ramp_flex,0,,NOT_DIRECTLY_VARIED,retained across screens; not directly varied
+Chrome Mox,core_mana,0,,NOT_DIRECTLY_VARIED,reference/core; not directly varied
+City of Brass,rainbow_land,0,,NOT_DIRECTLY_VARIED,any-color land
+City of Traitors,core_land,0,,NOT_DIRECTLY_VARIED,reference/core; not directly varied
+Coalition Relic,ramp_flex,0,,NOT_DIRECTLY_VARIED,retained across screens; not directly varied
+Command Tower,rainbow_land,0,,NOT_DIRECTLY_VARIED,white-only in mono-white color identity
+Crystal Vein,core_land,0,,NOT_DIRECTLY_VARIED,reference/core; not directly varied
+Everflowing Chalice,ramp_flex,0,,NOT_DIRECTLY_VARIED,existing mana rock; not directly varied
+Gemstone Mine,rainbow_land,0,,NOT_DIRECTLY_VARIED,any-color limited counters
+Grim Monolith,core_mana,0,,NOT_DIRECTLY_VARIED,reference/core; not directly varied
+Lion's Eye Diamond,core_mana,0,,NOT_DIRECTLY_VARIED,reference/core; not directly varied
+Lotus Petal,core_mana,0,,NOT_DIRECTLY_VARIED,reference/core; not directly varied
+Mana Confluence,rainbow_land,0,,NOT_DIRECTLY_VARIED,any-color land
+Mana Vault,core_mana,0,,NOT_DIRECTLY_VARIED,reference/core; not directly varied
+Mind Stone,ramp_flex,0,,NOT_DIRECTLY_VARIED,existing mana rock; not directly varied
+Mishra's Workshop,core_land,0,,NOT_DIRECTLY_VARIED,reference/core; not directly varied
+Mox Diamond,core_mana,0,,NOT_DIRECTLY_VARIED,reference/core; not directly varied
+Mox Opal,core_mana,0,,NOT_DIRECTLY_VARIED,reference/core; not directly varied
+Prismatic Lens,ramp_flex,0,,NOT_DIRECTLY_VARIED,existing mana rock; not directly varied
+Sol Ring,core_mana,0,,NOT_DIRECTLY_VARIED,reference/core; not a cut candidate in this screen
+The Mind Stone,ramp_flex,0,,NOT_DIRECTLY_VARIED,existing mana rock; not directly varied

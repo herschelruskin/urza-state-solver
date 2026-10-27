@@ -1,0 +1,285 @@
+{
+  "schema": "dack_assertive_planned_comparison_coverage_v1",
+  "sources": {
+    "core20": 20,
+    "flex41": 41
+  },
+  "total_one_card_contrasts": 150,
+  "unique_tracked_cards_directly_varied": 12,
+  "unique_tracked_cards_not_directly_varied": 22,
+  "note": "Counts represent PLANNED pairwise comparisons. No turn results or actual piece power are implied.",
+  "coverage": [
+    {
+      "card": "Plains",
+      "role": "land",
+      "planned_direct_swap_contexts": 52,
+      "suites": "core20,flex41",
+      "status": "PLANNED_DIRECT_EVIDENCE",
+      "notes": "33 to 36 nominal lands tested"
+    },
+    {
+      "card": "Basalt Monolith",
+      "role": "ramp_flex",
+      "planned_direct_swap_contexts": 37,
+      "suites": "core20,flex41",
+      "status": "PLANNED_DIRECT_EVIDENCE",
+      "notes": "retest as incumbent or addition"
+    },
+    {
+      "card": "Manifold Key",
+      "role": "untapper",
+      "planned_direct_swap_contexts": 37,
+      "suites": "core20,flex41",
+      "status": "PLANNED_DIRECT_EVIDENCE",
+      "notes": "competes with Boulder / World Map / land slots"
+    },
+    {
+      "card": "Giant's Boulder",
+      "role": "ramp_flex",
+      "planned_direct_swap_contexts": 32,
+      "suites": "core20,flex41",
+      "status": "PLANNED_DIRECT_EVIDENCE",
+      "notes": "tests relative to Basalt, key and land"
+    },
+    {
+      "card": "World Map",
+      "role": "tutor_flex",
+      "planned_direct_swap_contexts": 29,
+      "suites": "flex41",
+      "status": "PLANNED_DIRECT_EVIDENCE",
+      "notes": "card-advantage / land access; not pure mana"
+    },
+    {
+      "card": "Voltaic Key",
+      "role": "untapper",
+      "planned_direct_swap_contexts": 27,
+      "suites": "core20,flex41",
+      "status": "PLANNED_DIRECT_EVIDENCE",
+      "notes": "Mana Vault/Monolith utility"
+    },
+    {
+      "card": "Candelabra of Tawnos",
+      "role": "untapper",
+      "planned_direct_swap_contexts": 24,
+      "suites": "core20,flex41",
+      "status": "PLANNED_DIRECT_EVIDENCE",
+      "notes": "land untap; synergy with Ancient Tomb"
+    },
+    {
+      "card": "Pentad Prism",
+      "role": "ramp_flex",
+      "planned_direct_swap_contexts": 22,
+      "suites": "core20,flex41",
+      "status": "PLANNED_DIRECT_EVIDENCE",
+      "notes": "correct no-tap 2-counter sunburst"
+    },
+    {
+      "card": "Lunarch Mantle",
+      "role": "combo_flex",
+      "planned_direct_swap_contexts": 20,
+      "suites": "core20,flex41",
+      "status": "PLANNED_DIRECT_EVIDENCE",
+      "notes": "sacrifice outlet possibility; Dack-cast proxy does not price its combo role"
+    },
+    {
+      "card": "Tooth of Ramos",
+      "role": "ramp_flex",
+      "planned_direct_swap_contexts": 18,
+      "suites": "core20,flex41",
+      "status": "PLANNED_DIRECT_EVIDENCE",
+      "notes": "flex rock / potential sacrifice outlet"
+    },
+    {
+      "card": "Hardlight Containment",
+      "role": "combo_flex",
+      "planned_direct_swap_contexts": 1,
+      "suites": "core20",
+      "status": "PLANNED_DIRECT_EVIDENCE",
+      "notes": "auras can affect full combo; goldfish cast metric incomplete"
+    },
+    {
+      "card": "Implements of Sacrifice",
+      "role": "ramp_flex",
+      "planned_direct_swap_contexts": 1,
+      "suites": "core20",
+      "status": "PLANNED_DIRECT_EVIDENCE",
+      "notes": "one-time mana conversion"
+    },
+    {
+      "card": "Ancient Tomb",
+      "role": "core_land",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "reference/core; not directly varied"
+    },
+    {
+      "card": "Bucknard's Everfull Purse",
+      "role": "ramp_flex",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "retained across screens; not directly varied"
+    },
+    {
+      "card": "Chrome Mox",
+      "role": "core_mana",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "reference/core; not directly varied"
+    },
+    {
+      "card": "City of Brass",
+      "role": "rainbow_land",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "any-color land"
+    },
+    {
+      "card": "City of Traitors",
+      "role": "core_land",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "reference/core; not directly varied"
+    },
+    {
+      "card": "Coalition Relic",
+      "role": "ramp_flex",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "retained across screens; not directly varied"
+    },
+    {
+      "card": "Command Tower",
+      "role": "rainbow_land",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "white-only in mono-white color identity"
+    },
+    {
+      "card": "Crystal Vein",
+      "role": "core_land",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "reference/core; not directly varied"
+    },
+    {
+      "card": "Everflowing Chalice",
+      "role": "ramp_flex",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "existing mana rock; not directly varied"
+    },
+    {
+      "card": "Gemstone Mine",
+      "role": "rainbow_land",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "any-color limited counters"
+    },
+    {
+      "card": "Grim Monolith",
+      "role": "core_mana",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "reference/core; not directly varied"
+    },
+    {
+      "card": "Lion's Eye Diamond",
+      "role": "core_mana",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "reference/core; not directly varied"
+    },
+    {
+      "card": "Lotus Petal",
+      "role": "core_mana",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "reference/core; not directly varied"
+    },
+    {
+      "card": "Mana Confluence",
+      "role": "rainbow_land",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "any-color land"
+    },
+    {
+      "card": "Mana Vault",
+      "role": "core_mana",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "reference/core; not directly varied"
+    },
+    {
+      "card": "Mind Stone",
+      "role": "ramp_flex",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "existing mana rock; not directly varied"
+    },
+    {
+      "card": "Mishra's Workshop",
+      "role": "core_land",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "reference/core; not directly varied"
+    },
+    {
+      "card": "Mox Diamond",
+      "role": "core_mana",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "reference/core; not directly varied"
+    },
+    {
+      "card": "Mox Opal",
+      "role": "core_mana",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "reference/core; not directly varied"
+    },
+    {
+      "card": "Prismatic Lens",
+      "role": "ramp_flex",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "existing mana rock; not directly varied"
+    },
+    {
+      "card": "Sol Ring",
+      "role": "core_mana",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "reference/core; not a cut candidate in this screen"
+    },
+    {
+      "card": "The Mind Stone",
+      "role": "ramp_flex",
+      "planned_direct_swap_contexts": 0,
+      "suites": "",
+      "status": "NOT_DIRECTLY_VARIED",
+      "notes": "existing mana rock; not directly varied"
+    }
+  ]
+}
