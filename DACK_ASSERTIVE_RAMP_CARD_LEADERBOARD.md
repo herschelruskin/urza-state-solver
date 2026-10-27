@@ -4,7 +4,7 @@
 
 | Trial | Games recovered | Completed shards | Data status |
 |---|---:|---:|---|
-| screen20 | 156/256 | 39/64 | Partial exploratory evidence |
+| screen20 | 164/256 | 41/64 | Partial exploratory evidence |
 | flex41 | 40/128 | 20/64 | Partial exploratory evidence |
 
 ---
@@ -16,25 +16,25 @@
 
 ## Live evidence status
 
-- **screen20**: PARTIAL_156_OF_256, 20 decks × 256 matched game IDs — https://github.com/herschelruskin/urza-state-solver/actions/runs/40444150025
+- **screen20**: PARTIAL_164_OF_256, 20 decks × 256 matched game IDs — https://github.com/herschelruskin/urza-state-solver/actions/runs/40444150025
 - **flex41**: PARTIAL_40_OF_128, 41 decks × 128 matched game IDs — https://github.com/herschelruskin/urza-state-solver/actions/runs/40445020227
 
 ## Ramp-card ranking (only controlled single-card comparisons)
 
 | Rank | Card | Observed context-weighted T2 signal (pp) | Matched contexts | Trial sets | Positive / negative contexts |
 |---:|---|---:|---:|---:|---:|
-| 1 | Hardlight Containment | +1.92 | 1 | 1 | 1 / 0 |
-| 2 | Giant's Boulder | +1.53 | 32 | 2 | 18 / 6 |
-| 3 | Manifold Key | +1.22 | 37 | 2 | 19 / 10 |
-| 4 | Plains | +1.21 | 52 | 2 | 25 / 16 |
-| 5 | Tooth of Ramos | +1.04 | 18 | 2 | 12 / 6 |
-| 6 | Pentad Prism | +0.15 | 22 | 2 | 7 / 7 |
-| 7 | Voltaic Key | -0.05 | 27 | 2 | 10 / 12 |
-| 8 | Lunarch Mantle | -0.70 | 20 | 2 | 8 / 12 |
+| 1 | Hardlight Containment | +1.83 | 1 | 1 | 1 / 0 |
+| 2 | Giant's Boulder | +1.35 | 32 | 2 | 18 / 8 |
+| 3 | Plains | +1.12 | 52 | 2 | 25 / 16 |
+| 4 | Tooth of Ramos | +1.07 | 18 | 2 | 11 / 6 |
+| 5 | Manifold Key | +0.98 | 37 | 2 | 19 / 10 |
+| 6 | Pentad Prism | +0.51 | 22 | 2 | 9 / 7 |
+| 7 | Voltaic Key | +0.21 | 27 | 2 | 10 / 10 |
+| 8 | Lunarch Mantle | -0.68 | 20 | 2 | 6 / 11 |
 | 9 | World Map | -0.78 | 29 | 1 | 11 / 11 |
-| 10 | Basalt Monolith | -0.98 | 37 | 2 | 10 / 17 |
-| 11 | Implements of Sacrifice | -2.56 | 1 | 1 | 0 / 1 |
-| 12 | Candelabra of Tawnos | -3.14 | 24 | 2 | 0 / 23 |
+| 10 | Basalt Monolith | -0.86 | 37 | 2 | 11 / 18 |
+| 11 | Candelabra of Tawnos | -3.08 | 24 | 2 | 0 / 23 |
+| 12 | Implements of Sacrifice | -3.66 | 1 | 1 | 0 / 1 |
 
 **Interpretation:** The score averages results across the *observed replacement options and deck backgrounds*, not the intrinsic value of a card. Contexts share hands and games; the displayed score has **no valid pooled confidence interval**. Strong claims require a held-out card comparison.
 
@@ -64,14 +64,14 @@
 | Plains over World Map | flex41: full33_basalt_monolith → full_map_to_basalt_monolith | +5.00 | -7.05 to +17.05 | 40 |
 | Manifold Key over Pentad Prism | flex41: current33_pentad_prism → current33_manifold_key | +5.00 | -1.84 to +11.84 | 40 |
 | Voltaic Key over World Map | flex41: full35_minus_voltaic_key → full35_minus_world_map | +5.00 | -1.84 to +11.84 | 40 |
-| Manifold Key over Tooth of Ramos | screen20: full_prism_voltaic_boulder → full_3keys_instead_tooth | +3.21 | -0.94 to +7.36 | 156 |
-| Lunarch Mantle over Candelabra of Tawnos | screen20: full_candelabra_instead_tooth → full_preserve_mantle | +3.21 | -0.94 to +7.36 | 156 |
-| Pentad Prism over Implements of Sacrifice | screen20: current → prism_only | +2.56 | -0.98 to +6.11 | 156 |
+| Pentad Prism over Implements of Sacrifice | screen20: current → prism_only | +3.66 | -0.09 to +7.41 | 164 |
+| Lunarch Mantle over Candelabra of Tawnos | screen20: full_candelabra_instead_tooth → full_preserve_mantle | +3.05 | -1.25 to +7.35 | 164 |
 | Voltaic Key over Plains | flex41: current → current33_voltaic_key | +2.50 | -2.40 to +7.40 | 40 |
 | Manifold Key over Plains | flex41: current → current33_manifold_key | +2.50 | -2.40 to +7.40 | 40 |
 | Plains over Voltaic Key | flex41: full_preserve_mantle → safe35_minus_voltaic_key | +2.50 | -6.06 to +11.06 | 40 |
 | Basalt Monolith over Giant's Boulder | flex41: full_preserve_mantle → safe_boulder_to_basalt | +2.50 | -2.40 to +7.40 | 40 |
 | Giant's Boulder over Plains | flex41: full_double_keys → full33_manifold_key | +2.50 | -8.57 to +13.57 | 40 |
+| Basalt Monolith over Plains | flex41: full_double_keys → full33_manifold_boulder_to_basalt | +2.50 | -8.57 to +13.57 | 40 |
 
 ## Historical controls — Standard mulligans only
 
