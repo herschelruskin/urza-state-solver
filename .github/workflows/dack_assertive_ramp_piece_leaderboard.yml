@@ -5,6 +5,7 @@ on:
     paths:
       - 'dack_assertive_ramp_tracker_manifest.json'
       - 'dack_assertive_ramp_piece_leaderboard.py'
+      - 'dack_assertive_ramp_pair_coverage.py'
       - '.github/workflows/dack_assertive_ramp_piece_leaderboard.yml'
   workflow_dispatch:
 permissions:
@@ -25,12 +26,17 @@ jobs:
         run: |
           python -m py_compile dack_assertive_ramp_piece_leaderboard.py
           python -u dack_assertive_ramp_piece_leaderboard.py --outdir ramp_leaderboard
+          python -u dack_assertive_ramp_pair_coverage.py
           python - <<'PY'
           import json
           r=json.load(open('ramp_leaderboard/ramp_piece_leaderboard.json'))
           assert r['status']=='AWAITING_SCREEN_RESULTS'
           assert len(r['cards'])==34 and len(r['direct_pairs'])==0
           assert all(c['status']=='NOT_TESTED' for c in r['cards'])
+          coverage=json.load(open('ramp_leaderboard/planned_direct_swap_coverage.json'))
+          assert coverage['total_one_card_contrasts']>30
+          assert coverage['unique_tracked_cards_directly_varied']>5
+          assert coverage['unique_tracked_cards_not_directly_varied']>5
           import dack_assertive_ramp_piece_leaderboard as t
           import dack_active_mulligan_policy as sim
           original=sim.FROZEN_DECK
@@ -61,7 +67,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -f ramp_leaderboard/ramp_piece_leaderboard.md ramp_leaderboard/ramp_piece_leaderboard.json ramp_leaderboard/ramp_piece_leaderboard.csv ramp_leaderboard/one_card_matched_swaps.csv
+          git add -f ramp_leaderboard/ramp_piece_leaderboard.md ramp_leaderboard/ramp_piece_leaderboard.json ramp_leaderboard/ramp_piece_leaderboard.csv ramp_leaderboard/one_card_matched_swaps.csv ramp_leaderboard/planned_direct_swap_coverage.csv ramp_leaderboard/planned_one_card_contrasts.csv ramp_leaderboard/planned_direct_swap_coverage.json ramp_leaderboard/planned_direct_swap_coverage.md
           if ! git diff --cached --quiet; then
             git commit -m 'Initialize Assertive ramp piece scorecard pending verified screening results'
             git push
