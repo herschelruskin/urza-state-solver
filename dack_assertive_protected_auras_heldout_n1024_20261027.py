@@ -91,7 +91,7 @@ def audit():
     # A uniquely direct Staff/Plains comparison with all other 98 cards held.
     aa=VARIANTS["rainbow_33land_full_four_standalone_keepers"]
     bb=VARIANTS[staff_cut]
-    assert diff_pair(aa,bb)=={"out":["Plains"],"in":["Staff of Compleation"]}
+    assert diff_pair(aa,bb)=={"out":["Staff of Compleation"],"in":["Plains"]}
     # World Map -> Boulder / Plains is also direct, no other changes.
     assert diff_pair(VARIANTS["current_map_to_plains"],
                      VARIANTS["current_map_to_giants_boulder"])=={
