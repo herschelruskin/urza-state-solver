@@ -7,10 +7,10 @@
       "source_run": "https://github.com/herschelruskin/urza-state-solver/actions/runs/40444150025",
       "expected_n": 256,
       "variant_count": 20,
-      "status": "PARTIAL_40_OF_256",
-      "paired_games": 40,
+      "status": "PARTIAL_48_OF_256",
+      "paired_games": 48,
       "expected_games": 256,
-      "complete_shards": 10,
+      "complete_shards": 12,
       "expected_shards": 64,
       "source_validated_full_pool": false,
       "eligible_for_provisional_ranking": true
@@ -19,10 +19,10 @@
       "source_run": "https://github.com/herschelruskin/urza-state-solver/actions/runs/40445020227",
       "expected_n": 128,
       "variant_count": 41,
-      "status": "PARTIAL_8_OF_128",
-      "paired_games": 8,
+      "status": "PARTIAL_14_OF_128",
+      "paired_games": 14,
       "expected_games": 128,
-      "complete_shards": 4,
+      "complete_shards": 7,
       "expected_shards": 64,
       "source_validated_full_pool": false,
       "eligible_for_provisional_ranking": false
@@ -291,7 +291,7 @@
   "single_swap_head_to_heads": [
     {
       "trial": "screen20",
-      "n": 40,
+      "n": 48,
       "old_card": "Candelabra of Tawnos",
       "new_card": "Lunarch Mantle",
       "from_arm": "full_candelabra_instead_tooth",
@@ -309,19 +309,19 @@
           "regressions": 0
         },
         "T2": {
-          "delta_pp": 7.5,
+          "delta_pp": 4.1667,
           "paired_95_ci_pp": [
-            -0.7666,
-            15.7666
+            -4.0,
+            12.3333
           ],
           "improvements": 3,
-          "regressions": 0
+          "regressions": 1
         },
         "T3": {
-          "delta_pp": 7.5,
+          "delta_pp": 6.25,
           "paired_95_ci_pp": [
-            -5.4166,
-            20.4166
+            -4.5206,
+            17.0206
           ],
           "improvements": 5,
           "regressions": 2
@@ -330,46 +330,7 @@
     },
     {
       "trial": "screen20",
-      "n": 40,
-      "old_card": "Hardlight Containment",
-      "new_card": "Pentad Prism",
-      "from_arm": "legal_four_rainbow",
-      "to_arm": "four_rainbow_plus_prism",
-      "background_land_count_from": 34,
-      "background_land_count_to": 34,
-      "metrics": {
-        "T1": {
-          "delta_pp": -2.5,
-          "paired_95_ci_pp": [
-            -7.4,
-            2.4
-          ],
-          "improvements": 0,
-          "regressions": 1
-        },
-        "T2": {
-          "delta_pp": 2.5,
-          "paired_95_ci_pp": [
-            -2.4,
-            7.4
-          ],
-          "improvements": 1,
-          "regressions": 0
-        },
-        "T3": {
-          "delta_pp": 7.5,
-          "paired_95_ci_pp": [
-            -0.7666,
-            15.7666
-          ],
-          "improvements": 3,
-          "regressions": 0
-        }
-      }
-    },
-    {
-      "trial": "screen20",
-      "n": 40,
+      "n": 48,
       "old_card": "Lunarch Mantle",
       "new_card": "Voltaic Key",
       "from_arm": "four_rainbow_plus_prism",
@@ -378,28 +339,28 @@
       "background_land_count_to": 34,
       "metrics": {
         "T1": {
-          "delta_pp": 2.5,
+          "delta_pp": 2.0833,
           "paired_95_ci_pp": [
-            -2.4,
-            7.4
+            -2.0,
+            6.1667
           ],
           "improvements": 1,
           "regressions": 0
         },
         "T2": {
-          "delta_pp": 0.0,
+          "delta_pp": 2.0833,
           "paired_95_ci_pp": [
-            0.0,
-            0.0
+            -2.0,
+            6.1667
           ],
-          "improvements": 0,
+          "improvements": 1,
           "regressions": 0
         },
         "T3": {
-          "delta_pp": -2.5,
+          "delta_pp": -2.0833,
           "paired_95_ci_pp": [
-            -7.4,
-            2.4
+            -6.1667,
+            2.0
           ],
           "improvements": 0,
           "regressions": 1
@@ -408,7 +369,7 @@
     },
     {
       "trial": "screen20",
-      "n": 40,
+      "n": 48,
       "old_card": "Voltaic Key",
       "new_card": "Candelabra of Tawnos",
       "from_arm": "full_prism_voltaic_boulder",
@@ -417,28 +378,28 @@
       "background_land_count_to": 34,
       "metrics": {
         "T1": {
-          "delta_pp": -2.5,
+          "delta_pp": -2.0833,
           "paired_95_ci_pp": [
-            -7.4,
-            2.4
+            -6.1667,
+            2.0
           ],
           "improvements": 0,
           "regressions": 1
         },
         "T2": {
-          "delta_pp": 0.0,
+          "delta_pp": 2.0833,
           "paired_95_ci_pp": [
-            0.0,
-            0.0
+            -2.0,
+            6.1667
           ],
-          "improvements": 0,
+          "improvements": 1,
           "regressions": 0
         },
         "T3": {
-          "delta_pp": -5.0,
+          "delta_pp": -4.1667,
           "paired_95_ci_pp": [
-            -11.8402,
-            1.8402
+            -9.8796,
+            1.5463
           ],
           "improvements": 0,
           "regressions": 2
@@ -447,7 +408,7 @@
     },
     {
       "trial": "screen20",
-      "n": 40,
+      "n": 48,
       "old_card": "Giant's Boulder",
       "new_card": "Basalt Monolith",
       "from_arm": "full_prism_voltaic_boulder",
@@ -465,19 +426,19 @@
           "regressions": 0
         },
         "T2": {
-          "delta_pp": 0.0,
+          "delta_pp": 2.0833,
           "paired_95_ci_pp": [
-            0.0,
-            0.0
+            -2.0,
+            6.1667
           ],
-          "improvements": 0,
+          "improvements": 1,
           "regressions": 0
         },
         "T3": {
-          "delta_pp": -2.5,
+          "delta_pp": -2.0833,
           "paired_95_ci_pp": [
-            -7.4,
-            2.4
+            -6.1667,
+            2.0
           ],
           "improvements": 0,
           "regressions": 1
@@ -486,7 +447,7 @@
     },
     {
       "trial": "screen20",
-      "n": 40,
+      "n": 48,
       "old_card": "Voltaic Key",
       "new_card": "Plains",
       "from_arm": "full_prism_voltaic_boulder",
@@ -504,19 +465,19 @@
           "regressions": 0
         },
         "T2": {
-          "delta_pp": 0.0,
+          "delta_pp": 2.0833,
           "paired_95_ci_pp": [
-            0.0,
-            0.0
+            -2.0,
+            6.1667
           ],
-          "improvements": 0,
+          "improvements": 1,
           "regressions": 0
         },
         "T3": {
-          "delta_pp": -5.0,
+          "delta_pp": -4.1667,
           "paired_95_ci_pp": [
-            -11.8402,
-            1.8402
+            -9.8796,
+            1.5463
           ],
           "improvements": 0,
           "regressions": 2
@@ -525,7 +486,7 @@
     },
     {
       "trial": "screen20",
-      "n": 40,
+      "n": 48,
       "old_card": "Giant's Boulder",
       "new_card": "Manifold Key",
       "from_arm": "full_prism_voltaic_boulder",
@@ -534,28 +495,28 @@
       "background_land_count_to": 34,
       "metrics": {
         "T1": {
-          "delta_pp": -2.5,
+          "delta_pp": -2.0833,
           "paired_95_ci_pp": [
-            -7.4,
-            2.4
+            -6.1667,
+            2.0
           ],
           "improvements": 0,
           "regressions": 1
         },
         "T2": {
-          "delta_pp": 0.0,
+          "delta_pp": 2.0833,
           "paired_95_ci_pp": [
-            -7.0179,
-            7.0179
+            -5.0392,
+            9.2059
           ],
-          "improvements": 1,
+          "improvements": 2,
           "regressions": 1
         },
         "T3": {
-          "delta_pp": -2.5,
+          "delta_pp": -2.0833,
           "paired_95_ci_pp": [
-            -7.4,
-            2.4
+            -6.1667,
+            2.0
           ],
           "improvements": 0,
           "regressions": 1
@@ -564,124 +525,7 @@
     },
     {
       "trial": "screen20",
-      "n": 40,
-      "old_card": "Candelabra of Tawnos",
-      "new_card": "Plains",
-      "from_arm": "full_prism_candelabra_boulder",
-      "to_arm": "full_35lands_instead_voltaic",
-      "background_land_count_from": 34,
-      "background_land_count_to": 35,
-      "metrics": {
-        "T1": {
-          "delta_pp": 2.5,
-          "paired_95_ci_pp": [
-            -2.4,
-            7.4
-          ],
-          "improvements": 1,
-          "regressions": 0
-        },
-        "T2": {
-          "delta_pp": 0.0,
-          "paired_95_ci_pp": [
-            0.0,
-            0.0
-          ],
-          "improvements": 0,
-          "regressions": 0
-        },
-        "T3": {
-          "delta_pp": 0.0,
-          "paired_95_ci_pp": [
-            0.0,
-            0.0
-          ],
-          "improvements": 0,
-          "regressions": 0
-        }
-      }
-    },
-    {
-      "trial": "screen20",
-      "n": 40,
-      "old_card": "Basalt Monolith",
-      "new_card": "Manifold Key",
-      "from_arm": "full_basalt_instead_boulder",
-      "to_arm": "full_2keys_instead_boulder",
-      "background_land_count_from": 34,
-      "background_land_count_to": 34,
-      "metrics": {
-        "T1": {
-          "delta_pp": -2.5,
-          "paired_95_ci_pp": [
-            -7.4,
-            2.4
-          ],
-          "improvements": 0,
-          "regressions": 1
-        },
-        "T2": {
-          "delta_pp": 0.0,
-          "paired_95_ci_pp": [
-            -7.0179,
-            7.0179
-          ],
-          "improvements": 1,
-          "regressions": 1
-        },
-        "T3": {
-          "delta_pp": 0.0,
-          "paired_95_ci_pp": [
-            0.0,
-            0.0
-          ],
-          "improvements": 0,
-          "regressions": 0
-        }
-      }
-    },
-    {
-      "trial": "screen20",
-      "n": 40,
-      "old_card": "Manifold Key",
-      "new_card": "Lunarch Mantle",
-      "from_arm": "full_3keys_instead_tooth",
-      "to_arm": "full_preserve_mantle",
-      "background_land_count_from": 34,
-      "background_land_count_to": 34,
-      "metrics": {
-        "T1": {
-          "delta_pp": 0.0,
-          "paired_95_ci_pp": [
-            0.0,
-            0.0
-          ],
-          "improvements": 0,
-          "regressions": 0
-        },
-        "T2": {
-          "delta_pp": 0.0,
-          "paired_95_ci_pp": [
-            0.0,
-            0.0
-          ],
-          "improvements": 0,
-          "regressions": 0
-        },
-        "T3": {
-          "delta_pp": 5.0,
-          "paired_95_ci_pp": [
-            -4.8,
-            14.8
-          ],
-          "improvements": 3,
-          "regressions": 1
-        }
-      }
-    },
-    {
-      "trial": "screen20",
-      "n": 40,
+      "n": 48,
       "old_card": "Giant's Boulder",
       "new_card": "Lunarch Mantle",
       "from_arm": "full_3keys_instead_tooth",
@@ -690,28 +534,28 @@
       "background_land_count_to": 34,
       "metrics": {
         "T1": {
-          "delta_pp": -2.5,
+          "delta_pp": -2.0833,
           "paired_95_ci_pp": [
-            -7.4,
-            2.4
+            -6.1667,
+            2.0
           ],
           "improvements": 0,
           "regressions": 1
         },
         "T2": {
-          "delta_pp": 0.0,
+          "delta_pp": 2.0833,
           "paired_95_ci_pp": [
-            -7.0179,
-            7.0179
+            -5.0392,
+            9.2059
           ],
-          "improvements": 1,
+          "improvements": 2,
           "regressions": 1
         },
         "T3": {
-          "delta_pp": 2.5,
+          "delta_pp": 2.0833,
           "paired_95_ci_pp": [
-            -6.0593,
-            11.0593
+            -5.0392,
+            9.2059
           ],
           "improvements": 2,
           "regressions": 1
@@ -720,7 +564,7 @@
     },
     {
       "trial": "screen20",
-      "n": 40,
+      "n": 48,
       "old_card": "Giant's Boulder",
       "new_card": "Manifold Key",
       "from_arm": "full_preserve_mantle",
@@ -729,28 +573,28 @@
       "background_land_count_to": 34,
       "metrics": {
         "T1": {
-          "delta_pp": -2.5,
+          "delta_pp": -2.0833,
           "paired_95_ci_pp": [
-            -7.4,
-            2.4
+            -6.1667,
+            2.0
           ],
           "improvements": 0,
           "regressions": 1
         },
         "T2": {
-          "delta_pp": 0.0,
+          "delta_pp": 2.0833,
           "paired_95_ci_pp": [
-            -7.0179,
-            7.0179
+            -5.0392,
+            9.2059
           ],
-          "improvements": 1,
+          "improvements": 2,
           "regressions": 1
         },
         "T3": {
-          "delta_pp": -2.5,
+          "delta_pp": -2.0833,
           "paired_95_ci_pp": [
-            -11.0593,
-            6.0593
+            -9.2059,
+            5.0392
           ],
           "improvements": 1,
           "regressions": 2
@@ -759,85 +603,46 @@
     },
     {
       "trial": "screen20",
-      "n": 40,
-      "old_card": "Manifold Key",
-      "new_card": "Candelabra of Tawnos",
-      "from_arm": "current_2keys",
-      "to_arm": "current_voltaic_candelabra",
-      "background_land_count_from": 34,
-      "background_land_count_to": 34,
-      "metrics": {
-        "T1": {
-          "delta_pp": 2.5,
-          "paired_95_ci_pp": [
-            -2.4,
-            7.4
-          ],
-          "improvements": 1,
-          "regressions": 0
-        },
-        "T2": {
-          "delta_pp": 0.0,
-          "paired_95_ci_pp": [
-            0.0,
-            0.0
-          ],
-          "improvements": 0,
-          "regressions": 0
-        },
-        "T3": {
-          "delta_pp": -5.0,
-          "paired_95_ci_pp": [
-            -11.8402,
-            1.8402
-          ],
-          "improvements": 0,
-          "regressions": 2
-        }
-      }
-    },
-    {
-      "trial": "screen20",
-      "n": 40,
-      "old_card": "Implements of Sacrifice",
+      "n": 48,
+      "old_card": "Hardlight Containment",
       "new_card": "Pentad Prism",
-      "from_arm": "current",
-      "to_arm": "prism_only",
+      "from_arm": "legal_four_rainbow",
+      "to_arm": "four_rainbow_plus_prism",
       "background_land_count_from": 34,
       "background_land_count_to": 34,
       "metrics": {
         "T1": {
-          "delta_pp": -2.5,
+          "delta_pp": -2.0833,
           "paired_95_ci_pp": [
-            -7.4,
-            2.4
+            -6.1667,
+            2.0
           ],
           "improvements": 0,
           "regressions": 1
         },
         "T2": {
-          "delta_pp": -2.5,
+          "delta_pp": 0.0,
           "paired_95_ci_pp": [
-            -7.4,
-            2.4
+            -5.8358,
+            5.8358
           ],
-          "improvements": 0,
+          "improvements": 1,
           "regressions": 1
         },
         "T3": {
-          "delta_pp": -7.5,
+          "delta_pp": 6.25,
           "paired_95_ci_pp": [
-            -15.7666,
-            0.7666
+            -0.6704,
+            13.1704
           ],
-          "improvements": 0,
-          "regressions": 3
+          "improvements": 3,
+          "regressions": 0
         }
       }
     },
     {
       "trial": "screen20",
-      "n": 40,
+      "n": 48,
       "old_card": "Lunarch Mantle",
       "new_card": "Candelabra of Tawnos",
       "from_arm": "four_rainbow_plus_prism",
@@ -855,19 +660,19 @@
           "regressions": 0
         },
         "T2": {
-          "delta_pp": -2.5,
+          "delta_pp": 0.0,
           "paired_95_ci_pp": [
-            -7.4,
-            2.4
+            -5.8358,
+            5.8358
           ],
-          "improvements": 0,
+          "improvements": 1,
           "regressions": 1
         },
         "T3": {
           "delta_pp": 0.0,
           "paired_95_ci_pp": [
-            -7.0179,
-            7.0179
+            -5.8358,
+            5.8358
           ],
           "improvements": 1,
           "regressions": 1
@@ -876,7 +681,7 @@
     },
     {
       "trial": "screen20",
-      "n": 40,
+      "n": 48,
       "old_card": "Pentad Prism",
       "new_card": "Basalt Monolith",
       "from_arm": "full_prism_voltaic_boulder",
@@ -894,19 +699,19 @@
           "regressions": 0
         },
         "T2": {
-          "delta_pp": -2.5,
+          "delta_pp": 0.0,
           "paired_95_ci_pp": [
-            -7.4,
-            2.4
+            -5.8358,
+            5.8358
           ],
-          "improvements": 0,
+          "improvements": 1,
           "regressions": 1
         },
         "T3": {
-          "delta_pp": -7.5,
+          "delta_pp": -6.25,
           "paired_95_ci_pp": [
-            -18.3438,
-            3.3438
+            -15.3026,
+            2.8026
           ],
           "improvements": 1,
           "regressions": 4
@@ -915,7 +720,202 @@
     },
     {
       "trial": "screen20",
-      "n": 40,
+      "n": 48,
+      "old_card": "Candelabra of Tawnos",
+      "new_card": "Plains",
+      "from_arm": "full_prism_candelabra_boulder",
+      "to_arm": "full_35lands_instead_voltaic",
+      "background_land_count_from": 34,
+      "background_land_count_to": 35,
+      "metrics": {
+        "T1": {
+          "delta_pp": 2.0833,
+          "paired_95_ci_pp": [
+            -2.0,
+            6.1667
+          ],
+          "improvements": 1,
+          "regressions": 0
+        },
+        "T2": {
+          "delta_pp": 0.0,
+          "paired_95_ci_pp": [
+            0.0,
+            0.0
+          ],
+          "improvements": 0,
+          "regressions": 0
+        },
+        "T3": {
+          "delta_pp": 0.0,
+          "paired_95_ci_pp": [
+            0.0,
+            0.0
+          ],
+          "improvements": 0,
+          "regressions": 0
+        }
+      }
+    },
+    {
+      "trial": "screen20",
+      "n": 48,
+      "old_card": "Basalt Monolith",
+      "new_card": "Manifold Key",
+      "from_arm": "full_basalt_instead_boulder",
+      "to_arm": "full_2keys_instead_boulder",
+      "background_land_count_from": 34,
+      "background_land_count_to": 34,
+      "metrics": {
+        "T1": {
+          "delta_pp": -2.0833,
+          "paired_95_ci_pp": [
+            -6.1667,
+            2.0
+          ],
+          "improvements": 0,
+          "regressions": 1
+        },
+        "T2": {
+          "delta_pp": 0.0,
+          "paired_95_ci_pp": [
+            -5.8358,
+            5.8358
+          ],
+          "improvements": 1,
+          "regressions": 1
+        },
+        "T3": {
+          "delta_pp": 0.0,
+          "paired_95_ci_pp": [
+            0.0,
+            0.0
+          ],
+          "improvements": 0,
+          "regressions": 0
+        }
+      }
+    },
+    {
+      "trial": "screen20",
+      "n": 48,
+      "old_card": "Manifold Key",
+      "new_card": "Lunarch Mantle",
+      "from_arm": "full_3keys_instead_tooth",
+      "to_arm": "full_preserve_mantle",
+      "background_land_count_from": 34,
+      "background_land_count_to": 34,
+      "metrics": {
+        "T1": {
+          "delta_pp": 0.0,
+          "paired_95_ci_pp": [
+            0.0,
+            0.0
+          ],
+          "improvements": 0,
+          "regressions": 0
+        },
+        "T2": {
+          "delta_pp": 0.0,
+          "paired_95_ci_pp": [
+            0.0,
+            0.0
+          ],
+          "improvements": 0,
+          "regressions": 0
+        },
+        "T3": {
+          "delta_pp": 4.1667,
+          "paired_95_ci_pp": [
+            -4.0,
+            12.3333
+          ],
+          "improvements": 3,
+          "regressions": 1
+        }
+      }
+    },
+    {
+      "trial": "screen20",
+      "n": 48,
+      "old_card": "Manifold Key",
+      "new_card": "Candelabra of Tawnos",
+      "from_arm": "current_2keys",
+      "to_arm": "current_voltaic_candelabra",
+      "background_land_count_from": 34,
+      "background_land_count_to": 34,
+      "metrics": {
+        "T1": {
+          "delta_pp": 2.0833,
+          "paired_95_ci_pp": [
+            -2.0,
+            6.1667
+          ],
+          "improvements": 1,
+          "regressions": 0
+        },
+        "T2": {
+          "delta_pp": 0.0,
+          "paired_95_ci_pp": [
+            0.0,
+            0.0
+          ],
+          "improvements": 0,
+          "regressions": 0
+        },
+        "T3": {
+          "delta_pp": -4.1667,
+          "paired_95_ci_pp": [
+            -9.8796,
+            1.5463
+          ],
+          "improvements": 0,
+          "regressions": 2
+        }
+      }
+    },
+    {
+      "trial": "screen20",
+      "n": 48,
+      "old_card": "Implements of Sacrifice",
+      "new_card": "Pentad Prism",
+      "from_arm": "current",
+      "to_arm": "prism_only",
+      "background_land_count_from": 34,
+      "background_land_count_to": 34,
+      "metrics": {
+        "T1": {
+          "delta_pp": -2.0833,
+          "paired_95_ci_pp": [
+            -6.1667,
+            2.0
+          ],
+          "improvements": 0,
+          "regressions": 1
+        },
+        "T2": {
+          "delta_pp": -2.0833,
+          "paired_95_ci_pp": [
+            -6.1667,
+            2.0
+          ],
+          "improvements": 0,
+          "regressions": 1
+        },
+        "T3": {
+          "delta_pp": -6.25,
+          "paired_95_ci_pp": [
+            -13.1704,
+            0.6704
+          ],
+          "improvements": 0,
+          "regressions": 3
+        }
+      }
+    },
+    {
+      "trial": "screen20",
+      "n": 48,
       "old_card": "Tooth of Ramos",
       "new_card": "Manifold Key",
       "from_arm": "full_prism_voltaic_boulder",
@@ -933,19 +933,19 @@
           "regressions": 0
         },
         "T2": {
-          "delta_pp": -2.5,
+          "delta_pp": -2.0833,
           "paired_95_ci_pp": [
-            -7.4,
-            2.4
+            -6.1667,
+            2.0
           ],
           "improvements": 0,
           "regressions": 1
         },
         "T3": {
-          "delta_pp": -7.5,
+          "delta_pp": -6.25,
           "paired_95_ci_pp": [
-            -15.7666,
-            0.7666
+            -13.1704,
+            0.6704
           ],
           "improvements": 0,
           "regressions": 3
@@ -954,7 +954,7 @@
     },
     {
       "trial": "screen20",
-      "n": 40,
+      "n": 48,
       "old_card": "Tooth of Ramos",
       "new_card": "Lunarch Mantle",
       "from_arm": "full_prism_voltaic_boulder",
@@ -972,19 +972,19 @@
           "regressions": 0
         },
         "T2": {
-          "delta_pp": -2.5,
+          "delta_pp": -2.0833,
           "paired_95_ci_pp": [
-            -7.4,
-            2.4
+            -6.1667,
+            2.0
           ],
           "improvements": 0,
           "regressions": 1
         },
         "T3": {
-          "delta_pp": -2.5,
+          "delta_pp": -2.0833,
           "paired_95_ci_pp": [
-            -11.0593,
-            6.0593
+            -9.2059,
+            5.0392
           ],
           "improvements": 1,
           "regressions": 2
@@ -993,7 +993,7 @@
     },
     {
       "trial": "screen20",
-      "n": 40,
+      "n": 48,
       "old_card": "Giant's Boulder",
       "new_card": "Basalt Monolith",
       "from_arm": "full_prism_candelabra_boulder",
@@ -1011,19 +1011,19 @@
           "regressions": 0
         },
         "T2": {
-          "delta_pp": -2.5,
+          "delta_pp": -2.0833,
           "paired_95_ci_pp": [
-            -7.4,
-            2.4
+            -6.1667,
+            2.0
           ],
           "improvements": 0,
           "regressions": 1
         },
         "T3": {
-          "delta_pp": 5.0,
+          "delta_pp": 4.1667,
           "paired_95_ci_pp": [
-            -1.8402,
-            11.8402
+            -1.5463,
+            9.8796
           ],
           "improvements": 2,
           "regressions": 0
@@ -1032,7 +1032,7 @@
     },
     {
       "trial": "screen20",
-      "n": 40,
+      "n": 48,
       "old_card": "Pentad Prism",
       "new_card": "Giant's Boulder",
       "from_arm": "full_basalt_instead_boulder",
@@ -1050,19 +1050,19 @@
           "regressions": 0
         },
         "T2": {
-          "delta_pp": -2.5,
+          "delta_pp": -2.0833,
           "paired_95_ci_pp": [
-            -7.4,
-            2.4
+            -6.1667,
+            2.0
           ],
           "improvements": 0,
           "regressions": 1
         },
         "T3": {
-          "delta_pp": -5.0,
+          "delta_pp": -4.1667,
           "paired_95_ci_pp": [
-            -14.8,
-            4.8
+            -12.3333,
+            4.0
           ],
           "improvements": 1,
           "regressions": 3
@@ -1071,7 +1071,7 @@
     },
     {
       "trial": "screen20",
-      "n": 40,
+      "n": 48,
       "old_card": "Voltaic Key",
       "new_card": "Candelabra of Tawnos",
       "from_arm": "full_basalt_instead_boulder",
@@ -1080,28 +1080,28 @@
       "background_land_count_to": 34,
       "metrics": {
         "T1": {
-          "delta_pp": -2.5,
+          "delta_pp": -2.0833,
           "paired_95_ci_pp": [
-            -7.4,
-            2.4
+            -6.1667,
+            2.0
           ],
           "improvements": 0,
           "regressions": 1
         },
         "T2": {
-          "delta_pp": -2.5,
+          "delta_pp": -2.0833,
           "paired_95_ci_pp": [
-            -7.4,
-            2.4
+            -6.1667,
+            2.0
           ],
           "improvements": 0,
           "regressions": 1
         },
         "T3": {
-          "delta_pp": 2.5,
+          "delta_pp": 2.0833,
           "paired_95_ci_pp": [
-            -6.0593,
-            11.0593
+            -5.0392,
+            9.2059
           ],
           "improvements": 2,
           "regressions": 1
@@ -1110,46 +1110,7 @@
     },
     {
       "trial": "screen20",
-      "n": 40,
-      "old_card": "Tooth of Ramos",
-      "new_card": "Giant's Boulder",
-      "from_arm": "full_2keys_instead_boulder",
-      "to_arm": "full_3keys_instead_tooth",
-      "background_land_count_from": 34,
-      "background_land_count_to": 34,
-      "metrics": {
-        "T1": {
-          "delta_pp": 2.5,
-          "paired_95_ci_pp": [
-            -2.4,
-            7.4
-          ],
-          "improvements": 1,
-          "regressions": 0
-        },
-        "T2": {
-          "delta_pp": -2.5,
-          "paired_95_ci_pp": [
-            -11.0593,
-            6.0593
-          ],
-          "improvements": 1,
-          "regressions": 2
-        },
-        "T3": {
-          "delta_pp": -5.0,
-          "paired_95_ci_pp": [
-            -11.8402,
-            1.8402
-          ],
-          "improvements": 0,
-          "regressions": 2
-        }
-      }
-    },
-    {
-      "trial": "screen20",
-      "n": 40,
+      "n": 48,
       "old_card": "Tooth of Ramos",
       "new_card": "Lunarch Mantle",
       "from_arm": "full_2keys_instead_boulder",
@@ -1167,19 +1128,19 @@
           "regressions": 0
         },
         "T2": {
-          "delta_pp": -2.5,
+          "delta_pp": -2.0833,
           "paired_95_ci_pp": [
-            -7.4,
-            2.4
+            -6.1667,
+            2.0
           ],
           "improvements": 0,
           "regressions": 1
         },
         "T3": {
-          "delta_pp": -2.5,
+          "delta_pp": -2.0833,
           "paired_95_ci_pp": [
-            -7.4,
-            2.4
+            -6.1667,
+            2.0
           ],
           "improvements": 0,
           "regressions": 1
@@ -1188,7 +1149,7 @@
     },
     {
       "trial": "screen20",
-      "n": 40,
+      "n": 48,
       "old_card": "Voltaic Key",
       "new_card": "Lunarch Mantle",
       "from_arm": "full_candelabra_instead_tooth",
@@ -1206,19 +1167,19 @@
           "regressions": 0
         },
         "T2": {
-          "delta_pp": -2.5,
+          "delta_pp": -2.0833,
           "paired_95_ci_pp": [
-            -11.0593,
-            6.0593
+            -9.2059,
+            5.0392
           ],
           "improvements": 1,
           "regressions": 2
         },
         "T3": {
-          "delta_pp": 5.0,
+          "delta_pp": 4.1667,
           "paired_95_ci_pp": [
-            -1.8402,
-            11.8402
+            -1.5463,
+            9.8796
           ],
           "improvements": 2,
           "regressions": 0
@@ -1227,7 +1188,46 @@
     },
     {
       "trial": "screen20",
-      "n": 40,
+      "n": 48,
+      "old_card": "Tooth of Ramos",
+      "new_card": "Giant's Boulder",
+      "from_arm": "full_2keys_instead_boulder",
+      "to_arm": "full_3keys_instead_tooth",
+      "background_land_count_from": 34,
+      "background_land_count_to": 34,
+      "metrics": {
+        "T1": {
+          "delta_pp": 2.0833,
+          "paired_95_ci_pp": [
+            -2.0,
+            6.1667
+          ],
+          "improvements": 1,
+          "regressions": 0
+        },
+        "T2": {
+          "delta_pp": -4.1667,
+          "paired_95_ci_pp": [
+            -12.3333,
+            4.0
+          ],
+          "improvements": 1,
+          "regressions": 3
+        },
+        "T3": {
+          "delta_pp": -4.1667,
+          "paired_95_ci_pp": [
+            -9.8796,
+            1.5463
+          ],
+          "improvements": 0,
+          "regressions": 2
+        }
+      }
+    },
+    {
+      "trial": "screen20",
+      "n": 48,
       "old_card": "Manifold Key",
       "new_card": "Candelabra of Tawnos",
       "from_arm": "full_3keys_instead_tooth",
@@ -1245,19 +1245,19 @@
           "regressions": 0
         },
         "T2": {
-          "delta_pp": -7.5,
+          "delta_pp": -4.1667,
           "paired_95_ci_pp": [
-            -15.7666,
-            0.7666
+            -12.3333,
+            4.0
           ],
-          "improvements": 0,
+          "improvements": 1,
           "regressions": 3
         },
         "T3": {
-          "delta_pp": -2.5,
+          "delta_pp": -2.0833,
           "paired_95_ci_pp": [
-            -13.5685,
-            8.5685
+            -11.2913,
+            7.1247
           ],
           "improvements": 2,
           "regressions": 3
@@ -1266,7 +1266,7 @@
     },
     {
       "trial": "screen20",
-      "n": 40,
+      "n": 48,
       "old_card": "Tooth of Ramos",
       "new_card": "Candelabra of Tawnos",
       "from_arm": "full_prism_voltaic_boulder",
@@ -1284,19 +1284,19 @@
           "regressions": 0
         },
         "T2": {
-          "delta_pp": -10.0,
+          "delta_pp": -6.25,
           "paired_95_ci_pp": [
-            -19.4155,
-            -0.5845
+            -15.3026,
+            2.8026
           ],
-          "improvements": 0,
+          "improvements": 1,
           "regressions": 4
         },
         "T3": {
-          "delta_pp": -10.0,
+          "delta_pp": -8.3333,
           "paired_95_ci_pp": [
-            -19.4155,
-            -0.5845
+            -16.2351,
+            -0.4316
           ],
           "improvements": 0,
           "regressions": 4
@@ -1305,46 +1305,7 @@
     },
     {
       "trial": "screen20",
-      "n": 40,
-      "old_card": "Tooth of Ramos",
-      "new_card": "Voltaic Key",
-      "from_arm": "full_prism_candelabra_boulder",
-      "to_arm": "full_candelabra_instead_tooth",
-      "background_land_count_from": 34,
-      "background_land_count_to": 34,
-      "metrics": {
-        "T1": {
-          "delta_pp": 2.5,
-          "paired_95_ci_pp": [
-            -2.4,
-            7.4
-          ],
-          "improvements": 1,
-          "regressions": 0
-        },
-        "T2": {
-          "delta_pp": -10.0,
-          "paired_95_ci_pp": [
-            -19.4155,
-            -0.5845
-          ],
-          "improvements": 0,
-          "regressions": 4
-        },
-        "T3": {
-          "delta_pp": -5.0,
-          "paired_95_ci_pp": [
-            -14.8,
-            4.8
-          ],
-          "improvements": 1,
-          "regressions": 3
-        }
-      }
-    },
-    {
-      "trial": "screen20",
-      "n": 40,
+      "n": 48,
       "old_card": "Voltaic Key",
       "new_card": "Candelabra of Tawnos",
       "from_arm": "full_preserve_mantle",
@@ -1362,19 +1323,19 @@
           "regressions": 0
         },
         "T2": {
-          "delta_pp": -10.0,
+          "delta_pp": -6.25,
           "paired_95_ci_pp": [
-            -19.4155,
-            -0.5845
+            -15.3026,
+            2.8026
           ],
-          "improvements": 0,
+          "improvements": 1,
           "regressions": 4
         },
         "T3": {
-          "delta_pp": -2.5,
+          "delta_pp": -2.0833,
           "paired_95_ci_pp": [
-            -13.5685,
-            8.5685
+            -11.2913,
+            7.1247
           ],
           "improvements": 2,
           "regressions": 3
@@ -1383,7 +1344,46 @@
     },
     {
       "trial": "screen20",
-      "n": 40,
+      "n": 48,
+      "old_card": "Tooth of Ramos",
+      "new_card": "Voltaic Key",
+      "from_arm": "full_prism_candelabra_boulder",
+      "to_arm": "full_candelabra_instead_tooth",
+      "background_land_count_from": 34,
+      "background_land_count_to": 34,
+      "metrics": {
+        "T1": {
+          "delta_pp": 2.0833,
+          "paired_95_ci_pp": [
+            -2.0,
+            6.1667
+          ],
+          "improvements": 1,
+          "regressions": 0
+        },
+        "T2": {
+          "delta_pp": -8.3333,
+          "paired_95_ci_pp": [
+            -16.2351,
+            -0.4316
+          ],
+          "improvements": 0,
+          "regressions": 4
+        },
+        "T3": {
+          "delta_pp": -4.1667,
+          "paired_95_ci_pp": [
+            -12.3333,
+            4.0
+          ],
+          "improvements": 1,
+          "regressions": 3
+        }
+      }
+    },
+    {
+      "trial": "screen20",
+      "n": 48,
       "old_card": "Tooth of Ramos",
       "new_card": "Lunarch Mantle",
       "from_arm": "full_prism_candelabra_boulder",
@@ -1392,19 +1392,19 @@
       "background_land_count_to": 34,
       "metrics": {
         "T1": {
-          "delta_pp": 2.5,
+          "delta_pp": 2.0833,
           "paired_95_ci_pp": [
-            -2.4,
-            7.4
+            -2.0,
+            6.1667
           ],
           "improvements": 1,
           "regressions": 0
         },
         "T2": {
-          "delta_pp": -12.5,
+          "delta_pp": -10.4167,
           "paired_95_ci_pp": [
-            -22.8797,
-            -2.1203
+            -19.1501,
+            -1.6832
           ],
           "improvements": 0,
           "regressions": 5
@@ -1412,8 +1412,8 @@
         "T3": {
           "delta_pp": 0.0,
           "paired_95_ci_pp": [
-            -7.0179,
-            7.0179
+            -5.8358,
+            5.8358
           ],
           "improvements": 1,
           "regressions": 1
@@ -1425,7 +1425,7 @@
     {
       "card": "Tooth of Ramos",
       "role": "three-mana storage artifact",
-      "exploratory_context_weighted_T2_pp": 6.0714,
+      "exploratory_context_weighted_T2_pp": 5.0595,
       "matched_single_card_contexts": 7,
       "distinct_trial_sets": 1,
       "positive_contexts": 7,
@@ -1446,7 +1446,7 @@
     {
       "card": "Implements of Sacrifice",
       "role": "burst conversion",
-      "exploratory_context_weighted_T2_pp": 2.5,
+      "exploratory_context_weighted_T2_pp": 2.0833,
       "matched_single_card_contexts": 1,
       "distinct_trial_sets": 1,
       "positive_contexts": 1,
@@ -1459,34 +1459,30 @@
       "status": "EXPLORATORY_NOT_CONFIRMATORY"
     },
     {
-      "card": "Pentad Prism",
-      "role": "sunburst burst mana",
-      "exploratory_context_weighted_T2_pp": 1.25,
-      "matched_single_card_contexts": 4,
+      "card": "Plains",
+      "role": "basic land / slot baseline",
+      "exploratory_context_weighted_T2_pp": 1.0416,
+      "matched_single_card_contexts": 2,
       "distinct_trial_sets": 1,
-      "positive_contexts": 3,
-      "negative_contexts": 1,
-      "zero_contexts": 0,
+      "positive_contexts": 1,
+      "negative_contexts": 0,
+      "zero_contexts": 1,
       "backgrounds": [
-        "current",
-        "four_rainbow_plus_prism",
-        "full_basalt_instead_boulder",
-        "full_basalt_instead_prism",
-        "full_prism_voltaic_boulder",
-        "legal_four_rainbow",
-        "prism_only"
+        "full_35lands_instead_voltaic",
+        "full_prism_candelabra_boulder",
+        "full_prism_voltaic_boulder"
       ],
       "status": "EXPLORATORY_NOT_CONFIRMATORY"
     },
     {
       "card": "Manifold Key",
       "role": "artifact untapper",
-      "exploratory_context_weighted_T2_pp": 0.7143,
+      "exploratory_context_weighted_T2_pp": 0.8929,
       "matched_single_card_contexts": 7,
       "distinct_trial_sets": 1,
-      "positive_contexts": 1,
+      "positive_contexts": 3,
       "negative_contexts": 1,
-      "zero_contexts": 5,
+      "zero_contexts": 3,
       "backgrounds": [
         "current_2keys",
         "current_voltaic_candelabra",
@@ -1503,81 +1499,19 @@
     {
       "card": "Voltaic Key",
       "role": "artifact untapper",
-      "exploratory_context_weighted_T2_pp": 0.7143,
-      "matched_single_card_contexts": 7,
-      "distinct_trial_sets": 1,
-      "positive_contexts": 3,
-      "negative_contexts": 1,
-      "zero_contexts": 3,
-      "backgrounds": [
-        "four_rainbow_plus_prism",
-        "full_35lands_instead_voltaic",
-        "full_basalt_and_candelabra",
-        "full_basalt_instead_boulder",
-        "full_candelabra_instead_tooth",
-        "full_preserve_mantle",
-        "full_preserve_mantle_candelabra",
-        "full_prism_candelabra_boulder",
-        "full_prism_voltaic_boulder"
-      ],
-      "status": "EXPLORATORY_NOT_CONFIRMATORY"
-    },
-    {
-      "card": "Plains",
-      "role": "basic land / slot baseline",
       "exploratory_context_weighted_T2_pp": 0.0,
-      "matched_single_card_contexts": 2,
-      "distinct_trial_sets": 1,
-      "positive_contexts": 0,
-      "negative_contexts": 0,
-      "zero_contexts": 2,
-      "backgrounds": [
-        "full_35lands_instead_voltaic",
-        "full_prism_candelabra_boulder",
-        "full_prism_voltaic_boulder"
-      ],
-      "status": "EXPLORATORY_NOT_CONFIRMATORY"
-    },
-    {
-      "card": "Giant's Boulder",
-      "role": "small artifact ramp",
-      "exploratory_context_weighted_T2_pp": -0.3571,
       "matched_single_card_contexts": 7,
       "distinct_trial_sets": 1,
-      "positive_contexts": 1,
-      "negative_contexts": 2,
-      "zero_contexts": 4,
-      "backgrounds": [
-        "full_2keys_instead_boulder",
-        "full_3keys_instead_tooth",
-        "full_basalt_and_candelabra",
-        "full_basalt_instead_boulder",
-        "full_basalt_instead_prism",
-        "full_preserve_mantle",
-        "full_preserve_mantle_2keys",
-        "full_prism_candelabra_boulder",
-        "full_prism_voltaic_boulder"
-      ],
-      "status": "EXPLORATORY_NOT_CONFIRMATORY"
-    },
-    {
-      "card": "Lunarch Mantle",
-      "role": "combo sacrifice outlet / flex slot",
-      "exploratory_context_weighted_T2_pp": -1.1111,
-      "matched_single_card_contexts": 9,
-      "distinct_trial_sets": 1,
-      "positive_contexts": 2,
-      "negative_contexts": 4,
-      "zero_contexts": 3,
+      "positive_contexts": 4,
+      "negative_contexts": 3,
+      "zero_contexts": 0,
       "backgrounds": [
         "four_rainbow_plus_prism",
-        "full_2keys_instead_boulder",
-        "full_3keys_instead_tooth",
+        "full_35lands_instead_voltaic",
         "full_basalt_and_candelabra",
         "full_basalt_instead_boulder",
         "full_candelabra_instead_tooth",
         "full_preserve_mantle",
-        "full_preserve_mantle_2keys",
         "full_preserve_mantle_candelabra",
         "full_prism_candelabra_boulder",
         "full_prism_voltaic_boulder"
@@ -1587,11 +1521,11 @@
     {
       "card": "Basalt Monolith",
       "role": "three-mana rock / untap engine",
-      "exploratory_context_weighted_T2_pp": -1.25,
+      "exploratory_context_weighted_T2_pp": 0.0,
       "matched_single_card_contexts": 4,
       "distinct_trial_sets": 1,
-      "positive_contexts": 0,
-      "negative_contexts": 2,
+      "positive_contexts": 1,
+      "negative_contexts": 1,
       "zero_contexts": 2,
       "backgrounds": [
         "full_2keys_instead_boulder",
@@ -1604,14 +1538,34 @@
       "status": "EXPLORATORY_NOT_CONFIRMATORY"
     },
     {
+      "card": "Pentad Prism",
+      "role": "sunburst burst mana",
+      "exploratory_context_weighted_T2_pp": 0.0,
+      "matched_single_card_contexts": 4,
+      "distinct_trial_sets": 1,
+      "positive_contexts": 1,
+      "negative_contexts": 1,
+      "zero_contexts": 2,
+      "backgrounds": [
+        "current",
+        "four_rainbow_plus_prism",
+        "full_basalt_instead_boulder",
+        "full_basalt_instead_prism",
+        "full_prism_voltaic_boulder",
+        "legal_four_rainbow",
+        "prism_only"
+      ],
+      "status": "EXPLORATORY_NOT_CONFIRMATORY"
+    },
+    {
       "card": "Hardlight Containment",
       "role": "combo-affecting flex slot",
-      "exploratory_context_weighted_T2_pp": -2.5,
+      "exploratory_context_weighted_T2_pp": 0.0,
       "matched_single_card_contexts": 1,
       "distinct_trial_sets": 1,
       "positive_contexts": 0,
-      "negative_contexts": 1,
-      "zero_contexts": 0,
+      "negative_contexts": 0,
+      "zero_contexts": 1,
       "backgrounds": [
         "four_rainbow_plus_prism",
         "legal_four_rainbow"
@@ -1619,13 +1573,59 @@
       "status": "EXPLORATORY_NOT_CONFIRMATORY"
     },
     {
-      "card": "Candelabra of Tawnos",
-      "role": "land untapper",
-      "exploratory_context_weighted_T2_pp": -4.4444,
+      "card": "Lunarch Mantle",
+      "role": "combo sacrifice outlet / flex slot",
+      "exploratory_context_weighted_T2_pp": -1.3889,
       "matched_single_card_contexts": 9,
       "distinct_trial_sets": 1,
-      "positive_contexts": 0,
+      "positive_contexts": 2,
+      "negative_contexts": 5,
+      "zero_contexts": 2,
+      "backgrounds": [
+        "four_rainbow_plus_prism",
+        "full_2keys_instead_boulder",
+        "full_3keys_instead_tooth",
+        "full_basalt_and_candelabra",
+        "full_basalt_instead_boulder",
+        "full_candelabra_instead_tooth",
+        "full_preserve_mantle",
+        "full_preserve_mantle_2keys",
+        "full_preserve_mantle_candelabra",
+        "full_prism_candelabra_boulder",
+        "full_prism_voltaic_boulder"
+      ],
+      "status": "EXPLORATORY_NOT_CONFIRMATORY"
+    },
+    {
+      "card": "Giant's Boulder",
+      "role": "small artifact ramp",
+      "exploratory_context_weighted_T2_pp": -1.7857,
+      "matched_single_card_contexts": 7,
+      "distinct_trial_sets": 1,
+      "positive_contexts": 1,
       "negative_contexts": 6,
+      "zero_contexts": 0,
+      "backgrounds": [
+        "full_2keys_instead_boulder",
+        "full_3keys_instead_tooth",
+        "full_basalt_and_candelabra",
+        "full_basalt_instead_boulder",
+        "full_basalt_instead_prism",
+        "full_preserve_mantle",
+        "full_preserve_mantle_2keys",
+        "full_prism_candelabra_boulder",
+        "full_prism_voltaic_boulder"
+      ],
+      "status": "EXPLORATORY_NOT_CONFIRMATORY"
+    },
+    {
+      "card": "Candelabra of Tawnos",
+      "role": "land untapper",
+      "exploratory_context_weighted_T2_pp": -2.3148,
+      "matched_single_card_contexts": 9,
+      "distinct_trial_sets": 1,
+      "positive_contexts": 1,
+      "negative_contexts": 5,
       "zero_contexts": 3,
       "backgrounds": [
         "current_2keys",
@@ -1686,17 +1686,17 @@
   "preliminary_card_effects_are_not_causal": true,
   "live_progress": {
     "screen20": {
-      "paired_games": 40,
+      "paired_games": 48,
       "expected_games": 256,
-      "complete_shards": 10,
+      "complete_shards": 12,
       "expected_shards": 64,
       "source_validated_full_pool": false,
       "eligible_for_provisional_ranking": true
     },
     "flex41": {
-      "paired_games": 8,
+      "paired_games": 14,
       "expected_games": 128,
-      "complete_shards": 4,
+      "complete_shards": 7,
       "expected_shards": 64,
       "source_validated_full_pool": false,
       "eligible_for_provisional_ranking": false
