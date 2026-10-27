@@ -4,8 +4,8 @@
 
 | Trial | Games recovered | Completed shards | Data status |
 |---|---:|---:|---|
-| screen20 | 104/256 | 26/64 | Partial exploratory evidence |
-| flex41 | 32/128 | 16/64 | Partial exploratory evidence |
+| screen20 | 112/256 | 28/64 | Partial exploratory evidence |
+| flex41 | 38/128 | 19/64 | Partial exploratory evidence |
 
 ---
 
@@ -16,25 +16,25 @@
 
 ## Live evidence status
 
-- **screen20**: PARTIAL_104_OF_256, 20 decks × 256 matched game IDs — https://github.com/herschelruskin/urza-state-solver/actions/runs/40444150025
-- **flex41**: PARTIAL_32_OF_128, 41 decks × 128 matched game IDs — https://github.com/herschelruskin/urza-state-solver/actions/runs/40445020227
+- **screen20**: PARTIAL_112_OF_256, 20 decks × 256 matched game IDs — https://github.com/herschelruskin/urza-state-solver/actions/runs/40444150025
+- **flex41**: PARTIAL_38_OF_128, 41 decks × 128 matched game IDs — https://github.com/herschelruskin/urza-state-solver/actions/runs/40445020227
 
 ## Ramp-card ranking (only controlled single-card comparisons)
 
 | Rank | Card | Observed context-weighted T2 signal (pp) | Matched contexts | Trial sets | Positive / negative contexts |
 |---:|---|---:|---:|---:|---:|
-| 1 | Tooth of Ramos | +2.13 | 18 | 2 | 11 / 6 |
-| 2 | Giant's Boulder | +1.83 | 32 | 2 | 18 / 7 |
-| 3 | Pentad Prism | +1.01 | 22 | 2 | 11 / 7 |
-| 4 | Hardlight Containment | +0.96 | 1 | 1 | 1 / 0 |
-| 5 | Implements of Sacrifice | +0.96 | 1 | 1 | 1 / 0 |
-| 6 | Manifold Key | +0.65 | 37 | 2 | 18 / 11 |
-| 7 | Plains | +0.22 | 52 | 2 | 18 / 19 |
-| 8 | Voltaic Key | -0.07 | 27 | 2 | 10 / 10 |
-| 9 | World Map | -0.32 | 29 | 1 | 12 / 11 |
-| 10 | Lunarch Mantle | -0.78 | 20 | 2 | 8 / 9 |
-| 11 | Basalt Monolith | -1.63 | 37 | 2 | 6 / 19 |
-| 12 | Candelabra of Tawnos | -2.82 | 24 | 2 | 3 / 18 |
+| 1 | Tooth of Ramos | +2.08 | 18 | 2 | 11 / 5 |
+| 2 | Giant's Boulder | +1.67 | 32 | 2 | 18 / 7 |
+| 3 | Plains | +1.08 | 52 | 2 | 24 / 17 |
+| 4 | Hardlight Containment | +0.89 | 1 | 1 | 1 / 0 |
+| 5 | Manifold Key | +0.73 | 37 | 2 | 19 / 10 |
+| 6 | Implements of Sacrifice | +0.00 | 1 | 1 | 0 / 0 |
+| 7 | Pentad Prism | -0.09 | 22 | 2 | 6 / 8 |
+| 8 | Voltaic Key | -0.65 | 27 | 2 | 8 / 13 |
+| 9 | World Map | -0.82 | 29 | 1 | 11 / 11 |
+| 10 | Lunarch Mantle | -0.91 | 20 | 2 | 7 / 10 |
+| 11 | Basalt Monolith | -1.12 | 37 | 2 | 10 / 18 |
+| 12 | Candelabra of Tawnos | -2.53 | 24 | 2 | 3 / 19 |
 
 **Interpretation:** The score averages results across the *observed replacement options and deck backgrounds*, not the intrinsic value of a card. Contexts share hands and games; the displayed score has **no valid pooled confidence interval**. Strong claims require a held-out card comparison.
 
@@ -42,36 +42,36 @@
 
 | New card over old | Background | Δ T2 (pp) | Paired 95% CI (pp) | n |
 |---|---|---:|---|---:|
-| Pentad Prism over Voltaic Key | flex41: current_map_to_voltaic_key → current_map_to_pentad_prism | +12.50 | +0.86 to +24.14 | 32 |
-| World Map over Basalt Monolith | flex41: current_map_to_voltaic_key → current_basalt_to_voltaic_key | +12.50 | -2.09 to +27.09 | 32 |
-| Pentad Prism over World Map | flex41: current → current_map_to_pentad_prism | +9.38 | -0.89 to +19.64 | 32 |
-| Pentad Prism over Basalt Monolith | flex41: current → current_basalt_to_pentad_prism | +9.38 | -4.14 to +22.89 | 32 |
-| Voltaic Key over Basalt Monolith | flex41: current → current_basalt_to_voltaic_key | +9.38 | -4.14 to +22.89 | 32 |
-| Plains over World Map | flex41: current33_pentad_prism → current_map_to_pentad_prism | +9.38 | -0.89 to +19.64 | 32 |
-| Plains over Basalt Monolith | flex41: current33_pentad_prism → current_basalt_to_pentad_prism | +9.38 | -4.14 to +22.89 | 32 |
-| Voltaic Key over Pentad Prism | flex41: full35_minus_voltaic_key → full35_minus_pentad_prism | +9.38 | -0.89 to +19.64 | 32 |
-| Giant's Boulder over Pentad Prism | flex41: full35_minus_giants_boulder → full35_minus_pentad_prism | +9.38 | -4.14 to +22.89 | 32 |
-| Plains over Voltaic Key | flex41: safe35_minus_giants_boulder → safe36_no_key_boulder | +9.38 | -0.89 to +19.64 | 32 |
-| Basalt Monolith over Plains | flex41: safe35_minus_giants_boulder → safe_boulder_to_basalt | +9.38 | -4.14 to +22.89 | 32 |
-| Manifold Key over Candelabra of Tawnos | flex41: current_basalt_to_candelabra_of_tawnos → current_basalt_to_manifold_key | +9.38 | -4.14 to +22.89 | 32 |
-| Plains over World Map | flex41: current → current35_minus_world_map | +6.25 | -6.00 to +18.50 | 32 |
-| Plains over Basalt Monolith | flex41: current → current35_minus_basalt_monolith | +6.25 | -8.83 to +21.33 | 32 |
-| Manifold Key over Basalt Monolith | flex41: current → current_basalt_to_manifold_key | +6.25 | -6.00 to +18.50 | 32 |
-| Giant's Boulder over Plains | flex41: full_double_keys → full33_manifold_key | +6.25 | -6.00 to +18.50 | 32 |
-| Giant's Boulder over World Map | flex41: full_double_keys → full_map_to_manifold_key | +6.25 | -6.00 to +18.50 | 32 |
-| Basalt Monolith over Plains | flex41: full_double_keys → full33_manifold_boulder_to_basalt | +6.25 | -6.00 to +18.50 | 32 |
-| Giant's Boulder over World Map | flex41: full_basalt_over_boulder → full_map_to_basalt_monolith | +6.25 | -6.00 to +18.50 | 32 |
-| Manifold Key over Plains | flex41: full_basalt_over_boulder → full33_manifold_boulder_to_basalt | +6.25 | -2.27 to +14.77 | 32 |
-| Plains over Basalt Monolith | flex41: current33_voltaic_key → current_basalt_to_voltaic_key | +6.25 | -6.00 to +18.50 | 32 |
-| Voltaic Key over World Map | flex41: full35_minus_voltaic_key → full35_minus_world_map | +6.25 | -2.27 to +14.77 | 32 |
-| Giant's Boulder over World Map | flex41: full35_minus_giants_boulder → full35_minus_world_map | +6.25 | -8.83 to +21.33 | 32 |
-| Lunarch Mantle over Candelabra of Tawnos | screen20: full_candelabra_instead_tooth → full_preserve_mantle | +3.85 | -0.73 to +8.43 | 104 |
-| Voltaic Key over Plains | flex41: current → current33_voltaic_key | +3.12 | -3.00 to +9.25 | 32 |
-| Manifold Key over Plains | flex41: current → current33_manifold_key | +3.12 | -3.00 to +9.25 | 32 |
-| Basalt Monolith over World Map | flex41: full_double_keys → full_map_to_basalt_boulder_to_manifold | +3.12 | -10.75 to +17.00 | 32 |
-| Giant's Boulder over Plains | flex41: full_basalt_over_boulder → full33_basalt_monolith | +3.12 | -10.75 to +17.00 | 32 |
-| Lunarch Mantle over Tooth of Ramos | flex41: full_basalt_over_boulder → safe_boulder_to_basalt | +3.12 | -10.75 to +17.00 | 32 |
-| Manifold Key over World Map | flex41: full_basalt_over_boulder → full_map_to_basalt_boulder_to_manifold | +3.12 | -7.60 to +13.85 | 32 |
+| Plains over World Map | flex41: current33_pentad_prism → current_map_to_pentad_prism | +10.53 | +0.64 to +20.42 | 38 |
+| Giant's Boulder over Pentad Prism | flex41: full35_minus_giants_boulder → full35_minus_pentad_prism | +10.53 | -1.82 to +22.87 | 38 |
+| Pentad Prism over Voltaic Key | flex41: current_map_to_voltaic_key → current_map_to_pentad_prism | +10.53 | +0.64 to +20.42 | 38 |
+| Pentad Prism over World Map | flex41: current → current_map_to_pentad_prism | +7.89 | -0.79 to +16.58 | 38 |
+| Plains over Basalt Monolith | flex41: current33_pentad_prism → current_basalt_to_pentad_prism | +7.89 | -3.51 to +19.30 | 38 |
+| Voltaic Key over Pentad Prism | flex41: full35_minus_voltaic_key → full35_minus_pentad_prism | +7.89 | -0.79 to +16.58 | 38 |
+| Giant's Boulder over World Map | flex41: full35_minus_giants_boulder → full35_minus_world_map | +7.89 | -5.70 to +21.49 | 38 |
+| Plains over Voltaic Key | flex41: safe35_minus_giants_boulder → safe36_no_key_boulder | +7.89 | -0.79 to +16.58 | 38 |
+| Basalt Monolith over Plains | flex41: safe35_minus_giants_boulder → safe_boulder_to_basalt | +7.89 | -3.51 to +19.30 | 38 |
+| World Map over Basalt Monolith | flex41: current_map_to_voltaic_key → current_basalt_to_voltaic_key | +7.89 | -5.70 to +21.49 | 38 |
+| Manifold Key over Candelabra of Tawnos | flex41: current_basalt_to_candelabra_of_tawnos → current_basalt_to_manifold_key | +7.89 | -3.51 to +19.30 | 38 |
+| Plains over World Map | flex41: current → current35_minus_world_map | +5.26 | -5.05 to +15.58 | 38 |
+| Plains over Basalt Monolith | flex41: current → current35_minus_basalt_monolith | +5.26 | -7.43 to +17.95 | 38 |
+| Pentad Prism over Basalt Monolith | flex41: current → current_basalt_to_pentad_prism | +5.26 | -7.43 to +17.95 | 38 |
+| Voltaic Key over Basalt Monolith | flex41: current → current_basalt_to_voltaic_key | +5.26 | -7.43 to +17.95 | 38 |
+| Manifold Key over Basalt Monolith | flex41: current → current_basalt_to_manifold_key | +5.26 | -5.05 to +15.58 | 38 |
+| Giant's Boulder over World Map | flex41: full_double_keys → full_map_to_manifold_key | +5.26 | -5.05 to +15.58 | 38 |
+| Giant's Boulder over World Map | flex41: full_basalt_over_boulder → full_map_to_basalt_monolith | +5.26 | -5.05 to +15.58 | 38 |
+| Plains over World Map | flex41: full33_candelabra_of_tawnos → full_map_to_candelabra_of_tawnos | +5.26 | -7.43 to +17.95 | 38 |
+| Plains over World Map | flex41: full33_basalt_monolith → full_map_to_basalt_monolith | +5.26 | -7.43 to +17.95 | 38 |
+| Manifold Key over Pentad Prism | flex41: current33_pentad_prism → current33_manifold_key | +5.26 | -1.93 to +12.46 | 38 |
+| Voltaic Key over World Map | flex41: full35_minus_voltaic_key → full35_minus_world_map | +5.26 | -1.93 to +12.46 | 38 |
+| Lunarch Mantle over Candelabra of Tawnos | screen20: full_candelabra_instead_tooth → full_preserve_mantle | +2.68 | -1.95 to +7.30 | 112 |
+| Voltaic Key over Plains | flex41: current → current33_voltaic_key | +2.63 | -2.53 to +7.79 | 38 |
+| Manifold Key over Plains | flex41: current → current33_manifold_key | +2.63 | -2.53 to +7.79 | 38 |
+| Plains over Voltaic Key | flex41: full_preserve_mantle → safe35_minus_voltaic_key | +2.63 | -6.38 to +11.65 | 38 |
+| Basalt Monolith over Giant's Boulder | flex41: full_preserve_mantle → safe_boulder_to_basalt | +2.63 | -2.53 to +7.79 | 38 |
+| Giant's Boulder over Plains | flex41: full_double_keys → full33_manifold_key | +2.63 | -9.03 to +14.29 | 38 |
+| Basalt Monolith over Plains | flex41: full_double_keys → full33_manifold_boulder_to_basalt | +2.63 | -9.03 to +14.29 | 38 |
+| Lunarch Mantle over Tooth of Ramos | flex41: full_basalt_over_boulder → safe_boulder_to_basalt | +2.63 | -9.03 to +14.29 | 38 |
 
 ## Historical controls — Standard mulligans only
 
