@@ -1,0 +1,49 @@
+name: Dack Assertive Ramp Live Leaderboard Poller
+on:
+  push:
+    branches: [dack-assertive-ramp-card-leaderboard-20261026]
+    paths:
+      - 'dack_assertive_ramp_live_leaderboard.py'
+      - 'dack_assertive_ramp_live_monitor.sh'
+      - '.github/workflows/dack_assertive_ramp_live_leaderboard.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: dack-assertive-ramp-live-leaderboard
+  cancel-in-progress: false
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Source and independent seed integrity
+        run: |
+          python -m py_compile dack_assertive_ramp_live_leaderboard.py dack_assertive_ramp_card_leaderboard.py
+          python - <<'PY'
+          import dack_assertive_ramp_live_leaderboard as m
+          import dack_assertive_ramp_card_leaderboard as b
+          assert m.MIN_INTERIM_GAMES>=24
+          assert len(b.screen20.VARIANTS)==20 and len(b.flex41.VARIANTS)==41
+          assert b.screen20.SEED_BASE!=b.flex41.SEED_BASE
+          print('ASSERTIVE_RAMP_LIVE_SOURCES_PASS')
+          PY
+      - name: Poll completed matched shards and publish provenance-labeled exploratory rankings
+        run: bash dack_assertive_ramp_live_monitor.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-assertive-live-card-rankings
+          path: |
+            benchmark_results/dack_assertive_ramp_card_tracker.json
+            DACK_ASSERTIVE_RAMP_CARD_LEADERBOARD.md
+          retention-days: 90
+          if-no-files-found: warn
