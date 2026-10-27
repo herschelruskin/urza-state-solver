@@ -238,6 +238,10 @@ def pool(path,out):
                           -report["arms"][v]["T3_pct"],v))
     output=Path(out);output.parent.mkdir(parents=True,exist_ok=True)
     output.write_text(json.dumps(report,indent=2)+"\n")
+    raw_path=output.with_suffix(".raw.json.gz")
+    with gzip.open(raw_path,"wt",encoding="utf8") as f:
+        json.dump({"schema":SCHEMA,"deck_hashes":hashes,"seed_base":SEED_BASE,
+                   "rows":[rows[k] for k in sorted(rows)]},f,separators=(",",":"))
     print("ASSERTIVE_SCREEN_POOL",report["status"],"n",n,"missing",len(missing),
           "top_T2",report.get("rank_by_T2_then_T3",[])[:8],flush=True)
     assert not missing,("incomplete data",len(missing))
