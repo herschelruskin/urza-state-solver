@@ -1,0 +1,2540 @@
+{
+  "status": "PASS",
+  "schema": "dack_assertive_flexslots_33to36_n128_v1",
+  "planned_n": 128,
+  "validated_n": 128,
+  "missing_count": 0,
+  "missing_game_ids_first50": [],
+  "shards_found": 64,
+  "expected_shards": 64,
+  "seed_base": 99142610262358031,
+  "beam": 160,
+  "policy": "assertive",
+  "hashes": {
+    "current": "a1c8e05dc3f9e1bcfbfbe2f7773ea4a5e62222d3440dd2f7417fd7f2f058c422",
+    "full_prism_voltaic_boulder": "7920d7b9614ae4e205a02ae6b6eb18b29181269a5cf5323c5a44908c599f6787",
+    "full_preserve_mantle": "ce46ab290eb4cc95f402f88c5d771f6c29ec2703af4ccbd8d0472eabc7d3a618",
+    "full_double_keys": "1a0d343140d12df9880047b5ff1e9ac24b0698e640d5d4466715b180f3bcc3b2",
+    "full_basalt_over_boulder": "36b9e64df13a8ea135f5175e7adfcf021d8d4a749aba798e4efebff2514b05b5",
+    "full33_manifold_key": "4c44989f4d3d0ad1f327917ce4691c07cfa46bfdfa5c6311da1a7859b5faef4d",
+    "full33_candelabra_of_tawnos": "cae7ac257310508011f3a6b500bb9298bed16488cc57a6814248e5ffea8419ae",
+    "full33_basalt_monolith": "0cb2927ee97e8d4d651f30b74be771a17ea5f472963fb32a49a077770d0f9f8e",
+    "safe33_manifold_key": "107cc927bb7168445f5e96a20845819d67c8c36643057b8f8e324203cb34226c",
+    "safe33_candelabra_of_tawnos": "cee730c742fc9f142bb7c1533756ed85e223a1395deaf16bde84d9f243e89987",
+    "current33_voltaic_key": "151b4c245e23332b177413df36283de33f51e3cb73ed43676e9e5e6ef4b3a75c",
+    "current33_pentad_prism": "6919985654accb7df09e5be1b5da8199a4d2b7fee5955d9d054833c022fa9766",
+    "current33_manifold_key": "0e032a7aea1185807d8a82c81c6c3df8a9fb47b735e238ce4c5b20dd5beaeb85",
+    "full35_minus_voltaic_key": "213245cfc45a57d742a4835f48956a60f75b5b796f9875f27f3e9f525b8dd402",
+    "full35_minus_giants_boulder": "a1ec41fd846deb6c7010d05c5ea3076dbfe8e8ebcdd4861359f2b330c137a249",
+    "full35_minus_pentad_prism": "00593b503d1041924433300a4c51fa25be387d508bfc6ca0013ab7126c7d85ac",
+    "full35_minus_world_map": "54a7714f83732fdd5e9ad6dbcf62f3851d7798b55e8b73e8300798cce893a16a",
+    "safe35_minus_voltaic_key": "38e332e49ef3401410d02a854fd0e43affe8613233608a4b2a8b5dbccbb8b9af",
+    "safe35_minus_giants_boulder": "17197174ec3d53cf66b59a3460fddbb1fd7d57e9d4cbc52da5b5f78b1702b161",
+    "current35_minus_world_map": "0948b833ffa9cf4a6bde6d78cf6e4c36187b39c21cabdb47c743e1bd1fffcf70",
+    "current35_minus_basalt_monolith": "d3f153bf73428ebb0343c314acb46a296029002e9bab8e053c7c9ac66f97f476",
+    "full36_no_key_boulder": "359928c7d17b49ab331670c40a2731a5e94332a746f1887cd63a1dac70c8595e",
+    "safe36_no_key_boulder": "a8d97303f2a790099c46aaa3480efea26b1f21d742d90d93b4befed119c57dc2",
+    "full_map_to_manifold_key": "3f776913acb18a69286ec38c77790105895e41db8aca7892964bcccfc7ec7302",
+    "full_map_to_candelabra_of_tawnos": "2a7c1874e0b3264877c4bb047b2093b0247b8d2da5a6e74d4d4d055d9d5774ba",
+    "full_map_to_basalt_monolith": "d35ebb93412d5e447e6d1d8d3bf5403ba9e4032dc96824ae0a6def9cf25fb5e4",
+    "safe_map_to_manifold_key": "6f69a1697fb65821526dc54b8369ea885f8ce56a62da88aa25ef7d1dadf4e68c",
+    "safe_map_to_basalt_monolith": "3049421ca985761fea58cc8d78f15e371e64a3b707b8b6563174129f12714b28",
+    "current_map_to_voltaic_key": "ac77ac2c4179a6f8584c39e9fbff1f1553199a4480348fe8dfc6b3154b5200dd",
+    "current_map_to_pentad_prism": "2ae67b751a9f929582fbccf2521d69fc947fa8b72fc553fb3972a0a5fc4ad047",
+    "current_basalt_to_pentad_prism": "807faedd6c027d9c596dba95df4cc82b577b8ec46181881016590d366da570e2",
+    "current_basalt_to_voltaic_key": "c6b9232a55ccbf06f52d7f3adebc1de331244c88cbbda1d5164655f0ff850469",
+    "current_basalt_to_candelabra_of_tawnos": "0d7d65c379bf3f4f43e4820ee531ef9115cb53033abfe553d6a46e31ab620cbb",
+    "current_basalt_to_manifold_key": "832272b9c102bbdb68979d1e4d291beb5e0d5405b3c03a3da12172132e59c53d",
+    "safe_boulder_to_basalt": "673fd00051ce93e73b7b4dec54da6d963caa573429721dd76fbc033566e456e5",
+    "safe_prism_to_basalt": "de8ea5211e94cc7c7605cd8ae48d164567cdc62a907155d22b2691364bffc027",
+    "safe_boulder_to_manifold": "3fd6988d77344d367ea2d8e16553279d779a5bcddeba95b67387cf2866df41f7",
+    "full_basalt_plus_candelabra": "846fce598c47ec53d45a77f87a6bbd3623cc16dcc1544969cab69d7afb4b8ea9",
+    "full_map_to_basalt_boulder_to_manifold": "2e94703b971e82a37f7d59395299f07fb892c404cff3719f297ff39f0ff6545d",
+    "full33_manifold_boulder_to_basalt": "62c14af76467964c4a3917cd7d9f25e59e821b8d1a1a5cf6fbbb1b936fd7de04",
+    "safe33_manifold_boulder_to_basalt": "003198b9e57602b48672ca7e2194814c8a78ef0d9bbfb824ecfbdbaf6a4c201b"
+  },
+  "arms": {
+    "current": {
+      "nominal_lands": 34,
+      "retains_mantle": true,
+      "retains_world_map": true,
+      "retains_basalt": true,
+      "in": [],
+      "out": [],
+      "counts": {
+        "0": 18,
+        "1": 8,
+        "2": 61,
+        "3": 41
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 53.9062,
+      "T3_pct": 85.9375,
+      "weighted_T2_plus_half_exact_T3_pct": 69.9219,
+      "mean_keep": 5.3672
+    },
+    "full_prism_voltaic_boulder": {
+      "nominal_lands": 34,
+      "retains_mantle": false,
+      "retains_world_map": true,
+      "retains_basalt": false,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Basalt Monolith",
+        "Hardlight Containment",
+        "Lunarch Mantle",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "counts": {
+        "0": 17,
+        "1": 8,
+        "2": 69,
+        "3": 34
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 60.1562,
+      "T3_pct": 86.7188,
+      "weighted_T2_plus_half_exact_T3_pct": 73.4375,
+      "mean_keep": 5.2266
+    },
+    "full_preserve_mantle": {
+      "nominal_lands": 34,
+      "retains_mantle": true,
+      "retains_world_map": true,
+      "retains_basalt": false,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Basalt Monolith",
+        "Hardlight Containment",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos"
+      ],
+      "counts": {
+        "0": 17,
+        "1": 8,
+        "2": 65,
+        "3": 38
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 57.0312,
+      "T3_pct": 86.7188,
+      "weighted_T2_plus_half_exact_T3_pct": 71.875,
+      "mean_keep": 5.2109
+    },
+    "full_double_keys": {
+      "nominal_lands": 34,
+      "retains_mantle": false,
+      "retains_world_map": true,
+      "retains_basalt": false,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Manifold Key",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Basalt Monolith",
+        "Hardlight Containment",
+        "Lunarch Mantle",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "counts": {
+        "0": 21,
+        "1": 7,
+        "2": 62,
+        "3": 38
+      },
+      "T1_pct": 5.4688,
+      "T2_pct": 53.9062,
+      "T3_pct": 83.5938,
+      "weighted_T2_plus_half_exact_T3_pct": 68.75,
+      "mean_keep": 5.2344
+    },
+    "full_basalt_over_boulder": {
+      "nominal_lands": 34,
+      "retains_mantle": false,
+      "retains_world_map": true,
+      "retains_basalt": true,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Hardlight Containment",
+        "Lunarch Mantle",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "counts": {
+        "0": 16,
+        "1": 6,
+        "2": 67,
+        "3": 39
+      },
+      "T1_pct": 4.6875,
+      "T2_pct": 57.0312,
+      "T3_pct": 87.5,
+      "weighted_T2_plus_half_exact_T3_pct": 72.2656,
+      "mean_keep": 5.3516
+    },
+    "full33_manifold_key": {
+      "nominal_lands": 33,
+      "retains_mantle": false,
+      "retains_world_map": true,
+      "retains_basalt": false,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Manifold Key",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Basalt Monolith",
+        "Hardlight Containment",
+        "Lunarch Mantle",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "counts": {
+        "0": 19,
+        "1": 8,
+        "2": 68,
+        "3": 33
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 59.375,
+      "T3_pct": 85.1562,
+      "weighted_T2_plus_half_exact_T3_pct": 72.2656,
+      "mean_keep": 5.2031
+    },
+    "full33_candelabra_of_tawnos": {
+      "nominal_lands": 33,
+      "retains_mantle": false,
+      "retains_world_map": true,
+      "retains_basalt": false,
+      "in": [
+        "Candelabra of Tawnos",
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Basalt Monolith",
+        "Hardlight Containment",
+        "Lunarch Mantle",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "counts": {
+        "0": 21,
+        "1": 9,
+        "2": 59,
+        "3": 39
+      },
+      "T1_pct": 7.0312,
+      "T2_pct": 53.125,
+      "T3_pct": 83.5938,
+      "weighted_T2_plus_half_exact_T3_pct": 68.3594,
+      "mean_keep": 5.2188
+    },
+    "full33_basalt_monolith": {
+      "nominal_lands": 33,
+      "retains_mantle": false,
+      "retains_world_map": true,
+      "retains_basalt": true,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Hardlight Containment",
+        "Lunarch Mantle",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "counts": {
+        "0": 20,
+        "1": 9,
+        "2": 62,
+        "3": 37
+      },
+      "T1_pct": 7.0312,
+      "T2_pct": 55.4688,
+      "T3_pct": 84.375,
+      "weighted_T2_plus_half_exact_T3_pct": 69.9219,
+      "mean_keep": 5.2578
+    },
+    "safe33_manifold_key": {
+      "nominal_lands": 33,
+      "retains_mantle": true,
+      "retains_world_map": true,
+      "retains_basalt": false,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Manifold Key",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Basalt Monolith",
+        "Hardlight Containment",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos"
+      ],
+      "counts": {
+        "0": 20,
+        "1": 9,
+        "2": 62,
+        "3": 37
+      },
+      "T1_pct": 7.0312,
+      "T2_pct": 55.4688,
+      "T3_pct": 84.375,
+      "weighted_T2_plus_half_exact_T3_pct": 69.9219,
+      "mean_keep": 5.2812
+    },
+    "safe33_candelabra_of_tawnos": {
+      "nominal_lands": 33,
+      "retains_mantle": true,
+      "retains_world_map": true,
+      "retains_basalt": false,
+      "in": [
+        "Candelabra of Tawnos",
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Basalt Monolith",
+        "Hardlight Containment",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos"
+      ],
+      "counts": {
+        "0": 23,
+        "1": 9,
+        "2": 59,
+        "3": 37
+      },
+      "T1_pct": 7.0312,
+      "T2_pct": 53.125,
+      "T3_pct": 82.0312,
+      "weighted_T2_plus_half_exact_T3_pct": 67.5781,
+      "mean_keep": 5.1719
+    },
+    "current33_voltaic_key": {
+      "nominal_lands": 33,
+      "retains_mantle": true,
+      "retains_world_map": true,
+      "retains_basalt": true,
+      "in": [
+        "Voltaic Key"
+      ],
+      "out": [
+        "Plains"
+      ],
+      "counts": {
+        "0": 17,
+        "1": 7,
+        "2": 61,
+        "3": 43
+      },
+      "T1_pct": 5.4688,
+      "T2_pct": 53.125,
+      "T3_pct": 86.7188,
+      "weighted_T2_plus_half_exact_T3_pct": 69.9219,
+      "mean_keep": 5.3594
+    },
+    "current33_pentad_prism": {
+      "nominal_lands": 33,
+      "retains_mantle": true,
+      "retains_world_map": true,
+      "retains_basalt": true,
+      "in": [
+        "Pentad Prism"
+      ],
+      "out": [
+        "Plains"
+      ],
+      "counts": {
+        "0": 17,
+        "1": 8,
+        "2": 57,
+        "3": 46
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 50.7812,
+      "T3_pct": 86.7188,
+      "weighted_T2_plus_half_exact_T3_pct": 68.75,
+      "mean_keep": 5.3281
+    },
+    "current33_manifold_key": {
+      "nominal_lands": 33,
+      "retains_mantle": true,
+      "retains_world_map": true,
+      "retains_basalt": true,
+      "in": [
+        "Manifold Key"
+      ],
+      "out": [
+        "Plains"
+      ],
+      "counts": {
+        "0": 12,
+        "1": 6,
+        "2": 69,
+        "3": 41
+      },
+      "T1_pct": 4.6875,
+      "T2_pct": 58.5938,
+      "T3_pct": 90.625,
+      "weighted_T2_plus_half_exact_T3_pct": 74.6094,
+      "mean_keep": 5.4375
+    },
+    "full35_minus_voltaic_key": {
+      "nominal_lands": 35,
+      "retains_mantle": false,
+      "retains_world_map": true,
+      "retains_basalt": false,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Pentad Prism"
+      ],
+      "out": [
+        "Basalt Monolith",
+        "Hardlight Containment",
+        "Lunarch Mantle",
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "counts": {
+        "0": 18,
+        "1": 7,
+        "2": 64,
+        "3": 39
+      },
+      "T1_pct": 5.4688,
+      "T2_pct": 55.4688,
+      "T3_pct": 85.9375,
+      "weighted_T2_plus_half_exact_T3_pct": 70.7031,
+      "mean_keep": 5.3125
+    },
+    "full35_minus_giants_boulder": {
+      "nominal_lands": 35,
+      "retains_mantle": false,
+      "retains_world_map": true,
+      "retains_basalt": false,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Basalt Monolith",
+        "Hardlight Containment",
+        "Lunarch Mantle",
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "counts": {
+        "0": 19,
+        "1": 9,
+        "2": 62,
+        "3": 38
+      },
+      "T1_pct": 7.0312,
+      "T2_pct": 55.4688,
+      "T3_pct": 85.1562,
+      "weighted_T2_plus_half_exact_T3_pct": 70.3125,
+      "mean_keep": 5.2266
+    },
+    "full35_minus_pentad_prism": {
+      "nominal_lands": 35,
+      "retains_mantle": false,
+      "retains_world_map": true,
+      "retains_basalt": false,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Basalt Monolith",
+        "Hardlight Containment",
+        "Lunarch Mantle",
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "counts": {
+        "0": 16,
+        "1": 8,
+        "2": 70,
+        "3": 34
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 60.9375,
+      "T3_pct": 87.5,
+      "weighted_T2_plus_half_exact_T3_pct": 74.2188,
+      "mean_keep": 5.3203
+    },
+    "full35_minus_world_map": {
+      "nominal_lands": 35,
+      "retains_mantle": false,
+      "retains_world_map": false,
+      "retains_basalt": false,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Basalt Monolith",
+        "Hardlight Containment",
+        "Lunarch Mantle",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "counts": {
+        "0": 17,
+        "1": 9,
+        "2": 67,
+        "3": 35
+      },
+      "T1_pct": 7.0312,
+      "T2_pct": 59.375,
+      "T3_pct": 86.7188,
+      "weighted_T2_plus_half_exact_T3_pct": 73.0469,
+      "mean_keep": 5.3125
+    },
+    "safe35_minus_voltaic_key": {
+      "nominal_lands": 35,
+      "retains_mantle": true,
+      "retains_world_map": true,
+      "retains_basalt": false,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Pentad Prism"
+      ],
+      "out": [
+        "Basalt Monolith",
+        "Hardlight Containment",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos"
+      ],
+      "counts": {
+        "0": 17,
+        "1": 8,
+        "2": 69,
+        "3": 34
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 60.1562,
+      "T3_pct": 86.7188,
+      "weighted_T2_plus_half_exact_T3_pct": 73.4375,
+      "mean_keep": 5.2969
+    },
+    "safe35_minus_giants_boulder": {
+      "nominal_lands": 35,
+      "retains_mantle": true,
+      "retains_world_map": true,
+      "retains_basalt": false,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Basalt Monolith",
+        "Hardlight Containment",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos"
+      ],
+      "counts": {
+        "0": 18,
+        "1": 7,
+        "2": 61,
+        "3": 42
+      },
+      "T1_pct": 5.4688,
+      "T2_pct": 53.125,
+      "T3_pct": 85.9375,
+      "weighted_T2_plus_half_exact_T3_pct": 69.5312,
+      "mean_keep": 5.2188
+    },
+    "current35_minus_world_map": {
+      "nominal_lands": 35,
+      "retains_mantle": true,
+      "retains_world_map": false,
+      "retains_basalt": true,
+      "in": [
+        "Plains"
+      ],
+      "out": [
+        "World Map"
+      ],
+      "counts": {
+        "0": 19,
+        "1": 7,
+        "2": 65,
+        "3": 37
+      },
+      "T1_pct": 5.4688,
+      "T2_pct": 56.25,
+      "T3_pct": 85.1562,
+      "weighted_T2_plus_half_exact_T3_pct": 70.7031,
+      "mean_keep": 5.3672
+    },
+    "current35_minus_basalt_monolith": {
+      "nominal_lands": 35,
+      "retains_mantle": true,
+      "retains_world_map": true,
+      "retains_basalt": false,
+      "in": [
+        "Plains"
+      ],
+      "out": [
+        "Basalt Monolith"
+      ],
+      "counts": {
+        "0": 19,
+        "1": 9,
+        "2": 65,
+        "3": 35
+      },
+      "T1_pct": 7.0312,
+      "T2_pct": 57.8125,
+      "T3_pct": 85.1562,
+      "weighted_T2_plus_half_exact_T3_pct": 71.4844,
+      "mean_keep": 5.3047
+    },
+    "full36_no_key_boulder": {
+      "nominal_lands": 36,
+      "retains_mantle": false,
+      "retains_world_map": true,
+      "retains_basalt": false,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism"
+      ],
+      "out": [
+        "Basalt Monolith",
+        "Hardlight Containment",
+        "Lunarch Mantle",
+        "Plains",
+        "Plains"
+      ],
+      "counts": {
+        "0": 13,
+        "1": 7,
+        "2": 62,
+        "3": 46
+      },
+      "T1_pct": 5.4688,
+      "T2_pct": 53.9062,
+      "T3_pct": 89.8438,
+      "weighted_T2_plus_half_exact_T3_pct": 71.875,
+      "mean_keep": 5.2656
+    },
+    "safe36_no_key_boulder": {
+      "nominal_lands": 36,
+      "retains_mantle": true,
+      "retains_world_map": true,
+      "retains_basalt": false,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism"
+      ],
+      "out": [
+        "Basalt Monolith",
+        "Hardlight Containment",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos"
+      ],
+      "counts": {
+        "0": 14,
+        "1": 8,
+        "2": 68,
+        "3": 38
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 59.375,
+      "T3_pct": 89.0625,
+      "weighted_T2_plus_half_exact_T3_pct": 74.2188,
+      "mean_keep": 5.3203
+    },
+    "full_map_to_manifold_key": {
+      "nominal_lands": 34,
+      "retains_mantle": false,
+      "retains_world_map": false,
+      "retains_basalt": false,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Manifold Key",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Basalt Monolith",
+        "Hardlight Containment",
+        "Lunarch Mantle",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "counts": {
+        "0": 17,
+        "1": 9,
+        "2": 69,
+        "3": 33
+      },
+      "T1_pct": 7.0312,
+      "T2_pct": 60.9375,
+      "T3_pct": 86.7188,
+      "weighted_T2_plus_half_exact_T3_pct": 73.8281,
+      "mean_keep": 5.2656
+    },
+    "full_map_to_candelabra_of_tawnos": {
+      "nominal_lands": 34,
+      "retains_mantle": false,
+      "retains_world_map": false,
+      "retains_basalt": false,
+      "in": [
+        "Candelabra of Tawnos",
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Basalt Monolith",
+        "Hardlight Containment",
+        "Lunarch Mantle",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "counts": {
+        "0": 16,
+        "1": 8,
+        "2": 66,
+        "3": 38
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 57.8125,
+      "T3_pct": 87.5,
+      "weighted_T2_plus_half_exact_T3_pct": 72.6562,
+      "mean_keep": 5.3906
+    },
+    "full_map_to_basalt_monolith": {
+      "nominal_lands": 34,
+      "retains_mantle": false,
+      "retains_world_map": false,
+      "retains_basalt": true,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Hardlight Containment",
+        "Lunarch Mantle",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "counts": {
+        "0": 16,
+        "1": 8,
+        "2": 68,
+        "3": 36
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 59.375,
+      "T3_pct": 87.5,
+      "weighted_T2_plus_half_exact_T3_pct": 73.4375,
+      "mean_keep": 5.3438
+    },
+    "safe_map_to_manifold_key": {
+      "nominal_lands": 34,
+      "retains_mantle": true,
+      "retains_world_map": false,
+      "retains_basalt": false,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Manifold Key",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Basalt Monolith",
+        "Hardlight Containment",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos",
+        "World Map"
+      ],
+      "counts": {
+        "0": 17,
+        "1": 9,
+        "2": 64,
+        "3": 38
+      },
+      "T1_pct": 7.0312,
+      "T2_pct": 57.0312,
+      "T3_pct": 86.7188,
+      "weighted_T2_plus_half_exact_T3_pct": 71.875,
+      "mean_keep": 5.3359
+    },
+    "safe_map_to_basalt_monolith": {
+      "nominal_lands": 34,
+      "retains_mantle": true,
+      "retains_world_map": false,
+      "retains_basalt": true,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Hardlight Containment",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos",
+        "World Map"
+      ],
+      "counts": {
+        "0": 14,
+        "1": 10,
+        "2": 66,
+        "3": 38
+      },
+      "T1_pct": 7.8125,
+      "T2_pct": 59.375,
+      "T3_pct": 89.0625,
+      "weighted_T2_plus_half_exact_T3_pct": 74.2188,
+      "mean_keep": 5.2734
+    },
+    "current_map_to_voltaic_key": {
+      "nominal_lands": 34,
+      "retains_mantle": true,
+      "retains_world_map": false,
+      "retains_basalt": true,
+      "in": [
+        "Voltaic Key"
+      ],
+      "out": [
+        "World Map"
+      ],
+      "counts": {
+        "0": 14,
+        "1": 7,
+        "2": 62,
+        "3": 45
+      },
+      "T1_pct": 5.4688,
+      "T2_pct": 53.9062,
+      "T3_pct": 89.0625,
+      "weighted_T2_plus_half_exact_T3_pct": 71.4844,
+      "mean_keep": 5.4375
+    },
+    "current_map_to_pentad_prism": {
+      "nominal_lands": 34,
+      "retains_mantle": true,
+      "retains_world_map": false,
+      "retains_basalt": true,
+      "in": [
+        "Pentad Prism"
+      ],
+      "out": [
+        "World Map"
+      ],
+      "counts": {
+        "0": 17,
+        "1": 8,
+        "2": 64,
+        "3": 39
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 56.25,
+      "T3_pct": 86.7188,
+      "weighted_T2_plus_half_exact_T3_pct": 71.4844,
+      "mean_keep": 5.4141
+    },
+    "current_basalt_to_pentad_prism": {
+      "nominal_lands": 34,
+      "retains_mantle": true,
+      "retains_world_map": true,
+      "retains_basalt": false,
+      "in": [
+        "Pentad Prism"
+      ],
+      "out": [
+        "Basalt Monolith"
+      ],
+      "counts": {
+        "0": 16,
+        "1": 9,
+        "2": 62,
+        "3": 41
+      },
+      "T1_pct": 7.0312,
+      "T2_pct": 55.4688,
+      "T3_pct": 87.5,
+      "weighted_T2_plus_half_exact_T3_pct": 71.4844,
+      "mean_keep": 5.2891
+    },
+    "current_basalt_to_voltaic_key": {
+      "nominal_lands": 34,
+      "retains_mantle": true,
+      "retains_world_map": true,
+      "retains_basalt": false,
+      "in": [
+        "Voltaic Key"
+      ],
+      "out": [
+        "Basalt Monolith"
+      ],
+      "counts": {
+        "0": 17,
+        "1": 9,
+        "2": 64,
+        "3": 38
+      },
+      "T1_pct": 7.0312,
+      "T2_pct": 57.0312,
+      "T3_pct": 86.7188,
+      "weighted_T2_plus_half_exact_T3_pct": 71.875,
+      "mean_keep": 5.3203
+    },
+    "current_basalt_to_candelabra_of_tawnos": {
+      "nominal_lands": 34,
+      "retains_mantle": true,
+      "retains_world_map": true,
+      "retains_basalt": false,
+      "in": [
+        "Candelabra of Tawnos"
+      ],
+      "out": [
+        "Basalt Monolith"
+      ],
+      "counts": {
+        "0": 16,
+        "1": 9,
+        "2": 61,
+        "3": 42
+      },
+      "T1_pct": 7.0312,
+      "T2_pct": 54.6875,
+      "T3_pct": 87.5,
+      "weighted_T2_plus_half_exact_T3_pct": 71.0938,
+      "mean_keep": 5.3047
+    },
+    "current_basalt_to_manifold_key": {
+      "nominal_lands": 34,
+      "retains_mantle": true,
+      "retains_world_map": true,
+      "retains_basalt": false,
+      "in": [
+        "Manifold Key"
+      ],
+      "out": [
+        "Basalt Monolith"
+      ],
+      "counts": {
+        "0": 17,
+        "1": 9,
+        "2": 62,
+        "3": 40
+      },
+      "T1_pct": 7.0312,
+      "T2_pct": 55.4688,
+      "T3_pct": 86.7188,
+      "weighted_T2_plus_half_exact_T3_pct": 71.0938,
+      "mean_keep": 5.2734
+    },
+    "safe_boulder_to_basalt": {
+      "nominal_lands": 34,
+      "retains_mantle": true,
+      "retains_world_map": true,
+      "retains_basalt": true,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Hardlight Containment",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos"
+      ],
+      "counts": {
+        "0": 18,
+        "1": 8,
+        "2": 67,
+        "3": 35
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 58.5938,
+      "T3_pct": 85.9375,
+      "weighted_T2_plus_half_exact_T3_pct": 72.2656,
+      "mean_keep": 5.3203
+    },
+    "safe_prism_to_basalt": {
+      "nominal_lands": 34,
+      "retains_mantle": true,
+      "retains_world_map": true,
+      "retains_basalt": true,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Hardlight Containment",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos"
+      ],
+      "counts": {
+        "0": 15,
+        "1": 9,
+        "2": 64,
+        "3": 40
+      },
+      "T1_pct": 7.0312,
+      "T2_pct": 57.0312,
+      "T3_pct": 88.2812,
+      "weighted_T2_plus_half_exact_T3_pct": 72.6562,
+      "mean_keep": 5.3438
+    },
+    "safe_boulder_to_manifold": {
+      "nominal_lands": 34,
+      "retains_mantle": true,
+      "retains_world_map": true,
+      "retains_basalt": false,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Manifold Key",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Basalt Monolith",
+        "Hardlight Containment",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos"
+      ],
+      "counts": {
+        "0": 14,
+        "1": 6,
+        "2": 63,
+        "3": 45
+      },
+      "T1_pct": 4.6875,
+      "T2_pct": 53.9062,
+      "T3_pct": 89.0625,
+      "weighted_T2_plus_half_exact_T3_pct": 71.4844,
+      "mean_keep": 5.2578
+    },
+    "full_basalt_plus_candelabra": {
+      "nominal_lands": 34,
+      "retains_mantle": false,
+      "retains_world_map": true,
+      "retains_basalt": true,
+      "in": [
+        "Candelabra of Tawnos",
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism"
+      ],
+      "out": [
+        "Hardlight Containment",
+        "Lunarch Mantle",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "counts": {
+        "0": 18,
+        "1": 8,
+        "2": 65,
+        "3": 37
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 57.0312,
+      "T3_pct": 85.9375,
+      "weighted_T2_plus_half_exact_T3_pct": 71.4844,
+      "mean_keep": 5.3203
+    },
+    "full_map_to_basalt_boulder_to_manifold": {
+      "nominal_lands": 34,
+      "retains_mantle": false,
+      "retains_world_map": false,
+      "retains_basalt": true,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Manifold Key",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Hardlight Containment",
+        "Lunarch Mantle",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "counts": {
+        "0": 17,
+        "1": 8,
+        "2": 64,
+        "3": 39
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 56.25,
+      "T3_pct": 86.7188,
+      "weighted_T2_plus_half_exact_T3_pct": 71.4844,
+      "mean_keep": 5.3359
+    },
+    "full33_manifold_boulder_to_basalt": {
+      "nominal_lands": 33,
+      "retains_mantle": false,
+      "retains_world_map": true,
+      "retains_basalt": true,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Manifold Key",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Hardlight Containment",
+        "Lunarch Mantle",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "counts": {
+        "0": 18,
+        "1": 7,
+        "2": 66,
+        "3": 37
+      },
+      "T1_pct": 5.4688,
+      "T2_pct": 57.0312,
+      "T3_pct": 85.9375,
+      "weighted_T2_plus_half_exact_T3_pct": 71.4844,
+      "mean_keep": 5.3359
+    },
+    "safe33_manifold_boulder_to_basalt": {
+      "nominal_lands": 33,
+      "retains_mantle": true,
+      "retains_world_map": true,
+      "retains_basalt": true,
+      "in": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Manifold Key",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "out": [
+        "Hardlight Containment",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos"
+      ],
+      "counts": {
+        "0": 19,
+        "1": 8,
+        "2": 62,
+        "3": 39
+      },
+      "T1_pct": 6.25,
+      "T2_pct": 54.6875,
+      "T3_pct": 85.1562,
+      "weighted_T2_plus_half_exact_T3_pct": 69.9219,
+      "mean_keep": 5.3516
+    }
+  },
+  "paired_vs_current": {
+    "full_prism_voltaic_boulder": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gain": 1,
+        "loss": 1,
+        "paired_95_ci_pp": [
+          -2.174,
+          2.174
+        ]
+      },
+      "T2": {
+        "delta_pp": 6.25,
+        "gain": 12,
+        "loss": 4,
+        "paired_95_ci_pp": [
+          0.1978,
+          12.3022
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.7812,
+        "gain": 6,
+        "loss": 5,
+        "paired_95_ci_pp": [
+          -4.3155,
+          5.878
+        ]
+      }
+    },
+    "full_preserve_mantle": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gain": 1,
+        "loss": 1,
+        "paired_95_ci_pp": [
+          -2.174,
+          2.174
+        ]
+      },
+      "T2": {
+        "delta_pp": 3.125,
+        "gain": 11,
+        "loss": 7,
+        "paired_95_ci_pp": [
+          -3.3744,
+          9.6244
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.7812,
+        "gain": 7,
+        "loss": 6,
+        "paired_95_ci_pp": [
+          -4.7598,
+          6.3223
+        ]
+      }
+    },
+    "full_double_keys": {
+      "T1": {
+        "delta_pp": -0.7812,
+        "gain": 1,
+        "loss": 2,
+        "paired_95_ci_pp": [
+          -3.4404,
+          1.8779
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gain": 9,
+        "loss": 9,
+        "paired_95_ci_pp": [
+          -6.5221,
+          6.5221
+        ]
+      },
+      "T3": {
+        "delta_pp": -2.3438,
+        "gain": 6,
+        "loss": 9,
+        "paired_95_ci_pp": [
+          -8.2836,
+          3.5961
+        ]
+      }
+    },
+    "full_basalt_over_boulder": {
+      "T1": {
+        "delta_pp": -1.5625,
+        "gain": 0,
+        "loss": 2,
+        "paired_95_ci_pp": [
+          -3.7195,
+          0.5945
+        ]
+      },
+      "T2": {
+        "delta_pp": 3.125,
+        "gain": 10,
+        "loss": 6,
+        "paired_95_ci_pp": [
+          -3.0,
+          9.25
+        ]
+      },
+      "T3": {
+        "delta_pp": 1.5625,
+        "gain": 6,
+        "loss": 4,
+        "paired_95_ci_pp": [
+          -3.2912,
+          6.4162
+        ]
+      }
+    },
+    "full33_manifold_key": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gain": 1,
+        "loss": 1,
+        "paired_95_ci_pp": [
+          -2.174,
+          2.174
+        ]
+      },
+      "T2": {
+        "delta_pp": 5.4688,
+        "gain": 13,
+        "loss": 6,
+        "paired_95_ci_pp": [
+          -1.1642,
+          12.1017
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.7812,
+        "gain": 7,
+        "loss": 8,
+        "paired_95_ci_pp": [
+          -6.7335,
+          5.171
+        ]
+      }
+    },
+    "full33_candelabra_of_tawnos": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "gain": 1,
+        "loss": 0,
+        "paired_95_ci_pp": [
+          -0.75,
+          2.3125
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.7812,
+        "gain": 10,
+        "loss": 11,
+        "paired_95_ci_pp": [
+          -7.8246,
+          6.2621
+        ]
+      },
+      "T3": {
+        "delta_pp": -2.3438,
+        "gain": 6,
+        "loss": 9,
+        "paired_95_ci_pp": [
+          -8.2836,
+          3.5961
+        ]
+      }
+    },
+    "full33_basalt_monolith": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "gain": 1,
+        "loss": 0,
+        "paired_95_ci_pp": [
+          -0.75,
+          2.3125
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.5625,
+        "gain": 11,
+        "loss": 9,
+        "paired_95_ci_pp": [
+          -5.307,
+          8.432
+        ]
+      },
+      "T3": {
+        "delta_pp": -1.5625,
+        "gain": 6,
+        "loss": 8,
+        "paired_95_ci_pp": [
+          -7.308,
+          4.183
+        ]
+      }
+    },
+    "safe33_manifold_key": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "gain": 1,
+        "loss": 0,
+        "paired_95_ci_pp": [
+          -0.75,
+          2.3125
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.5625,
+        "gain": 10,
+        "loss": 8,
+        "paired_95_ci_pp": [
+          -4.9539,
+          8.0789
+        ]
+      },
+      "T3": {
+        "delta_pp": -1.5625,
+        "gain": 6,
+        "loss": 8,
+        "paired_95_ci_pp": [
+          -7.308,
+          4.183
+        ]
+      }
+    },
+    "safe33_candelabra_of_tawnos": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "gain": 1,
+        "loss": 0,
+        "paired_95_ci_pp": [
+          -0.75,
+          2.3125
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.7812,
+        "gain": 10,
+        "loss": 11,
+        "paired_95_ci_pp": [
+          -7.8246,
+          6.2621
+        ]
+      },
+      "T3": {
+        "delta_pp": -3.9062,
+        "gain": 7,
+        "loss": 12,
+        "paired_95_ci_pp": [
+          -10.5725,
+          2.76
+        ]
+      }
+    },
+    "current33_voltaic_key": {
+      "T1": {
+        "delta_pp": -0.7812,
+        "gain": 0,
+        "loss": 1,
+        "paired_95_ci_pp": [
+          -2.3125,
+          0.75
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.7812,
+        "gain": 3,
+        "loss": 4,
+        "paired_95_ci_pp": [
+          -4.8462,
+          3.2837
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.7812,
+        "gain": 5,
+        "loss": 4,
+        "paired_95_ci_pp": [
+          -3.8285,
+          5.391
+        ]
+      }
+    },
+    "current33_pentad_prism": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gain": 0,
+        "loss": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ]
+      },
+      "T2": {
+        "delta_pp": -3.125,
+        "gain": 1,
+        "loss": 5,
+        "paired_95_ci_pp": [
+          -6.8511,
+          0.6011
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.7812,
+        "gain": 2,
+        "loss": 1,
+        "paired_95_ci_pp": [
+          -1.8779,
+          3.4404
+        ]
+      }
+    },
+    "current33_manifold_key": {
+      "T1": {
+        "delta_pp": -1.5625,
+        "gain": 0,
+        "loss": 2,
+        "paired_95_ci_pp": [
+          -3.7195,
+          0.5945
+        ]
+      },
+      "T2": {
+        "delta_pp": 4.6875,
+        "gain": 7,
+        "loss": 1,
+        "paired_95_ci_pp": [
+          0.4166,
+          8.9584
+        ]
+      },
+      "T3": {
+        "delta_pp": 4.6875,
+        "gain": 7,
+        "loss": 1,
+        "paired_95_ci_pp": [
+          0.4166,
+          8.9584
+        ]
+      }
+    },
+    "full35_minus_voltaic_key": {
+      "T1": {
+        "delta_pp": -0.7812,
+        "gain": 1,
+        "loss": 2,
+        "paired_95_ci_pp": [
+          -3.4404,
+          1.8779
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.5625,
+        "gain": 9,
+        "loss": 7,
+        "paired_95_ci_pp": [
+          -4.5806,
+          7.7056
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.0,
+        "gain": 6,
+        "loss": 6,
+        "paired_95_ci_pp": [
+          -5.3252,
+          5.3252
+        ]
+      }
+    },
+    "full35_minus_giants_boulder": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "gain": 2,
+        "loss": 1,
+        "paired_95_ci_pp": [
+          -1.8779,
+          3.4404
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.5625,
+        "gain": 10,
+        "loss": 8,
+        "paired_95_ci_pp": [
+          -4.9539,
+          8.0789
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.7812,
+        "gain": 4,
+        "loss": 5,
+        "paired_95_ci_pp": [
+          -5.391,
+          3.8285
+        ]
+      }
+    },
+    "full35_minus_pentad_prism": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gain": 1,
+        "loss": 1,
+        "paired_95_ci_pp": [
+          -2.174,
+          2.174
+        ]
+      },
+      "T2": {
+        "delta_pp": 7.0312,
+        "gain": 13,
+        "loss": 4,
+        "paired_95_ci_pp": [
+          0.812,
+          13.2505
+        ]
+      },
+      "T3": {
+        "delta_pp": 1.5625,
+        "gain": 7,
+        "loss": 5,
+        "paired_95_ci_pp": [
+          -3.7558,
+          6.8808
+        ]
+      }
+    },
+    "full35_minus_world_map": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "gain": 1,
+        "loss": 0,
+        "paired_95_ci_pp": [
+          -0.75,
+          2.3125
+        ]
+      },
+      "T2": {
+        "delta_pp": 5.4688,
+        "gain": 11,
+        "loss": 4,
+        "paired_95_ci_pp": [
+          -0.4086,
+          11.3461
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.7812,
+        "gain": 6,
+        "loss": 5,
+        "paired_95_ci_pp": [
+          -4.3155,
+          5.878
+        ]
+      }
+    },
+    "safe35_minus_voltaic_key": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gain": 2,
+        "loss": 2,
+        "paired_95_ci_pp": [
+          -3.0745,
+          3.0745
+        ]
+      },
+      "T2": {
+        "delta_pp": 6.25,
+        "gain": 12,
+        "loss": 4,
+        "paired_95_ci_pp": [
+          0.1978,
+          12.3022
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.7812,
+        "gain": 7,
+        "loss": 6,
+        "paired_95_ci_pp": [
+          -4.7598,
+          6.3223
+        ]
+      }
+    },
+    "safe35_minus_giants_boulder": {
+      "T1": {
+        "delta_pp": -0.7812,
+        "gain": 1,
+        "loss": 2,
+        "paired_95_ci_pp": [
+          -3.4404,
+          1.8779
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.7812,
+        "gain": 9,
+        "loss": 10,
+        "paired_95_ci_pp": [
+          -7.4807,
+          5.9182
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.0,
+        "gain": 5,
+        "loss": 5,
+        "paired_95_ci_pp": [
+          -4.8613,
+          4.8613
+        ]
+      }
+    },
+    "current35_minus_world_map": {
+      "T1": {
+        "delta_pp": -0.7812,
+        "gain": 0,
+        "loss": 1,
+        "paired_95_ci_pp": [
+          -2.3125,
+          0.75
+        ]
+      },
+      "T2": {
+        "delta_pp": 2.3438,
+        "gain": 6,
+        "loss": 3,
+        "paired_95_ci_pp": [
+          -2.25,
+          6.9375
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.7812,
+        "gain": 2,
+        "loss": 3,
+        "paired_95_ci_pp": [
+          -4.216,
+          2.6535
+        ]
+      }
+    },
+    "current35_minus_basalt_monolith": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "gain": 1,
+        "loss": 0,
+        "paired_95_ci_pp": [
+          -0.75,
+          2.3125
+        ]
+      },
+      "T2": {
+        "delta_pp": 3.9062,
+        "gain": 8,
+        "loss": 3,
+        "paired_95_ci_pp": [
+          -1.1468,
+          8.9593
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.7812,
+        "gain": 4,
+        "loss": 5,
+        "paired_95_ci_pp": [
+          -5.391,
+          3.8285
+        ]
+      }
+    },
+    "full36_no_key_boulder": {
+      "T1": {
+        "delta_pp": -0.7812,
+        "gain": 1,
+        "loss": 2,
+        "paired_95_ci_pp": [
+          -3.4404,
+          1.8779
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gain": 9,
+        "loss": 9,
+        "paired_95_ci_pp": [
+          -6.5221,
+          6.5221
+        ]
+      },
+      "T3": {
+        "delta_pp": 3.9062,
+        "gain": 8,
+        "loss": 3,
+        "paired_95_ci_pp": [
+          -1.1468,
+          8.9593
+        ]
+      }
+    },
+    "safe36_no_key_boulder": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gain": 2,
+        "loss": 2,
+        "paired_95_ci_pp": [
+          -3.0745,
+          3.0745
+        ]
+      },
+      "T2": {
+        "delta_pp": 5.4688,
+        "gain": 11,
+        "loss": 4,
+        "paired_95_ci_pp": [
+          -0.4086,
+          11.3461
+        ]
+      },
+      "T3": {
+        "delta_pp": 3.125,
+        "gain": 8,
+        "loss": 4,
+        "paired_95_ci_pp": [
+          -2.1724,
+          8.4224
+        ]
+      }
+    },
+    "full_map_to_manifold_key": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "gain": 1,
+        "loss": 0,
+        "paired_95_ci_pp": [
+          -0.75,
+          2.3125
+        ]
+      },
+      "T2": {
+        "delta_pp": 7.0312,
+        "gain": 11,
+        "loss": 2,
+        "paired_95_ci_pp": [
+          1.6251,
+          12.4374
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.7812,
+        "gain": 7,
+        "loss": 6,
+        "paired_95_ci_pp": [
+          -4.7598,
+          6.3223
+        ]
+      }
+    },
+    "full_map_to_candelabra_of_tawnos": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gain": 1,
+        "loss": 1,
+        "paired_95_ci_pp": [
+          -2.174,
+          2.174
+        ]
+      },
+      "T2": {
+        "delta_pp": 3.9062,
+        "gain": 10,
+        "loss": 5,
+        "paired_95_ci_pp": [
+          -2.0087,
+          9.8212
+        ]
+      },
+      "T3": {
+        "delta_pp": 1.5625,
+        "gain": 9,
+        "loss": 7,
+        "paired_95_ci_pp": [
+          -4.5806,
+          7.7056
+        ]
+      }
+    },
+    "full_map_to_basalt_monolith": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gain": 1,
+        "loss": 1,
+        "paired_95_ci_pp": [
+          -2.174,
+          2.174
+        ]
+      },
+      "T2": {
+        "delta_pp": 5.4688,
+        "gain": 11,
+        "loss": 4,
+        "paired_95_ci_pp": [
+          -0.4086,
+          11.3461
+        ]
+      },
+      "T3": {
+        "delta_pp": 1.5625,
+        "gain": 8,
+        "loss": 6,
+        "paired_95_ci_pp": [
+          -4.183,
+          7.308
+        ]
+      }
+    },
+    "safe_map_to_manifold_key": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "gain": 2,
+        "loss": 1,
+        "paired_95_ci_pp": [
+          -1.8779,
+          3.4404
+        ]
+      },
+      "T2": {
+        "delta_pp": 3.125,
+        "gain": 11,
+        "loss": 7,
+        "paired_95_ci_pp": [
+          -3.3744,
+          9.6244
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.7812,
+        "gain": 7,
+        "loss": 6,
+        "paired_95_ci_pp": [
+          -4.7598,
+          6.3223
+        ]
+      }
+    },
+    "safe_map_to_basalt_monolith": {
+      "T1": {
+        "delta_pp": 1.5625,
+        "gain": 2,
+        "loss": 0,
+        "paired_95_ci_pp": [
+          -0.5945,
+          3.7195
+        ]
+      },
+      "T2": {
+        "delta_pp": 5.4688,
+        "gain": 12,
+        "loss": 5,
+        "paired_95_ci_pp": [
+          -0.7978,
+          11.7353
+        ]
+      },
+      "T3": {
+        "delta_pp": 3.125,
+        "gain": 7,
+        "loss": 3,
+        "paired_95_ci_pp": [
+          -1.7058,
+          7.9558
+        ]
+      }
+    },
+    "current_map_to_voltaic_key": {
+      "T1": {
+        "delta_pp": -0.7812,
+        "gain": 0,
+        "loss": 1,
+        "paired_95_ci_pp": [
+          -2.3125,
+          0.75
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gain": 3,
+        "loss": 3,
+        "paired_95_ci_pp": [
+          -3.7655,
+          3.7655
+        ]
+      },
+      "T3": {
+        "delta_pp": 3.125,
+        "gain": 5,
+        "loss": 1,
+        "paired_95_ci_pp": [
+          -0.6011,
+          6.8511
+        ]
+      }
+    },
+    "current_map_to_pentad_prism": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gain": 0,
+        "loss": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ]
+      },
+      "T2": {
+        "delta_pp": 2.3438,
+        "gain": 6,
+        "loss": 3,
+        "paired_95_ci_pp": [
+          -2.25,
+          6.9375
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.7812,
+        "gain": 3,
+        "loss": 2,
+        "paired_95_ci_pp": [
+          -2.6535,
+          4.216
+        ]
+      }
+    },
+    "current_basalt_to_pentad_prism": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "gain": 1,
+        "loss": 0,
+        "paired_95_ci_pp": [
+          -0.75,
+          2.3125
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.5625,
+        "gain": 8,
+        "loss": 6,
+        "paired_95_ci_pp": [
+          -4.183,
+          7.308
+        ]
+      },
+      "T3": {
+        "delta_pp": 1.5625,
+        "gain": 5,
+        "loss": 3,
+        "paired_95_ci_pp": [
+          -2.777,
+          5.902
+        ]
+      }
+    },
+    "current_basalt_to_voltaic_key": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "gain": 1,
+        "loss": 0,
+        "paired_95_ci_pp": [
+          -0.75,
+          2.3125
+        ]
+      },
+      "T2": {
+        "delta_pp": 3.125,
+        "gain": 8,
+        "loss": 4,
+        "paired_95_ci_pp": [
+          -2.1724,
+          8.4224
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.7812,
+        "gain": 5,
+        "loss": 4,
+        "paired_95_ci_pp": [
+          -3.8285,
+          5.391
+        ]
+      }
+    },
+    "current_basalt_to_candelabra_of_tawnos": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "gain": 1,
+        "loss": 0,
+        "paired_95_ci_pp": [
+          -0.75,
+          2.3125
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.7812,
+        "gain": 4,
+        "loss": 3,
+        "paired_95_ci_pp": [
+          -3.2837,
+          4.8462
+        ]
+      },
+      "T3": {
+        "delta_pp": 1.5625,
+        "gain": 6,
+        "loss": 4,
+        "paired_95_ci_pp": [
+          -3.2912,
+          6.4162
+        ]
+      }
+    },
+    "current_basalt_to_manifold_key": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "gain": 1,
+        "loss": 0,
+        "paired_95_ci_pp": [
+          -0.75,
+          2.3125
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.5625,
+        "gain": 6,
+        "loss": 4,
+        "paired_95_ci_pp": [
+          -3.2912,
+          6.4162
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.7812,
+        "gain": 4,
+        "loss": 3,
+        "paired_95_ci_pp": [
+          -3.2837,
+          4.8462
+        ]
+      }
+    },
+    "safe_boulder_to_basalt": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gain": 1,
+        "loss": 1,
+        "paired_95_ci_pp": [
+          -2.174,
+          2.174
+        ]
+      },
+      "T2": {
+        "delta_pp": 4.6875,
+        "gain": 9,
+        "loss": 3,
+        "paired_95_ci_pp": [
+          -0.575,
+          9.95
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.0,
+        "gain": 6,
+        "loss": 6,
+        "paired_95_ci_pp": [
+          -5.3252,
+          5.3252
+        ]
+      }
+    },
+    "safe_prism_to_basalt": {
+      "T1": {
+        "delta_pp": 0.7812,
+        "gain": 1,
+        "loss": 0,
+        "paired_95_ci_pp": [
+          -0.75,
+          2.3125
+        ]
+      },
+      "T2": {
+        "delta_pp": 3.125,
+        "gain": 10,
+        "loss": 6,
+        "paired_95_ci_pp": [
+          -3.0,
+          9.25
+        ]
+      },
+      "T3": {
+        "delta_pp": 2.3438,
+        "gain": 8,
+        "loss": 5,
+        "paired_95_ci_pp": [
+          -3.1839,
+          7.8714
+        ]
+      }
+    },
+    "safe_boulder_to_manifold": {
+      "T1": {
+        "delta_pp": -1.5625,
+        "gain": 1,
+        "loss": 3,
+        "paired_95_ci_pp": [
+          -4.625,
+          1.5
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gain": 8,
+        "loss": 8,
+        "paired_95_ci_pp": [
+          -6.1491,
+          6.1491
+        ]
+      },
+      "T3": {
+        "delta_pp": 3.125,
+        "gain": 7,
+        "loss": 3,
+        "paired_95_ci_pp": [
+          -1.7058,
+          7.9558
+        ]
+      }
+    },
+    "full_basalt_plus_candelabra": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gain": 0,
+        "loss": 0,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ]
+      },
+      "T2": {
+        "delta_pp": 3.125,
+        "gain": 8,
+        "loss": 4,
+        "paired_95_ci_pp": [
+          -2.1724,
+          8.4224
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.0,
+        "gain": 7,
+        "loss": 7,
+        "paired_95_ci_pp": [
+          -5.7519,
+          5.7519
+        ]
+      }
+    },
+    "full_map_to_basalt_boulder_to_manifold": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gain": 1,
+        "loss": 1,
+        "paired_95_ci_pp": [
+          -2.174,
+          2.174
+        ]
+      },
+      "T2": {
+        "delta_pp": 2.3438,
+        "gain": 9,
+        "loss": 6,
+        "paired_95_ci_pp": [
+          -3.5961,
+          8.2836
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.7812,
+        "gain": 7,
+        "loss": 6,
+        "paired_95_ci_pp": [
+          -4.7598,
+          6.3223
+        ]
+      }
+    },
+    "full33_manifold_boulder_to_basalt": {
+      "T1": {
+        "delta_pp": -0.7812,
+        "gain": 0,
+        "loss": 1,
+        "paired_95_ci_pp": [
+          -2.3125,
+          0.75
+        ]
+      },
+      "T2": {
+        "delta_pp": 3.125,
+        "gain": 10,
+        "loss": 6,
+        "paired_95_ci_pp": [
+          -3.0,
+          9.25
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.0,
+        "gain": 6,
+        "loss": 6,
+        "paired_95_ci_pp": [
+          -5.3252,
+          5.3252
+        ]
+      }
+    },
+    "safe33_manifold_boulder_to_basalt": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gain": 1,
+        "loss": 1,
+        "paired_95_ci_pp": [
+          -2.174,
+          2.174
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.7812,
+        "gain": 8,
+        "loss": 7,
+        "paired_95_ci_pp": [
+          -5.171,
+          6.7335
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.7812,
+        "gain": 5,
+        "loss": 6,
+        "paired_95_ci_pp": [
+          -5.878,
+          4.3155
+        ]
+      }
+    }
+  },
+  "scope": "Exploratory small-n screen, 41 predeclared singleton-legal 33\u201336-land combinations under promoted Assertive. Matched full-beam optimistic Dack cast, not confirmed combo completion or multiplayer win. Multiple comparisons: shortlist then independently replicate.",
+  "combo_caveat": "Removing Lunarch Mantle, World Map, Basalt, or other functional pieces may impact lines unobserved by Dack-cast proxy. Confirm complete combo functionality before considering a deck promotion.",
+  "rank_by_T2": [
+    "full35_minus_pentad_prism",
+    "full_map_to_manifold_key",
+    "full_prism_voltaic_boulder",
+    "safe35_minus_voltaic_key",
+    "safe36_no_key_boulder",
+    "safe_map_to_basalt_monolith",
+    "full_map_to_basalt_monolith",
+    "full35_minus_world_map",
+    "full33_manifold_key",
+    "current33_manifold_key",
+    "safe_boulder_to_basalt",
+    "full_map_to_candelabra_of_tawnos",
+    "current35_minus_basalt_monolith",
+    "safe_prism_to_basalt",
+    "full_basalt_over_boulder",
+    "current_basalt_to_voltaic_key",
+    "full_preserve_mantle",
+    "safe_map_to_manifold_key",
+    "full33_manifold_boulder_to_basalt",
+    "full_basalt_plus_candelabra",
+    "current_map_to_pentad_prism",
+    "full_map_to_basalt_boulder_to_manifold",
+    "current35_minus_world_map",
+    "current_basalt_to_pentad_prism",
+    "current_basalt_to_manifold_key",
+    "full35_minus_voltaic_key",
+    "full35_minus_giants_boulder",
+    "full33_basalt_monolith",
+    "safe33_manifold_key",
+    "current_basalt_to_candelabra_of_tawnos",
+    "safe33_manifold_boulder_to_basalt",
+    "full36_no_key_boulder",
+    "current_map_to_voltaic_key",
+    "safe_boulder_to_manifold",
+    "current",
+    "full_double_keys",
+    "current33_voltaic_key",
+    "safe35_minus_giants_boulder",
+    "full33_candelabra_of_tawnos",
+    "safe33_candelabra_of_tawnos",
+    "current33_pentad_prism"
+  ]
+}
