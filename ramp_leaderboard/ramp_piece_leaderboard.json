@@ -1,0 +1,766 @@
+{
+  "schema": "dack_assertive_ramp_piece_ranking_v1",
+  "status": "AWAITING_SCREEN_RESULTS",
+  "manifest": {
+    "schema": "dack_assertive_ramp_piece_tracking_v1",
+    "objective": "T2 cumulative Dack cast under promoted Assertive, T1 and T3 secondary; goldfish, not certified combo",
+    "policy": "assertive",
+    "benchmark_n10000": {
+      "deck": "frozen_current99",
+      "T1_pct": 6,
+      "T2_pct": 50.27,
+      "T3_pct": 83.15,
+      "reference": "benchmark_results/dack_assertive_heldout_n10000_report.json"
+    },
+    "input_suites": [
+      {
+        "id": "core20",
+        "run_id": 40444150025,
+        "n": 256,
+        "arms": 20,
+        "branch": "dack-assertive-ramp-land-key-screen-n256-20261026",
+        "report": "dack_assertive_ramp_land_key_screen_n256_report.json",
+        "raw": "dack_assertive_ramp_land_key_screen_n256_report.raw.json.gz",
+        "policy": "assertive"
+      },
+      {
+        "id": "flex41",
+        "run_id": 40445020227,
+        "n": 128,
+        "arms": 41,
+        "branch": "dack-assertive-flexslots-33to36-n128-20261026",
+        "report": "dack_assertive_flexslots_33to36_n128_report.json",
+        "raw": "dack_assertive_flexslots_33to36_n128_report.raw.json.gz",
+        "policy": "assertive"
+      }
+    ],
+    "tracked_cards": [
+      {
+        "card": "Sol Ring",
+        "role": "core_mana",
+        "notes": "reference/core; not a cut candidate in this screen"
+      },
+      {
+        "card": "Mana Vault",
+        "role": "core_mana",
+        "notes": "reference/core; not directly varied"
+      },
+      {
+        "card": "Grim Monolith",
+        "role": "core_mana",
+        "notes": "reference/core; not directly varied"
+      },
+      {
+        "card": "Lion's Eye Diamond",
+        "role": "core_mana",
+        "notes": "reference/core; not directly varied"
+      },
+      {
+        "card": "Lotus Petal",
+        "role": "core_mana",
+        "notes": "reference/core; not directly varied"
+      },
+      {
+        "card": "Chrome Mox",
+        "role": "core_mana",
+        "notes": "reference/core; not directly varied"
+      },
+      {
+        "card": "Mox Diamond",
+        "role": "core_mana",
+        "notes": "reference/core; not directly varied"
+      },
+      {
+        "card": "Mox Opal",
+        "role": "core_mana",
+        "notes": "reference/core; not directly varied"
+      },
+      {
+        "card": "Ancient Tomb",
+        "role": "core_land",
+        "notes": "reference/core; not directly varied"
+      },
+      {
+        "card": "City of Traitors",
+        "role": "core_land",
+        "notes": "reference/core; not directly varied"
+      },
+      {
+        "card": "Mishra's Workshop",
+        "role": "core_land",
+        "notes": "reference/core; not directly varied"
+      },
+      {
+        "card": "Crystal Vein",
+        "role": "core_land",
+        "notes": "reference/core; not directly varied"
+      },
+      {
+        "card": "Basalt Monolith",
+        "role": "ramp_flex",
+        "notes": "retest as incumbent or addition"
+      },
+      {
+        "card": "Pentad Prism",
+        "role": "ramp_flex",
+        "notes": "correct no-tap 2-counter sunburst"
+      },
+      {
+        "card": "Voltaic Key",
+        "role": "untapper",
+        "notes": "Mana Vault/Monolith utility"
+      },
+      {
+        "card": "Manifold Key",
+        "role": "untapper",
+        "notes": "competes with Boulder / World Map / land slots"
+      },
+      {
+        "card": "Candelabra of Tawnos",
+        "role": "untapper",
+        "notes": "land untap; synergy with Ancient Tomb"
+      },
+      {
+        "card": "Giant's Boulder",
+        "role": "ramp_flex",
+        "notes": "tests relative to Basalt, key and land"
+      },
+      {
+        "card": "Implements of Sacrifice",
+        "role": "ramp_flex",
+        "notes": "one-time mana conversion"
+      },
+      {
+        "card": "Tooth of Ramos",
+        "role": "ramp_flex",
+        "notes": "flex rock / potential sacrifice outlet"
+      },
+      {
+        "card": "Coalition Relic",
+        "role": "ramp_flex",
+        "notes": "retained across screens; not directly varied"
+      },
+      {
+        "card": "Bucknard's Everfull Purse",
+        "role": "ramp_flex",
+        "notes": "retained across screens; not directly varied"
+      },
+      {
+        "card": "Everflowing Chalice",
+        "role": "ramp_flex",
+        "notes": "existing mana rock; not directly varied"
+      },
+      {
+        "card": "Mind Stone",
+        "role": "ramp_flex",
+        "notes": "existing mana rock; not directly varied"
+      },
+      {
+        "card": "The Mind Stone",
+        "role": "ramp_flex",
+        "notes": "existing mana rock; not directly varied"
+      },
+      {
+        "card": "Prismatic Lens",
+        "role": "ramp_flex",
+        "notes": "existing mana rock; not directly varied"
+      },
+      {
+        "card": "World Map",
+        "role": "tutor_flex",
+        "notes": "card-advantage / land access; not pure mana"
+      },
+      {
+        "card": "Lunarch Mantle",
+        "role": "combo_flex",
+        "notes": "sacrifice outlet possibility; Dack-cast proxy does not price its combo role"
+      },
+      {
+        "card": "Hardlight Containment",
+        "role": "combo_flex",
+        "notes": "auras can affect full combo; goldfish cast metric incomplete"
+      },
+      {
+        "card": "Plains",
+        "role": "land",
+        "notes": "33 to 36 nominal lands tested"
+      },
+      {
+        "card": "Command Tower",
+        "role": "rainbow_land",
+        "notes": "white-only in mono-white color identity"
+      },
+      {
+        "card": "Mana Confluence",
+        "role": "rainbow_land",
+        "notes": "any-color land"
+      },
+      {
+        "card": "City of Brass",
+        "role": "rainbow_land",
+        "notes": "any-color land"
+      },
+      {
+        "card": "Gemstone Mine",
+        "role": "rainbow_land",
+        "notes": "any-color limited counters"
+      }
+    ],
+    "interpretation": {
+      "direct_swap": "two decks differ by exactly one removed and one added card; paired game IDs within a single suite only",
+      "multi_card_package": "not attributed to individual card unless a one-card matched contrast is available",
+      "no_core_rank": "cards not varied receive NOT_TESTED, not bottom rank",
+      "not_full_combo": "preserved required trio is not proof of functional post-Dack combo; caution for Lunarch Mantle and other outlets",
+      "multiple_testing": "exploratory screen and overlapping contrasts; no discovery p-value warrants promotion without held-out"
+    }
+  },
+  "sources": {},
+  "direct_pairs": [],
+  "cards": [
+    {
+      "card": "Ancient Tomb",
+      "role": "core_land",
+      "notes": "reference/core; not directly varied",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Basalt Monolith",
+      "role": "ramp_flex",
+      "notes": "retest as incumbent or addition",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Bucknard's Everfull Purse",
+      "role": "ramp_flex",
+      "notes": "retained across screens; not directly varied",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Candelabra of Tawnos",
+      "role": "untapper",
+      "notes": "land untap; synergy with Ancient Tomb",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Chrome Mox",
+      "role": "core_mana",
+      "notes": "reference/core; not directly varied",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "City of Brass",
+      "role": "rainbow_land",
+      "notes": "any-color land",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "City of Traitors",
+      "role": "core_land",
+      "notes": "reference/core; not directly varied",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Coalition Relic",
+      "role": "ramp_flex",
+      "notes": "retained across screens; not directly varied",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Command Tower",
+      "role": "rainbow_land",
+      "notes": "white-only in mono-white color identity",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Crystal Vein",
+      "role": "core_land",
+      "notes": "reference/core; not directly varied",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Everflowing Chalice",
+      "role": "ramp_flex",
+      "notes": "existing mana rock; not directly varied",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Gemstone Mine",
+      "role": "rainbow_land",
+      "notes": "any-color limited counters",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Giant's Boulder",
+      "role": "ramp_flex",
+      "notes": "tests relative to Basalt, key and land",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Grim Monolith",
+      "role": "core_mana",
+      "notes": "reference/core; not directly varied",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Hardlight Containment",
+      "role": "combo_flex",
+      "notes": "auras can affect full combo; goldfish cast metric incomplete",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Implements of Sacrifice",
+      "role": "ramp_flex",
+      "notes": "one-time mana conversion",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Lion's Eye Diamond",
+      "role": "core_mana",
+      "notes": "reference/core; not directly varied",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Lotus Petal",
+      "role": "core_mana",
+      "notes": "reference/core; not directly varied",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Lunarch Mantle",
+      "role": "combo_flex",
+      "notes": "sacrifice outlet possibility; Dack-cast proxy does not price its combo role",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Mana Confluence",
+      "role": "rainbow_land",
+      "notes": "any-color land",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Mana Vault",
+      "role": "core_mana",
+      "notes": "reference/core; not directly varied",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Manifold Key",
+      "role": "untapper",
+      "notes": "competes with Boulder / World Map / land slots",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Mind Stone",
+      "role": "ramp_flex",
+      "notes": "existing mana rock; not directly varied",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Mishra's Workshop",
+      "role": "core_land",
+      "notes": "reference/core; not directly varied",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Mox Diamond",
+      "role": "core_mana",
+      "notes": "reference/core; not directly varied",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Mox Opal",
+      "role": "core_mana",
+      "notes": "reference/core; not directly varied",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Pentad Prism",
+      "role": "ramp_flex",
+      "notes": "correct no-tap 2-counter sunburst",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Plains",
+      "role": "land",
+      "notes": "33 to 36 nominal lands tested",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Prismatic Lens",
+      "role": "ramp_flex",
+      "notes": "existing mana rock; not directly varied",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Sol Ring",
+      "role": "core_mana",
+      "notes": "reference/core; not a cut candidate in this screen",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "The Mind Stone",
+      "role": "ramp_flex",
+      "notes": "existing mana rock; not directly varied",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Tooth of Ramos",
+      "role": "ramp_flex",
+      "notes": "flex rock / potential sacrifice outlet",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "Voltaic Key",
+      "role": "untapper",
+      "notes": "Mana Vault/Monolith utility",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    },
+    {
+      "card": "World Map",
+      "role": "tutor_flex",
+      "notes": "card-advantage / land access; not pure mana",
+      "status": "NOT_TESTED",
+      "median_T2_delta_pp": null,
+      "min_T2_delta_pp": null,
+      "max_T2_delta_pp": null,
+      "median_T1_delta_pp": null,
+      "median_T3_delta_pp": null,
+      "ci_excludes_zero_positive": 0,
+      "ci_excludes_zero_negative": 0,
+      "direct_contexts": 0,
+      "suites": [],
+      "evidence": []
+    }
+  ],
+  "note": "Cards ordered by descriptive median signed T2 effect across overlapping one-card replacements, NOT a causal global strength ranking; independent held-out confirmation needed."
+}
