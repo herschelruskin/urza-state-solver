@@ -4,7 +4,7 @@
 
 | Trial | Games recovered | Completed shards | Data status |
 |---|---:|---:|---|
-| screen20 | 128/256 | 32/64 | Partial exploratory evidence |
+| screen20 | 144/256 | 36/64 | Partial exploratory evidence |
 | flex41 | 40/128 | 20/64 | Partial exploratory evidence |
 
 ---
@@ -16,25 +16,25 @@
 
 ## Live evidence status
 
-- **screen20**: PARTIAL_128_OF_256, 20 decks × 256 matched game IDs — https://github.com/herschelruskin/urza-state-solver/actions/runs/40444150025
+- **screen20**: PARTIAL_144_OF_256, 20 decks × 256 matched game IDs — https://github.com/herschelruskin/urza-state-solver/actions/runs/40444150025
 - **flex41**: PARTIAL_40_OF_128, 41 decks × 128 matched game IDs — https://github.com/herschelruskin/urza-state-solver/actions/runs/40445020227
 
 ## Ramp-card ranking (only controlled single-card comparisons)
 
 | Rank | Card | Observed context-weighted T2 signal (pp) | Matched contexts | Trial sets | Positive / negative contexts |
 |---:|---|---:|---:|---:|---:|
-| 1 | Hardlight Containment | +3.12 | 1 | 1 | 1 / 0 |
-| 2 | Giant's Boulder | +1.58 | 32 | 2 | 18 / 6 |
-| 3 | Plains | +1.06 | 52 | 2 | 24 / 16 |
-| 4 | Tooth of Ramos | +1.05 | 18 | 2 | 11 / 6 |
-| 5 | Manifold Key | +0.91 | 37 | 2 | 19 / 10 |
-| 6 | Pentad Prism | -0.24 | 22 | 2 | 7 / 8 |
-| 7 | Voltaic Key | -0.53 | 27 | 2 | 8 / 14 |
-| 8 | World Map | -0.78 | 29 | 1 | 11 / 11 |
-| 9 | Implements of Sacrifice | -0.78 | 1 | 1 | 0 / 1 |
-| 10 | Lunarch Mantle | -0.88 | 20 | 2 | 7 / 11 |
-| 11 | Basalt Monolith | -0.98 | 37 | 2 | 10 / 17 |
-| 12 | Candelabra of Tawnos | -2.11 | 24 | 2 | 3 / 19 |
+| 1 | Hardlight Containment | +2.78 | 1 | 1 | 1 / 0 |
+| 2 | Giant's Boulder | +1.49 | 32 | 2 | 18 / 7 |
+| 3 | Plains | +1.22 | 52 | 2 | 25 / 16 |
+| 4 | Manifold Key | +1.04 | 37 | 2 | 19 / 10 |
+| 5 | Tooth of Ramos | +0.62 | 18 | 2 | 11 / 7 |
+| 6 | Pentad Prism | -0.31 | 22 | 2 | 7 / 9 |
+| 7 | Voltaic Key | -0.33 | 27 | 2 | 8 / 12 |
+| 8 | Lunarch Mantle | -0.63 | 20 | 2 | 7 / 11 |
+| 9 | Basalt Monolith | -0.69 | 37 | 2 | 12 / 16 |
+| 10 | World Map | -0.78 | 29 | 1 | 11 / 11 |
+| 11 | Implements of Sacrifice | -1.39 | 1 | 1 | 0 / 1 |
+| 12 | Candelabra of Tawnos | -2.58 | 24 | 2 | 1 / 20 |
 
 **Interpretation:** The score averages results across the *observed replacement options and deck backgrounds*, not the intrinsic value of a card. Contexts share hands and games; the displayed score has **no valid pooled confidence interval**. Strong claims require a held-out card comparison.
 
@@ -64,14 +64,14 @@
 | Plains over World Map | flex41: full33_basalt_monolith → full_map_to_basalt_monolith | +5.00 | -7.05 to +17.05 | 40 |
 | Manifold Key over Pentad Prism | flex41: current33_pentad_prism → current33_manifold_key | +5.00 | -1.84 to +11.84 | 40 |
 | Voltaic Key over World Map | flex41: full35_minus_voltaic_key → full35_minus_world_map | +5.00 | -1.84 to +11.84 | 40 |
+| Manifold Key over Tooth of Ramos | screen20: full_prism_voltaic_boulder → full_3keys_instead_tooth | +3.47 | -0.59 to +7.53 | 144 |
+| Lunarch Mantle over Candelabra of Tawnos | screen20: full_candelabra_instead_tooth → full_preserve_mantle | +2.78 | -1.52 to +7.07 | 144 |
 | Voltaic Key over Plains | flex41: current → current33_voltaic_key | +2.50 | -2.40 to +7.40 | 40 |
 | Manifold Key over Plains | flex41: current → current33_manifold_key | +2.50 | -2.40 to +7.40 | 40 |
 | Plains over Voltaic Key | flex41: full_preserve_mantle → safe35_minus_voltaic_key | +2.50 | -6.06 to +11.06 | 40 |
 | Basalt Monolith over Giant's Boulder | flex41: full_preserve_mantle → safe_boulder_to_basalt | +2.50 | -2.40 to +7.40 | 40 |
 | Giant's Boulder over Plains | flex41: full_double_keys → full33_manifold_key | +2.50 | -8.57 to +13.57 | 40 |
 | Basalt Monolith over Plains | flex41: full_double_keys → full33_manifold_boulder_to_basalt | +2.50 | -8.57 to +13.57 | 40 |
-| Lunarch Mantle over Tooth of Ramos | flex41: full_basalt_over_boulder → safe_boulder_to_basalt | +2.50 | -8.57 to +13.57 | 40 |
-| Manifold Key over Plains | flex41: full_basalt_over_boulder → full33_manifold_boulder_to_basalt | +2.50 | -6.06 to +11.06 | 40 |
 
 ## Historical controls — Standard mulligans only
 
