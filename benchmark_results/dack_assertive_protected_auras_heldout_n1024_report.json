@@ -1,0 +1,766 @@
+{
+  "schema": "dack_assertive_auras_heldout_n1024_v1",
+  "status": "PASS",
+  "n": 1024,
+  "planned_n": 1024,
+  "shards_found": 128,
+  "expected_shards": 128,
+  "missing_count": 0,
+  "first_missing_ids": [],
+  "seed_base": 99142710271850,
+  "beam": 160,
+  "policy": "assertive",
+  "hashes": {
+    "current": "a1c8e05dc3f9e1bcfbfbe2f7773ea4a5e62222d3440dd2f7417fd7f2f058c422",
+    "current_map_to_plains": "0948b833ffa9cf4a6bde6d78cf6e4c36187b39c21cabdb47c743e1bd1fffcf70",
+    "current_map_to_giants_boulder": "587b6534e05a65299306b479e460cdb34917da70da11512663532fae5ca97538",
+    "four_rainbow": "94fc6dcc0bc98e1a317b458cf49577e3592fc173e7dfa6d350d778dd56db76e8",
+    "rainbow_map_to_pentad_prism": "4d1fa0f7b1ed08faca459ee036ee9d5f0833d294d6409305d67fc516902ae261",
+    "rainbow_map_basalt_to_voltaic_manifold": "a61ae241ab6073788b4e3f5ce5b860db0b05a856e3f1c1544b5826e68ba10165",
+    "rainbow_map_basalt_to_prism_boulder": "01897da6dbe9c769939b84186e1a2e12ac199ec3a754e951e042ec053a7e2965",
+    "rainbow_map_basalt_to_voltaic_boulder": "83cc04b520480d64920633bd55d0d78285afa4bcda7fc6c4556c113eb65bec24",
+    "rainbow_map_basalt_tooth_to_voltaic_prism_boulder": "8ab5abe64d93420ceeef1f1412db05934fb4d8929d4d1bc156ed73381428b136",
+    "rainbow_33land_full_four_standalone_keepers": "09d335987434472fd9737bde66b03a874829c3498ae3e9111001c632c985ca34",
+    "rainbow_map_basalt_tooth_staff_to_voltaic_manifold_prism_boulder": "176ccf1cc1cd2733ed6addffe7f3598a01be2b7fe4a41482ed5f487d962a89ef"
+  },
+  "locked_auras": [
+    "Hardlight Containment",
+    "Lunarch Mantle"
+  ],
+  "arms": {
+    "current": {
+      "lands": 34,
+      "retains_staff": true,
+      "removed": [],
+      "added": [],
+      "counts": {
+        "0": 174,
+        "1": 69,
+        "2": 461,
+        "3": 320
+      },
+      "T1_pct": 6.7383,
+      "T2_pct": 51.7578,
+      "T3_pct": 83.0078,
+      "T2_plus_half_exact_T3_pct": 67.3828,
+      "mean_keep": 5.1514
+    },
+    "current_map_to_plains": {
+      "lands": 35,
+      "retains_staff": true,
+      "removed": [
+        "World Map"
+      ],
+      "added": [
+        "Plains"
+      ],
+      "counts": {
+        "0": 170,
+        "1": 67,
+        "2": 463,
+        "3": 324
+      },
+      "T1_pct": 6.543,
+      "T2_pct": 51.7578,
+      "T3_pct": 83.3984,
+      "T2_plus_half_exact_T3_pct": 67.5781,
+      "mean_keep": 5.123
+    },
+    "current_map_to_giants_boulder": {
+      "lands": 34,
+      "retains_staff": true,
+      "removed": [
+        "World Map"
+      ],
+      "added": [
+        "Giant's Boulder"
+      ],
+      "counts": {
+        "0": 164,
+        "1": 67,
+        "2": 473,
+        "3": 320
+      },
+      "T1_pct": 6.543,
+      "T2_pct": 52.7344,
+      "T3_pct": 83.9844,
+      "T2_plus_half_exact_T3_pct": 68.3594,
+      "mean_keep": 5.1396
+    },
+    "four_rainbow": {
+      "lands": 34,
+      "retains_staff": true,
+      "removed": [
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence"
+      ],
+      "counts": {
+        "0": 170,
+        "1": 67,
+        "2": 461,
+        "3": 326
+      },
+      "T1_pct": 6.543,
+      "T2_pct": 51.5625,
+      "T3_pct": 83.3984,
+      "T2_plus_half_exact_T3_pct": 67.4805,
+      "mean_keep": 5.1553
+    },
+    "rainbow_map_to_pentad_prism": {
+      "lands": 34,
+      "retains_staff": true,
+      "removed": [
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism"
+      ],
+      "counts": {
+        "0": 163,
+        "1": 66,
+        "2": 460,
+        "3": 335
+      },
+      "T1_pct": 6.4453,
+      "T2_pct": 51.3672,
+      "T3_pct": 84.082,
+      "T2_plus_half_exact_T3_pct": 67.7246,
+      "mean_keep": 5.166
+    },
+    "rainbow_map_basalt_to_voltaic_manifold": {
+      "lands": 34,
+      "retains_staff": true,
+      "removed": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Manifold Key",
+        "Voltaic Key"
+      ],
+      "counts": {
+        "0": 178,
+        "1": 72,
+        "2": 464,
+        "3": 310
+      },
+      "T1_pct": 7.0312,
+      "T2_pct": 52.3438,
+      "T3_pct": 82.6172,
+      "T2_plus_half_exact_T3_pct": 67.4805,
+      "mean_keep": 5.1289
+    },
+    "rainbow_map_basalt_to_prism_boulder": {
+      "lands": 34,
+      "retains_staff": true,
+      "removed": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Pentad Prism"
+      ],
+      "counts": {
+        "0": 170,
+        "1": 62,
+        "2": 465,
+        "3": 327
+      },
+      "T1_pct": 6.0547,
+      "T2_pct": 51.4648,
+      "T3_pct": 83.3984,
+      "T2_plus_half_exact_T3_pct": 67.4316,
+      "mean_keep": 5.0859
+    },
+    "rainbow_map_basalt_to_voltaic_boulder": {
+      "lands": 34,
+      "retains_staff": true,
+      "removed": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Voltaic Key"
+      ],
+      "counts": {
+        "0": 164,
+        "1": 67,
+        "2": 469,
+        "3": 324
+      },
+      "T1_pct": 6.543,
+      "T2_pct": 52.3438,
+      "T3_pct": 83.9844,
+      "T2_plus_half_exact_T3_pct": 68.1641,
+      "mean_keep": 5.1143
+    },
+    "rainbow_map_basalt_tooth_to_voltaic_prism_boulder": {
+      "lands": 34,
+      "retains_staff": true,
+      "removed": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "counts": {
+        "0": 178,
+        "1": 65,
+        "2": 457,
+        "3": 324
+      },
+      "T1_pct": 6.3477,
+      "T2_pct": 50.9766,
+      "T3_pct": 82.6172,
+      "T2_plus_half_exact_T3_pct": 66.7969,
+      "mean_keep": 5.0996
+    },
+    "rainbow_33land_full_four_standalone_keepers": {
+      "lands": 33,
+      "retains_staff": true,
+      "removed": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Manifold Key",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "counts": {
+        "0": 182,
+        "1": 66,
+        "2": 470,
+        "3": 306
+      },
+      "T1_pct": 6.4453,
+      "T2_pct": 52.3438,
+      "T3_pct": 82.2266,
+      "T2_plus_half_exact_T3_pct": 67.2852,
+      "mean_keep": 5.0879
+    },
+    "rainbow_map_basalt_tooth_staff_to_voltaic_manifold_prism_boulder": {
+      "lands": 34,
+      "retains_staff": false,
+      "removed": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Staff of Compleation",
+        "Tooth of Ramos",
+        "World Map"
+      ],
+      "added": [
+        "City of Brass",
+        "Command Tower",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Manifold Key",
+        "Pentad Prism",
+        "Voltaic Key"
+      ],
+      "counts": {
+        "0": 186,
+        "1": 66,
+        "2": 468,
+        "3": 304
+      },
+      "T1_pct": 6.4453,
+      "T2_pct": 52.1484,
+      "T3_pct": 81.8359,
+      "T2_plus_half_exact_T3_pct": 66.9922,
+      "mean_keep": 5.1094
+    }
+  },
+  "paired_vs_current": {
+    "current_map_to_plains": {
+      "T1": {
+        "delta_pp": -0.1953,
+        "gains": 5,
+        "losses": 7,
+        "ties": 1012,
+        "paired_95_ci_pp": [
+          -0.8586,
+          0.468
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gains": 33,
+        "losses": 33,
+        "ties": 958,
+        "paired_95_ci_pp": [
+          -1.5558,
+          1.5558
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.3906,
+        "gains": 34,
+        "losses": 30,
+        "ties": 960,
+        "paired_95_ci_pp": [
+          -1.1412,
+          1.9224
+        ]
+      }
+    },
+    "current_map_to_giants_boulder": {
+      "T1": {
+        "delta_pp": -0.1953,
+        "gains": 8,
+        "losses": 10,
+        "ties": 1006,
+        "paired_95_ci_pp": [
+          -1.0077,
+          0.6171
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.9766,
+        "gains": 48,
+        "losses": 38,
+        "ties": 938,
+        "paired_95_ci_pp": [
+          -0.7983,
+          2.7514
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.9766,
+        "gains": 43,
+        "losses": 33,
+        "ties": 948,
+        "paired_95_ci_pp": [
+          -0.6918,
+          2.6449
+        ]
+      }
+    },
+    "four_rainbow": {
+      "T1": {
+        "delta_pp": -0.1953,
+        "gains": 4,
+        "losses": 6,
+        "ties": 1014,
+        "paired_95_ci_pp": [
+          -0.8008,
+          0.4101
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.1953,
+        "gains": 36,
+        "losses": 38,
+        "ties": 950,
+        "paired_95_ci_pp": [
+          -1.8426,
+          1.452
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.3906,
+        "gains": 38,
+        "losses": 34,
+        "ties": 952,
+        "paired_95_ci_pp": [
+          -1.2341,
+          2.0154
+        ]
+      }
+    },
+    "rainbow_map_to_pentad_prism": {
+      "T1": {
+        "delta_pp": -0.293,
+        "gains": 8,
+        "losses": 11,
+        "ties": 1005,
+        "paired_95_ci_pp": [
+          -1.1275,
+          0.5416
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.3906,
+        "gains": 49,
+        "losses": 53,
+        "ties": 922,
+        "paired_95_ci_pp": [
+          -2.3245,
+          1.5433
+        ]
+      },
+      "T3": {
+        "delta_pp": 1.0742,
+        "gains": 46,
+        "losses": 35,
+        "ties": 943,
+        "paired_95_ci_pp": [
+          -0.648,
+          2.7965
+        ]
+      }
+    },
+    "rainbow_map_basalt_to_voltaic_manifold": {
+      "T1": {
+        "delta_pp": 0.293,
+        "gains": 9,
+        "losses": 6,
+        "ties": 1009,
+        "paired_95_ci_pp": [
+          -0.4485,
+          1.0344
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.5859,
+        "gains": 55,
+        "losses": 49,
+        "ties": 920,
+        "paired_95_ci_pp": [
+          -1.3667,
+          2.5385
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.3906,
+        "gains": 38,
+        "losses": 42,
+        "ties": 944,
+        "paired_95_ci_pp": [
+          -2.1033,
+          1.322
+        ]
+      }
+    },
+    "rainbow_map_basalt_to_prism_boulder": {
+      "T1": {
+        "delta_pp": -0.6836,
+        "gains": 6,
+        "losses": 13,
+        "ties": 1005,
+        "paired_95_ci_pp": [
+          -1.5173,
+          0.1501
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.293,
+        "gains": 48,
+        "losses": 51,
+        "ties": 925,
+        "paired_95_ci_pp": [
+          -2.1983,
+          1.6123
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.3906,
+        "gains": 45,
+        "losses": 41,
+        "ties": 938,
+        "paired_95_ci_pp": [
+          -1.3851,
+          2.1664
+        ]
+      }
+    },
+    "rainbow_map_basalt_to_voltaic_boulder": {
+      "T1": {
+        "delta_pp": -0.1953,
+        "gains": 7,
+        "losses": 9,
+        "ties": 1008,
+        "paired_95_ci_pp": [
+          -0.9612,
+          0.5706
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.5859,
+        "gains": 55,
+        "losses": 49,
+        "ties": 920,
+        "paired_95_ci_pp": [
+          -1.3667,
+          2.5385
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.9766,
+        "gains": 48,
+        "losses": 38,
+        "ties": 938,
+        "paired_95_ci_pp": [
+          -0.7983,
+          2.7514
+        ]
+      }
+    },
+    "rainbow_map_basalt_tooth_to_voltaic_prism_boulder": {
+      "T1": {
+        "delta_pp": -0.3906,
+        "gains": 8,
+        "losses": 12,
+        "ties": 1004,
+        "paired_95_ci_pp": [
+          -1.2467,
+          0.4655
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.7812,
+        "gains": 48,
+        "losses": 56,
+        "ties": 920,
+        "paired_95_ci_pp": [
+          -2.7336,
+          1.1711
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.3906,
+        "gains": 44,
+        "losses": 48,
+        "ties": 932,
+        "paired_95_ci_pp": [
+          -2.2273,
+          1.446
+        ]
+      }
+    },
+    "rainbow_33land_full_four_standalone_keepers": {
+      "T1": {
+        "delta_pp": -0.293,
+        "gains": 9,
+        "losses": 12,
+        "ties": 1003,
+        "paired_95_ci_pp": [
+          -1.1703,
+          0.5844
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.5859,
+        "gains": 58,
+        "losses": 52,
+        "ties": 914,
+        "paired_95_ci_pp": [
+          -1.4222,
+          2.5941
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.7812,
+        "gains": 46,
+        "losses": 54,
+        "ties": 924,
+        "paired_95_ci_pp": [
+          -2.6956,
+          1.1331
+        ]
+      }
+    },
+    "rainbow_map_basalt_tooth_staff_to_voltaic_manifold_prism_boulder": {
+      "T1": {
+        "delta_pp": -0.293,
+        "gains": 7,
+        "losses": 10,
+        "ties": 1007,
+        "paired_95_ci_pp": [
+          -1.0823,
+          0.4964
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.3906,
+        "gains": 53,
+        "losses": 49,
+        "ties": 922,
+        "paired_95_ci_pp": [
+          -1.5433,
+          2.3245
+        ]
+      },
+      "T3": {
+        "delta_pp": -1.1719,
+        "gains": 45,
+        "losses": 57,
+        "ties": 922,
+        "paired_95_ci_pp": [
+          -3.1046,
+          0.7608
+        ]
+      }
+    }
+  },
+  "head_to_heads": {
+    "current_map_to_giants_boulder_minus_current_map_to_plains": {
+      "before": "current_map_to_plains",
+      "after": "current_map_to_giants_boulder",
+      "card_swap": {
+        "out": [
+          "Plains"
+        ],
+        "in": [
+          "Giant's Boulder"
+        ]
+      },
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 5,
+        "losses": 5,
+        "ties": 1014,
+        "paired_95_ci_pp": [
+          -0.6056,
+          0.6056
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.9766,
+        "gains": 39,
+        "losses": 29,
+        "ties": 956,
+        "paired_95_ci_pp": [
+          -0.6015,
+          2.5546
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.5859,
+        "gains": 40,
+        "losses": 34,
+        "ties": 950,
+        "paired_95_ci_pp": [
+          -1.061,
+          2.2329
+        ]
+      }
+    },
+    "rainbow_map_basalt_tooth_staff_to_voltaic_manifold_prism_boulder_minus_rainbow_33land_full_four_standalone_keepers": {
+      "before": "rainbow_33land_full_four_standalone_keepers",
+      "after": "rainbow_map_basalt_tooth_staff_to_voltaic_manifold_prism_boulder",
+      "card_swap": {
+        "out": [
+          "Staff of Compleation"
+        ],
+        "in": [
+          "Plains"
+        ]
+      },
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 9,
+        "losses": 9,
+        "ties": 1006,
+        "paired_95_ci_pp": [
+          -0.8125,
+          0.8125
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.1953,
+        "gains": 35,
+        "losses": 37,
+        "ties": 952,
+        "paired_95_ci_pp": [
+          -1.8202,
+          1.4296
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.3906,
+        "gains": 33,
+        "losses": 37,
+        "ties": 954,
+        "paired_95_ci_pp": [
+          -1.9926,
+          1.2114
+        ]
+      }
+    }
+  },
+  "scope": "Predeclared independent held-out Assertive N1024 sample, 11 singleton-legal decks with both auras retained, paired across all arms. Outcome is optimistic Dack cast by T1/T2/T3, not verified Boonweaver combo or cEDH win.",
+  "caution": "Several candidates preselected from N128 exploratory results; interpret CIs as descriptive unadjusted matched intervals, with family-wise multiplicity / selection considerations.",
+  "rank_by_T2_then_T3": [
+    "current_map_to_giants_boulder",
+    "rainbow_map_basalt_to_voltaic_boulder",
+    "rainbow_map_basalt_to_voltaic_manifold",
+    "rainbow_33land_full_four_standalone_keepers",
+    "rainbow_map_basalt_tooth_staff_to_voltaic_manifold_prism_boulder",
+    "current_map_to_plains",
+    "current",
+    "four_rainbow",
+    "rainbow_map_basalt_to_prism_boulder",
+    "rainbow_map_to_pentad_prism",
+    "rainbow_map_basalt_tooth_to_voltaic_prism_boulder"
+  ]
+}
