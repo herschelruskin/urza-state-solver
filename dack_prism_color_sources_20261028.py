@@ -137,10 +137,10 @@ def exact_source_witnesses():
 
     # Talon filter (already correct) requires external {1}.
     s=d.State(1,("Pentad Prism",),(),(d.Perm("Talon Gates of Madara"),),c=1)
-    assert any(z.any==1 and z.c==0 for z in d.utility_actions(s))
+    assert any(z.any==1 and z.c==0 for z in d.tap_mana_actions(s))
     # Prismatic Lens filter (already correct) requires external {1}.
     s=d.State(1,("Pentad Prism",),(),(d.Perm("Prismatic Lens"),),c=1)
-    assert any(z.any==1 and z.c==0 for z in d.utility_actions(s))
+    assert any(z.any==1 and z.c==0 for z in d.tap_mana_actions(s))
     # Boulder filter (already correct) requires external {1}.
     s=d.State(1,("Pentad Prism",),(),(d.Perm("Giant's Boulder"),),c=1)
     assert any(z.any==1 and z.c==0 for z in d.special_actions(s))
