@@ -25,6 +25,7 @@ SEED_BASE=9914281028171137
 SCHEMA="dack_prism_key_cuts_four_rainbow_paired_n2048_v1"
 POLICY="assertive"
 BEAM=160
+ORIGINAL_512_SEED_BASE=prior.SEED_BASE
 TRUE4=tuple(prior.TRUE4)
 BASE=tuple(prior.BASE)
 RAINBOW=tuple(prior.RAINBOW)
@@ -97,7 +98,7 @@ def diff_between(a,b):
 def audit():
     assert POLICY==sim.ACTIVE_POLICY and BEAM==sim.GAMEPLAY_BEAM
     assert N==256*SHARD_GAMES and SHARD_GAMES==prior.GAMES_PER_SHARD
-    assert SEED_BASE not in (prior.SEED_BASE,sim.DEFAULT_SEED_BASE,
+    assert SEED_BASE not in (ORIGINAL_512_SEED_BASE,sim.DEFAULT_SEED_BASE,
                              99142710271850,99142710270201)
     assert sim.deck_hash(BASE)==EXPECTED_HASH
     assert len(VARIANTS)==14 and len({sim.deck_hash(x) for x in VARIANTS.values()})==14
