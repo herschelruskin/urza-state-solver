@@ -112,7 +112,7 @@ def audit():
                             "out":["Pentad Prism"],"in":["Voltaic Key"]}
     assert diff_between(VARIANTS["true4_basalt_tooth_prism_key"],
                         VARIANTS["true4_map_tooth_prism_key"])=={
-                            "out":["Basalt Monolith"],"in":["World Map"]} or True
+                            "out":["World Map"],"in":["Basalt Monolith"]}
     for name,deck in VARIANTS.items():
         assert len(deck)==99 and LOCKED.issubset(deck),name
         assert sim.root.COMBO.issubset(deck),name
