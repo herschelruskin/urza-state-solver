@@ -1,0 +1,23 @@
+name: Dack Prism Color Source Witness Audit
+on:
+  push:
+    branches: [dack-prism-true-rainbow-correction-20261028]
+    paths:
+      - 'dack_prism_color_sources_20261028.py'
+      - '.github/workflows/dack_prism_color_sources_20261028.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile correction
+        run: python -m py_compile dack_prism_color_sources_20261028.py
+      - name: Prove exact colored payment, filters, metalcraft, two counters, and Commander legality
+        run: python -u dack_prism_color_sources_20261028.py
