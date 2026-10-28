@@ -1,0 +1,42 @@
+name: Dack Aura N1024 Missing Artifact Recovery
+on:
+  push:
+    branches: [dack-assertive-heldout-n1024-shard104-recovery-20261027]
+    paths:
+      - 'dack_assertive_n1024_artifact_recovery.sh'
+      - '.github/workflows/dack_assertive_n1024_artifact_recovery.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: dack-aura-n1024-recovery
+  cancel-in-progress: false
+jobs:
+  recover-and-pool:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate recovery source and Python schema
+        run: |
+          bash -n dack_assertive_n1024_artifact_recovery.sh
+          python -m py_compile dack_assertive_protected_auras_heldout_n1024_20261027.py
+      - name: Restore exactly failed game seeds and strictly validate 1024 unique trials
+        run: bash dack_assertive_n1024_artifact_recovery.sh
+      - name: Retain validated report if Git push fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dack-aura-n1024-recovered-final-results
+          path: |
+            benchmark_results/dack_assertive_protected_auras_heldout_n1024_report.json
+            benchmark_results/dack_assertive_protected_auras_heldout_n1024_report.raw.json.gz
+          retention-days: 90
+          if-no-files-found: warn
