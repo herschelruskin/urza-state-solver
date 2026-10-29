@@ -1,0 +1,37 @@
+name: Audit Boonweaver Aura Exile Guard
+on:
+  push:
+    branches: [dack-boonweaver-combo-exile-guard-20261029]
+    paths:
+      - 'dack_boonweaver_aura_exile_guard_20261029.py'
+      - '.github/workflows/dack_boonweaver_aura_exile_guard.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and reproduce the previous unsafe Gemstone Aura branch
+        run: |
+          python -m py_compile dack_boonweaver_aura_exile_guard_20261029.py
+          python -u dack_boonweaver_aura_exile_guard_20261029.py
+      - name: Check live Boulder deck goldfish remains runnable with new guard
+        run: |
+          python - <<'PY'
+          import dack_boonweaver_aura_exile_guard_20261029 as g
+          import dack_actual_current_boulder_20261028 as live
+          import dack_active_mulligan_policy as sim
+          assert g.audit()['status']=='PASS'
+          sim.configure_variants({'actual_boulder':live.ACTUAL_CURRENT_99})
+          sim.reset_caches()
+          r=sim.simulate('actual_boulder',7,policy='assertive',seed_base=99142910292101,beam=160)
+          assert r['deck_hash']==sim.deck_hash(live.ACTUAL_CURRENT_99)
+          assert r['win_turn'] in (0,1,2,3)
+          print('BOONWEAVER_AURA_GUARD_SMOKE_PASS',r['win_turn'],r['keep_n'])
+          PY
