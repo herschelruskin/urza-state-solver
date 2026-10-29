@@ -1,0 +1,687 @@
+{
+  "schema": "dack_exile_guard_old_seed_matched_n1024_v1",
+  "status": "PASS",
+  "n": 1024,
+  "planned": 1024,
+  "missing": [],
+  "missing_count": 0,
+  "shards_found": 128,
+  "expected_shards": 128,
+  "seed_base": 9914291029102331,
+  "policy": "assertive",
+  "beam": 160,
+  "locked_auras": [
+    "Hardlight Containment",
+    "Lunarch Mantle"
+  ],
+  "hashes": {
+    "current": "587b6534e05a65299306b479e460cdb34917da70da11512663532fae5ca97538",
+    "key_for_tooth": "fd21f09a14e929d4a877a6ae158a37d46bda6ae0d76c3adc6e4b6b1085638552",
+    "key_for_implements": "f3ab8ad0e6ef8b78e43b03642f000c1af149ba12b8b34a7957c9c32d9a88d86d",
+    "key_for_basalt": "d08b16982ce8ba75e2ef0e912774fe8362412ddb4abb2f99fc9fd968c71d885c"
+  },
+  "rainbow_lands": [],
+  "source_correction": "mox_diamond_any_and_gardens_filter_20261028_v1",
+  "arms": {
+    "current": {
+      "out": [
+        "World Map"
+      ],
+      "in": [
+        "Giant's Boulder"
+      ],
+      "T1_pct": 5.1758,
+      "T2_pct": 50.5859,
+      "T3_pct": 82.8125,
+      "counts": {
+        "0": 176,
+        "1": 53,
+        "2": 465,
+        "3": 330
+      },
+      "mean_keep": 5.1162
+    },
+    "key_for_tooth": {
+      "out": [
+        "Tooth of Ramos",
+        "World Map"
+      ],
+      "in": [
+        "Giant's Boulder",
+        "Voltaic Key"
+      ],
+      "T1_pct": 4.8828,
+      "T2_pct": 51.6602,
+      "T3_pct": 82.5195,
+      "counts": {
+        "0": 179,
+        "1": 50,
+        "2": 479,
+        "3": 316
+      },
+      "mean_keep": 5.0986
+    },
+    "key_for_implements": {
+      "out": [
+        "Implements of Sacrifice",
+        "World Map"
+      ],
+      "in": [
+        "Giant's Boulder",
+        "Voltaic Key"
+      ],
+      "T1_pct": 5.1758,
+      "T2_pct": 51.1719,
+      "T3_pct": 83.1055,
+      "counts": {
+        "0": 173,
+        "1": 53,
+        "2": 471,
+        "3": 327
+      },
+      "mean_keep": 5.0889
+    },
+    "key_for_basalt": {
+      "out": [
+        "Basalt Monolith",
+        "World Map"
+      ],
+      "in": [
+        "Giant's Boulder",
+        "Voltaic Key"
+      ],
+      "T1_pct": 5.1758,
+      "T2_pct": 51.0742,
+      "T3_pct": 83.6914,
+      "counts": {
+        "0": 167,
+        "1": 53,
+        "2": 470,
+        "3": 334
+      },
+      "mean_keep": 5.1055
+    }
+  },
+  "paired_vs_current": {
+    "key_for_tooth": {
+      "T1": {
+        "delta_pp": -0.293,
+        "gains": 2,
+        "losses": 5,
+        "ties": 1017,
+        "paired_95_ci_pp": [
+          -0.7993,
+          0.2134
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.0742,
+        "gains": 29,
+        "losses": 18,
+        "ties": 977,
+        "paired_95_ci_pp": [
+          -0.237,
+          2.3854
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.293,
+        "gains": 19,
+        "losses": 22,
+        "ties": 983,
+        "paired_95_ci_pp": [
+          -1.519,
+          0.9331
+        ]
+      }
+    },
+    "key_for_implements": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 6,
+        "losses": 6,
+        "ties": 1012,
+        "paired_95_ci_pp": [
+          -0.6634,
+          0.6634
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.5859,
+        "gains": 48,
+        "losses": 42,
+        "ties": 934,
+        "paired_95_ci_pp": [
+          -1.2304,
+          2.4023
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.293,
+        "gains": 42,
+        "losses": 39,
+        "ties": 943,
+        "paired_95_ci_pp": [
+          -1.4304,
+          2.0164
+        ]
+      }
+    },
+    "key_for_basalt": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 6,
+        "losses": 6,
+        "ties": 1012,
+        "paired_95_ci_pp": [
+          -0.6634,
+          0.6634
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.4883,
+        "gains": 55,
+        "losses": 50,
+        "ties": 919,
+        "paired_95_ci_pp": [
+          -1.4738,
+          2.4503
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.8789,
+        "gains": 49,
+        "losses": 40,
+        "ties": 935,
+        "paired_95_ci_pp": [
+          -0.9269,
+          2.6847
+        ]
+      }
+    }
+  },
+  "head_to_heads": {
+    "key_for_tooth_vs_current": {
+      "T1": {
+        "delta_pp": -0.293,
+        "gains": 2,
+        "losses": 5,
+        "ties": 1017,
+        "paired_95_ci_pp": [
+          -0.7993,
+          0.2134
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.0742,
+        "gains": 29,
+        "losses": 18,
+        "ties": 977,
+        "paired_95_ci_pp": [
+          -0.237,
+          2.3854
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.293,
+        "gains": 19,
+        "losses": 22,
+        "ties": 983,
+        "paired_95_ci_pp": [
+          -1.519,
+          0.9331
+        ]
+      }
+    },
+    "key_for_implements_vs_current": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 6,
+        "losses": 6,
+        "ties": 1012,
+        "paired_95_ci_pp": [
+          -0.6634,
+          0.6634
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.5859,
+        "gains": 48,
+        "losses": 42,
+        "ties": 934,
+        "paired_95_ci_pp": [
+          -1.2304,
+          2.4023
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.293,
+        "gains": 42,
+        "losses": 39,
+        "ties": 943,
+        "paired_95_ci_pp": [
+          -1.4304,
+          2.0164
+        ]
+      }
+    },
+    "key_for_basalt_vs_current": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 6,
+        "losses": 6,
+        "ties": 1012,
+        "paired_95_ci_pp": [
+          -0.6634,
+          0.6634
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.4883,
+        "gains": 55,
+        "losses": 50,
+        "ties": 919,
+        "paired_95_ci_pp": [
+          -1.4738,
+          2.4503
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.8789,
+        "gains": 49,
+        "losses": 40,
+        "ties": 935,
+        "paired_95_ci_pp": [
+          -0.9269,
+          2.6847
+        ]
+      }
+    },
+    "key_for_implements_vs_key_for_tooth": {
+      "T1": {
+        "delta_pp": 0.293,
+        "gains": 8,
+        "losses": 5,
+        "ties": 1011,
+        "paired_95_ci_pp": [
+          -0.3973,
+          0.9832
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.4883,
+        "gains": 43,
+        "losses": 48,
+        "ties": 933,
+        "paired_95_ci_pp": [
+          -2.3148,
+          1.3383
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.5859,
+        "gains": 44,
+        "losses": 38,
+        "ties": 942,
+        "paired_95_ci_pp": [
+          -1.1478,
+          2.3197
+        ]
+      }
+    }
+  },
+  "scope": "Exact same 1024 paired old game IDs replayed with Aura+Gleaming Splendor exile guard, including Chrome Mox, Battlefront and Gemstone Caverns. Not full multiplayer win odds.",
+  "rank_by_T2": [
+    "key_for_tooth",
+    "key_for_implements",
+    "key_for_basalt",
+    "current"
+  ],
+  "replay_comparison": {
+    "original_report": "benchmark_results/dack_boulder_key_bucknard_n1024_report.json",
+    "old_mechanics": "Previous Bucknard priority fix, no protected Aura/Splendor Gemstone guard; Splendor Chrome imprint allowed",
+    "new_mechanics": "boonweaver_auras_plus_gleaming_splendor_exile_guard_v2",
+    "paired_n": 1024,
+    "old_and_new_same_seeds_and_decks": true,
+    "by_arm": {
+      "current": {
+        "old_T2_pct": 50.5859,
+        "new_T2_pct": 50.5859,
+        "T1": {
+          "delta_pp": 0.0,
+          "gains": 0,
+          "losses": 0,
+          "ties": 1024,
+          "paired_95_ci_pp": [
+            0.0,
+            0.0
+          ]
+        },
+        "T2": {
+          "delta_pp": 0.0,
+          "gains": 1,
+          "losses": 1,
+          "ties": 1022,
+          "paired_95_ci_pp": [
+            -0.2708,
+            0.2708
+          ]
+        },
+        "T3": {
+          "delta_pp": -0.1953,
+          "gains": 1,
+          "losses": 3,
+          "ties": 1020,
+          "paired_95_ci_pp": [
+            -0.5781,
+            0.1875
+          ]
+        },
+        "keep_n_change_count": 6
+      },
+      "key_for_tooth": {
+        "old_T2_pct": 51.8555,
+        "new_T2_pct": 51.6602,
+        "T1": {
+          "delta_pp": 0.0,
+          "gains": 0,
+          "losses": 0,
+          "ties": 1024,
+          "paired_95_ci_pp": [
+            0.0,
+            0.0
+          ]
+        },
+        "T2": {
+          "delta_pp": -0.1953,
+          "gains": 0,
+          "losses": 2,
+          "ties": 1022,
+          "paired_95_ci_pp": [
+            -0.4659,
+            0.0752
+          ]
+        },
+        "T3": {
+          "delta_pp": -0.293,
+          "gains": 0,
+          "losses": 3,
+          "ties": 1021,
+          "paired_95_ci_pp": [
+            -0.6242,
+            0.0382
+          ]
+        },
+        "keep_n_change_count": 5
+      },
+      "key_for_implements": {
+        "old_T2_pct": 51.2695,
+        "new_T2_pct": 51.1719,
+        "T1": {
+          "delta_pp": 0.0,
+          "gains": 0,
+          "losses": 0,
+          "ties": 1024,
+          "paired_95_ci_pp": [
+            0.0,
+            0.0
+          ]
+        },
+        "T2": {
+          "delta_pp": -0.0977,
+          "gains": 1,
+          "losses": 2,
+          "ties": 1021,
+          "paired_95_ci_pp": [
+            -0.4293,
+            0.234
+          ]
+        },
+        "T3": {
+          "delta_pp": -0.3906,
+          "gains": 0,
+          "losses": 4,
+          "ties": 1020,
+          "paired_95_ci_pp": [
+            -0.7729,
+            -0.0084
+          ]
+        },
+        "keep_n_change_count": 6
+      },
+      "key_for_basalt": {
+        "old_T2_pct": 51.1719,
+        "new_T2_pct": 51.0742,
+        "T1": {
+          "delta_pp": -0.0977,
+          "gains": 0,
+          "losses": 1,
+          "ties": 1023,
+          "paired_95_ci_pp": [
+            -0.2891,
+            0.0938
+          ]
+        },
+        "T2": {
+          "delta_pp": -0.0977,
+          "gains": 1,
+          "losses": 2,
+          "ties": 1021,
+          "paired_95_ci_pp": [
+            -0.4293,
+            0.234
+          ]
+        },
+        "T3": {
+          "delta_pp": -0.293,
+          "gains": 1,
+          "losses": 4,
+          "ties": 1019,
+          "paired_95_ci_pp": [
+            -0.7208,
+            0.1349
+          ]
+        },
+        "keep_n_change_count": 3
+      }
+    },
+    "old_swaps_vs_current": {
+      "key_for_tooth": {
+        "T1": {
+          "delta_pp": -0.293,
+          "gains": 2,
+          "losses": 5,
+          "ties": 1017,
+          "paired_95_ci_pp": [
+            -0.7993,
+            0.2134
+          ]
+        },
+        "T2": {
+          "delta_pp": 1.2695,
+          "gains": 30,
+          "losses": 17,
+          "ties": 977,
+          "paired_95_ci_pp": [
+            -0.041,
+            2.5801
+          ]
+        },
+        "T3": {
+          "delta_pp": -0.1953,
+          "gains": 20,
+          "losses": 22,
+          "ties": 982,
+          "paired_95_ci_pp": [
+            -1.4363,
+            1.0457
+          ]
+        }
+      },
+      "key_for_implements": {
+        "T1": {
+          "delta_pp": 0.0,
+          "gains": 6,
+          "losses": 6,
+          "ties": 1012,
+          "paired_95_ci_pp": [
+            -0.6634,
+            0.6634
+          ]
+        },
+        "T2": {
+          "delta_pp": 0.6836,
+          "gains": 49,
+          "losses": 42,
+          "ties": 933,
+          "paired_95_ci_pp": [
+            -1.1427,
+            2.5099
+          ]
+        },
+        "T3": {
+          "delta_pp": 0.4883,
+          "gains": 44,
+          "losses": 39,
+          "ties": 941,
+          "paired_95_ci_pp": [
+            -1.2561,
+            2.2327
+          ]
+        }
+      },
+      "key_for_basalt": {
+        "T1": {
+          "delta_pp": 0.0977,
+          "gains": 7,
+          "losses": 6,
+          "ties": 1011,
+          "paired_95_ci_pp": [
+            -0.5928,
+            0.7881
+          ]
+        },
+        "T2": {
+          "delta_pp": 0.5859,
+          "gains": 55,
+          "losses": 49,
+          "ties": 920,
+          "paired_95_ci_pp": [
+            -1.3667,
+            2.5385
+          ]
+        },
+        "T3": {
+          "delta_pp": 0.9766,
+          "gains": 48,
+          "losses": 38,
+          "ties": 938,
+          "paired_95_ci_pp": [
+            -0.7983,
+            2.7514
+          ]
+        }
+      }
+    },
+    "new_swaps_vs_current": {
+      "key_for_tooth": {
+        "T1": {
+          "delta_pp": -0.293,
+          "gains": 2,
+          "losses": 5,
+          "ties": 1017,
+          "paired_95_ci_pp": [
+            -0.7993,
+            0.2134
+          ]
+        },
+        "T2": {
+          "delta_pp": 1.0742,
+          "gains": 29,
+          "losses": 18,
+          "ties": 977,
+          "paired_95_ci_pp": [
+            -0.237,
+            2.3854
+          ]
+        },
+        "T3": {
+          "delta_pp": -0.293,
+          "gains": 19,
+          "losses": 22,
+          "ties": 983,
+          "paired_95_ci_pp": [
+            -1.519,
+            0.9331
+          ]
+        }
+      },
+      "key_for_implements": {
+        "T1": {
+          "delta_pp": 0.0,
+          "gains": 6,
+          "losses": 6,
+          "ties": 1012,
+          "paired_95_ci_pp": [
+            -0.6634,
+            0.6634
+          ]
+        },
+        "T2": {
+          "delta_pp": 0.5859,
+          "gains": 48,
+          "losses": 42,
+          "ties": 934,
+          "paired_95_ci_pp": [
+            -1.2304,
+            2.4023
+          ]
+        },
+        "T3": {
+          "delta_pp": 0.293,
+          "gains": 42,
+          "losses": 39,
+          "ties": 943,
+          "paired_95_ci_pp": [
+            -1.4304,
+            2.0164
+          ]
+        }
+      },
+      "key_for_basalt": {
+        "T1": {
+          "delta_pp": 0.0,
+          "gains": 6,
+          "losses": 6,
+          "ties": 1012,
+          "paired_95_ci_pp": [
+            -0.6634,
+            0.6634
+          ]
+        },
+        "T2": {
+          "delta_pp": 0.4883,
+          "gains": 55,
+          "losses": 50,
+          "ties": 919,
+          "paired_95_ci_pp": [
+            -1.4738,
+            2.4503
+          ]
+        },
+        "T3": {
+          "delta_pp": 0.8789,
+          "gains": 49,
+          "losses": 40,
+          "ties": 935,
+          "paired_95_ci_pp": [
+            -0.9269,
+            2.6847
+          ]
+        }
+      }
+    }
+  },
+  "real_user_baseline": "User's live 34-land deck: World Map removed, Giant's Boulder kept; NO rainbow land proposals",
+  "protected_splendor": true
+}
