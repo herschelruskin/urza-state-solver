@@ -1,0 +1,548 @@
+{
+  "schema": "dack_boulder_key_bucknard_stack_paired_n1024_v1",
+  "status": "PASS",
+  "n": 1024,
+  "planned": 1024,
+  "missing": [],
+  "missing_count": 0,
+  "shards_found": 128,
+  "expected_shards": 128,
+  "seed_base": 9914291029102331,
+  "policy": "assertive",
+  "beam": 160,
+  "locked_auras": [
+    "Hardlight Containment",
+    "Lunarch Mantle"
+  ],
+  "hashes": {
+    "current": "587b6534e05a65299306b479e460cdb34917da70da11512663532fae5ca97538",
+    "key_for_tooth": "fd21f09a14e929d4a877a6ae158a37d46bda6ae0d76c3adc6e4b6b1085638552",
+    "key_for_implements": "f3ab8ad0e6ef8b78e43b03642f000c1af149ba12b8b34a7957c9c32d9a88d86d",
+    "key_for_basalt": "d08b16982ce8ba75e2ef0e912774fe8362412ddb4abb2f99fc9fd968c71d885c",
+    "key_for_tooth_legacy_bucknard": "fd21f09a14e929d4a877a6ae158a37d46bda6ae0d76c3adc6e4b6b1085638552",
+    "key_for_implements_legacy_bucknard": "f3ab8ad0e6ef8b78e43b03642f000c1af149ba12b8b34a7957c9c32d9a88d86d"
+  },
+  "rainbow_lands": [],
+  "source_correction": "bucknard_key_pre_resolution_double_activation_20261029_v1",
+  "arms": {
+    "current": {
+      "out": [],
+      "in": [],
+      "T1_pct": 5.1758,
+      "T2_pct": 50.5859,
+      "T3_pct": 83.0078,
+      "counts": {
+        "0": 174,
+        "1": 53,
+        "2": 465,
+        "3": 332
+      },
+      "mean_keep": 5.1221,
+      "key_bucknard_priority": true
+    },
+    "key_for_tooth": {
+      "out": [
+        "Tooth of Ramos"
+      ],
+      "in": [
+        "Voltaic Key"
+      ],
+      "T1_pct": 4.8828,
+      "T2_pct": 51.8555,
+      "T3_pct": 82.8125,
+      "counts": {
+        "0": 176,
+        "1": 50,
+        "2": 481,
+        "3": 317
+      },
+      "mean_keep": 5.1074,
+      "key_bucknard_priority": true
+    },
+    "key_for_implements": {
+      "out": [
+        "Implements of Sacrifice"
+      ],
+      "in": [
+        "Voltaic Key"
+      ],
+      "T1_pct": 5.1758,
+      "T2_pct": 51.2695,
+      "T3_pct": 83.4961,
+      "counts": {
+        "0": 169,
+        "1": 53,
+        "2": 472,
+        "3": 330
+      },
+      "mean_keep": 5.0957,
+      "key_bucknard_priority": true
+    },
+    "key_for_basalt": {
+      "out": [
+        "Basalt Monolith"
+      ],
+      "in": [
+        "Voltaic Key"
+      ],
+      "T1_pct": 5.2734,
+      "T2_pct": 51.1719,
+      "T3_pct": 83.9844,
+      "counts": {
+        "0": 164,
+        "1": 54,
+        "2": 470,
+        "3": 336
+      },
+      "mean_keep": 5.1094,
+      "key_bucknard_priority": true
+    },
+    "key_for_tooth_legacy_bucknard": {
+      "out": [
+        "Tooth of Ramos"
+      ],
+      "in": [
+        "Voltaic Key"
+      ],
+      "T1_pct": 4.8828,
+      "T2_pct": 51.8555,
+      "T3_pct": 82.8125,
+      "counts": {
+        "0": 176,
+        "1": 50,
+        "2": 481,
+        "3": 317
+      },
+      "mean_keep": 5.1074,
+      "key_bucknard_priority": false
+    },
+    "key_for_implements_legacy_bucknard": {
+      "out": [
+        "Implements of Sacrifice"
+      ],
+      "in": [
+        "Voltaic Key"
+      ],
+      "T1_pct": 5.1758,
+      "T2_pct": 51.2695,
+      "T3_pct": 83.4961,
+      "counts": {
+        "0": 169,
+        "1": 53,
+        "2": 472,
+        "3": 330
+      },
+      "mean_keep": 5.0957,
+      "key_bucknard_priority": false
+    }
+  },
+  "paired_vs_current": {
+    "key_for_tooth": {
+      "T1": {
+        "delta_pp": -0.293,
+        "gains": 2,
+        "losses": 5,
+        "ties": 1017,
+        "paired_95_ci_pp": [
+          -0.7993,
+          0.2134
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.2695,
+        "gains": 30,
+        "losses": 17,
+        "ties": 977,
+        "paired_95_ci_pp": [
+          -0.041,
+          2.5801
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.1953,
+        "gains": 20,
+        "losses": 22,
+        "ties": 982,
+        "paired_95_ci_pp": [
+          -1.4363,
+          1.0457
+        ]
+      }
+    },
+    "key_for_implements": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 6,
+        "losses": 6,
+        "ties": 1012,
+        "paired_95_ci_pp": [
+          -0.6634,
+          0.6634
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.6836,
+        "gains": 49,
+        "losses": 42,
+        "ties": 933,
+        "paired_95_ci_pp": [
+          -1.1427,
+          2.5099
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.4883,
+        "gains": 44,
+        "losses": 39,
+        "ties": 941,
+        "paired_95_ci_pp": [
+          -1.2561,
+          2.2327
+        ]
+      }
+    },
+    "key_for_basalt": {
+      "T1": {
+        "delta_pp": 0.0977,
+        "gains": 7,
+        "losses": 6,
+        "ties": 1011,
+        "paired_95_ci_pp": [
+          -0.5928,
+          0.7881
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.5859,
+        "gains": 55,
+        "losses": 49,
+        "ties": 920,
+        "paired_95_ci_pp": [
+          -1.3667,
+          2.5385
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.9766,
+        "gains": 48,
+        "losses": 38,
+        "ties": 938,
+        "paired_95_ci_pp": [
+          -0.7983,
+          2.7514
+        ]
+      }
+    },
+    "key_for_tooth_legacy_bucknard": {
+      "T1": {
+        "delta_pp": -0.293,
+        "gains": 2,
+        "losses": 5,
+        "ties": 1017,
+        "paired_95_ci_pp": [
+          -0.7993,
+          0.2134
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.2695,
+        "gains": 30,
+        "losses": 17,
+        "ties": 977,
+        "paired_95_ci_pp": [
+          -0.041,
+          2.5801
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.1953,
+        "gains": 20,
+        "losses": 22,
+        "ties": 982,
+        "paired_95_ci_pp": [
+          -1.4363,
+          1.0457
+        ]
+      }
+    },
+    "key_for_implements_legacy_bucknard": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 6,
+        "losses": 6,
+        "ties": 1012,
+        "paired_95_ci_pp": [
+          -0.6634,
+          0.6634
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.6836,
+        "gains": 49,
+        "losses": 42,
+        "ties": 933,
+        "paired_95_ci_pp": [
+          -1.1427,
+          2.5099
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.4883,
+        "gains": 44,
+        "losses": 39,
+        "ties": 941,
+        "paired_95_ci_pp": [
+          -1.2561,
+          2.2327
+        ]
+      }
+    }
+  },
+  "head_to_heads": {
+    "key_for_tooth_vs_current": {
+      "T1": {
+        "delta_pp": -0.293,
+        "gains": 2,
+        "losses": 5,
+        "ties": 1017,
+        "paired_95_ci_pp": [
+          -0.7993,
+          0.2134
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.2695,
+        "gains": 30,
+        "losses": 17,
+        "ties": 977,
+        "paired_95_ci_pp": [
+          -0.041,
+          2.5801
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.1953,
+        "gains": 20,
+        "losses": 22,
+        "ties": 982,
+        "paired_95_ci_pp": [
+          -1.4363,
+          1.0457
+        ]
+      }
+    },
+    "key_for_implements_vs_current": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 6,
+        "losses": 6,
+        "ties": 1012,
+        "paired_95_ci_pp": [
+          -0.6634,
+          0.6634
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.6836,
+        "gains": 49,
+        "losses": 42,
+        "ties": 933,
+        "paired_95_ci_pp": [
+          -1.1427,
+          2.5099
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.4883,
+        "gains": 44,
+        "losses": 39,
+        "ties": 941,
+        "paired_95_ci_pp": [
+          -1.2561,
+          2.2327
+        ]
+      }
+    },
+    "key_for_basalt_vs_current": {
+      "T1": {
+        "delta_pp": 0.0977,
+        "gains": 7,
+        "losses": 6,
+        "ties": 1011,
+        "paired_95_ci_pp": [
+          -0.5928,
+          0.7881
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.5859,
+        "gains": 55,
+        "losses": 49,
+        "ties": 920,
+        "paired_95_ci_pp": [
+          -1.3667,
+          2.5385
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.9766,
+        "gains": 48,
+        "losses": 38,
+        "ties": 938,
+        "paired_95_ci_pp": [
+          -0.7983,
+          2.7514
+        ]
+      }
+    },
+    "key_for_implements_vs_key_for_tooth": {
+      "T1": {
+        "delta_pp": 0.293,
+        "gains": 8,
+        "losses": 5,
+        "ties": 1011,
+        "paired_95_ci_pp": [
+          -0.3973,
+          0.9832
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.5859,
+        "gains": 42,
+        "losses": 48,
+        "ties": 934,
+        "paired_95_ci_pp": [
+          -2.4023,
+          1.2304
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.6836,
+        "gains": 45,
+        "losses": 38,
+        "ties": 941,
+        "paired_95_ci_pp": [
+          -1.0605,
+          2.4277
+        ]
+      }
+    },
+    "key_for_tooth_vs_key_for_basalt": {
+      "T1": {
+        "delta_pp": -0.3906,
+        "gains": 4,
+        "losses": 8,
+        "ties": 1012,
+        "paired_95_ci_pp": [
+          -1.0536,
+          0.2723
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.6836,
+        "gains": 59,
+        "losses": 52,
+        "ties": 913,
+        "paired_95_ci_pp": [
+          -1.3335,
+          2.7007
+        ]
+      },
+      "T3": {
+        "delta_pp": -1.1719,
+        "gains": 40,
+        "losses": 52,
+        "ties": 932,
+        "paired_95_ci_pp": [
+          -3.0073,
+          0.6635
+        ]
+      }
+    },
+    "key_for_tooth_vs_key_for_tooth_legacy_bucknard": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "ties": 1024,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "ties": 1024,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "ties": 1024,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ]
+      }
+    },
+    "key_for_implements_vs_key_for_implements_legacy_bucknard": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "ties": 1024,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "ties": 1024,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.0,
+        "gains": 0,
+        "losses": 0,
+        "ties": 1024,
+        "paired_95_ci_pp": [
+          0.0,
+          0.0
+        ]
+      }
+    }
+  },
+  "scope": "Optimistic goldfish commander cast by T1 T2 T3. Priority stack Bucknard+Key modeled as 3 generic mana for two independent d4 treasure activations; no opponent interactions.",
+  "rank_by_T2": [
+    "key_for_tooth",
+    "key_for_tooth_legacy_bucknard",
+    "key_for_implements",
+    "key_for_implements_legacy_bucknard",
+    "key_for_basalt",
+    "current"
+  ],
+  "real_user_baseline": "current has Boulder IN and World Map OUT; original 34 lands",
+  "study_design": "Fresh matched 1024 game IDs across real Boulder baseline, 3 key-for-one-card alternatives and 2 rule-ablated identical-deck diagnostic controls",
+  "stack_corrected_arms": [
+    "current",
+    "key_for_tooth",
+    "key_for_implements",
+    "key_for_basalt"
+  ],
+  "stack_disabled_arms": [
+    "key_for_implements_legacy_bucknard",
+    "key_for_tooth_legacy_bucknard"
+  ]
+}
