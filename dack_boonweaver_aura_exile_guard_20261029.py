@@ -28,6 +28,10 @@ _PREV_CHROME=d.chrome_mox_allowed
 # rather than calling d.chrome_mox_allowed.
 newer=sim.root.newer
 _PREV_WHITE_IMPRINTS=frozenset(newer.WHITE_IMPRINTS)
+# Snapshot before changing module-level WHITE_IMPRINTS; historical Chrome
+# policy is a lambda that looks up that module global dynamically.
+_WAS_CHROME_IMPRINTABLE=_PREV_CHROME("Gleaming Splendor")
+_WAS_BATTLEFRONT_IMPRINTABLE="Gleaming Splendor" in _PREV_WHITE_IMPRINTS
 FIX_VERSION="boonweaver_auras_plus_gleaming_splendor_exile_guard_v2"
 
 def safe_chrome_mox_imprint(card):
@@ -76,8 +80,8 @@ def audit():
     assert "World Map" not in live.ACTUAL_CURRENT_99
     assert not any(d.chrome_mox_allowed(a) for a in PROTECTED_AURAS)
     assert not any(d.chrome_mox_allowed(c) for c in CORE_CREATURES)
-    assert _PREV_CHROME("Gleaming Splendor"), "Verify formerly unsafe Chrome imprint"
-    assert "Gleaming Splendor" in _PREV_WHITE_IMPRINTS, "Verify unsafe Battlefront path"
+    assert _WAS_CHROME_IMPRINTABLE, "Verify originally unsafe Chrome imprint"
+    assert _WAS_BATTLEFRONT_IMPRINTABLE, "Verify unsafe Battlefront path"
     assert not d.chrome_mox_allowed("Gleaming Splendor")
     assert "Gleaming Splendor" not in newer.WHITE_IMPRINTS
     assert d.chrome_mox_allowed("Silence"), "Keep safe Chrome Mox imprints usable"
