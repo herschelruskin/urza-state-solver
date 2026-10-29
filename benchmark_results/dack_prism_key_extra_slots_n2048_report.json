@@ -1,0 +1,1314 @@
+{
+  "schema": "dack_prism_key_cuts_four_rainbow_paired_n2048_v1",
+  "status": "PASS",
+  "n": 2048,
+  "planned": 2048,
+  "missing": [],
+  "missing_count": 0,
+  "shards_found": 256,
+  "expected_shards": 256,
+  "seed_base": 9914281028171137,
+  "policy": "assertive",
+  "beam": 160,
+  "locked_auras": [
+    "Hardlight Containment",
+    "Lunarch Mantle"
+  ],
+  "hashes": {
+    "current": "a1c8e05dc3f9e1bcfbfbe2f7773ea4a5e62222d3440dd2f7417fd7f2f058c422",
+    "true4": "8e8fbcaf7d0988d816669fae0321c6b22a83fdd5e63532ebdbd34812ef3b7976",
+    "true4_map_boulder": "8724fc2128ac06e470576a683b90715e2dde9fdc9743b150cd0a6c0319686d9a",
+    "true4_map_basalt_boulder_key": "a795975a903a1ba75ce276b3d22b4a31315c61e62938508eca2728d5b96f7415",
+    "true4_map_basalt_prism_key": "58566f3983e8b7a9001afb64708d1a08687b7e14cb578dfd8658f799ce1d2a8d",
+    "true4_map_basalt_boulder_prism": "7f87b2f922ac6c56489f14e0de5f13883dffa085cc6694c690d84081348c6a47",
+    "true4_basalt_prism": "e24c1fe6309322270e7addd08f9dcc60dd085861b24d0d9b58d6a02907fa1f44",
+    "true4_basalt_tooth_prism_key": "b1f343ce11c5237f445102df5cb078ec2921b1295a9f6ab68ef95bc19773fc18",
+    "true4_basalt_implements_prism_key": "198e8b044d72d0e83d626ae6ff9e95418ed5063de801e3fda8e3501ae62e7932",
+    "true4_basalt_everflow_prism_key": "89ecff5b120c01c18699f97db25b188d626202ec5dcb9d398c23a79f8d017cbb",
+    "true4_map_tooth_prism_key": "585f92aa93411086895d83178e8d6634f94f94249c6c06a005f85dc833d6dfa5",
+    "true4_map_implements_prism_key": "9437290674bd63435f32f455c5df60359a4eb71ded82432dc6959dbde847e720",
+    "true4_map_basalt_tooth_boulder_prism_key": "b39e6176276ff998250211ea503c7765f8ae76c58e0050f74af2e832e6bbeb5b",
+    "true4_map_basalt_implements_boulder_prism_key": "58e7533441318eb562e4f62957336fae197424520edfbe29d01bb797a45234a9"
+  },
+  "rainbow_lands": [
+    "City of Brass",
+    "Mana Confluence",
+    "Tarnished Citadel",
+    "Gemstone Mine"
+  ],
+  "source_correction": "mox_diamond_any_and_gardens_filter_20261028_v1",
+  "arms": {
+    "current": {
+      "out": [],
+      "in": [],
+      "T1_pct": 6.7871,
+      "T2_pct": 50.0488,
+      "T3_pct": 83.4473,
+      "counts": {
+        "0": 339,
+        "1": 139,
+        "2": 886,
+        "3": 684
+      },
+      "mean_keep": 5.0942
+    },
+    "true4": {
+      "out": [
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "in": [
+        "City of Brass",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Tarnished Citadel"
+      ],
+      "T1_pct": 6.5918,
+      "T2_pct": 50.0977,
+      "T3_pct": 83.4473,
+      "counts": {
+        "0": 339,
+        "1": 135,
+        "2": 891,
+        "3": 683
+      },
+      "mean_keep": 5.0674
+    },
+    "true4_map_boulder": {
+      "out": [
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "in": [
+        "City of Brass",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Tarnished Citadel"
+      ],
+      "T1_pct": 6.4453,
+      "T2_pct": 49.1211,
+      "T3_pct": 82.7637,
+      "counts": {
+        "0": 353,
+        "1": 132,
+        "2": 874,
+        "3": 689
+      },
+      "mean_keep": 5.062
+    },
+    "true4_map_basalt_boulder_key": {
+      "out": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "in": [
+        "City of Brass",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Tarnished Citadel",
+        "Voltaic Key"
+      ],
+      "T1_pct": 6.543,
+      "T2_pct": 49.707,
+      "T3_pct": 82.2754,
+      "counts": {
+        "0": 363,
+        "1": 134,
+        "2": 884,
+        "3": 667
+      },
+      "mean_keep": 5.0449
+    },
+    "true4_map_basalt_prism_key": {
+      "out": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "in": [
+        "City of Brass",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Tarnished Citadel",
+        "Voltaic Key"
+      ],
+      "T1_pct": 6.543,
+      "T2_pct": 50.5859,
+      "T3_pct": 82.7637,
+      "counts": {
+        "0": 353,
+        "1": 134,
+        "2": 902,
+        "3": 659
+      },
+      "mean_keep": 5.0679
+    },
+    "true4_map_basalt_boulder_prism": {
+      "out": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "in": [
+        "City of Brass",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Tarnished Citadel"
+      ],
+      "T1_pct": 6.3477,
+      "T2_pct": 49.8535,
+      "T3_pct": 82.666,
+      "counts": {
+        "0": 355,
+        "1": 130,
+        "2": 891,
+        "3": 672
+      },
+      "mean_keep": 5.0273
+    },
+    "true4_basalt_prism": {
+      "out": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "in": [
+        "City of Brass",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Tarnished Citadel"
+      ],
+      "T1_pct": 6.1523,
+      "T2_pct": 50.0488,
+      "T3_pct": 83.4473,
+      "counts": {
+        "0": 339,
+        "1": 126,
+        "2": 899,
+        "3": 684
+      },
+      "mean_keep": 5.0654
+    },
+    "true4_basalt_tooth_prism_key": {
+      "out": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos"
+      ],
+      "in": [
+        "City of Brass",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Tarnished Citadel",
+        "Voltaic Key"
+      ],
+      "T1_pct": 6.3477,
+      "T2_pct": 48.9258,
+      "T3_pct": 82.7637,
+      "counts": {
+        "0": 353,
+        "1": 130,
+        "2": 872,
+        "3": 693
+      },
+      "mean_keep": 5.0557
+    },
+    "true4_basalt_implements_prism_key": {
+      "out": [
+        "Basalt Monolith",
+        "Implements of Sacrifice",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "in": [
+        "City of Brass",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Tarnished Citadel",
+        "Voltaic Key"
+      ],
+      "T1_pct": 6.3477,
+      "T2_pct": 49.2188,
+      "T3_pct": 82.5684,
+      "counts": {
+        "0": 357,
+        "1": 130,
+        "2": 878,
+        "3": 683
+      },
+      "mean_keep": 5.0801
+    },
+    "true4_basalt_everflow_prism_key": {
+      "out": [
+        "Basalt Monolith",
+        "Everflowing Chalice",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "in": [
+        "City of Brass",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Tarnished Citadel",
+        "Voltaic Key"
+      ],
+      "T1_pct": 6.2988,
+      "T2_pct": 49.9023,
+      "T3_pct": 83.6426,
+      "counts": {
+        "0": 335,
+        "1": 129,
+        "2": 893,
+        "3": 691
+      },
+      "mean_keep": 5.1079
+    },
+    "true4_map_tooth_prism_key": {
+      "out": [
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos",
+        "World Map"
+      ],
+      "in": [
+        "City of Brass",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Tarnished Citadel",
+        "Voltaic Key"
+      ],
+      "T1_pct": 6.6406,
+      "T2_pct": 49.2188,
+      "T3_pct": 82.7637,
+      "counts": {
+        "0": 353,
+        "1": 136,
+        "2": 872,
+        "3": 687
+      },
+      "mean_keep": 5.0771
+    },
+    "true4_map_implements_prism_key": {
+      "out": [
+        "Implements of Sacrifice",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "in": [
+        "City of Brass",
+        "Gemstone Mine",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Tarnished Citadel",
+        "Voltaic Key"
+      ],
+      "T1_pct": 6.6895,
+      "T2_pct": 49.8047,
+      "T3_pct": 82.7637,
+      "counts": {
+        "0": 353,
+        "1": 137,
+        "2": 883,
+        "3": 675
+      },
+      "mean_keep": 5.0991
+    },
+    "true4_map_basalt_tooth_boulder_prism_key": {
+      "out": [
+        "Basalt Monolith",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Tooth of Ramos",
+        "World Map"
+      ],
+      "in": [
+        "City of Brass",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Tarnished Citadel",
+        "Voltaic Key"
+      ],
+      "T1_pct": 6.1523,
+      "T2_pct": 50.0,
+      "T3_pct": 82.1777,
+      "counts": {
+        "0": 365,
+        "1": 126,
+        "2": 898,
+        "3": 659
+      },
+      "mean_keep": 5.0225
+    },
+    "true4_map_basalt_implements_boulder_prism_key": {
+      "out": [
+        "Basalt Monolith",
+        "Implements of Sacrifice",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Plains",
+        "World Map"
+      ],
+      "in": [
+        "City of Brass",
+        "Gemstone Mine",
+        "Giant's Boulder",
+        "Mana Confluence",
+        "Pentad Prism",
+        "Tarnished Citadel",
+        "Voltaic Key"
+      ],
+      "T1_pct": 6.2988,
+      "T2_pct": 50.1465,
+      "T3_pct": 82.959,
+      "counts": {
+        "0": 349,
+        "1": 129,
+        "2": 898,
+        "3": 672
+      },
+      "mean_keep": 5.0591
+    }
+  },
+  "paired_vs_current": {
+    "true4": {
+      "T1": {
+        "delta_pp": -0.1953,
+        "gains": 10,
+        "losses": 14,
+        "ties": 2024,
+        "paired_95_ci_pp": [
+          -0.6642,
+          0.2736
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0488,
+        "gains": 81,
+        "losses": 80,
+        "ties": 1887,
+        "paired_95_ci_pp": [
+          -1.1658,
+          1.2635
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.0,
+        "gains": 85,
+        "losses": 85,
+        "ties": 1878,
+        "paired_95_ci_pp": [
+          -1.2481,
+          1.2481
+        ]
+      }
+    },
+    "true4_map_boulder": {
+      "T1": {
+        "delta_pp": -0.3418,
+        "gains": 7,
+        "losses": 14,
+        "ties": 2027,
+        "paired_95_ci_pp": [
+          -0.7802,
+          0.0966
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.9277,
+        "gains": 81,
+        "losses": 100,
+        "ties": 1867,
+        "paired_95_ci_pp": [
+          -2.215,
+          0.3595
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.6836,
+        "gains": 83,
+        "losses": 97,
+        "ties": 1868,
+        "paired_95_ci_pp": [
+          -1.9676,
+          0.6004
+        ]
+      }
+    },
+    "true4_map_basalt_boulder_key": {
+      "T1": {
+        "delta_pp": -0.2441,
+        "gains": 9,
+        "losses": 14,
+        "ties": 2025,
+        "paired_95_ci_pp": [
+          -0.7031,
+          0.2148
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.3418,
+        "gains": 95,
+        "losses": 102,
+        "ties": 1851,
+        "paired_95_ci_pp": [
+          -1.6853,
+          1.0017
+        ]
+      },
+      "T3": {
+        "delta_pp": -1.1719,
+        "gains": 85,
+        "losses": 109,
+        "ties": 1854,
+        "paired_95_ci_pp": [
+          -2.5042,
+          0.1605
+        ]
+      }
+    },
+    "true4_map_basalt_prism_key": {
+      "T1": {
+        "delta_pp": -0.2441,
+        "gains": 9,
+        "losses": 14,
+        "ties": 2025,
+        "paired_95_ci_pp": [
+          -0.7031,
+          0.2148
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.5371,
+        "gains": 102,
+        "losses": 91,
+        "ties": 1855,
+        "paired_95_ci_pp": [
+          -0.7926,
+          1.8668
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.6836,
+        "gains": 77,
+        "losses": 91,
+        "ties": 1880,
+        "paired_95_ci_pp": [
+          -1.924,
+          0.5568
+        ]
+      }
+    },
+    "true4_map_basalt_boulder_prism": {
+      "T1": {
+        "delta_pp": -0.4395,
+        "gains": 7,
+        "losses": 16,
+        "ties": 2025,
+        "paired_95_ci_pp": [
+          -0.8981,
+          0.0192
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.1953,
+        "gains": 95,
+        "losses": 99,
+        "ties": 1854,
+        "paired_95_ci_pp": [
+          -1.5286,
+          1.138
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.7812,
+        "gains": 76,
+        "losses": 92,
+        "ties": 1880,
+        "paired_95_ci_pp": [
+          -2.0215,
+          0.459
+        ]
+      }
+    },
+    "true4_basalt_prism": {
+      "T1": {
+        "delta_pp": -0.6348,
+        "gains": 8,
+        "losses": 21,
+        "ties": 2019,
+        "paired_95_ci_pp": [
+          -1.1495,
+          -0.12
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gains": 91,
+        "losses": 91,
+        "ties": 1866,
+        "paired_95_ci_pp": [
+          -1.2914,
+          1.2914
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.0,
+        "gains": 83,
+        "losses": 83,
+        "ties": 1882,
+        "paired_95_ci_pp": [
+          -1.2333,
+          1.2333
+        ]
+      }
+    },
+    "true4_basalt_tooth_prism_key": {
+      "T1": {
+        "delta_pp": -0.4395,
+        "gains": 10,
+        "losses": 19,
+        "ties": 2019,
+        "paired_95_ci_pp": [
+          -0.9546,
+          0.0757
+        ]
+      },
+      "T2": {
+        "delta_pp": -1.123,
+        "gains": 94,
+        "losses": 117,
+        "ties": 1837,
+        "paired_95_ci_pp": [
+          -2.5127,
+          0.2666
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.6836,
+        "gains": 82,
+        "losses": 96,
+        "ties": 1870,
+        "paired_95_ci_pp": [
+          -1.9604,
+          0.5932
+        ]
+      }
+    },
+    "true4_basalt_implements_prism_key": {
+      "T1": {
+        "delta_pp": -0.4395,
+        "gains": 9,
+        "losses": 18,
+        "ties": 2021,
+        "paired_95_ci_pp": [
+          -0.9365,
+          0.0576
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.8301,
+        "gains": 89,
+        "losses": 106,
+        "ties": 1853,
+        "paired_95_ci_pp": [
+          -2.1663,
+          0.5062
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.8789,
+        "gains": 76,
+        "losses": 94,
+        "ties": 1878,
+        "paired_95_ci_pp": [
+          -2.1264,
+          0.3686
+        ]
+      }
+    },
+    "true4_basalt_everflow_prism_key": {
+      "T1": {
+        "delta_pp": -0.4883,
+        "gains": 8,
+        "losses": 18,
+        "ties": 2022,
+        "paired_95_ci_pp": [
+          -0.9759,
+          -0.0006
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.1465,
+        "gains": 89,
+        "losses": 92,
+        "ties": 1867,
+        "paired_95_ci_pp": [
+          -1.4343,
+          1.1414
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.1953,
+        "gains": 80,
+        "losses": 76,
+        "ties": 1892,
+        "paired_95_ci_pp": [
+          -1.0003,
+          1.3909
+        ]
+      }
+    },
+    "true4_map_tooth_prism_key": {
+      "T1": {
+        "delta_pp": -0.1465,
+        "gains": 11,
+        "losses": 14,
+        "ties": 2023,
+        "paired_95_ci_pp": [
+          -0.6251,
+          0.3321
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.8301,
+        "gains": 94,
+        "losses": 111,
+        "ties": 1843,
+        "paired_95_ci_pp": [
+          -2.2002,
+          0.54
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.6836,
+        "gains": 90,
+        "losses": 104,
+        "ties": 1854,
+        "paired_95_ci_pp": [
+          -2.0166,
+          0.6494
+        ]
+      }
+    },
+    "true4_map_implements_prism_key": {
+      "T1": {
+        "delta_pp": -0.0977,
+        "gains": 12,
+        "losses": 14,
+        "ties": 2022,
+        "paired_95_ci_pp": [
+          -0.5857,
+          0.3904
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.2441,
+        "gains": 92,
+        "losses": 97,
+        "ties": 1859,
+        "paired_95_ci_pp": [
+          -1.5601,
+          1.0718
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.6836,
+        "gains": 87,
+        "losses": 101,
+        "ties": 1860,
+        "paired_95_ci_pp": [
+          -1.9958,
+          0.6286
+        ]
+      }
+    },
+    "true4_map_basalt_tooth_boulder_prism_key": {
+      "T1": {
+        "delta_pp": -0.6348,
+        "gains": 5,
+        "losses": 18,
+        "ties": 2025,
+        "paired_95_ci_pp": [
+          -1.093,
+          -0.1765
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.0488,
+        "gains": 111,
+        "losses": 112,
+        "ties": 1825,
+        "paired_95_ci_pp": [
+          -1.4783,
+          1.3807
+        ]
+      },
+      "T3": {
+        "delta_pp": -1.2695,
+        "gains": 81,
+        "losses": 107,
+        "ties": 1860,
+        "paired_95_ci_pp": [
+          -2.5809,
+          0.0419
+        ]
+      }
+    },
+    "true4_map_basalt_implements_boulder_prism_key": {
+      "T1": {
+        "delta_pp": -0.4883,
+        "gains": 11,
+        "losses": 21,
+        "ties": 2016,
+        "paired_95_ci_pp": [
+          -1.0294,
+          0.0528
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0977,
+        "gains": 99,
+        "losses": 97,
+        "ties": 1852,
+        "paired_95_ci_pp": [
+          -1.2425,
+          1.4378
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.4883,
+        "gains": 84,
+        "losses": 94,
+        "ties": 1870,
+        "paired_95_ci_pp": [
+          -1.7653,
+          0.7887
+        ]
+      }
+    }
+  },
+  "head_to_heads": {
+    "true4_vs_current": {
+      "T1": {
+        "delta_pp": -0.1953,
+        "gains": 10,
+        "losses": 14,
+        "ties": 2024,
+        "paired_95_ci_pp": [
+          -0.6642,
+          0.2736
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0488,
+        "gains": 81,
+        "losses": 80,
+        "ties": 1887,
+        "paired_95_ci_pp": [
+          -1.1658,
+          1.2635
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.0,
+        "gains": 85,
+        "losses": 85,
+        "ties": 1878,
+        "paired_95_ci_pp": [
+          -1.2481,
+          1.2481
+        ]
+      }
+    },
+    "true4_basalt_prism_vs_true4": {
+      "T1": {
+        "delta_pp": -0.4395,
+        "gains": 9,
+        "losses": 18,
+        "ties": 2021,
+        "paired_95_ci_pp": [
+          -0.9365,
+          0.0576
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.0488,
+        "gains": 82,
+        "losses": 83,
+        "ties": 1883,
+        "paired_95_ci_pp": [
+          -1.2785,
+          1.1808
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.0,
+        "gains": 81,
+        "losses": 81,
+        "ties": 1886,
+        "paired_95_ci_pp": [
+          -1.2184,
+          1.2184
+        ]
+      }
+    },
+    "true4_map_basalt_boulder_key_vs_true4_map_basalt_prism_key": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 7,
+        "losses": 7,
+        "ties": 2034,
+        "paired_95_ci_pp": [
+          -0.3582,
+          0.3582
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.8789,
+        "gains": 68,
+        "losses": 86,
+        "ties": 1894,
+        "paired_95_ci_pp": [
+          -2.0662,
+          0.3084
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.4883,
+        "gains": 71,
+        "losses": 81,
+        "ties": 1896,
+        "paired_95_ci_pp": [
+          -1.6683,
+          0.6917
+        ]
+      }
+    },
+    "true4_map_basalt_boulder_key_vs_true4_map_basalt_boulder_prism": {
+      "T1": {
+        "delta_pp": 0.1953,
+        "gains": 13,
+        "losses": 9,
+        "ties": 2026,
+        "paired_95_ci_pp": [
+          -0.2536,
+          0.6442
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.1465,
+        "gains": 80,
+        "losses": 83,
+        "ties": 1885,
+        "paired_95_ci_pp": [
+          -1.3686,
+          1.0757
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.3906,
+        "gains": 69,
+        "losses": 77,
+        "ties": 1902,
+        "paired_95_ci_pp": [
+          -1.5472,
+          0.7659
+        ]
+      }
+    },
+    "true4_map_basalt_prism_key_vs_true4_map_basalt_boulder_prism": {
+      "T1": {
+        "delta_pp": 0.1953,
+        "gains": 12,
+        "losses": 8,
+        "ties": 2028,
+        "paired_95_ci_pp": [
+          -0.2327,
+          0.6233
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.7324,
+        "gains": 106,
+        "losses": 91,
+        "ties": 1851,
+        "paired_95_ci_pp": [
+          -0.6108,
+          2.0756
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.0977,
+        "gains": 88,
+        "losses": 86,
+        "ties": 1874,
+        "paired_95_ci_pp": [
+          -1.1651,
+          1.3604
+        ]
+      }
+    },
+    "true4_map_basalt_boulder_key_vs_true4_map_boulder": {
+      "T1": {
+        "delta_pp": 0.0977,
+        "gains": 13,
+        "losses": 11,
+        "ties": 2024,
+        "paired_95_ci_pp": [
+          -0.3713,
+          0.5666
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.5859,
+        "gains": 98,
+        "losses": 86,
+        "ties": 1864,
+        "paired_95_ci_pp": [
+          -0.7123,
+          1.8842
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.4883,
+        "gains": 92,
+        "losses": 102,
+        "ties": 1854,
+        "paired_95_ci_pp": [
+          -1.8214,
+          0.8449
+        ]
+      }
+    },
+    "true4_basalt_tooth_prism_key_vs_true4_basalt_prism": {
+      "T1": {
+        "delta_pp": 0.1953,
+        "gains": 7,
+        "losses": 3,
+        "ties": 2038,
+        "paired_95_ci_pp": [
+          -0.1073,
+          0.4979
+        ]
+      },
+      "T2": {
+        "delta_pp": -1.123,
+        "gains": 34,
+        "losses": 57,
+        "ties": 1957,
+        "paired_95_ci_pp": [
+          -2.0349,
+          -0.2112
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.6836,
+        "gains": 42,
+        "losses": 56,
+        "ties": 1950,
+        "paired_95_ci_pp": [
+          -1.6308,
+          0.2636
+        ]
+      }
+    },
+    "true4_basalt_implements_prism_key_vs_true4_basalt_prism": {
+      "T1": {
+        "delta_pp": 0.1953,
+        "gains": 18,
+        "losses": 14,
+        "ties": 2016,
+        "paired_95_ci_pp": [
+          -0.3461,
+          0.7368
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.8301,
+        "gains": 77,
+        "losses": 94,
+        "ties": 1877,
+        "paired_95_ci_pp": [
+          -2.0813,
+          0.4212
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.8789,
+        "gains": 71,
+        "losses": 89,
+        "ties": 1888,
+        "paired_95_ci_pp": [
+          -2.0892,
+          0.3314
+        ]
+      }
+    },
+    "true4_basalt_everflow_prism_key_vs_true4_basalt_prism": {
+      "T1": {
+        "delta_pp": 0.1465,
+        "gains": 15,
+        "losses": 12,
+        "ties": 2021,
+        "paired_95_ci_pp": [
+          -0.3509,
+          0.6439
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.1465,
+        "gains": 83,
+        "losses": 86,
+        "ties": 1879,
+        "paired_95_ci_pp": [
+          -1.3909,
+          1.0979
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.1953,
+        "gains": 78,
+        "losses": 74,
+        "ties": 1896,
+        "paired_95_ci_pp": [
+          -0.9849,
+          1.3755
+        ]
+      }
+    },
+    "true4_map_basalt_tooth_boulder_prism_key_vs_true4_map_basalt_prism_key": {
+      "T1": {
+        "delta_pp": -0.3906,
+        "gains": 6,
+        "losses": 14,
+        "ties": 2028,
+        "paired_95_ci_pp": [
+          -0.8184,
+          0.0371
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.5859,
+        "gains": 104,
+        "losses": 116,
+        "ties": 1828,
+        "paired_95_ci_pp": [
+          -2.0056,
+          0.8337
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.5859,
+        "gains": 88,
+        "losses": 100,
+        "ties": 1860,
+        "paired_95_ci_pp": [
+          -1.8982,
+          0.7264
+        ]
+      }
+    },
+    "true4_map_basalt_implements_boulder_prism_key_vs_true4_map_basalt_prism_key": {
+      "T1": {
+        "delta_pp": -0.2441,
+        "gains": 7,
+        "losses": 12,
+        "ties": 2029,
+        "paired_95_ci_pp": [
+          -0.6613,
+          0.173
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.4395,
+        "gains": 65,
+        "losses": 74,
+        "ties": 1909,
+        "paired_95_ci_pp": [
+          -1.5679,
+          0.689
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.1953,
+        "gains": 67,
+        "losses": 63,
+        "ties": 1918,
+        "paired_95_ci_pp": [
+          -0.8961,
+          1.2867
+        ]
+      }
+    },
+    "true4_map_basalt_implements_boulder_prism_key_vs_true4_map_basalt_tooth_boulder_prism_key": {
+      "T1": {
+        "delta_pp": 0.1465,
+        "gains": 12,
+        "losses": 9,
+        "ties": 2027,
+        "paired_95_ci_pp": [
+          -0.2921,
+          0.5851
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.1465,
+        "gains": 101,
+        "losses": 98,
+        "ties": 1849,
+        "paired_95_ci_pp": [
+          -1.2039,
+          1.4969
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.7812,
+        "gains": 93,
+        "losses": 77,
+        "ties": 1878,
+        "paired_95_ci_pp": [
+          -0.4664,
+          2.0289
+        ]
+      }
+    },
+    "true4_map_tooth_prism_key_vs_true4_basalt_tooth_prism_key": {
+      "T1": {
+        "delta_pp": 0.293,
+        "gains": 13,
+        "losses": 7,
+        "ties": 2028,
+        "paired_95_ci_pp": [
+          -0.1349,
+          0.7209
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.293,
+        "gains": 106,
+        "losses": 100,
+        "ties": 1842,
+        "paired_95_ci_pp": [
+          -1.0809,
+          1.6668
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.0,
+        "gains": 100,
+        "losses": 100,
+        "ties": 1848,
+        "paired_95_ci_pp": [
+          -1.3538,
+          1.3538
+        ]
+      }
+    },
+    "true4_map_implements_prism_key_vs_true4_basalt_implements_prism_key": {
+      "T1": {
+        "delta_pp": 0.3418,
+        "gains": 20,
+        "losses": 13,
+        "ties": 2015,
+        "paired_95_ci_pp": [
+          -0.2079,
+          0.8915
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.5859,
+        "gains": 101,
+        "losses": 89,
+        "ties": 1858,
+        "paired_95_ci_pp": [
+          -0.7333,
+          1.9052
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.1953,
+        "gains": 91,
+        "losses": 87,
+        "ties": 1870,
+        "paired_95_ci_pp": [
+          -1.0818,
+          1.4724
+        ]
+      }
+    }
+  },
+  "scope": "Matched independent Assertive free London goldfish Dack cast T1/T2/T3 (NOT verified post-Dack combo), with Mox Diamond any-color and Mycosynth Gardens {1},T any-color corrected. 4 true rainbow lands. 2-class sunburst simplification remains.",
+  "rank_by_T2": [
+    "true4_map_basalt_prism_key",
+    "true4_map_basalt_implements_boulder_prism_key",
+    "true4",
+    "current",
+    "true4_basalt_prism",
+    "true4_map_basalt_tooth_boulder_prism_key",
+    "true4_basalt_everflow_prism_key",
+    "true4_map_basalt_boulder_prism",
+    "true4_map_implements_prism_key",
+    "true4_map_basalt_boulder_key",
+    "true4_map_tooth_prism_key",
+    "true4_basalt_implements_prism_key",
+    "true4_map_boulder",
+    "true4_basalt_tooth_prism_key"
+  ],
+  "study_design": "Independent N2048 direct confirmation of N512 speed finalists plus exploratory Key+Prism extra-card cut search. Predeclared, same seeds and samples across arms.",
+  "primary_confirmatory_arms": [
+    "true4_map_basalt_boulder_key",
+    "true4_map_basalt_prism_key",
+    "true4_map_basalt_boulder_prism"
+  ],
+  "exploratory_extra_slot_candidates": [
+    "World Map",
+    "Tooth of Ramos",
+    "Implements of Sacrifice",
+    "Everflowing Chalice"
+  ],
+  "interpretation_limit": "Dack casting only, not fully verified Boonweaver combo; Implements-of-Sacrifice alternative may remove useful post-Dack lines."
+}
