@@ -7,7 +7,7 @@ and the completed Voltaic/Manifold Bucknard priority stack mechanics.
 All three required combo creatures remain in library at the winning check.
 
 Compare live current, single Key for Tooth, and five TWO-key alternatives:
- - Implement of Sacrifice, Everflowing Chalice, Candelabra of Tawnos,
+ - Implement of Sacrifice, Everflowing Chalice, Mind Stone,
    Coalition Relic, or Basalt Monolith => Manifold Key. All still retain
    Giant's Boulder. Losing Basalt tests whether its Key synergy matters.
 
@@ -31,7 +31,7 @@ SCHEMA="dack_second_key_manifold_fresh_n1024_v1"
 BEAM=160
 POLICY="assertive"
 LOCKED=frozenset(("Hardlight Containment","Lunarch Mantle","Gleaming Splendor"))
-CUTS=("Implements of Sacrifice","Everflowing Chalice","Candelabra of Tawnos","Coalition Relic","Basalt Monolith")
+CUTS=("Implements of Sacrifice","Everflowing Chalice","Mind Stone","Coalition Relic","Basalt Monolith")
 
 def change(deck,remove,insert):
     assert remove in deck and insert not in deck,(remove,insert)
@@ -44,7 +44,7 @@ VARIANTS={
     "one_key_tooth":ONE_KEY,
     "two_keys_implements":change(ONE_KEY,"Implements of Sacrifice","Manifold Key"),
     "two_keys_everflow":change(ONE_KEY,"Everflowing Chalice","Manifold Key"),
-    "two_keys_candelabra":change(ONE_KEY,"Candelabra of Tawnos","Manifold Key"),
+    "two_keys_mindstone":change(ONE_KEY,"Mind Stone","Manifold Key"),
     "two_keys_coalition":change(ONE_KEY,"Coalition Relic","Manifold Key"),
     "two_keys_basalt":change(ONE_KEY,"Basalt Monolith","Manifold Key"),
 }
@@ -52,11 +52,11 @@ PAIRS=(
     ("live_boulder","one_key_tooth"),
     ("one_key_tooth","two_keys_implements"),
     ("one_key_tooth","two_keys_everflow"),
-    ("one_key_tooth","two_keys_candelabra"),
+    ("one_key_tooth","two_keys_mindstone"),
     ("one_key_tooth","two_keys_coalition"),
     ("one_key_tooth","two_keys_basalt"),
     ("two_keys_implements","two_keys_everflow"),
-    ("two_keys_implements","two_keys_candelabra"),
+    ("two_keys_implements","two_keys_mindstone"),
     ("two_keys_implements","two_keys_coalition"),
     ("two_keys_implements","two_keys_basalt"),
 )
@@ -77,7 +77,7 @@ def audit():
     assert "World Map" not in BASE and "Giant's Boulder" in BASE
     assert sim.deck_hash(BASE)==live.audit()["live_deck_hash"]
     assert {"Bucknard's Everfull Purse","Basalt Monolith","Tooth of Ramos","Implements of Sacrifice",
-            "Everflowing Chalice","Candelabra of Tawnos","Coalition Relic"}.issubset(BASE)
+            "Everflowing Chalice","Mind Stone","Coalition Relic"}.issubset(BASE)
     assert not {"Voltaic Key","Manifold Key","Pentad Prism"}.intersection(BASE)
     for name,deck in VARIANTS.items():
         assert len(deck)==99,name
@@ -101,7 +101,7 @@ def audit():
             expected={
                 "two_keys_implements":"Implements of Sacrifice",
                 "two_keys_everflow":"Everflowing Chalice",
-                "two_keys_candelabra":"Candelabra of Tawnos",
+                "two_keys_mindstone":"Mind Stone",
                 "two_keys_coalition":"Coalition Relic",
                 "two_keys_basalt":"Basalt Monolith",
             }[name]
