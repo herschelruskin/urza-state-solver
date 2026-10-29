@@ -1,0 +1,123 @@
+name: Dack Aura and Gleaming Exile Guard Matched Replay N1024
+on:
+  push:
+    branches: [dack-aura-splendor-guard-replay-n1024-20261029]
+    paths:
+      - 'dack_aura_splendor_guard_replay_n1024_20261029.py'
+      - '.github/workflows/dack_aura_splendor_guard_replay_n1024.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: dack-aura-splendor-exile-replay-n1024
+  cancel-in-progress: false
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile, verify 4 original deck hashes and old results, test protected Splendor/Auras
+        run: |
+          python -m py_compile dack_aura_splendor_guard_replay_n1024_20261029.py
+          python -u dack_aura_splendor_guard_replay_n1024_20261029.py --audit
+      - name: Simulate representative paired replays under corrected rules
+        run: python -u dack_aura_splendor_guard_replay_n1024_20261029.py --smoke
+  shards:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 175
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Replay eight matched old IDs under guarded mechanics across 4 arms
+        run: |
+          mkdir -p shards
+          python -u dack_aura_splendor_guard_replay_n1024_20261029.py --shard ${{ matrix.shard }} --games 8 --out "shards/prism_true4_shard_${{ matrix.shard }}.json.gz"
+      - name: Archive each matched game and checkpoint
+        id: archive
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aura-splendor-guard-replay-shard-${{ matrix.shard }}
+          path: |
+            shards/prism_true4_shard_${{ matrix.shard }}.json.gz
+            shards/prism_true4_shard_${{ matrix.shard }}.jsonl
+          retention-days: 90
+          if-no-files-found: warn
+      - name: Retry transient artifact failure
+        if: ${{ failure() && steps.archive.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: aura-splendor-guard-replay-shard-${{ matrix.shard }}
+          path: |
+            shards/prism_true4_shard_${{ matrix.shard }}.json.gz
+            shards/prism_true4_shard_${{ matrix.shard }}.jsonl
+          retention-days: 90
+          if-no-files-found: warn
+  pool:
+    needs: [smoke, shards]
+    if: ${{ always() && needs.smoke.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Download all shards
+        uses: actions/download-artifact@v4
+        with:
+          pattern: aura-splendor-guard-replay-shard-*
+          path: shards
+          merge-multiple: true
+      - name: Strictly pool 1024 replayed IDs and compare EXACT archived old outcomes
+        run: |
+          python -u dack_aura_splendor_guard_replay_n1024_20261029.py --pool --path shards --out dack_aura_splendor_guard_replay_n1024_report.json
+          python - <<'PY'
+          import json
+          r=json.load(open('dack_aura_splendor_guard_replay_n1024_report.json'))
+          assert r['status']=='PASS' and r['n']==1024 and r['shards_found']==128
+          assert r['missing_count']==0 and len(r['arms'])==4
+          assert r['protected_splendor'] is True and not r['rainbow_lands']
+          assert r['replay_comparison']['old_and_new_same_seeds_and_decks']
+          for k in ('current','key_for_tooth','key_for_implements','key_for_basalt'):
+            assert k in r['replay_comparison']['by_arm']
+          print('EXILE_GUARD_REPLAY_VALIDATED_1024',flush=True)
+          PY
+      - name: Archive report and raw games before git publishing
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aura-splendor-guard-replay-n1024-report
+          path: |
+            dack_aura_splendor_guard_replay_n1024_report.json
+            dack_aura_splendor_guard_replay_n1024_report.raw.json.gz
+          retention-days: 90
+          if-no-files-found: warn
+      - name: Publish validated report
+        run: |
+          set -euo pipefail
+          mkdir -p benchmark_results
+          cp dack_aura_splendor_guard_replay_n1024_report.json benchmark_results/
+          cp dack_aura_splendor_guard_replay_n1024_report.raw.json.gz benchmark_results/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f benchmark_results/dack_aura_splendor_guard_replay_n1024_report.json benchmark_results/dack_aura_splendor_guard_replay_n1024_report.raw.json.gz
+          git commit -m 'Publish N1024 same-seed rerun of Aura and Splendor combo exile guard'
+          git fetch origin dack-aura-splendor-guard-replay-n1024-20261029
+          git rebase origin/dack-aura-splendor-guard-replay-n1024-20261029
+          git push origin HEAD:dack-aura-splendor-guard-replay-n1024-20261029
