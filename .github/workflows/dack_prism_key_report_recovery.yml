@@ -1,0 +1,65 @@
+name: Recover Validated Prism Key N2048 Report
+on:
+  push:
+    branches: [dack-prism-key-slot-expansion-n2048-20261028]
+    paths:
+      - '.github/workflows/dack_prism_key_report_recovery.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Download validated report from complete 2048-game run
+        uses: actions/download-artifact@v4
+        with:
+          name: prism-key-extra-slots-n2048-final-report
+          run-id: 40700867255
+          github-token: ${{ github.token }}
+          repository: herschelruskin/urza-state-solver
+          path: recovered
+      - name: Independently check report schema, completeness and paired contrasts
+        run: |
+          python - <<'PY'
+          import json,os,gzip
+          from pathlib import Path
+          d=Path('recovered')
+          r=json.loads((d/'dack_prism_key_extra_slots_n2048_report.json').read_text())
+          assert r['status']=='PASS' and r['n']==2048 and r['planned']==2048
+          assert r['shards_found']==256 and r['missing_count']==0
+          assert len(r['arms'])==14 and len(r['head_to_heads'])==14
+          assert r['locked_auras']==['Hardlight Containment','Lunarch Mantle']
+          assert r['rainbow_lands']==['City of Brass','Mana Confluence','Tarnished Citadel','Gemstone Mine']
+          assert r['seed_base']==9914281028171137
+          gz=d/'dack_prism_key_extra_slots_n2048_report.raw.json.gz'
+          assert gz.is_file() and gz.stat().st_size>1000
+          with gzip.open(gz,'rt') as f:
+            raw=json.load(f)
+          assert len(raw['rows'])==2048 and len(set(x['gid'] for x in raw['rows']))==2048
+          assert raw['seed_base']==r['seed_base'] and raw['hashes']==r['hashes']
+          print('VALIDATED_2048_RESULT',json.dumps({
+              'winner':r['rank_by_T2'][0],
+              'ranking':[(k,r['arms'][k]['T2_pct'],r['arms'][k]['T3_pct']) for k in r['rank_by_T2']],
+              'head_to_heads':r['head_to_heads'],
+              'n':r['n']}),flush=True)
+          PY
+      - name: Publish verified report on updated branch
+        run: |
+          set -euo pipefail
+          mkdir -p benchmark_results
+          cp recovered/dack_prism_key_extra_slots_n2048_report.json benchmark_results/
+          cp recovered/dack_prism_key_extra_slots_n2048_report.raw.json.gz benchmark_results/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f benchmark_results/dack_prism_key_extra_slots_n2048_report.json benchmark_results/dack_prism_key_extra_slots_n2048_report.raw.json.gz
+          git commit -m 'Recover and publish completely validated 2048-game Prism + Key comparison'
+          git fetch origin dack-prism-key-slot-expansion-n2048-20261028
+          git rebase origin/dack-prism-key-slot-expansion-n2048-20261028
+          git push origin HEAD:dack-prism-key-slot-expansion-n2048-20261028
