@@ -35,7 +35,7 @@ def change(deck,old,new):
 ONE=change(SOURCE,"Tooth of Ramos","Voltaic Key")
 BASE=change(ONE,"Implements of Sacrifice","Manifold Key")
 VARIANTS={
-    "current":BASE,
+    "current":SOURCE,
     "one_key":ONE,
     "two_keys_implements":change(ONE,"Implements of Sacrifice","Manifold Key"),
     "two_keys_everflow":change(ONE,"Everflowing Chalice","Manifold Key"),
