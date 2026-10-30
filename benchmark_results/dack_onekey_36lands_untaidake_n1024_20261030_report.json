@@ -1,0 +1,704 @@
+{
+  "schema": "dack_onekey_36lands_untaidake_n1024_20261030_v1",
+  "status": "PASS",
+  "n": 1024,
+  "planned": 1024,
+  "missing": [],
+  "missing_count": 0,
+  "shards_found": 64,
+  "expected_shards": 64,
+  "seed_base": 9914301030011429,
+  "policy": "assertive",
+  "beam": 160,
+  "locked_auras": [
+    "Gleaming Splendor",
+    "Hardlight Containment",
+    "Lunarch Mantle"
+  ],
+  "hashes": {
+    "current": "fd21f09a14e929d4a877a6ae158a37d46bda6ae0d76c3adc6e4b6b1085638552",
+    "no_untaidake": "ae7e5f142bda4a88914e0d79eefd82a4755fd1156a2d083f19dc641b0ec05fe4",
+    "land35_mindstone": "99d6094f362f4dd291486142ba7943c90105df4e41d80a573bdc275cb4561ec1",
+    "land35_everflow": "b83953e5154878eb6c93067b8990bf4f9d9509d86f78f555b15888ef85c51cdb",
+    "land36_both": "3e874c439e1f29e22fcbc683badc8e87d0be7180858e078e0de0730a375a12fa",
+    "land35_everflow_no_unt": "3269659e19def6af275933240c8de3d7baafbd103b47f2f85b78c412ad170b82",
+    "land36_both_no_unt": "56b282cc6549f67ce3ed0e88c4a06d59542dedce5f8858c8c7f60aec9b993975"
+  },
+  "rainbow_lands": [],
+  "source_correction": "mox_diamond_any_and_gardens_filter_20261028_v1",
+  "arms": {
+    "current": {
+      "out": [],
+      "in": [],
+      "T1_pct": 5.8594,
+      "T2_pct": 51.7578,
+      "T3_pct": 83.4961,
+      "counts": {
+        "0": 169,
+        "1": 60,
+        "2": 470,
+        "3": 325
+      },
+      "mean_keep": 5.125
+    },
+    "no_untaidake": {
+      "out": [
+        "Untaidake, the Cloud Keeper"
+      ],
+      "in": [
+        "Plains"
+      ],
+      "T1_pct": 5.5664,
+      "T2_pct": 52.4414,
+      "T3_pct": 83.8867,
+      "counts": {
+        "0": 165,
+        "1": 57,
+        "2": 480,
+        "3": 322
+      },
+      "mean_keep": 5.1475
+    },
+    "land35_mindstone": {
+      "out": [
+        "Mind Stone"
+      ],
+      "in": [
+        "Plains"
+      ],
+      "T1_pct": 5.8594,
+      "T2_pct": 52.2461,
+      "T3_pct": 83.9844,
+      "counts": {
+        "0": 164,
+        "1": 60,
+        "2": 475,
+        "3": 325
+      },
+      "mean_keep": 5.1523
+    },
+    "land35_everflow": {
+      "out": [
+        "Everflowing Chalice"
+      ],
+      "in": [
+        "Plains"
+      ],
+      "T1_pct": 6.0547,
+      "T2_pct": 53.125,
+      "T3_pct": 83.5938,
+      "counts": {
+        "0": 168,
+        "1": 62,
+        "2": 482,
+        "3": 312
+      },
+      "mean_keep": 5.1006
+    },
+    "land36_both": {
+      "out": [
+        "Everflowing Chalice",
+        "Mind Stone"
+      ],
+      "in": [
+        "Plains",
+        "Plains"
+      ],
+      "T1_pct": 6.1523,
+      "T2_pct": 53.2227,
+      "T3_pct": 84.668,
+      "counts": {
+        "0": 157,
+        "1": 63,
+        "2": 482,
+        "3": 322
+      },
+      "mean_keep": 5.1689
+    },
+    "land35_everflow_no_unt": {
+      "out": [
+        "Everflowing Chalice",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "in": [
+        "Plains",
+        "Plains"
+      ],
+      "T1_pct": 5.8594,
+      "T2_pct": 52.1484,
+      "T3_pct": 83.3008,
+      "counts": {
+        "0": 171,
+        "1": 60,
+        "2": 474,
+        "3": 319
+      },
+      "mean_keep": 5.1572
+    },
+    "land36_both_no_unt": {
+      "out": [
+        "Everflowing Chalice",
+        "Mind Stone",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "in": [
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "T1_pct": 5.8594,
+      "T2_pct": 52.4414,
+      "T3_pct": 83.8867,
+      "counts": {
+        "0": 165,
+        "1": 60,
+        "2": 477,
+        "3": 322
+      },
+      "mean_keep": 5.1689
+    }
+  },
+  "paired_vs_current": {
+    "no_untaidake": {
+      "T1": {
+        "delta_pp": -0.293,
+        "gains": 3,
+        "losses": 6,
+        "ties": 1015,
+        "paired_95_ci_pp": [
+          -0.8672,
+          0.2812
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.6836,
+        "gains": 40,
+        "losses": 33,
+        "ties": 951,
+        "paired_95_ci_pp": [
+          -0.952,
+          2.3192
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.3906,
+        "gains": 38,
+        "losses": 34,
+        "ties": 952,
+        "paired_95_ci_pp": [
+          -1.2341,
+          2.0154
+        ]
+      }
+    },
+    "land35_mindstone": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 1,
+        "losses": 1,
+        "ties": 1022,
+        "paired_95_ci_pp": [
+          -0.2708,
+          0.2708
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.4883,
+        "gains": 28,
+        "losses": 23,
+        "ties": 973,
+        "paired_95_ci_pp": [
+          -0.879,
+          1.8555
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.4883,
+        "gains": 27,
+        "losses": 22,
+        "ties": 975,
+        "paired_95_ci_pp": [
+          -0.8519,
+          1.8284
+        ]
+      }
+    },
+    "land35_everflow": {
+      "T1": {
+        "delta_pp": 0.1953,
+        "gains": 4,
+        "losses": 2,
+        "ties": 1018,
+        "paired_95_ci_pp": [
+          -0.2736,
+          0.6642
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.3672,
+        "gains": 45,
+        "losses": 31,
+        "ties": 948,
+        "paired_95_ci_pp": [
+          -0.3002,
+          3.0345
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.0977,
+        "gains": 38,
+        "losses": 37,
+        "ties": 949,
+        "paired_95_ci_pp": [
+          -1.5608,
+          1.7561
+        ]
+      }
+    },
+    "land36_both": {
+      "T1": {
+        "delta_pp": 0.293,
+        "gains": 6,
+        "losses": 3,
+        "ties": 1015,
+        "paired_95_ci_pp": [
+          -0.2812,
+          0.8672
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.4648,
+        "gains": 51,
+        "losses": 36,
+        "ties": 937,
+        "paired_95_ci_pp": [
+          -0.3191,
+          3.2488
+        ]
+      },
+      "T3": {
+        "delta_pp": 1.1719,
+        "gains": 45,
+        "losses": 33,
+        "ties": 946,
+        "paired_95_ci_pp": [
+          -0.5179,
+          2.8616
+        ]
+      }
+    },
+    "land35_everflow_no_unt": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 6,
+        "losses": 6,
+        "ties": 1012,
+        "paired_95_ci_pp": [
+          -0.6634,
+          0.6634
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.3906,
+        "gains": 56,
+        "losses": 52,
+        "ties": 916,
+        "paired_95_ci_pp": [
+          -1.5994,
+          2.3806
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.1953,
+        "gains": 46,
+        "losses": 48,
+        "ties": 930,
+        "paired_95_ci_pp": [
+          -2.0519,
+          1.6613
+        ]
+      }
+    },
+    "land36_both_no_unt": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 6,
+        "losses": 6,
+        "ties": 1012,
+        "paired_95_ci_pp": [
+          -0.6634,
+          0.6634
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.6836,
+        "gains": 64,
+        "losses": 57,
+        "ties": 903,
+        "paired_95_ci_pp": [
+          -1.4225,
+          2.7897
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.3906,
+        "gains": 55,
+        "losses": 51,
+        "ties": 918,
+        "paired_95_ci_pp": [
+          -1.5808,
+          2.3621
+        ]
+      }
+    }
+  },
+  "head_to_heads": {
+    "no_untaidake_vs_current": {
+      "T1": {
+        "delta_pp": -0.293,
+        "gains": 3,
+        "losses": 6,
+        "ties": 1015,
+        "paired_95_ci_pp": [
+          -0.8672,
+          0.2812
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.6836,
+        "gains": 40,
+        "losses": 33,
+        "ties": 951,
+        "paired_95_ci_pp": [
+          -0.952,
+          2.3192
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.3906,
+        "gains": 38,
+        "losses": 34,
+        "ties": 952,
+        "paired_95_ci_pp": [
+          -1.2341,
+          2.0154
+        ]
+      }
+    },
+    "land35_mindstone_vs_current": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 1,
+        "losses": 1,
+        "ties": 1022,
+        "paired_95_ci_pp": [
+          -0.2708,
+          0.2708
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.4883,
+        "gains": 28,
+        "losses": 23,
+        "ties": 973,
+        "paired_95_ci_pp": [
+          -0.879,
+          1.8555
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.4883,
+        "gains": 27,
+        "losses": 22,
+        "ties": 975,
+        "paired_95_ci_pp": [
+          -0.8519,
+          1.8284
+        ]
+      }
+    },
+    "land35_everflow_vs_current": {
+      "T1": {
+        "delta_pp": 0.1953,
+        "gains": 4,
+        "losses": 2,
+        "ties": 1018,
+        "paired_95_ci_pp": [
+          -0.2736,
+          0.6642
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.3672,
+        "gains": 45,
+        "losses": 31,
+        "ties": 948,
+        "paired_95_ci_pp": [
+          -0.3002,
+          3.0345
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.0977,
+        "gains": 38,
+        "losses": 37,
+        "ties": 949,
+        "paired_95_ci_pp": [
+          -1.5608,
+          1.7561
+        ]
+      }
+    },
+    "land36_both_vs_current": {
+      "T1": {
+        "delta_pp": 0.293,
+        "gains": 6,
+        "losses": 3,
+        "ties": 1015,
+        "paired_95_ci_pp": [
+          -0.2812,
+          0.8672
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.4648,
+        "gains": 51,
+        "losses": 36,
+        "ties": 937,
+        "paired_95_ci_pp": [
+          -0.3191,
+          3.2488
+        ]
+      },
+      "T3": {
+        "delta_pp": 1.1719,
+        "gains": 45,
+        "losses": 33,
+        "ties": 946,
+        "paired_95_ci_pp": [
+          -0.5179,
+          2.8616
+        ]
+      }
+    },
+    "land36_both_no_unt_vs_current": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 6,
+        "losses": 6,
+        "ties": 1012,
+        "paired_95_ci_pp": [
+          -0.6634,
+          0.6634
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.6836,
+        "gains": 64,
+        "losses": 57,
+        "ties": 903,
+        "paired_95_ci_pp": [
+          -1.4225,
+          2.7897
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.3906,
+        "gains": 55,
+        "losses": 51,
+        "ties": 918,
+        "paired_95_ci_pp": [
+          -1.5808,
+          2.3621
+        ]
+      }
+    },
+    "land35_everflow_no_unt_vs_no_untaidake": {
+      "T1": {
+        "delta_pp": 0.293,
+        "gains": 6,
+        "losses": 3,
+        "ties": 1015,
+        "paired_95_ci_pp": [
+          -0.2812,
+          0.8672
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.293,
+        "gains": 37,
+        "losses": 40,
+        "ties": 947,
+        "paired_95_ci_pp": [
+          -1.9733,
+          1.3873
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.5859,
+        "gains": 32,
+        "losses": 38,
+        "ties": 954,
+        "paired_95_ci_pp": [
+          -2.1877,
+          1.0159
+        ]
+      }
+    },
+    "land35_everflow_no_unt_vs_land35_everflow": {
+      "T1": {
+        "delta_pp": -0.1953,
+        "gains": 4,
+        "losses": 6,
+        "ties": 1014,
+        "paired_95_ci_pp": [
+          -0.8008,
+          0.4101
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.9766,
+        "gains": 35,
+        "losses": 45,
+        "ties": 944,
+        "paired_95_ci_pp": [
+          -2.6883,
+          0.7352
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.293,
+        "gains": 35,
+        "losses": 38,
+        "ties": 951,
+        "paired_95_ci_pp": [
+          -1.929,
+          1.3431
+        ]
+      }
+    },
+    "land36_both_no_unt_vs_land36_both": {
+      "T1": {
+        "delta_pp": -0.293,
+        "gains": 3,
+        "losses": 6,
+        "ties": 1015,
+        "paired_95_ci_pp": [
+          -0.8672,
+          0.2812
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.7812,
+        "gains": 35,
+        "losses": 43,
+        "ties": 946,
+        "paired_95_ci_pp": [
+          -2.4719,
+          0.9094
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.7812,
+        "gains": 31,
+        "losses": 39,
+        "ties": 954,
+        "paired_95_ci_pp": [
+          -2.3827,
+          0.8202
+        ]
+      }
+    },
+    "land36_both_vs_land35_everflow": {
+      "T1": {
+        "delta_pp": 0.0977,
+        "gains": 4,
+        "losses": 3,
+        "ties": 1017,
+        "paired_95_ci_pp": [
+          -0.409,
+          0.6043
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0977,
+        "gains": 24,
+        "losses": 23,
+        "ties": 977,
+        "paired_95_ci_pp": [
+          -1.2152,
+          1.4105
+        ]
+      },
+      "T3": {
+        "delta_pp": 1.0742,
+        "gains": 29,
+        "losses": 18,
+        "ties": 977,
+        "paired_95_ci_pp": [
+          -0.237,
+          2.3854
+        ]
+      }
+    },
+    "land36_both_no_unt_vs_land35_everflow_no_unt": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 3,
+        "losses": 3,
+        "ties": 1018,
+        "paired_95_ci_pp": [
+          -0.4691,
+          0.4691
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.293,
+        "gains": 26,
+        "losses": 23,
+        "ties": 975,
+        "paired_95_ci_pp": [
+          -1.0474,
+          1.6333
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.5859,
+        "gains": 24,
+        "losses": 18,
+        "ties": 982,
+        "paired_95_ci_pp": [
+          -0.6546,
+          1.8265
+        ]
+      }
+    }
+  },
+  "scope": "Matched independent Assertive free London goldfish Dack cast T1/T2/T3 (NOT verified post-Dack combo), with Mox Diamond any-color and Mycosynth Gardens {1},T any-color corrected. 4 true rainbow lands. 2-class sunburst simplification remains.",
+  "rank_by_T2": [
+    "land36_both",
+    "land35_everflow",
+    "land36_both_no_unt",
+    "no_untaidake",
+    "land35_mindstone",
+    "land35_everflow_no_unt",
+    "current"
+  ],
+  "study_objective": "Fresh one-Key: 34/35/36 land re-evaluation and Untaidake-vs-Plains at 34 and 36 lands. Land count changes also remove Everflowing and/or Mind Stone.",
+  "actual_boulder_deck": true,
+  "one_key_baseline": "Voltaic for Tooth; Implements retained, Manifold absent",
+  "guard_version": "boonweaver_auras_plus_gleaming_splendor_exile_guard_v2",
+  "first_key_bucknard_version": "bucknard_key_pre_resolution_double_activation_20261029_v1",
+  "original_34_land_slots": 34,
+  "land_counts": {
+    "current": 34,
+    "no_untaidake": 34,
+    "land35_mindstone": 35,
+    "land35_everflow": 35,
+    "land36_both": 36,
+    "land35_everflow_no_unt": 35,
+    "land36_both_no_unt": 36
+  },
+  "fresh_seed": true,
+  "exploratory_multiple_comparisons": true
+}
