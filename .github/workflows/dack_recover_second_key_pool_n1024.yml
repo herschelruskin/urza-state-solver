@@ -1,0 +1,94 @@
+name: Recover Completed N1024 Second-Key Pool
+on:
+  push:
+    branches: [dack-voltaic-manifold-second-key-recover-20261029]
+    paths:
+      - '.github/workflows/dack_recover_second_key_pool_n1024.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  recover-pool:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Download the ORIGINAL 128 successful simulation shard archives
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 40948407322
+          repository: herschelruskin/urza-state-solver
+          github-token: ${{ github.token }}
+          pattern: manifold-second-key-n1024-shard-*
+          merge-multiple: true
+          path: shards
+      - name: Verify all ORIGINAL 1024 paired game IDs and corrected rules
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import gzip,json
+          import dack_manifold_second_key_n1024_20261029 as v
+          names=set(v.VARIANTS)
+          files=sorted(Path('shards').glob('prism_true4_shard_*.json.gz'))
+          assert len(files)==128,('missing original completed shards',len(files))
+          found=set()
+          for f in files:
+            with gzip.open(f,'rt') as g:x=json.load(g)
+            assert x['seed_base']==v.SEED_BASE and x['schema']==v.SCHEMA
+            assert set(x['hashes'])==names
+            assert all(x['hashes'][n]==v.sim.deck_hash(v.VARIANTS[n]) for n in names)
+            assert len(x['rows'])==8 and x['games']==8
+            for row in x['rows']:
+              gid=row['gid']
+              assert gid not in found and 0<=gid<1024
+              assert set(row['arms'])==names
+              assert all(z['seed']==v.SEED_BASE+gid*1000003 for z in row['arms'].values())
+              found.add(gid)
+          assert found==set(range(1024))
+          assert v.audit() is None
+          print('SECOND_KEY_ORIGINAL_SHARDS_RECOVERED',len(files),len(found),flush=True)
+          PY
+      - name: Pool EXACT original games, compute T2 paired confidence intervals
+        run: |
+          python -u dack_manifold_second_key_n1024_20261029.py --pool --path shards --out dack_manifold_second_key_n1024_report.json
+          python - <<'PY'
+          import json
+          r=json.load(open('dack_manifold_second_key_n1024_report.json'))
+          assert r['status']=='PASS' and r['n']==1024 and r['shards_found']==128
+          assert r['missing_count']==0 and len(r['arms'])==7
+          assert len(r['head_to_heads'])==10 and r['no_rainbow_land_swaps']
+          assert r['baseline_arm']=='live_boulder'
+          assert r['first_key']=='Voltaic Key IN, Tooth of Ramos OUT'
+          print('SECOND_KEY_FINAL_T2',json.dumps({
+            'rank':r['rank_by_T2'],
+            'arms':{k:{'t1':v['T1_pct'],'t2':v['T2_pct'],'t3':v['T3_pct']} for k,v in r['arms'].items()},
+            'pairs':{k:v['T2'] for k,v in r['head_to_heads'].items()}
+          }),flush=True)
+          PY
+      - name: Archive verified results ahead of publishing
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: manifold-second-key-n1024-recovered-final-report
+          path: |
+            dack_manifold_second_key_n1024_report.json
+            dack_manifold_second_key_n1024_report.raw.json.gz
+          retention-days: 90
+          if-no-files-found: warn
+      - name: Publish fully validated paired results
+        run: |
+          set -euo pipefail
+          mkdir -p benchmark_results
+          cp dack_manifold_second_key_n1024_report.json benchmark_results/
+          cp dack_manifold_second_key_n1024_report.raw.json.gz benchmark_results/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f benchmark_results/dack_manifold_second_key_n1024_report.json benchmark_results/dack_manifold_second_key_n1024_report.raw.json.gz
+          git commit -m 'Recover and archive original 1024-game second-key screen paired results'
+          git fetch origin dack-voltaic-manifold-second-key-recover-20261029
+          git rebase origin/dack-voltaic-manifold-second-key-recover-20261029
+          git push origin HEAD:dack-voltaic-manifold-second-key-recover-20261029
