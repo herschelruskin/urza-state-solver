@@ -1,7 +1,7 @@
 name: Blind One-Key Bucknard vs Implements N128
 on:
   push:
-    branches: [dack-bucknard-blind-check-20261029]
+    branches: [dack-bucknard-onekey-blind-improved-20261030]
     paths:
       - '.github/workflows/dack_bucknard_onekey_blind_n128_20261030.yml'
       - 'dack_bucknard_onekey_blind_n128_20261030.py'
@@ -10,7 +10,7 @@ permissions:
   contents: write
   actions: read
 concurrency:
-  group: dack-blind-bucknard-vs-artifacts-n128
+  group: dack-blind-bucknard-onekey-n128
   cancel-in-progress: false
 env:
   PYTHONHASHSEED: '0'
@@ -103,6 +103,6 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -f benchmark_results/dack_bucknard_onekey_blind_n128_20261030_report.json benchmark_results/dack_bucknard_onekey_blind_n128_20261030_report.raw.json.gz
           git commit -m 'Archive blind pre-roll Bucknard T2 versus comparable artifacts'
-          git fetch origin dack-bucknard-blind-check-20261029
-          git rebase origin/dack-bucknard-blind-check-20261029
-          git push origin HEAD:dack-bucknard-blind-check-20261029
+          git fetch origin dack-bucknard-onekey-blind-improved-20261030
+          git rebase origin/dack-bucknard-onekey-blind-improved-20261030
+          git push origin HEAD:dack-bucknard-onekey-blind-improved-20261030
