@@ -1,0 +1,66 @@
+{
+  "schema": "dack_bucknard_two_keys_blind_expectation_n128_v1",
+  "status": "PASS",
+  "n": 128,
+  "shards_found": 32,
+  "seed_base": 9914291031034001,
+  "beam_blind": 96,
+  "beam_comparators": 160,
+  "baseline": "two Keys with Bucknard, no Tooth/Implements",
+  "assumptions": "Blind pre-roll action choice maximizing exact averaged d4 outcome, top 3 eligible candidate states per turn; four-face or 16/64 independent combinations for multiple activations. Postroll adaptation allowed. Neutral2 heuristic used for mulligan decisions. Search is approximate and may see future draws, so not a verified fully imperfect-information win rate.",
+  "arms": {
+    "bucknard": {
+      "mean_probability_T2_pct": 41.2109,
+      "p2_probabilistic_success_mass": 52.75,
+      "mean_keep_n": 4.7578,
+      "deck_hash": "de43e56c9cdde939288affb8a1e4c3b77b085e5d1c83dd7970877880b16bb5c8"
+    },
+    "without_buck_tooth": {
+      "mean_probability_T2_pct": 41.4062,
+      "p2_probabilistic_success_mass": 53.0,
+      "mean_keep_n": 4.8281,
+      "deck_hash": "d9733d270df1954261a8fd939fe1bcb4fdf236610aa00694d68a792541faaf11"
+    },
+    "without_buck_implements": {
+      "mean_probability_T2_pct": 41.4062,
+      "p2_probabilistic_success_mass": 53.0,
+      "mean_keep_n": 4.7812,
+      "deck_hash": "d88a914c86c43c9898d6f1b0b6e4771f10fae4dbebf8649255d039c197569307"
+    },
+    "without_buck_candelabra": {
+      "mean_probability_T2_pct": 41.4062,
+      "p2_probabilistic_success_mass": 53.0,
+      "mean_keep_n": 4.7812,
+      "deck_hash": "fb6be7ca5b625866b6f0cb730e152acc541a55f3bf847680fe155641fea68d1f"
+    }
+  },
+  "paired_vs_bucknard": {
+    "without_buck_tooth": {
+      "bucknard_minus_comparator_T2_pp": -0.1953,
+      "paired_95_ci_pp": [
+        -2.9397,
+        2.549
+      ],
+      "note": "Comparators use full unrestricted deterministic search (no random Bucknard); Bucknard uses approximate top-K blind policy"
+    },
+    "without_buck_implements": {
+      "bucknard_minus_comparator_T2_pp": -0.1953,
+      "paired_95_ci_pp": [
+        -2.9397,
+        2.549
+      ],
+      "note": "Comparators use full unrestricted deterministic search (no random Bucknard); Bucknard uses approximate top-K blind policy"
+    },
+    "without_buck_candelabra": {
+      "bucknard_minus_comparator_T2_pp": -0.1953,
+      "paired_95_ci_pp": [
+        -3.6964,
+        3.3058
+      ],
+      "note": "Comparators use full unrestricted deterministic search (no random Bucknard); Bucknard uses approximate top-K blind policy"
+    }
+  },
+  "max_candidates_per_turn": 3,
+  "roll_policy": "NO realized d4 available when choosing pre-activation line",
+  "protected_splendor_and_auras": true
+}
