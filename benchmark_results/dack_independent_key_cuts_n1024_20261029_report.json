@@ -1,0 +1,464 @@
+{
+  "schema": "dack_independent_key_cuts_n1024_20261029_v1",
+  "status": "PASS",
+  "n": 1024,
+  "planned": 1024,
+  "missing": [],
+  "missing_count": 0,
+  "shards_found": 64,
+  "expected_shards": 64,
+  "seed_base": 9914291031010001,
+  "policy": "assertive",
+  "beam": 160,
+  "locked_auras": [
+    "Gleaming Splendor",
+    "Hardlight Containment",
+    "Lunarch Mantle"
+  ],
+  "hashes": {
+    "current": "587b6534e05a65299306b479e460cdb34917da70da11512663532fae5ca97538",
+    "one_key": "fd21f09a14e929d4a877a6ae158a37d46bda6ae0d76c3adc6e4b6b1085638552",
+    "two_keys_implements": "de43e56c9cdde939288affb8a1e4c3b77b085e5d1c83dd7970877880b16bb5c8",
+    "two_keys_everflow": "10e43f67546a45af404f4e2659ea769797608b20bada1a10b034d3d595d9f7b7",
+    "two_keys_mindstone": "6f58c0443b198d2293cd3ac2deadf41395ab445fe7f3ec171edcc639c53b83b4"
+  },
+  "rainbow_lands": [],
+  "source_correction": "mox_diamond_any_and_gardens_filter_20261028_v1",
+  "arms": {
+    "current": {
+      "out": [
+        "Manifold Key",
+        "Voltaic Key"
+      ],
+      "in": [
+        "Implements of Sacrifice",
+        "Tooth of Ramos"
+      ],
+      "T1_pct": 6.0547,
+      "T2_pct": 52.6367,
+      "T3_pct": 82.9102,
+      "counts": {
+        "0": 175,
+        "1": 62,
+        "2": 477,
+        "3": 310
+      },
+      "mean_keep": 5.1006
+    },
+    "one_key": {
+      "out": [
+        "Manifold Key"
+      ],
+      "in": [
+        "Implements of Sacrifice"
+      ],
+      "T1_pct": 6.1523,
+      "T2_pct": 53.125,
+      "T3_pct": 82.8125,
+      "counts": {
+        "0": 176,
+        "1": 63,
+        "2": 481,
+        "3": 304
+      },
+      "mean_keep": 5.0889
+    },
+    "two_keys_implements": {
+      "out": [],
+      "in": [],
+      "T1_pct": 5.8594,
+      "T2_pct": 52.4414,
+      "T3_pct": 82.7148,
+      "counts": {
+        "0": 177,
+        "1": 60,
+        "2": 477,
+        "3": 310
+      },
+      "mean_keep": 5.0791
+    },
+    "two_keys_everflow": {
+      "out": [
+        "Everflowing Chalice"
+      ],
+      "in": [
+        "Implements of Sacrifice"
+      ],
+      "T1_pct": 6.25,
+      "T2_pct": 52.4414,
+      "T3_pct": 82.0312,
+      "counts": {
+        "0": 184,
+        "1": 64,
+        "2": 473,
+        "3": 303
+      },
+      "mean_keep": 5.1182
+    },
+    "two_keys_mindstone": {
+      "out": [
+        "Mind Stone"
+      ],
+      "in": [
+        "Implements of Sacrifice"
+      ],
+      "T1_pct": 6.543,
+      "T2_pct": 53.0273,
+      "T3_pct": 82.7148,
+      "counts": {
+        "0": 177,
+        "1": 67,
+        "2": 476,
+        "3": 304
+      },
+      "mean_keep": 5.0869
+    }
+  },
+  "paired_vs_current": {
+    "one_key": {
+      "T1": {
+        "delta_pp": 0.0977,
+        "gains": 4,
+        "losses": 3,
+        "ties": 1017,
+        "paired_95_ci_pp": [
+          -0.409,
+          0.6043
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.4883,
+        "gains": 21,
+        "losses": 16,
+        "ties": 987,
+        "paired_95_ci_pp": [
+          -0.6762,
+          1.6527
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.0977,
+        "gains": 22,
+        "losses": 23,
+        "ties": 979,
+        "paired_95_ci_pp": [
+          -1.3823,
+          1.1869
+        ]
+      }
+    },
+    "two_keys_implements": {
+      "T1": {
+        "delta_pp": -0.1953,
+        "gains": 3,
+        "losses": 5,
+        "ties": 1016,
+        "paired_95_ci_pp": [
+          -0.7368,
+          0.3462
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.1953,
+        "gains": 34,
+        "losses": 36,
+        "ties": 954,
+        "paired_95_ci_pp": [
+          -1.7975,
+          1.4068
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.1953,
+        "gains": 38,
+        "losses": 40,
+        "ties": 946,
+        "paired_95_ci_pp": [
+          -1.8866,
+          1.4959
+        ]
+      }
+    },
+    "two_keys_everflow": {
+      "T1": {
+        "delta_pp": 0.1953,
+        "gains": 5,
+        "losses": 3,
+        "ties": 1016,
+        "paired_95_ci_pp": [
+          -0.3462,
+          0.7368
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.1953,
+        "gains": 34,
+        "losses": 36,
+        "ties": 954,
+        "paired_95_ci_pp": [
+          -1.7975,
+          1.4068
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.8789,
+        "gains": 38,
+        "losses": 47,
+        "ties": 939,
+        "paired_95_ci_pp": [
+          -2.6436,
+          0.8858
+        ]
+      }
+    },
+    "two_keys_mindstone": {
+      "T1": {
+        "delta_pp": 0.4883,
+        "gains": 7,
+        "losses": 2,
+        "ties": 1015,
+        "paired_95_ci_pp": [
+          -0.0854,
+          1.062
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.3906,
+        "gains": 27,
+        "losses": 23,
+        "ties": 974,
+        "paired_95_ci_pp": [
+          -0.9633,
+          1.7445
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.1953,
+        "gains": 24,
+        "losses": 26,
+        "ties": 974,
+        "paired_95_ci_pp": [
+          -1.5494,
+          1.1587
+        ]
+      }
+    }
+  },
+  "head_to_heads": {
+    "one_key_vs_current": {
+      "T1": {
+        "delta_pp": 0.0977,
+        "gains": 4,
+        "losses": 3,
+        "ties": 1017,
+        "paired_95_ci_pp": [
+          -0.409,
+          0.6043
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.4883,
+        "gains": 21,
+        "losses": 16,
+        "ties": 987,
+        "paired_95_ci_pp": [
+          -0.6762,
+          1.6527
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.0977,
+        "gains": 22,
+        "losses": 23,
+        "ties": 979,
+        "paired_95_ci_pp": [
+          -1.3823,
+          1.1869
+        ]
+      }
+    },
+    "two_keys_implements_vs_one_key": {
+      "T1": {
+        "delta_pp": -0.293,
+        "gains": 0,
+        "losses": 3,
+        "ties": 1021,
+        "paired_95_ci_pp": [
+          -0.6242,
+          0.0382
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.6836,
+        "gains": 28,
+        "losses": 35,
+        "ties": 961,
+        "paired_95_ci_pp": [
+          -2.203,
+          0.8358
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.0977,
+        "gains": 26,
+        "losses": 27,
+        "ties": 971,
+        "paired_95_ci_pp": [
+          -1.4918,
+          1.2965
+        ]
+      }
+    },
+    "two_keys_everflow_vs_one_key": {
+      "T1": {
+        "delta_pp": 0.0977,
+        "gains": 3,
+        "losses": 2,
+        "ties": 1019,
+        "paired_95_ci_pp": [
+          -0.3305,
+          0.5258
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.6836,
+        "gains": 27,
+        "losses": 34,
+        "ties": 963,
+        "paired_95_ci_pp": [
+          -2.1787,
+          0.8115
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.7812,
+        "gains": 33,
+        "losses": 41,
+        "ties": 950,
+        "paired_95_ci_pp": [
+          -2.4279,
+          0.8654
+        ]
+      }
+    },
+    "two_keys_mindstone_vs_one_key": {
+      "T1": {
+        "delta_pp": 0.3906,
+        "gains": 6,
+        "losses": 2,
+        "ties": 1016,
+        "paired_95_ci_pp": [
+          -0.1505,
+          0.9317
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.0977,
+        "gains": 14,
+        "losses": 15,
+        "ties": 995,
+        "paired_95_ci_pp": [
+          -1.1289,
+          0.9336
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.0977,
+        "gains": 12,
+        "losses": 13,
+        "ties": 999,
+        "paired_95_ci_pp": [
+          -1.0551,
+          0.8598
+        ]
+      }
+    },
+    "two_keys_everflow_vs_two_keys_implements": {
+      "T1": {
+        "delta_pp": 0.3906,
+        "gains": 4,
+        "losses": 0,
+        "ties": 1020,
+        "paired_95_ci_pp": [
+          0.0084,
+          0.7729
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.0,
+        "gains": 33,
+        "losses": 33,
+        "ties": 958,
+        "paired_95_ci_pp": [
+          -1.5558,
+          1.5558
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.6836,
+        "gains": 26,
+        "losses": 33,
+        "ties": 965,
+        "paired_95_ci_pp": [
+          -2.1539,
+          0.7867
+        ]
+      }
+    },
+    "two_keys_mindstone_vs_two_keys_implements": {
+      "T1": {
+        "delta_pp": 0.6836,
+        "gains": 8,
+        "losses": 1,
+        "ties": 1015,
+        "paired_95_ci_pp": [
+          0.1106,
+          1.2566
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.5859,
+        "gains": 37,
+        "losses": 31,
+        "ties": 956,
+        "paired_95_ci_pp": [
+          -0.9928,
+          2.1647
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.0,
+        "gains": 27,
+        "losses": 27,
+        "ties": 970,
+        "paired_95_ci_pp": [
+          -1.4072,
+          1.4072
+        ]
+      }
+    }
+  },
+  "scope": "Matched independent Assertive free London goldfish Dack cast T1/T2/T3 (NOT verified post-Dack combo), with Mox Diamond any-color and Mycosynth Gardens {1},T any-color corrected. 4 true rainbow lands. 2-class sunburst simplification remains.",
+  "rank_by_T2": [
+    "one_key",
+    "two_keys_mindstone",
+    "current",
+    "two_keys_implements",
+    "two_keys_everflow"
+  ],
+  "study_objective": "Independent fresh-seed T2 confirmation of second-Key cut; 1key vs 2key with Implements, Everflow, Mind Stone cuts; same locked combo mechanics.",
+  "actual_boulder_deck": true,
+  "two_key_baseline": "Voltaic for Tooth, Manifold for Implements",
+  "guard_version": "boonweaver_auras_plus_gleaming_splendor_exile_guard_v2",
+  "second_key_bucknard_version": "bucknard_pre_resolution_manifold_and_double_key_three_dice_v1",
+  "original_34_land_slots": 34,
+  "land_counts": {
+    "current": 34,
+    "one_key": 34,
+    "two_keys_implements": 34,
+    "two_keys_everflow": 34,
+    "two_keys_mindstone": 34
+  },
+  "fresh_seed": true,
+  "exploratory_multiple_comparisons": true
+}
