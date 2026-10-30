@@ -1,7 +1,7 @@
 name: One Key 34 to 36 Lands Untaidake Holdout N1024
 on:
   push:
-    branches: [dack-land-white-untaidake-n1024-20261029]
+    branches: [dack-onekey-36lands-untaidake-holdout-20261030]
     paths:
       - '.github/workflows/dack_onekey_36lands_untaidake_n1024_20261030.yml'
       - 'dack_onekey_36lands_untaidake_n1024_20261030.py'
@@ -103,6 +103,6 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -f benchmark_results/dack_onekey_36lands_untaidake_n1024_20261030_report.json benchmark_results/dack_onekey_36lands_untaidake_n1024_20261030_report.raw.json.gz
           git commit -m 'Archive One Key 34 to 36 Lands Untaidake Holdout N1024 validated N1024 results'
-          git fetch origin dack-land-white-untaidake-n1024-20261029
-          git rebase origin/dack-land-white-untaidake-n1024-20261029
-          git push origin HEAD:dack-land-white-untaidake-n1024-20261029
+          git fetch origin dack-onekey-36lands-untaidake-holdout-20261030
+          git rebase origin/dack-onekey-36lands-untaidake-holdout-20261030
+          git push origin HEAD:dack-onekey-36lands-untaidake-holdout-20261030
