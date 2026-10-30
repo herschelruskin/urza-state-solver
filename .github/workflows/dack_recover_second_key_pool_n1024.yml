@@ -17,15 +17,18 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Download the ORIGINAL 128 successful simulation shard archives
-        uses: actions/download-artifact@v4
-        with:
-          run-id: 40948407322
-          repository: herschelruskin/urza-state-solver
-          github-token: ${{ github.token }}
-          pattern: manifold-second-key-n1024-shard-*
-          merge-multiple: true
-          path: shards
+      - name: Download ALL original 128 successful shards using paginated GitHub CLI
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p shards
+          gh api --paginate '/repos/herschelruskin/urza-state-solver/actions/runs/40948407322/artifacts?per_page=100' --jq '.artifacts[] | select(.name | startswith("manifold-second-key-n1024-shard-")) | .name' > expected_artifacts.txt
+          echo "Shard archives visible via paginated API: $(wc -l < expected_artifacts.txt)"
+          test "$(wc -l < expected_artifacts.txt)" -eq 128
+          gh run download 40948407322 -R herschelruskin/urza-state-solver -p 'manifold-second-key-n1024-shard-*' -D shards
+          echo "Completed shard payloads: $(find shards -name 'prism_true4_shard_*.json.gz' | wc -l)"
+          test "$(find shards -name 'prism_true4_shard_*.json.gz' | wc -l)" -eq 128
       - name: Verify all ORIGINAL 1024 paired game IDs and corrected rules
         run: |
           python - <<'PY'
@@ -33,7 +36,7 @@ jobs:
           import gzip,json
           import dack_manifold_second_key_n1024_20261029 as v
           names=set(v.VARIANTS)
-          files=sorted(Path('shards').glob('prism_true4_shard_*.json.gz'))
+          files=sorted(Path('shards').rglob('prism_true4_shard_*.json.gz'))
           assert len(files)==128,('missing original completed shards',len(files))
           found=set()
           for f in files:
