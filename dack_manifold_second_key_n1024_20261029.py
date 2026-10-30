@@ -134,6 +134,17 @@ prior.N=N
 prior.SEED_BASE=SEED_BASE
 prior.SCHEMA=SCHEMA
 prior.PAIRS=PAIRS
+# The reusable historical pooling routine hardcodes its baseline label
+# "current" when computing paired contrasts. Our completed shards and
+# matched predeclared study correctly call the user baseline "live_boulder".
+# Translate that legacy comparison alias ONLY while aggregating; do NOT
+# modify, relabel, or regenerate any of the 1024 completed game rows.
+_ORIGINAL_COMPARE=prior.compare
+def _compare_with_live_baseline(rows,a,b,t):
+    return _ORIGINAL_COMPARE(rows,
+        "live_boulder" if a=="current" else a,
+        "live_boulder" if b=="current" else b,t)
+prior.compare=_compare_with_live_baseline
 prior.BASE=BASE
 prior.LOCKED=LOCKED
 prior.RAINBOW=()
@@ -146,6 +157,9 @@ def pool(folder,out):
     assert report["status"]=="PASS" and report["n"]==N
     assert report["shards_found"]==128 and report["missing_count"]==0
     assert len(report["arms"])==len(VARIANTS) and len(report["head_to_heads"])==len(PAIRS)
+    # Historical helper's extra self-comparison has no analytical purpose.
+    report["paired_vs_current"].pop("live_boulder",None)
+    report["baseline_arm"]="live_boulder"
     report["source_correction"]=[second.guard.FIX_VERSION,second.FIX_VERSION]
     report["no_rainbow_land_swaps"]=True
     report["real_user_baseline"]="Actual Boulder deck (World Map absent, 34 original lands)"
