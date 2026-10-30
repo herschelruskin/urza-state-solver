@@ -53,8 +53,8 @@ def audit():
     assert "Manifold Key" in BASE and "Voltaic Key" in BASE
     assert "Tooth of Ramos" not in BASE and "Implements of Sacrifice" not in BASE
     assert len(set(sim.deck_hash(v) for v in VARIANTS.values()))==len(VARIANTS)
-    assert "Implements of Sacrifice" in BASE and "Mind Stone" in BASE
-    assert "Everflowing Chalice" in BASE
+    assert "Implements of Sacrifice" in SOURCE and "Mind Stone" in SOURCE
+    assert "Everflowing Chalice" in SOURCE
     assert len(VARIANTS)==5 and len(PAIRS)==6
     for k,deck in VARIANTS.items():
         assert len(deck)==99 and LOCKED.issubset(deck),k
