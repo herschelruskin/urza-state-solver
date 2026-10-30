@@ -1,0 +1,107 @@
+{
+  "schema": "dack_bucknard_onekey_blind_d4_expected_n128_v2",
+  "status": "PASS",
+  "n": 128,
+  "shards_found": 32,
+  "seed_base": 9914301030034001,
+  "beam_blind": 128,
+  "beam_comparators": 160,
+  "baseline": "ONE Voltaic Key replacing Tooth; Implements retained in current; no Manifold",
+  "assumptions": "Two one-Key Bucknard arms, blind pre-roll action choice maximizing averaged 4 or 16 d4 outcomes, top six eligible candidate states per turn; postroll adaptation allowed. Neutral 2 only during mulligan. Full no-Buck comparator beam160 has asymmetric search budget; no-Buck head-to-head remains descriptive. Future draws known by old engine.",
+  "arms": {
+    "buck_with_implements": {
+      "mean_probability_T2_pct": 48.8281,
+      "p2_probabilistic_success_mass": 62.5,
+      "mean_keep_n": 4.7734,
+      "deck_hash": "fd21f09a14e929d4a877a6ae158a37d46bda6ae0d76c3adc6e4b6b1085638552",
+      "games_with_any_pre_roll_candidate": 6,
+      "games_choosing_positive_value_activation": 2,
+      "chosen_dice_histogram": {
+        "1": 2
+      },
+      "conditional_first_d4_success_pct_given_chosen_activation": [
+        0.0,
+        0.0,
+        0.0,
+        100.0
+      ],
+      "mean_pre_roll_candidates_evaluated": 0.195
+    },
+    "buck_with_candelabra": {
+      "mean_probability_T2_pct": 51.1719,
+      "p2_probabilistic_success_mass": 65.5,
+      "mean_keep_n": 4.8594,
+      "deck_hash": "655e173f91d69d5bf7c8f9098ee679a2220e84bba7bee6f267e921fd4fad2baa",
+      "games_with_any_pre_roll_candidate": 6,
+      "games_choosing_positive_value_activation": 2,
+      "chosen_dice_histogram": {
+        "1": 2
+      },
+      "conditional_first_d4_success_pct_given_chosen_activation": [
+        0.0,
+        0.0,
+        0.0,
+        100.0
+      ],
+      "mean_pre_roll_candidates_evaluated": 0.273
+    },
+    "implements_with_candelabra": {
+      "mean_probability_T2_pct": 49.2188,
+      "p2_probabilistic_success_mass": 63.0,
+      "mean_keep_n": 4.8281,
+      "deck_hash": "2e20c7734ce469b69688f74c9b16427d3f9c981c8452b717448882461fa4ba64"
+    },
+    "implements_without_buck_tooth": {
+      "mean_probability_T2_pct": 50.7812,
+      "p2_probabilistic_success_mass": 65.0,
+      "mean_keep_n": 4.875,
+      "deck_hash": "8be4322f0521f40e2927244a41d4dd5d0f64fccabc717aa3cf5b48be48b17734"
+    }
+  },
+  "paired_vs_bucknard": {
+    "buck_and_implements_vs_implements_and_candelabra": {
+      "difference_T2_pp": -0.3906,
+      "paired_95_ci_pp": [
+        -2.0197,
+        1.2385
+      ],
+      "a": "buck_with_implements",
+      "b": "implements_with_candelabra",
+      "warning": "Buck uses limited blind policy, comparator uses full beam160; exploratory"
+    },
+    "buck_vs_implements_common_candelabra": {
+      "difference_T2_pp": 1.9531,
+      "paired_95_ci_pp": [
+        -0.2619,
+        4.1682
+      ],
+      "a": "buck_with_candelabra",
+      "b": "implements_with_candelabra",
+      "warning": "Buck uses limited blind policy, comparator uses full beam160; exploratory"
+    },
+    "buck_vs_tooth_keep_implements": {
+      "difference_T2_pp": -1.9531,
+      "paired_95_ci_pp": [
+        -5.4166,
+        1.5104
+      ],
+      "a": "buck_with_implements",
+      "b": "implements_without_buck_tooth",
+      "warning": "Buck uses limited blind policy, comparator uses full beam160; exploratory"
+    },
+    "implements_vs_candelabra_keep_buck": {
+      "difference_T2_pp": -2.3438,
+      "paired_95_ci_pp": [
+        -4.975,
+        0.2875
+      ],
+      "a": "buck_with_implements",
+      "b": "buck_with_candelabra",
+      "warning": "Buck uses limited blind policy, comparator uses full beam160; exploratory"
+    }
+  },
+  "max_candidates_per_turn": 6,
+  "roll_policy": "NO realized d4 available when choosing pre-activation line",
+  "protected_splendor_and_auras": true,
+  "naive_seeded_known_roll_onekey_T2_pct": 53.125
+}
