@@ -1,0 +1,108 @@
+name: Blind Bucknard Versus Other Mana Artifacts N128
+on:
+  push:
+    branches: [dack-bucknard-blind-check-20261029]
+    paths:
+      - '.github/workflows/dack_bucknard_blind_two_keys_n128_20261029.yml'
+      - 'dack_bucknard_blind_two_keys_n128_20261029.py'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: dack-blind-bucknard-vs-artifacts-n128
+  cancel-in-progress: false
+env:
+  PYTHONHASHSEED: '0'
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test exact independent d4 outcomes, locked combo, three Keys cases
+        run: |
+          python -m py_compile dack_bucknard_blind_two_keys_n128_20261029.py
+          python -u dack_bucknard_blind_two_keys_n128_20261029.py --audit
+      - name: Execute a blind 3-dice smoke outcome and each matched no-Purse comparator
+        run: python -u dack_bucknard_blind_two_keys_n128_20261029.py --smoke
+  shards:
+    needs: smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 175
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run four matched nonclairvoyant d4 games plus comparators
+        run: |
+          mkdir -p shards
+          python -u dack_bucknard_blind_two_keys_n128_20261029.py --shard ${{ matrix.shard }} --games 4 --out "shards/buck_blind_shard_${{ matrix.shard }}.json.gz"
+      - name: Archive complete and in-progress match results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blind-buck-n128-shard-${{ matrix.shard }}
+          path: |
+            shards/buck_blind_shard_${{ matrix.shard }}.json.gz
+            shards/buck_blind_shard_${{ matrix.shard }}.jsonl
+          retention-days: 90
+          if-no-files-found: warn
+  pool:
+    if: ${{ always() && needs.smoke.result == 'success' }}
+    needs: [smoke, shards]
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Download all 32 blind roll shards
+        uses: actions/download-artifact@v4
+        with:
+          pattern: blind-buck-n128-shard-*
+          merge-multiple: true
+          path: shards
+      - name: Strictly pool paired n128 blind expectation and no-Purse comparator results
+        run: |
+          python -u dack_bucknard_blind_two_keys_n128_20261029.py --pool --path shards --out dack_bucknard_blind_two_keys_n128_20261029_report.json
+          python - <<'PY'
+          import json
+          r=json.load(open('dack_bucknard_blind_two_keys_n128_20261029_report.json'))
+          assert r['n']==128 and r['shards_found']==32 and r['status']=='PASS'
+          assert r['protected_splendor_and_auras'] and len(r['arms'])==4
+          print('BUCK_BLIND_N128_VERIFIED',r['paired_vs_bucknard'],flush=True)
+          PY
+      - name: Archive verified report and raw expected-success fractions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blind-buck-n128-validated-report
+          path: |
+            dack_bucknard_blind_two_keys_n128_20261029_report.json
+            dack_bucknard_blind_two_keys_n128_20261029_report.raw.json.gz
+          retention-days: 90
+          if-no-files-found: warn
+      - name: Publish completed blind d4 report
+        run: |
+          set -euo pipefail
+          mkdir -p benchmark_results
+          cp dack_bucknard_blind_two_keys_n128_20261029_report.json benchmark_results/
+          cp dack_bucknard_blind_two_keys_n128_20261029_report.raw.json.gz benchmark_results/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f benchmark_results/dack_bucknard_blind_two_keys_n128_20261029_report.json benchmark_results/dack_bucknard_blind_two_keys_n128_20261029_report.raw.json.gz
+          git commit -m 'Archive blind pre-roll Bucknard T2 versus comparable artifacts'
+          git fetch origin dack-bucknard-blind-check-20261029
+          git rebase origin/dack-bucknard-blind-check-20261029
+          git push origin HEAD:dack-bucknard-blind-check-20261029
