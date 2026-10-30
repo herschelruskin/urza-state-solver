@@ -93,7 +93,7 @@ def audit():
         "seed_base":SEED_BASE,"land_counts":{
             k:sum(x in d.LANDS or x in ("Emeria's Call","Razorgrass Ambush")
                   for x in v) for k,v in VARIANTS.items()},
-        "exile_guard":validated.guard.FIX_VERSION,
+        "exile_guard":validated.FIX_VERSION,
         "first_key_priority":validated.priority.FIX_VERSION}),flush=True)
 
 def smoke():
@@ -127,7 +127,7 @@ def pool(folder,out):
         "study_objective":"Fresh one-Key: 34/35/36 land re-evaluation and Untaidake-vs-Plains at 34 and 36 lands. Land count changes also remove Everflowing and/or Mind Stone.",
         "actual_boulder_deck":True,
         "one_key_baseline":"Voltaic for Tooth; Implements retained, Manifold absent",
-        "guard_version":validated.guard.FIX_VERSION,
+        "guard_version":validated.FIX_VERSION,
         "first_key_bucknard_version":validated.priority.FIX_VERSION,
         "original_34_land_slots":34,
         "land_counts":{k:sum(x in d.LANDS or x in ("Emeria's Call","Razorgrass Ambush") for x in v) for k,v in VARIANTS.items()},
