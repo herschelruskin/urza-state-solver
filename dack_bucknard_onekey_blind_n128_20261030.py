@@ -201,6 +201,7 @@ def audit():
     assert set(n for _,n in actions)=={1,2},set(n for _,n in actions)
     assert any(n==2 and q.treasures==2 for q,n in actions)
     assert any(n==1 and q.treasures==1 for q,n in actions)
+    forced_dice((1,2,3))
     assert any(q.treasures==3 for q in ORIG_UTILITY(st) if source_leaves(st,q))
     assert not d.chrome_mox_allowed("Gleaming Splendor")
     forced_dice((2,2,2))
