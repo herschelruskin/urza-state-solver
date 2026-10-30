@@ -1,0 +1,698 @@
+{
+  "schema": "dack_second_key_manifold_fresh_n1024_v1",
+  "status": "PASS",
+  "n": 1024,
+  "planned": 1024,
+  "missing": [],
+  "missing_count": 0,
+  "shards_found": 128,
+  "expected_shards": 128,
+  "seed_base": 9914291029184729,
+  "policy": "assertive",
+  "beam": 160,
+  "locked_auras": [
+    "Gleaming Splendor",
+    "Hardlight Containment",
+    "Lunarch Mantle"
+  ],
+  "hashes": {
+    "live_boulder": "587b6534e05a65299306b479e460cdb34917da70da11512663532fae5ca97538",
+    "one_key_tooth": "fd21f09a14e929d4a877a6ae158a37d46bda6ae0d76c3adc6e4b6b1085638552",
+    "two_keys_implements": "de43e56c9cdde939288affb8a1e4c3b77b085e5d1c83dd7970877880b16bb5c8",
+    "two_keys_everflow": "10e43f67546a45af404f4e2659ea769797608b20bada1a10b034d3d595d9f7b7",
+    "two_keys_mindstone": "6f58c0443b198d2293cd3ac2deadf41395ab445fe7f3ec171edcc639c53b83b4",
+    "two_keys_coalition": "5dafa993687ba6f30c9e08ba646c8b299990c00745076c0f88de5fe16ce9e06f",
+    "two_keys_basalt": "52eaadd67bc96226dbf092b5418dd920d235b789a28638c084f21fc81ff1bb16"
+  },
+  "rainbow_lands": [],
+  "source_correction": [
+    "boonweaver_auras_plus_gleaming_splendor_exile_guard_v2",
+    "bucknard_pre_resolution_manifold_and_double_key_three_dice_v1"
+  ],
+  "arms": {
+    "live_boulder": {
+      "out": [],
+      "in": [],
+      "T1_pct": 6.7383,
+      "T2_pct": 51.7578,
+      "T3_pct": 82.3242,
+      "counts": {
+        "0": 181,
+        "1": 69,
+        "2": 461,
+        "3": 313
+      },
+      "mean_keep": 5.1904
+    },
+    "one_key_tooth": {
+      "out": [
+        "Tooth of Ramos"
+      ],
+      "in": [
+        "Voltaic Key"
+      ],
+      "T1_pct": 6.7383,
+      "T2_pct": 52.1484,
+      "T3_pct": 83.0078,
+      "counts": {
+        "0": 174,
+        "1": 69,
+        "2": 465,
+        "3": 316
+      },
+      "mean_keep": 5.2002
+    },
+    "two_keys_implements": {
+      "out": [
+        "Implements of Sacrifice",
+        "Tooth of Ramos"
+      ],
+      "in": [
+        "Manifold Key",
+        "Voltaic Key"
+      ],
+      "T1_pct": 7.2266,
+      "T2_pct": 53.418,
+      "T3_pct": 84.082,
+      "counts": {
+        "0": 163,
+        "1": 74,
+        "2": 473,
+        "3": 314
+      },
+      "mean_keep": 5.2061
+    },
+    "two_keys_everflow": {
+      "out": [
+        "Everflowing Chalice",
+        "Tooth of Ramos"
+      ],
+      "in": [
+        "Manifold Key",
+        "Voltaic Key"
+      ],
+      "T1_pct": 7.3242,
+      "T2_pct": 53.125,
+      "T3_pct": 83.2031,
+      "counts": {
+        "0": 172,
+        "1": 75,
+        "2": 469,
+        "3": 308
+      },
+      "mean_keep": 5.2412
+    },
+    "two_keys_mindstone": {
+      "out": [
+        "Mind Stone",
+        "Tooth of Ramos"
+      ],
+      "in": [
+        "Manifold Key",
+        "Voltaic Key"
+      ],
+      "T1_pct": 6.8359,
+      "T2_pct": 52.9297,
+      "T3_pct": 83.1055,
+      "counts": {
+        "0": 173,
+        "1": 70,
+        "2": 472,
+        "3": 309
+      },
+      "mean_keep": 5.1914
+    },
+    "two_keys_coalition": {
+      "out": [
+        "Coalition Relic",
+        "Tooth of Ramos"
+      ],
+      "in": [
+        "Manifold Key",
+        "Voltaic Key"
+      ],
+      "T1_pct": 6.9336,
+      "T2_pct": 52.5391,
+      "T3_pct": 82.5195,
+      "counts": {
+        "0": 179,
+        "1": 71,
+        "2": 467,
+        "3": 307
+      },
+      "mean_keep": 5.2393
+    },
+    "two_keys_basalt": {
+      "out": [
+        "Basalt Monolith",
+        "Tooth of Ramos"
+      ],
+      "in": [
+        "Manifold Key",
+        "Voltaic Key"
+      ],
+      "T1_pct": 6.6406,
+      "T2_pct": 53.2227,
+      "T3_pct": 82.1289,
+      "counts": {
+        "0": 183,
+        "1": 68,
+        "2": 477,
+        "3": 296
+      },
+      "mean_keep": 5.1943
+    }
+  },
+  "paired_vs_current": {
+    "one_key_tooth": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 3,
+        "losses": 3,
+        "ties": 1018,
+        "paired_95_ci_pp": [
+          -0.4691,
+          0.4691
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.3906,
+        "gains": 24,
+        "losses": 20,
+        "ties": 980,
+        "paired_95_ci_pp": [
+          -0.8794,
+          1.6607
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.6836,
+        "gains": 25,
+        "losses": 18,
+        "ties": 981,
+        "paired_95_ci_pp": [
+          -0.5715,
+          1.9386
+        ]
+      }
+    },
+    "two_keys_implements": {
+      "T1": {
+        "delta_pp": 0.4883,
+        "gains": 10,
+        "losses": 5,
+        "ties": 1009,
+        "paired_95_ci_pp": [
+          -0.2528,
+          1.2294
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.6602,
+        "gains": 49,
+        "losses": 32,
+        "ties": 943,
+        "paired_95_ci_pp": [
+          -0.0603,
+          3.3806
+        ]
+      },
+      "T3": {
+        "delta_pp": 1.7578,
+        "gains": 48,
+        "losses": 30,
+        "ties": 946,
+        "paired_95_ci_pp": [
+          0.07,
+          3.4457
+        ]
+      }
+    },
+    "two_keys_everflow": {
+      "T1": {
+        "delta_pp": 0.5859,
+        "gains": 11,
+        "losses": 5,
+        "ties": 1008,
+        "paired_95_ci_pp": [
+          -0.1792,
+          1.3511
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.3672,
+        "gains": 56,
+        "losses": 42,
+        "ties": 926,
+        "paired_95_ci_pp": [
+          -0.5267,
+          3.2611
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.8789,
+        "gains": 44,
+        "losses": 35,
+        "ties": 945,
+        "paired_95_ci_pp": [
+          -0.8223,
+          2.5801
+        ]
+      }
+    },
+    "two_keys_mindstone": {
+      "T1": {
+        "delta_pp": 0.0977,
+        "gains": 5,
+        "losses": 4,
+        "ties": 1015,
+        "paired_95_ci_pp": [
+          -0.4768,
+          0.6721
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.1719,
+        "gains": 33,
+        "losses": 21,
+        "ties": 970,
+        "paired_95_ci_pp": [
+          -0.2335,
+          2.5773
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.7812,
+        "gains": 25,
+        "losses": 17,
+        "ties": 982,
+        "paired_95_ci_pp": [
+          -0.4589,
+          2.0214
+        ]
+      }
+    },
+    "two_keys_coalition": {
+      "T1": {
+        "delta_pp": 0.1953,
+        "gains": 9,
+        "losses": 7,
+        "ties": 1008,
+        "paired_95_ci_pp": [
+          -0.5706,
+          0.9612
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.7812,
+        "gains": 52,
+        "losses": 44,
+        "ties": 928,
+        "paired_95_ci_pp": [
+          -1.0944,
+          2.6569
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.1953,
+        "gains": 46,
+        "losses": 44,
+        "ties": 934,
+        "paired_95_ci_pp": [
+          -1.6214,
+          2.012
+        ]
+      }
+    },
+    "two_keys_basalt": {
+      "T1": {
+        "delta_pp": -0.0977,
+        "gains": 9,
+        "losses": 10,
+        "ties": 1005,
+        "paired_95_ci_pp": [
+          -0.9324,
+          0.7371
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.4648,
+        "gains": 61,
+        "losses": 46,
+        "ties": 917,
+        "paired_95_ci_pp": [
+          -0.514,
+          3.4437
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.1953,
+        "gains": 48,
+        "losses": 50,
+        "ties": 926,
+        "paired_95_ci_pp": [
+          -2.091,
+          1.7004
+        ]
+      }
+    }
+  },
+  "head_to_heads": {
+    "one_key_tooth_vs_live_boulder": {
+      "T1": {
+        "delta_pp": 0.0,
+        "gains": 3,
+        "losses": 3,
+        "ties": 1018,
+        "paired_95_ci_pp": [
+          -0.4691,
+          0.4691
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.3906,
+        "gains": 24,
+        "losses": 20,
+        "ties": 980,
+        "paired_95_ci_pp": [
+          -0.8794,
+          1.6607
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.6836,
+        "gains": 25,
+        "losses": 18,
+        "ties": 981,
+        "paired_95_ci_pp": [
+          -0.5715,
+          1.9386
+        ]
+      }
+    },
+    "two_keys_implements_vs_one_key_tooth": {
+      "T1": {
+        "delta_pp": 0.4883,
+        "gains": 8,
+        "losses": 3,
+        "ties": 1013,
+        "paired_95_ci_pp": [
+          -0.1461,
+          1.1227
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.2695,
+        "gains": 36,
+        "losses": 23,
+        "ties": 965,
+        "paired_95_ci_pp": [
+          -0.1993,
+          2.7384
+        ]
+      },
+      "T3": {
+        "delta_pp": 1.0742,
+        "gains": 34,
+        "losses": 23,
+        "ties": 967,
+        "paired_95_ci_pp": [
+          -0.3701,
+          2.5185
+        ]
+      }
+    },
+    "two_keys_everflow_vs_one_key_tooth": {
+      "T1": {
+        "delta_pp": 0.5859,
+        "gains": 8,
+        "losses": 2,
+        "ties": 1014,
+        "paired_95_ci_pp": [
+          -0.0186,
+          1.1904
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.9766,
+        "gains": 41,
+        "losses": 31,
+        "ties": 952,
+        "paired_95_ci_pp": [
+          -0.6473,
+          2.6004
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.1953,
+        "gains": 30,
+        "losses": 28,
+        "ties": 966,
+        "paired_95_ci_pp": [
+          -1.2631,
+          1.6537
+        ]
+      }
+    },
+    "two_keys_mindstone_vs_one_key_tooth": {
+      "T1": {
+        "delta_pp": 0.0977,
+        "gains": 3,
+        "losses": 2,
+        "ties": 1019,
+        "paired_95_ci_pp": [
+          -0.3305,
+          0.5258
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.7812,
+        "gains": 20,
+        "losses": 12,
+        "ties": 992,
+        "paired_95_ci_pp": [
+          -0.301,
+          1.8635
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.0977,
+        "gains": 16,
+        "losses": 15,
+        "ties": 993,
+        "paired_95_ci_pp": [
+          -0.9686,
+          1.1639
+        ]
+      }
+    },
+    "two_keys_coalition_vs_one_key_tooth": {
+      "T1": {
+        "delta_pp": 0.1953,
+        "gains": 7,
+        "losses": 5,
+        "ties": 1012,
+        "paired_95_ci_pp": [
+          -0.468,
+          0.8586
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.3906,
+        "gains": 39,
+        "losses": 35,
+        "ties": 950,
+        "paired_95_ci_pp": [
+          -1.2565,
+          2.0378
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.4883,
+        "gains": 33,
+        "losses": 38,
+        "ties": 953,
+        "paired_95_ci_pp": [
+          -2.1016,
+          1.125
+        ]
+      }
+    },
+    "two_keys_basalt_vs_one_key_tooth": {
+      "T1": {
+        "delta_pp": -0.0977,
+        "gains": 7,
+        "losses": 8,
+        "ties": 1009,
+        "paired_95_ci_pp": [
+          -0.8393,
+          0.644
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.0742,
+        "gains": 49,
+        "losses": 38,
+        "ties": 937,
+        "paired_95_ci_pp": [
+          -0.7108,
+          2.8592
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.8789,
+        "gains": 35,
+        "losses": 44,
+        "ties": 945,
+        "paired_95_ci_pp": [
+          -2.5801,
+          0.8223
+        ]
+      }
+    },
+    "two_keys_everflow_vs_two_keys_implements": {
+      "T1": {
+        "delta_pp": 0.0977,
+        "gains": 7,
+        "losses": 6,
+        "ties": 1011,
+        "paired_95_ci_pp": [
+          -0.5928,
+          0.7881
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.293,
+        "gains": 26,
+        "losses": 29,
+        "ties": 969,
+        "paired_95_ci_pp": [
+          -1.7131,
+          1.1271
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.8789,
+        "gains": 22,
+        "losses": 31,
+        "ties": 971,
+        "paired_95_ci_pp": [
+          -2.272,
+          0.5142
+        ]
+      }
+    },
+    "two_keys_mindstone_vs_two_keys_implements": {
+      "T1": {
+        "delta_pp": -0.3906,
+        "gains": 5,
+        "losses": 9,
+        "ties": 1010,
+        "paired_95_ci_pp": [
+          -1.1068,
+          0.3255
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.4883,
+        "gains": 29,
+        "losses": 34,
+        "ties": 961,
+        "paired_95_ci_pp": [
+          -2.008,
+          1.0314
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.9766,
+        "gains": 32,
+        "losses": 42,
+        "ties": 950,
+        "paired_95_ci_pp": [
+          -2.6228,
+          0.6697
+        ]
+      }
+    },
+    "two_keys_coalition_vs_two_keys_implements": {
+      "T1": {
+        "delta_pp": -0.293,
+        "gains": 4,
+        "losses": 7,
+        "ties": 1013,
+        "paired_95_ci_pp": [
+          -0.9278,
+          0.3419
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.8789,
+        "gains": 24,
+        "losses": 33,
+        "ties": 967,
+        "paired_95_ci_pp": [
+          -2.3237,
+          0.5659
+        ]
+      },
+      "T3": {
+        "delta_pp": -1.5625,
+        "gains": 25,
+        "losses": 41,
+        "ties": 958,
+        "paired_95_ci_pp": [
+          -3.1153,
+          -0.0097
+        ]
+      }
+    },
+    "two_keys_basalt_vs_two_keys_implements": {
+      "T1": {
+        "delta_pp": -0.5859,
+        "gains": 5,
+        "losses": 11,
+        "ties": 1008,
+        "paired_95_ci_pp": [
+          -1.3511,
+          0.1792
+        ]
+      },
+      "T2": {
+        "delta_pp": -0.1953,
+        "gains": 39,
+        "losses": 41,
+        "ties": 944,
+        "paired_95_ci_pp": [
+          -1.9081,
+          1.5175
+        ]
+      },
+      "T3": {
+        "delta_pp": -1.9531,
+        "gains": 32,
+        "losses": 52,
+        "ties": 940,
+        "paired_95_ci_pp": [
+          -3.7042,
+          -0.2021
+        ]
+      }
+    }
+  },
+  "scope": "Fresh paired N1024 game IDs across one- and two-key Boonweaver decks, with Aura/Gleaming exile protection and both-key Bucknard pre-resolution priority interaction, one-free Assertive London mulligan; Dack combo-eligible goldfish deployment.",
+  "rank_by_T2": [
+    "two_keys_implements",
+    "two_keys_basalt",
+    "two_keys_everflow",
+    "two_keys_mindstone",
+    "two_keys_coalition",
+    "one_key_tooth",
+    "live_boulder"
+  ],
+  "baseline_arm": "live_boulder",
+  "no_rainbow_land_swaps": true,
+  "real_user_baseline": "Actual Boulder deck (World Map absent, 34 original lands)",
+  "first_key": "Voltaic Key IN, Tooth of Ramos OUT",
+  "second_key": "Manifold Key",
+  "candidate_selection": "Exploratory screen of five possible second-key cuts, multiple comparisons apply"
+}
