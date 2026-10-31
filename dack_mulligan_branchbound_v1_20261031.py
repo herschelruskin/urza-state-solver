@@ -48,6 +48,14 @@ def _rollout_prefix(hand,unknown,bottom,seat,beam,samples,t3_weight,
     unknown=tuple(unknown)
     bottom=tuple(bottom)
     samples=max(1,int(samples))
+    # An incumbent that already reaches the mathematical utility ceiling
+    # dominates every later lower-structure finalist without ANY rollout.
+    if _proven_uncompetitive(0.0,0,samples,best_utility,struct,best_struct,
+                            t3_weight):
+        stats["futures_skipped_proven"]+=samples
+        stats["pruned_candidates"]+=1
+        stats["zero_rollout_prunes"]+=1
+        return None,0,True
     if any(x in d.COMBO_CREATURES for x in hand) and not (
         "Brainstone" in hand or "Scroll Rack" in hand):
         stats["structural_zero"]+=1
