@@ -1,0 +1,48 @@
+name: DACK v11 corrective learned-selected real outcomes smoke
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_corrective_v11_smoke.yml'
+      - 'dack_simulator/validation/generate_corrective_learned_labels_v11.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Generate beam-160 outcomes from new hand states selected by frozen experimental learned model
+        run: |
+          python -m compileall -q dack_simulator/validation/generate_corrective_learned_labels_v11.py
+          python -u dack_simulator/validation/generate_corrective_learned_labels_v11.py \
+            --split train --start 22000 --games 4 --draws 4 \
+            --out datasets/corrective_v11_smoke_22000.jsonl.gz
+      - name: Check no oracle information, preserved physical deck, and four independent draws per scenario
+        run: |
+          python - <<'PY'
+          import gzip,json,collections
+          with gzip.open('datasets/corrective_v11_smoke_22000.jsonl.gz','rt') as f:
+              m=json.loads(next(f));r=[json.loads(s) for s in f]
+          assert m['sampling_protocol']=='DACK-CORRECTIVE-LEARNED-SELECTED-V11'
+          assert m['raw_sample_probabilities_biased'] is False
+          assert m['learned_selection_without_hidden_library_peeking']
+          assert len(r)==16 and len({x['game_id'] for x in r})==4
+          assert sorted(collections.Counter(x['game_id'] for x in r).values())==[4]*4
+          assert all(x['selection_stratum']=='learned_v8_policy_selected_natural' for x in r)
+          assert all(len(x['hand'])+len(x['bottom'])==7 for x in r)
+          assert all(sum(x['unknown_counts'].values())==92 for x in r)
+          assert all(not any(k in x for k in ('actual_library','sampled_order','hidden_order','first3')) for x in r)
+          print('CORRECTIVE_V11_SMOKE_PASS',dict(collections.Counter(x['label_turn'] for x in r)),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: corrective-v11-real-smoke
+          path: datasets/corrective_v11_smoke_22000.jsonl.gz
+          retention-days: 10
