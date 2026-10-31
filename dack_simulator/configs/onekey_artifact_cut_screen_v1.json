@@ -1,0 +1,73 @@
+{
+  "schema": "dack_paired_counterfactual_spec_v1",
+  "status": "PRE_VALIDATION",
+  "date": "2026-10-30",
+  "purpose": "One-Key artifact cut screen, one additional Plains at same 35 land count",
+  "baseline_manifest": "dack_simulator/configs/physical99_20261030.json",
+  "baseline_swaps": [
+    [
+      "Tooth of Ramos",
+      "Voltaic Key"
+    ]
+  ],
+  "control": "one_key_34",
+  "variants": {
+    "one_key_34": [],
+    "staff_plains_35": [
+      [
+        "Staff of Compleation",
+        "Plains"
+      ]
+    ],
+    "mindstone_plains_35": [
+      [
+        "Mind Stone",
+        "Plains"
+      ]
+    ],
+    "everflow_plains_35": [
+      [
+        "Everflowing Chalice",
+        "Plains"
+      ]
+    ],
+    "coalition_plains_35": [
+      [
+        "Coalition Relic",
+        "Plains"
+      ]
+    ],
+    "lens_plains_35": [
+      [
+        "Prismatic Lens",
+        "Plains"
+      ]
+    ],
+    "amulet_plains_35": [
+      [
+        "Jeweled Amulet",
+        "Plains"
+      ]
+    ],
+    "implements_plains_35": [
+      [
+        "Implements of Sacrifice",
+        "Plains"
+      ]
+    ],
+    "basalt_plains_35": [
+      [
+        "Basalt Monolith",
+        "Plains"
+      ]
+    ]
+  },
+  "gameplay_policy": "assertive",
+  "beam": 160,
+  "max_turn": 3,
+  "seed_base": 9914301030316156,
+  "rng_scheme": "canonical_slots_fisher_yates_each_london_stage_v1",
+  "internal_mulligan_sampling": "historical_card_name_multiset_seeded_v1",
+  "precision_note": "Paired outer London slots and per-game seat; legacy nested mulligan-EV and post-tutor search randomness not yet common-slot-stream-coupled. Full per-arm reruns; no cross-variant state caching.",
+  "inference": "Exploratory: do not rank definitively based on N256, require independent holdout and CI."
+}
