@@ -1,0 +1,34 @@
+name: DACK strict bounded v3 E2E parity
+
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_bounded_strict_v3_parity.yml'
+      - 'dack_paired_counterfactual_v3_bounded_20261031.py'
+      - 'dack_simulator/validation/benchmark_strict_bounded_parity_v3.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  parity:
+    strategy:
+      fail-fast: false
+      matrix:
+        game_id: [0, 1]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and audit opt-in strict bounded replay
+        run: |
+          python -m compileall -q dack_paired_counterfactual_v3_bounded_20261031.py dack_simulator/validation/benchmark_strict_bounded_parity_v3.py
+          python dack_paired_counterfactual_v3_bounded_20261031.py --audit
+      - name: Assert exact same strict-key game, mulligans and traces
+        run: |
+          python -u dack_simulator/validation/benchmark_strict_bounded_parity_v3.py --game-id ${{ matrix.game_id }}
