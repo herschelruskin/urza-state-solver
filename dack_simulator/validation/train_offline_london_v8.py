@@ -105,8 +105,21 @@ def fit(train_files,calibration_files,model_file,report_file):
                         options={"xatol":1e-5})
     if not res.success:raise RuntimeError("temperature calibration failed")
     temp=float(np.exp(res.x))
+    biased=any(bool(m.get("raw_sample_probabilities_biased") or
+                           m.get("not_population_representative"))
+               for m in training_meta+calibration_meta)
+    synthetic=any(bool(m.get("SYNTHETIC_NONPHYSICAL_LABELS"))
+                  for m in training_meta+calibration_meta)
+    # Training and an independent temperature fit do not prove external
+    # deployment calibration; approval requires a separate evaluation.
     export={
         "schema":"dack_london_multiclass_softmax_v8",
+        "diagnostic_only":True,
+        "deployed_policy_approved":False,
+        "training_contains_enriched_strata":bool(biased),
+        "synthetic_training_labels":bool(synthetic),
+        "calibration_scope":("enriched_mixture_not_deployment_representative"
+                             if biased else "unverified_external_representativeness"),
         "feature_sha256":feat.feature_hash(),"feature_names":list(feat.FEATURES),
         "classes":[0,1,2,3],"coef":raw_coef.tolist(),
         "intercept":raw_intercept.tolist(),"temperature":temp,
@@ -129,6 +142,11 @@ def fit(train_files,calibration_files,model_file,report_file):
     p_cal=softmax(cal_logits/temp,axis=1)
     report={
         "schema":"dack_london_model_calibration_report_v8",
+        "diagnostic_only":True,
+        "deployed_policy_approved":False,
+        "training_contains_enriched_strata":bool(biased),
+        "calibration_represents_population":False,
+        "synthetic_training_labels":bool(synthetic),
         "separate_training_and_calibration_game_ids":True,
         "no_hidden_draws_as_model_inputs":True,
         "n_train_groups":len(tgroups),"n_calibration_groups":len(cgroups),
