@@ -65,7 +65,7 @@
   "gameplay_policy": "assertive",
   "beam": 160,
   "max_turn": 3,
-  "seed_base": 9914301030316156,
+  "seed_base": "9914301030316157",
   "rng_scheme": "canonical_slots_fisher_yates_each_london_stage_v1",
   "internal_mulligan_sampling": "historical_card_name_multiset_seeded_v1",
   "precision_note": "Paired outer London slots and per-game seat; legacy nested mulligan-EV and post-tutor search randomness not yet common-slot-stream-coupled. Full per-arm reruns; no cross-variant state caching.",
