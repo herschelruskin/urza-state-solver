@@ -107,7 +107,19 @@ def fit(train_files,calibration_files,model_file,report_file):
     temp=float(np.exp(res.x))
     biased=any(bool(m.get("raw_sample_probabilities_biased") or
                            m.get("not_population_representative"))
-               for m in training_meta+calibration_meta)
+               for m in training_meta)
+    calibration_biased=any(bool(m.get("raw_sample_probabilities_biased") or
+                           m.get("not_population_representative"))
+               for m in calibration_meta)
+    selected_protocols={m.get("sampling_protocol") for m in calibration_meta}
+    if selected_protocols=={"DACK-SELECTED-LONDON-V10"}:
+        calibration_scope="natural_v7_policy_selected_hands_only"
+    elif selected_protocols=={"DACK-CORRECTIVE-LEARNED-SELECTED-V11"}:
+        calibration_scope="frozen_learned_v8_policy_selected_hands_only"
+    elif calibration_biased:
+        calibration_scope="intentionally_enriched_nonrepresentative_mixture"
+    else:
+        calibration_scope="unverified_distribution"
     synthetic=any(bool(m.get("SYNTHETIC_NONPHYSICAL_LABELS"))
                   for m in training_meta+calibration_meta)
     # Training and an independent temperature fit do not prove external
@@ -118,8 +130,8 @@ def fit(train_files,calibration_files,model_file,report_file):
         "deployed_policy_approved":False,
         "training_contains_enriched_strata":bool(biased),
         "synthetic_training_labels":bool(synthetic),
-        "calibration_scope":("enriched_mixture_not_deployment_representative"
-                             if biased else "unverified_external_representativeness"),
+        "calibration_scope":calibration_scope,
+        "calibration_is_enriched":calibration_biased,
         "feature_sha256":feat.feature_hash(),"feature_names":list(feat.FEATURES),
         "classes":[0,1,2,3],"coef":raw_coef.tolist(),
         "intercept":raw_intercept.tolist(),"temperature":temp,
@@ -146,6 +158,8 @@ def fit(train_files,calibration_files,model_file,report_file):
         "deployed_policy_approved":False,
         "training_contains_enriched_strata":bool(biased),
         "calibration_represents_population":False,
+        "calibration_scope":calibration_scope,
+        "calibration_is_enriched":calibration_biased,
         "synthetic_training_labels":bool(synthetic),
         "separate_training_and_calibration_game_ids":True,
         "no_hidden_draws_as_model_inputs":True,
