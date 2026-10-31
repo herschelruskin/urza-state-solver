@@ -99,7 +99,46 @@ jobs:
           path: corpus/
       - name: Install offline-only model dependencies
         run: python -m pip install 'scikit-learn>=1.4,<2'
+      - name: Check independent T1/T2/T3 class coverage before fitting
+        id: coverage
+        run: |
+          python - <<'PY'
+          from collections import Counter
+          from pathlib import Path
+          import gzip,glob,json,os
+          result={'schema':'dack_real_outcome_label_coverage_v8',
+                  'pilot_only':True,'per_split':{}}
+          for split in ('train','calibration'):
+              files=glob.glob(f'corpus/offline_{split}_*.jsonl.gz')
+              assert len(files)==8,(split,len(files))
+              counts=Counter();groups=set()
+              for path in files:
+                  with gzip.open(path,'rt') as f:
+                      meta=json.loads(next(f))
+                      assert meta['split']==split
+                      for line in f:
+                          x=json.loads(line)
+                          assert x['type']=='label'
+                          counts[x['label_turn']]+=1
+                          groups.add(x['game_id'])
+              result['per_split'][split]={
+                  'n_groups':len(groups),'n_labels':sum(counts.values()),
+                  'class_counts':{str(k):counts[k] for k in range(4)}}
+              assert len(groups)==32
+          ready=all(min(int(v['class_counts'][str(k)]) for k in range(4))>=8
+                    for v in result['per_split'].values())
+          result['ready_for_experimental_fit']=ready
+          result['required_each_class_per_split']=8
+          result['status']='SUFFICIENT_PILOT_COVERAGE' if ready else 'MORE_LABELS_REQUIRED'
+          out=Path('benchmark_results/real_outcome_label_coverage_v8.json')
+          out.parent.mkdir(exist_ok=True)
+          out.write_text(json.dumps(result,indent=2)+'\\n')
+          with open(os.environ['GITHUB_OUTPUT'],'at') as f:
+              f.write(f"ready={'true' if ready else 'false'}\\n")
+          print('OFFLINE_REAL_LABEL_COVERAGE',json.dumps(result),flush=True)
+          PY
       - name: Fit and independently calibrate experimental real-outcome model
+        if: steps.coverage.outputs.ready == 'true'
         run: |
           python -u dack_simulator/validation/train_offline_london_v8.py \
             --train corpus/offline_train_*.jsonl.gz \
@@ -107,6 +146,7 @@ jobs:
             --model models/experimental_real_outcomes_v8.json \
             --report benchmark_results/experimental_real_outcomes_v8_calibration.json
       - name: Derive all-nine-deck seat-specific London DP without beam
+        if: steps.coverage.outputs.ready == 'true'
         run: |
           python - <<'PY'
           import json
@@ -120,6 +160,7 @@ jobs:
           print('EXPERIMENTAL_REAL_MODEL_DP_READY',len(VARIANTS),flush=True)
           PY
       - name: Audit model artifact and all DP tables without evaluating holdout
+        if: steps.coverage.outputs.ready == 'true'
         run: |
           python dack_paired_counterfactual_v8_learned_london_20261031.py \
             --model models/experimental_real_outcomes_v8.json \
@@ -131,5 +172,5 @@ jobs:
           name: dack-v8-experimental-real-outcomes-model-and-calibration
           path: |
             models/
-            benchmark_results/experimental_real_outcomes_v8_calibration.json
+            benchmark_results/*.json
           retention-days: 10
