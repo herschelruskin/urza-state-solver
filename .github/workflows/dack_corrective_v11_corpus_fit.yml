@@ -1,0 +1,223 @@
+name: DACK v11 corrective real labels from learned-selected states N128 plus N128
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_corrective_v11_corpus_fit.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  collect:
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        include:
+          - split: train
+            start: 22100
+          - split: train
+            start: 22108
+          - split: train
+            start: 22116
+          - split: train
+            start: 22124
+          - split: train
+            start: 22132
+          - split: train
+            start: 22140
+          - split: train
+            start: 22148
+          - split: train
+            start: 22156
+          - split: train
+            start: 22164
+          - split: train
+            start: 22172
+          - split: train
+            start: 22180
+          - split: train
+            start: 22188
+          - split: train
+            start: 22196
+          - split: train
+            start: 22204
+          - split: train
+            start: 22212
+          - split: train
+            start: 22220
+          - split: calibration
+            start: 32100
+          - split: calibration
+            start: 32108
+          - split: calibration
+            start: 32116
+          - split: calibration
+            start: 32124
+          - split: calibration
+            start: 32132
+          - split: calibration
+            start: 32140
+          - split: calibration
+            start: 32148
+          - split: calibration
+            start: 32156
+          - split: calibration
+            start: 32164
+          - split: calibration
+            start: 32172
+          - split: calibration
+            start: 32180
+          - split: calibration
+            start: 32188
+          - split: calibration
+            start: 32196
+          - split: calibration
+            start: 32204
+          - split: calibration
+            start: 32212
+          - split: calibration
+            start: 32220
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Corrective beam-160 real futures from never-before-seen model-selected London hands
+        run: |
+          python -u dack_simulator/validation/generate_corrective_learned_labels_v11.py \
+            --split ${{ matrix.split }} --start ${{ matrix.start }} \
+            --games 8 --draws 4 \
+            --out datasets/v11_${{ matrix.split }}_${{ matrix.start }}.jsonl.gz
+      - name: Verify real physical group integrity and source-model policy hash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from collections import Counter
+          import gzip,json
+          fs=list(Path('datasets').glob('v11_*.jsonl.gz'))
+          assert len(fs)==1
+          with gzip.open(fs[0],'rt') as fp:
+              m=json.loads(next(fp));rows=[json.loads(s) for s in fp]
+          assert m['sampling_protocol']=='DACK-CORRECTIVE-LEARNED-SELECTED-V11'
+          assert m['learned_selection_without_hidden_library_peeking']
+          assert len(rows)==32 and len(set(x['game_id'] for x in rows))==8
+          assert set(Counter(x['game_id'] for x in rows).values())=={4}
+          assert len(set(x['selection_model_policy_hash'] for x in rows))==1
+          assert all(len(x['hand'])+len(x['bottom'])==7 for x in rows)
+          assert all(sum(x['unknown_counts'].values())==92 for x in rows)
+          assert all(not any(k in x for k in ('actual_library','hidden_order','sampled_order','first3')) for x in rows)
+          print('V11_CORRECTIVE_SHARD_PASS',fs[0].name,dict(Counter(x['label_turn'] for x in rows)),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: corrective-v11-${{ matrix.split }}-${{ matrix.start }}
+          path: datasets/v11_*.jsonl.gz
+          retention-days: 14
+  fit_archive:
+    needs: collect
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: corrective-v11-*
+          merge-multiple: true
+          path: datasets/corrective_learned_v11_20261031/
+      - name: Audit all 256 independent model-selected scenarios and their four-class labels
+        id: audit
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from collections import Counter
+          import hashlib,gzip,json,os
+          root=Path('datasets/corrective_learned_v11_20261031')
+          fs=sorted(root.glob('v11_*.jsonl.gz'))
+          assert len(fs)==32,len(fs)
+          manifest={'schema':'dack_corrective_learned_selected_v11_real_corpus',
+                    'source_frozen_learned_model_diagnostic_only':True,
+                    'policy_evaluation_seed_overlap':False,
+                    'train_calibration_split_disjoint':True,
+                    'source_policy_hash':None,'files':[],'splits':{}}
+          ids_all=[]
+          for split,base in [('train',22100),('calibration',32100)]:
+              files=[f for f in fs if f.name.startswith('v11_'+split+'_')]
+              assert len(files)==16
+              ids=Counter();outcomes=Counter();kept=Counter()
+              for file in files:
+                  with gzip.open(file,'rt') as h:
+                      header=json.loads(next(h))
+                      assert header['split']==split
+                      assert header['sampling_protocol']=='DACK-CORRECTIVE-LEARNED-SELECTED-V11'
+                      if manifest['source_policy_hash'] is None:
+                          manifest['source_policy_hash']=header['source_learned_policy_hash']
+                      assert manifest['source_policy_hash']==header['source_learned_policy_hash']
+                      for line in h:
+                          r=json.loads(line)
+                          ids[r['game_id']]+=1
+                          outcomes[r['label_turn']]+=1
+                          if r['future_index']==0:kept[r['keep_n']]+=1
+                          assert r['selection_model_policy_hash']==manifest['source_policy_hash']
+                          assert r['selection_stratum']=='learned_v8_policy_selected_natural'
+                          assert len(r['hand'])+len(r['bottom'])==7
+                          assert sum(r['unknown_counts'].values())==92
+                          assert not any(k in r for k in ('actual_library','hidden_order','sampled_order','first3'))
+                  manifest['files'].append({'path':file.name,'sha256':hashlib.sha256(file.read_bytes()).hexdigest(),'split':split,'bytes':file.stat().st_size})
+              assert set(ids)==set(range(base,base+128))
+              assert set(ids.values())=={4}
+              ids_all.append(set(ids))
+              manifest['splits'][split]={
+                  'game_ids':[base,base+127],'independent_scenarios':128,
+                  'rollouts':sum(outcomes.values()),
+                  'classes':{str(k):outcomes[k] for k in range(4)},
+                  'kept_scenarios':{str(k):v for k,v in sorted(kept.items())}}
+          assert ids_all[0].isdisjoint(ids_all[1])
+          ready=all(min(s['classes'].values())>=8 for s in manifest['splits'].values())
+          manifest['ready_for_diagnostic_fourclass_fit']=ready
+          (root/'manifest.json').write_text(json.dumps(manifest,indent=2,sort_keys=True)+'\n')
+          with open(os.environ['GITHUB_OUTPUT'],'a') as out:
+              out.write('ready='+('true' if ready else 'false')+'\n')
+          print('V11_CORRECTIVE_CORPUS_AUDIT_PASS',json.dumps({
+              'ready':ready,'splits':manifest['splits']},flush=True)
+          PY
+      - name: Install training-only scikit-learn
+        if: steps.audit.outputs.ready == 'true'
+        run: python -m pip install 'scikit-learn>=1.4,<2'
+      - name: Refit on natural, enriched, v7-kept and corrective learned-kept TRAIN; calibrate on learned-kept only
+        if: steps.audit.outputs.ready == 'true'
+        run: |
+          python -u dack_simulator/validation/train_offline_london_v8.py \
+            --train datasets/natural_v8_20261031/offline_train_*.jsonl.gz datasets/stratified_v9_20261031/v9_train_*.jsonl.gz datasets/selected_v10_20261031/v10_train_*.jsonl.gz datasets/corrective_learned_v11_20261031/v11_train_*.jsonl.gz \
+            --calibration datasets/corrective_learned_v11_20261031/v11_calibration_*.jsonl.gz \
+            --model models/dack_v11_corrective_EXPERIMENTAL.json \
+            --report benchmark_results/dack_v11_corrective_calibration_EXPERIMENTAL.json
+      - name: Permanently archive experimental correction data without promoting a model
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f datasets/corrective_learned_v11_20261031
+          if test -f models/dack_v11_corrective_EXPERIMENTAL.json; then
+            git add -f models/dack_v11_corrective_EXPERIMENTAL.json benchmark_results/dack_v11_corrective_calibration_EXPERIMENTAL.json
+          fi
+          git commit -m "Archive corrective learned-policy real trajectories and independent diagnostic model"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v11-corrective-model-and-provenance
+          path: |
+            datasets/corrective_learned_v11_20261031/manifest.json
+            models/dack_v11_corrective_EXPERIMENTAL.json
+            benchmark_results/dack_v11_corrective_calibration_EXPERIMENTAL.json
+          retention-days: 14
