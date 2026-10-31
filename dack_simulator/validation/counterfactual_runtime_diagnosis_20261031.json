@@ -1,0 +1,69 @@
+{
+  "schema": "dack_mulligan_vs_gameplay_profiling_20261031_v1",
+  "source": "GitHub Actions 41170912822",
+  "source_url": "https://github.com/herschelruskin/urza-state-solver/actions/runs/41170912822",
+  "comparison_source": "GitHub Actions 41170454271",
+  "comparison_url": "https://github.com/herschelruskin/urza-state-solver/actions/runs/41170454271",
+  "deck_variant": "one_key_34",
+  "status": "PASS",
+  "profiles": [
+    {
+      "game_id": 0,
+      "keep_n": 4,
+      "win_turn": 1,
+      "total_seconds": 59.7472,
+      "evaluate_seconds": 59.7414,
+      "gameplay_seconds": 0.00311,
+      "eval_calls": 5,
+      "stage_seconds": {
+        "keep7_two": 3.5293,
+        "keep6": 34.2188,
+        "keep5": 16.2192,
+        "keep4": 5.7742
+      }
+    },
+    {
+      "game_id": 1,
+      "keep_n": 6,
+      "win_turn": 2,
+      "total_seconds": 13.9414,
+      "evaluate_seconds": 13.738,
+      "gameplay_seconds": 0.20082,
+      "eval_calls": 3,
+      "stage_seconds": {
+        "keep7_two": 4.0488,
+        "keep6": 9.6893
+      }
+    }
+  ],
+  "state_key_comparison": {
+    "game0": {
+      "legacy_seconds": 60.649,
+      "strict_seconds": 62.398,
+      "delta_percent": 2.884
+    },
+    "game1": {
+      "legacy_seconds": 13.545,
+      "strict_seconds": 14.042,
+      "delta_percent": 3.67
+    },
+    "results_match": "Both win turn, kept hand, seat and first3 agree at both seeds."
+  },
+  "findings": [
+    "Dominant runtime is batch.evaluate_keep (mulligan simulation), not actual gameplay.",
+    "Shared physical slot seeds do not reuse evaluation work.",
+    "Every variant undergoes independent full London stage evaluations and clears caches.",
+    "At keep4 seed0, v1 evaluates two 7-card stages, then 6, 5 and 4-card stages.",
+    "Bottom candidates screened: 1 for keep7, 7 for keep6, up to 12 for keep5 and keep4; each uses eight sampled future outcomes at beam60, plus possible refinements at 16 samples.",
+    "Database checkpoint and trace summaries are not the bottleneck.",
+    "Historical seven-arm N1024 shard 0 completed 16 seeds in ~69m 47s, so the baseline was expensive too; these are different seeds/decks and not an apples-to-apples speed comparison."
+  ],
+  "next_steps": [
+    "Instrument per-bottom candidate and future rollout cache hit rates.",
+    "Implement stable slot-based RNG for mulligan hypothetical draws and trace each dependency.",
+    "Cache/share only exact identical rollout states or reuse validated action certificates; no reuse inferred merely from changed card being absent from opening seven.",
+    "Preserve assertive threshold and bottom choice with bit-for-bit parity on fixed seeds before scaling.",
+    "Compare CPU/wall time with N16 paired holdout before selecting faster policy.",
+    "Parallel shards improve wall clock, not CPU cost."
+  ]
+}
