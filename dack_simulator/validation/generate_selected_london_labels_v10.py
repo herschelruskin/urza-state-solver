@@ -37,6 +37,8 @@ TRAIN_START=21000
 CAL_START=31000
 TRAIN_LIMIT=21999
 CAL_LIMIT=31999
+EVAL_START=33000
+EVAL_LIMIT=33999
 
 def sample_selected(gid,variant):
     if variant not in ref.VARIANTS:raise KeyError(variant)
@@ -68,8 +70,13 @@ def sample_selected(gid,variant):
     }
 
 def generate(start,games,out,split="train",variant="one_key_34",draws=4):
-    lo,hi=(TRAIN_START,TRAIN_LIMIT) if split=="train" else (CAL_START,CAL_LIMIT)
-    if split not in ("train","calibration"):raise ValueError("invalid split")
+    if split not in ("train","calibration","evaluation"):
+        raise ValueError("invalid split")
+    lo,hi={
+        "train":(TRAIN_START,TRAIN_LIMIT),
+        "calibration":(CAL_START,CAL_LIMIT),
+        "evaluation":(EVAL_START,EVAL_LIMIT),
+    }[split]
     if games<1 or draws<1 or not lo<=start<=start+games-1<=hi:
         raise ValueError("invalid split, IDs or rollout count")
     v7.audit()
@@ -141,7 +148,7 @@ def generate(start,games,out,split="train",variant="one_key_34",draws=4):
 
 if __name__=="__main__":
     p=argparse.ArgumentParser()
-    p.add_argument("--split",choices=("train","calibration"),default="train")
+    p.add_argument("--split",choices=("train","calibration","evaluation"),default="train")
     p.add_argument("--start",type=int,default=TRAIN_START)
     p.add_argument("--games",type=int,default=4)
     p.add_argument("--draws",type=int,default=4)
