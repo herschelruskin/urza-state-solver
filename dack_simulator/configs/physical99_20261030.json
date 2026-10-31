@@ -1,0 +1,435 @@
+{
+  "schema": "dack_physical_99_slots_v1",
+  "record_date": "2026-10-30",
+  "description": "Frozen user-confirmed physical list; no proposed Voltaic Key swap. This manifest is NOT yet an engine-rules certification for Treasure Vault.",
+  "commander": "Dack Fayden, Helping Hand",
+  "parent_source": "dack_boonweaver_exact99_20261016.py:DECK_TEXT",
+  "reconstruction_delta_from_oct16": [
+    [
+      "Fomori Vault",
+      "Treasure Vault"
+    ],
+    [
+      "World Map",
+      "Giant's Boulder"
+    ],
+    [
+      "Smothering Tithe",
+      "Bucknard's Everfull Purse"
+    ],
+    [
+      "United Battlefront",
+      "Coalition Relic"
+    ]
+  ],
+  "delta_from_prior_boulder": [
+    [
+      "Fomori Vault",
+      "Treasure Vault"
+    ]
+  ],
+  "physical_card_count": 99,
+  "literal_land_count": 32,
+  "mdfc_land_count": 2,
+  "land_access_count": 34,
+  "plains_count": 10,
+  "slot_order": "lexical_card_name_then_occurrence_v1",
+  "slots": [
+    {
+      "slot_id": "slot_001",
+      "card": "Ancient Den"
+    },
+    {
+      "slot_id": "slot_002",
+      "card": "Ancient Tomb"
+    },
+    {
+      "slot_id": "slot_003",
+      "card": "Arcane Signet"
+    },
+    {
+      "slot_id": "slot_004",
+      "card": "Basalt Monolith"
+    },
+    {
+      "slot_id": "slot_005",
+      "card": "Blast Zone"
+    },
+    {
+      "slot_id": "slot_006",
+      "card": "Boonweaver Giant"
+    },
+    {
+      "slot_id": "slot_007",
+      "card": "Bound by Moonsilver"
+    },
+    {
+      "slot_id": "slot_008",
+      "card": "Brainstone"
+    },
+    {
+      "slot_id": "slot_009",
+      "card": "Bucknard's Everfull Purse"
+    },
+    {
+      "slot_id": "slot_010",
+      "card": "Cavern of Souls"
+    },
+    {
+      "slot_id": "slot_011",
+      "card": "Charitable Levy"
+    },
+    {
+      "slot_id": "slot_012",
+      "card": "Chrome Mox"
+    },
+    {
+      "slot_id": "slot_013",
+      "card": "City of Traitors"
+    },
+    {
+      "slot_id": "slot_014",
+      "card": "Coalition Relic"
+    },
+    {
+      "slot_id": "slot_015",
+      "card": "Command Beacon"
+    },
+    {
+      "slot_id": "slot_016",
+      "card": "Crystal Vein"
+    },
+    {
+      "slot_id": "slot_017",
+      "card": "Deafening Silence"
+    },
+    {
+      "slot_id": "slot_018",
+      "card": "Defense Grid"
+    },
+    {
+      "slot_id": "slot_019",
+      "card": "Disruptor Flute"
+    },
+    {
+      "slot_id": "slot_020",
+      "card": "Eiganjo, Seat of the Empire"
+    },
+    {
+      "slot_id": "slot_021",
+      "card": "Eldrazi Confluence"
+    },
+    {
+      "slot_id": "slot_022",
+      "card": "Emergence Zone"
+    },
+    {
+      "slot_id": "slot_023",
+      "card": "Emeria's Call"
+    },
+    {
+      "slot_id": "slot_024",
+      "card": "Enlightened Tutor"
+    },
+    {
+      "slot_id": "slot_025",
+      "card": "Erode"
+    },
+    {
+      "slot_id": "slot_026",
+      "card": "Everflowing Chalice"
+    },
+    {
+      "slot_id": "slot_027",
+      "card": "Expedition Map"
+    },
+    {
+      "slot_id": "slot_028",
+      "card": "Feather of Flight"
+    },
+    {
+      "slot_id": "slot_029",
+      "card": "Fellwar Stone"
+    },
+    {
+      "slot_id": "slot_030",
+      "card": "Floating Shield"
+    },
+    {
+      "slot_id": "slot_031",
+      "card": "Gemstone Caverns"
+    },
+    {
+      "slot_id": "slot_032",
+      "card": "Giant's Boulder"
+    },
+    {
+      "slot_id": "slot_033",
+      "card": "Gift of Immortality"
+    },
+    {
+      "slot_id": "slot_034",
+      "card": "Gleaming Splendor"
+    },
+    {
+      "slot_id": "slot_035",
+      "card": "Great Hall of the Citadel"
+    },
+    {
+      "slot_id": "slot_036",
+      "card": "Grim Monolith"
+    },
+    {
+      "slot_id": "slot_037",
+      "card": "Hardlight Containment"
+    },
+    {
+      "slot_id": "slot_038",
+      "card": "Homeward Path"
+    },
+    {
+      "slot_id": "slot_039",
+      "card": "Idolized"
+    },
+    {
+      "slot_id": "slot_040",
+      "card": "Implements of Sacrifice"
+    },
+    {
+      "slot_id": "slot_041",
+      "card": "Jeweled Amulet"
+    },
+    {
+      "slot_id": "slot_042",
+      "card": "Krark-Clan Ironworks"
+    },
+    {
+      "slot_id": "slot_043",
+      "card": "Lion's Eye Diamond"
+    },
+    {
+      "slot_id": "slot_044",
+      "card": "Lotus Petal"
+    },
+    {
+      "slot_id": "slot_045",
+      "card": "Lunarch Mantle"
+    },
+    {
+      "slot_id": "slot_046",
+      "card": "Mana Tithe"
+    },
+    {
+      "slot_id": "slot_047",
+      "card": "Mana Vault"
+    },
+    {
+      "slot_id": "slot_048",
+      "card": "Mantle of the Ancients"
+    },
+    {
+      "slot_id": "slot_049",
+      "card": "March of Otherworldly Light"
+    },
+    {
+      "slot_id": "slot_050",
+      "card": "Mind Stone"
+    },
+    {
+      "slot_id": "slot_051",
+      "card": "Minimus Containment"
+    },
+    {
+      "slot_id": "slot_052",
+      "card": "Mishra's Workshop"
+    },
+    {
+      "slot_id": "slot_053",
+      "card": "Moonsilver Key"
+    },
+    {
+      "slot_id": "slot_054",
+      "card": "Mox Diamond"
+    },
+    {
+      "slot_id": "slot_055",
+      "card": "Mox Opal"
+    },
+    {
+      "slot_id": "slot_056",
+      "card": "Orim's Chant"
+    },
+    {
+      "slot_id": "slot_057",
+      "card": "Paladin Class"
+    },
+    {
+      "slot_id": "slot_058",
+      "card": "Petrified Hamlet"
+    },
+    {
+      "slot_id": "slot_059",
+      "card": "Plains"
+    },
+    {
+      "slot_id": "slot_060",
+      "card": "Plains"
+    },
+    {
+      "slot_id": "slot_061",
+      "card": "Plains"
+    },
+    {
+      "slot_id": "slot_062",
+      "card": "Plains"
+    },
+    {
+      "slot_id": "slot_063",
+      "card": "Plains"
+    },
+    {
+      "slot_id": "slot_064",
+      "card": "Plains"
+    },
+    {
+      "slot_id": "slot_065",
+      "card": "Plains"
+    },
+    {
+      "slot_id": "slot_066",
+      "card": "Plains"
+    },
+    {
+      "slot_id": "slot_067",
+      "card": "Plains"
+    },
+    {
+      "slot_id": "slot_068",
+      "card": "Plains"
+    },
+    {
+      "slot_id": "slot_069",
+      "card": "Portable Hole"
+    },
+    {
+      "slot_id": "slot_070",
+      "card": "Preston, the Vanisher"
+    },
+    {
+      "slot_id": "slot_071",
+      "card": "Prismatic Lens"
+    },
+    {
+      "slot_id": "slot_072",
+      "card": "Razorgrass Ambush"
+    },
+    {
+      "slot_id": "slot_073",
+      "card": "Remote Farm"
+    },
+    {
+      "slot_id": "slot_074",
+      "card": "Roaming Throne"
+    },
+    {
+      "slot_id": "slot_075",
+      "card": "Ruins of Trokair"
+    },
+    {
+      "slot_id": "slot_076",
+      "card": "Scroll Rack"
+    },
+    {
+      "slot_id": "slot_077",
+      "card": "Sheltered by Ghosts"
+    },
+    {
+      "slot_id": "slot_078",
+      "card": "Silence"
+    },
+    {
+      "slot_id": "slot_079",
+      "card": "Sol Ring"
+    },
+    {
+      "slot_id": "slot_080",
+      "card": "Soul Partition"
+    },
+    {
+      "slot_id": "slot_081",
+      "card": "Staff of Compleation"
+    },
+    {
+      "slot_id": "slot_082",
+      "card": "Static Prison"
+    },
+    {
+      "slot_id": "slot_083",
+      "card": "Super State"
+    },
+    {
+      "slot_id": "slot_084",
+      "card": "Talon Gates of Madara"
+    },
+    {
+      "slot_id": "slot_085",
+      "card": "Tezzeret, Cruel Captain"
+    },
+    {
+      "slot_id": "slot_086",
+      "card": "The Mind Stone"
+    },
+    {
+      "slot_id": "slot_087",
+      "card": "The Mycosynth Gardens"
+    },
+    {
+      "slot_id": "slot_088",
+      "card": "Thorn of Amethyst"
+    },
+    {
+      "slot_id": "slot_089",
+      "card": "Tooth of Ramos"
+    },
+    {
+      "slot_id": "slot_090",
+      "card": "Touch the Spirit Realm"
+    },
+    {
+      "slot_id": "slot_091",
+      "card": "Treasure Vault"
+    },
+    {
+      "slot_id": "slot_092",
+      "card": "Trinisphere"
+    },
+    {
+      "slot_id": "slot_093",
+      "card": "Twinblade Blessing"
+    },
+    {
+      "slot_id": "slot_094",
+      "card": "Untaidake, the Cloud Keeper"
+    },
+    {
+      "slot_id": "slot_095",
+      "card": "Unwanted Remake"
+    },
+    {
+      "slot_id": "slot_096",
+      "card": "Urza's Cave"
+    },
+    {
+      "slot_id": "slot_097",
+      "card": "Urza's Saga"
+    },
+    {
+      "slot_id": "slot_098",
+      "card": "Vexing Bauble"
+    },
+    {
+      "slot_id": "slot_099",
+      "card": "Void Mirror"
+    }
+  ]
+}
