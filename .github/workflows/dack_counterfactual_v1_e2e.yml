@@ -1,0 +1,55 @@
+name: DACK paired counterfactual v1 one-game E2E
+
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_counterfactual_v1_e2e.yml'
+      - 'dack_paired_counterfactual_v1_20261030.py'
+      - 'dack_counterfactual_rules_v1_20261030.py'
+      - 'dack_simulator/configs/onekey_artifact_cut_screen_v1.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  paired-one-game:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run one seed on all nine variants, with shared slot positions
+        run: |
+          python -u dack_paired_counterfactual_v1_20261030.py \
+            --start 0 --games 1 \
+            --out shards/one_game_9_arms.json.gz \
+            --store shards/one_game_9_arms.sqlite
+      - name: Validate output shape and lossless paired SQLite blocks
+        run: |
+          python - <<'PY'
+          import gzip, json, sqlite3
+          from pathlib import Path
+          p=Path('shards/one_game_9_arms.json.gz')
+          assert p.is_file()
+          with gzip.open(p, 'rt', encoding='utf8') as f: data=json.load(f)
+          assert data['status']=='PASS'
+          assert len(data['rows'])==1
+          assert len(data['rows'][0]['arms'])==9
+          assert data['summary']['n']==1
+          assert data['audit']['paired_outer_slots'] is True
+          assert data['audit']['cross_variant_reuse'] is False
+          conn=sqlite3.connect('shards/one_game_9_arms.sqlite')
+          assert conn.execute('SELECT COUNT(*) FROM result_blocks').fetchone()[0]==9
+          print('PAIRED_9_ARM_E2E_PASS',data['rows'][0]['arms'])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-paired-v1-one-game-e2e
+          path: shards/
+          if-no-files-found: ignore
+          retention-days: 7
