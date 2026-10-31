@@ -1,0 +1,99 @@
+name: DACK archive real v9 corpus to isolated branch
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_archive_v9_real_corpus.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 41253501291
+          github-token: ${{ github.token }}
+          pattern: v9-real-*
+          merge-multiple: true
+          path: datasets/stratified_v9_20261031
+      - name: Audit all physical-real sampled shards and create permanent provenance manifest
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from collections import Counter
+          import gzip,hashlib,json
+          root=Path('datasets/stratified_v9_20261031')
+          files=sorted(root.glob('v9_*.jsonl.gz'))
+          assert len(files)==16,(len(files),files)
+          manifest={'schema':'dack_stratified_real_corpus_archive_v9',
+                    'source_actions_run':41253501291,
+                    'sampling_protocol':'DACK-OFFLINE-STRATIFIED-V9',
+                    'calibration_distribution_representative':False,
+                    'trained_model_approved':False,
+                    'selection_strata_are_recorded':True,
+                    'source_manifest_sha256':None,
+                    'splits':{},'files':[]}
+          group_ids={}
+          for split,base in [('train',20200),('calibration',30200)]:
+              split_files=[p for p in files if p.name.startswith('v9_'+split+'_')]
+              assert len(split_files)==8
+              ids=set();counts=Counter();strata=Counter()
+              for p in split_files:
+                  with gzip.open(p,'rt') as f:
+                      header=json.loads(next(f))
+                      assert header['type']=='metadata' and header['split']==split
+                      assert header['sampling_protocol']==manifest['sampling_protocol']
+                      assert header['not_population_representative'] is True
+                      assert header['beam']==160 and header['variant']=='one_key_34'
+                      sha=header['source_physical_sha256']
+                      if manifest['source_manifest_sha256'] is None:
+                          manifest['source_manifest_sha256']=sha
+                      else:
+                          assert manifest['source_manifest_sha256']==sha
+                      for line in f:
+                          x=json.loads(line)
+                          assert x['type']=='label' and x['selection_protocol']==manifest['sampling_protocol']
+                          assert x['label_turn'] in (0,1,2,3)
+                          assert len(x['seven'])==7
+                          assert len(x['hand'])+len(x['bottom'])==7
+                          assert sum(x['unknown_counts'].values())==92
+                          assert not any(k in x for k in ('sampled_order','hidden_order','actual_library','first3'))
+                          counts[x['label_turn']]+=1
+                          strata[x['selection_stratum']]+=1
+                          ids.add(x['game_id'])
+                  manifest['files'].append({
+                      'path':str(p.relative_to(root)),
+                      'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),
+                      'bytes':p.stat().st_size,
+                      'split':split})
+              assert ids==set(range(base,base+32))
+              manifest['splits'][split]={
+                  'game_id_min':base,'game_id_max':base+31,
+                  'independent_scenarios':len(ids),
+                  'labels':sum(counts.values()),
+                  'classes':{str(k):counts[k] for k in range(4)},
+                  'stratum_label_counts':dict(sorted(strata.items()))}
+              group_ids[split]=ids
+          assert group_ids['train'].isdisjoint(group_ids['calibration'])
+          assert sum(x['labels'] for x in manifest['splits'].values())==320
+          (root/'manifest.json').write_text(json.dumps(manifest,indent=2,sort_keys=True)+'\n')
+          print('DACK_PERMANENT_CORPUS_AUDIT_PASS',json.dumps(manifest['splits']),flush=True)
+          PY
+      - name: Commit compressed real labels and provenance to experiment branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f datasets/stratified_v9_20261031
+          if git diff --cached --quiet; then
+            echo "Corpus already archived"
+          else
+            git commit -m "Archive 320 real stratified DACK mulligan rollout labels and immutable provenance"
+            git push origin HEAD:dack-counterfactual-engine-v1-20261030
+          fi
