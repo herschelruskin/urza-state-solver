@@ -15,6 +15,7 @@ on:
       - 'dack_simulator/validation/audit_physical99_20261030.py'
       - 'dack_simulator/validation/test_paired_v1.py'
       - 'dack_simulator/validation/test_pool_v1.py'
+      - 'dack_simulator/validation/test_treasure_interactions_v1.py'
       - 'dack_simulator/validation/state_key_collision_witness_v1.py'
       - '.github/workflows/dack_counterfactual_v1_smoke.yml'
   workflow_dispatch:
@@ -39,7 +40,7 @@ jobs:
           python-version: '3.11'
       - name: Compile isolated code and tests
         run: |
-          python -m compileall -q dack_counterfactual_rules_v1_20261030.py dack_counterfactual_rules_v2_strict_key_20261030.py dack_paired_counterfactual_v1_20261030.py dack_paired_counterfactual_v2_strict_20261030.py pool_dack_paired_counterfactual_v1_20261030.py dack_simulator/validation/audit_physical99_20261030.py dack_simulator/validation/test_paired_v1.py dack_simulator/validation/test_pool_v1.py
+          python -m compileall -q dack_counterfactual_rules_v1_20261030.py dack_counterfactual_rules_v2_strict_key_20261030.py dack_paired_counterfactual_v1_20261030.py dack_paired_counterfactual_v2_strict_20261030.py pool_dack_paired_counterfactual_v1_20261030.py dack_simulator/validation/audit_physical99_20261030.py dack_simulator/validation/test_paired_v1.py dack_simulator/validation/test_pool_v1.py dack_simulator/validation/test_treasure_interactions_v1.py
       - name: Freeze and validate the physical 99
         run: python dack_simulator/validation/audit_physical99_20261030.py
       - name: Test Treasure Vault and Staff semantics
@@ -54,6 +55,8 @@ jobs:
         run: python dack_paired_counterfactual_v2_strict_20261030.py --audit
       - name: Run deterministic lightweight unit tests
         run: python -m unittest discover -s dack_simulator/validation -p test_paired_v1.py -v
+      - name: Extended Treasure and Staff interaction tests
+        run: python -m unittest discover -s dack_simulator/validation -p test_treasure_interactions_v1.py -v
       - name: Strict pooled-results contract tests
         run: python -m unittest discover -s dack_simulator/validation -p test_pool_v1.py -v
       - name: Optional single-game end-to-end
