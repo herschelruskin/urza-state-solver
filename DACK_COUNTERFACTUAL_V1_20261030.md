@@ -199,3 +199,21 @@ Pilot workflow: `.github/workflows/dack_bounded_strict_v3_pilot_n4.yml`.
 It checks four independent seeds, the full nine-arm counterfactual,
 SQLite blocks, checkpoints and strict pooling. This N4 is **diagnostic
 only** and must not be used to select deck cuts.
+
+### Dominance check before the first sampled future
+
+The optimizer also tests the utility ceiling **before** executing any
+future sample for a challenger. If an earlier candidate already reaches
+the maximum possible score (utility 1.0 at t3_weight=0.5) and wins the
+structural tie-break, all remaining futures for that challenger are
+mathematically irrelevant. This further reduces CPU time without
+changing the retained hand.
+
+Exact parity tests reran after this improvement (GitHub Actions
+41209381716): for one_key_34, seed 0 changed 46.4353 s -> 38.1336 s
+(1.2177x); seed 1, 7.5321 s -> 2.7205 s (2.7686x).
+For everflow_plains_35, seed 0 changed 62.4099 s -> 53.0072 s
+(1.1774x). All three returned exactly the same complete records. These
+benchmark pairs were run reference-first in the same interpreter with
+simulation caches reset, so treat speedups as diagnostic rather than
+a fully balanced cold-process population benchmark.
