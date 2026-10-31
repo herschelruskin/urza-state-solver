@@ -1,0 +1,101 @@
+{
+  "calibration_overlap": false,
+  "counts": {
+    "0": 122,
+    "1": 27,
+    "2": 178,
+    "3": 185
+  },
+  "files": [
+    {
+      "bytes": 3002,
+      "name": "holdout_v10_33100.jsonl.gz",
+      "sha256": "34495fa46be768aef3dcb445effecd1889f2c9a437774011655f8658d9a74191"
+    },
+    {
+      "bytes": 2975,
+      "name": "holdout_v10_33108.jsonl.gz",
+      "sha256": "edc91009da82bee685bea7d4e517ecb8ddacde2a93db5cc35f4ceb85d4977791"
+    },
+    {
+      "bytes": 2979,
+      "name": "holdout_v10_33116.jsonl.gz",
+      "sha256": "e9963a859b1cdc7fea063b261bdf1b7e111bb4cf2adf56c130d4b25b0a3a1d50"
+    },
+    {
+      "bytes": 3023,
+      "name": "holdout_v10_33124.jsonl.gz",
+      "sha256": "0510813574d4461ab33e0db5889960b3976ae987ff98e5a7c7734ecfa30ac226"
+    },
+    {
+      "bytes": 2975,
+      "name": "holdout_v10_33132.jsonl.gz",
+      "sha256": "891d439ae8c6997bc8a7af57b88d0e96a71a07788eaa49fddcb882457528cd4f"
+    },
+    {
+      "bytes": 3007,
+      "name": "holdout_v10_33140.jsonl.gz",
+      "sha256": "27977b171dde88b3aac4b8420a7c4a0678a9a296f13a091f5d3c83008a0f8002"
+    },
+    {
+      "bytes": 3037,
+      "name": "holdout_v10_33148.jsonl.gz",
+      "sha256": "ca572e8baca5a25a6623afdcfb315dd7d8506fc769471b5185f32f922e68f741"
+    },
+    {
+      "bytes": 2976,
+      "name": "holdout_v10_33156.jsonl.gz",
+      "sha256": "5edf9b1ac65af345cde508a682282f6be22c344f91bea05e987578ace1fcdb96"
+    },
+    {
+      "bytes": 2982,
+      "name": "holdout_v10_33164.jsonl.gz",
+      "sha256": "c09a850d718ca023682275d206a1c3e71cf58d38ea037afbd5363460c17a76f3"
+    },
+    {
+      "bytes": 2966,
+      "name": "holdout_v10_33172.jsonl.gz",
+      "sha256": "798f1a705d52bb484bbb3c3015632ddee5cdfbb96cd2079550cde4149b040f8d"
+    },
+    {
+      "bytes": 2957,
+      "name": "holdout_v10_33180.jsonl.gz",
+      "sha256": "75f7d7c62a19119f19224b30d3ff91a92053eb9ac1d935aa5b30464a9a00c759"
+    },
+    {
+      "bytes": 3015,
+      "name": "holdout_v10_33188.jsonl.gz",
+      "sha256": "b49f86c23859c8ace12ebf20abdea4b5b2fc4a0313cd4a5cf8f14907959893e6"
+    },
+    {
+      "bytes": 2979,
+      "name": "holdout_v10_33196.jsonl.gz",
+      "sha256": "1756c017c823b28cbe6b73591a019b1390abf5abb86f09e55001d308113d693c"
+    },
+    {
+      "bytes": 3009,
+      "name": "holdout_v10_33204.jsonl.gz",
+      "sha256": "492aa8cb299c80f00955d917262569fff599516e587f8827851b88e2cabbc630"
+    },
+    {
+      "bytes": 3007,
+      "name": "holdout_v10_33212.jsonl.gz",
+      "sha256": "19ff0507a73a44712b343b92b64bbced4d719b505838d61d1e41d788f1deec52"
+    },
+    {
+      "bytes": 3002,
+      "name": "holdout_v10_33220.jsonl.gz",
+      "sha256": "4a63db3a0bf154f83444bf7a7c6890fa8d892546eb01ae077cb6c24dd7d10f29"
+    }
+  ],
+  "game_id_range": [
+    33100,
+    33227
+  ],
+  "model_file_sha256": "c3f5ebaa27e4ba5b80f13f2c26fb085177d90270d5b4355e8d0af9534dbf3f82",
+  "n_independent_scenarios": 128,
+  "not_learned_policy_win_rate": true,
+  "real_rollouts": 512,
+  "schema": "dack_v10_sealed_predictive_holdout_archive",
+  "train_overlap": false
+}

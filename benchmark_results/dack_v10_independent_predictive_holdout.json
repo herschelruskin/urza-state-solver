@@ -1,0 +1,214 @@
+{
+  "schema": "dack_selected_model_independent_predictive_holdout_v1",
+  "status": "PASS",
+  "model_was_frozen_prior_to_holdout": true,
+  "model_approved_for_policy_deployment": false,
+  "n_group_scenarios": 128,
+  "n_real_rollouts": 512,
+  "observed_class_counts": {
+    "0": 122,
+    "1": 27,
+    "2": 178,
+    "3": 185
+  },
+  "metrics": {
+    "multiclass_brier": 0.6356554502705032,
+    "multiclass_log_loss": 1.1214836253186775,
+    "T1": {
+      "expected": 0.0849905074322998,
+      "observed": 0.052734375,
+      "mean_absolute_prediction_error": 0.0322561324322998
+    },
+    "T2_cumulative": {
+      "expected": 0.35607790141360157,
+      "observed": 0.400390625,
+      "mean_absolute_prediction_error": 0.04431272358639843
+    },
+    "T3_cumulative": {
+      "expected": 0.7010978923289268,
+      "observed": 0.76171875,
+      "mean_absolute_prediction_error": 0.06062085767107317
+    }
+  },
+  "independent_group_bootstrap_95_ci": {
+    "multiclass_brier": [
+      0.5870222117264087,
+      0.6769096112082784
+    ],
+    "multiclass_log_loss": [
+      1.0340968365610261,
+      1.2085269011352506
+    ]
+  },
+  "reliability_bins": {
+    "T1": [
+      {
+        "range": [
+          0.0,
+          0.05
+        ],
+        "n": 268,
+        "predicted": 0.026958050455939214,
+        "observed": 0.0037313432835820895
+      },
+      {
+        "range": [
+          0.05,
+          0.1
+        ],
+        "n": 128,
+        "predicted": 0.0678729142930328,
+        "observed": 0.0390625
+      },
+      {
+        "range": [
+          0.1,
+          0.2
+        ],
+        "n": 64,
+        "predicted": 0.1388581964377709,
+        "observed": 0.125
+      },
+      {
+        "range": [
+          0.2,
+          0.35
+        ],
+        "n": 32,
+        "predicted": 0.23381849169314387,
+        "observed": 0.09375
+      },
+      {
+        "range": [
+          0.35,
+          0.5
+        ],
+        "n": 8,
+        "predicted": 0.4169066772622287,
+        "observed": 0.0
+      },
+      {
+        "range": [
+          0.5,
+          0.7
+        ],
+        "n": 8,
+        "predicted": 0.6192777483014331,
+        "observed": 0.75
+      },
+      {
+        "range": [
+          0.7,
+          1.0
+        ],
+        "n": 4,
+        "predicted": 0.736014385732588,
+        "observed": 1.0
+      }
+    ],
+    "T2_cumulative": [
+      {
+        "range": [
+          0.0,
+          0.05
+        ],
+        "n": 8,
+        "predicted": 0.04183848097531816,
+        "observed": 0.0
+      },
+      {
+        "range": [
+          0.05,
+          0.1
+        ],
+        "n": 32,
+        "predicted": 0.07204195286671504,
+        "observed": 0.125
+      },
+      {
+        "range": [
+          0.1,
+          0.2
+        ],
+        "n": 136,
+        "predicted": 0.1431567693886009,
+        "observed": 0.11764705882352941
+      },
+      {
+        "range": [
+          0.2,
+          0.35
+        ],
+        "n": 128,
+        "predicted": 0.27159193890685807,
+        "observed": 0.4140625
+      },
+      {
+        "range": [
+          0.35,
+          0.5
+        ],
+        "n": 48,
+        "predicted": 0.4284269494801259,
+        "observed": 0.5208333333333334
+      },
+      {
+        "range": [
+          0.5,
+          0.7
+        ],
+        "n": 108,
+        "predicted": 0.6007033075468831,
+        "observed": 0.6018518518518519
+      },
+      {
+        "range": [
+          0.7,
+          1.0
+        ],
+        "n": 52,
+        "predicted": 0.7691979918690308,
+        "observed": 0.8076923076923077
+      }
+    ],
+    "T3_cumulative": [
+      {
+        "range": [
+          0.2,
+          0.35
+        ],
+        "n": 20,
+        "predicted": 0.2955354307902315,
+        "observed": 0.45
+      },
+      {
+        "range": [
+          0.35,
+          0.5
+        ],
+        "n": 56,
+        "predicted": 0.4324705929325393,
+        "observed": 0.5535714285714286
+      },
+      {
+        "range": [
+          0.5,
+          0.7
+        ],
+        "n": 168,
+        "predicted": 0.6025097790950296,
+        "observed": 0.6309523809523809
+      },
+      {
+        "range": [
+          0.7,
+          1.0
+        ],
+        "n": 268,
+        "predicted": 0.8492963289717117,
+        "observed": 0.9104477611940298
+      }
+    ]
+  },
+  "warning": "This is ONLY predictive holdout for v7-selected kept hands. It is not an unbiased four-player win rate or independent learned-policy gameplay test."
+}
