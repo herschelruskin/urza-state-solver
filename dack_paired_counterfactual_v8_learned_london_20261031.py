@@ -31,11 +31,13 @@ POLICY_HASH=None
 def _sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
-def load(model_path,dp_directory):
+def load(model_path,dp_directory,allow_diagnostic=False):
     global MODEL,CONTINUATIONS,POLICY_HASH
     model=json.loads(Path(model_path).read_text())
     if model["schema"]!="dack_london_multiclass_softmax_v8":
         raise ValueError("unsupported model")
+    if not model.get("deployed_policy_approved",False) and not allow_diagnostic:
+        raise RuntimeError("Experimental model not approved for deployment; use --diagnostic-audit-only to inspect artifacts, not to run policy games")
     if model["feature_sha256"]!=features.feature_hash():
         raise ValueError("model feature signature mismatch")
     # Every arm has its own physical deck and a distinct DP continuation
@@ -96,9 +98,9 @@ def choose_keep(deck_slots,seat,order_by_stage):
             return ref.d.State(1,tuple(hand),tuple(unknown)+tuple(bottom)),history
     raise AssertionError("no terminal one-card London keep")
 
-def install(model_path,dp_directory):
+def install(model_path,dp_directory,allow_diagnostic=False):
     dice.install()
-    digest=load(model_path,dp_directory)
+    digest=load(model_path,dp_directory,allow_diagnostic=allow_diagnostic)
     ref.rules=strict
     ref.RULES_VERSION=RULES_VERSION_PREFIX+"_"+digest[:16]
     ref.MULLIGAN_POLICY_NAME="learned_london_v8:"+digest
@@ -106,9 +108,9 @@ def install(model_path,dp_directory):
     ref.choose_keep=choose_keep
     return digest
 
-def audit(model_path,dp_directory):
+def audit(model_path,dp_directory,allow_diagnostic=False):
     assert strict.rule_smoke()["status"]=="PASS"
-    digest=install(model_path,dp_directory)
+    digest=install(model_path,dp_directory,allow_diagnostic=allow_diagnostic)
     check=ref.audit()
     assert check["rules_version"]==RULES_VERSION_PREFIX+"_"+digest[:16]
     return dict(check,policy_hash=digest,gameplay_beam=160,
@@ -120,13 +122,18 @@ if __name__=="__main__":
     p.add_argument("--model",required=True)
     p.add_argument("--continuations-dir",required=True)
     p.add_argument("--audit",action="store_true")
+    p.add_argument("--diagnostic-audit-only",action="store_true",
+                   help="Inspect unapproved experimental artifacts without playing games")
     p.add_argument("--single-variant",choices=list(ref.VARIANTS))
     p.add_argument("--start",type=int,default=40000)
     p.add_argument("--games",type=int,default=1)
     p.add_argument("--out",default="shards/learned_london_v8_40000.json.gz")
     p.add_argument("--store",default=None)
     a=p.parse_args()
-    report=audit(a.model,a.continuations_dir)
+    if a.diagnostic_audit_only and not a.audit:
+        raise RuntimeError("--diagnostic-audit-only cannot execute gameplay")
+    report=audit(a.model,a.continuations_dir,
+                 allow_diagnostic=a.diagnostic_audit_only)
     if a.audit:
         print(json.dumps(report,indent=2))
     elif a.single_variant:
