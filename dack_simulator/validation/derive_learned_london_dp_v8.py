@@ -19,6 +19,7 @@ import argparse
 from collections import Counter
 from itertools import combinations
 import json
+import hashlib
 import random
 from pathlib import Path
 
@@ -85,6 +86,8 @@ def calibrate(model,variant="one_key_34",samples=256,start=DP_SEED_START):
         }
     return {
         "schema":SCHEMA,"variant":variant,"samples_per_seat_per_keep_n":samples,
+        "model_sha256":hashlib.sha256(json.dumps(
+            model,sort_keys=True,separators=(",",":")).encode()).hexdigest(),
         "independent_seed_protocol_start":start,
         "stage_keep_counts":list(ref.sim.STAGES),
         "seats":seat_tables,"feature_sha256":features.feature_hash(),
