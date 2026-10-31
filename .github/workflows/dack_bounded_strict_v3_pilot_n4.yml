@@ -1,0 +1,82 @@
+name: DACK strict bounded 9-arm pilot N4
+
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_bounded_strict_v3_pilot_n4.yml'
+      - 'dack_paired_counterfactual_v3_bounded_20261031.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shard:
+    strategy:
+      fail-fast: false
+      matrix:
+        game_id: [2, 3, 4, 5]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run strict-key exact-bound 9-arm one-seed shard
+        run: |
+          python -u dack_paired_counterfactual_v3_bounded_20261031.py \
+            --start ${{ matrix.game_id }} --games 1 \
+            --out shards/paired_${{ matrix.game_id }}.json.gz \
+            --store shards/paired_${{ matrix.game_id }}.sqlite
+      - name: Verify one lossless result block per arm and its checkpoint
+        run: |
+          python - <<'PY'
+          import gzip, json, glob, sqlite3
+          path=glob.glob('shards/paired_*.json.gz')
+          assert len(path)==1,path
+          with gzip.open(path[0],'rt') as f: x=json.load(f)
+          assert x['status']=='PASS' and x['games']==1
+          assert x['audit']['rules_version']=='dack_strict_state_key_bounded_mulligan_v3'
+          assert len(x['rows'][0]['arms'])==9
+          assert x['summary']['n']==1
+          db=glob.glob('shards/paired_*.sqlite')
+          assert len(db)==1
+          with sqlite3.connect(db[0]) as conn:
+              assert conn.execute('SELECT COUNT(*) FROM result_blocks').fetchone()[0]==9
+          checkpoint=glob.glob('shards/*.checkpoint.jsonl')
+          assert len(checkpoint)==1,checkpoint
+          print('BOUNDED_PAIRED_SHARD_PASS',x['seed_start'],flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bounded-v3-n4-shard-${{ matrix.game_id }}
+          path: shards/
+          retention-days: 7
+
+  pool:
+    needs: shard
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: bounded-v3-n4-shard-*
+          path: pooled_shards
+          merge-multiple: true
+      - name: Require complete non-overlapping four-seed pairing
+        run: |
+          python pool_dack_paired_counterfactual_v1_20261030.py \
+            --folder pooled_shards --out benchmark_results/strict_bounded_v3_n4_diagnostic.json \
+            --expected-start 2 --expected-games 4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bounded-v3-n4-complete-paired-report
+          path: benchmark_results/strict_bounded_v3_n4_diagnostic.json
+          retention-days: 7
