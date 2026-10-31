@@ -1,0 +1,39 @@
+{
+  "schema": "dack_london_model_calibration_report_v8",
+  "diagnostic_only": true,
+  "deployed_policy_approved": false,
+  "training_contains_enriched_strata": true,
+  "calibration_represents_population": false,
+  "synthetic_training_labels": false,
+  "separate_training_and_calibration_game_ids": true,
+  "no_hidden_draws_as_model_inputs": true,
+  "n_train_groups": 192,
+  "n_calibration_groups": 128,
+  "train_rollouts": 896,
+  "calibration_rollouts": 512,
+  "temperature": 3.3385940411428745,
+  "training_metrics_resubstitution_not_holdout": {
+    "brier_multiclass": 0.38982489292194666,
+    "log_loss": 0.7088998732009459,
+    "accuracy": 0.8080357142857143,
+    "t1_expected": 0.11996911770976379,
+    "t1_observed": 0.11495535714285714,
+    "t2_or_earlier_expected": 0.34201575742792095,
+    "t2_or_earlier_observed": 0.31361607142857145,
+    "t3_or_earlier_expected": 0.6493270774209815,
+    "t3_or_earlier_observed": 0.6127232142857143
+  },
+  "calibration_metrics_used_to_choose_temperature_not_holdout": {
+    "brier_multiclass": 0.6056084445245953,
+    "log_loss": 1.0586719113934462,
+    "accuracy": 0.5,
+    "t1_expected": 0.09542708920411883,
+    "t1_observed": 0.0625,
+    "t2_or_earlier_expected": 0.35690953040087203,
+    "t2_or_earlier_observed": 0.41796875,
+    "t3_or_earlier_expected": 0.7119841199595492,
+    "t3_or_earlier_observed": 0.740234375
+  },
+  "policy_evaluation_status": "NOT RUN",
+  "warning": "train and calibration scores are not an independent final evaluation"
+}
