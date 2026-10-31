@@ -136,3 +136,66 @@ validate the opt-in strict implementation; its output has a distinct
 rules-version identity and must never be pooled with the v1 replay
 results. A small runtime and outcome sensitivity study should establish
 whether increased state distinctions materially increase search work.
+
+## 2026-10-31 exact bounded London optimization
+
+Profiling showed ~98.6–99.99% of wall time in mulligan evaluation on
+seeds 0 and 1, not in actual Dack gameplay. The inherited
+`dack_bottom_weighted_ev_seat` evaluates eight or sixteen sampled
+future-games per candidate London bottom choice, even when a completed
+candidate has a utility that all remaining futures can never beat.
+
+`dack_mulligan_branchbound_v1_20261031.py` is an **opt-in** exact
+branch-and-bound implementation. It changes only the number of
+hypothetical futures computed. It retains:
+- exactly the same finalist generation and ranking;
+- exactly the same sample ordering and card information;
+- exactly the same reward weights and structural tie-break;
+- the same threshold-triggered 16-sample refinement;
+- the same actual kept-hand gameplay search.
+
+If an incumbent has utility U, a challenger with n future samples, k
+already completed, and total achieved reward r has the optimistic
+upper bound `(r + (n-k) * max(1, t3_weight)) / n`.
+The challenger is stopped when the optimistic bound cannot beat U,
+including the original structural tie-break. No partial value is
+inserted into the complete-evaluation cache.
+
+Use `dack_paired_counterfactual_v3_bounded_20261031.py` for the
+combination of conservative strict state keys and exact bounded London
+evaluation. The historical v1 and strict-unbounded v2 entrypoints
+remain unchanged.
+
+```bash
+python dack_mulligan_branchbound_v1_20261031.py
+python -m unittest discover -s dack_simulator/validation -p test_bounded_mulligan_v1.py -v
+python dack_paired_counterfactual_v3_bounded_20261031.py --audit
+python dack_simulator/validation/benchmark_strict_bounded_parity_v3.py --game-id 0
+python dack_paired_counterfactual_v3_bounded_20261031.py --start 0 --games 1 \
+   --out shards/v3_smoke.json.gz --store shards/v3_smoke.sqlite
+```
+
+Exact E2E reference-vs-bounded comparisons, original beam key:
+- one_key_34, game 0: 46.4348 s to 39.3378 s, 1.1804×
+- one_key_34, game 1: 14.0898 s to 6.3075 s, 2.2338×
+- everflow_plains_35, game 0: 70.54 s to 60.8509 s, 1.1592×
+
+All three comparisons passed every game-record and mulligan-history
+parity assertion in GitHub Actions 41209135344. Separately,
+strict-key-v2 vs strict-key+bounded-v3 E2E parity passed game 0 and
+game 1 in GitHub Actions 41209289986 (1.1808× and 2.1918×).
+
+These are observed **few-seed** timings, not an estimated population
+average. More performance testing is needed. Cold/warm process order
+can affect timings, so use a balanced A/B comparison before estimating
+production costs. The one-card counterfactual arms still independently
+evaluate all stages: this optimization does not yet implement a
+cross-arm semantic-equivalence certificate and does not assume a swap
+is irrelevant merely because it was not drawn. The inner sampler still
+uses legacy composition-based pseudo-randomness rather than fully
+slot-coupled futures.
+
+Pilot workflow: `.github/workflows/dack_bounded_strict_v3_pilot_n4.yml`.
+It checks four independent seeds, the full nine-arm counterfactual,
+SQLite blocks, checkpoints and strict pooling. This N4 is **diagnostic
+only** and must not be used to select deck cuts.
