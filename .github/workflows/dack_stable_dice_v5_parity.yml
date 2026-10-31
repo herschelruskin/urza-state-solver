@@ -1,0 +1,55 @@
+name: DACK stable dice and win-witness v5 parity
+
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_stable_dice_v5_parity.yml'
+      - 'dack_mulligan_stateless_roll_v1_20261031.py'
+      - 'dack_mulligan_terminal_witness_v1_20261031.py'
+      - 'dack_paired_counterfactual_v5_stable_chance_20261031.py'
+      - 'dack_simulator/validation/benchmark_stable_dice_v5_parity.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test stable per-state dice, exact witness and v5 imports
+        run: |
+          python -m compileall -q dack_mulligan_stateless_roll_v1_20261031.py dack_paired_counterfactual_v5_stable_chance_20261031.py dack_simulator/validation/benchmark_stable_dice_v5_parity.py
+          python dack_mulligan_stateless_roll_v1_20261031.py
+          python -m unittest discover -s dack_simulator/validation -p test_terminal_witness_v1.py -v
+          python dack_paired_counterfactual_v5_stable_chance_20261031.py --audit
+
+  parity:
+    needs: unit
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - game_id: 0
+            variant: one_key_34
+          - game_id: 1
+            variant: one_key_34
+          - game_id: 2
+            variant: everflow_plains_35
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Prove identical sampled mulligan decisions under stable chance
+        run: |
+          python -u dack_simulator/validation/benchmark_stable_dice_v5_parity.py \
+            --game-id ${{ matrix.game_id }} --variant ${{ matrix.variant }}
