@@ -135,7 +135,7 @@ def bounded_bottom_weighted_ev_seat(seven,keep_n,rest,seat,beam=50,
             else:
                 ev,done,pruned=_rollout_prefix(
                     hand,unknown,bottom,seat,beam,samples,t3_weight,
-                    struct,best[2],best[0])
+                    struct,best[1],best[0])
                 if pruned:
                     stage_stats[int(keep_n)]["pruned_candidates"]+=1
                     continue
@@ -145,7 +145,7 @@ def bounded_bottom_weighted_ev_seat(seven,keep_n,rest,seat,beam=50,
         # Original scoring: sort descending by (utility, struct), stable
         # finalist ordering when keys tie. Only replace on a STRICT increase.
         rank=(ev["utility"],struct)
-        if best is None or rank>(best[2],best[0]):
+        if best is None or rank>(best[1],best[0]):
             best=(struct,ev["utility"],ev,hand,bottom,unknown)
             stats["new_incumbents"]+=1
     struct,u,ev,hand,bottom,unknown=best
