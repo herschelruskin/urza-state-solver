@@ -54,6 +54,10 @@ def load(model_path,dp_directory,allow_diagnostic=False):
             raise ValueError("DP variant/protocol mismatch")
         if obj["feature_sha256"]!=features.feature_hash():
             raise ValueError("DP feature signature mismatch")
+        model_hash=hashlib.sha256(json.dumps(
+            model,sort_keys=True,separators=(",",":")).encode()).hexdigest()
+        if obj.get("model_sha256")!=model_hash:
+            raise ValueError("DP table computed from a different prediction model")
         if obj["stage_keep_counts"]!=list(ref.sim.STAGES):
             raise ValueError("London stage sequence changed")
         if sorted(obj["seats"])!=["0","1","2","3"]:
