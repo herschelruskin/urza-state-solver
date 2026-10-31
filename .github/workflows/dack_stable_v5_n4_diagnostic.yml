@@ -1,0 +1,78 @@
+name: DACK stable-dice bounded witness v5 9-arm N4 diagnostic
+
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_stable_v5_n4_diagnostic.yml'
+      - 'dack_paired_counterfactual_v5_stable_chance_20261031.py'
+      - 'dack_mulligan_stateless_roll_v1_20261031.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shard:
+    strategy:
+      fail-fast: false
+      matrix:
+        seed: [2, 3, 4, 5]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run one 9-arm shared-seed scenario
+        run: |
+          python -u dack_paired_counterfactual_v5_stable_chance_20261031.py \
+            --start ${{ matrix.seed }} --games 1 \
+            --out shards/stable_${{ matrix.seed }}.json.gz \
+            --store shards/stable_${{ matrix.seed }}.sqlite
+      - name: Verify provenance and nine separate result blocks
+        run: |
+          python - <<'PY'
+          import gzip,glob,json,sqlite3
+          f=glob.glob('shards/stable_*.json.gz');assert len(f)==1
+          with gzip.open(f[0],'rt') as h:x=json.load(h)
+          assert x['status']=='PASS' and x['games']==1
+          assert x['audit']['rules_version']=='dack_stable_dice_strict_bounded_witness_v5'
+          assert len(x['rows'][0]['arms'])==9
+          with sqlite3.connect(glob.glob('shards/stable_*.sqlite')[0]) as db:
+              assert db.execute('SELECT COUNT(*) FROM result_blocks').fetchone()[0]==9
+          assert len(glob.glob('shards/*.checkpoint.jsonl'))==1
+          print('STABLE_DICE_9_ARM_SHARD_PASS',x['seed_start'],x['elapsed_seconds'])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stable-v5-n4-seed-${{ matrix.seed }}
+          path: shards/
+          retention-days: 7
+
+  pool:
+    needs: shard
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: stable-v5-n4-seed-*
+          merge-multiple: true
+          path: pooled/
+      - name: Verify no missing seeds or mixed engine versions
+        run: |
+          python pool_dack_paired_counterfactual_v1_20261030.py \
+            --folder pooled --out benchmark_results/stable_v5_n4_diagnostic.json \
+            --expected-start 2 --expected-games 4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: stable-v5-n4-paired-diagnostic
+          path: benchmark_results/stable_v5_n4_diagnostic.json
+          retention-days: 7
