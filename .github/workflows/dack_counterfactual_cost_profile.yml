@@ -1,0 +1,29 @@
+name: DACK stage-level mulligan versus gameplay timing
+
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_counterfactual_cost_profile.yml'
+      - 'dack_simulator/validation/profile_counterfactual_cost_v1.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  profile:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        game_id: [0, 1]
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Profile assertive London evaluator and first winning search
+        run: |
+          python -u dack_simulator/validation/profile_counterfactual_cost_v1.py --variant one_key_34 --game-id ${{ matrix.game_id }}
