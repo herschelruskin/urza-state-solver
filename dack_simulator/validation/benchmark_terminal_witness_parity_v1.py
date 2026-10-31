@@ -15,7 +15,6 @@ def compare(game_id,variant):
     opt.audit()
     opt.witness.uninstall()
     opt.bounded.install()
-    ref.reset=ref.sim.reset_caches
     start=time.perf_counter()
     baseline=ref.game(variant,game_id)
     ref_seconds=time.perf_counter()-start
