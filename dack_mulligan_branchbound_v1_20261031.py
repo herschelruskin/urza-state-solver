@@ -122,8 +122,19 @@ def bounded_bottom_weighted_ev_seat(seven,keep_n,rest,seat,beam=50,
     stats["total_candidate_structures"]+=len(finalists)
     stage_stats[int(keep_n)]["candidate_structures"]+=len(finalists)
 
+    # An identical ordered London bottom, hand, and unknown remainder is the
+    # SAME information state. Distinct physical Plains copies can generate
+    # duplicate index-combinations; keep the first finalist (stable tie rule).
+    # Do not replenish finalists with new candidates: that would change policy.
+    unique=set()
     best=None
     for i,(struct,hand,bottom,unknown) in enumerate(finalists):
+        identity=(hand,bottom,struct)
+        if identity in unique:
+            stats["duplicate_london_candidates_collapsed"]+=1
+            stage_stats[int(keep_n)]["duplicate_candidates"]+=1
+            continue
+        unique.add(identity)
         if i==0:
             # Establish an EXACT incumbent using the ORIGINAL evaluator.
             ev=d.keep_weighted_ev_seat(
