@@ -22,6 +22,8 @@ import json
 import hashlib
 import random
 from pathlib import Path
+import sys
+sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 
 import dack_mulligan_learned_features_v8_20261031 as features
 import dack_paired_counterfactual_v1_20261030 as ref
