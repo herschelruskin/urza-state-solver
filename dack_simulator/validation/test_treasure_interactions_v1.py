@@ -13,7 +13,7 @@ class TreasureInteractions(unittest.TestCase):
         # Moonsilver Key searches for a basic land or artifact with a mana ability.
         s = d.State(1, (), ("Treasure Vault",),
                     battlefield=(d.Perm("Moonsilver Key"),), c=1)
-        choices = d.special_actions(s)
+        choices = d.v03_actions(s)
         self.assertTrue(any(
             "Treasure Vault" in q.hand and "Moonsilver Key" in q.grave
             for q in choices), "Moonsilver should be able to find Treasure Vault")
