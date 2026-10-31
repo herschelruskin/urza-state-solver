@@ -183,3 +183,53 @@ This is an important finding: a real model cannot emerge just from
 trying to replace every expensive hypothetical beam with a few hundred
 random nonrepresentative labels. The computation has been moved to an
 offline stage, but careful training design still matters.
+
+
+## October 31 data collection outcome — reproducible archived corpora
+
+Both real-outcome sets are now committed on isolated branch
+dack-counterfactual-engine-v1-20261030 with per-file SHA-256 manifests.
+
+- datasets/natural_v8_20261031/manifest.json: 448 real labeled beam-160
+  rollouts, 32 separate training + 32 calibration seven-card scenarios
+  (IDs 20000–20031 and 30000–30031). Class counts training:
+  [T0 141, T1 0, T2 13, T3 70]; calibration:
+  [T0 143, T1 0, T2 25, T3 56].
+  These are naturally dealt but UNSELECTED sevens sampled across London
+  stages, not a representative policy-kept distribution.
+- datasets/stratified_v9_20261031/manifest.json: 320 additional labeled
+  beam-160 rollouts, 32 new training + 32 new calibration scenarios,
+  IDs 20200–20231 and 30200–30231. Class counts training:
+  [T0 56, T1 77, T2 11, T3 16]; calibration:
+  [T0 63, T1 68, T2 15, T3 14].
+  All stratified label rows record selection_stratum and forced card core.
+  Physical seven cards are drawn conditional on predefined fast-mana cores,
+  or naturally from a shuffled 99. NO model feature includes future draw
+  order. Oversampled fast strata intentionally distort class prevalence.
+- 768 total persisted rollout labels from 128 independent scenarios.
+  Training vs calibration scenario IDs never overlap. Every individual
+  hidden future is independently sampled conditional on that scenario.
+- Initial real enriched-data four-class softmax was trained only as an
+  experiment: 32 training groups, 32 calibration groups, 160 labels
+  per split. On its separate, enriched-distribution calibration data,
+  multiclass Brier score=0.30449, log loss=0.61760,
+  temperature=1.51270. This is NOT a deployment calibration result,
+  and no independent learned-policy win-rate holdout has been run.
+- New exported models carry diagnostic_only=true,
+  deployed_policy_approved=false. The learned policy runner refuses
+  unapproved models for gameplay; --diagnostic-audit-only allows merely
+  inspecting an experimental model artifact.
+
+Experimental enriched model and CI reports:
+https://github.com/herschelruskin/urza-state-solver/actions/runs/41253501291
+
+Permanent corpus archival validations:
+https://github.com/herschelruskin/urza-state-solver/actions/runs/41253660290
+https://github.com/herschelruskin/urza-state-solver/actions/runs/41253698800
+
+NEXT: balanced and independently sampled policy-kept calibration cases
+with sufficient T1 coverage. Mix the archived natural and fast-stratum
+training corpora for diverse learning, but DO NOT simply concatenate
+both calibration sets and present the unweighted result as a natural
+deployment probability. The final paired v5-versus-learned policy
+comparison must use entirely new unused game seeds.
