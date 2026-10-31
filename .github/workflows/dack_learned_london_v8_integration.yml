@@ -1,0 +1,86 @@
+name: DACK learned-London v8 model fit and DP contract tests
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_learned_london_v8_integration.yml'
+      - 'dack_paired_counterfactual_v8_learned_london_20261031.py'
+      - 'dack_simulator/validation/test_learned_london_dp_v8.py'
+      - 'dack_simulator/validation/derive_learned_london_dp_v8.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          python -m compileall -q dack_paired_counterfactual_v8_learned_london_20261031.py dack_simulator/validation/derive_learned_london_dp_v8.py
+          python -m unittest discover -s dack_simulator/validation -p test_learned_london_dp_v8.py -v
+  synthetic_trainer:
+    needs: unit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install 'scikit-learn>=1.4,<2'
+      - name: Create diagnostic-only synthetic class labels
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import collections,gzip,json
+          from dack_paired_counterfactual_v1_20261030 import stage_slots,SLOT_VARIANTS,SEED_STRIDE,SPEC
+          Path('datasets').mkdir(exist_ok=True)
+          for split,start in [('train',20000),('calibration',30000)]:
+              with gzip.open(f'datasets/{split}_synthetic.jsonl.gz','wt') as f:
+                  meta={'type':'metadata','schema':'dack_offline_london_outcomes_v1',
+                        'split':split,'beam':160,'variant':'one_key_34',
+                        'rules':'strict_state_stable_dice_actual_beam160',
+                        'SYNTHETIC_NONPHYSICAL_LABELS':True}
+                  f.write(json.dumps(meta)+'\n')
+                  for i in range(24):
+                      gid=start+i
+                      _,slots=stage_slots(int(SPEC['seed_base'])+gid*SEED_STRIDE)
+                      names=SLOT_VARIANTS['one_key_34']
+                      seven=[names[x] for x in slots[0][:7]]
+                      rest=[names[x] for x in slots[0][7:]]
+                      row={'type':'label','game_id':gid,'variant':'one_key_34',
+                           'hand':seven,'bottom':[], 'unknown_counts':dict(collections.Counter(rest)),
+                           'seat':i%4,'keep_n':7,'label_turn':i%4}
+                      f.write(json.dumps(row)+'\n')
+          print('SYNTHETIC_LABELS_CREATED not real outcomes')
+          PY
+      - name: Fit multinomial model and independently calibrate softmax on synthetic smoke data
+        run: |
+          python -u dack_simulator/validation/train_offline_london_v8.py \
+            --train datasets/train_synthetic.jsonl.gz \
+            --calibration datasets/calibration_synthetic.jsonl.gz \
+            --model models/synthetic_only_dack_london_v8.json \
+            --report benchmark_results/synthetic_only_dack_london_v8_report.json
+      - name: Create synthetic DP files for all nine variants
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from dack_paired_counterfactual_v1_20261030 import VARIANTS
+          from dack_simulator.validation.derive_learned_london_dp_v8 import calibrate
+          model=json.loads(Path('models/synthetic_only_dack_london_v8.json').read_text())
+          for name in VARIANTS:
+              result=calibrate(model,name,samples=2,start=50000)
+              Path(f'models/dack_london_v8_dp_{name}.json').write_text(json.dumps(result))
+          print('SYNTHETIC_DP_FILES_READY',len(VARIANTS),flush=True)
+          PY
+      - name: Audit zero-beam learned-policy executable with strictly required immutable artifacts
+        run: |
+          python dack_paired_counterfactual_v8_learned_london_20261031.py \
+            --model models/synthetic_only_dack_london_v8.json \
+            --continuations-dir models --audit
+          echo 'SYNTHETIC_PIPELINE_ONLY: does not demonstrate real deployment performance'
