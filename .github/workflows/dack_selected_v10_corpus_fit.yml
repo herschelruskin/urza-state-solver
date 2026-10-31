@@ -1,0 +1,238 @@
+name: DACK v10 natural policy-selected real labels and fit N128 plus N128
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_selected_v10_corpus_fit.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  collect:
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        include:
+          - split: train
+            start: 21100
+          - split: train
+            start: 21108
+          - split: train
+            start: 21116
+          - split: train
+            start: 21124
+          - split: train
+            start: 21132
+          - split: train
+            start: 21140
+          - split: train
+            start: 21148
+          - split: train
+            start: 21156
+          - split: train
+            start: 21164
+          - split: train
+            start: 21172
+          - split: train
+            start: 21180
+          - split: train
+            start: 21188
+          - split: train
+            start: 21196
+          - split: train
+            start: 21204
+          - split: train
+            start: 21212
+          - split: train
+            start: 21220
+          - split: calibration
+            start: 31100
+          - split: calibration
+            start: 31108
+          - split: calibration
+            start: 31116
+          - split: calibration
+            start: 31124
+          - split: calibration
+            start: 31132
+          - split: calibration
+            start: 31140
+          - split: calibration
+            start: 31148
+          - split: calibration
+            start: 31156
+          - split: calibration
+            start: 31164
+          - split: calibration
+            start: 31172
+          - split: calibration
+            start: 31180
+          - split: calibration
+            start: 31188
+          - split: calibration
+            start: 31196
+          - split: calibration
+            start: 31204
+          - split: calibration
+            start: 31212
+          - split: calibration
+            start: 31220
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Natural 99-card seven, selected by the frozen v7 policy, with four fresh beam-160 hidden futures
+        run: |
+          python -u dack_simulator/validation/generate_selected_london_labels_v10.py \
+            --split ${{ matrix.split }} --start ${{ matrix.start }} \
+            --games 8 --draws 4 \
+            --out datasets/v10_${{ matrix.split }}_${{ matrix.start }}.jsonl.gz
+      - name: Validate exact four-rollout scenario groups and no peeking
+        run: |
+          python - <<'PY'
+          from collections import Counter
+          from pathlib import Path
+          import gzip,json
+          files=list(Path('datasets').glob('v10_*.jsonl.gz'))
+          assert len(files)==1
+          with gzip.open(files[0],'rt') as f:
+              meta=json.loads(next(f));rows=[json.loads(s) for s in f]
+          assert meta['sampling_protocol']=='DACK-SELECTED-LONDON-V10'
+          assert meta['sampling_distribution']=='natural_physical_7_conditioned_on_v7_kept_hand'
+          assert meta['raw_sample_probabilities_biased'] is False
+          assert len(rows)==32 and len(set(r['game_id'] for r in rows))==8
+          assert sorted(Counter(r['game_id'] for r in rows).values())==[4]*8
+          for r in rows:
+              assert len(r['hand'])==r['keep_n']
+              assert len(r['hand'])+len(r['bottom'])==7
+              assert sum(r['unknown_counts'].values())==92
+              assert r['selection_stratum']=='v7_policy_kept_natural'
+              assert r['label_turn'] in (0,1,2,3)
+              assert not any(x in r for x in ('first3','sampled_order','actual_library','hidden_order'))
+          print('V10_SELECTED_REAL_SHARD_PASS',files[0].name,
+                dict(Counter(r['label_turn'] for r in rows)),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v10-${{ matrix.split }}-${{ matrix.start }}
+          path: datasets/v10_*.jsonl.gz
+          retention-days: 14
+  fit_and_archive:
+    needs: collect
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v10-*
+          merge-multiple: true
+          path: datasets/selected_v10_20261031
+      - name: Verify all collected groups and write permanent SHA-256 provenance
+        id: audit
+        run: |
+          python - <<'PY'
+          from collections import Counter
+          from pathlib import Path
+          import hashlib,gzip,json,os
+          root=Path('datasets/selected_v10_20261031')
+          paths=sorted(root.glob('v10_*.jsonl.gz'))
+          assert len(paths)==32,len(paths)
+          manifest={
+              'schema':'dack_v10_policy_kept_physical_real_corpus_v1',
+              'source_workflow':'dack_selected_v10_corpus_fit.yml',
+              'real_beam_160_outcome_labels':True,
+              'natural_physical_sevens_selected_by':'analytic_hypergeometric_keep_v7_trained_only_mean_keep',
+              'representative_for_frozen_v7_policy_selected_hands_only':True,
+              'not_representative_for_v5_or_learned_policy':True,
+              'unseen_library_order_never_saved':True,
+              'files':[],'splits':{}
+          }
+          groups=[]
+          for split,base in [('train',21100),('calibration',31100)]:
+              sp=[p for p in paths if p.name.startswith('v10_'+split+'_')]
+              assert len(sp)==16
+              counts=Counter();seen=Counter();keep=Counter()
+              for path in sp:
+                  with gzip.open(path,'rt') as f:
+                      meta=json.loads(next(f))
+                      assert meta['split']==split
+                      assert meta['sampling_protocol']=='DACK-SELECTED-LONDON-V10'
+                      assert meta['beam']==160
+                      for line in f:
+                          r=json.loads(line)
+                          assert r['type']=='label'
+                          assert len(r['hand'])+len(r['bottom'])==7
+                          assert sum(r['unknown_counts'].values())==92
+                          assert r['selection_protocol']=='DACK-SELECTED-LONDON-V10'
+                          assert not any(x in r for x in ('first3','hidden_order','actual_library','sampled_order'))
+                          seen[r['game_id']]+=1
+                          counts[r['label_turn']]+=1
+                          if r['future_index']==0:keep[r['keep_n']]+=1
+                  manifest['files'].append({
+                      'path':path.name,
+                      'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),
+                      'bytes':path.stat().st_size,'split':split})
+              assert set(seen)==set(range(base,base+128))
+              assert set(seen.values())=={4}
+              manifest['splits'][split]={
+                  'scenario_ids':[base,base+127],
+                  'independent_scenarios':128,
+                  'real_outcome_rollouts':sum(counts.values()),
+                  'class_counts':{str(i):counts[i] for i in range(4)},
+                  'keep_size_scenarios':{str(k):v for k,v in sorted(keep.items())}}
+              groups.append(set(seen))
+          assert groups[0].isdisjoint(groups[1])
+          Path(root/'manifest.json').write_text(json.dumps(manifest,indent=2,sort_keys=True)+'\n')
+          ready=all(min(s['class_counts'].values())>=8 for s in manifest['splits'].values())
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:
+              f.write('fit_ready='+('true' if ready else 'false')+'\n')
+          print('V10_SELECTED_INDEPENDENT_COVERAGE',json.dumps({
+              'fit_ready':ready,'splits':manifest['splits']},sort_keys=True),flush=True)
+          PY
+      - name: Install training-only dependencies
+        if: steps.audit.outputs.fit_ready == 'true'
+        run: python -m pip install 'scikit-learn>=1.4,<2'
+      - name: Train from v8 natural, v9 enrichment, v10 policy-kept; calibrate only on v10 policy-kept
+        if: steps.audit.outputs.fit_ready == 'true'
+        run: |
+          python -u dack_simulator/validation/train_offline_london_v8.py \
+            --train datasets/natural_v8_20261031/offline_train_*.jsonl.gz datasets/stratified_v9_20261031/v9_train_*.jsonl.gz datasets/selected_v10_20261031/v10_train_*.jsonl.gz \
+            --calibration datasets/selected_v10_20261031/v10_calibration_*.jsonl.gz \
+            --model models/dack_v10_selected_calibration_EXPERIMENTAL.json \
+            --report benchmark_results/dack_v10_selected_calibration_EXPERIMENTAL.json
+      - name: Preserve outputs in repository experiment branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f datasets/selected_v10_20261031
+          if test -f models/dack_v10_selected_calibration_EXPERIMENTAL.json; then
+            git add -f models/dack_v10_selected_calibration_EXPERIMENTAL.json
+            git add -f benchmark_results/dack_v10_selected_calibration_EXPERIMENTAL.json
+          fi
+          if git diff --cached --quiet; then
+            echo "Nothing to archive"
+          else
+            git commit -m "Archive v10 naturally selected real labels and separately calibrated diagnostic model"
+            git push origin HEAD:dack-counterfactual-engine-v1-20261030
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v10-selected-policy-real-corpus-and-calibration
+          path: |
+            datasets/selected_v10_20261031/manifest.json
+            models/dack_v10_selected_calibration_EXPERIMENTAL.json
+            benchmark_results/dack_v10_selected_calibration_EXPERIMENTAL.json
+          retention-days: 14
