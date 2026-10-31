@@ -132,3 +132,54 @@ Paired holdout N16, GitHub Actions run 41245401673:
 
 Do not conflate calibrated goldfish turn probabilities with real four-player
 Magic win probabilities, regardless of the mulligan optimizer.
+
+
+## Initial real-label pilot and rare-event coverage failure
+
+GitHub Actions 41246601250 generated 32 independent training opening-hand
+scenarios and 32 disjoint calibration scenarios with two candidate bottom
+choices (or fewer when identical) and four independently sampled futures per
+candidate. The 16 label-generation shards all passed and produced:
+
+| Split | T0 (no deployment) | T1 | T2 exact | T3 exact | Total |
+|---|---:|---:|---:|---:|---:|
+| Training | 141 | **0** | 13 | 70 | 224 |
+| Calibration | 143 | **0** | 25 | 56 | 224 |
+
+The four-class trainer **correctly refused to fit**, because there are
+no turn-one outcomes to learn. This is insufficient outcome support,
+not a simulator crash. Sampling unselected random seven-card hands
+across arbitrary mulligan stages grossly undersamples the fast, retained
+hands we actually care about. Thus a simple random corpus is inadequate
+even when its total label count looks reasonably large.
+
+The corrected real-label pilot workflow now explicitly assesses all
+four class counts and reports MORE_LABELS_REQUIRED rather than falsely
+promoting an uncalibrated model. It requires at least eight labels of
+each class in EACH independent split just to attempt an experimental
+fit; this low gate does not establish scientifically adequate T1
+calibration.
+
+Before scaling:
+
+1. Training should deliberately include a predeclared fast-hand stratum,
+   e.g. hands with early LED/Sol Ring/Mana Vault/Ancient Tomb access and
+   potentially meaningful white sources, as well as uniform random
+   hands at multiple keep sizes. Log the stratum and sampling scheme.
+2. Calibration should remain independent and represent the expected
+   decision distribution or be appropriately stratified/weighted with
+   explicitly known inclusion probabilities. Do not calibrate raw T1
+   probabilities on a biased, unweighted fast-hand sample.
+3. Include samples of the *actual hands selected by existing/learned
+   policies* and near decision thresholds (DAgger-style corrective data).
+4. Do not optimize a policy by greedily maximizing an under-supported
+   model over 35 bottom choices. Ensure coverage of all relevant action
+   combinations and inspect newly preferred choices.
+5. Keep explicit class coverage tests and use a fresh, untouched paired
+   policy holdout even when the model achieves attractive training
+   log-loss or a large deployment speedup.
+
+This is an important finding: a real model cannot emerge just from
+trying to replace every expensive hypothetical beam with a few hundred
+random nonrepresentative labels. The computation has been moved to an
+offline stage, but careful training design still matters.
