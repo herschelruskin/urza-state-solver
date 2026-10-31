@@ -23,6 +23,7 @@ d=bounded.d
 RULES_VERSION="dack_exact_terminal_witness_mulligan_v1"
 _ORIGINAL_SEARCH=d.search_turn_frontier_many
 _ORIGINAL_KEEP=d.keep_weighted_ev_seat
+_ORIGINAL_PREFIX=bounded._rollout_prefix
 counters=Counter()
 
 def search_turn_frontier_win_only(states,beam=6000,depth=24):
@@ -57,10 +58,10 @@ def search_turn_frontier_win_only(states,beam=6000,depth=24):
     end_by_key={kf(q):q for q in frontier}
     for _ in range(depth):
         nxt=[]
-        for q in frontier:
+        for qi,q in enumerate(frontier):
             if d.can_cast_dack(q) and not d.city_trigger_pending(q):
                 counters["terminal_witnesses"]+=1
-                counters["unexplored_current_frontier"]+=len(frontier)-frontier.index(q)-1
+                counters["unexplored_current_frontier"]+=len(frontier)-qi-1
                 return [q],[]
             if d.city_trigger_pending(q):
                 resp_special=[
@@ -111,7 +112,8 @@ def search_turn_frontier_win_only(states,beam=6000,depth=24):
             keep=vals[:beam]
             end_by_key={kf(q):q for q in keep}
 
-    wins=[q for q in frontier if d.can_cast_dack(q) and not d.city_trigger_pending(q)]
+    # Preserve even the legacy final-depth success predicate verbatim.
+    wins=[q for q in frontier if d.can_cast_dack(q)]
     if wins:
         counters["terminal_witnesses_at_depth_end"]+=1
         return wins[:1],[]
@@ -134,13 +136,19 @@ def certified_keep_weighted_ev_seat(*args,**kwargs):
     with conditional_win_only():
         return _ORIGINAL_KEEP(*args,**kwargs)
 
+def certified_bounded_rollout_prefix(*args,**kwargs):
+    with conditional_win_only():
+        return _ORIGINAL_PREFIX(*args,**kwargs)
+
 def install():
-    """Only keep-EV futures get the existential search, not actual gameplay."""
+    """All hypothetical futures, including branch-bound suffixes; not gameplay."""
     d.keep_weighted_ev_seat=certified_keep_weighted_ev_seat
+    bounded._rollout_prefix=certified_bounded_rollout_prefix
     return certified_keep_weighted_ev_seat
 
 def uninstall():
     d.keep_weighted_ev_seat=_ORIGINAL_KEEP
+    bounded._rollout_prefix=_ORIGINAL_PREFIX
     return _ORIGINAL_KEEP
 
 def clear_counters():
@@ -150,8 +158,10 @@ def selftest():
     assert d.search_turn_frontier_many is _ORIGINAL_SEARCH
     install()
     assert d.keep_weighted_ev_seat is certified_keep_weighted_ev_seat
+    assert bounded._rollout_prefix is certified_bounded_rollout_prefix
     uninstall()
     assert d.keep_weighted_ev_seat is _ORIGINAL_KEEP
+    assert bounded._rollout_prefix is _ORIGINAL_PREFIX
     assert d.search_turn_frontier_many is _ORIGINAL_SEARCH
     return {"status":"PASS","version":RULES_VERSION,
             "scope":"London hypothetical futures only"}
