@@ -118,3 +118,21 @@ confidence intervals and divergence summaries from original game rows.
    N4096+ confirmation.
 
 All historical results and deck lists remain in the older branches.
+
+## Strict-state-key opt-in
+
+The independent witness in
+`dack_simulator/validation/state_key_collision_witness_v1.py` establishes
+false equality in the inherited beam key when the only difference is a
+protected exile or a combo creature in the graveyard.
+
+`dack_counterfactual_rules_v2_strict_key_20261030.py` composes the
+v1 rules with a stricter deduplication key retaining the complete grave
+and exile multisets, Saga age, success and repaired status. It is
+**not** enabled in the preserved v1 reference entrypoint.
+
+Use `dack_paired_counterfactual_v2_strict_20261030.py --audit` to
+validate the opt-in strict implementation; its output has a distinct
+rules-version identity and must never be pooled with the v1 replay
+results. A small runtime and outcome sensitivity study should establish
+whether increased state distinctions materially increase search work.
