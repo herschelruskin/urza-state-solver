@@ -51,7 +51,7 @@ def original_99():
 
 def content_hash(cards):
     return hashlib.sha256(
-        ("\\n".join(sorted(cards)) + "\\n").encode("utf-8")
+        ("\n".join(sorted(cards)) + "\n").encode("utf-8")
     ).hexdigest()
 
 def audit():
