@@ -217,3 +217,59 @@ For everflow_plains_35, seed 0 changed 62.4099 s -> 53.0072 s
 benchmark pairs were run reference-first in the same interpreter with
 simulation caches reset, so treat speedups as diagnostic rather than
 a fully balanced cold-process population benchmark.
+
+## Further exact optimizations (October 31)
+
+**Identical London bottom candidate collapse:** A second physical combination
+that leaves the same hand, ordered bottom, and structural score is skipped
+after its earliest identical finalist has already been considered. This
+preserves the original top-12 limit and stable ties. The original-vs-
+optimized parity jobs passed (Actions 41218044069 and 41218044152).
+The three tested hands had zero duplicate collapses, so this optimization
+has not yet demonstrated additional speedup.
+
+**Search-order dependence of the historical dice:** The historical
+Bucknard/Component Pouch oracle hashed `repr(d.key(state))`. The key includes
+an ordinal `library_token` assigned when a library is first visited.
+Reordering search branches therefore changed simulated dice even for the
+same physical state. The initial winning-witness v4 shortcut changed a
+mulligan raw EV (0.65625 -> 0.625), despite an identical final win turn,
+and FAILED exact policy parity (Actions 41217967964). We have blocked
+v4's standalone execution, leaving historical data unchanged.
+
+**Stable-state dice v5:** The new
+`dack_mulligan_stateless_roll_v1_20261031.py` hashes game seed, die,
+salt and full canonical state, including the exact ordered library,
+permanent attributes, and all state fields. This removes dependence on
+the ephemeral library intern cache. Historical exact-seed outcomes may
+change: v5 is a NEW rules/RNG version and cannot pool with earlier
+runs. The distribution of die faces remains pseudorandom; this does
+not solve imperfect-information/clairvoyant decision-making.
+
+**Winning-line collapse:** During a hypothetical mulligan future
+rollout, `dack_mulligan_terminal_witness_v1_20261031.py` stops once
+an actual reachable winning state is found in the selected frontier.
+The normal final game search and trace instrumentation remain unchanged.
+The opt-in combined entrypoint is
+`dack_paired_counterfactual_v5_stable_chance_20261031.py`.
+
+With *both arms* using the corrected stable dice, the complete replay
+parity passed on three seeds (Actions 41218334182): seed 0 57.8943 ->
+55.7537 seconds (1.038x), seed 1 5.1668 -> 4.9748 (1.039x), and
+Everflowing-to-Plains seed 2 4.8349 -> 4.4697 (1.082x). These are
+marginal **extra** savings over the preexisting exact bounded evaluator,
+not its combined total speedup. N4 9-arm stable-dice diagnostic:
+`.github/workflows/dack_stable_v5_n4_diagnostic.yml`.
+
+**PyPy control:** Python 3.11 took 2.7747 seconds on control seed 1;
+PyPy 3.10 took 5.2254 seconds with identical cards and decisions
+(Actions 41218450607). PyPy is slower in this short test.
+
+**Accuracy boundaries:** Keep real ordered libraries, all tutor and
+recovery choices, strict grave/exile/Saga semantics, 8/16 future
+sampling budgets, and the assertive London continuation policy.
+Do not assume a card absent from the opening hand is irrelevant to
+mulligan EV; its unknown-library presence matters. Reusing outcomes
+across deck variants requires actual line-dependency proof. These
+probabilities still describe the current **bounded, optimistic goldfish
+Dack-cast model** rather than validated four-player win probabilities.
