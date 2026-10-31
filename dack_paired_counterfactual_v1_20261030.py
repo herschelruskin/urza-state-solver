@@ -155,6 +155,9 @@ def choose_keep(deck_slots, seat, order_by_stage):
             return d.State(1, tuple(hand), tuple(unknown) + tuple(bottom)), history
     raise AssertionError("London terminal keep not reached")
 
+def t2_success(turn):
+    return 0 < int(turn) <= 2
+
 def game(name, game_id, seat=None, slots=None):
     if name not in VARIANTS:
         raise KeyError(name)
@@ -166,13 +169,34 @@ def game(name, game_id, seat=None, slots=None):
     sim.root.install(name)
     sim.m.set_trial_seed(seed)
     state, history = choose_keep(SLOT_VARIANTS[name], seat, slots)
-    win = d._win_turn_from_unknown_order(
-        state.hand, state.library, seat, beam=int(SPEC["beam"]), max_turn=MAX_TURN)
+    # Mirror the validated active policy: discard mulligan evaluator's
+    # speculative game outcomes before running this actual kept-hand trial.
+    d._WIN_CACHE.clear()
+    frontier_events = []
+    original_frontier = d.search_turn_frontier_many
+    def traced_frontier(turn_states, beam=160, depth=24):
+        wins, survivors = original_frontier(turn_states, beam=beam, depth=depth)
+        frontier_events.append({
+            "turn": turn_states[0].turn if turn_states else None,
+            "states_entering": len(turn_states),
+            "terminal_candidates": len(wins),
+            "survivors": len(survivors),
+            "beam": beam, "depth": depth,
+        })
+        return wins, survivors
+    # Scoped instrumentation; never leak monkeypatches between arms/games.
+    d.search_turn_frontier_many = traced_frontier
+    try:
+        win = d._win_turn_from_unknown_order(
+            state.hand, state.library, seat, beam=int(SPEC["beam"]), max_turn=MAX_TURN)
+    finally:
+        d.search_turn_frontier_many = original_frontier
     return {
         "game_id": int(game_id), "seed": seed, "seat": seat,
         "variant": name, "keep_n": history[-1]["keep_n"],
         "win_turn": int(win or 0), "hand": list(state.hand),
         "first3": list(state.library[:3]), "history": history,
+        "frontier_events": frontier_events,
     }
 
 def first_divergence(control, other):
@@ -192,6 +216,8 @@ def first_divergence(control, other):
             return {"kind": "mulligan_decision_or_bottom", "stage": i}
     if control["first3"] != other["first3"]:
         return {"kind": "future_draw_order_or_contents", "stage": None}
+    if control.get("frontier_events") != other.get("frontier_events"):
+        return {"kind": "turn_frontier_or_action_search", "stage": None}
     if control["win_turn"] != other["win_turn"]:
         return {"kind": "gameplay_search_or_deeper_library", "stage": None}
     return {"kind": "no_observed_divergence", "stage": None}
@@ -203,7 +229,7 @@ def paired_game(game_id):
     for name in VARIANTS:
         outputs[name] = game(name, game_id, seat, slots)
     base = outputs[SPEC["control"]]
-    interesting = any((0 < x["win_turn"] <= 2) != (0 < base["win_turn"] <= 2)
+    interesting = any(t2_success(x["win_turn"]) != t2_success(base["win_turn"])
                       for x in outputs.values())
     summary = {
         "game_id": game_id, "seat": seat,
@@ -214,7 +240,7 @@ def paired_game(game_id):
         summary["discordant_trace"] = {
             name: {"first_divergence": first_divergence(base, x),
                    "hand": x["hand"], "first3": x["first3"],
-                   "history": x["history"]}
+                   "history": x["history"], "frontier_events": x["frontier_events"]}
             for name, x in outputs.items()
         }
     return summary
@@ -366,8 +392,13 @@ if __name__ == "__main__":
     parser.add_argument("--games", type=int, default=1)
     parser.add_argument("--out", default="shards/counterfactual_v1_shard0.json.gz")
     parser.add_argument("--store", default=None)
+    parser.add_argument("--single-variant", choices=list(VARIANTS), default=None,
+                        help="One fresh E2E game, without launching nine arms")
     opt = parser.parse_args()
     if opt.audit:
         print(json.dumps(audit(), indent=2))
+    elif opt.single_variant is not None:
+        audit()
+        print(json.dumps(game(opt.single_variant, opt.start), indent=2))
     else:
         run(opt.start, opt.games, opt.out, opt.store)
