@@ -8,6 +8,9 @@ from __future__ import annotations
 import argparse
 import json
 import time
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import dack_paired_counterfactual_v1_20261030 as reference
 import dack_mulligan_branchbound_v1_20261031 as bounded
