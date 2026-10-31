@@ -1,0 +1,59 @@
+name: DACK v10 selected-natural-hand labels contracts and smoke
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_selected_v10_smoke.yml'
+      - 'dack_simulator/validation/generate_selected_london_labels_v10.py'
+      - 'dack_simulator/validation/test_selected_london_v10.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          python -m compileall -q dack_simulator/validation/generate_selected_london_labels_v10.py dack_simulator/validation/test_selected_london_v10.py
+          python -m unittest discover -s dack_simulator/validation -p test_selected_london_v10.py -v
+  real_labels:
+    needs: contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Independently sample genuine 99-card and beam-160 futures from frozen v7-selected keeps
+        run: |
+          python -u dack_simulator/validation/generate_selected_london_labels_v10.py \
+            --split train --start 21000 --games 4 --draws 4 \
+            --out datasets/v10_selected_train_21000.jsonl.gz
+      - name: Confirm completely disjoint hidden draw information
+        run: |
+          python - <<'PY'
+          import gzip,json,collections
+          with gzip.open('datasets/v10_selected_train_21000.jsonl.gz','rt') as f:
+              m=json.loads(next(f));rows=[json.loads(x) for x in f]
+          assert m['sampling_protocol']=='DACK-SELECTED-LONDON-V10'
+          assert m['sampling_distribution']=='natural_physical_7_conditioned_on_v7_kept_hand'
+          assert len({x['game_id'] for x in rows})==4
+          assert len(rows)==16
+          for x in rows:
+              assert len(x['hand'])==x['keep_n']
+              assert len(x['hand'])+len(x['bottom'])==7
+              assert sum(x['unknown_counts'].values())==92
+              assert 'hidden_order' not in x and 'sampled_order' not in x and 'first3' not in x
+          print('SELECTED_POLICY_OUTCOME_SMOKE_PASS',len(rows),dict(collections.Counter(x['label_turn'] for x in rows)),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v10-policy-selected-real-smoke
+          path: datasets/v10_selected_train_21000.jsonl.gz
+          retention-days: 10
