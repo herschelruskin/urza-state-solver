@@ -12,6 +12,9 @@ from __future__ import annotations
 import argparse
 import json
 from statistics import mean
+import sys
+from pathlib import Path
+sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 
 import dack_paired_counterfactual_v1_20261030 as ref
 import dack_mulligan_analytic_policy_v6_20261031 as model
