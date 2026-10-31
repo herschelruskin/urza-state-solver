@@ -203,7 +203,7 @@ def paired_game(game_id):
     for name in VARIANTS:
         outputs[name] = game(name, game_id, seat, slots)
     base = outputs[SPEC["control"]]
-    interesting = any((x["win_turn"] <= 2) != (base["win_turn"] <= 2)
+    interesting = any((0 < x["win_turn"] <= 2) != (0 < base["win_turn"] <= 2)
                       for x in outputs.values())
     summary = {
         "game_id": game_id, "seat": seat,
