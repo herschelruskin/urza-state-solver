@@ -362,12 +362,40 @@ def run(start, count, output, store_path=None):
         raise ValueError("start >= 0 and count > 0 required")
     stamp = time.monotonic()
     audit_result = audit()
+    target = Path(output)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    checkpoint = target.with_name(target.name + ".checkpoint.jsonl")
+    signature = {
+        "spec_sha256": source_sha(SPEC_PATH),
+        "manifest_sha256": source_sha(MANIFEST_PATH),
+        "rules_version": RULES_VERSION,
+        "seed_start": start, "games": count,
+    }
     rows = []
-    for gid in range(start, start + count):
-        rows.append(paired_game(gid))
+    if checkpoint.exists():
+        with checkpoint.open("rt", encoding="utf8") as fp:
+            for line in fp:
+                if not line.strip():
+                    continue
+                entry = json.loads(line)
+                if entry["signature"] != signature:
+                    raise RuntimeError("checkpoint spec/manifest mismatch")
+                expected_gid = start + len(rows)
+                if entry["row"]["game_id"] != expected_gid:
+                    raise RuntimeError("checkpoint noncontiguous or duplicate game ID")
+                rows.append(entry["row"])
+        if len(rows) > count:
+            raise RuntimeError("checkpoint longer than selected shard")
+    for gid in range(start + len(rows), start + count):
+        row = paired_game(gid)
+        with checkpoint.open("at", encoding="utf8") as fp:
+            fp.write(json.dumps({"signature": signature, "row": row},
+                                separators=(",", ":")) + "\n")
+            fp.flush()
+            os.fsync(fp.fileno())
+        rows.append(row)
         print("PAIRED_GAME", gid,
-              {k: v["win_turn"] for k, v in {
-                  name: rows[-1]["arms"][name] for name in VARIANTS}.items()},
+              {name: row["arms"][name]["win_turn"] for name in VARIANTS},
               flush=True)
     report = {
         "schema": "dack_paired_counterfactual_full_replay_v1",
@@ -378,8 +406,6 @@ def run(start, count, output, store_path=None):
     }
     if store_path:
         report["sqlite"] = persist(rows, store_path)
-    target = Path(output)
-    target.parent.mkdir(parents=True, exist_ok=True)
     with gzip.open(target, "wt", encoding="utf8", compresslevel=6) as fp:
         json.dump(report, fp, separators=(",", ":"))
     print("PAIRED_RUN_PASS", target, count, report["elapsed_seconds"], flush=True)
