@@ -38,6 +38,10 @@ SLOTS = tuple(row["slot_id"] for row in MANIFEST["slots"])
 PHYSICAL = {row["slot_id"]: row["card"] for row in MANIFEST["slots"]}
 MAX_TURN = 3
 RULES_VERSION = rules.RULES_VERSION
+# Opt-in independent keep-policy identity for policy variants. Historical
+# reference stays assertive unless an experimental entrypoint sets this.
+MULLIGAN_POLICY_NAME = SPEC["gameplay_policy"]
+MULLIGAN_SAMPLER_NAME = SPEC["internal_mulligan_sampling"]
 
 def with_substitutions(slot_names, changes):
     result = dict(slot_names)
@@ -314,9 +318,9 @@ def persist(rows, db_path):
     import zlib
     engine = source_engine_manifest()
     policy = {
-        "policy": SPEC["gameplay_policy"], "seed_base": SPEC["seed_base"],
+        "policy": MULLIGAN_POLICY_NAME, "seed_base": SPEC["seed_base"],
         "stride": SEED_STRIDE, "rng_scheme": SPEC["rng_scheme"],
-        "nested_sampler": SPEC["internal_mulligan_sampling"],
+        "nested_sampler": MULLIGAN_SAMPLER_NAME,
         "source_spec_sha256": source_sha(SPEC_PATH),
     }
     ids = [row["game_id"] for row in rows]
