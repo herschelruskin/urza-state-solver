@@ -1,0 +1,106 @@
+name: DACK diagnostic learned London v8 seat-and-deck continuations
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v10_model_dp_diagnostic.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  dp:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: one_key_34
+          - variant: staff_plains_35
+          - variant: mindstone_plains_35
+          - variant: everflow_plains_35
+          - variant: coalition_plains_35
+          - variant: lens_plains_35
+          - variant: amulet_plains_35
+          - variant: implements_plains_35
+          - variant: basalt_plains_35
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Evaluate 64 natural physical London sevens per seat and keep size without gameplay beams
+        run: |
+          python -u dack_simulator/validation/derive_learned_london_dp_v8.py \
+            --model models/dack_v10_selected_calibration_EXPERIMENTAL.json \
+            --variant ${{ matrix.variant }} --samples 64 --start 50000 \
+            --out models/dack_london_v8_dp_${{ matrix.variant }}.json
+      - name: Require model checksum and valid first-free-mulligan table
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib,json
+          model=json.loads(Path('models/dack_v10_selected_calibration_EXPERIMENTAL.json').read_text())
+          source=hashlib.sha256(json.dumps(model,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+          fs=list(Path('models').glob('dack_london_v8_dp_*.json'))
+          assert len(fs)==1
+          table=json.loads(fs[0].read_text())
+          assert table['model_sha256']==source
+          assert table['samples_per_seat_per_keep_n']==64
+          for s in range(4):
+              seat=table['seats'][str(s)]
+              assert len(seat['thresholds_by_london_stage'])==8
+              assert abs(seat['thresholds_by_london_stage'][0]-seat['continuations_by_keep_n']['7'])<1e-9
+              assert abs(seat['thresholds_by_london_stage'][1]-seat['continuations_by_keep_n']['6'])<1e-9
+          print('DP_MODEL_PROVENANCE_PASS',table['variant'],flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v10-model-dp-${{ matrix.variant }}
+          path: models/dack_london_v8_dp_*.json
+          retention-days: 14
+  archive:
+    needs: dp
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v10-model-dp-*
+          merge-multiple: true
+          path: models/
+      - name: Audit entire experimental London continuation collection
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import dack_paired_counterfactual_v8_learned_london_20261031 as runner
+          from dack_paired_counterfactual_v1_20261030 import VARIANTS
+          fs=list(Path('models').glob('dack_london_v8_dp_*.json'))
+          assert len(fs)==len(VARIANTS)==9
+          report=runner.audit('models/dack_v10_selected_calibration_EXPERIMENTAL.json',
+                              'models',allow_diagnostic=True)
+          assert report['mulligan_beam']==0 and report['gameplay_beam']==160
+          print('DIAGNOSTIC_LEARNED_LONDON_ALL_NINE_DP_PASS',json.dumps({
+            'model_approved_for_gameplay':False,
+            'policy_hash':report['policy_hash'],
+            'all_nine_deck_and_seat_tables_present':True
+          }),flush=True)
+          PY
+      - name: Persist experimental DP tables without promoting learned policy
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f models/dack_london_v8_dp_*.json
+          git commit -m "Archive all nine experimental learned London per-seat continuation tables with model checksum"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v10-diagnostic-learned-london-continuations
+          path: models/dack_london_v8_dp_*.json
+          retention-days: 14
