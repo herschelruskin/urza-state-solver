@@ -1,0 +1,87 @@
+name: DACK archive natural v8 real corpus to isolated branch
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_archive_v8_natural_corpus.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 41246780035
+          github-token: ${{ github.token }}
+          pattern: offline-v8-*
+          merge-multiple: true
+          path: datasets/natural_v8_20261031
+      - name: Verify all natural sample labels and hash source files
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from collections import Counter
+          import gzip,hashlib,json
+          root=Path('datasets/natural_v8_20261031')
+          paths=sorted(root.glob('offline_*.jsonl.gz'))
+          assert len(paths)==16,(len(paths),paths)
+          manifest={'schema':'dack_natural_real_corpus_archive_v8',
+                    'source_actions_run':41246780035,'files':[],
+                    'natural_unselected_sevens_across_london_stages':True,
+                    'policy_kept_distribution':False,
+                    'four_class_model_fit_supported_without_enrichment':False,
+                    'split':{},'source_physical_sha256':None}
+          idsets={}
+          for split,lo in [('train',20000),('calibration',30000)]:
+              fs=[p for p in paths if p.name.startswith('offline_'+split+'_')]
+              assert len(fs)==8
+              counts=Counter();ids=set()
+              for path in fs:
+                  with gzip.open(path,'rt') as f:
+                      h=json.loads(next(f))
+                      assert h['schema']=='dack_offline_london_outcomes_v1'
+                      assert h['split']==split and h['beam']==160
+                      assert h['rules']=='strict_state_stable_dice_actual_beam160'
+                      sha=h['source_physical_sha256']
+                      if manifest['source_physical_sha256'] is None:
+                          manifest['source_physical_sha256']=sha
+                      else:
+                          assert manifest['source_physical_sha256']==sha
+                      for line in f:
+                          r=json.loads(line)
+                          assert r['type']=='label' and r['label_turn'] in (0,1,2,3)
+                          assert len(r['hand'])+len(r['bottom'])==7
+                          assert sum(r['unknown_counts'].values())==92
+                          assert not any(k in r for k in ('hidden_order','sampled_order','actual_library','first3'))
+                          counts[r['label_turn']]+=1;ids.add(r['game_id'])
+                  manifest['files'].append({'path':path.name,
+                    'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),
+                    'bytes':path.stat().st_size,'split':split})
+              assert ids==set(range(lo,lo+32))
+              idsets[split]=ids
+              manifest['split'][split]={'ids':[lo,lo+31],
+                   'n_scenarios':32,'n_labels':sum(counts.values()),
+                   'outcome_classes':{str(k):counts[k] for k in range(4)}}
+          assert idsets['train'].isdisjoint(idsets['calibration'])
+          assert sum(v['n_labels'] for v in manifest['split'].values())==448
+          (root/'manifest.json').write_text(json.dumps(manifest,indent=2,sort_keys=True)+'\n')
+          print('DACK_NATURAL_CORPUS_ARCHIVE_PASS',json.dumps(manifest['split']),flush=True)
+          PY
+      - name: Commit immutable actual beam labels on the experiment branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f datasets/natural_v8_20261031
+          if git diff --cached --quiet; then
+            echo "Natural dataset already archived"
+          else
+            git commit -m "Archive 448 natural random-seven real DACK deployment labels and provenance"
+            git push origin HEAD:dack-counterfactual-engine-v1-20261030
+          fi
