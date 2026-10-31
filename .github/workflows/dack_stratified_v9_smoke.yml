@@ -1,0 +1,57 @@
+name: DACK v9 stratified physical-fast-hand label smoke
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_stratified_v9_smoke.yml'
+      - 'dack_simulator/validation/generate_stratified_london_labels_v9.py'
+      - 'dack_simulator/validation/test_stratified_london_v9.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          python -m compileall -q dack_simulator/validation/generate_stratified_london_labels_v9.py dack_simulator/validation/test_stratified_london_v9.py
+          python -m unittest discover -s dack_simulator/validation -p test_stratified_london_v9.py -v
+  real_labels:
+    needs: contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run genuine beam-160 conditional futures with documented fast strata
+        run: |
+          python -u dack_simulator/validation/generate_stratified_london_labels_v9.py \
+            --split train --start 20199 --games 5 --candidates 2 --draws 4 \
+            --out datasets/stratified_v9_smoke_train_20199.jsonl.gz
+      - name: Inspect actual T1/T2/T3 label coverage and provenance
+        run: |
+          python - <<'PY'
+          import gzip,json,collections
+          with gzip.open('datasets/stratified_v9_smoke_train_20199.jsonl.gz','rt') as fp:
+              m=json.loads(next(fp));r=[json.loads(x) for x in fp]
+          assert m['sampling_conditional_fast_core'] is True
+          assert m['not_population_representative'] is True
+          assert len({x['game_id'] for x in r})==5
+          assert all(sum(x['unknown_counts'].values())==92 for x in r)
+          assert all('sampled_order' not in x and 'actual_library' not in x for x in r)
+          print('STRATIFIED_REAL_LABEL_SMOKE_PASS',
+              json.dumps({'labels':len(r),'outcomes':dict(collections.Counter(x['label_turn'] for x in r)),
+               'strata':dict(collections.Counter(x['selection_stratum'] for x in r))}),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-stratified-v9-real-smoke-labels
+          path: datasets/*.jsonl.gz
+          retention-days: 10
