@@ -1,14 +1,6 @@
 name: DACK exact terminal witness v4 parity
 
 on:
-  push:
-    branches: [dack-counterfactual-engine-v1-20261030]
-    paths:
-      - '.github/workflows/dack_terminal_witness_v4_parity.yml'
-      - 'dack_mulligan_terminal_witness_v1_20261031.py'
-      - 'dack_paired_counterfactual_v4_witness_20261031.py'
-      - 'dack_simulator/validation/test_terminal_witness_v1.py'
-      - 'dack_simulator/validation/benchmark_terminal_witness_parity_v1.py'
   workflow_dispatch:
 
 permissions:
