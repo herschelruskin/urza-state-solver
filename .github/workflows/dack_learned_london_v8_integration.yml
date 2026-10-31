@@ -37,13 +37,14 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           import collections,gzip,json
-          from dack_paired_counterfactual_v1_20261030 import stage_slots,SLOT_VARIANTS,SEED_STRIDE,SPEC
+          from dack_paired_counterfactual_v1_20261030 import stage_slots,SLOT_VARIANTS,SEED_STRIDE,SPEC,MANIFEST_PATH,source_sha
           Path('datasets').mkdir(exist_ok=True)
           for split,start in [('train',20000),('calibration',30000)]:
               with gzip.open(f'datasets/{split}_synthetic.jsonl.gz','wt') as f:
                   meta={'type':'metadata','schema':'dack_offline_london_outcomes_v1',
                         'split':split,'beam':160,'variant':'one_key_34',
                         'rules':'strict_state_stable_dice_actual_beam160',
+                        'source_physical_sha256':source_sha(MANIFEST_PATH),
                         'SYNTHETIC_NONPHYSICAL_LABELS':True}
                   f.write(json.dumps(meta)+'\n')
                   for i in range(24):
