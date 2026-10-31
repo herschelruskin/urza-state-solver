@@ -1,0 +1,93 @@
+name: DACK strict vs legacy state-key parity and timing
+
+on:
+  push:
+    branches:
+      - dack-counterfactual-engine-v1-20261030
+    paths:
+      - '.github/workflows/dack_counterfactual_state_key_benchmark.yml'
+      - 'dack_counterfactual_rules_v2_strict_key_20261030.py'
+      - 'dack_paired_counterfactual_v2_strict_20261030.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  strict-vs-reference:
+    strategy:
+      fail-fast: false
+      matrix:
+        game_id: [0, 1]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compare same control deck and scenario under two state keys
+        env:
+          GAME_ID: ${{ matrix.game_id }}
+        run: |
+          mkdir -p benchmarks
+          python - <<'PY'
+          import json, os, resource, time
+          from pathlib import Path
+          import dack_paired_counterfactual_v1_20261030 as p
+          game_id=int(os.environ["GAME_ID"])
+          p.audit()
+          start=time.monotonic()
+          row=p.game("one_key_34",game_id)
+          result={"state_key":"legacy_v1","game_id":game_id,
+                  "elapsed_seconds":round(time.monotonic()-start,3),
+                  "max_rss_kb":resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
+                  "seat":row["seat"],"keep_n":row["keep_n"],
+                  "hand":row["hand"],"first3":row["first3"],
+                  "win_turn":row["win_turn"],
+                  "frontier_events":row["frontier_events"]}
+          Path(f"benchmarks/legacy_{game_id}.json").write_text(json.dumps(result,indent=2))
+          print("LEGACY_ONE_ARM",json.dumps(result),flush=True)
+          PY
+          python - <<'PY'
+          import json, os, resource, time
+          from pathlib import Path
+          import dack_paired_counterfactual_v2_strict_20261030 as p
+          game_id=int(os.environ["GAME_ID"])
+          p.audit()
+          start=time.monotonic()
+          row=p.reference.game("one_key_34",game_id)
+          result={"state_key":"strict_v2","game_id":game_id,
+                  "elapsed_seconds":round(time.monotonic()-start,3),
+                  "max_rss_kb":resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
+                  "seat":row["seat"],"keep_n":row["keep_n"],
+                  "hand":row["hand"],"first3":row["first3"],
+                  "win_turn":row["win_turn"],
+                  "frontier_events":row["frontier_events"]}
+          Path(f"benchmarks/strict_{game_id}.json").write_text(json.dumps(result,indent=2))
+          print("STRICT_ONE_ARM",json.dumps(result),flush=True)
+          PY
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          gid=os.environ["GAME_ID"]
+          a=json.loads(Path(f"benchmarks/legacy_{gid}.json").read_text())
+          b=json.loads(Path(f"benchmarks/strict_{gid}.json").read_text())
+          assert all(a[k]==b[k] for k in ("game_id","seat","keep_n","hand","first3"))
+          print("STATE_KEY_PARITY",json.dumps({
+              "game_id":int(gid),"same_initial_conditions":True,
+              "same_win_turn":a["win_turn"]==b["win_turn"],
+              "legacy_win_turn":a["win_turn"],
+              "strict_win_turn":b["win_turn"],
+              "legacy_seconds":a["elapsed_seconds"],
+              "strict_seconds":b["elapsed_seconds"],
+              "legacy_rss_kb":a["max_rss_kb"],
+              "strict_rss_kb":b["max_rss_kb"],
+          }),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: state-key-comparison-game-${{ matrix.game_id }}
+          path: benchmarks/
+          retention-days: 7
