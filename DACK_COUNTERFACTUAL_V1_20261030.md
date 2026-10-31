@@ -338,3 +338,53 @@ continuation values as though they were probabilities.
 Outer Monte Carlo still measures the specified policy's bounded
 goldfish **Dack deployment** rate, NOT actual four-player cEDH win
 probability, regardless of mulligan model.
+
+### Matched independent N16 policy-only holdout result
+
+Actions 41245401673 PASS. Training game IDs 10000–10511 were
+used solely to fix a scale for matching historical mean keep size.
+Holdout IDs 12000–12015 were not used in that calibration.
+
+Both compared policies used the SAME:
+- physical one-Key 34-land 99 (one_key_34);
+- independently seeded shuffled opening hands, seat, and actual future draws;
+- corrected stable-dice rules, strict game-state identity;
+- actual goldfish Dack deployment engine with beam 160 and max_turn=3.
+
+Only the London keep/bottom decision policy changed. The two policies
+executed in separate Python processes per seed to avoid monkeypatch
+cross-talk. Results:
+
+| Metric | Beam-mulligan v5 | Calibrated no-beam v7 |
+| --- | ---: | ---: |
+| Seeds | 16 | 16 |
+| T1 deployments | 1/16 (6.25%) | 0/16 (0%) |
+| T2-or-earlier deployments | 8/16 (50%) | 6/16 (37.5%) |
+| T3-or-earlier deployments | 11/16 (68.75%) | 11/16 (68.75%) |
+| Average hand kept | 4.875 | 4.8125 |
+| Total sequential per-game evaluation time | 429.151 s | 4.529 s |
+
+The no-beam policy had 1 paired T2 gain and 3 paired T2 losses;
+difference = -12.5 percentage points with exploratory paired-normal
+95% CI [-37.0, +12.0] percentage points. Both outcomes were tied for
+12 of 16 seeds. N=16 is only an engineering diagnostic, and even its
+near-95x total-time improvement should not be extrapolated as a
+population benchmark (different kept hands can themselves change
+actual gameplay search cost). No win-rate equivalence is established.
+
+Interpretation: no-beam mulligans are demonstrably possible and cheap,
+and the Monte Carlo outer event statistics remain valid for each
+specified policy. However, simply matching the historical average
+keep size does NOT reproduce the original policy's early deployment
+decisions or its objective.
+
+**Recommended next model:** Train a compact outcome predictor OFFLINE
+on independent no-peek hand/bottom/deck features with labeled realized
+T1/T2/T3 full-game rollouts. Calibrate the predictor's actual
+P(T1), P(T2), P(T3) on disjoint data (reliability/Brier), then compute
+U(h)=P(T<=2|h)+.5P(T=3|h), and recompute per-stage London
+continuation values for that new policy. Evaluation still uses actual
+beam-160 games on fresh held-out seeds. Keep v5 as the reference until
+there is sufficient paired evidence of a superior or equivalent
+speed/quality tradeoff. Never use an uncalibrated proxy score as though
+it were a probability.
