@@ -1,0 +1,29 @@
+name: DACK no-beam London policy offline keep-rate calibration
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_no_beam_v6_calibration.yml'
+      - 'dack_simulator/validation/calibrate_no_beam_london_v6.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  calibrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Train only hand-quality cutoff scale on independent 512 seeds
+        run: |
+          python -u dack_simulator/validation/calibrate_no_beam_london_v6.py \
+            --start 10000 --games 512 \
+            --out benchmark_results/analytic_london_v6_aggressiveness_training_512.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: analytic-london-v6-keep-rate-calibration-512
+          path: benchmark_results/analytic_london_v6_aggressiveness_training_512.json
+          retention-days: 10
