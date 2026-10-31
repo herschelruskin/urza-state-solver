@@ -1,0 +1,134 @@
+name: DACK v10 independent selected-hand probability holdout N128
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v10_predictive_holdout.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  collect:
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        include:
+          - start: 33100
+          - start: 33108
+          - start: 33116
+          - start: 33124
+          - start: 33132
+          - start: 33140
+          - start: 33148
+          - start: 33156
+          - start: 33164
+          - start: 33172
+          - start: 33180
+          - start: 33188
+          - start: 33196
+          - start: 33204
+          - start: 33212
+          - start: 33220
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Real beam-160 futures on untouched v7-selected physical opening hands
+        run: |
+          python -u dack_simulator/validation/generate_selected_london_labels_v10.py \
+            --split evaluation --start ${{ matrix.start }} \
+            --games 8 --draws 4 \
+            --out datasets/holdout_v10_${{ matrix.start }}.jsonl.gz
+      - name: Audit no future peek and distinct 8x4 outer game IDs
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from collections import Counter
+          import gzip,json
+          fs=list(Path('datasets').glob('holdout_v10_*.jsonl.gz'))
+          assert len(fs)==1
+          with gzip.open(fs[0],'rt') as f:
+              meta=json.loads(next(f));r=[json.loads(x) for x in f]
+          assert meta['split']=='evaluation'
+          assert meta['sampling_protocol']=='DACK-SELECTED-LONDON-V10'
+          assert len(r)==32 and len(set(x['game_id'] for x in r))==8
+          assert sorted(Counter(x['game_id'] for x in r).values())==[4]*8
+          assert all(x['selection_stratum']=='v7_policy_kept_natural' for x in r)
+          assert all(not any(k in x for k in ('first3','hidden_order','sampled_order','actual_library')) for x in r)
+          print('INDEPENDENT_HOLDOUT_SHARD_PASS',fs[0].name,
+                dict(Counter(x['label_turn'] for x in r)),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v10-independent-test-${{ matrix.start }}
+          path: datasets/holdout_v10_*.jsonl.gz
+          retention-days: 14
+  evaluate_and_archive:
+    needs: collect
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v10-independent-test-*
+          merge-multiple: true
+          path: datasets/selected_v10_independent_holdout_20261031/
+      - name: Frozen model, held-out grouped Brier, log-loss and calibration
+        run: |
+          python -u dack_simulator/validation/evaluate_v10_model_holdout.py \
+            --model models/dack_v10_selected_calibration_EXPERIMENTAL.json \
+            --evaluation datasets/selected_v10_independent_holdout_20261031/holdout_v10_*.jsonl.gz \
+            --out benchmark_results/dack_v10_independent_predictive_holdout.json
+      - name: Verify independent IDs and permanently archive checksum manifest
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from collections import Counter
+          import gzip,json,hashlib
+          root=Path('datasets/selected_v10_independent_holdout_20261031')
+          paths=sorted(root.glob('holdout_v10_*.jsonl.gz'))
+          assert len(paths)==16,len(paths)
+          ids=Counter();cls=Counter()
+          files=[]
+          for path in paths:
+              with gzip.open(path,'rt') as f:
+                  header=json.loads(next(f))
+                  assert header['split']=='evaluation'
+                  for line in f:
+                      x=json.loads(line)
+                      ids[x['game_id']]+=1
+                      cls[x['label_turn']]+=1
+              files.append({'name':path.name,'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'bytes':path.stat().st_size})
+          assert set(ids)==set(range(33100,33228))
+          assert set(ids.values())=={4}
+          m={'schema':'dack_v10_sealed_predictive_holdout_archive',
+             'n_independent_scenarios':128,'real_rollouts':512,
+             'game_id_range':[33100,33227],
+             'train_overlap':False,'calibration_overlap':False,
+             'not_learned_policy_win_rate':True,
+             'model_file_sha256':hashlib.sha256(Path('models/dack_v10_selected_calibration_EXPERIMENTAL.json').read_bytes()).hexdigest(),
+             'counts':{str(k):cls[k] for k in range(4)},'files':files}
+          (root/'manifest.json').write_text(json.dumps(m,indent=2,sort_keys=True)+'\n')
+          print('V10_PREDICTIVE_HOLDOUT_ARCHIVED',json.dumps(m),flush=True)
+          PY
+      - name: Commit sealed holdout and diagnostic report on isolated branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f datasets/selected_v10_independent_holdout_20261031 benchmark_results/dack_v10_independent_predictive_holdout.json
+          git commit -m "Archive untouched 128-scenario predictive holdout and grouped probability metrics"
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v10-independent-predictive-holdout-metrics
+          path: benchmark_results/dack_v10_independent_predictive_holdout.json
+          retention-days: 14
