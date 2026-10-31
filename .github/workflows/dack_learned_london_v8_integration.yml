@@ -83,5 +83,5 @@ jobs:
         run: |
           python dack_paired_counterfactual_v8_learned_london_20261031.py \
             --model models/synthetic_only_dack_london_v8.json \
-            --continuations-dir models --audit
+            --continuations-dir models --audit --diagnostic-audit-only
           echo 'SYNTHETIC_PIPELINE_ONLY: does not demonstrate real deployment performance'
