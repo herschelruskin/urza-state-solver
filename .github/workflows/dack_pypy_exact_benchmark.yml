@@ -1,0 +1,43 @@
+name: DACK exact engine CPU interpreter comparison
+
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_pypy_exact_benchmark.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.11', 'pypy3.10']
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Verify exact strict-key bounded mulligan on seed 1 and report CPU
+        run: |
+          python - <<'PY'
+          import json,time,platform
+          import dack_paired_counterfactual_v3_bounded_20261031 as v3
+          v3.audit()
+          start=time.perf_counter()
+          row=v3.reference.game("one_key_34",1)
+          report={"interpreter":platform.python_implementation(),
+                  "version":platform.python_version(),
+                  "elapsed_seconds":round(time.perf_counter()-start,4),
+                  "seed":1,"seat":row["seat"],"keep_n":row["keep_n"],
+                  "hand":row["hand"],"first3":row["first3"],
+                  "win_turn":row["win_turn"],
+                  "mulligan_history":row["history"]}
+          assert row["win_turn"]==2 and row["keep_n"]==6
+          print("DACK_JIT_EXACT_COMPARISON",json.dumps(report,sort_keys=True),flush=True)
+          PY
