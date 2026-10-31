@@ -102,6 +102,8 @@ def audit():
         assert land_count == (34 if name == SPEC["control"] else 35), (name,land_count)
     return {
         "status": "PASS", "rules_version": RULES_VERSION, "variants": list(VARIANTS),
+        "mulligan_policy": MULLIGAN_POLICY_NAME,
+        "mulligan_sampler": MULLIGAN_SAMPLER_NAME,
         "manifest_sha256": source_sha(MANIFEST_PATH),
         "spec_sha256": source_sha(SPEC_PATH),
         "paired_outer_slots": True,
