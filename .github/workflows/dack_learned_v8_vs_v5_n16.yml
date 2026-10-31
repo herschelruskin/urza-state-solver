@@ -1,0 +1,101 @@
+name: DACK research-only learned London versus v5 paired N16
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_learned_v8_vs_v5_n16.yml'
+      - 'dack_simulator/validation/compare_learned_v8_vs_v5_experimental.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pairs:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - start: 41000
+          - start: 41002
+          - start: 41004
+          - start: 41006
+          - start: 41008
+          - start: 41010
+          - start: 41012
+          - start: 41014
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Paired full-game seeded v5 versus unapproved experimental learned policy
+        run: |
+          python -u dack_simulator/validation/compare_learned_v8_vs_v5_experimental.py \
+            --start ${{ matrix.start }} --games 2 \
+            --out shards/research_pair_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: research-pairs-${{ matrix.start }}
+          path: shards/research_pair_*.json.gz
+          retention-days: 14
+  pool:
+    needs: pairs
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: research-pairs-*
+          merge-multiple: true
+          path: paired/
+      - name: Strictly paired 16-seed T1 T2 T3 and runtime report
+        run: |
+          python - <<'PY'
+          import gzip,glob,json,math
+          from pathlib import Path
+          files=sorted(glob.glob('paired/research_pair_*.json.gz'))
+          assert len(files)==8
+          rows=[]
+          for f in files:
+              with gzip.open(f,'rt') as h:r=json.load(h)
+              assert r['policy_model_still_unapproved'] is True
+              assert r['actual_gameplay_beam']==160
+              rows.extend(r['rows'])
+          rows.sort(key=lambda r:r['game_id'])
+          assert [r['game_id'] for r in rows]==list(range(41000,41016))
+          def stats(name):
+              v=[r[name] for r in rows]
+              return {'n':16,
+                      'turn_1':sum(x['win_turn']==1 for x in v),
+                      'by_turn_2':sum(0<x['win_turn']<=2 for x in v),
+                      'by_turn_3':sum(0<x['win_turn']<=3 for x in v),
+                      'mean_keep':sum(x['keep_n'] for x in v)/16,
+                      'total_seconds':round(sum(x['seconds'] for x in v),3)}
+          a,b=stats('v5'),stats('learned')
+          ds=[int(0<r['learned']['win_turn']<=2)-int(0<r['v5']['win_turn']<=2) for r in rows]
+          m=sum(ds)/16
+          se=(sum((x-m)**2 for x in ds)/(16*15))**.5
+          report={'schema':'dack_v5_learned_experimental_paired_n16',
+                  'model_approved':False,'status':'PASS',
+                  'game_ids':[41000,41015],
+                  'v5':a,'learned_experimental':b,
+                  'observed_speedup':a['total_seconds']/max(.01,b['total_seconds']),
+                  'learned_T2_gains':ds.count(1),'learned_T2_losses':ds.count(-1),
+                  'learned_T2_delta_pp':100*m,
+                  'exploratory_95_ci_delta_pp':[100*(m-1.96*se),100*(m+1.96*se)],
+                  'warning':'N16 is a software and policy failure-mode screen, not evidence of learned-policy noninferiority'}
+          Path('benchmark_results').mkdir(exist_ok=True)
+          Path('benchmark_results/learned_vs_v5_n16_RESEARCH_ONLY.json').write_text(json.dumps(report,indent=2)+'\n')
+          print('RESEARCH_ONLY_LEARNED_VS_V5_N16',json.dumps(report),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: research-only-learned-vs-v5-n16
+          path: benchmark_results/learned_vs_v5_n16_RESEARCH_ONLY.json
+          retention-days: 14
