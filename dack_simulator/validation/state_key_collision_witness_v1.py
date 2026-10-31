@@ -6,7 +6,10 @@ produce concrete witnesses rather than quietly assuming the key is exact.
 """
 from __future__ import annotations
 from dataclasses import replace
+from pathlib import Path
 import json
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 import dack_counterfactual_rules_v1_20261030 as patched
 
