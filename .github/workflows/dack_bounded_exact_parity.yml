@@ -1,0 +1,52 @@
+name: DACK exact bounded London optimizer parity
+
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_bounded_exact_parity.yml'
+      - 'dack_mulligan_branchbound_v1_20261031.py'
+      - 'dack_simulator/validation/test_bounded_mulligan_v1.py'
+      - 'dack_simulator/validation/benchmark_bounded_exact_parity_v1.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile optimizer and test
+        run: python -m compileall -q dack_mulligan_branchbound_v1_20261031.py dack_simulator/validation/test_bounded_mulligan_v1.py dack_simulator/validation/benchmark_bounded_exact_parity_v1.py
+      - name: Unit parity across 15 complete London sample cases
+        run: python -m unittest discover -s dack_simulator/validation -p test_bounded_mulligan_v1.py -v
+
+  benchmark:
+    needs: unit
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - game_id: 0
+            variant: one_key_34
+          - game_id: 1
+            variant: one_key_34
+          - game_id: 0
+            variant: everflow_plains_35
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compare exact mulligan hand, bottom, decisions, and win turn
+        run: |
+          python -u dack_simulator/validation/benchmark_bounded_exact_parity_v1.py \
+            --game-id ${{ matrix.game_id }} --variant ${{ matrix.variant }}
