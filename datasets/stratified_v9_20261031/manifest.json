@@ -1,0 +1,163 @@
+{
+  "calibration_distribution_representative": false,
+  "files": [
+    {
+      "bytes": 2309,
+      "path": "v9_train_20200.jsonl.gz",
+      "sha256": "87a54b2b45023ed8c554ddb57ebaa9993c2bd18073207a9eca201dcd2740dc48",
+      "split": "train"
+    },
+    {
+      "bytes": 2501,
+      "path": "v9_train_20204.jsonl.gz",
+      "sha256": "b7958cf7cf75a31d41a39487b3e8a3641691e111b556fd82f03c3758ed1428a1",
+      "split": "train"
+    },
+    {
+      "bytes": 2452,
+      "path": "v9_train_20208.jsonl.gz",
+      "sha256": "94537fbdb9f88467010b81a840296a10a6a5ed2291a01e831149f2df41509995",
+      "split": "train"
+    },
+    {
+      "bytes": 2441,
+      "path": "v9_train_20212.jsonl.gz",
+      "sha256": "1012c3af7fff651c1aa70f8ad1ae72269e25cd8465ea909da244dae7d69e1f7d",
+      "split": "train"
+    },
+    {
+      "bytes": 2438,
+      "path": "v9_train_20216.jsonl.gz",
+      "sha256": "d08098f5fa79064853d3f6a4593d19334a7c4d5645d9fcd58916ff608fdaaebb",
+      "split": "train"
+    },
+    {
+      "bytes": 2447,
+      "path": "v9_train_20220.jsonl.gz",
+      "sha256": "47bf81053a81ab32f572a7e5bcf5fff678ca04706451bc07c7469a6b2b60f5bb",
+      "split": "train"
+    },
+    {
+      "bytes": 2330,
+      "path": "v9_train_20224.jsonl.gz",
+      "sha256": "fbcf200ea57ae2ef2f7d439e68386c5a4016d92127cf72e8677b946b3aa687ec",
+      "split": "train"
+    },
+    {
+      "bytes": 2535,
+      "path": "v9_train_20228.jsonl.gz",
+      "sha256": "be2b802e71e3ea1a7f7ea0e6b7d6c595f0e564533c6cbe8cf2b28ce6057a3302",
+      "split": "train"
+    },
+    {
+      "bytes": 2321,
+      "path": "v9_calibration_30200.jsonl.gz",
+      "sha256": "48fe01856879ec2e5503d5f8666813a06fa0fa106db55af4197a7d925b34847c",
+      "split": "calibration"
+    },
+    {
+      "bytes": 2552,
+      "path": "v9_calibration_30204.jsonl.gz",
+      "sha256": "dc31ea58c9ce8560226f2f42d002f9017ad36010d869cd0d58396c64ebf71356",
+      "split": "calibration"
+    },
+    {
+      "bytes": 2426,
+      "path": "v9_calibration_30208.jsonl.gz",
+      "sha256": "5f2d8dd67e9c02bddea61edd2553354a579169b63acd34d6649ce26ae95cbc81",
+      "split": "calibration"
+    },
+    {
+      "bytes": 2455,
+      "path": "v9_calibration_30212.jsonl.gz",
+      "sha256": "487b54b493ad96a47874df75c4da9b0742593ecb89cbd6ad8b19ca45a8fc9207",
+      "split": "calibration"
+    },
+    {
+      "bytes": 2429,
+      "path": "v9_calibration_30216.jsonl.gz",
+      "sha256": "d796954ff9e801a25c7d3b6a0c670276a178155959be0104425d9b0d313f0b33",
+      "split": "calibration"
+    },
+    {
+      "bytes": 2441,
+      "path": "v9_calibration_30220.jsonl.gz",
+      "sha256": "01ace00d3f400df6e7b126f1c4f9603df71515e04c41cfa7f5da8b90db9b2012",
+      "split": "calibration"
+    },
+    {
+      "bytes": 2327,
+      "path": "v9_calibration_30224.jsonl.gz",
+      "sha256": "149442ad851886a8b8c8d811076943f8ba98fc04847a93054390bd5f6b4073bc",
+      "split": "calibration"
+    },
+    {
+      "bytes": 2513,
+      "path": "v9_calibration_30228.jsonl.gz",
+      "sha256": "6f729977390b4fe1a992d1b845f54112735565d087ecde0590fa5e4f8204c72e",
+      "split": "calibration"
+    }
+  ],
+  "sampling_protocol": "DACK-OFFLINE-STRATIFIED-V9",
+  "schema": "dack_stratified_real_corpus_archive_v9",
+  "selection_strata_are_recorded": true,
+  "source_actions_run": 41253501291,
+  "source_manifest_sha256": "174448e8336125fd3cb933647a89819605453ade4084ed36ed77db2649027f7d",
+  "splits": {
+    "calibration": {
+      "classes": {
+        "0": 63,
+        "1": 68,
+        "2": 15,
+        "3": 14
+      },
+      "game_id_max": 30231,
+      "game_id_min": 30200,
+      "independent_scenarios": 32,
+      "labels": 160,
+      "stratum_label_counts": {
+        "gemstone_led_ring_white": 8,
+        "led_grim_tomb_white": 8,
+        "led_mox_tomb_white": 8,
+        "led_ring_city_white": 8,
+        "led_ring_tomb_white": 8,
+        "led_ring_vault_key": 8,
+        "led_vault_city_white": 8,
+        "led_vault_ring_white": 8,
+        "led_vault_tomb_key": 8,
+        "led_vault_tomb_white": 4,
+        "natural": 76,
+        "vault_ring_tomb_white": 4,
+        "zero_rock_suite": 4
+      }
+    },
+    "train": {
+      "classes": {
+        "0": 56,
+        "1": 77,
+        "2": 11,
+        "3": 16
+      },
+      "game_id_max": 20231,
+      "game_id_min": 20200,
+      "independent_scenarios": 32,
+      "labels": 160,
+      "stratum_label_counts": {
+        "gemstone_led_ring_white": 8,
+        "led_grim_tomb_white": 8,
+        "led_mox_tomb_white": 8,
+        "led_ring_city_white": 8,
+        "led_ring_tomb_white": 8,
+        "led_ring_vault_key": 8,
+        "led_vault_city_white": 8,
+        "led_vault_ring_white": 8,
+        "led_vault_tomb_key": 8,
+        "led_vault_tomb_white": 4,
+        "natural": 76,
+        "vault_ring_tomb_white": 4,
+        "zero_rock_suite": 4
+      }
+    }
+  },
+  "trained_model_approved": false
+}
