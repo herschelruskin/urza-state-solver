@@ -1,0 +1,106 @@
+name: DACK v5 beam versus v7 no-beam London matched holdout N16
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v5_v7_policy_holdout_n16.yml'
+      - 'dack_paired_counterfactual_v7_calibrated_nobeam_20261031.py'
+      - 'dack_simulator/validation/compare_v5_v7_policy_only.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          python -m compileall -q dack_paired_counterfactual_v7_calibrated_nobeam_20261031.py dack_simulator/validation/compare_v5_v7_policy_only.py
+          python dack_paired_counterfactual_v7_calibrated_nobeam_20261031.py --audit
+          python -m unittest discover -s dack_simulator/validation -p test_no_beam_london_v6.py -v
+  shard:
+    needs: audit
+    strategy:
+      fail-fast: false
+      matrix:
+        start: [12000,12002,12004,12006,12008,12010,12012,12014]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Same exact shuffled physical slots and realized draws, distinct London policies
+        run: |
+          python -u dack_simulator/validation/compare_v5_v7_policy_only.py \
+            --start ${{ matrix.start }} --games 2 \
+            --out shards/policy_holdout_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: policy-compare-seeds-${{ matrix.start }}
+          path: shards/
+          retention-days: 10
+  pool:
+    needs: shard
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: policy-compare-seeds-*
+          merge-multiple: true
+          path: paired/
+      - name: Aggregate 16 distinct game seeds and paired within-seed outcomes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import gzip,json,math
+          fs=sorted(Path('paired').glob('*.json.gz'))
+          assert len(fs)==8,fs
+          rows=[]
+          for f in fs:
+              with gzip.open(f,'rt') as h:report=json.load(h)
+              assert report['n']==2 and report['training_seeds_disjoint']
+              rows.extend(report['rows'])
+          rows.sort(key=lambda x:x['game_id'])
+          assert [r['game_id'] for r in rows]==list(range(12000,12016))
+          a='beam_mulligan_v5';b='analytic_mulligan_v7';summ={}
+          for name in (a,b):
+              v=[r['variants'][name] for r in rows]
+              summ[name]={'n':len(v),
+                  'T1':sum(x['win_turn']==1 for x in v),
+                  'T2':sum(0<x['win_turn']<=2 for x in v),
+                  'T3':sum(0<x['win_turn']<=3 for x in v),
+                  'mean_keep':sum(x['keep_n'] for x in v)/len(v),
+                  'total_seconds':round(sum(x['seconds'] for x in v),3)}
+          diffs=[int(0<r['variants'][b]['win_turn']<=2)-
+                 int(0<r['variants'][a]['win_turn']<=2) for r in rows]
+          delta=sum(diffs)/len(diffs)
+          se=(sum((d-delta)**2 for d in diffs)/(len(diffs)*(len(diffs)-1)))**.5
+          result={'status':'PASS','schema':'paired_policy_holdout_n16',
+              'training_seed_range':[10000,10511],'holdout_seed_range':[12000,12015],
+              'summary':summ,
+              'v7_minus_v5_T2_pct_points':100*delta,
+              'paired_95ci_pp':[100*(delta-1.96*se),100*(delta+1.96*se)],
+              'gains':diffs.count(1),'losses':diffs.count(-1),
+              'warning':'N16 diagnostic only, proxy uncalibrated; do not choose policy from this alone'}
+          out=Path('benchmark_results/no_beam_policy_v7_heldout16.json')
+          out.parent.mkdir(exist_ok=True)
+          out.write_text(json.dumps(result,indent=2)+'\n')
+          print('V5_V7_HOLDOUT_N16_PASS',json.dumps(result),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: policy-v5-v7-paired-n16-report
+          path: benchmark_results/no_beam_policy_v7_heldout16.json
+          retention-days: 10
