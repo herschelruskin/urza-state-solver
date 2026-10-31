@@ -1,0 +1,64 @@
+name: DACK learned-London v8 offline dataset and model contract smoke
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_offline_learning_v8_smoke.yml'
+      - 'dack_simulator/validation/test_offline_learning_v8.py'
+      - 'dack_simulator/validation/generate_offline_london_labels_v8.py'
+      - 'dack_mulligan_learned_features_v8_20261031.py'
+      - 'dack_simulator/validation/train_offline_london_v8.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile dataset producer, runtime probability model and trainer
+        run: |
+          python -m compileall -q dack_simulator/validation/generate_offline_london_labels_v8.py dack_mulligan_learned_features_v8_20261031.py dack_simulator/validation/train_offline_london_v8.py
+          python dack_mulligan_learned_features_v8_20261031.py
+          python -m unittest discover -s dack_simulator/validation -p test_offline_learning_v8.py -v
+  smoke_data:
+    needs: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Generate four independent actual beam-160 labels on training seed 20000
+        run: |
+          python -u dack_simulator/validation/generate_offline_london_labels_v8.py \
+            --split train --start 20000 --games 1 --candidates 2 --draws 2 \
+            --out datasets/offline_london_v8_smoke_20000.jsonl.gz
+      - name: Validate no hidden library order leaked into training examples
+        run: |
+          python - <<'PY'
+          import gzip,json
+          p='datasets/offline_london_v8_smoke_20000.jsonl.gz'
+          with gzip.open(p,'rt') as f:lines=[json.loads(s) for s in f]
+          meta=lines[0];rows=lines[1:]
+          assert meta['type']=='metadata' and meta['split']=='train'
+          assert len(rows)>=2
+          for x in rows:
+              assert x['game_id']==20000
+              assert x['label_turn'] in (0,1,2,3)
+              assert len(x['hand'])+len(x['bottom'])==7
+              assert sum(x['unknown_counts'].values())==92
+              assert not any(k in x for k in ('actual_library','first3','hidden_order'))
+          print('OFFLINE_REAL_LABEL_SCHEMA_PASS',len(rows),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-offline-v8-one-scenario-real-labels
+          path: datasets/offline_london_v8_smoke_20000.jsonl.gz
+          retention-days: 7
