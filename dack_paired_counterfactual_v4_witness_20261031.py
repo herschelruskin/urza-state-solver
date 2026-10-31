@@ -54,8 +54,5 @@ if __name__=="__main__":
     if x.audit:
         print(json.dumps({"status":"PASS","rules_version":RULES_VERSION,
                           "mulligan_witness_scope":True},indent=2))
-    elif x.single_variant:
-        print(json.dumps(reference.game(x.single_variant,x.start),indent=2))
     else:
-        reference.run(x.start,x.games,x.out,x.store)
-        print("TERMINAL_WITNESS_STATS",json.dumps(dict(witness.counters)),flush=True)
+        raise RuntimeError("v4 DEPRECATED: early-return search changes historical dice because library tokens are visit-ordered. Use v5 with stateless dice or strict bounded v3.")
