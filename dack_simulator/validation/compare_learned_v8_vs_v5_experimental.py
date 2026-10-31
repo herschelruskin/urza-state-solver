@@ -64,7 +64,8 @@ def main(start,games,output,variant="one_key_34"):
         ref=evaluate("v5",gid,variant)
         candidate=evaluate("learned_experimental",gid,variant)
         assert ref["seat"]==candidate["seat"]
-        assert ref["first3"]==candidate["first3"],"physical future mismatch"
+        # Same physical game ID yields the same seat and per-stage permutations.
+        # Different keep stages can legitimately draw different first3.
         rows.append({"game_id":gid,"v5":ref,"learned":candidate})
         print("LEARNED_EXPERIMENTAL_PAIR",gid,
               {"v5":(ref["keep_n"],ref["win_turn"],ref["seconds"]),
@@ -86,7 +87,8 @@ def main(start,games,output,variant="one_key_34"):
         "variant":variant,"policy_model_still_unapproved":True,
         "no_mulligan_beam_in_learned_policy":True,
         "actual_gameplay_beam":160,
-        "physical_slot_and_future_paired":True,
+        "physical_shuffle_seed_and_per_stage_slot_order_paired":True,
+        "realized_draws_can_differ_if_mulligan_stage_differs":True,
         "metrics":{"v5":measures("v5"),"learned":measures("learned")},
         "learned_T2_gains":discord.count(1),
         "learned_T2_losses":discord.count(-1),
