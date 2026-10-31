@@ -188,7 +188,7 @@ jobs:
           with open(os.environ['GITHUB_OUTPUT'],'a') as out:
               out.write('ready='+('true' if ready else 'false')+'\n')
           print('V11_CORRECTIVE_CORPUS_AUDIT_PASS',json.dumps({
-              'ready':ready,'splits':manifest['splits']},flush=True)
+              'ready':ready,'splits':manifest['splits']}),flush=True)
           PY
       - name: Install training-only scikit-learn
         if: steps.audit.outputs.ready == 'true'
