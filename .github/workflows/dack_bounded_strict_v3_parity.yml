@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/dack_bounded_strict_v3_parity.yml'
       - 'dack_paired_counterfactual_v3_bounded_20261031.py'
+      - 'dack_mulligan_branchbound_v1_20261031.py'
       - 'dack_simulator/validation/benchmark_strict_bounded_parity_v3.py'
   workflow_dispatch:
 
