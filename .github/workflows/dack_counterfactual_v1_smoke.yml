@@ -6,6 +6,7 @@ on:
       - dack-counterfactual-engine-v1-20261030
     paths:
       - 'dack_counterfactual_rules_v1_20261030.py'
+      - 'dack_counterfactual_rules_v2_strict_key_20261030.py'
       - 'dack_paired_counterfactual_v1_20261030.py'
       - 'pool_dack_paired_counterfactual_v1_20261030.py'
       - 'dack_simulator/configs/physical99_20261030.json'
@@ -13,6 +14,7 @@ on:
       - 'dack_simulator/validation/audit_physical99_20261030.py'
       - 'dack_simulator/validation/test_paired_v1.py'
       - 'dack_simulator/validation/test_pool_v1.py'
+      - 'dack_simulator/validation/state_key_collision_witness_v1.py'
       - '.github/workflows/dack_counterfactual_v1_smoke.yml'
   workflow_dispatch:
     inputs:
@@ -36,11 +38,15 @@ jobs:
           python-version: '3.11'
       - name: Compile isolated code and tests
         run: |
-          python -m compileall -q dack_counterfactual_rules_v1_20261030.py dack_paired_counterfactual_v1_20261030.py pool_dack_paired_counterfactual_v1_20261030.py dack_simulator/validation/audit_physical99_20261030.py dack_simulator/validation/test_paired_v1.py dack_simulator/validation/test_pool_v1.py
+          python -m compileall -q dack_counterfactual_rules_v1_20261030.py dack_counterfactual_rules_v2_strict_key_20261030.py dack_paired_counterfactual_v1_20261030.py pool_dack_paired_counterfactual_v1_20261030.py dack_simulator/validation/audit_physical99_20261030.py dack_simulator/validation/test_paired_v1.py dack_simulator/validation/test_pool_v1.py
       - name: Freeze and validate the physical 99
         run: python dack_simulator/validation/audit_physical99_20261030.py
       - name: Test Treasure Vault and Staff semantics
         run: python dack_counterfactual_rules_v1_20261030.py
+      - name: Demonstrate the inherited collision risk
+        run: python dack_simulator/validation/state_key_collision_witness_v1.py
+      - name: Test opt-in strict state key v2
+        run: python dack_counterfactual_rules_v2_strict_key_20261030.py
       - name: Audit paired deck variants and policy
         run: python dack_paired_counterfactual_v1_20261030.py --audit
       - name: Run deterministic lightweight unit tests
