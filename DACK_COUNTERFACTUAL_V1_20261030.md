@@ -273,3 +273,68 @@ mulligan EV; its unknown-library presence matters. Reusing outcomes
 across deck variants requires actual line-dependency proof. These
 probabilities still describe the current **bounded, optimistic goldfish
 Dack-cast model** rather than validated four-player win probabilities.
+
+## 2026-10-31: experimental probabilistic, zero-beam London policies
+
+This is a **change to the decision policy**, not an exact runtime
+optimization of the previous beam-based policy. It is possible to estimate
+the physical deck's conditional T1/T2/T3 goldfish performance with Monte
+Carlo while never running a beam during mulligans: the outer shuffled deck
+and real kept-hand gameplay are still the source of the measured outcome.
+
+- dack_mulligan_analytic_policy_v6_20261031.py — a fast, explanatory,
+  deliberately *uncalibrated* proxy based on exact hypergeometric
+  probabilities of drawing land/white sources, approximate mana/synergy
+  values, mandatory combo-piece constraints and exhaustive London bottom
+  choices (at most 35 choices). It reads only the seven visible cards,
+  seat and unseen deck multiset, never the actual order of future draws.
+- dack_paired_counterfactual_v6_no_beam_mulligan_20261031.py — optional
+  runner. Game search remains strict-key, stable-dice, beam 160.
+- dack_simulator/validation/test_no_beam_london_v6.py — confirms zero
+  mulligan beam invocations, no unseen draw-order leakage and exact
+  hypergeometric arithmetic. CI 41245057917 PASSED.
+- Initial N4 nine-arm pilot: 0.105–2.695 seconds per nine-arm seed,
+  but the original cutoffs were too conservative; seed 4 and seed 5
+  mulliganed all nine arms to one card with no winning outcomes. This is
+  a **failed policy-calibration experiment** despite remarkable speed,
+  not evidence that its win rate is adequate.
+- dack_simulator/validation/calibrate_no_beam_london_v6.py — choose a
+  multiplicative keep-cutoff scale based ONLY on the prior historical
+  reference mean keep size 5.125, measured on separate 512 training
+  game IDs 10000–10511. It did not train on actual Dack deployment
+  outcomes. CI 41245257582 PASSED, selected scale 0.6090461744461209
+  and mean keep 5.12890625 in training.
+- dack_paired_counterfactual_v7_calibrated_nobeam_20261031.py —
+  FREEZES the training-derived cutoffs (7=.3349754, 6=.29843263,
+  5=.24361847, 4=.18271385, 3=.11571877, 2=.06090462).
+  Separate rules_version and policy identity are included in the
+  experiment metadata and SQLite policy record.
+- dack_simulator/validation/compare_v5_v7_policy_only.py —
+  independent Python process per policy and seed to avoid monkeypatch
+  leakage, same physical deck/outer shuffle/seat/chance rules/beam-160
+  actual gameplay. Holds out IDs 12000–12015 completely separate from
+  the 512 training games. Workflow:
+  .github/workflows/dack_v5_v7_policy_holdout_n16.yml.
+
+**Critical probability interpretation:** The simple land and white-out
+hypergeometric terms are exact under their stated draws-without-
+replacement definitions. The joint proxy_utility, proxy_t2_index
+and proxy_t3_index values are NOT calibrated Dack deployment
+probabilities; their mana coefficients are engineering heuristics.
+Consequently, the policy can be unrealistic and perform badly
+despite needing no beam. Report actual held-out cast-by-T1/T2/T3
+frequencies, keep-size distribution, and paired uncertainty for each
+candidate policy. N=16 is for debugging only, never a statistical
+policy-selection holdout.
+
+To improve the proxy scientifically, learn and calibrate conditional
+P(T1), P(T2), P(T3) from *independently generated*, realistic rollout
+outcomes using inexpensive visible-state features. Then validate
+Brier/reliability, full-deck counterfactual stability, and paired
+actual-beam goldfish win rates on disjoint seeds. Use new continuation
+thresholds calibrated for that proxy, never the historical beam
+continuation values as though they were probabilities.
+
+Outer Monte Carlo still measures the specified policy's bounded
+goldfish **Dack deployment** rate, NOT actual four-player cEDH win
+probability, regardless of mulligan model.
