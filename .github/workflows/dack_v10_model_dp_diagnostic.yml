@@ -4,6 +4,7 @@ on:
     branches: [dack-counterfactual-engine-v1-20261030]
     paths:
       - '.github/workflows/dack_v10_model_dp_diagnostic.yml'
+      - 'dack_simulator/validation/derive_learned_london_dp_v8.py'
   workflow_dispatch:
 permissions:
   contents: write
