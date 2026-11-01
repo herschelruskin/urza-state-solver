@@ -1,0 +1,137 @@
+name: DACK v24 pooled N256 and four-policy N64 cross-workflow reproducibility audit
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v24_pooled_physical_256_and_v5_64.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  pool:
+    runs-on: ubuntu-latest
+    timeout-minutes: 11
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Join independent 87k and 88k full-game goldfish artifacts; verify repeated physical games agree across workflows
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import gzip,glob,json,math,random
+          a=glob.glob('benchmark_results/v22_student_value_DP_n128_shards/*.json.gz')
+          b=glob.glob('benchmark_results/v23_T2_only_n128_shards/*.json.gz')
+          c=glob.glob('benchmark_results/v22_88k_v5_paired_shards/*.json.gz')
+          assert len(a)==16 and len(b)==16 and len(c)==32,(len(a),len(b),len(c))
+          def get(paths):
+              out=[]
+              for f in paths:
+                  with gzip.open(f,'rt') as file:d=json.load(file)
+                  assert d['status']=='PASS'
+                  out.extend(d['rows'])
+              out.sort(key=lambda r:r['game_id'])
+              assert len(set(r['game_id'] for r in out))==len(out)
+              return out
+          old=get(a);new=get(b);v5=get(c)
+          assert [r['game_id'] for r in old]==list(range(87000,87128))
+          assert [r['game_id'] for r in new]==list(range(88000,88128))
+          assert [r['game_id'] for r in v5]==list(range(88000,88064))
+          mapnew={r['game_id']:r for r in new}
+          audit={'n_paired_replayed_games':64,'v14_identical':0,'v22_identical':0}
+          for row in v5:
+              other=mapnew[row['game_id']]
+              for oldname,newname,tag in [
+                  ('v14_128','v14_128','v14_identical'),
+                  ('v22_real_keep_DP','v22_U_half_T3','v22_identical')]:
+                  left=row[oldname];right=other[newname]
+                  if (left['turn'],left['keep_n'],left['seat'])!=(
+                      right['turn'],right['keep_n'],right['seat']):
+                      raise AssertionError(('REALIZED_SEED_REPLAY_MISMATCH',
+                            row['game_id'],oldname,left['turn'],right['turn']))
+                  audit[tag]+=1
+          def metric(records,key):
+              o=[r[key] for r in records]
+              n=len(o)
+              return {'n':n,
+                      'T1':sum(z['turn']==1 for z in o),
+                      'T2':sum(z['turn'] in (1,2) for z in o),
+                      'T3':sum(z['turn'] in (1,2,3) for z in o),
+                      'mean_keep':sum(z['keep_n'] for z in o)/n,
+                      'CPU_seconds':round(sum(z['seconds'] for z in o),4)}
+          def differences(rows,key_a,key_b):
+              n=len(rows)
+              output={}
+              for threshold in (1,2,3):
+                  d=[int(0<r[key_a]['turn']<=threshold)-
+                     int(0<r[key_b]['turn']<=threshold) for r in rows]
+                  avg=sum(d)/n
+                  rng=random.Random(24000+n+threshold)
+                  sims=sorted(sum(d[rng.randrange(n)] for _ in range(n))/n
+                              for _ in range(4000))
+                  output['T'+str(threshold)]={
+                      'gain_games':d.count(1),'loss_games':d.count(-1),
+                      'difference_pp':100*avg,
+                      'paired_bootstrap_95ci_pp':[100*sims[100],100*sims[3899]]}
+              return output
+          first=[{'game_id':r['game_id'],
+                  'v14':r['v14_128'],'v22':r['v22_real_keep_DP']} for r in old]
+          second=[{'game_id':r['game_id'],
+                   'v14':r['v14_128'],'v22':r['v22_U_half_T3']} for r in new]
+          pooled=first+second
+          assert len(pooled)==256 and len({r['game_id'] for r in pooled})==256
+          comp={
+             'schema':'dack_v24_pooled_v22_vs_v14_256_physical_games',
+             'status':'PASS',
+             'independent_paired_physical_games':256,
+             'physical_seed_bands':[[87000,87127],[88000,88127]],
+             'v14':metric(pooled,'v14'),'v22':metric(pooled,'v22'),
+             'paired_v22_minus_v14':differences(pooled,'v22','v14'),
+             'provenance_runs':[41261927266,41262335296],
+             'all_models_unapproved':True,
+             'warning':'The 88k second band overlaps the separate v5 benchmark by design; no game is double-counted within pooled N256. Goldfish deployment not multiplayer win rate.'
+          }
+          fours=[]
+          for row in v5:
+              other=mapnew[row['game_id']]
+              fours.append({'game_id':row['game_id'],'v5':row['v5'],
+                   'v14':row['v14_128'],'v22':row['v22_real_keep_DP'],
+                   'v23':other['v23_T2_only']})
+          four={
+             'schema':'dack_v24_full_v5_v14_v22_v23_64_same_physical_games',
+             'status':'PASS','physical_games':64,
+             'physical_seed_band':[88000,88063],
+             'repeated_student_policy_results_reproduced_exactly':audit,
+             'metrics':{k:metric(fours,k) for k in ('v5','v14','v22','v23')},
+             'pairwise_vs_v5':{k:differences(fours,k,'v5') for k in ('v14','v22','v23')},
+             'pairwise_v23_vs_v22':differences(fours,'v23','v22'),
+             'source_runs':[41262221020,41262335296],
+             'models_approved':False,
+             'warning':'N64 is not sufficient to establish equivalence and 88k games share seeds with another evaluation; comparison internally paired, no training leak.'
+          }
+          outdir=Path('benchmark_results');outdir.mkdir(exist_ok=True)
+          (outdir/'v24_pooled_v22_v14_N256.json').write_text(
+             json.dumps(comp,indent=2,sort_keys=True)+'\n')
+          (outdir/'v24_four_policy_vs_v5_N64.json').write_text(
+             json.dumps(four,indent=2,sort_keys=True)+'\n')
+          print('V24_POOLED_256_RESEARCH_PASS',json.dumps(comp,sort_keys=True),flush=True)
+          print('V24_FULL_V5_FOUR_WAY_64_RESEARCH_PASS',json.dumps(four,sort_keys=True),flush=True)
+          PY
+      - name: Save verified pooled and cross-workflow reproducibility findings only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v24_pooled_v22_v14_N256.json benchmark_results/v24_four_policy_vs_v5_N64.json
+          git commit -m "Archive grouped 256-game learned keep comparison and 64 exact-seed v5 four-way cross-workflow validation"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v24-goldfish-256-64-independent-analysis
+          path: |
+            benchmark_results/v24_pooled_v22_v14_N256.json
+            benchmark_results/v24_four_policy_vs_v5_N64.json
+          retention-days: 21
