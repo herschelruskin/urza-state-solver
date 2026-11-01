@@ -1,0 +1,144 @@
+name: DACK v23 true T2-only London continuation vs v22 and v14 fresh 128 games
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v23_T2_only_paired_N128_launch.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Exact model-linked DP and comparator syntax, no gameplay beams during student mulligans
+        run: |
+          python -m compileall -q dack_simulator/validation/compare_v23_T2_only_vs_v22_v14_N128.py
+          python dack_paired_counterfactual_v23_T2_only_keep_DP_20261101.py --audit
+  pairs:
+    needs: audit
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        include:
+          - start: 88000
+          - start: 88008
+          - start: 88016
+          - start: 88024
+          - start: 88032
+          - start: 88040
+          - start: 88048
+          - start: 88056
+          - start: 88064
+          - start: 88072
+          - start: 88080
+          - start: 88088
+          - start: 88096
+          - start: 88104
+          - start: 88112
+          - start: 88120
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Evaluate 8 independent new physical games under three frozen learned keep policies
+        run: |
+          python -u dack_simulator/validation/compare_v23_T2_only_vs_v22_v14_N128.py \
+            --start ${{ matrix.start }} --games 8 \
+            --out shards/v23_T2_pair_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v23-paired-physical-${{ matrix.start }}
+          path: shards/v23_T2_pair_*.json.gz
+          retention-days: 21
+  pool:
+    needs: pairs
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v23-paired-physical-*
+          merge-multiple: true
+          path: paired/
+      - name: Pool paired N128 T1 T2 T3 rates and uncertainties on distinct physical game IDs
+        run: |
+          python - <<'PY'
+          import gzip,glob,json,math
+          from pathlib import Path
+          files=glob.glob('paired/v23_T2_pair_*.json.gz')
+          assert len(files)==16
+          rows=[]
+          for path in files:
+              with gzip.open(path,'rt') as f:r=json.load(f)
+              assert r['status']=='PASS' and r['all_models_unapproved']
+              rows.extend(r['rows'])
+          rows.sort(key=lambda r:r['game_id'])
+          assert [r['game_id'] for r in rows]==list(range(88000,88128))
+          policies=['v14_128','v22_U_half_T3','v23_T2_only']
+          def metric(p):
+              a=[r[p] for r in rows]
+              return {'n':128,
+                      'T1':sum(x['turn']==1 for x in a),
+                      'T2':sum(x['turn'] in (1,2) for x in a),
+                      'T3':sum(x['turn'] in (1,2,3) for x in a),
+                      'mean_keep':sum(x['keep_n'] for x in a)/128,
+                      'seconds':round(sum(x['seconds'] for x in a),4)}
+          results={p:metric(p) for p in policies}
+          paired={}
+          for base in policies[:2]:
+              d=[int(r['v23_T2_only']['turn'] in (1,2))-
+                  int(r[base]['turn'] in (1,2)) for r in rows]
+              delta=sum(d)/128
+              se=(sum((x-delta)**2 for x in d)/(128*127))**.5
+              paired['v23_minus_'+base]={
+                  'T2_gain_games':d.count(1),'T2_loss_games':d.count(-1),
+                  'T2_diff_percentage_points':100*delta,
+                  'exploratory_normal_95ci_pp':[100*(delta-1.96*se),100*(delta+1.96*se)]}
+          changes={
+              base:sum(r['v23_T2_only']['keep_n']!=r[base]['keep_n'] for r in rows)
+              for base in policies[:2]}
+          report={'schema':'dack_v23_T2_only_value_DP_128_physical_games',
+                  'status':'PASS','game_ids':[88000,88127],
+                  'physical_games':128,'models_approved':False,
+                  'actual_gameplay_beam':160,
+                  'no_mulligan_beam':True,
+                  'full_game_metrics':results,
+                  'paired_T2':paired,
+                  'keep_depth_changes':changes,
+                  'warning':'No v5 reference in N128 screen; full gameplay goldfish, not 4-player cEDH win-rate.'}
+          dest=Path('benchmark_results/v23_T2_only_vs_v22_v14_N128.json')
+          dest.parent.mkdir(exist_ok=True)
+          dest.write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
+          print('V23_T2_ONLY_PAIRED_128_GAMES_PASS',json.dumps(report,sort_keys=True),flush=True)
+          PY
+      - name: Archive independent N128 complete seed-group results without changing any model
+        run: |
+          mkdir -p benchmark_results/v23_T2_only_n128_shards
+          cp paired/v23_T2_pair_*.json.gz benchmark_results/v23_T2_only_n128_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v23_T2_only_vs_v22_v14_N128.json benchmark_results/v23_T2_only_n128_shards/
+          git commit -m "Archive untouched 128-game physical T2-only keep London comparison against v22 and v14"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v23-T2-only-N128-paired-summary
+          path: benchmark_results/v23_T2_only_vs_v22_v14_N128.json
+          retention-days: 21
