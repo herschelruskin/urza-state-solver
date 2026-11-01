@@ -4,6 +4,7 @@ on:
     branches: [dack-v33b-capability-regret-20261101]
     paths:
       - '.github/workflows/dack_v33b_pairwise_fit.yml'
+      - 'dack_simulator/validation/v33b_fit_pairwise_regret.py'
   workflow_dispatch:
 permissions:
   contents: write
