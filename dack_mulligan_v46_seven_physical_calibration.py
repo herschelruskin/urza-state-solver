@@ -37,7 +37,7 @@ def features(seven,unknown_counts,seat,stage,v43_q,v43_c):
     if stage not in (0,1):raise ValueError("calibration applies only to original seven")
     seven=tuple(seven)
     opts=finalists(seven,7,tuple(k for k,v in unknown_counts.items() for _ in range(v)))
-    assert len(opts)==1 and opts[0]["bottom"]==[] and opts[0]["hand"]==list(seven)
+    assert len(opts)==1 and tuple(opts[0]["bottom"])==() and Counter(opts[0]["hand"])==Counter(seven)
     x=f.extract(seven,seven,(),Counter(unknown_counts),seat,7,stage,
                 opts[0]["struct_rank"],0)
     return [float(v43_q),float(v43_c)]+[float(x[i]) for i in BASE]
