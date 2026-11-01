@@ -1,0 +1,227 @@
+{
+  "schema": "dack_v14_v15_v16_sample_coverage_research_handoff",
+  "status": "ALL_EXPERIMENTAL_NO_PROMOTION",
+  "branch": "dack-counterfactual-engine-v1-20261030",
+  "sampling": {
+    "v5_teacher_natural": {
+      "train_games": 144,
+      "train_stage_rows": 538,
+      "validation_games": 40,
+      "validation_stage_rows": 158,
+      "source_run": 41257433294,
+      "manifest": "datasets/teacher_v14_expansion/manifest.json"
+    },
+    "student_visited_DAgger": {
+      "train_games": 32,
+      "train_stage_rows": 138,
+      "validation_games": 16,
+      "validation_stage_rows": 93,
+      "source_run": 41258082091,
+      "manifest": "datasets/teacher_v15_student_states/manifest.json",
+      "frozen_source_student": "v13_16"
+    },
+    "real_teacher_kept_conditional_future": {
+      "train_distinct_hands": 144,
+      "train_rollouts": 576,
+      "validation_distinct_hands": 40,
+      "validation_rollouts": 160,
+      "total_real_outcomes": 736,
+      "source_run": 41258024959,
+      "manifest": "datasets/true_v5_kept_futures_v14/manifest.json"
+    }
+  },
+  "teacher_imitation_learning_curve": [
+    {
+      "train_groups": 16,
+      "choice_accuracy": 0.6455696202531646,
+      "keep_accuracy": 0.8037974683544303,
+      "joint_accuracy": 0.5759493670886076,
+      "keep_rate": 0.14556962025316456
+    },
+    {
+      "train_groups": 32,
+      "choice_accuracy": 0.6265822784810127,
+      "keep_accuracy": 0.7151898734177216,
+      "joint_accuracy": 0.5253164556962026,
+      "keep_rate": 0.310126582278481
+    },
+    {
+      "train_groups": 64,
+      "choice_accuracy": 0.6329113924050633,
+      "keep_accuracy": 0.7658227848101266,
+      "joint_accuracy": 0.5443037974683544,
+      "keep_rate": 0.34810126582278483
+    },
+    {
+      "train_groups": 96,
+      "choice_accuracy": 0.6455696202531646,
+      "keep_accuracy": 0.8417721518987342,
+      "joint_accuracy": 0.5886075949367089,
+      "keep_rate": 0.2848101265822785
+    },
+    {
+      "train_groups": 128,
+      "choice_accuracy": 0.6392405063291139,
+      "keep_accuracy": 0.8544303797468354,
+      "joint_accuracy": 0.5949367088607594,
+      "keep_rate": 0.25949367088607594
+    },
+    {
+      "train_groups": 144,
+      "choice_accuracy": 0.6392405063291139,
+      "keep_accuracy": 0.8164556962025317,
+      "joint_accuracy": 0.5759493670886076,
+      "keep_rate": 0.25949367088607594
+    }
+  ],
+  "selection": {
+    "best_development_validation_student": "models/v14_curve/v14_teacher_groups_128.json",
+    "structural_first_accuracy_same_validation": 0.6392405063291139,
+    "teacher_keep_rate_same_validation": 0.25316455696202533,
+    "warning": "Selection by developer validation; no generalization claim."
+  },
+  "paired_new_physical_games": {
+    "cohort_66000_66015": {
+      "run": 41257970907,
+      "v5": {
+        "T1": 0,
+        "T2": 8,
+        "T3": 12,
+        "seconds": 462.3126
+      },
+      "v13_old": {
+        "T1": 2,
+        "T2": 6,
+        "T3": 8,
+        "seconds": 3.2271
+      },
+      "v14_128": {
+        "T1": 2,
+        "T2": 7,
+        "T3": 10,
+        "seconds": 8.8121
+      },
+      "v14_144": {
+        "T1": 1,
+        "T2": 6,
+        "T3": 12,
+        "seconds": 9.4307
+      }
+    },
+    "cohort_69000_69015": {
+      "run": 41258200322,
+      "v5": {
+        "T1": 1,
+        "T2": 10,
+        "T3": 13,
+        "seconds": 572.7484
+      },
+      "v13_old": {
+        "T1": 1,
+        "T2": 6,
+        "T3": 7,
+        "seconds": 2.7016
+      },
+      "v14_128": {
+        "T1": 0,
+        "T2": 8,
+        "T3": 12,
+        "seconds": 6.365
+      },
+      "v14_144": {
+        "T1": 0,
+        "T2": 7,
+        "T3": 11,
+        "seconds": 6.3435
+      },
+      "v15_DAgger_176": {
+        "T1": 0,
+        "T2": 8,
+        "T3": 11,
+        "seconds": 7.5673
+      }
+    },
+    "pooled_fixed_128_model_32_games": {
+      "n": 32,
+      "v5_T1": 1,
+      "v5_T2": 18,
+      "v5_T3": 25,
+      "student_T1": 2,
+      "student_T2": 15,
+      "student_T3": 22,
+      "older_v13_student_T2": 12,
+      "paired_student_T2_gains": 3,
+      "paired_student_T2_losses": 6,
+      "T2_delta_percentage_points": -9.375,
+      "exploratory_normal_95ci_pp": [
+        -27.75,
+        9
+      ],
+      "v5_total_seconds": 1035.061,
+      "student_total_seconds": 15.1771,
+      "observed_speedup": 68.1988653958925
+    }
+  },
+  "student_visited_validation": {
+    "source_run": 41258082091,
+    "student_v13_visited_groups": 16,
+    "stages": 93,
+    "v14_128": {
+      "choice_accuracy": 0.45161290322580644,
+      "keep_accuracy": 0.8494623655913979,
+      "joint_accuracy": 0.3978494623655914
+    },
+    "v15_DAgger_176": {
+      "choice_accuracy": 0.43010752688172044,
+      "keep_accuracy": 0.8924731182795699,
+      "joint_accuracy": 0.40860215053763443
+    },
+    "conclusion": "Corrective states improved keep accuracy, not bottom ranking or T2 in 69k N16."
+  },
+  "conditional_probability_model": {
+    "run": 41258303265,
+    "model": "models/dack_v16_conditional_outcomes_EXPERIMENTAL.json",
+    "report": "benchmark_results/v16_true_outcome_forest_diagnostic.json",
+    "validation_real_rollouts": 160,
+    "validation_distinct_hands": 40,
+    "constant_prior": {
+      "brier": 0.6410312982253098,
+      "logloss": 1.1486288323669673,
+      "pred_T1": 0.0347222222222223,
+      "pred_T2": 0.484375,
+      "pred_T3": 0.8246527777777748
+    },
+    "random_forest": {
+      "brier": 0.5567504259931132,
+      "logloss": 0.9950517266339292,
+      "pred_T1": 0.035016955499558994,
+      "pred_T2": 0.5016541856186967,
+      "pred_T3": 0.8093506348457703
+    },
+    "actual": {
+      "T1": 0.04375,
+      "by_T2": 0.55,
+      "by_T3": 0.83125
+    },
+    "Brier_model_minus_prior": -0.0842808722321966,
+    "group_bootstrap_95ci": [
+      -0.18876502818050483,
+      0.011728434397628051
+    ],
+    "limit": "Learns conditional outcomes on V5-kept hands; not an unconditional full-game winrate, not yet calibrated for other bottom/keep policies."
+  },
+  "limitations": [
+    "32 full games insufficient for noninferiority",
+    "Teacher decision choice accuracy did not improve beyond structural top finalist on observed v5 validation",
+    "Individual rollout labels per hand are correlated; 736 outcomes represent only 184 independent hands",
+    "Frozen teacher v5 models restricted goldfish deployment, not full 4-player multiplayer game",
+    "Student DAgger domain requires further independent validation with more lines and candidate evaluations",
+    "Neither v14 nor v15 nor v16 models approved for gameplay"
+  ],
+  "next_steps": [
+    "Collect additional physically distinct teacher choices, enriched rare-line and DAgger-student states, with group-disjoint splits.",
+    "Supervise candidate-specific expected utility/paired rankings from actual independent futures, not only v5 final chosen index.",
+    "Use nonlinear/interaction-aware model and selection-aware probability calibration.",
+    "After freezing any new policy, test actual paired full games on entirely fresh IDs with enough samples to bound T2 differences."
+  ]
+}
