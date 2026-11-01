@@ -1,0 +1,55 @@
+name: DACK v15 student-visited teacher DAgger pilot
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_teacher_v15_dagger_pilot.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  label:
+    strategy:
+      fail-fast: false
+      matrix:
+        start: [67000, 67001, 67002, 67003]
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Actual v5 oracle decision at every London stage visited by v13 experimental student
+        run: |
+          python -m compileall -q dack_simulator/validation/collect_student_visited_teacher_v15.py
+          python -u dack_simulator/validation/collect_student_visited_teacher_v15.py \
+            --split train --start ${{ matrix.start }} --games 1 \
+            --out datasets/v15_dagger_${{ matrix.start }}.jsonl.gz
+      - name: Validate stage group physics, frozen student and actual teacher labels
+        run: |
+          python - <<'PY'
+          import gzip,json,glob
+          from collections import Counter
+          fs=glob.glob('datasets/v15_dagger_*.jsonl.gz')
+          assert len(fs)==1
+          with gzip.open(fs[0],'rt') as f:
+              m=json.loads(next(f));r=[json.loads(s) for s in f]
+          assert m['sampling_protocol']=='dack_v15_student_v13_visited_v5_teacher_labels'
+          assert m['student_visited_stage_sampling'] is True
+          assert len({x['game_id'] for x in r})==1 and r[-1]['source_student_keep']
+          assert sum(x['source_student_keep'] for x in r)==1
+          for x in r:
+              assert len(x['seven'])==7
+              assert sum(x['unknown_counts'].values())==92
+              assert 0<=x['source_student_chosen_candidate']<len(x['candidate_rows'])
+              assert 0<=x['teacher_chosen_candidate']<len(x['candidate_rows'])
+              assert Counter(x['teacher_selected_hand'])+Counter(x['teacher_selected_bottom'])==Counter(x['seven'])
+              assert not any(k in x for k in ('first3','actual_library','hidden_order'))
+          print('DAGGER_V15_STUDENT_STATES_VALID',len(r),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v15-dagger-pilot-${{ matrix.start }}
+          path: datasets/v15_dagger_*.jsonl.gz
+          retention-days: 21
