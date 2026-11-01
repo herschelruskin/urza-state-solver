@@ -79,7 +79,7 @@ def feats(row):
     finalists_=finalists(seven,7,unknown)
     assert len(finalists_)==1
     c=finalists_[0]
-    assert not c["bottom"] and list(c["hand"])==list(seven)
+    assert not c["bottom"] and Counter(c["hand"])==Counter(seven)
     full=f.extract(seven,c["hand"],c["bottom"],unknown,
           row["seat"],7,row["stage"],c["struct_rank"],0)
     assert len(full)==len(f.FEATURES)
