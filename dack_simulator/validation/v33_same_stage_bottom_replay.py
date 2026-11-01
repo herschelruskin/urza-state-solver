@@ -2,8 +2,8 @@
 """v33: fresh-future counterfactual bottom replay, matched at same London stage.
 
 Precommitted source is ALL 110k N256 games where v5 and v27 kept at the
-same London stage but with different final hands (56 groups in preliminary
-read-only census). Neither the original 110k win turns nor any future
+same recorded London STAGE INDEX but with different final hands.
+The earlier count of 56 used keep_n as a proxy and was wrong for stage 0/1. Neither the original 110k win turns nor any future
 orders enter a decision. 8 *independent* physical unknown shuffles per
 arm in each of two untuned splits. Strict immutable stable-dice beam160.
 Each group shares draws and dice seed across arms to reduce variance.
@@ -31,7 +31,6 @@ PROTO = "DACK_V33_SAME_STAGE_DIFFERENT_BOTTOM_FRESH_FUTURES_20261101"
 SPLITS = ("calibration", "untouched_validation")
 FUTURES_PER_SPLIT = 8
 N_BLOCKS = 8
-GROUPS_PER_BLOCK = 7
 BEAM = 160
 
 
@@ -61,12 +60,13 @@ def selected_groups():
     selected = []
     for row in rows:
         a,b = row["v5"],row["v27_frozen"]
-        if a["keep_n"] != b["keep_n"]:
+        if a["history"][-1]["stage"] != b["history"][-1]["stage"]:
             continue
+        assert a["keep_n"] == b["keep_n"]
         if Counter(a["history"][-1]["hand"]) == Counter(b["history"][-1]["hand"]):
             continue
         selected.append(row)
-    assert len(selected) == 56, ("disagreement group census changed",len(selected))
+    assert 8 <= len(selected) <= 56, ("unexpected actual-stage disagreement census",len(selected))
     return selected,sha
 
 
@@ -105,8 +105,8 @@ def run_block(block,out):
     assert report["status"] == "PASS"
     assert ref.SPEC["beam"] == BEAM and len(ref.SLOTS) == 99
     rows,sha = selected_groups()
-    subset = rows[block*GROUPS_PER_BLOCK:(block+1)*GROUPS_PER_BLOCK]
-    assert len(subset) == GROUPS_PER_BLOCK
+    subset = [row for i,row in enumerate(rows) if i % N_BLOCKS == block]
+    assert subset
     output = []
     t0 = time.monotonic()
     for row in subset:
@@ -141,7 +141,8 @@ def run_block(block,out):
         "schema":"dack_v33_same_stage_bottom_fresh_futures",
         "status":"PASS","block":block,
         "selection_ids":[110000,110255],
-        "selection_criterion":"ALL same keep stage different kept hand v5 versus frozen v27",
+        "selection_criterion":"ALL same RECORDED London stage index, different kept hand, v5 versus frozen v27",
+        "total_eligible_groups":len(rows),
         "selection_uses_original_win_turn":False,
         "source_shas":sha,"actual_beam":BEAM,
         "futures_per_split":FUTURES_PER_SPLIT,
