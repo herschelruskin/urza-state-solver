@@ -1,0 +1,35 @@
+name: DACK v36 freeze outcome-blind random and boundary-enriched training manifest
+on:
+  push:
+    branches: [dack-v36-targeted-keep-value-20261101]
+    paths:
+      - '.github/workflows/dack_v36_freeze_manifest.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  frozen-selection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify exact frozen v33b physical policy and pure capabilities
+        run: |
+          python -m py_compile dack_simulator/validation/v36_preoutcome_manifest.py dack_mulligan_v36_features.py
+          python dack_mulligan_v36_features.py
+          python -m dack_simulator.validation.v34_frozen_v33b_continuation
+      - name: Select ONLY using observable early-hand margins; NO physical game outcomes
+        run: python -u dack_simulator/validation/v36_preoutcome_manifest.py
+      - name: Archive immutable pre-outcome random-and-targeted physical game IDs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f datasets/v36_preoutcome_123k_manifest.json
+          git commit -m "Freeze v36 pre-outcome 128 random and 128 balanced boundary-enriched physical groups"
+          git pull --rebase origin dack-v36-targeted-keep-value-20261101
+          git push origin HEAD:dack-v36-targeted-keep-value-20261101
