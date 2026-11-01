@@ -1,0 +1,36 @@
+name: DACK v46 pure Python first-two-seven features and training syntax smoke
+on:
+  push:
+    branches: [dack-v46-first-two-sevens-physical-Q2-20261101]
+    paths: ['.github/workflows/dack_v46_feature_training_smoke.yml']
+jobs:
+  syntax_and_features:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v46-first-two-sevens-physical-Q2-20261101
+      - name: Install science libraries only for offline fit
+        run: python -m pip install 'numpy>=1.26,<3' 'scikit-learn>=1.4,<1.8'
+      - name: Verify strict source scripts and feature extractor
+        run: |
+          python -m py_compile dack_simulator/validation/v46_fit_and_dev_stage01.py dack_paired_counterfactual_v46_early_one_stage_20261101.py
+          python - <<'PY'
+          from collections import Counter
+          import dack_mulligan_v46_first_two_sevens_physical as f
+          from dack_simulator.validation.v45_frozen_v43_continuation import ref,initialize,choose_at
+          initialize()
+          deck=ref.SLOT_VARIANTS['one_key_34']
+          for gid in range(163000,163008):
+            seat,orders=ref.stage_slots(int(ref.SPEC['seed_base'])+gid*ref.SEED_STRIDE)
+            for stage in (0,1):
+              order=orders[stage]
+              seven=tuple(deck[i] for i in order[:7])
+              hidden=tuple(deck[i] for i in order[7:])
+              o=choose_at(stage,seat,order,deck)
+              assert Counter(o['hand'])==Counter(seven) and o['bottom']==[]
+              x=f.features(seven,hidden,seat,stage,o['raw'],o['threshold'])
+              assert len(x)==len(f.NAMES)
+          print("DACK_V46_FIRST_TWO_SEVENS_EXACT_PHYSICAL_FEATURE_PROVENANCE_PASS")
+          PY
