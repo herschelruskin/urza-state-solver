@@ -1,0 +1,34 @@
+name: DACK v39 freeze new N1024 random 131k full-action and London path census
+on:
+  push:
+    branches: [dack-v39-t2-risk-bounded-regret-20261101]
+    paths: ['.github/workflows/dack_v39_131k_census.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  census:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify independent outcome-blind v39 frozen contract and exact v33b
+        run: |
+          python -m py_compile dack_mulligan_v39_t2_risk_regret.py dack_paired_counterfactual_v39_t2_risk_regret_20261101.py dack_simulator/validation/v39_131k_census.py
+          test -f DACK_V39_PREDECLARED_T2_REGRET_T3_RISK_PROTOCOL.md
+          python -u dack_paired_counterfactual_v39_t2_risk_regret_20261101.py --audit
+      - name: Observe 1024 physical 99-slot groups and actual stages0/1/2, no game simulation
+        run: python -u dack_simulator/validation/v39_131k_census.py
+      - name: Freeze and archive the entire 3072 state original denominator before outcomes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f datasets/v39_131k_frozen_outcome_blind_census.json
+          git commit -m "Freeze v39 new 131k N1024 random exact London action census pre-physical-outcomes"
+          git pull --rebase origin dack-v39-t2-risk-bounded-regret-20261101
+          git push origin HEAD:dack-v39-t2-risk-bounded-regret-20261101
