@@ -38,3 +38,15 @@ Run frozen v27 keep and v33b bottom choice on the *same* game ID/seat/stage/phys
 - `.github/workflows/dack_v40_4096_real_v5_teacher.yml`
 
 No student fitting should occur until the pilot is a verified pass and complete source shards have passed the join/integrity census. The earlier v40 *384-group physical-regret proposal* is a separate later phase; it is not silently pooled with these teacher annotations or treated as an interchangeable observation type. Existing 135k/137k proposed holdouts remain untouched.
+
+## Actual correctness pilot result — successful
+
+GitHub Actions [run 41340364687](https://github.com/herschelruskin/urza-state-solver/actions/runs/41340364687) completed **SUCCESS** at 19:13Z on 2026-11-01, with complete artifact `dack-v40-actual-v5-4-group-pilot` (sha256: `3155a40a7f880398aa89340a23e996f619766ba91e9a06b363860d4342c98ed3`). The Python collectors compiled; the synthetic original-v5 hypothetical sampler hidden92 order-invariance test passed; original v5 teacher, independent v27 baseline and joined census all passed.
+
+- Four independent outer physical game IDs `140000..140003`; exactly **12 unconditional early-stage action observations** (four each at stage0, stage1, stage2), plus eight naturally reached later-stage decisions, for 20 true-v5 stage records total.
+- Original teacher 4 KEEP and 16 MULL among those 20 source records; v5 chose a nonfirst structural bottom on 9/20, but the sample is FAR too small to estimate population frequencies.
+- Three of four source groups had an actual early first v5-v27 disagreement. All three were v27 KEEP / actual v5 MULL. This is a correctness smoke, **NOT** a measured win-rate advantage or representative estimate of real disagreement frequency.
+- Actual v5 source extraction for four deals took **172.39 seconds on the hosted pilot runner** (13.69, 5.40, 81.45, 71.84 seconds per deal), rather than the historical benchmark's ~24 s per completed v5 game. This highly variable 4-game estimate naively suggests ~49 CPU-hours for 4096 teacher-only source groups and ~6 CPU-hours for 512 DEV, **before** hosted CI overhead. Do not treat that estimate as precise or launch all 4096 without considering Actions minute quota and serial pilot runtime. Larger sample/shard benchmark recommended for cost estimation.
+- Both frozen v38/v39 historical recovery workflow runs 41328420324 and 41330839667 independently completed SUCCESS.
+
+The 4096+512 program is configured but **has not been dispatched**. There are no new physical KEEP/MULL goldfish outcome labels and no trained v40 model.
