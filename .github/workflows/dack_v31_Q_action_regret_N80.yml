@@ -1,0 +1,101 @@
+name: DACK v31 actual counterfactual keep-vs-mull T2 regret N80
+on:
+  push:
+    branches: [dack-v31-action-regret-counterfactual-20261031]
+    paths:
+      - '.github/workflows/dack_v31_Q_action_regret_N80.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  sample:
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        include:
+          {start: 103000, split: train},
+          {start: 103004, split: train},
+          {start: 103008, split: train},
+          {start: 103012, split: train},
+          {start: 103016, split: train},
+          {start: 103020, split: train},
+          {start: 103024, split: train},
+          {start: 103028, split: train},
+          {start: 103032, split: train},
+          {start: 103036, split: train},
+          {start: 103040, split: train},
+          {start: 103044, split: train},
+          {start: 103048, split: validation},
+          {start: 103052, split: validation},
+          {start: 103056, split: validation},
+          {start: 103060, split: validation},
+          {start: 103064, split: test},
+          {start: 103068, split: test},
+          {start: 103072, split: test},
+          {start: 103076, split: test}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v31-action-regret-counterfactual-20261031
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile model and strict audit
+        run: |
+          python -m compileall -q dack_simulator/validation/v31_collect_action_regret.py dack_simulator/validation/v31_fit_action_regret.py
+          python dack_paired_counterfactual_v27_T2_only_DP_20261101.py --audit
+      - name: Sample forced keep vs forced mull London continuation and beam160 gameplay
+        run: |
+          python -u dack_simulator/validation/v31_collect_action_regret.py \
+              --split ${{ matrix.split }} --start ${{ matrix.start }} --games 4 \
+              --out shards/v31_${{ matrix.split }}_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v31-${{ matrix.start }}
+          path: shards/v31_*.json.gz
+          retention-days: 30
+  fit:
+    needs: sample
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v31-action-regret-counterfactual-20261031
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install numpy scikit-learn
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v31-*
+          merge-multiple: true
+          path: collected
+      - name: Fit Q advantage with train-only 103k, report separate validation and untouched test regret
+        run: |
+          python -u dack_simulator/validation/v31_fit_action_regret.py \
+              --train collected/v31_train_*.json.gz \
+              --validation collected/v31_validation_*.json.gz \
+              --test collected/v31_test_*.json.gz
+      - name: Archive independent label shards and experimental model (NO policy approval)
+        run: |
+          mkdir -p datasets/v31_action_regret_103k
+          cp collected/v31_*.json.gz datasets/v31_action_regret_103k/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f datasets/v31_action_regret_103k models/dack_v31_Q_advantage_residual_EXPERIMENTAL.json benchmark_results/v31_Q_advantage_103k_holdout.json
+          git commit -m "Archive train/validation/test real Qkeep-Qmull outcomes and unapproved regret student"
+          git pull --rebase origin dack-v31-action-regret-counterfactual-20261031
+          git push origin HEAD:dack-v31-action-regret-counterfactual-20261031
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v31-Q-regret-frozen-heldout-N80-report
+          path: |
+            models/dack_v31_Q_advantage_residual_EXPERIMENTAL.json
+            benchmark_results/v31_Q_advantage_103k_holdout.json
+          retention-days: 30
