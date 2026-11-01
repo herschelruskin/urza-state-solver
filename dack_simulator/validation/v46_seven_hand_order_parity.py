@@ -5,7 +5,9 @@ The seven-card hand has no bottom at London stages 0 and 1. Engine outcome
 must not depend on whether cards are given in deal order or the v43 finalist's
 canonical sorted order. Fail before fitting any model if not true.
 """
-import random
+import random,sys
+from pathlib import Path
+sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 from collections import Counter
 from dack_simulator.validation import v45_frozen_v43_continuation as k
 def run():
