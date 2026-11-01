@@ -1,4 +1,4 @@
-name: DACK v46 strict seven-hand ordering physical parity
+name: DACK v46 seven-hand ordering strict parity corrected script import
 on:
   push:
     branches: [dack-v46-first-two-sevens-physical-Q2-20261101]
