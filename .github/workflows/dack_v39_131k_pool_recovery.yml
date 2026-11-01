@@ -1,0 +1,48 @@
+name: DACK v39 recover 28 completed 131k physical K/C shards after aggregation key fix
+on:
+  push:
+    branches: [dack-v39-t2-risk-bounded-regret-20261101]
+    paths: ['.github/workflows/dack_v39_131k_pool_recovery.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Retrieve SAME 28 pre-existing succeeded physical artifacts, no replay
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 41319100962
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pattern: v39-131k-*
+          path: collected
+          merge-multiple: true
+      - name: 28 exact frozen source shards and no new beam calls
+        run: |
+          test "$(find collected -maxdepth 1 -name 'v39_K_*.json.gz' | wc -l)" -eq 16
+          test "$(find collected -maxdepth 1 -name 'v39_C_*.json.gz' | wc -l)" -eq 12
+          python -m py_compile dack_simulator/validation/v39_131k_pool.py
+          python -u dack_simulator/validation/v39_131k_pool.py
+      - name: Archive original source futures and corrected grouped confidence intervals
+        run: |
+          mkdir -p benchmark_results/v39_131k_physical_shards
+          cp collected/v39_*.json.gz benchmark_results/v39_131k_physical_shards/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f benchmark_results/v39_131k_physical_shards benchmark_results/v39_131k_independent_action_regret.json
+          git commit -m "Recover 28 original 131k physical shards and corrected two-source bootstrap"
+          git pull --rebase origin dack-v39-t2-risk-bounded-regret-20261101
+          git push origin HEAD:dack-v39-t2-risk-bounded-regret-20261101
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v39-131k-corrected-independent-two-source-action-regret
+          path: benchmark_results/v39_131k_independent_action_regret.json
