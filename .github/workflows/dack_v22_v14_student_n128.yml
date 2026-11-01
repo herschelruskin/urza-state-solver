@@ -1,0 +1,137 @@
+name: DACK v22 learned keep DP vs v14 independent physical N128
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v22_v14_student_n128.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  pairs:
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        include:
+          - start: 87000
+          - start: 87008
+          - start: 87016
+          - start: 87024
+          - start: 87032
+          - start: 87040
+          - start: 87048
+          - start: 87056
+          - start: 87064
+          - start: 87072
+          - start: 87080
+          - start: 87088
+          - start: 87096
+          - start: 87104
+          - start: 87112
+          - start: 87120
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Matched student London seeds, complete beam160 gameplay, frozen model checksums
+        run: |
+          python -m compileall -q dack_simulator/validation/compare_v22_v14_student_only_n128.py
+          python dack_paired_counterfactual_v22_all_stage_real_keep_DP_20261101.py --audit
+          python -u dack_simulator/validation/compare_v22_v14_student_only_n128.py \
+            --start ${{ matrix.start }} --games 8 \
+            --out shards/v22_student_pair_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v22-student-87k-${{ matrix.start }}
+          path: shards/v22_student_pair_*.json.gz
+          retention-days: 21
+  summarize:
+    needs: pairs
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v22-student-87k-*
+          merge-multiple: true
+          path: paired/
+      - name: Audit all 128 independent pairs and calculate paired T2 effect
+        run: |
+          python - <<'PY'
+          import gzip,glob,json,math
+          from pathlib import Path
+          fs=sorted(glob.glob('paired/v22_student_pair_*.json.gz'))
+          assert len(fs)==16,len(fs)
+          rows=[]
+          for file in fs:
+              with gzip.open(file,'rt') as f:m=json.load(f)
+              assert m['status']=='PASS' and m['gameplay_beam']==160
+              assert m['mulligan_beam']==0 and m['models_approved'] is False
+              rows.extend(m['rows'])
+          rows.sort(key=lambda x:x['game_id'])
+          assert [x['game_id'] for x in rows]==list(range(87000,87128))
+          ps=['v14_128','v22_real_keep_DP']
+          def summarise(name):
+              v=[x[name] for x in rows]
+              return {'n':128,
+                      'T1':sum(r['turn']==1 for r in v),
+                      'T2':sum(r['turn'] in (1,2) for r in v),
+                      'T3':sum(r['turn'] in (1,2,3) for r in v),
+                      'average_kept_hand_size':sum(r['keep_n'] for r in v)/128,
+                      'sum_gameplay_seconds':round(sum(r['seconds'] for r in v),4)}
+          a,b=[summarise(p) for p in ps]
+          diffs=[int(r['v22_real_keep_DP']['turn'] in (1,2))-
+                 int(r['v14_128']['turn'] in (1,2)) for r in rows]
+          avg=sum(diffs)/128
+          sd=math.sqrt(sum((d-avg)**2 for d in diffs)/(128*127))
+          differs=sum(
+              x['v14_128']['keep_n']!=x['v22_real_keep_DP']['keep_n']
+              for x in rows)
+          report={
+              'schema':'dack_v22_value_DP_paired_128_independent_games',
+              'status':'PASS','ids':[87000,87127],
+              'n_independent_game_seeds':128,
+              'same_physical_shuffle_seat_strict_gameplay':True,
+              'both_mulligan_beams_removed':True,
+              'same_bottom_selection_model':True,
+              'no_model_promotion':True,
+              'v14_128':a,'v22_real_keep_DP':b,
+              'T2_gains':diffs.count(1),'T2_losses':diffs.count(-1),
+              'T2_delta_pp':100*avg,
+              'paired_exploratory_normal_95ci_pp':[
+                  100*(avg-1.96*sd),100*(avg+1.96*sd)],
+              'games_with_different_keep_depth':differs,
+              'student_runtime_ratio':a['sum_gameplay_seconds']/max(.001,b['sum_gameplay_seconds']),
+              'warning':'Learned goldfish deployment through T3 only; no four-player cEDH win rate. Models still unapproved.'
+          }
+          out=Path('benchmark_results/v22_student_value_DP_independent_n128.json')
+          out.parent.mkdir(exist_ok=True)
+          out.write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
+          print('V22_INDEPENDENT_128_STUDENT_PAIRS_PASS',json.dumps(report,sort_keys=True),flush=True)
+          PY
+      - name: Archive all distinct game pairs and nonpromoted statistical report
+        run: |
+          mkdir -p benchmark_results/v22_student_value_DP_n128_shards
+          cp paired/v22_student_pair_*.json.gz benchmark_results/v22_student_value_DP_n128_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v22_student_value_DP_independent_n128.json benchmark_results/v22_student_value_DP_n128_shards/
+          git commit -m "Archive independent 128-game physical learned keep-DP versus teacher student comparison"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v22-student-keep-DP-128-game-summary
+          path: benchmark_results/v22_student_value_DP_independent_n128.json
+          retention-days: 21
