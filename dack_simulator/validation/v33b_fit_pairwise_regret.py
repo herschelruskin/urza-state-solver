@@ -44,8 +44,8 @@ def run(source,out,report):
             gid=int(group["game_id"])
             assert 112000<=gid<112128
             assert gid not in by_gid
+            by_gid[gid]=[]  # Include zero-alternative and seven-card physical groups.
             if group["no_bottom"]:
-                by_gid[gid]=[]
                 continue
             n_eligible+=1
             seven=tuple(group["seven"])
