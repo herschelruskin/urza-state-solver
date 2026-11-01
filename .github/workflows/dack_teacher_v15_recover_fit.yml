@@ -1,0 +1,150 @@
+name: DACK v15 recover DAgger labels and fit corrective teacher student
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_teacher_v15_recover_fit.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  salvage_and_fit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 23
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 41257665681
+          github-token: ${{ github.token }}
+          pattern: v15-dagger-*
+          merge-multiple: true
+          path: datasets/teacher_v15_student_states/
+      - name: Recover and independently verify all real v5 labels despite earlier test typo
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from collections import Counter
+          import json,gzip,hashlib
+          root=Path('datasets/teacher_v15_student_states')
+          fs=sorted(root.glob('v15_*.jsonl.gz'))
+          assert len(fs)==48,len(fs)
+          man={'schema':'dack_v15_DAgger_student_visited_teacher_dataset',
+               'policy_teacher':'dack_stable_dice_strict_bounded_witness_v5',
+               'student_frozen_model_sha256':None,
+               'student_visited_not_population_representative':True,
+               'not_outcome_probabilities':True,
+               'original_orchestration_error':'verification printed a str.name; data generation had already succeeded',
+               'data_recovered_from_actions_run':41257665681,
+               'split':{},'files':[]}
+          ids_seen=[]
+          for split,start,n in [('train',67100,32),('validation',68100,16)]:
+              fs_split=[p for p in fs if p.name.startswith('v15_'+split+'_')]
+              assert len(fs_split)==n,(split,len(fs_split))
+              ids=set();counts=Counter()
+              for p in fs_split:
+                  with gzip.open(p,'rt') as fp:
+                      h=json.loads(next(fp))
+                      rows=[json.loads(s) for s in fp]
+                  assert h['split']==split
+                  assert h['sampling_protocol']=='dack_v15_student_v13_visited_v5_teacher_labels'
+                  assert h['teacher']=='dack_stable_dice_strict_bounded_witness_v5'
+                  sha=h['student_policy_sha256']
+                  if man['student_frozen_model_sha256'] is None:
+                      man['student_frozen_model_sha256']=sha
+                  assert sha==man['student_frozen_model_sha256']
+                  assert rows and rows[-1]['source_student_keep']
+                  assert sum(x['source_student_keep'] for x in rows)==1
+                  assert len({x['game_id'] for x in rows})==1
+                  ids.add(rows[0]['game_id'])
+                  for x in rows:
+                      assert x['type']=='stage'
+                      assert len(x['seven'])==7
+                      assert sum(x['unknown_counts'].values())==92
+                      assert 0<=x['teacher_chosen_candidate']<len(x['candidate_rows'])<=12
+                      assert 0<=x['source_student_chosen_candidate']<len(x['candidate_rows'])
+                      assert not any(k in x for k in ('first3','hidden_order','actual_library','sampled_order'))
+                      counts['stages']+=1
+                      counts['candidates']+=len(x['candidate_rows'])
+                      counts['student_keep']+=int(x['source_student_keep'])
+                      counts['teacher_keep']+=int(x['teacher_keep'])
+                      counts['keep_mismatch']+=int(x['source_student_keep']!=x['teacher_keep'])
+                      counts['bottom_mismatch']+=int(x['source_student_chosen_candidate']!=x['teacher_chosen_candidate'])
+                  man['files'].append({'name':p.name,'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'bytes':p.stat().st_size,'split':split})
+              assert ids==set(range(start,start+n)),(split,len(ids))
+              man['split'][split]={'groups':n,'game_ids':[start,start+n-1],
+                                  'counts':dict(counts)}
+              ids_seen.append(ids)
+          assert ids_seen[0].isdisjoint(ids_seen[1])
+          from pathlib import Path
+          old=Path('models/dack_teacher_distill_v13_EXPERIMENTAL.json').read_bytes()
+          assert hashlib.sha256(old).hexdigest()==man['student_frozen_model_sha256']
+          (root/'manifest.json').write_text(json.dumps(man,sort_keys=True,indent=2)+'\n')
+          print('DAgger_V15_SALVAGED_48_REAL_TEACHER_GROUPS_PASS',json.dumps(man['split']),flush=True)
+          PY
+      - name: Training-only install
+        run: python -m pip install 'scikit-learn>=1.4,<2'
+      - name: Fit v15 using all natural v5 teacher data plus student-distribution correction
+        run: |
+          python -u dack_simulator/validation/train_teacher_distillation_v13.py \
+            --train datasets/teacher_v13_20261031/distill_v13_train_*.jsonl.gz datasets/teacher_v14_expansion/v14_train_*.jsonl.gz datasets/teacher_v15_student_states/v15_train_*.jsonl.gz \
+            --validation datasets/teacher_v13_20261031/distill_v13_validation_*.jsonl.gz datasets/teacher_v14_expansion/v14_validation_*.jsonl.gz datasets/teacher_v15_student_states/v15_validation_*.jsonl.gz \
+            --model models/dack_teacher_distill_v15_dagger_EXPERIMENTAL.json \
+            --report benchmark_results/v15_dagger_mixed_validation.json \
+            --trees 64 --depth 7
+      - name: Compare v14 and v15 model quality separately on natural v5 and student-visited domains
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import glob,json
+          from dack_simulator.validation.train_teacher_distillation_v13 import read,evaluate
+          old_paths=glob.glob('datasets/teacher_v13_20261031/distill_v13_validation_*.jsonl.gz')
+          old_paths+=glob.glob('datasets/teacher_v14_expansion/v14_validation_*.jsonl.gz')
+          dagger_paths=glob.glob('datasets/teacher_v15_student_states/v15_validation_*.jsonl.gz')
+          a,aids,ash=read(old_paths,'validation')
+          b,bids,bsh=read(dagger_paths,'validation')
+          assert len(aids)==40 and len(bids)==16 and aids.isdisjoint(bids)
+          assert ash==bsh
+          report={'schema':'dack_v15_DAgger_two_domain_validation',
+                  'status':'PASS','natural_validation_groups':40,
+                  'student_visited_validation_groups':16,
+                  'these_are_model_validation_not_full_gameplay':True,
+                  'models':{}}
+          models={
+             'v14_128':'models/v14_curve/v14_teacher_groups_128.json',
+             'v14_144':'models/v14_curve/v14_teacher_groups_144.json',
+             'v15_dagger_176':'models/dack_teacher_distill_v15_dagger_EXPERIMENTAL.json'}
+          for name,path in models.items():
+              model=json.loads(Path(path).read_text())
+              assert model['deployed_policy_approved'] is False
+              out={}
+              for domain,rows in [('natural_v5_visited',a),('student_v13_visited',b)]:
+                  vals=evaluate(rows,model)
+                  out[domain]={k:v for k,v in vals.items() if k!='per_stage_results'}
+              report['models'][name]=out
+          dest=Path('benchmark_results/v15_dagger_two_domain_validation.json')
+          dest.write_text(json.dumps(report,sort_keys=True,indent=2)+'\n')
+          print('V15_DAGGER_TWO_DOMAIN_VALIDATION_PASS',json.dumps(report['models']),flush=True)
+          PY
+      - name: Archive recovered corrective states and frozen unapproved v15 student
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f datasets/teacher_v15_student_states/ models/dack_teacher_distill_v15_dagger_EXPERIMENTAL.json benchmark_results/v15_dagger_mixed_validation.json benchmark_results/v15_dagger_two_domain_validation.json
+          git commit -m "Recover 48 true student-visited teacher groups and fit DAgger corrected 176-game student"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v15-recovered-student-policy-distillation
+          path: |
+            datasets/teacher_v15_student_states/manifest.json
+            models/dack_teacher_distill_v15_dagger_EXPERIMENTAL.json
+            benchmark_results/v15_dagger_two_domain_validation.json
+          retention-days: 21
