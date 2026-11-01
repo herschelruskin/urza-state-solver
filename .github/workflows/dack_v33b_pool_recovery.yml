@@ -1,0 +1,50 @@
+name: DACK v33b pool-only recovery (reuse 48 completed shards)
+on:
+  push:
+    branches: [dack-v33b-capability-regret-20261101]
+    paths:
+      - '.github/workflows/dack_v33b_pool_recovery.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  pool-existing-physical-shards:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v33b-capability-regret-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Reuse exactly completed v33b shards from workflow 41273121483
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 41273121483
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pattern: v33b-*
+          merge-multiple: true
+          path: collected
+      - name: Assert archived shard count, compile and pool results
+        run: |
+          test "$(find collected -maxdepth 1 -name 'v33b_*.json.gz' | wc -l)" -eq 48
+          python -m py_compile dack_simulator/validation/v33b_pool_ranker_screen.py
+          python -u dack_simulator/validation/v33b_pool_ranker_screen.py
+      - name: Archive original shards unchanged and pooled summary
+        run: |
+          mkdir -p benchmark_results/v33b_bottom_screen_shards
+          cp collected/v33b_*.json.gz benchmark_results/v33b_bottom_screen_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v33b_bottom_screen_shards benchmark_results/v33b_existing_bottom_ranker_screen.json
+          git commit -m "Archive v33b paired bottom screen from reusable original 48 shards"
+          git pull --rebase origin dack-v33b-capability-regret-20261101
+          git push origin HEAD:dack-v33b-capability-regret-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v33b-recovered-paired-screen
+          path: benchmark_results/v33b_existing_bottom_ranker_screen.json
+          retention-days: 30
