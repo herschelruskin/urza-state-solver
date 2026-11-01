@@ -1,0 +1,216 @@
+{
+  "schema": "dack_v22_v23_full_physical_research_checkpoint_20261101",
+  "project": "DACK simulator — monotonic separate experimental branch",
+  "branch": "dack-counterfactual-engine-v1-20261030",
+  "current_reference": "dack_stable_dice_strict_bounded_witness_v5",
+  "promotion_status": "NONE; all policies remain experimental",
+  "real_utility_training": {
+    "dataset": "datasets/v21_all_london_keep_values/manifest.json",
+    "train_outer_games": 64,
+    "validation_outer_games": 16,
+    "train_stage_states": 512,
+    "validation_stage_states": 128,
+    "real_beam160_futures_train": 2048,
+    "real_beam160_futures_validation": 512,
+    "v22_target": "P(T1 exact)+P(T2 exact)+0.5 P(T3 exact)",
+    "v23_target": "P(T1 exact)+P(T2 exact)",
+    "includes_rejected_as_well_as_kept_hands": true,
+    "validation_v22_mse": 0.028287022848498024,
+    "validation_stage_constant_prior_mse": 0.06371545791625977,
+    "validation_v22_minus_prior_group_bootstrap_95ci": [
+      -0.05068719727001511,
+      -0.020172854469597715
+    ]
+  },
+  "v22_vs_v14_128_seed_87k_N128": {
+    "source_run": 41261927266,
+    "physical_game_ids": [
+      87000,
+      87127
+    ],
+    "v14": {
+      "T1": 4,
+      "T2": 49,
+      "T3": 93,
+      "mean_keep": 5.1484375,
+      "gameplay_seconds": 44.7323
+    },
+    "v22": {
+      "T1": 5,
+      "T2": 54,
+      "T3": 105,
+      "mean_keep": 5.796875,
+      "gameplay_seconds": 45.8581
+    },
+    "paired_T2": {
+      "gain": 12,
+      "loss": 7,
+      "delta_pp": 3.90625,
+      "bootstrap95_pp": [
+        -2.34375,
+        10.9375
+      ],
+      "mcnemar_exact_p": 0.359283447265625
+    },
+    "paired_T3": {
+      "gain": 16,
+      "loss": 4,
+      "delta_pp": 9.375,
+      "bootstrap95_pp": [
+        3.125,
+        15.625
+      ],
+      "mcnemar_exact_p": 0.01181793212890625
+    },
+    "decision_integrity": {
+      "same_hand_outcome_anomalies": 0,
+      "bottom_model_disagreement_anomalies": 0,
+      "changed_keep_depth": 63,
+      "v22_kept_more": 51,
+      "v22_kept_fewer": 12
+    }
+  },
+  "v22_vs_v5_seed_86k_N16": {
+    "source_run": 41261808902,
+    "physical_game_ids": [
+      86000,
+      86015
+    ],
+    "v5": {
+      "T1": 0,
+      "T2": 8,
+      "T3": 14,
+      "simulation_seconds": 492.5699
+    },
+    "v22": {
+      "T1": 0,
+      "T2": 6,
+      "T3": 15,
+      "simulation_seconds": 9.1879
+    },
+    "observed_speedup": 53.6107162681
+  },
+  "v22_vs_v5_seed_88k_N64": {
+    "source_run": 41262221020,
+    "physical_game_ids": [
+      88000,
+      88063
+    ],
+    "v5": {
+      "T1": 4,
+      "T2": 32,
+      "T3": 53,
+      "mean_keep": 5.1875,
+      "simulation_seconds": 1507.1724
+    },
+    "v14": {
+      "T1": 3,
+      "T2": 29,
+      "T3": 48,
+      "mean_keep": 5.28125,
+      "simulation_seconds": 23.8998
+    },
+    "v22": {
+      "T1": 2,
+      "T2": 31,
+      "T3": 51,
+      "mean_keep": 6.109375,
+      "simulation_seconds": 32.7334
+    },
+    "v22_vs_v5_T2": {
+      "gains": 6,
+      "losses": 7,
+      "delta_pp": -1.5625,
+      "paired_bootstrap_95ci_pp": [
+        -12.5,
+        9.375
+      ]
+    },
+    "v22_vs_v5_T3": {
+      "gains": 5,
+      "losses": 7,
+      "delta_pp": -3.125,
+      "paired_bootstrap_95ci_pp": [
+        -14.0625,
+        7.8125
+      ]
+    },
+    "observed_speedup_v5_over_v22": 46.04386956442,
+    "observed_speedup_v5_over_v14": 63.06213441117,
+    "note": "Small sample; near nominal reference count is not a noninferiority result"
+  },
+  "v23_T2_only_vs_blended_seed_88k_N128": {
+    "source_run": 41262335296,
+    "game_ids": [
+      88000,
+      88127
+    ],
+    "v14": {
+      "T1": 5,
+      "T2": 57,
+      "T3": 97
+    },
+    "v22": {
+      "T1": 5,
+      "T2": 59,
+      "T3": 103
+    },
+    "v23": {
+      "T1": 4,
+      "T2": 57,
+      "T3": 94
+    },
+    "v23_minus_v22_T2_pp": -1.5625
+  },
+  "v23_T2_only_vs_blended_seed_89k_N128": {
+    "source_run": 41262364750,
+    "game_ids": [
+      89000,
+      89127
+    ],
+    "v14": {
+      "T1": 11,
+      "T2": 57,
+      "T3": 95
+    },
+    "v22": {
+      "T1": 12,
+      "T2": 59,
+      "T3": 102
+    },
+    "v23": {
+      "T1": 12,
+      "T2": 55,
+      "T3": 91
+    },
+    "v23_minus_v22_T2_pp": -3.125,
+    "v23_minus_v22_T3_pp": -8.59375
+  },
+  "combined_two_frozen_student_utility_cohorts_N256": {
+    "not_independent_of_88k_v5_reference_cohort": true,
+    "v22": {
+      "T1": 17,
+      "T2": 118,
+      "T3": 205
+    },
+    "v23": {
+      "T1": 16,
+      "T2": 112,
+      "T3": 185
+    },
+    "v14": {
+      "T1": 16,
+      "T2": 114,
+      "T3": 192
+    },
+    "v22_minus_v23_T2_pp": 2.34375,
+    "v22_minus_v23_T3_pp": 7.8125,
+    "warning": "Posthoc combined descriptive comparison only; do not present as pre-registered significance or 4-player multiplayer outcome"
+  },
+  "next": {
+    "priority": "Keep v22 blended utility frozen as best current fast candidate; do not promote",
+    "statistical": "More independent full-game v5 comparisons, ideally enough to bound T2 noninferiority; current 64-game interval spans a meaningful loss",
+    "technical": "Increase diverse true-hypothetical per-candidate outcomes beyond frozen v14 bottom choices, improve P(T1) rare class and London value calibration across decks/seats, audit actual game rules",
+    "policy": "No changes to v5 reference, no replacement of main branch, no use of experimental models as production"
+  }
+}
