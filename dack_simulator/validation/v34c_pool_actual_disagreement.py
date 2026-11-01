@@ -16,7 +16,7 @@ K_SPLITS=("calibration","replication")
 Q_SPLITS={"calibration":"train","replication":"untouched_validation"}
 TOTAL=100
 
-def y(t,turn):
+def y(turn,t):
     return int(0<int(turn)<=t)
 
 def load(kpattern,cpattern):
@@ -139,7 +139,16 @@ def dual_bootstrap(groups,cont,split,t,iters=5000):
       "bootstrap_physical_group_and_keep_future_and_shared_C":True}
 
 def pool(K,C,out):
+    # Cumulative deployment probabilities must satisfy T1 <= T2 <= T3.
+    assert y(0,1)==0 and y(1,1)==1 and y(1,2)==1 and y(1,3)==1
+    assert y(2,1)==0 and y(2,2)==1 and y(2,3)==1
+    assert y(3,2)==0 and y(3,3)==1
     groups,cont,sha=load(K,C)
+    for split in ("calibration","replication","pooled"):
+        for g in groups:
+            qs=[one(g,cont,split,t) for t in (1,2,3)]
+            assert all(qs[i]["Pkeep"]<=qs[i+1]["Pkeep"] for i in (0,1))
+            assert all(qs[i]["Pmull"]<=qs[i+1]["Pmull"] for i in (0,1))
     bydirection=Counter("v5_keeps_first" if r["v5_first_keeps"]
                         else "v27_keeps_first" for r in groups)
     counts=Counter(r["stage"] for r in groups)
@@ -159,7 +168,7 @@ def pool(K,C,out):
        "different_stage_first_action_counts":dict(bydirection),
        "earliest_disagreement_stage_counts":{str(k):v for k,v in sorted(counts.items())},
        "no_new_Qmull_or_v5_beam":True,
-       "no_fit_no_new_policy":True,"analyses":{}}
+       "no_fit_no_new_policy":True,"cumulative_turn_monotonicity_asserted":True,"analysis_corrected_after_invalid_argument_order_first_pool":True,"analyses":{}}
     for split in ("calibration","replication","pooled"):
         this={"splits_independent_action_simulations":split!="pooled"}
         for t in (1,2,3):
