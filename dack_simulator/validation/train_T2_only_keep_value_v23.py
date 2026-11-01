@@ -178,7 +178,7 @@ def train(trainpaths,valpaths,modelpath,reportpath):
     trscore=evaluate(tr,model,baseline)
     valscore=evaluate(va,model,baseline)
     report={
-        "schema":"dack_v22_all_london_keep_value_regression_diagnostic",
+        "schema":"dack_v23_T2_only_keep_value_regression_diagnostic",
         "status":"PASS",
         "training_game_groups":64,"validation_game_groups":16,
         "training_states":512,"validation_states":128,
@@ -204,7 +204,7 @@ if __name__=="__main__":
     p=argparse.ArgumentParser()
     p.add_argument("--train",nargs="+",required=True)
     p.add_argument("--validation",nargs="+",required=True)
-    p.add_argument("--model",default="models/dack_v22_real_all_stage_keep_value_EXPERIMENTAL.json")
-    p.add_argument("--report",default="benchmark_results/v22_real_keep_value_validation.json")
+    p.add_argument("--model",default="models/dack_v23_T2_only_real_keep_value_EXPERIMENTAL.json")
+    p.add_argument("--report",default="benchmark_results/v23_T2_only_keep_value_validation.json")
     a=p.parse_args()
     train(a.train,a.validation,a.model,a.report)
