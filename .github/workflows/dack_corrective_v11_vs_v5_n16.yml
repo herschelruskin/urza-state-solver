@@ -1,0 +1,98 @@
+name: DACK v11 corrective learned versus v5 experimental paired N16
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_corrective_v11_vs_v5_n16.yml'
+      - 'dack_simulator/validation/compare_corrective_v11_vs_v5.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pairs:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - start: 42000
+          - start: 42002
+          - start: 42004
+          - start: 42006
+          - start: 42008
+          - start: 42010
+          - start: 42012
+          - start: 42014
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          python -u dack_simulator/validation/compare_corrective_v11_vs_v5.py \
+            --start ${{ matrix.start }} --games 2 \
+            --out shards/v11_pair_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v11-corrective-pair-${{ matrix.start }}
+          path: shards/v11_pair_*.json.gz
+          retention-days: 14
+  pool:
+    needs: pairs
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v11-corrective-pair-*
+          merge-multiple: true
+          path: paired/
+      - run: |
+          python - <<'PY'
+          import gzip,glob,json,math
+          from pathlib import Path
+          fs=sorted(glob.glob('paired/v11_pair_*.json.gz'))
+          assert len(fs)==8
+          rows=[]
+          for f in fs:
+              with gzip.open(f,'rt') as fp:r=json.load(fp)
+              assert r['status']=='PASS' and r['experimental_model_approved'] is False
+              rows.extend(r['rows'])
+          rows.sort(key=lambda x:x['game_id'])
+          assert [r['game_id'] for r in rows]==list(range(42000,42016))
+          def score(name):
+              v=[r[name] for r in rows]
+              return {'n':16,
+                      'T1':sum(x['win_turn']==1 for x in v),
+                      'T2':sum(0<x['win_turn']<=2 for x in v),
+                      'T3':sum(0<x['win_turn']<=3 for x in v),
+                      'mean_keep':sum(x['keep_n'] for x in v)/16,
+                      'seconds':round(sum(x['seconds'] for x in v),4)}
+          a=score('v5');b=score('corrective_v11')
+          ds=[int(0<r['corrective_v11']['win_turn']<=2)-
+              int(0<r['v5']['win_turn']<=2) for r in rows]
+          delta=sum(ds)/16
+          se=(sum((x-delta)**2 for x in ds)/(16*15))**.5
+          report={'status':'PASS','schema':'dack_v11_corrective_vs_v5_n16_research',
+                  'ids':[42000,42015],'model_approved':False,
+                  'v5':a,'corrective_v11':b,
+                  'runtime_ratio':a['seconds']/max(.001,b['seconds']),
+                  'T2_net_percentage_points':100*delta,
+                  'T2_gains':ds.count(1),'T2_losses':ds.count(-1),
+                  'T2_95ci_pp':[100*(delta-1.96*se),100*(delta+1.96*se)],
+                  'warning':'N16 independent new IDs only, not sufficient for performance equivalence'}
+          Path('benchmark_results').mkdir(exist_ok=True)
+          Path('benchmark_results/corrective_v11_vs_v5_n16_RESEARCH.json').write_text(json.dumps(report,indent=2)+'\n')
+          print('CORRECTIVE_V11_VS_V5_N16_RESEARCH',json.dumps(report),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-corrective-v11-vs-v5-n16-research-report
+          path: benchmark_results/corrective_v11_vs_v5_n16_RESEARCH.json
+          retention-days: 14
