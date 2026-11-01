@@ -1,0 +1,31 @@
+name: DACK v44 physical top12 candidate source four-group smoke
+on:
+  push:
+    branches: [dack-v44-physical-candidate-values-20261101]
+    paths:
+      - '.github/workflows/dack_v44_candidate_physics_smoke.yml'
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v44-physical-candidate-values-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Four independent actual physical hands, all original legal candidate bottoms
+        run: |
+          python -m py_compile dack_simulator/validation/v44_collect_real_candidate_Q2.py
+          python -u dack_simulator/validation/v44_collect_real_candidate_Q2.py \
+            --split train --start 154000 --groups 4 \
+            --out pilot/v44_candidate_154000_4.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v44-physical-top12-4-group-smoke
+          path: pilot/*.json.gz
+          retention-days: 30
