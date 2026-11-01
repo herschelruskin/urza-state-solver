@@ -103,7 +103,7 @@ def boot(rows,keep,C,t,B=4000):
     rng=random.Random(390131+t)
     pergroup=defaultdict(list)
     for r in rows:
-        if r["changed"]:pergroup[r["game_id"]].append(r)
+        if r["changed"]:pergroup[r["gid"]].append(r)
     gidlist=list(range(LO,HI+1))
     bvals=[]
     for _ in range(B):
