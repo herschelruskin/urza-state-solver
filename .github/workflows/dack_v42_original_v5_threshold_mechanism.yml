@@ -1,0 +1,56 @@
+name: DACK v42 readonly original-v5 decision mechanism and threshold dissection
+on:
+  push:
+    branches: [dack-v42-v5-decision-mechanism-audit-20261101]
+    paths:
+      - '.github/workflows/dack_v42_original_v5_threshold_mechanism.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v42-v5-decision-mechanism-audit-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile exact-source observer
+        run: python -m py_compile dack_simulator/validation/v42_readonly_v5_v27_mechanisms.py
+      - name: Recover 256 original cases and compare v5 with native no-bump counterfactual
+        run: |
+          python -u dack_simulator/validation/v42_readonly_v5_v27_mechanisms.py \
+            --out benchmark_results/v42_original_v5_vs_v27_threshold_mechanism_115k.json
+      - name: Assert exact stage, source, model-safety and count invariants
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('benchmark_results/v42_original_v5_vs_v27_threshold_mechanism_115k.json')
+          r=json.loads(p.read_text())
+          assert r['status']=='PASS' and r['counts']['N_outer_games']==256
+          assert r['counts']['different_actual_keep_stage']==100
+          assert r['counts']['same_actual_keep_stage']==156
+          assert r['no_new_gameplay_or_lookahead'] and r['historical_selected_sample_NOT_new_validation']
+          assert not r['no_new_teacher_model_or_policy'] is False
+          assert len(r['cases'])==100
+          assert sum(x['N'] for x in r['different_stage_first_stage_mechanisms'].values())==100
+          print('DACK_V42_READONLY_ORIGINAL_V5_MECHANISM_AUDIT_PASS')
+          PY
+      - name: Archive exact teacher mechanism diagnostic, not a model
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v42_original_v5_vs_v27_threshold_mechanism_115k.json
+          git commit -m "Archive measured original-v5 native versus assertive threshold mechanism on real 115k conflicts"
+          git pull --rebase origin dack-v42-v5-decision-mechanism-audit-20261101
+          git push origin HEAD:dack-v42-v5-decision-mechanism-audit-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v42-actual-v5-threshold-mechanisms-no-physics
+          path: benchmark_results/v42_original_v5_vs_v27_threshold_mechanism_115k.json
+          retention-days: 90
