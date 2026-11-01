@@ -50,3 +50,7 @@ GitHub Actions [run 41340364687](https://github.com/herschelruskin/urza-state-so
 - Both frozen v38/v39 historical recovery workflow runs 41328420324 and 41330839667 independently completed SUCCESS.
 
 The 4096+512 program is configured but **has not been dispatched**. There are no new physical KEEP/MULL goldfish outcome labels and no trained v40 model.
+
+## Full-job launch controls
+
+On a research branch, GitHub's manual `workflow_dispatch` menu may be unavailable unless the workflow exists on the default branch. To avoid depending on that UI behavior, the opt-in full workflow also supports branch-local push triggers: creating exactly `DACK_V40_START_TRAIN_4096.txt` launches the **train** matrix, or creating exactly `DACK_V40_START_DEV_512.txt` launches the independent **dev** matrix. The workflow gates its jobs on the *added* sentinel filename in the triggering push and will not launch due to ordinary code or protocol commits. Never add these trigger files speculatively; each launches substantial GitHub Actions compute. Neither trigger file exists as of this documentation update.
