@@ -1,0 +1,4326 @@
+{
+  "cases": [
+    {
+      "T1_signed_v5_advantage": 0.03125,
+      "T2_signed_v5_advantage": 0.1875,
+      "T3_signed_v5_advantage": -0.39583333333333337,
+      "assertive_bump": 0.12,
+      "game_id": 115003,
+      "keep_n": 6,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 1,
+      "stage": 2,
+      "v27_bottom": [
+        "Trinisphere"
+      ],
+      "v27_hand": [
+        "Blast Zone",
+        "Enlightened Tutor",
+        "Plains",
+        "Remote Farm",
+        "Ruins of Trokair",
+        "Scroll Rack"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.4898582,
+      "v27_threshold": 0.2225183,
+      "v5_bottom": [
+        "Scroll Rack"
+      ],
+      "v5_effective_threshold": 0.63025,
+      "v5_frozen_native_C": 0.51025,
+      "v5_hand": [
+        "Blast Zone",
+        "Enlightened Tutor",
+        "Plains",
+        "Remote Farm",
+        "Ruins of Trokair",
+        "Trinisphere"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.5625,
+      "v5_raw_minus_actual_threshold": -0.06775,
+      "v5_raw_minus_native_C": 0.05225,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.020833333333333332,
+      "T2_signed_v5_advantage": -0.010416666666666685,
+      "T3_signed_v5_advantage": -0.14583333333333337,
+      "assertive_bump": 0.12,
+      "game_id": 115004,
+      "keep_n": 6,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 0,
+      "stage": 2,
+      "v27_bottom": [
+        "Floating Shield"
+      ],
+      "v27_hand": [
+        "Grim Monolith",
+        "Petrified Hamlet",
+        "Portable Hole",
+        "Sol Ring",
+        "Static Prison",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.4022768,
+      "v27_threshold": 0.2292364,
+      "v5_bottom": [
+        "Portable Hole"
+      ],
+      "v5_effective_threshold": 0.63025,
+      "v5_frozen_native_C": 0.51025,
+      "v5_hand": [
+        "Floating Shield",
+        "Grim Monolith",
+        "Petrified Hamlet",
+        "Sol Ring",
+        "Static Prison",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.375,
+      "v5_raw_minus_actual_threshold": -0.25525,
+      "v5_raw_minus_native_C": -0.13525,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.010416666666666664,
+      "T2_signed_v5_advantage": 0.26041666666666663,
+      "T3_signed_v5_advantage": -0.05208333333333337,
+      "assertive_bump": 0.2,
+      "game_id": 115005,
+      "keep_n": 7,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 1,
+      "stage": 0,
+      "v27_bottom": [],
+      "v27_hand": [
+        "City of Traitors",
+        "Homeward Path",
+        "Mana Vault",
+        "Orim's Chant",
+        "Petrified Hamlet",
+        "Plains",
+        "Sheltered by Ghosts"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.5371126,
+      "v27_threshold": 0.3642452,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "City of Traitors",
+        "Homeward Path",
+        "Mana Vault",
+        "Orim's Chant",
+        "Petrified Hamlet",
+        "Plains",
+        "Sheltered by Ghosts"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.4375,
+      "v5_raw_minus_actual_threshold": -0.31853,
+      "v5_raw_minus_native_C": -0.11853,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.0,
+      "T2_signed_v5_advantage": -0.020833333333333336,
+      "T3_signed_v5_advantage": 0.20833333333333334,
+      "assertive_bump": 0.0,
+      "game_id": 115007,
+      "keep_n": 3,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 0,
+      "stage": 5,
+      "v27_bottom": [
+        "March of Otherworldly Light",
+        "Remote Farm",
+        "Sheltered by Ghosts",
+        "Erode"
+      ],
+      "v27_hand": [
+        "Krark-Clan Ironworks",
+        "Mox Opal",
+        "Plains"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0108406,
+      "v27_threshold": 0.0275108,
+      "v5_bottom": [
+        "March of Otherworldly Light",
+        "Sheltered by Ghosts",
+        "Plains",
+        "Erode"
+      ],
+      "v5_effective_threshold": 0.19234,
+      "v5_frozen_native_C": 0.19234,
+      "v5_hand": [
+        "Krark-Clan Ironworks",
+        "Mox Opal",
+        "Remote Farm"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.375,
+      "v5_raw_minus_actual_threshold": 0.18266,
+      "v5_raw_minus_native_C": 0.18266,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.0,
+      "T2_signed_v5_advantage": 0.052083333333333336,
+      "T3_signed_v5_advantage": 0.07291666666666666,
+      "assertive_bump": 0.0,
+      "game_id": 115008,
+      "keep_n": 3,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 0,
+      "stage": 5,
+      "v27_bottom": [
+        "Preston, the Vanisher",
+        "Thorn of Amethyst",
+        "Touch the Spirit Realm",
+        "Feather of Flight"
+      ],
+      "v27_hand": [
+        "Basalt Monolith",
+        "Blast Zone",
+        "Gemstone Caverns"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.0501425,
+      "v27_threshold": 0.0275108,
+      "v5_bottom": [
+        "Preston, the Vanisher",
+        "Gemstone Caverns",
+        "Thorn of Amethyst",
+        "Touch the Spirit Realm"
+      ],
+      "v5_effective_threshold": 0.19234,
+      "v5_frozen_native_C": 0.19234,
+      "v5_hand": [
+        "Basalt Monolith",
+        "Blast Zone",
+        "Feather of Flight"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.09375,
+      "v5_raw_minus_actual_threshold": -0.09859,
+      "v5_raw_minus_native_C": -0.09859,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.020833333333333332,
+      "T2_signed_v5_advantage": 0.2604166666666667,
+      "T3_signed_v5_advantage": 0.05208333333333337,
+      "assertive_bump": 0.055,
+      "game_id": 115012,
+      "keep_n": 5,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 1,
+      "stage": 3,
+      "v27_bottom": [
+        "Idolized",
+        "Lunarch Mantle"
+      ],
+      "v27_hand": [
+        "Crystal Vein",
+        "Expedition Map",
+        "Grim Monolith",
+        "Portable Hole",
+        "Silence"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.2902124,
+      "v27_threshold": 0.1287871,
+      "v5_bottom": [
+        "Idolized",
+        "Lunarch Mantle"
+      ],
+      "v5_effective_threshold": 0.47768,
+      "v5_frozen_native_C": 0.42268,
+      "v5_hand": [
+        "Crystal Vein",
+        "Expedition Map",
+        "Grim Monolith",
+        "Portable Hole",
+        "Silence"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.25,
+      "v5_raw_minus_actual_threshold": -0.22768,
+      "v5_raw_minus_native_C": -0.17268,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.020833333333333332,
+      "T2_signed_v5_advantage": -0.10416666666666669,
+      "T3_signed_v5_advantage": 0.41666666666666663,
+      "assertive_bump": 0.055,
+      "game_id": 115017,
+      "keep_n": 5,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 1,
+      "stage": 3,
+      "v27_bottom": [
+        "Ruins of Trokair",
+        "Paladin Class"
+      ],
+      "v27_hand": [
+        "Fellwar Stone",
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Tezzeret, Cruel Captain",
+        "Urza's Cave"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0404995,
+      "v27_threshold": 0.1287871,
+      "v5_bottom": [
+        "Fellwar Stone",
+        "Paladin Class"
+      ],
+      "v5_effective_threshold": 0.47768,
+      "v5_frozen_native_C": 0.42268,
+      "v5_hand": [
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Ruins of Trokair",
+        "Tezzeret, Cruel Captain",
+        "Urza's Cave"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.625,
+      "v5_raw_minus_actual_threshold": 0.14732,
+      "v5_raw_minus_native_C": 0.20232,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.020833333333333332,
+      "T2_signed_v5_advantage": 0.5833333333333333,
+      "T3_signed_v5_advantage": 0.27083333333333337,
+      "assertive_bump": 0.2,
+      "game_id": 115025,
+      "keep_n": 7,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 0,
+      "stage": 0,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Ancient Den",
+        "City of Traitors",
+        "Coalition Relic",
+        "Gemstone Caverns",
+        "Mox Diamond",
+        "Plains",
+        "Urza's Saga"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.2519965,
+      "v27_threshold": 0.3795842,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Ancient Den",
+        "City of Traitors",
+        "Coalition Relic",
+        "Gemstone Caverns",
+        "Mox Diamond",
+        "Plains",
+        "Urza's Saga"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 1.0,
+      "v5_raw_minus_actual_threshold": 0.24397,
+      "v5_raw_minus_native_C": 0.44397,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.020833333333333336,
+      "T2_signed_v5_advantage": 0.48958333333333337,
+      "T3_signed_v5_advantage": 0.23958333333333337,
+      "assertive_bump": 0.2,
+      "game_id": 115030,
+      "keep_n": 7,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 1,
+      "stage": 0,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Chrome Mox",
+        "City of Traitors",
+        "Coalition Relic",
+        "Emergence Zone",
+        "Emeria's Call",
+        "Moonsilver Key",
+        "Sheltered by Ghosts"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.3421139,
+      "v27_threshold": 0.3642452,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Chrome Mox",
+        "City of Traitors",
+        "Coalition Relic",
+        "Emergence Zone",
+        "Emeria's Call",
+        "Moonsilver Key",
+        "Sheltered by Ghosts"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 1.0,
+      "v5_raw_minus_actual_threshold": 0.24397,
+      "v5_raw_minus_native_C": 0.44397,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.0625,
+      "T2_signed_v5_advantage": 0.1875,
+      "T3_signed_v5_advantage": -0.26041666666666663,
+      "assertive_bump": 0.2,
+      "game_id": 115031,
+      "keep_n": 7,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 0,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Coalition Relic",
+        "Enlightened Tutor",
+        "Giant's Boulder",
+        "Mishra's Workshop",
+        "Remote Farm",
+        "Scroll Rack",
+        "Static Prison"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.3554721,
+      "v27_threshold": 0.313281,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Coalition Relic",
+        "Enlightened Tutor",
+        "Giant's Boulder",
+        "Mishra's Workshop",
+        "Remote Farm",
+        "Scroll Rack",
+        "Static Prison"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.5625,
+      "v5_raw_minus_actual_threshold": -0.19353,
+      "v5_raw_minus_native_C": 0.00647,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.0,
+      "T2_signed_v5_advantage": -0.010416666666666666,
+      "T3_signed_v5_advantage": 0.16666666666666666,
+      "assertive_bump": 0.0,
+      "game_id": 115032,
+      "keep_n": 2,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 2,
+      "stage": 6,
+      "v27_bottom": [
+        "Silence",
+        "Touch the Spirit Realm",
+        "Paladin Class",
+        "Erode",
+        "Razorgrass Ambush"
+      ],
+      "v27_hand": [
+        "Charitable Levy",
+        "Implements of Sacrifice"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0026147,
+      "v27_threshold": 0.0077262,
+      "v5_bottom": [
+        "Silence",
+        "Charitable Levy",
+        "Touch the Spirit Realm",
+        "Paladin Class",
+        "Implements of Sacrifice"
+      ],
+      "v5_effective_threshold": 0.06171875,
+      "v5_frozen_native_C": 0.06171875,
+      "v5_hand": [
+        "Erode",
+        "Razorgrass Ambush"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.1875,
+      "v5_raw_minus_actual_threshold": 0.1257813,
+      "v5_raw_minus_native_C": 0.1257813,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.041666666666666664,
+      "T2_signed_v5_advantage": 0.4791666666666667,
+      "T3_signed_v5_advantage": -0.04166666666666663,
+      "assertive_bump": 0.2,
+      "game_id": 115033,
+      "keep_n": 7,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 2,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Enlightened Tutor",
+        "Prismatic Lens",
+        "Ruins of Trokair",
+        "Super State",
+        "Tezzeret, Cruel Captain",
+        "The Mind Stone",
+        "Touch the Spirit Realm"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.4297039,
+      "v27_threshold": 0.330679,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Enlightened Tutor",
+        "Prismatic Lens",
+        "Ruins of Trokair",
+        "Super State",
+        "Tezzeret, Cruel Captain",
+        "The Mind Stone",
+        "Touch the Spirit Realm"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.375,
+      "v5_raw_minus_actual_threshold": -0.38103,
+      "v5_raw_minus_native_C": -0.18103,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.020833333333333336,
+      "T2_signed_v5_advantage": -0.04166666666666666,
+      "T3_signed_v5_advantage": -0.125,
+      "assertive_bump": 0.055,
+      "game_id": 115044,
+      "keep_n": 5,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 3,
+      "stage": 3,
+      "v27_bottom": [
+        "Defense Grid",
+        "Homeward Path"
+      ],
+      "v27_hand": [
+        "Eldrazi Confluence",
+        "Implements of Sacrifice",
+        "Krark-Clan Ironworks",
+        "Lion's Eye Diamond",
+        "Tezzeret, Cruel Captain"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.4476369,
+      "v27_threshold": 0.1553826,
+      "v5_bottom": [
+        "Defense Grid",
+        "Implements of Sacrifice"
+      ],
+      "v5_effective_threshold": 0.47768,
+      "v5_frozen_native_C": 0.42268,
+      "v5_hand": [
+        "Eldrazi Confluence",
+        "Homeward Path",
+        "Krark-Clan Ironworks",
+        "Lion's Eye Diamond",
+        "Tezzeret, Cruel Captain"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.4375,
+      "v5_raw_minus_actual_threshold": -0.04018,
+      "v5_raw_minus_native_C": 0.01482,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.0625,
+      "T2_signed_v5_advantage": 0.375,
+      "T3_signed_v5_advantage": -0.13541666666666663,
+      "assertive_bump": 0.2,
+      "game_id": 115048,
+      "keep_n": 7,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 0,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Basalt Monolith",
+        "City of Traitors",
+        "Defense Grid",
+        "Eiganjo, Seat of the Empire",
+        "Everflowing Chalice",
+        "Mind Stone",
+        "Plains"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.3604253,
+      "v27_threshold": 0.313281,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Basalt Monolith",
+        "City of Traitors",
+        "Defense Grid",
+        "Eiganjo, Seat of the Empire",
+        "Everflowing Chalice",
+        "Mind Stone",
+        "Plains"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.4375,
+      "v5_raw_minus_actual_threshold": -0.31853,
+      "v5_raw_minus_native_C": -0.11853,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.020833333333333332,
+      "T2_signed_v5_advantage": -0.05208333333333334,
+      "T3_signed_v5_advantage": 0.22916666666666669,
+      "assertive_bump": 0.015,
+      "game_id": 115050,
+      "keep_n": 4,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 1,
+      "stage": 4,
+      "v27_bottom": [
+        "Petrified Hamlet",
+        "Plains",
+        "Urza's Saga"
+      ],
+      "v27_hand": [
+        "Krark-Clan Ironworks",
+        "Mishra's Workshop",
+        "Plains",
+        "Treasure Vault"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0542438,
+      "v27_threshold": 0.0802855,
+      "v5_bottom": [
+        "Petrified Hamlet",
+        "Plains",
+        "Urza's Saga"
+      ],
+      "v5_effective_threshold": 0.32919000000000004,
+      "v5_frozen_native_C": 0.31419,
+      "v5_hand": [
+        "Krark-Clan Ironworks",
+        "Mishra's Workshop",
+        "Plains",
+        "Treasure Vault"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.625,
+      "v5_raw_minus_actual_threshold": 0.29581,
+      "v5_raw_minus_native_C": 0.31081,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.03125,
+      "T2_signed_v5_advantage": 0.08333333333333331,
+      "T3_signed_v5_advantage": -0.1875,
+      "assertive_bump": 0.2,
+      "game_id": 115055,
+      "keep_n": 7,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 1,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Disruptor Flute",
+        "Emeria's Call",
+        "Feather of Flight",
+        "Floating Shield",
+        "Lion's Eye Diamond",
+        "Mox Opal",
+        "Petrified Hamlet"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.9183823,
+      "v27_threshold": 0.3126459,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Disruptor Flute",
+        "Emeria's Call",
+        "Feather of Flight",
+        "Floating Shield",
+        "Lion's Eye Diamond",
+        "Mox Opal",
+        "Petrified Hamlet"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.6875,
+      "v5_raw_minus_actual_threshold": -0.06853,
+      "v5_raw_minus_native_C": 0.13147,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.010416666666666664,
+      "T2_signed_v5_advantage": -0.11458333333333334,
+      "T3_signed_v5_advantage": 0.5625,
+      "assertive_bump": 0.055,
+      "game_id": 115060,
+      "keep_n": 5,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 3,
+      "stage": 3,
+      "v27_bottom": [
+        "Touch the Spirit Realm",
+        "Idolized"
+      ],
+      "v27_hand": [
+        "Command Beacon",
+        "Deafening Silence",
+        "Giant's Boulder",
+        "The Mycosynth Gardens",
+        "Urza's Saga"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0165519,
+      "v27_threshold": 0.1553826,
+      "v5_bottom": [
+        "Touch the Spirit Realm",
+        "Idolized"
+      ],
+      "v5_effective_threshold": 0.47768,
+      "v5_frozen_native_C": 0.42268,
+      "v5_hand": [
+        "Command Beacon",
+        "Deafening Silence",
+        "Giant's Boulder",
+        "The Mycosynth Gardens",
+        "Urza's Saga"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.5625,
+      "v5_raw_minus_actual_threshold": 0.08482,
+      "v5_raw_minus_native_C": 0.13982,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.010416666666666666,
+      "T2_signed_v5_advantage": -0.15625,
+      "T3_signed_v5_advantage": 0.5520833333333333,
+      "assertive_bump": 0.055,
+      "game_id": 115061,
+      "keep_n": 5,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 2,
+      "stage": 3,
+      "v27_bottom": [
+        "Feather of Flight",
+        "Void Mirror"
+      ],
+      "v27_hand": [
+        "Fellwar Stone",
+        "Moonsilver Key",
+        "Plains",
+        "Treasure Vault",
+        "Urza's Saga"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0564875,
+      "v27_threshold": 0.1592664,
+      "v5_bottom": [
+        "Treasure Vault",
+        "Feather of Flight"
+      ],
+      "v5_effective_threshold": 0.47768,
+      "v5_frozen_native_C": 0.42268,
+      "v5_hand": [
+        "Fellwar Stone",
+        "Moonsilver Key",
+        "Plains",
+        "Urza's Saga",
+        "Void Mirror"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.5625,
+      "v5_raw_minus_actual_threshold": 0.08482,
+      "v5_raw_minus_native_C": 0.13982,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.03125,
+      "T2_signed_v5_advantage": 0.4791666666666667,
+      "T3_signed_v5_advantage": 0.21875,
+      "assertive_bump": 0.2,
+      "game_id": 115065,
+      "keep_n": 7,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 1,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Krark-Clan Ironworks",
+        "Mishra's Workshop",
+        "Prismatic Lens",
+        "Silence",
+        "Talon Gates of Madara",
+        "Tezzeret, Cruel Captain",
+        "Void Mirror"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.1272585,
+      "v27_threshold": 0.3126459,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Krark-Clan Ironworks",
+        "Mishra's Workshop",
+        "Prismatic Lens",
+        "Silence",
+        "Talon Gates of Madara",
+        "Tezzeret, Cruel Captain",
+        "Void Mirror"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 1.0,
+      "v5_raw_minus_actual_threshold": 0.24397,
+      "v5_raw_minus_native_C": 0.44397,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.020833333333333332,
+      "T2_signed_v5_advantage": 0.20833333333333331,
+      "T3_signed_v5_advantage": -0.08333333333333337,
+      "assertive_bump": 0.12,
+      "game_id": 115066,
+      "keep_n": 6,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 0,
+      "stage": 2,
+      "v27_bottom": [
+        "Minimus Containment"
+      ],
+      "v27_hand": [
+        "Enlightened Tutor",
+        "Fellwar Stone",
+        "Floating Shield",
+        "Gemstone Caverns",
+        "Implements of Sacrifice",
+        "Mox Opal"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.4807184,
+      "v27_threshold": 0.2292364,
+      "v5_bottom": [
+        "Minimus Containment"
+      ],
+      "v5_effective_threshold": 0.63025,
+      "v5_frozen_native_C": 0.51025,
+      "v5_hand": [
+        "Enlightened Tutor",
+        "Fellwar Stone",
+        "Floating Shield",
+        "Gemstone Caverns",
+        "Implements of Sacrifice",
+        "Mox Opal"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.4375,
+      "v5_raw_minus_actual_threshold": -0.19275,
+      "v5_raw_minus_native_C": -0.07275,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.010416666666666666,
+      "T2_signed_v5_advantage": 0.0,
+      "T3_signed_v5_advantage": 0.125,
+      "assertive_bump": 0.0,
+      "game_id": 115068,
+      "keep_n": 3,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 3,
+      "stage": 5,
+      "v27_bottom": [
+        "Crystal Vein",
+        "Minimus Containment",
+        "Remote Farm",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v27_hand": [
+        "Cavern of Souls",
+        "Implements of Sacrifice",
+        "Mishra's Workshop"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0275656,
+      "v27_threshold": 0.0326566,
+      "v5_bottom": [
+        "Minimus Containment",
+        "Untaidake, the Cloud Keeper",
+        "Cavern of Souls",
+        "Mishra's Workshop"
+      ],
+      "v5_effective_threshold": 0.19234,
+      "v5_frozen_native_C": 0.19234,
+      "v5_hand": [
+        "Crystal Vein",
+        "Implements of Sacrifice",
+        "Remote Farm"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.4375,
+      "v5_raw_minus_actual_threshold": 0.24516,
+      "v5_raw_minus_native_C": 0.24516,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.052083333333333336,
+      "T2_signed_v5_advantage": -0.14583333333333334,
+      "T3_signed_v5_advantage": 0.5,
+      "assertive_bump": 0.055,
+      "game_id": 115069,
+      "keep_n": 5,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 3,
+      "stage": 3,
+      "v27_bottom": [
+        "Idolized",
+        "Boonweaver Giant"
+      ],
+      "v27_hand": [
+        "Bucknard's Everfull Purse",
+        "Coalition Relic",
+        "Command Beacon",
+        "Plains",
+        "Urza's Saga"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0283585,
+      "v27_threshold": 0.1553826,
+      "v5_bottom": [
+        "Idolized",
+        "Boonweaver Giant"
+      ],
+      "v5_effective_threshold": 0.47768,
+      "v5_frozen_native_C": 0.42268,
+      "v5_hand": [
+        "Bucknard's Everfull Purse",
+        "Coalition Relic",
+        "Command Beacon",
+        "Plains",
+        "Urza's Saga"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.5625,
+      "v5_raw_minus_actual_threshold": 0.08482,
+      "v5_raw_minus_native_C": 0.13982,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.010416666666666666,
+      "T2_signed_v5_advantage": -0.15625,
+      "T3_signed_v5_advantage": 0.052083333333333315,
+      "assertive_bump": 0.055,
+      "game_id": 115071,
+      "keep_n": 5,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 2,
+      "stage": 3,
+      "v27_bottom": [
+        "Plains",
+        "Urza's Saga"
+      ],
+      "v27_hand": [
+        "Blast Zone",
+        "Charitable Levy",
+        "Command Beacon",
+        "Crystal Vein",
+        "Implements of Sacrifice"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0254154,
+      "v27_threshold": 0.1592664,
+      "v5_bottom": [
+        "Plains",
+        "Crystal Vein"
+      ],
+      "v5_effective_threshold": 0.47768,
+      "v5_frozen_native_C": 0.42268,
+      "v5_hand": [
+        "Blast Zone",
+        "Charitable Levy",
+        "Command Beacon",
+        "Implements of Sacrifice",
+        "Urza's Saga"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.5,
+      "v5_raw_minus_actual_threshold": 0.02232,
+      "v5_raw_minus_native_C": 0.07732,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.052083333333333336,
+      "T2_signed_v5_advantage": 0.0625,
+      "T3_signed_v5_advantage": -0.20833333333333337,
+      "assertive_bump": 0.2,
+      "game_id": 115073,
+      "keep_n": 7,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 2,
+      "stage": 0,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Coalition Relic",
+        "Great Hall of the Citadel",
+        "Idolized",
+        "Mana Vault",
+        "Moonsilver Key",
+        "Plains",
+        "Treasure Vault"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.5570249,
+      "v27_threshold": 0.4119294,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Coalition Relic",
+        "Great Hall of the Citadel",
+        "Idolized",
+        "Mana Vault",
+        "Moonsilver Key",
+        "Plains",
+        "Treasure Vault"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.6875,
+      "v5_raw_minus_actual_threshold": -0.06853,
+      "v5_raw_minus_native_C": 0.13147,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.052083333333333336,
+      "T2_signed_v5_advantage": 0.08333333333333334,
+      "T3_signed_v5_advantage": -0.34375,
+      "assertive_bump": 0.055,
+      "game_id": 115075,
+      "keep_n": 5,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 3,
+      "stage": 3,
+      "v27_bottom": [
+        "Void Mirror",
+        "Disruptor Flute"
+      ],
+      "v27_hand": [
+        "Ancient Den",
+        "Bucknard's Everfull Purse",
+        "Moonsilver Key",
+        "Plains",
+        "Talon Gates of Madara"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.2680526,
+      "v27_threshold": 0.1553826,
+      "v5_bottom": [
+        "Plains",
+        "Void Mirror"
+      ],
+      "v5_effective_threshold": 0.47768,
+      "v5_frozen_native_C": 0.42268,
+      "v5_hand": [
+        "Ancient Den",
+        "Bucknard's Everfull Purse",
+        "Disruptor Flute",
+        "Moonsilver Key",
+        "Talon Gates of Madara"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.46875,
+      "v5_raw_minus_actual_threshold": -0.00893,
+      "v5_raw_minus_native_C": 0.04607,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.010416666666666671,
+      "T2_signed_v5_advantage": 0.041666666666666685,
+      "T3_signed_v5_advantage": -0.16666666666666663,
+      "assertive_bump": 0.2,
+      "game_id": 115077,
+      "keep_n": 7,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 3,
+      "stage": 0,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Brainstone",
+        "Chrome Mox",
+        "Emergence Zone",
+        "Krark-Clan Ironworks",
+        "Paladin Class",
+        "Silence",
+        "Sol Ring"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.6089842,
+      "v27_threshold": 0.3817041,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Brainstone",
+        "Chrome Mox",
+        "Emergence Zone",
+        "Krark-Clan Ironworks",
+        "Paladin Class",
+        "Silence",
+        "Sol Ring"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.5625,
+      "v5_raw_minus_actual_threshold": -0.19353,
+      "v5_raw_minus_native_C": 0.00647,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.010416666666666664,
+      "T2_signed_v5_advantage": 0.19791666666666669,
+      "T3_signed_v5_advantage": -0.26041666666666663,
+      "assertive_bump": 0.2,
+      "game_id": 115078,
+      "keep_n": 7,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 2,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Cavern of Souls",
+        "Defense Grid",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Sheltered by Ghosts",
+        "Treasure Vault",
+        "Void Mirror"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.5864664,
+      "v27_threshold": 0.330679,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Cavern of Souls",
+        "Defense Grid",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Sheltered by Ghosts",
+        "Treasure Vault",
+        "Void Mirror"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.625,
+      "v5_raw_minus_actual_threshold": -0.13103,
+      "v5_raw_minus_native_C": 0.06897,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.010416666666666666,
+      "T2_signed_v5_advantage": 0.125,
+      "T3_signed_v5_advantage": -0.3020833333333333,
+      "assertive_bump": 0.055,
+      "game_id": 115083,
+      "keep_n": 5,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 2,
+      "stage": 3,
+      "v27_bottom": [
+        "Super State",
+        "Boonweaver Giant"
+      ],
+      "v27_hand": [
+        "Ancient Den",
+        "Ancient Tomb",
+        "Basalt Monolith",
+        "City of Traitors",
+        "Mantle of the Ancients"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.3636648,
+      "v27_threshold": 0.1592664,
+      "v5_bottom": [
+        "Super State",
+        "Boonweaver Giant"
+      ],
+      "v5_effective_threshold": 0.47768,
+      "v5_frozen_native_C": 0.42268,
+      "v5_hand": [
+        "Ancient Den",
+        "Ancient Tomb",
+        "Basalt Monolith",
+        "City of Traitors",
+        "Mantle of the Ancients"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.4375,
+      "v5_raw_minus_actual_threshold": -0.04018,
+      "v5_raw_minus_native_C": 0.01482,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.052083333333333336,
+      "T2_signed_v5_advantage": -0.3541666666666667,
+      "T3_signed_v5_advantage": -0.23958333333333337,
+      "assertive_bump": 0.2,
+      "game_id": 115085,
+      "keep_n": 7,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 3,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "City of Traitors",
+        "Mana Tithe",
+        "Mox Diamond",
+        "Sol Ring",
+        "The Mycosynth Gardens",
+        "Touch the Spirit Realm",
+        "Voltaic Key"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.7018449,
+      "v27_threshold": 0.3157466,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "City of Traitors",
+        "Mana Tithe",
+        "Mox Diamond",
+        "Sol Ring",
+        "The Mycosynth Gardens",
+        "Touch the Spirit Realm",
+        "Voltaic Key"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.6875,
+      "v5_raw_minus_actual_threshold": -0.06853,
+      "v5_raw_minus_native_C": 0.13147,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.03125,
+      "T2_signed_v5_advantage": 0.28125,
+      "T3_signed_v5_advantage": 0.13541666666666663,
+      "assertive_bump": 0.12,
+      "game_id": 115086,
+      "keep_n": 6,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 1,
+      "stage": 2,
+      "v27_bottom": [
+        "Mantle of the Ancients"
+      ],
+      "v27_hand": [
+        "Ancient Tomb",
+        "City of Traitors",
+        "Everflowing Chalice",
+        "Gift of Immortality",
+        "Plains",
+        "Plains"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.3340558,
+      "v27_threshold": 0.2225183,
+      "v5_bottom": [
+        "Everflowing Chalice"
+      ],
+      "v5_effective_threshold": 0.63025,
+      "v5_frozen_native_C": 0.51025,
+      "v5_hand": [
+        "Ancient Tomb",
+        "City of Traitors",
+        "Gift of Immortality",
+        "Mantle of the Ancients",
+        "Plains",
+        "Plains"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.3125,
+      "v5_raw_minus_actual_threshold": -0.31775,
+      "v5_raw_minus_native_C": -0.19775,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.010416666666666664,
+      "T2_signed_v5_advantage": 0.22916666666666669,
+      "T3_signed_v5_advantage": 0.17708333333333337,
+      "assertive_bump": 0.2,
+      "game_id": 115087,
+      "keep_n": 7,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 2,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Lion's Eye Diamond",
+        "Lunarch Mantle",
+        "Mana Tithe",
+        "Plains",
+        "Portable Hole",
+        "Soul Partition",
+        "Touch the Spirit Realm"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.3367288,
+      "v27_threshold": 0.330679,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Lion's Eye Diamond",
+        "Lunarch Mantle",
+        "Mana Tithe",
+        "Plains",
+        "Portable Hole",
+        "Soul Partition",
+        "Touch the Spirit Realm"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.375,
+      "v5_raw_minus_actual_threshold": -0.38103,
+      "v5_raw_minus_native_C": -0.18103,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.010416666666666666,
+      "T2_signed_v5_advantage": 0.03125,
+      "T3_signed_v5_advantage": -0.4583333333333333,
+      "assertive_bump": 0.055,
+      "game_id": 115089,
+      "keep_n": 5,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 2,
+      "stage": 3,
+      "v27_bottom": [
+        "Roaming Throne",
+        "Sheltered by Ghosts"
+      ],
+      "v27_hand": [
+        "Deafening Silence",
+        "Grim Monolith",
+        "Homeward Path",
+        "Plains",
+        "Voltaic Key"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.3193853,
+      "v27_threshold": 0.1592664,
+      "v5_bottom": [
+        "Deafening Silence",
+        "Roaming Throne"
+      ],
+      "v5_effective_threshold": 0.47768,
+      "v5_frozen_native_C": 0.42268,
+      "v5_hand": [
+        "Grim Monolith",
+        "Homeward Path",
+        "Plains",
+        "Sheltered by Ghosts",
+        "Voltaic Key"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.46875,
+      "v5_raw_minus_actual_threshold": -0.00893,
+      "v5_raw_minus_native_C": 0.04607,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.08333333333333334,
+      "T2_signed_v5_advantage": 0.22916666666666669,
+      "T3_signed_v5_advantage": -0.01041666666666663,
+      "assertive_bump": 0.2,
+      "game_id": 115094,
+      "keep_n": 7,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 2,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Deafening Silence",
+        "Feather of Flight",
+        "Floating Shield",
+        "Lion's Eye Diamond",
+        "Plains",
+        "The Mind Stone",
+        "Void Mirror"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.4421958,
+      "v27_threshold": 0.330679,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Deafening Silence",
+        "Feather of Flight",
+        "Floating Shield",
+        "Lion's Eye Diamond",
+        "Plains",
+        "The Mind Stone",
+        "Void Mirror"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.375,
+      "v5_raw_minus_actual_threshold": -0.38103,
+      "v5_raw_minus_native_C": -0.18103,
+      "v5_sampled_T1": 0.125
+    },
+    {
+      "T1_signed_v5_advantage": -0.010416666666666668,
+      "T2_signed_v5_advantage": 0.17708333333333331,
+      "T3_signed_v5_advantage": -0.17708333333333337,
+      "assertive_bump": 0.12,
+      "game_id": 115095,
+      "keep_n": 6,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 0,
+      "stage": 2,
+      "v27_bottom": [
+        "Soul Partition"
+      ],
+      "v27_hand": [
+        "Crystal Vein",
+        "Emergence Zone",
+        "Giant's Boulder",
+        "Lotus Petal",
+        "Portable Hole",
+        "Razorgrass Ambush"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.3335786,
+      "v27_threshold": 0.2292364,
+      "v5_bottom": [
+        "Giant's Boulder"
+      ],
+      "v5_effective_threshold": 0.63025,
+      "v5_frozen_native_C": 0.51025,
+      "v5_hand": [
+        "Crystal Vein",
+        "Emergence Zone",
+        "Lotus Petal",
+        "Portable Hole",
+        "Razorgrass Ambush",
+        "Soul Partition"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.59375,
+      "v5_raw_minus_actual_threshold": -0.0365,
+      "v5_raw_minus_native_C": 0.0835,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.03125,
+      "T2_signed_v5_advantage": 0.21875,
+      "T3_signed_v5_advantage": -0.39583333333333337,
+      "assertive_bump": 0.12,
+      "game_id": 115100,
+      "keep_n": 6,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 1,
+      "stage": 2,
+      "v27_bottom": [
+        "Void Mirror"
+      ],
+      "v27_hand": [
+        "Ancient Den",
+        "Basalt Monolith",
+        "Eiganjo, Seat of the Empire",
+        "Razorgrass Ambush",
+        "Scroll Rack",
+        "Voltaic Key"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.3411915,
+      "v27_threshold": 0.2225183,
+      "v5_bottom": [
+        "Void Mirror"
+      ],
+      "v5_effective_threshold": 0.63025,
+      "v5_frozen_native_C": 0.51025,
+      "v5_hand": [
+        "Ancient Den",
+        "Basalt Monolith",
+        "Eiganjo, Seat of the Empire",
+        "Razorgrass Ambush",
+        "Scroll Rack",
+        "Voltaic Key"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.5625,
+      "v5_raw_minus_actual_threshold": -0.06775,
+      "v5_raw_minus_native_C": 0.05225,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.010416666666666666,
+      "T2_signed_v5_advantage": 0.03125,
+      "T3_signed_v5_advantage": 0.03125,
+      "assertive_bump": 0.0,
+      "game_id": 115102,
+      "keep_n": 3,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 3,
+      "stage": 5,
+      "v27_bottom": [
+        "Charitable Levy",
+        "Ancient Tomb",
+        "Homeward Path",
+        "Static Prison"
+      ],
+      "v27_hand": [
+        "Disruptor Flute",
+        "Gemstone Caverns",
+        "Krark-Clan Ironworks"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.0528321,
+      "v27_threshold": 0.0326566,
+      "v5_bottom": [
+        "Charitable Levy",
+        "Gemstone Caverns",
+        "Homeward Path",
+        "Static Prison"
+      ],
+      "v5_effective_threshold": 0.19234,
+      "v5_frozen_native_C": 0.19234,
+      "v5_hand": [
+        "Ancient Tomb",
+        "Disruptor Flute",
+        "Krark-Clan Ironworks"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.125,
+      "v5_raw_minus_actual_threshold": -0.06734,
+      "v5_raw_minus_native_C": -0.06734,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.010416666666666666,
+      "T2_signed_v5_advantage": -0.05208333333333333,
+      "T3_signed_v5_advantage": 0.3854166666666667,
+      "assertive_bump": 0.015,
+      "game_id": 115106,
+      "keep_n": 4,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 3,
+      "stage": 4,
+      "v27_bottom": [
+        "Soul Partition",
+        "Floating Shield",
+        "Mantle of the Ancients"
+      ],
+      "v27_hand": [
+        "Moonsilver Key",
+        "Mox Opal",
+        "Scroll Rack",
+        "Urza's Saga"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0091498,
+      "v27_threshold": 0.0912216,
+      "v5_bottom": [
+        "Scroll Rack",
+        "Floating Shield",
+        "Mantle of the Ancients"
+      ],
+      "v5_effective_threshold": 0.32919000000000004,
+      "v5_frozen_native_C": 0.31419,
+      "v5_hand": [
+        "Moonsilver Key",
+        "Mox Opal",
+        "Soul Partition",
+        "Urza's Saga"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.5,
+      "v5_raw_minus_actual_threshold": 0.17081,
+      "v5_raw_minus_native_C": 0.18581,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.010416666666666666,
+      "T2_signed_v5_advantage": 0.010416666666666664,
+      "T3_signed_v5_advantage": 0.59375,
+      "assertive_bump": 0.015,
+      "game_id": 115110,
+      "keep_n": 4,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 2,
+      "stage": 4,
+      "v27_bottom": [
+        "Bound by Moonsilver",
+        "Homeward Path",
+        "Orim's Chant"
+      ],
+      "v27_hand": [
+        "Basalt Monolith",
+        "Ruins of Trokair",
+        "Tezzeret, Cruel Captain",
+        "Urza's Saga"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0488451,
+      "v27_threshold": 0.0754839,
+      "v5_bottom": [
+        "Bound by Moonsilver",
+        "Tezzeret, Cruel Captain",
+        "Homeward Path"
+      ],
+      "v5_effective_threshold": 0.32919000000000004,
+      "v5_frozen_native_C": 0.31419,
+      "v5_hand": [
+        "Basalt Monolith",
+        "Orim's Chant",
+        "Ruins of Trokair",
+        "Urza's Saga"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.625,
+      "v5_raw_minus_actual_threshold": 0.29581,
+      "v5_raw_minus_native_C": 0.31081,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.0625,
+      "T2_signed_v5_advantage": 0.08333333333333331,
+      "T3_signed_v5_advantage": -0.0,
+      "assertive_bump": 0.2,
+      "game_id": 115111,
+      "keep_n": 7,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 1,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Arcane Signet",
+        "Brainstone",
+        "Disruptor Flute",
+        "Mana Vault",
+        "Mishra's Workshop",
+        "Trinisphere",
+        "Vexing Bauble"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.3849449,
+      "v27_threshold": 0.3126459,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Arcane Signet",
+        "Brainstone",
+        "Disruptor Flute",
+        "Mana Vault",
+        "Mishra's Workshop",
+        "Trinisphere",
+        "Vexing Bauble"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.3125,
+      "v5_raw_minus_actual_threshold": -0.44353,
+      "v5_raw_minus_native_C": -0.24353,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.0625,
+      "T2_signed_v5_advantage": 0.15625,
+      "T3_signed_v5_advantage": -0.22916666666666663,
+      "assertive_bump": 0.2,
+      "game_id": 115117,
+      "keep_n": 7,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 0,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Enlightened Tutor",
+        "Homeward Path",
+        "Implements of Sacrifice",
+        "Moonsilver Key",
+        "Mox Opal",
+        "Plains",
+        "Portable Hole"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.6136638,
+      "v27_threshold": 0.313281,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Enlightened Tutor",
+        "Homeward Path",
+        "Implements of Sacrifice",
+        "Moonsilver Key",
+        "Mox Opal",
+        "Plains",
+        "Portable Hole"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.53125,
+      "v5_raw_minus_actual_threshold": -0.22478,
+      "v5_raw_minus_native_C": -0.02478,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.03125,
+      "T2_signed_v5_advantage": 0.21875,
+      "T3_signed_v5_advantage": 0.36458333333333337,
+      "assertive_bump": 0.12,
+      "game_id": 115119,
+      "keep_n": 6,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 1,
+      "stage": 2,
+      "v27_bottom": [
+        "Deafening Silence"
+      ],
+      "v27_hand": [
+        "Basalt Monolith",
+        "Charitable Levy",
+        "Coalition Relic",
+        "Mox Diamond",
+        "Sol Ring",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.1545255,
+      "v27_threshold": 0.2225183,
+      "v5_bottom": [
+        "Charitable Levy"
+      ],
+      "v5_effective_threshold": 0.63025,
+      "v5_frozen_native_C": 0.51025,
+      "v5_hand": [
+        "Basalt Monolith",
+        "Coalition Relic",
+        "Deafening Silence",
+        "Mox Diamond",
+        "Sol Ring",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.6875,
+      "v5_raw_minus_actual_threshold": 0.05725,
+      "v5_raw_minus_native_C": 0.17725,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.010416666666666671,
+      "T2_signed_v5_advantage": -0.14583333333333331,
+      "T3_signed_v5_advantage": -0.22916666666666663,
+      "assertive_bump": 0.2,
+      "game_id": 115121,
+      "keep_n": 7,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 3,
+      "stage": 0,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Ancient Tomb",
+        "Bound by Moonsilver",
+        "Eldrazi Confluence",
+        "Mind Stone",
+        "Mox Diamond",
+        "Plains",
+        "Prismatic Lens"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.4659728,
+      "v27_threshold": 0.3817041,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Ancient Tomb",
+        "Bound by Moonsilver",
+        "Eldrazi Confluence",
+        "Mind Stone",
+        "Mox Diamond",
+        "Plains",
+        "Prismatic Lens"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.65625,
+      "v5_raw_minus_actual_threshold": -0.09978,
+      "v5_raw_minus_native_C": 0.10022,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.052083333333333336,
+      "T2_signed_v5_advantage": 0.375,
+      "T3_signed_v5_advantage": 0.47916666666666663,
+      "assertive_bump": 0.2,
+      "game_id": 115124,
+      "keep_n": 7,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 2,
+      "stage": 0,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Defense Grid",
+        "Gleaming Splendor",
+        "Lion's Eye Diamond",
+        "Mox Opal",
+        "Staff of Compleation",
+        "Unwanted Remake",
+        "Void Mirror"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.4336988,
+      "v27_threshold": 0.4119294,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Defense Grid",
+        "Gleaming Splendor",
+        "Lion's Eye Diamond",
+        "Mox Opal",
+        "Staff of Compleation",
+        "Unwanted Remake",
+        "Void Mirror"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.1875,
+      "v5_raw_minus_actual_threshold": -0.56853,
+      "v5_raw_minus_native_C": -0.36853,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.020833333333333336,
+      "T2_signed_v5_advantage": 0.25,
+      "T3_signed_v5_advantage": -0.02083333333333337,
+      "assertive_bump": 0.2,
+      "game_id": 115128,
+      "keep_n": 7,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 2,
+      "stage": 0,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Eiganjo, Seat of the Empire",
+        "Emergence Zone",
+        "Lion's Eye Diamond",
+        "Mantle of the Ancients",
+        "Soul Partition",
+        "Staff of Compleation",
+        "Unwanted Remake"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.5094135,
+      "v27_threshold": 0.4119294,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Eiganjo, Seat of the Empire",
+        "Emergence Zone",
+        "Lion's Eye Diamond",
+        "Mantle of the Ancients",
+        "Soul Partition",
+        "Staff of Compleation",
+        "Unwanted Remake"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.6875,
+      "v5_raw_minus_actual_threshold": -0.06853,
+      "v5_raw_minus_native_C": 0.13147,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.010416666666666664,
+      "T2_signed_v5_advantage": 0.3541666666666667,
+      "T3_signed_v5_advantage": -0.19791666666666663,
+      "assertive_bump": 0.2,
+      "game_id": 115132,
+      "keep_n": 7,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 2,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Command Beacon",
+        "Defense Grid",
+        "Mana Vault",
+        "Petrified Hamlet",
+        "Plains",
+        "Soul Partition",
+        "The Mind Stone"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.4473418,
+      "v27_threshold": 0.330679,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Command Beacon",
+        "Defense Grid",
+        "Mana Vault",
+        "Petrified Hamlet",
+        "Plains",
+        "Soul Partition",
+        "The Mind Stone"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.5,
+      "v5_raw_minus_actual_threshold": -0.25603,
+      "v5_raw_minus_native_C": -0.05603,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.0,
+      "T2_signed_v5_advantage": 0.041666666666666664,
+      "T3_signed_v5_advantage": 0.48958333333333337,
+      "assertive_bump": 0.0,
+      "game_id": 115133,
+      "keep_n": 3,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 0,
+      "stage": 5,
+      "v27_bottom": [
+        "Mishra's Workshop",
+        "Crystal Vein",
+        "Touch the Spirit Realm",
+        "Silence"
+      ],
+      "v27_hand": [
+        "Emeria's Call",
+        "Ruins of Trokair",
+        "Scroll Rack"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0137847,
+      "v27_threshold": 0.0275108,
+      "v5_bottom": [
+        "Crystal Vein",
+        "Touch the Spirit Realm",
+        "Silence",
+        "Scroll Rack"
+      ],
+      "v5_effective_threshold": 0.19234,
+      "v5_frozen_native_C": 0.19234,
+      "v5_hand": [
+        "Emeria's Call",
+        "Mishra's Workshop",
+        "Ruins of Trokair"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.375,
+      "v5_raw_minus_actual_threshold": 0.18266,
+      "v5_raw_minus_native_C": 0.18266,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.07291666666666667,
+      "T2_signed_v5_advantage": 0.4166666666666667,
+      "T3_signed_v5_advantage": -0.26041666666666663,
+      "assertive_bump": 0.2,
+      "game_id": 115135,
+      "keep_n": 7,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 3,
+      "stage": 0,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Blast Zone",
+        "Enlightened Tutor",
+        "Erode",
+        "Plains",
+        "Plains",
+        "Ruins of Trokair",
+        "The Mind Stone"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.5694648,
+      "v27_threshold": 0.3817041,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Blast Zone",
+        "Enlightened Tutor",
+        "Erode",
+        "Plains",
+        "Plains",
+        "Ruins of Trokair",
+        "The Mind Stone"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.59375,
+      "v5_raw_minus_actual_threshold": -0.16228,
+      "v5_raw_minus_native_C": 0.03772,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.0,
+      "T2_signed_v5_advantage": -0.010416666666666668,
+      "T3_signed_v5_advantage": 0.13541666666666666,
+      "assertive_bump": 0.0,
+      "game_id": 115137,
+      "keep_n": 3,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 1,
+      "stage": 5,
+      "v27_bottom": [
+        "Fellwar Stone",
+        "Defense Grid",
+        "Unwanted Remake",
+        "Silence"
+      ],
+      "v27_hand": [
+        "Everflowing Chalice",
+        "Giant's Boulder",
+        "Lotus Petal"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.0270159,
+      "v27_threshold": 0.0258804,
+      "v5_bottom": [
+        "Fellwar Stone",
+        "Unwanted Remake",
+        "Silence",
+        "Everflowing Chalice"
+      ],
+      "v5_effective_threshold": 0.19234,
+      "v5_frozen_native_C": 0.19234,
+      "v5_hand": [
+        "Defense Grid",
+        "Giant's Boulder",
+        "Lotus Petal"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.09375,
+      "v5_raw_minus_actual_threshold": -0.09859,
+      "v5_raw_minus_native_C": -0.09859,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.010416666666666666,
+      "T2_signed_v5_advantage": 0.20833333333333331,
+      "T3_signed_v5_advantage": 0.05208333333333337,
+      "assertive_bump": 0.055,
+      "game_id": 115138,
+      "keep_n": 5,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 0,
+      "stage": 3,
+      "v27_bottom": [
+        "Super State",
+        "Hardlight Containment"
+      ],
+      "v27_hand": [
+        "Command Beacon",
+        "Expedition Map",
+        "Mana Vault",
+        "Paladin Class",
+        "Vexing Bauble"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.2372551,
+      "v27_threshold": 0.1100763,
+      "v5_bottom": [
+        "Super State",
+        "Vexing Bauble"
+      ],
+      "v5_effective_threshold": 0.47768,
+      "v5_frozen_native_C": 0.42268,
+      "v5_hand": [
+        "Command Beacon",
+        "Expedition Map",
+        "Hardlight Containment",
+        "Mana Vault",
+        "Paladin Class"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.40625,
+      "v5_raw_minus_actual_threshold": -0.07143,
+      "v5_raw_minus_native_C": -0.01643,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.052083333333333336,
+      "T2_signed_v5_advantage": -0.14583333333333334,
+      "T3_signed_v5_advantage": 0.4375,
+      "assertive_bump": 0.055,
+      "game_id": 115139,
+      "keep_n": 5,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 3,
+      "stage": 3,
+      "v27_bottom": [
+        "Soul Partition",
+        "Erode"
+      ],
+      "v27_hand": [
+        "Ancient Tomb",
+        "Charitable Levy",
+        "Coalition Relic",
+        "Emeria's Call",
+        "Plains"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0596013,
+      "v27_threshold": 0.1553826,
+      "v5_bottom": [
+        "Soul Partition",
+        "Erode"
+      ],
+      "v5_effective_threshold": 0.47768,
+      "v5_frozen_native_C": 0.42268,
+      "v5_hand": [
+        "Ancient Tomb",
+        "Charitable Levy",
+        "Coalition Relic",
+        "Emeria's Call",
+        "Plains"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.5,
+      "v5_raw_minus_actual_threshold": 0.02232,
+      "v5_raw_minus_native_C": 0.07732,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.052083333333333336,
+      "T2_signed_v5_advantage": -0.11458333333333334,
+      "T3_signed_v5_advantage": 0.5,
+      "assertive_bump": 0.055,
+      "game_id": 115140,
+      "keep_n": 5,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 3,
+      "stage": 3,
+      "v27_bottom": [
+        "Thorn of Amethyst",
+        "Twinblade Blessing"
+      ],
+      "v27_hand": [
+        "Ancient Den",
+        "Eiganjo, Seat of the Empire",
+        "Moonsilver Key",
+        "Plains",
+        "Remote Farm"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0458624,
+      "v27_threshold": 0.1553826,
+      "v5_bottom": [
+        "Thorn of Amethyst",
+        "Twinblade Blessing"
+      ],
+      "v5_effective_threshold": 0.47768,
+      "v5_frozen_native_C": 0.42268,
+      "v5_hand": [
+        "Ancient Den",
+        "Eiganjo, Seat of the Empire",
+        "Moonsilver Key",
+        "Plains",
+        "Remote Farm"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.5625,
+      "v5_raw_minus_actual_threshold": 0.08482,
+      "v5_raw_minus_native_C": 0.13982,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.052083333333333336,
+      "T2_signed_v5_advantage": 0.14583333333333331,
+      "T3_signed_v5_advantage": -0.27083333333333337,
+      "assertive_bump": 0.2,
+      "game_id": 115141,
+      "keep_n": 7,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 3,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Gemstone Caverns",
+        "Giant's Boulder",
+        "Moonsilver Key",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Scroll Rack"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.3316518,
+      "v27_threshold": 0.3157466,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Gemstone Caverns",
+        "Giant's Boulder",
+        "Moonsilver Key",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Scroll Rack"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.1875,
+      "v5_raw_minus_actual_threshold": -0.56853,
+      "v5_raw_minus_native_C": -0.36853,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.010416666666666666,
+      "T2_signed_v5_advantage": 0.0625,
+      "T3_signed_v5_advantage": 0.65625,
+      "assertive_bump": 0.0,
+      "game_id": 115142,
+      "keep_n": 3,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 3,
+      "stage": 5,
+      "v27_bottom": [
+        "Void Mirror",
+        "Boonweaver Giant",
+        "Static Prison",
+        "Silence"
+      ],
+      "v27_hand": [
+        "Bucknard's Everfull Purse",
+        "Petrified Hamlet",
+        "Plains"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.026552,
+      "v27_threshold": 0.0326566,
+      "v5_bottom": [
+        "Void Mirror",
+        "Boonweaver Giant",
+        "Static Prison",
+        "Silence"
+      ],
+      "v5_effective_threshold": 0.19234,
+      "v5_frozen_native_C": 0.19234,
+      "v5_hand": [
+        "Bucknard's Everfull Purse",
+        "Petrified Hamlet",
+        "Plains"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.375,
+      "v5_raw_minus_actual_threshold": 0.18266,
+      "v5_raw_minus_native_C": 0.18266,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.0,
+      "T2_signed_v5_advantage": -0.010416666666666666,
+      "T3_signed_v5_advantage": 0.0625,
+      "assertive_bump": 0.0,
+      "game_id": 115143,
+      "keep_n": 2,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 3,
+      "stage": 6,
+      "v27_bottom": [
+        "Unwanted Remake",
+        "Gemstone Caverns",
+        "Urza's Cave",
+        "Untaidake, the Cloud Keeper",
+        "Ancient Den"
+      ],
+      "v27_hand": [
+        "Mox Opal",
+        "Plains"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0054412,
+      "v27_threshold": 0.0103161,
+      "v5_bottom": [
+        "Unwanted Remake",
+        "Gemstone Caverns",
+        "Urza's Cave",
+        "Untaidake, the Cloud Keeper",
+        "Plains"
+      ],
+      "v5_effective_threshold": 0.06171875,
+      "v5_frozen_native_C": 0.06171875,
+      "v5_hand": [
+        "Ancient Den",
+        "Mox Opal"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.09375,
+      "v5_raw_minus_actual_threshold": 0.0320312,
+      "v5_raw_minus_native_C": 0.0320312,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.052083333333333336,
+      "T2_signed_v5_advantage": 0.3229166666666667,
+      "T3_signed_v5_advantage": 0.29166666666666663,
+      "assertive_bump": 0.055,
+      "game_id": 115145,
+      "keep_n": 5,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 0,
+      "stage": 3,
+      "v27_bottom": [
+        "Lunarch Mantle",
+        "Super State"
+      ],
+      "v27_hand": [
+        "Grim Monolith",
+        "Mana Vault",
+        "Orim's Chant",
+        "Razorgrass Ambush",
+        "Static Prison"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.096142,
+      "v27_threshold": 0.1100763,
+      "v5_bottom": [
+        "Orim's Chant",
+        "Super State"
+      ],
+      "v5_effective_threshold": 0.42268,
+      "v5_frozen_native_C": 0.42268,
+      "v5_hand": [
+        "Grim Monolith",
+        "Lunarch Mantle",
+        "Mana Vault",
+        "Razorgrass Ambush",
+        "Static Prison"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 1.0,
+      "v5_raw_minus_actual_threshold": 0.57732,
+      "v5_raw_minus_native_C": 0.57732,
+      "v5_sampled_T1": 0.125
+    },
+    {
+      "T1_signed_v5_advantage": 0.03125,
+      "T2_signed_v5_advantage": 0.28125,
+      "T3_signed_v5_advantage": -0.36458333333333337,
+      "assertive_bump": 0.12,
+      "game_id": 115147,
+      "keep_n": 6,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 1,
+      "stage": 2,
+      "v27_bottom": [
+        "Floating Shield"
+      ],
+      "v27_hand": [
+        "Defense Grid",
+        "Emergence Zone",
+        "Enlightened Tutor",
+        "March of Otherworldly Light",
+        "Moonsilver Key",
+        "Plains"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.269219,
+      "v27_threshold": 0.2225183,
+      "v5_bottom": [
+        "March of Otherworldly Light"
+      ],
+      "v5_effective_threshold": 0.63025,
+      "v5_frozen_native_C": 0.51025,
+      "v5_hand": [
+        "Defense Grid",
+        "Emergence Zone",
+        "Enlightened Tutor",
+        "Floating Shield",
+        "Moonsilver Key",
+        "Plains"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.625,
+      "v5_raw_minus_actual_threshold": -0.00525,
+      "v5_raw_minus_native_C": 0.11475,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.020833333333333332,
+      "T2_signed_v5_advantage": 0.5208333333333333,
+      "T3_signed_v5_advantage": 0.23958333333333337,
+      "assertive_bump": 0.2,
+      "game_id": 115151,
+      "keep_n": 7,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 0,
+      "stage": 0,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Bucknard's Everfull Purse",
+        "Eiganjo, Seat of the Empire",
+        "Hardlight Containment",
+        "Mox Diamond",
+        "Plains",
+        "Plains",
+        "The Mycosynth Gardens"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.3136788,
+      "v27_threshold": 0.3795842,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Bucknard's Everfull Purse",
+        "Eiganjo, Seat of the Empire",
+        "Hardlight Containment",
+        "Mox Diamond",
+        "Plains",
+        "Plains",
+        "The Mycosynth Gardens"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.8125,
+      "v5_raw_minus_actual_threshold": 0.05647,
+      "v5_raw_minus_native_C": 0.25647,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.03125,
+      "T2_signed_v5_advantage": 0.0625,
+      "T3_signed_v5_advantage": 0.30208333333333337,
+      "assertive_bump": 0.12,
+      "game_id": 115153,
+      "keep_n": 6,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 1,
+      "stage": 2,
+      "v27_bottom": [
+        "Floating Shield"
+      ],
+      "v27_hand": [
+        "Blast Zone",
+        "Gemstone Caverns",
+        "Mishra's Workshop",
+        "Orim's Chant",
+        "Staff of Compleation",
+        "Tezzeret, Cruel Captain"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.1436348,
+      "v27_threshold": 0.2225183,
+      "v5_bottom": [
+        "Blast Zone"
+      ],
+      "v5_effective_threshold": 0.63025,
+      "v5_frozen_native_C": 0.51025,
+      "v5_hand": [
+        "Floating Shield",
+        "Gemstone Caverns",
+        "Mishra's Workshop",
+        "Orim's Chant",
+        "Staff of Compleation",
+        "Tezzeret, Cruel Captain"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.6875,
+      "v5_raw_minus_actual_threshold": 0.05725,
+      "v5_raw_minus_native_C": 0.17725,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.010416666666666666,
+      "T2_signed_v5_advantage": 0.03125,
+      "T3_signed_v5_advantage": -0.09375,
+      "assertive_bump": 0.0,
+      "game_id": 115154,
+      "keep_n": 3,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 3,
+      "stage": 5,
+      "v27_bottom": [
+        "Vexing Bauble",
+        "Plains",
+        "The Mycosynth Gardens",
+        "Scroll Rack"
+      ],
+      "v27_hand": [
+        "Implements of Sacrifice",
+        "Lotus Petal",
+        "Mox Opal"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.0501111,
+      "v27_threshold": 0.0326566,
+      "v5_bottom": [
+        "Implements of Sacrifice",
+        "Vexing Bauble",
+        "Plains",
+        "Scroll Rack"
+      ],
+      "v5_effective_threshold": 0.19234,
+      "v5_frozen_native_C": 0.19234,
+      "v5_hand": [
+        "Lotus Petal",
+        "Mox Opal",
+        "The Mycosynth Gardens"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.1875,
+      "v5_raw_minus_actual_threshold": -0.00484,
+      "v5_raw_minus_native_C": -0.00484,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.052083333333333336,
+      "T2_signed_v5_advantage": -0.2916666666666667,
+      "T3_signed_v5_advantage": -0.20833333333333337,
+      "assertive_bump": 0.2,
+      "game_id": 115155,
+      "keep_n": 7,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 3,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Enlightened Tutor",
+        "Gemstone Caverns",
+        "Plains",
+        "Static Prison",
+        "Tezzeret, Cruel Captain",
+        "Trinisphere",
+        "Vexing Bauble"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.4421841,
+      "v27_threshold": 0.3157466,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Enlightened Tutor",
+        "Gemstone Caverns",
+        "Plains",
+        "Static Prison",
+        "Tezzeret, Cruel Captain",
+        "Trinisphere",
+        "Vexing Bauble"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.625,
+      "v5_raw_minus_actual_threshold": -0.13103,
+      "v5_raw_minus_native_C": 0.06897,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.010416666666666666,
+      "T2_signed_v5_advantage": -0.010416666666666671,
+      "T3_signed_v5_advantage": -0.07291666666666669,
+      "assertive_bump": 0.015,
+      "game_id": 115157,
+      "keep_n": 4,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 3,
+      "stage": 4,
+      "v27_bottom": [
+        "Floating Shield",
+        "Silence",
+        "Portable Hole"
+      ],
+      "v27_hand": [
+        "Expedition Map",
+        "Giant's Boulder",
+        "Grim Monolith",
+        "Mana Vault"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.1366574,
+      "v27_threshold": 0.0912216,
+      "v5_bottom": [
+        "Floating Shield",
+        "Silence",
+        "Portable Hole"
+      ],
+      "v5_effective_threshold": 0.32919000000000004,
+      "v5_frozen_native_C": 0.31419,
+      "v5_hand": [
+        "Expedition Map",
+        "Giant's Boulder",
+        "Grim Monolith",
+        "Mana Vault"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.28125,
+      "v5_raw_minus_actual_threshold": -0.04794,
+      "v5_raw_minus_native_C": -0.03294,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.052083333333333336,
+      "T2_signed_v5_advantage": -0.17708333333333334,
+      "T3_signed_v5_advantage": 0.4375,
+      "assertive_bump": 0.055,
+      "game_id": 115163,
+      "keep_n": 5,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 3,
+      "stage": 3,
+      "v27_bottom": [
+        "Deafening Silence",
+        "March of Otherworldly Light"
+      ],
+      "v27_hand": [
+        "Coalition Relic",
+        "Homeward Path",
+        "Plains",
+        "Remote Farm",
+        "Treasure Vault"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0120999,
+      "v27_threshold": 0.1553826,
+      "v5_bottom": [
+        "Deafening Silence",
+        "Plains"
+      ],
+      "v5_effective_threshold": 0.47768,
+      "v5_frozen_native_C": 0.42268,
+      "v5_hand": [
+        "Coalition Relic",
+        "Homeward Path",
+        "March of Otherworldly Light",
+        "Remote Farm",
+        "Treasure Vault"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.5,
+      "v5_raw_minus_actual_threshold": 0.02232,
+      "v5_raw_minus_native_C": 0.07732,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.0625,
+      "T2_signed_v5_advantage": 0.2708333333333333,
+      "T3_signed_v5_advantage": 0.03125,
+      "assertive_bump": 0.2,
+      "game_id": 115165,
+      "keep_n": 7,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 1,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Erode",
+        "Great Hall of the Citadel",
+        "Idolized",
+        "Lunarch Mantle",
+        "Mana Vault",
+        "Paladin Class",
+        "Prismatic Lens"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.3165423,
+      "v27_threshold": 0.3126459,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Erode",
+        "Great Hall of the Citadel",
+        "Idolized",
+        "Lunarch Mantle",
+        "Mana Vault",
+        "Paladin Class",
+        "Prismatic Lens"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.46875,
+      "v5_raw_minus_actual_threshold": -0.28728,
+      "v5_raw_minus_native_C": -0.08728,
+      "v5_sampled_T1": 0.0625
+    },
+    {
+      "T1_signed_v5_advantage": -0.010416666666666666,
+      "T2_signed_v5_advantage": 0.6666666666666667,
+      "T3_signed_v5_advantage": 0.44791666666666663,
+      "assertive_bump": 0.055,
+      "game_id": 115171,
+      "keep_n": 5,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 0,
+      "stage": 3,
+      "v27_bottom": [
+        "Bound by Moonsilver",
+        "Emergence Zone"
+      ],
+      "v27_hand": [
+        "Brainstone",
+        "Chrome Mox",
+        "Emeria's Call",
+        "Lotus Petal",
+        "Tezzeret, Cruel Captain"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0574707,
+      "v27_threshold": 0.1100763,
+      "v5_bottom": [
+        "Brainstone",
+        "Bound by Moonsilver"
+      ],
+      "v5_effective_threshold": 0.47768,
+      "v5_frozen_native_C": 0.42268,
+      "v5_hand": [
+        "Chrome Mox",
+        "Emergence Zone",
+        "Emeria's Call",
+        "Lotus Petal",
+        "Tezzeret, Cruel Captain"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 1.0,
+      "v5_raw_minus_actual_threshold": 0.52232,
+      "v5_raw_minus_native_C": 0.57732,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.07291666666666667,
+      "T2_signed_v5_advantage": 0.3854166666666667,
+      "T3_signed_v5_advantage": -0.04166666666666663,
+      "assertive_bump": 0.2,
+      "game_id": 115172,
+      "keep_n": 7,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 3,
+      "stage": 0,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Basalt Monolith",
+        "Command Beacon",
+        "Erode",
+        "Mox Opal",
+        "Razorgrass Ambush",
+        "The Mind Stone",
+        "Void Mirror"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.4420353,
+      "v27_threshold": 0.3817041,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Basalt Monolith",
+        "Command Beacon",
+        "Erode",
+        "Mox Opal",
+        "Razorgrass Ambush",
+        "The Mind Stone",
+        "Void Mirror"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.375,
+      "v5_raw_minus_actual_threshold": -0.38103,
+      "v5_raw_minus_native_C": -0.18103,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.0,
+      "T2_signed_v5_advantage": -0.0,
+      "T3_signed_v5_advantage": 0.07291666666666663,
+      "assertive_bump": 0.12,
+      "game_id": 115173,
+      "keep_n": 6,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 1,
+      "stage": 2,
+      "v27_bottom": [
+        "Lunarch Mantle"
+      ],
+      "v27_hand": [
+        "Deafening Silence",
+        "Enlightened Tutor",
+        "Lion's Eye Diamond",
+        "March of Otherworldly Light",
+        "Scroll Rack",
+        "Touch the Spirit Realm"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.2542967,
+      "v27_threshold": 0.2225183,
+      "v5_bottom": [
+        "March of Otherworldly Light"
+      ],
+      "v5_effective_threshold": 0.63025,
+      "v5_frozen_native_C": 0.51025,
+      "v5_hand": [
+        "Deafening Silence",
+        "Enlightened Tutor",
+        "Lion's Eye Diamond",
+        "Lunarch Mantle",
+        "Scroll Rack",
+        "Touch the Spirit Realm"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.34375,
+      "v5_raw_minus_actual_threshold": -0.2865,
+      "v5_raw_minus_native_C": -0.1665,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.010416666666666666,
+      "T2_signed_v5_advantage": -0.17708333333333331,
+      "T3_signed_v5_advantage": 0.19791666666666663,
+      "assertive_bump": 0.055,
+      "game_id": 115178,
+      "keep_n": 5,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 0,
+      "stage": 3,
+      "v27_bottom": [
+        "Void Mirror",
+        "Floating Shield"
+      ],
+      "v27_hand": [
+        "Ancient Tomb",
+        "Mox Opal",
+        "Plains",
+        "Remote Farm",
+        "Treasure Vault"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0718394,
+      "v27_threshold": 0.1100763,
+      "v5_bottom": [
+        "Plains",
+        "Floating Shield"
+      ],
+      "v5_effective_threshold": 0.47768,
+      "v5_frozen_native_C": 0.42268,
+      "v5_hand": [
+        "Ancient Tomb",
+        "Mox Opal",
+        "Remote Farm",
+        "Treasure Vault",
+        "Void Mirror"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.625,
+      "v5_raw_minus_actual_threshold": 0.14732,
+      "v5_raw_minus_native_C": 0.20232,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.0,
+      "T2_signed_v5_advantage": -0.052083333333333336,
+      "T3_signed_v5_advantage": 0.14583333333333334,
+      "assertive_bump": 0.0,
+      "game_id": 115180,
+      "keep_n": 3,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 0,
+      "stage": 5,
+      "v27_bottom": [
+        "Krark-Clan Ironworks",
+        "Minimus Containment",
+        "The Mycosynth Gardens",
+        "Boonweaver Giant"
+      ],
+      "v27_hand": [
+        "Charitable Levy",
+        "Giant's Boulder",
+        "Scroll Rack"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0049154,
+      "v27_threshold": 0.0275108,
+      "v5_bottom": [
+        "Krark-Clan Ironworks",
+        "Minimus Containment",
+        "Charitable Levy",
+        "Boonweaver Giant"
+      ],
+      "v5_effective_threshold": 0.19234,
+      "v5_frozen_native_C": 0.19234,
+      "v5_hand": [
+        "Giant's Boulder",
+        "Scroll Rack",
+        "The Mycosynth Gardens"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.4375,
+      "v5_raw_minus_actual_threshold": 0.24516,
+      "v5_raw_minus_native_C": 0.24516,
+      "v5_sampled_T1": 0.125
+    },
+    {
+      "T1_signed_v5_advantage": 0.0625,
+      "T2_signed_v5_advantage": 0.0625,
+      "T3_signed_v5_advantage": -0.28125,
+      "assertive_bump": 0.12,
+      "game_id": 115182,
+      "keep_n": 6,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 3,
+      "stage": 2,
+      "v27_bottom": [
+        "Minimus Containment"
+      ],
+      "v27_hand": [
+        "Eldrazi Confluence",
+        "Expedition Map",
+        "Grim Monolith",
+        "Plains",
+        "Razorgrass Ambush",
+        "Voltaic Key"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.4974732,
+      "v27_threshold": 0.24178,
+      "v5_bottom": [
+        "Minimus Containment"
+      ],
+      "v5_effective_threshold": 0.63025,
+      "v5_frozen_native_C": 0.51025,
+      "v5_hand": [
+        "Eldrazi Confluence",
+        "Expedition Map",
+        "Grim Monolith",
+        "Plains",
+        "Razorgrass Ambush",
+        "Voltaic Key"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.59375,
+      "v5_raw_minus_actual_threshold": -0.0365,
+      "v5_raw_minus_native_C": 0.0835,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.0,
+      "T2_signed_v5_advantage": -0.020833333333333332,
+      "T3_signed_v5_advantage": -0.04166666666666666,
+      "assertive_bump": 0.0,
+      "game_id": 115183,
+      "keep_n": 3,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 1,
+      "stage": 5,
+      "v27_bottom": [
+        "Plains",
+        "Bound by Moonsilver",
+        "Boonweaver Giant",
+        "March of Otherworldly Light"
+      ],
+      "v27_hand": [
+        "Homeward Path",
+        "Jeweled Amulet",
+        "Plains"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0124119,
+      "v27_threshold": 0.0258804,
+      "v5_bottom": [
+        "Bound by Moonsilver",
+        "Plains",
+        "Boonweaver Giant",
+        "March of Otherworldly Light"
+      ],
+      "v5_effective_threshold": 0.19234,
+      "v5_frozen_native_C": 0.19234,
+      "v5_hand": [
+        "Homeward Path",
+        "Jeweled Amulet",
+        "Plains"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.21875,
+      "v5_raw_minus_actual_threshold": 0.02641,
+      "v5_raw_minus_native_C": 0.02641,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.020833333333333336,
+      "T2_signed_v5_advantage": 0.6875,
+      "T3_signed_v5_advantage": 0.32291666666666663,
+      "assertive_bump": 0.12,
+      "game_id": 115184,
+      "keep_n": 6,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 2,
+      "stage": 2,
+      "v27_bottom": [
+        "Bound by Moonsilver"
+      ],
+      "v27_hand": [
+        "Blast Zone",
+        "Coalition Relic",
+        "Krark-Clan Ironworks",
+        "Mishra's Workshop",
+        "Talon Gates of Madara",
+        "The Mycosynth Gardens"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0858635,
+      "v27_threshold": 0.241826,
+      "v5_bottom": [
+        "Bound by Moonsilver"
+      ],
+      "v5_effective_threshold": 0.63025,
+      "v5_frozen_native_C": 0.51025,
+      "v5_hand": [
+        "Blast Zone",
+        "Coalition Relic",
+        "Krark-Clan Ironworks",
+        "Mishra's Workshop",
+        "Talon Gates of Madara",
+        "The Mycosynth Gardens"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 1.0,
+      "v5_raw_minus_actual_threshold": 0.36975,
+      "v5_raw_minus_native_C": 0.48975,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.020833333333333332,
+      "T2_signed_v5_advantage": -0.03125,
+      "T3_signed_v5_advantage": 0.625,
+      "assertive_bump": 0.015,
+      "game_id": 115186,
+      "keep_n": 4,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 0,
+      "stage": 4,
+      "v27_bottom": [
+        "Plains",
+        "Homeward Path",
+        "Ancient Tomb"
+      ],
+      "v27_hand": [
+        "Arcane Signet",
+        "City of Traitors",
+        "Plains",
+        "Plains"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0604725,
+      "v27_threshold": 0.0636901,
+      "v5_bottom": [
+        "Plains",
+        "Homeward Path",
+        "Plains"
+      ],
+      "v5_effective_threshold": 0.32919000000000004,
+      "v5_frozen_native_C": 0.31419,
+      "v5_hand": [
+        "Ancient Tomb",
+        "Arcane Signet",
+        "City of Traitors",
+        "Plains"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.5625,
+      "v5_raw_minus_actual_threshold": 0.23331,
+      "v5_raw_minus_native_C": 0.24831,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.010416666666666668,
+      "T2_signed_v5_advantage": 0.07291666666666669,
+      "T3_signed_v5_advantage": -0.27083333333333337,
+      "assertive_bump": 0.2,
+      "game_id": 115187,
+      "keep_n": 7,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 0,
+      "stage": 0,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Crystal Vein",
+        "Disruptor Flute",
+        "Gift of Immortality",
+        "Grim Monolith",
+        "Mana Vault",
+        "Treasure Vault",
+        "Urza's Saga"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.4714049,
+      "v27_threshold": 0.3795842,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Crystal Vein",
+        "Disruptor Flute",
+        "Gift of Immortality",
+        "Grim Monolith",
+        "Mana Vault",
+        "Treasure Vault",
+        "Urza's Saga"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.53125,
+      "v5_raw_minus_actual_threshold": -0.22478,
+      "v5_raw_minus_native_C": -0.02478,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.03125,
+      "T2_signed_v5_advantage": 0.15625,
+      "T3_signed_v5_advantage": -0.27083333333333337,
+      "assertive_bump": 0.12,
+      "game_id": 115191,
+      "keep_n": 6,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 1,
+      "stage": 2,
+      "v27_bottom": [
+        "Idolized"
+      ],
+      "v27_hand": [
+        "Bucknard's Everfull Purse",
+        "Crystal Vein",
+        "Expedition Map",
+        "Plains",
+        "Unwanted Remake",
+        "Urza's Cave"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.308609,
+      "v27_threshold": 0.2225183,
+      "v5_bottom": [
+        "Idolized"
+      ],
+      "v5_effective_threshold": 0.63025,
+      "v5_frozen_native_C": 0.51025,
+      "v5_hand": [
+        "Bucknard's Everfull Purse",
+        "Crystal Vein",
+        "Expedition Map",
+        "Plains",
+        "Unwanted Remake",
+        "Urza's Cave"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.46875,
+      "v5_raw_minus_actual_threshold": -0.1615,
+      "v5_raw_minus_native_C": -0.0415,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.020833333333333332,
+      "T2_signed_v5_advantage": -0.11458333333333334,
+      "T3_signed_v5_advantage": 0.6041666666666667,
+      "assertive_bump": 0.015,
+      "game_id": 115192,
+      "keep_n": 4,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 1,
+      "stage": 4,
+      "v27_bottom": [
+        "Mana Tithe",
+        "Preston, the Vanisher",
+        "Minimus Containment"
+      ],
+      "v27_hand": [
+        "Mishra's Workshop",
+        "Paladin Class",
+        "Remote Farm",
+        "Urza's Saga"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0279193,
+      "v27_threshold": 0.0802855,
+      "v5_bottom": [
+        "Paladin Class",
+        "Preston, the Vanisher",
+        "Minimus Containment"
+      ],
+      "v5_effective_threshold": 0.32919000000000004,
+      "v5_frozen_native_C": 0.31419,
+      "v5_hand": [
+        "Mana Tithe",
+        "Mishra's Workshop",
+        "Remote Farm",
+        "Urza's Saga"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.625,
+      "v5_raw_minus_actual_threshold": 0.29581,
+      "v5_raw_minus_native_C": 0.31081,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.03125,
+      "T2_signed_v5_advantage": 0.125,
+      "T3_signed_v5_advantage": 0.22916666666666663,
+      "assertive_bump": 0.12,
+      "game_id": 115194,
+      "keep_n": 6,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 1,
+      "stage": 2,
+      "v27_bottom": [
+        "Minimus Containment"
+      ],
+      "v27_hand": [
+        "Bucknard's Everfull Purse",
+        "Coalition Relic",
+        "Gemstone Caverns",
+        "Krark-Clan Ironworks",
+        "Scroll Rack",
+        "Static Prison"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.3087441,
+      "v27_threshold": 0.2225183,
+      "v5_bottom": [
+        "Scroll Rack"
+      ],
+      "v5_effective_threshold": 0.63025,
+      "v5_frozen_native_C": 0.51025,
+      "v5_hand": [
+        "Bucknard's Everfull Purse",
+        "Coalition Relic",
+        "Gemstone Caverns",
+        "Krark-Clan Ironworks",
+        "Minimus Containment",
+        "Static Prison"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.34375,
+      "v5_raw_minus_actual_threshold": -0.2865,
+      "v5_raw_minus_native_C": -0.1665,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.0,
+      "T2_signed_v5_advantage": -0.010416666666666666,
+      "T3_signed_v5_advantage": 0.0,
+      "assertive_bump": 0.0,
+      "game_id": 115199,
+      "keep_n": 2,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 3,
+      "stage": 6,
+      "v27_bottom": [
+        "Boonweaver Giant",
+        "Gift of Immortality",
+        "Blast Zone",
+        "Ancient Den",
+        "Idolized"
+      ],
+      "v27_hand": [
+        "Command Beacon",
+        "Treasure Vault"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0047889,
+      "v27_threshold": 0.0103161,
+      "v5_bottom": [
+        "Boonweaver Giant",
+        "Gift of Immortality",
+        "Blast Zone",
+        "Command Beacon",
+        "Idolized"
+      ],
+      "v5_effective_threshold": 0.06171875,
+      "v5_frozen_native_C": 0.06171875,
+      "v5_hand": [
+        "Ancient Den",
+        "Treasure Vault"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.125,
+      "v5_raw_minus_actual_threshold": 0.0632812,
+      "v5_raw_minus_native_C": 0.0632812,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.010416666666666668,
+      "T2_signed_v5_advantage": -0.041666666666666685,
+      "T3_signed_v5_advantage": -0.39583333333333337,
+      "assertive_bump": 0.12,
+      "game_id": 115200,
+      "keep_n": 6,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 0,
+      "stage": 2,
+      "v27_bottom": [
+        "Orim's Chant"
+      ],
+      "v27_hand": [
+        "Emergence Zone",
+        "Mana Vault",
+        "March of Otherworldly Light",
+        "Plains",
+        "Plains",
+        "Trinisphere"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.2626611,
+      "v27_threshold": 0.2292364,
+      "v5_bottom": [
+        "Orim's Chant"
+      ],
+      "v5_effective_threshold": 0.63025,
+      "v5_frozen_native_C": 0.51025,
+      "v5_hand": [
+        "Emergence Zone",
+        "Mana Vault",
+        "March of Otherworldly Light",
+        "Plains",
+        "Plains",
+        "Trinisphere"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.5625,
+      "v5_raw_minus_actual_threshold": -0.06775,
+      "v5_raw_minus_native_C": 0.05225,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.010416666666666666,
+      "T2_signed_v5_advantage": -0.020833333333333336,
+      "T3_signed_v5_advantage": 0.5,
+      "assertive_bump": 0.015,
+      "game_id": 115201,
+      "keep_n": 4,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 2,
+      "stage": 4,
+      "v27_bottom": [
+        "Deafening Silence",
+        "Ruins of Trokair",
+        "Sheltered by Ghosts"
+      ],
+      "v27_hand": [
+        "Coalition Relic",
+        "Emergence Zone",
+        "Homeward Path",
+        "Remote Farm"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0101571,
+      "v27_threshold": 0.0754839,
+      "v5_bottom": [
+        "Deafening Silence",
+        "Homeward Path",
+        "Sheltered by Ghosts"
+      ],
+      "v5_effective_threshold": 0.32919000000000004,
+      "v5_frozen_native_C": 0.31419,
+      "v5_hand": [
+        "Coalition Relic",
+        "Emergence Zone",
+        "Remote Farm",
+        "Ruins of Trokair"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.5,
+      "v5_raw_minus_actual_threshold": 0.17081,
+      "v5_raw_minus_native_C": 0.18581,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.020833333333333332,
+      "T2_signed_v5_advantage": -0.22916666666666669,
+      "T3_signed_v5_advantage": 0.19791666666666663,
+      "assertive_bump": 0.055,
+      "game_id": 115204,
+      "keep_n": 5,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 1,
+      "stage": 3,
+      "v27_bottom": [
+        "Trinisphere",
+        "Twinblade Blessing"
+      ],
+      "v27_hand": [
+        "Bucknard's Everfull Purse",
+        "Great Hall of the Citadel",
+        "Plains",
+        "Static Prison",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0289164,
+      "v27_threshold": 0.1287871,
+      "v5_bottom": [
+        "Trinisphere",
+        "Twinblade Blessing"
+      ],
+      "v5_effective_threshold": 0.47768,
+      "v5_frozen_native_C": 0.42268,
+      "v5_hand": [
+        "Bucknard's Everfull Purse",
+        "Great Hall of the Citadel",
+        "Plains",
+        "Static Prison",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.5,
+      "v5_raw_minus_actual_threshold": 0.02232,
+      "v5_raw_minus_native_C": 0.07732,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.0625,
+      "T2_signed_v5_advantage": 0.1875,
+      "T3_signed_v5_advantage": -0.22916666666666663,
+      "assertive_bump": 0.2,
+      "game_id": 115207,
+      "keep_n": 7,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 0,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Expedition Map",
+        "Krark-Clan Ironworks",
+        "Mox Opal",
+        "Plains",
+        "Prismatic Lens",
+        "Tezzeret, Cruel Captain",
+        "Urza's Cave"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.4365728,
+      "v27_threshold": 0.313281,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Expedition Map",
+        "Krark-Clan Ironworks",
+        "Mox Opal",
+        "Plains",
+        "Prismatic Lens",
+        "Tezzeret, Cruel Captain",
+        "Urza's Cave"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.59375,
+      "v5_raw_minus_actual_threshold": -0.16228,
+      "v5_raw_minus_native_C": 0.03772,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.052083333333333336,
+      "T2_signed_v5_advantage": 0.20833333333333337,
+      "T3_signed_v5_advantage": 0.20833333333333337,
+      "assertive_bump": 0.2,
+      "game_id": 115208,
+      "keep_n": 7,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 1,
+      "stage": 0,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Ancient Tomb",
+        "Gleaming Splendor",
+        "Lotus Petal",
+        "Mantle of the Ancients",
+        "Moonsilver Key",
+        "Paladin Class",
+        "Sheltered by Ghosts"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.3465826,
+      "v27_threshold": 0.3642452,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Ancient Tomb",
+        "Gleaming Splendor",
+        "Lotus Petal",
+        "Mantle of the Ancients",
+        "Moonsilver Key",
+        "Paladin Class",
+        "Sheltered by Ghosts"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.9375,
+      "v5_raw_minus_actual_threshold": 0.18147,
+      "v5_raw_minus_native_C": 0.38147,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.03125,
+      "T2_signed_v5_advantage": -0.21875,
+      "T3_signed_v5_advantage": -0.04166666666666663,
+      "assertive_bump": 0.2,
+      "game_id": 115211,
+      "keep_n": 7,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 0,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Crystal Vein",
+        "Lotus Petal",
+        "Mana Tithe",
+        "Mantle of the Ancients",
+        "Mishra's Workshop",
+        "Orim's Chant",
+        "Sol Ring"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.5410733,
+      "v27_threshold": 0.313281,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Crystal Vein",
+        "Lotus Petal",
+        "Mana Tithe",
+        "Mantle of the Ancients",
+        "Mishra's Workshop",
+        "Orim's Chant",
+        "Sol Ring"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.3125,
+      "v5_raw_minus_actual_threshold": -0.44353,
+      "v5_raw_minus_native_C": -0.24353,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.052083333333333336,
+      "T2_signed_v5_advantage": -0.05208333333333337,
+      "T3_signed_v5_advantage": -0.23958333333333337,
+      "assertive_bump": 0.2,
+      "game_id": 115213,
+      "keep_n": 7,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 1,
+      "stage": 0,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Emeria's Call",
+        "Enlightened Tutor",
+        "Feather of Flight",
+        "Gemstone Caverns",
+        "Gift of Immortality",
+        "Hardlight Containment",
+        "Krark-Clan Ironworks"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.3890494,
+      "v27_threshold": 0.3642452,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Emeria's Call",
+        "Enlightened Tutor",
+        "Feather of Flight",
+        "Gemstone Caverns",
+        "Gift of Immortality",
+        "Hardlight Containment",
+        "Krark-Clan Ironworks"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.59375,
+      "v5_raw_minus_actual_threshold": -0.16228,
+      "v5_raw_minus_native_C": 0.03772,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.052083333333333336,
+      "T2_signed_v5_advantage": 0.2708333333333333,
+      "T3_signed_v5_advantage": -0.33333333333333337,
+      "assertive_bump": 0.2,
+      "game_id": 115216,
+      "keep_n": 7,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 3,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Basalt Monolith",
+        "Everflowing Chalice",
+        "Grim Monolith",
+        "Plains",
+        "Plains",
+        "The Mycosynth Gardens",
+        "Touch the Spirit Realm"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.4127973,
+      "v27_threshold": 0.3157466,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Basalt Monolith",
+        "Everflowing Chalice",
+        "Grim Monolith",
+        "Plains",
+        "Plains",
+        "The Mycosynth Gardens",
+        "Touch the Spirit Realm"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.46875,
+      "v5_raw_minus_actual_threshold": -0.28728,
+      "v5_raw_minus_native_C": -0.08728,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.010416666666666666,
+      "T2_signed_v5_advantage": 0.09375,
+      "T3_signed_v5_advantage": -0.22916666666666663,
+      "assertive_bump": 0.12,
+      "game_id": 115218,
+      "keep_n": 6,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 2,
+      "stage": 2,
+      "v27_bottom": [
+        "Gift of Immortality"
+      ],
+      "v27_hand": [
+        "Coalition Relic",
+        "Expedition Map",
+        "Petrified Hamlet",
+        "Plains",
+        "Sol Ring",
+        "Treasure Vault"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.3790116,
+      "v27_threshold": 0.241826,
+      "v5_bottom": [
+        "Petrified Hamlet"
+      ],
+      "v5_effective_threshold": 0.63025,
+      "v5_frozen_native_C": 0.51025,
+      "v5_hand": [
+        "Coalition Relic",
+        "Expedition Map",
+        "Gift of Immortality",
+        "Plains",
+        "Sol Ring",
+        "Treasure Vault"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.5625,
+      "v5_raw_minus_actual_threshold": -0.06775,
+      "v5_raw_minus_native_C": 0.05225,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.010416666666666664,
+      "T2_signed_v5_advantage": -0.08333333333333337,
+      "T3_signed_v5_advantage": 0.07291666666666663,
+      "assertive_bump": 0.2,
+      "game_id": 115220,
+      "keep_n": 7,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 1,
+      "stage": 0,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Arcane Signet",
+        "Brainstone",
+        "Bucknard's Everfull Purse",
+        "Emeria's Call",
+        "Lion's Eye Diamond",
+        "Portable Hole",
+        "Void Mirror"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.9032915,
+      "v27_threshold": 0.3642452,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Arcane Signet",
+        "Brainstone",
+        "Bucknard's Everfull Purse",
+        "Emeria's Call",
+        "Lion's Eye Diamond",
+        "Portable Hole",
+        "Void Mirror"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.59375,
+      "v5_raw_minus_actual_threshold": -0.16228,
+      "v5_raw_minus_native_C": 0.03772,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.052083333333333336,
+      "T2_signed_v5_advantage": -0.07291666666666669,
+      "T3_signed_v5_advantage": -0.33333333333333337,
+      "assertive_bump": 0.2,
+      "game_id": 115221,
+      "keep_n": 7,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 3,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Ancient Den",
+        "Bound by Moonsilver",
+        "Chrome Mox",
+        "Defense Grid",
+        "Emergence Zone",
+        "Enlightened Tutor",
+        "Sheltered by Ghosts"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.5133002,
+      "v27_threshold": 0.3157466,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Ancient Den",
+        "Bound by Moonsilver",
+        "Chrome Mox",
+        "Defense Grid",
+        "Emergence Zone",
+        "Enlightened Tutor",
+        "Sheltered by Ghosts"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.59375,
+      "v5_raw_minus_actual_threshold": -0.16228,
+      "v5_raw_minus_native_C": 0.03772,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.010416666666666666,
+      "T2_signed_v5_advantage": 0.09375,
+      "T3_signed_v5_advantage": -0.26041666666666663,
+      "assertive_bump": 0.12,
+      "game_id": 115224,
+      "keep_n": 6,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 2,
+      "stage": 2,
+      "v27_bottom": [
+        "Boonweaver Giant"
+      ],
+      "v27_hand": [
+        "Emeria's Call",
+        "Giant's Boulder",
+        "Jeweled Amulet",
+        "Lunarch Mantle",
+        "Mana Vault",
+        "Urza's Cave"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.3453831,
+      "v27_threshold": 0.241826,
+      "v5_bottom": [
+        "Boonweaver Giant"
+      ],
+      "v5_effective_threshold": 0.63025,
+      "v5_frozen_native_C": 0.51025,
+      "v5_hand": [
+        "Emeria's Call",
+        "Giant's Boulder",
+        "Jeweled Amulet",
+        "Lunarch Mantle",
+        "Mana Vault",
+        "Urza's Cave"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.3125,
+      "v5_raw_minus_actual_threshold": -0.31775,
+      "v5_raw_minus_native_C": -0.19775,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.020833333333333336,
+      "T2_signed_v5_advantage": -0.03125,
+      "T3_signed_v5_advantage": -0.08333333333333337,
+      "assertive_bump": 0.2,
+      "game_id": 115226,
+      "keep_n": 7,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 2,
+      "stage": 0,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Crystal Vein",
+        "Grim Monolith",
+        "Hardlight Containment",
+        "Mana Vault",
+        "Mind Stone",
+        "Minimus Containment",
+        "Prismatic Lens"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.5119924,
+      "v27_threshold": 0.4119294,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Crystal Vein",
+        "Grim Monolith",
+        "Hardlight Containment",
+        "Mana Vault",
+        "Mind Stone",
+        "Minimus Containment",
+        "Prismatic Lens"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.75,
+      "v5_raw_minus_actual_threshold": -0.00603,
+      "v5_raw_minus_native_C": 0.19397,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.0,
+      "T2_signed_v5_advantage": 0.020833333333333336,
+      "T3_signed_v5_advantage": 0.28125,
+      "assertive_bump": 0.0,
+      "game_id": 115227,
+      "keep_n": 2,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 0,
+      "stage": 6,
+      "v27_bottom": [
+        "Razorgrass Ambush",
+        "Plains",
+        "Eldrazi Confluence",
+        "Remote Farm",
+        "Blast Zone"
+      ],
+      "v27_hand": [
+        "Disruptor Flute",
+        "Giant's Boulder"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.0028379,
+      "v27_threshold": 0.0087593,
+      "v5_bottom": [
+        "Razorgrass Ambush",
+        "Plains",
+        "Eldrazi Confluence",
+        "Disruptor Flute",
+        "Blast Zone"
+      ],
+      "v5_effective_threshold": 0.06171875,
+      "v5_frozen_native_C": 0.06171875,
+      "v5_hand": [
+        "Giant's Boulder",
+        "Remote Farm"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.0625,
+      "v5_raw_minus_actual_threshold": 0.0007812,
+      "v5_raw_minus_native_C": 0.0007812,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.052083333333333336,
+      "T2_signed_v5_advantage": 0.23958333333333337,
+      "T3_signed_v5_advantage": 0.17708333333333337,
+      "assertive_bump": 0.2,
+      "game_id": 115228,
+      "keep_n": 7,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 1,
+      "stage": 0,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Bound by Moonsilver",
+        "Bucknard's Everfull Purse",
+        "City of Traitors",
+        "Gleaming Splendor",
+        "Static Prison",
+        "Touch the Spirit Realm",
+        "Vexing Bauble"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.2055479,
+      "v27_threshold": 0.3642452,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Bound by Moonsilver",
+        "Bucknard's Everfull Purse",
+        "City of Traitors",
+        "Gleaming Splendor",
+        "Static Prison",
+        "Touch the Spirit Realm",
+        "Vexing Bauble"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.8125,
+      "v5_raw_minus_actual_threshold": 0.05647,
+      "v5_raw_minus_native_C": 0.25647,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.03125,
+      "T2_signed_v5_advantage": 0.3125,
+      "T3_signed_v5_advantage": -0.23958333333333337,
+      "assertive_bump": 0.12,
+      "game_id": 115230,
+      "keep_n": 6,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 1,
+      "stage": 2,
+      "v27_bottom": [
+        "Floating Shield"
+      ],
+      "v27_hand": [
+        "Ancient Den",
+        "Grim Monolith",
+        "Plains",
+        "The Mind Stone",
+        "The Mycosynth Gardens",
+        "Treasure Vault"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.2663976,
+      "v27_threshold": 0.2225183,
+      "v5_bottom": [
+        "The Mycosynth Gardens"
+      ],
+      "v5_effective_threshold": 0.63025,
+      "v5_frozen_native_C": 0.51025,
+      "v5_hand": [
+        "Ancient Den",
+        "Floating Shield",
+        "Grim Monolith",
+        "Plains",
+        "The Mind Stone",
+        "Treasure Vault"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.53125,
+      "v5_raw_minus_actual_threshold": -0.099,
+      "v5_raw_minus_native_C": 0.021,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.0625,
+      "T2_signed_v5_advantage": 0.3958333333333333,
+      "T3_signed_v5_advantage": -0.1875,
+      "assertive_bump": 0.2,
+      "game_id": 115232,
+      "keep_n": 7,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 1,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Blast Zone",
+        "Defense Grid",
+        "Eiganjo, Seat of the Empire",
+        "Enlightened Tutor",
+        "Mind Stone",
+        "Plains",
+        "Remote Farm"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.5376525,
+      "v27_threshold": 0.3126459,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Blast Zone",
+        "Defense Grid",
+        "Eiganjo, Seat of the Empire",
+        "Enlightened Tutor",
+        "Mind Stone",
+        "Plains",
+        "Remote Farm"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.625,
+      "v5_raw_minus_actual_threshold": -0.13103,
+      "v5_raw_minus_native_C": 0.06897,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.17708333333333334,
+      "T2_signed_v5_advantage": -0.010416666666666685,
+      "T3_signed_v5_advantage": -0.08333333333333337,
+      "assertive_bump": 0.2,
+      "game_id": 115237,
+      "keep_n": 7,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 2,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Defense Grid",
+        "Lion's Eye Diamond",
+        "Lunarch Mantle",
+        "Mana Vault",
+        "Orim's Chant",
+        "Sheltered by Ghosts",
+        "Trinisphere"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.1216443,
+      "v27_threshold": 0.330679,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.55603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Defense Grid",
+        "Lion's Eye Diamond",
+        "Lunarch Mantle",
+        "Mana Vault",
+        "Orim's Chant",
+        "Sheltered by Ghosts",
+        "Trinisphere"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 0.6875,
+      "v5_raw_minus_actual_threshold": 0.13147,
+      "v5_raw_minus_native_C": 0.13147,
+      "v5_sampled_T1": 0.5
+    },
+    {
+      "T1_signed_v5_advantage": 0.0625,
+      "T2_signed_v5_advantage": 0.25,
+      "T3_signed_v5_advantage": -0.22916666666666663,
+      "assertive_bump": 0.2,
+      "game_id": 115238,
+      "keep_n": 7,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 0,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Arcane Signet",
+        "Blast Zone",
+        "Brainstone",
+        "Enlightened Tutor",
+        "Orim's Chant",
+        "Plains",
+        "Ruins of Trokair"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.53415,
+      "v27_threshold": 0.313281,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Arcane Signet",
+        "Blast Zone",
+        "Brainstone",
+        "Enlightened Tutor",
+        "Orim's Chant",
+        "Plains",
+        "Ruins of Trokair"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.53125,
+      "v5_raw_minus_actual_threshold": -0.22478,
+      "v5_raw_minus_native_C": -0.02478,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.03125,
+      "T2_signed_v5_advantage": 0.1875,
+      "T3_signed_v5_advantage": -0.08333333333333337,
+      "assertive_bump": 0.12,
+      "game_id": 115239,
+      "keep_n": 6,
+      "mechanism": "v5_native_keep_value_below_native_C",
+      "seat": 1,
+      "stage": 2,
+      "v27_bottom": [
+        "Trinisphere"
+      ],
+      "v27_hand": [
+        "Fellwar Stone",
+        "March of Otherworldly Light",
+        "Sol Ring",
+        "Soul Partition",
+        "Unwanted Remake",
+        "Urza's Cave"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.2315648,
+      "v27_threshold": 0.2225183,
+      "v5_bottom": [
+        "March of Otherworldly Light"
+      ],
+      "v5_effective_threshold": 0.63025,
+      "v5_frozen_native_C": 0.51025,
+      "v5_hand": [
+        "Fellwar Stone",
+        "Sol Ring",
+        "Soul Partition",
+        "Trinisphere",
+        "Unwanted Remake",
+        "Urza's Cave"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.40625,
+      "v5_raw_minus_actual_threshold": -0.224,
+      "v5_raw_minus_native_C": -0.104,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.0625,
+      "T2_signed_v5_advantage": 0.3333333333333333,
+      "T3_signed_v5_advantage": -0.1875,
+      "assertive_bump": 0.2,
+      "game_id": 115242,
+      "keep_n": 7,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 1,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Command Beacon",
+        "Crystal Vein",
+        "Eldrazi Confluence",
+        "Lotus Petal",
+        "Plains",
+        "Razorgrass Ambush",
+        "The Mind Stone"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.4822828,
+      "v27_threshold": 0.3126459,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Command Beacon",
+        "Crystal Vein",
+        "Eldrazi Confluence",
+        "Lotus Petal",
+        "Plains",
+        "Razorgrass Ambush",
+        "The Mind Stone"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.59375,
+      "v5_raw_minus_actual_threshold": -0.16228,
+      "v5_raw_minus_native_C": 0.03772,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": -0.03125,
+      "T2_signed_v5_advantage": -0.0625,
+      "T3_signed_v5_advantage": 0.33333333333333337,
+      "assertive_bump": 0.12,
+      "game_id": 115246,
+      "keep_n": 6,
+      "mechanism": "v5_keep_v27_mull__not_an_assertive_veto",
+      "seat": 1,
+      "stage": 2,
+      "v27_bottom": [
+        "Vexing Bauble"
+      ],
+      "v27_hand": [
+        "Disruptor Flute",
+        "Emeria's Call",
+        "Krark-Clan Ironworks",
+        "Mishra's Workshop",
+        "Talon Gates of Madara",
+        "Tezzeret, Cruel Captain"
+      ],
+      "v27_keeps": false,
+      "v27_pred_Qkeep": 0.1202567,
+      "v27_threshold": 0.2225183,
+      "v5_bottom": [
+        "Emeria's Call"
+      ],
+      "v5_effective_threshold": 0.63025,
+      "v5_frozen_native_C": 0.51025,
+      "v5_hand": [
+        "Disruptor Flute",
+        "Krark-Clan Ironworks",
+        "Mishra's Workshop",
+        "Talon Gates of Madara",
+        "Tezzeret, Cruel Captain",
+        "Vexing Bauble"
+      ],
+      "v5_keeps": true,
+      "v5_raw": 1.0,
+      "v5_raw_minus_actual_threshold": 0.36975,
+      "v5_raw_minus_native_C": 0.48975,
+      "v5_sampled_T1": 0.0
+    },
+    {
+      "T1_signed_v5_advantage": 0.03125,
+      "T2_signed_v5_advantage": 0.03125,
+      "T3_signed_v5_advantage": -0.19791666666666663,
+      "assertive_bump": 0.2,
+      "game_id": 115255,
+      "keep_n": 7,
+      "mechanism": "v5_assertive_bump_veto",
+      "seat": 0,
+      "stage": 1,
+      "v27_bottom": [],
+      "v27_hand": [
+        "Ancient Tomb",
+        "Crystal Vein",
+        "Gift of Immortality",
+        "Mox Diamond",
+        "Plains",
+        "Thorn of Amethyst",
+        "Urza's Saga"
+      ],
+      "v27_keeps": true,
+      "v27_pred_Qkeep": 0.473159,
+      "v27_threshold": 0.313281,
+      "v5_bottom": [],
+      "v5_effective_threshold": 0.75603,
+      "v5_frozen_native_C": 0.55603,
+      "v5_hand": [
+        "Ancient Tomb",
+        "Crystal Vein",
+        "Gift of Immortality",
+        "Mox Diamond",
+        "Plains",
+        "Thorn of Amethyst",
+        "Urza's Saga"
+      ],
+      "v5_keeps": false,
+      "v5_raw": 0.5625,
+      "v5_raw_minus_actual_threshold": -0.19353,
+      "v5_raw_minus_native_C": 0.00647,
+      "v5_sampled_T1": 0.0
+    }
+  ],
+  "counts": {
+    "N_outer_games": 256,
+    "different_actual_keep_stage": 100,
+    "first_disagreement_native_would_keep": 69,
+    "first_disagreement_v5_t1_positive": 5,
+    "same_actual_keep_stage": 156,
+    "same_stage_different_bottom": 70,
+    "same_stage_different_kept_hand": 70,
+    "same_stage_different_ordered_bottom_but_same_cards": 0,
+    "v5_assertive_bump_veto": 30,
+    "v5_keep_v27_mull__not_an_assertive_veto": 39,
+    "v5_native_keep_value_below_native_C": 31
+  },
+  "different_stage_first_stage_mechanisms": {
+    "v5_assertive_bump_veto": {
+      "N": 30,
+      "mean_physical_v5_action_advantage_T1_pp": 3.2638888888888897,
+      "mean_physical_v5_action_advantage_T2_pp": 8.819444444444445,
+      "mean_physical_v5_action_advantage_T3_pp": -23.78472222222222
+    },
+    "v5_keep_v27_mull__not_an_assertive_veto": {
+      "N": 39,
+      "mean_physical_v5_action_advantage_T1_pp": -1.1217948717948718,
+      "mean_physical_v5_action_advantage_T2_pp": 6.730769230769233,
+      "mean_physical_v5_action_advantage_T3_pp": 31.3301282051282
+    },
+    "v5_native_keep_value_below_native_C": {
+      "N": 31,
+      "mean_physical_v5_action_advantage_T1_pp": 2.28494623655914,
+      "mean_physical_v5_action_advantage_T2_pp": 17.170698924731184,
+      "mean_physical_v5_action_advantage_T3_pp": -4.502688172043011
+    }
+  },
+  "first_disagreement_by_stage": {
+    "0": {
+      "v5_assertive_bump_veto": 8,
+      "v5_keep_v27_mull__not_an_assertive_veto": 5,
+      "v5_native_keep_value_below_native_C": 4
+    },
+    "1": {
+      "v5_assertive_bump_veto": 10,
+      "v5_keep_v27_mull__not_an_assertive_veto": 2,
+      "v5_native_keep_value_below_native_C": 12
+    },
+    "2": {
+      "v5_assertive_bump_veto": 8,
+      "v5_keep_v27_mull__not_an_assertive_veto": 4,
+      "v5_native_keep_value_below_native_C": 8
+    },
+    "3": {
+      "v5_assertive_bump_veto": 4,
+      "v5_keep_v27_mull__not_an_assertive_veto": 12,
+      "v5_native_keep_value_below_native_C": 2
+    },
+    "4": {
+      "v5_keep_v27_mull__not_an_assertive_veto": 6,
+      "v5_native_keep_value_below_native_C": 1
+    },
+    "5": {
+      "v5_keep_v27_mull__not_an_assertive_veto": 6,
+      "v5_native_keep_value_below_native_C": 4
+    },
+    "6": {
+      "v5_keep_v27_mull__not_an_assertive_veto": 4
+    }
+  },
+  "historical_selected_sample_NOT_new_validation": true,
+  "no_new_gameplay_or_lookahead": true,
+  "no_new_teacher_model_or_policy": true,
+  "original_v5_actual_policy_assertive": true,
+  "physical_effect_is_causal_1step_same_v33b_bottom_and_v27_future_NOT_original_v5_game": true,
+  "schema": "dack_v42_v5_structural_threshold_and_reality_diagnostic_v1",
+  "source": "historical 115k original-v5 and v27 identical physical outer slots + original v34c physical KEEP/C",
+  "status": "PASS",
+  "t3_teacher_utility_weight": 0.5,
+  "v5_assertive_bumps_by_keep_n": {
+    "4": 0.015,
+    "5": 0.055,
+    "6": 0.12,
+    "7": 0.2
+  },
+  "v5_continuation_native_by_keep_n": {
+    "2": 0.06171875,
+    "3": 0.19234,
+    "4": 0.31419,
+    "5": 0.42268,
+    "6": 0.51025,
+    "7": 0.55603
+  },
+  "v5_internal_CONFIG": {
+    "actual_seat_before_mulligans": true,
+    "bottom_finalists": 12,
+    "engine": "v0.78-extensions-boonweaver-exact99-oct16",
+    "gameplay_beam": 240,
+    "lambda": 0.5,
+    "max_turn": 3,
+    "min_keep": 1,
+    "mulligan_eval_beam": 60,
+    "policy": "free_multiplayer_London_v077_lambda_0.5_continuation_provisional",
+    "refine_margin": 0.125,
+    "refine_samples": 16,
+    "screen_samples": 8,
+    "seed_base": 99142610261318
+  }
+}
