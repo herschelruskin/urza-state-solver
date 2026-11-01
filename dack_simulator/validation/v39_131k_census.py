@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""v39 before-outcomes full 131k 512-group physical London action census.
+"""v39 before-outcomes full 131k 1024-group physical London action census.
 
 Whole 131000..132023 random IDs × early stages0/1/2, no game beam.
 Save each changed action, final-deck divergence, and original
@@ -21,7 +21,7 @@ import dack_mulligan_v39_t2_risk_regret as opt
 
 LO=131000
 HI=132023
-SCHEMA="dack_v39_131k_new_random_512_outcome_blind_census_v1"
+SCHEMA="dack_v39_131k_new_random_1024_outcome_blind_census_v1"
 
 def run():
     policy.audit()
@@ -44,7 +44,6 @@ def run():
               "pred_A2_med":diag["T2_median"],
               "pred_A2_lower":diag["T2_lower_quartile"],
               "pred_A2_upper":diag["T2_upper_quartile"],
-              "pred_A2_med":diag["T2_median"],
               "pred_A3_med":diag["T3_median"],
               "old_v27_margin":orig["old_v27_Qkeep"]-orig["old_v27_DP"]
             }
@@ -100,8 +99,8 @@ def run():
     dest=ROOT/"datasets/v39_131k_frozen_outcome_blind_census.json"
     dest.parent.mkdir(parents=True,exist_ok=True)
     dest.write_text(json.dumps(out,sort_keys=True,indent=2)+"\n")
-    print("DACK_V39_UNSEEN_N512_ACTION_CENSUS_PASS",json.dumps({
-      "states":1536,"changed_actions":len(differ),
+    print("DACK_V39_UNSEEN_N1024_ACTION_CENSUS_PASS",json.dumps({
+      "states":3072,"changed_actions":len(differ),
       "actual_path_changed_games":len(live),
       "reasons":dict(counts),"by_stage":bystage
     },sort_keys=True),flush=True)
