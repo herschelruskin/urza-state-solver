@@ -1,0 +1,125 @@
+{
+  "schema": "dack_learned_policy_comparison_handoff_v1",
+  "status": "All results research-only; none promoted",
+  "reference": "dack_stable_dice_strict_bounded_witness_v5",
+  "candidate_model_approval": false,
+  "experiments": [
+    {
+      "label": "first learned v8 vs v5",
+      "github_actions_run": 41254412065,
+      "seed_ids": [
+        41000,
+        41015
+      ],
+      "n": 16,
+      "v5": {
+        "T1": 1,
+        "T2": 4,
+        "T3": 12,
+        "mean_keep": 4.625,
+        "cpu_seconds": 555.688
+      },
+      "candidate": {
+        "T1": 0,
+        "T2": 2,
+        "T3": 11,
+        "mean_keep": 5.0625,
+        "cpu_seconds": 3.801
+      },
+      "speedup": 146.1952,
+      "T2_gains": 1,
+      "T2_losses": 3
+    },
+    {
+      "label": "corrective learned v11 vs v5",
+      "github_actions_run": 41255014354,
+      "seed_ids": [
+        42000,
+        42015
+      ],
+      "n": 16,
+      "v5": {
+        "T1": 0,
+        "T2": 3,
+        "T3": 12,
+        "mean_keep": 4.3125,
+        "cpu_seconds": 563.9792
+      },
+      "candidate": {
+        "T1": 0,
+        "T2": 0,
+        "T3": 11,
+        "mean_keep": 4.5625,
+        "cpu_seconds": 7.4122
+      },
+      "speedup": 76.088,
+      "T2_gains": 0,
+      "T2_losses": 3
+    },
+    {
+      "label": "confidence-gated hybrid m=.075 vs v5",
+      "github_actions_run": 41255514274,
+      "seed_ids": [
+        43000,
+        43015
+      ],
+      "n": 16,
+      "ambiguity_band_selected_after_42k_development": 0.075,
+      "v5": {
+        "T1": 2,
+        "T2": 11,
+        "T3": 13,
+        "mean_keep": 5.8125,
+        "cpu_seconds": 210.442
+      },
+      "candidate": {
+        "T1": 2,
+        "T2": 6,
+        "T3": 10,
+        "mean_keep": 5.8125,
+        "cpu_seconds": 74.65
+      },
+      "speedup": 2.819,
+      "T2_gains": 0,
+      "T2_losses": 5,
+      "beam_fallback_stages": 7,
+      "London_stages": 44
+    }
+  ],
+  "model_validation": {
+    "v10_on_v7_policy_selected_independent_128_scenarios": {
+      "github_actions_run": 41254178107,
+      "n_rollouts": 512,
+      "Brier": 0.6356554502705032,
+      "log_loss": 1.1214836253186775,
+      "predicted_T1": 0.0849905074322998,
+      "observed_T1": 0.052734375,
+      "predicted_T2_cumulative": 0.35607790141360157,
+      "observed_T2_cumulative": 0.400390625,
+      "predicted_T3_cumulative": 0.7010978923289268,
+      "observed_T3_cumulative": 0.76171875
+    },
+    "v11_on_frozen_learned_v8_policy_selected_calibration": {
+      "github_actions_run": 41254895641,
+      "n_rollouts": 512,
+      "temperature": 1.7367496760773884,
+      "Brier": 0.52461500825239,
+      "log_loss": 0.9102587264808653,
+      "observed_T1": 0.046875,
+      "predicted_T1": 0.042272037912314854,
+      "observed_T2_cumulative": 0.31640625,
+      "predicted_T2_cumulative": 0.3481880063041243,
+      "observed_T3_cumulative": 0.685546875,
+      "predicted_T3_cumulative": 0.6906888197004132
+    }
+  },
+  "missed_T2_decision_audit": {
+    "github_actions_run": 41255286014,
+    "path": "benchmark_results/learned_v11_missed_T2_decision_audit.json",
+    "n_T2_losses": 3,
+    "n_different_kept_stages": 3,
+    "n_same_stage_bottom_only_losses": 0
+  },
+  "warning": "N16 confidence intervals are imprecise. Goldfish beam-160 deployment only, not four-player cEDH win rate. Candidate policies remain unapproved. Do not pool across stochastic versions.",
+  "recommendation": "Train a line-aware, interaction-sensitive distilled mulligan teacher-policy with paired candidate rankings and outcome calibration, then independently compare on fresh 44k or higher seeds; retain strict v5 as baseline."
+}
