@@ -1,0 +1,48 @@
+name: DACK v45 pool new physical v5-v43 first conflict K/C regret once 44 K complete
+on:
+  push:
+    branches: [dack-v45-v5-v43-residual-gap-audit-20261101]
+    paths:
+      - 'benchmark_results/v45_v5_v43_first_conflict_physical_K_shards/**'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  pool_after_both_real_physical_sources:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v45-v5-v43-residual-gap-audit-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify 44 first-conflict K sources x32 and 20 C source cells x96, two-source group bootstrap
+        run: |
+          python -m py_compile dack_simulator/validation/v45_pool_first_conflict_physical_K_C.py
+          python -u dack_simulator/validation/v45_pool_first_conflict_physical_K_C.py
+      - name: Check conditional claims and exact physical outer sample sizes
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('benchmark_results/v45_first_v5_v43_conflict_physical_K_vs_C_N44.json').read_text())
+          assert d['schema']=='dack_v45_fresh_physical_v5_v43_first_disagreement_conditional_regret_N44'
+          assert d['status']=='PASS'
+          assert d['outer_selected_game_groups']==44
+          assert d['K_physical_new_gameplay_runs']==1408
+          assert d['C_physical_new_gameplay_runs']==1920
+          assert d['bootstrap_resamples_original_hands_Kfuture_and_SHARED_Ccell']
+          assert d['preselected_151k_first_conflicts_NOT_population_random_sample']
+          assert d['no_new_model_fit_or_threshold_tuning']
+          print("DACK_V45_REAL_K_C_REGRET_POOL_INVARIANTS_PASS")
+          PY
+      - name: Archive per-hand physical conditional action regret and both future sources
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v45_first_v5_v43_conflict_physical_K_vs_C_N44.json
+          git commit -m "Archive physical N44 original v5-v43 first disagreement direct K/C regrets and two-source CIs"
+          git pull --rebase origin dack-v45-v5-v43-residual-gap-audit-20261101
+          git push origin HEAD:dack-v45-v5-v43-residual-gap-audit-20261101
