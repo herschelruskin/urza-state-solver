@@ -1,0 +1,68 @@
+name: DACK v45 real frozen-v43 physical continuation 20 seat-stage cells
+on:
+  push:
+    branches: [dack-v45-v5-v43-residual-gap-audit-20261101]
+    paths:
+      - '.github/workflows/dack_v45_real_v43_C_20cells.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  C:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        seat: [0,1,2,3]
+        stage: [0,1,2,3,4]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v45-v5-v43-residual-gap-audit-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify v43 complete-stage parity, then simulate 96 all99 physically independent futures
+        run: |
+          python -m py_compile dack_simulator/validation/v45_real_v43_continuation_C.py
+          python -u dack_simulator/validation/v45_real_v43_continuation_C.py \
+            --seat ${{ matrix.seat }} --stage ${{ matrix.stage }} \
+            --out shards/v45_v43_C_${{ matrix.seat }}_${{ matrix.stage }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v45-true-v43-C-${{ matrix.seat }}-${{ matrix.stage }}
+          path: shards/v45_v43_C_*.json.gz
+          retention-days: 90
+  pool:
+    needs: C
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v45-v5-v43-residual-gap-audit-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v45-true-v43-C-*
+          merge-multiple: true
+          path: collected
+      - name: Verify all 20 cells, original v43 parity and actual physical future T2
+        run: |
+          python -m py_compile dack_simulator/validation/v45_pool_real_v43_C.py
+          python -u dack_simulator/validation/v45_pool_real_v43_C.py
+      - name: Archive 1920 physical future lottery outcomes and seat-stage continuation audit
+        run: |
+          mkdir -p benchmark_results/v45_real_v43_continuation_20cells_shards
+          cp collected/v45_v43_C_*.json.gz benchmark_results/v45_real_v43_continuation_20cells_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v45_v43_physical_continuation_vs_v27_DP_20cells.json benchmark_results/v45_real_v43_continuation_20cells_shards/
+          git commit -m "Archive 20 true physical seat-stage v43 future-mull continuation cells, 1920 full99 games"
+          git pull --rebase origin dack-v45-v5-v43-residual-gap-audit-20261101
+          git push origin HEAD:dack-v45-v5-v43-residual-gap-audit-20261101
