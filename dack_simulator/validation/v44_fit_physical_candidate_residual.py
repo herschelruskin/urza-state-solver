@@ -144,11 +144,13 @@ def estimate(data,model):
         totals={h:0. for h in (2,3)}
         for _ in range(N):
             r=detail[rng.randrange(N)]
-            # Reuse exactly the *same future index* for paired alternatives.
-            j=rng.randrange(8)
-            for h in (2,3):
-                totals[h]+=int(0<r["new_turns"][j]<=h)-int(0<r["old_turns"][j]<=h)
-        for h in (2,3):boot[h].append(100*totals[h]/N)
+            # Nested bootstrap: one original physical deal + its EIGHT
+            # physical paired future trials, not a single future per group.
+            for _future in range(8):
+                j=rng.randrange(8)
+                for h in (2,3):
+                    totals[h]+=int(0<r["new_turns"][j]<=h)-int(0<r["old_turns"][j]<=h)
+        for h in (2,3):boot[h].append(100*totals[h]/(N*8))
     for h in (2,3):
         b=sorted(boot[h])
         report[f"T{h}_group_and_shared_future_bootstrap95_pp"]=[b[124],b[4874]]
