@@ -1,0 +1,116 @@
+{
+  "schema": "dack_v13_teacher_policy_distillation_research_v1",
+  "status": "EXPERIMENTAL_FAILED_PROMOTION",
+  "source_branch": "dack-counterfactual-engine-v1-20261030",
+  "teacher": "dack_stable_dice_strict_bounded_witness_v5",
+  "model_source": "models/dack_teacher_distill_v13_EXPERIMENTAL.json",
+  "training": {
+    "game_ids": [
+      60000,
+      60015
+    ],
+    "games": 16,
+    "visited_stages": 55,
+    "top12_candidates": 292
+  },
+  "development_validation": {
+    "game_ids": [
+      61000,
+      61007
+    ],
+    "games": 8,
+    "visited_stages": 27,
+    "candidate_top1_accuracy": 0.7037037037037037,
+    "keep_accuracy": 0.7777777777777778,
+    "joint_stage_accuracy": 0.5925925925925926,
+    "teacher_keep_rate": 0.2962962962962963,
+    "student_keep_rate": 0.07407407407407407
+  },
+  "sealed_imitation": {
+    "game_ids": [
+      62000,
+      62007
+    ],
+    "games": 8,
+    "visited_stages": 35,
+    "candidate_top1_accuracy": 0.6285714285714286,
+    "keep_decision_accuracy": 0.8285714285714286,
+    "joint_stage_accuracy": 0.5428571428571428,
+    "teacher_structural_first_candidate_rate": 0.6571428571428571,
+    "teacher_keep_rate": 0.22857142857142856,
+    "student_keep_rate": 0.11428571428571428,
+    "actions_run": 41256791497
+  },
+  "full_game_frozen_v13": {
+    "game_ids": [
+      64000,
+      64007
+    ],
+    "n": 8,
+    "actions_run": 41256644008,
+    "baseline_v5": {
+      "T1": 0,
+      "T2": 4,
+      "T3": 6,
+      "average_keep": 4.625,
+      "seconds": 324.0535
+    },
+    "student": {
+      "T1": 0,
+      "T2": 2,
+      "T3": 3,
+      "average_keep": 3.625,
+      "seconds": 1.1804
+    },
+    "runtime_ratio": 274.52855,
+    "T2_gains": 0,
+    "T2_losses": 2,
+    "model_approved": false
+  },
+  "validation_threshold_experiment": {
+    "actions_run": 41256706895,
+    "chosen_keep_cutoff": 0.25,
+    "from_validation_ids": [
+      61000,
+      61007
+    ],
+    "raw_validation_keep_accuracy": 0.7037037037037037,
+    "raw_validation_joint_stage_accuracy": 0.48148148148148145,
+    "model_path": "models/dack_teacher_distill_v13_valcutoff_EXPERIMENTAL.json"
+  },
+  "full_game_cutoff_v13b": {
+    "game_ids": [
+      65000,
+      65007
+    ],
+    "n": 8,
+    "actions_run": 41256843916,
+    "baseline_v5": {
+      "T1": 0,
+      "T2": 4,
+      "T3": 7,
+      "average_keep": 5.375,
+      "seconds": 147.7734
+    },
+    "student": {
+      "T1": 0,
+      "T2": 3,
+      "T3": 4,
+      "average_keep": 6.625,
+      "seconds": 5.3101
+    },
+    "runtime_ratio": 27.82874,
+    "T2_gains": 1,
+    "T2_losses": 2,
+    "model_approved": false
+  },
+  "limitations": [
+    "No model trained on sufficient teacher-stage groups; teacher top12 candidates already structurally pruned",
+    "Original beam teacher uses finite sampled 8/16 futures and is goldfish biased",
+    "N8 full-game comparisons too small for population accuracy or non-inferiority",
+    "Student top1 bottom choice on untouched teacher stages no better than always choosing the top structural finalist",
+    "Threshold tuning on 8 validation groups is fragile; v13b was compared on a different game cohort, so raw differences across v13/v13b cohorts are not an effect estimate",
+    "No production promotion, no overwrite of original v5"
+  ],
+  "next": "Collect more diverse independent teacher games and hard stage examples. Fit group-disjoint line-aware rank/keep models with explicit train/calibration/test. Evaluate new fixed student on fresh paired 66k+ games and rank top1 vs structural baseline. Do not tune using 64k or 65k holdouts."
+}
