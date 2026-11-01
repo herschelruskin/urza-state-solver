@@ -31,8 +31,9 @@ def passed(turn, t):
 
 
 def category(a, b):
-    if a["keep_n"] != b["keep_n"]:
+    if a["history"][-1]["stage"] != b["history"][-1]["stage"]:
         return "different_london_stage_confounded"
+    assert a["keep_n"] == b["keep_n"]
     ah = a["history"][-1]["hand"]
     bh = b["history"][-1]["hand"]
     if Counter(ah) != Counter(bh):
@@ -118,7 +119,7 @@ def main(out):
     outcome = {
         "schema": "dack_v33_readonly_attribution_audit",
         "status": "PASS",
-        "scope": "retrospective, no beam simulations, no fitting, no policy changes",
+        "scope": "retrospective, no beam simulations, no fitting, no policy changes; London stage means recorded stage index, not keep_n",
         "source_full_game_ids": [110000, 110255],
         "source_model_shas": sha,
         "matched_256_game_descriptive_partitions": {
@@ -164,12 +165,13 @@ def main(out):
 
 
 def selftest():
-    a={"keep_n":4,"history":[{"hand":["Plains","Mana Vault"]}]}
-    b={"keep_n":4,"history":[{"hand":["Mana Vault","Plains"]}]}
+    a={"keep_n":4,"history":[{"stage":4,"hand":["Plains","Mana Vault"]}]}
+    b={"keep_n":4,"history":[{"stage":4,"hand":["Mana Vault","Plains"]}]}
     assert category(a,b) == "same_final_hand"
     b["history"][-1]["hand"] = ["Plains","Sol Ring"]
     assert category(a,b) == "same_stage_different_hand"
-    b["keep_n"]=3
+    b["history"][-1]["stage"]=3
+    b["keep_n"]=5
     assert category(a,b) == "different_london_stage_confounded"
     assert passed(0,3)==0 and passed(3,2)==0 and passed(2,2)==1
     print("DACK_V33_READONLY_SELFTEST_PASS", flush=True)
