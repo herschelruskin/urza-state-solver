@@ -1,0 +1,58 @@
+name: DACK v12 hybrid ambiguity fallback audit
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_hybrid_m075_smoke.yml'
+      - 'dack_paired_counterfactual_v12_hybrid_m075_20261031.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check experimental hybrid strict rules, stable dice and model-bound DP
+        run: |
+          python -m compileall -q dack_paired_counterfactual_v12_hybrid_m075_20261031.py
+          python dack_paired_counterfactual_v12_hybrid_m075_20261031.py --audit
+      - name: Count how frequently the FIXED band would trigger without actually playing or adjusting it
+        run: |
+          python - <<'PY'
+          import json
+          from collections import Counter
+          import dack_paired_counterfactual_v12_hybrid_m075_20261031 as hybrid
+          from dack_simulator.validation.derive_learned_london_dp_v8 import best_candidate
+          hybrid.audit()
+          ref=hybrid.ref
+          counts=Counter()
+          for gid in range(52000,52256):
+              seat,stages=ref.stage_slots(int(ref.SPEC['seed_base'])+gid*ref.SEED_STRIDE)
+              slots=ref.SLOT_VARIANTS['one_key_34']
+              for stage,(kn,order) in enumerate(zip(ref.sim.STAGES,stages)):
+                  seven=tuple(slots[s] for s in order[:7])
+                  rest=tuple(slots[s] for s in order[7:])
+                  (val,_),hand,bottom,p=best_candidate(seven,rest,seat,kn,hybrid.learned.MODEL)
+                  t=hybrid.learned.CONTINUATIONS['one_key_34']['seats'][str(seat)]['thresholds_by_london_stage'][stage]
+                  margin=val-t
+                  counts['london_stages']+=1
+                  if kn>1 and abs(margin)<=hybrid.MARGIN:
+                      counts['fallback_eligible']+=1
+                  else:
+                      counts['model_only_stages']+=1
+                  if kn==1 or margin>=0:
+                      break
+              counts['scenarios']+=1
+          report={'status':'PASS','scenario_count':counts['scenarios'],
+                  'london_stages':counts['london_stages'],
+                  'fallback_eligible':counts['fallback_eligible'],
+                  'fraction_stages_fallback_eligible':counts['fallback_eligible']/counts['london_stages'],
+                  'margin':hybrid.MARGIN,
+                  'warning':'Diagnostic only, no outcomes used or cutoff tuned'}
+          print('HYBRID_FALLBACK_FREQUENCY_PASS',json.dumps(report),flush=True)
+          PY
