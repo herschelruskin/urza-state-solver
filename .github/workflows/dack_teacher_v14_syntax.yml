@@ -1,0 +1,25 @@
+name: DACK v14 expanded learning and v15 DAgger syntax contracts
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_teacher_v14_syntax.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile all new student and teacher data paths
+        run: |
+          python -m compileall -q \
+            dack_simulator/validation/train_teacher_learning_curve_v14.py \
+            dack_simulator/validation/collect_student_visited_teacher_v15.py \
+            dack_simulator/validation/compare_teacher_distillation_v14.py
+          python -m unittest discover -s dack_simulator/validation -p test_teacher_distillation_v13.py -v
