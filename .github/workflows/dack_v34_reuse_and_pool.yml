@@ -1,0 +1,61 @@
+name: DACK v34 reuse validated physical C and K artifacts and pool
+on:
+  push:
+    branches: [dack-v34-consistent-keep-regret-20261101]
+    paths:
+      - '.github/workflows/dack_v34_reuse_and_pool.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  reuse-and-pool:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Reuse 28 completed original consistent-continuation shards
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 41274841117
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pattern: dack-v34-C-*
+          path: collected
+          merge-multiple: true
+      - name: Reuse 24 completed repaired keep-value shards
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 41274933150
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pattern: v34-repaired-K-*
+          path: collected
+          merge-multiple: true
+      - name: Assert complete physical data, compile, pool and two-source uncertainty
+        run: |
+          test "$(find collected -maxdepth 1 -name 'v34_C_*.json.gz' | wc -l)" -eq 28
+          test "$(find collected -maxdepth 1 -name 'v34_K_*.json.gz' | wc -l)" -eq 24
+          python -m py_compile dack_simulator/validation/v34_pool_consistent_regret.py
+          python -u dack_simulator/validation/v34_pool_consistent_regret.py
+      - name: Preserve all completed physical source shards and unapproved correction
+        run: |
+          mkdir -p benchmark_results/v34_consistent_regret_shards
+          cp collected/v34_*.json.gz benchmark_results/v34_consistent_regret_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v34_consistent_regret_shards benchmark_results/v34_consistent_keep_mull_117k_screen.json models/dack_v34_fixed_shrunk_keep_mull_EXPERIMENTAL.json
+          git commit -m "Archive reused v34 real Qkeep and consistent Qmull with untouched validation"
+          git pull --rebase origin dack-v34-consistent-keep-regret-20261101
+          git push origin HEAD:dack-v34-consistent-keep-regret-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v34-pooled-consistent-keep-regret-unapproved
+          path: |
+            benchmark_results/v34_consistent_keep_mull_117k_screen.json
+            models/dack_v34_fixed_shrunk_keep_mull_EXPERIMENTAL.json
+          retention-days: 30
