@@ -1,5 +1,10 @@
 name: DACK v40 original-v5 teacher data collection 4096 train or 512 dev
 on:
+  push:
+    branches: [dack-v40-true-disagreement-reassessment-20261101]
+    paths:
+      - 'DACK_V40_START_TRAIN_4096.txt'
+      - 'DACK_V40_START_DEV_512.txt'
   workflow_dispatch:
     inputs:
       split:
@@ -16,7 +21,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   train:
-    if: github.event.inputs.split == 'train'
+    if: (github.event_name == 'workflow_dispatch' && inputs.split == 'train') || (github.event_name == 'push' && contains(toJSON(github.event.head_commit.added), 'DACK_V40_START_TRAIN_4096.txt'))
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -48,7 +53,7 @@ jobs:
           path: shards/v40_*.jsonl.gz
           retention-days: 90
   pool_train:
-    if: github.event.inputs.split == 'train'
+    if: (github.event_name == 'workflow_dispatch' && inputs.split == 'train') || (github.event_name == 'push' && contains(toJSON(github.event.head_commit.added), 'DACK_V40_START_TRAIN_4096.txt'))
     needs: train
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -82,7 +87,7 @@ jobs:
           git pull --rebase origin dack-v40-true-disagreement-reassessment-20261101
           git push origin HEAD:dack-v40-true-disagreement-reassessment-20261101
   dev:
-    if: github.event.inputs.split == 'dev'
+    if: (github.event_name == 'workflow_dispatch' && inputs.split == 'dev') || (github.event_name == 'push' && contains(toJSON(github.event.head_commit.added), 'DACK_V40_START_DEV_512.txt'))
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -114,7 +119,7 @@ jobs:
           path: shards/v40_*.jsonl.gz
           retention-days: 90
   pool_dev:
-    if: github.event.inputs.split == 'dev'
+    if: (github.event_name == 'workflow_dispatch' && inputs.split == 'dev') || (github.event_name == 'push' && contains(toJSON(github.event.head_commit.added), 'DACK_V40_START_DEV_512.txt'))
     needs: dev
     runs-on: ubuntu-latest
     timeout-minutes: 25
