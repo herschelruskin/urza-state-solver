@@ -1,0 +1,112 @@
+name: DACK v15 DAgger-trained student vs v5 and original student paired N16
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_teacher_v15_five_policy_n16.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  paired:
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        include:
+          - start: 69000
+          - start: 69002
+          - start: 69004
+          - start: 69006
+          - start: 69008
+          - start: 69010
+          - start: 69012
+          - start: 69014
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Independent v5, original 16-train student, 128-train and 144-train students
+        run: |
+          python -m compileall -q dack_simulator/validation/compare_teacher_v15_dagger_five_policies.py
+          python -u dack_simulator/validation/compare_teacher_v15_dagger_five_policies.py \
+            --start ${{ matrix.start }} --games 2 \
+            --out shards/v15_five_policy_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v15-five-policy-${{ matrix.start }}
+          path: shards/v15_five_policy_*.json.gz
+          retention-days: 21
+  pool:
+    needs: paired
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v15-five-policy-*
+          merge-multiple: true
+          path: paired/
+      - name: Aggregate paired T1/T2/T3, model improvement and CPU without suppressing difficult games
+        run: |
+          python - <<'PY'
+          import gzip,glob,json,math
+          from pathlib import Path
+          fs=glob.glob('paired/v15_five_policy_*.json.gz')
+          assert len(fs)==8,len(fs)
+          rows=[]
+          policies=['v5','v13_16','v14_128','v14_144','v15_dagger_176']
+          for fp in fs:
+              with gzip.open(fp,'rt') as f:
+                  r=json.load(f)
+                  assert r['status']=='PASS'
+                  assert r['students_approved_for_production'] is False
+                  rows.extend(r['rows'])
+          rows.sort(key=lambda r:r['game_id'])
+          assert [r['game_id'] for r in rows]==list(range(69000,69016))
+          def metrics(policy):
+              rec=[r[policy] for r in rows]
+              return {
+                  'n':len(rec),'T1':sum(x['turn']==1 for x in rec),
+                  'T2':sum(x['turn'] in (1,2) for x in rec),
+                  'T3':sum(x['turn'] in (1,2,3) for x in rec),
+                  'mean_keep':sum(x['keep_n'] for x in rec)/16,
+                  'runtime_seconds':round(sum(x['seconds'] for x in rec),4)}
+          summaries={p:metrics(p) for p in policies}
+          paired={}
+          for a in policies[1:]:
+              for b in ['v5']+(['v13_16'] if a!='v13_16' else []):
+                  d=[int(r[a]['turn'] in (1,2))-int(r[b]['turn'] in (1,2)) for r in rows]
+                  delta=sum(d)/16
+                  se=(sum((x-delta)**2 for x in d)/(16*15))**.5
+                  paired[a+'_minus_'+b]={
+                      'T2_gain_games':d.count(1),'T2_loss_games':d.count(-1),
+                      'T2_delta_pp':100*delta,
+                      'exploratory_normal_95ci_pp':[100*(delta-1.96*se),100*(delta+1.96*se)]}
+          result={'schema':'dack_v15_five_policy_paired_n16',
+                  'status':'PASS','ids':[69000,69015],
+                  'independent_outer_games':16,
+                  'student_model_approved':False,
+                  'metrics':summaries,'paired':paired,
+                  'online_speed_ratios_vs_v5':{
+                     p:summaries['v5']['runtime_seconds']/max(.001,summaries[p]['runtime_seconds'])
+                     for p in policies[1:]},
+                  'warning':'N16 research screen. Cannot claim non-inferiority or unconditional multiplayer wins.'}
+          out=Path('benchmark_results/v15_teacher_five_policy_paired_n16.json')
+          out.parent.mkdir(exist_ok=True)
+          out.write_text(json.dumps(result,sort_keys=True,indent=2)+'\n')
+          print('V15_FIVE_POLICY_PAIRED_N16_PASS',json.dumps(result,sort_keys=True),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v15-five-policy-research-summary
+          path: benchmark_results/v15_teacher_five_policy_paired_n16.json
+          retention-days: 21
