@@ -1,0 +1,55 @@
+{
+  "action_reason_counts": {
+    "T2_prediction_favors_original": 750,
+    "T2_supports_override_but_T3_safeguard_blocks": 1,
+    "both_gates_pass_real_override": 2,
+    "opposite_T2_but_stability_or_C_margin_insufficient": 15
+  },
+  "actual_London_final_physical_hand_and_library_identical_games": 255,
+  "actual_London_final_physical_hand_or_library_DIFFERENT_games": 1,
+  "cohort_specific_max_full_game_T2_delta_pp": 0.390625,
+  "cohort_specific_max_one_step_uniform_conditional_T2_delta_pp": 0.2604166666666667,
+  "different_actual_path_detail": [
+    {
+      "gid": 124022,
+      "new_kept_actual_stage": 2,
+      "new_reasons": [
+        "v36_real_action_keep"
+      ],
+      "old_kept_actual_stage": 4
+    }
+  ],
+  "future_distribution_changed_policy_Bellman_not_evaluated": true,
+  "limitations": [
+    "These are empirical cohort-specific action-coverage upper bounds, not population CI",
+    "Census includes hypothetical stages that may not be visited by actual policies",
+    "Strict causal difference of final physical state is deterministic only for fixed actual game seeds",
+    "Gate decomposition is a posthoc read-only analysis, not a new trained candidate"
+  ],
+  "model_sha256": "3b52271ec600e2bedb35d3f5698e39b980d0695bdd3d5295e5f4ff108e5c2b48",
+  "n_all_actual_early_stages": 768,
+  "n_total_random_independent_outer_groups": 256,
+  "no_actual_gameplay_beam_calls": true,
+  "no_model_refitting": true,
+  "reason_by_actual_london_stage": {
+    "0": {
+      "T2_prediction_favors_original": 252,
+      "opposite_T2_but_stability_or_C_margin_insufficient": 4
+    },
+    "1": {
+      "T2_prediction_favors_original": 251,
+      "T2_supports_override_but_T3_safeguard_blocks": 1,
+      "both_gates_pass_real_override": 1,
+      "opposite_T2_but_stability_or_C_margin_insufficient": 3
+    },
+    "2": {
+      "T2_prediction_favors_original": 247,
+      "both_gates_pass_real_override": 1,
+      "opposite_T2_but_stability_or_C_margin_insufficient": 8
+    }
+  },
+  "same_final_hand_and_library_guarantees_same_game_outcome_under_same_seed": true,
+  "schema": "dack_v36_readonly_gate_and_actual_London_path_attribution_124k",
+  "status": "PASS",
+  "unapproved_policy": true
+}
