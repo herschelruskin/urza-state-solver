@@ -1,0 +1,34 @@
+name: DACK v38 freeze pre-outcome 129k random N512 action census and parity
+on:
+  push:
+    branches: [dack-v38-weighted-action-regret-20261101]
+    paths: ['.github/workflows/dack_v38_129k_census.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  census:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify freeze and exact legal v33b bottom without game outcomes
+        run: |
+          python -m py_compile dack_mulligan_v38_weighted_regret.py dack_paired_counterfactual_v38_weighted_regret_20261101.py dack_simulator/validation/v38_129k_census.py
+          test -f DACK_V38_PREDECLARED_WEIGHTED_REGRET_PROTOCOL.md
+          python -u dack_paired_counterfactual_v38_weighted_regret_20261101.py --audit
+      - name: Exhaustive 512 fully independent 99-slot physical deals, actual stages0/1/2 only
+        run: python -u dack_simulator/validation/v38_129k_census.py
+      - name: Archive immutable full 1536-state census before new physical labels
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f datasets/v38_129k_frozen_outcome_blind_census.json
+          git commit -m "v38 frozen pre-outcome 129k N512 random complete action and final physical path census"
+          git pull --rebase origin dack-v38-weighted-action-regret-20261101
+          git push origin HEAD:dack-v38-weighted-action-regret-20261101
