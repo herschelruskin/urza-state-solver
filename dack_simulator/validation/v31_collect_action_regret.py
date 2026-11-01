@@ -163,7 +163,7 @@ def run(start,games,split,out):
     if split not in SPLITS or games!=4 or N_FUTURES!=6:
         raise ValueError("frozen v31 four-physical-game shard/six paired future protocol")
     a,z=SPLITS[split]
-    if not a<=start and start+games-1<=z:
+    if not (a<=start and start+games-1<=z):
         raise ValueError("no cross-split or non-103k game IDs permitted")
     audit()
     t0=time.monotonic()
