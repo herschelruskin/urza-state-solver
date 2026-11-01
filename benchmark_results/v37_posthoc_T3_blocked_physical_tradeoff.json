@@ -51,12 +51,20 @@
       "positive_gain": 0
     },
     "utility_PbyT2_plus_half_PbyT3_MULL_minus_KEEP": {
+      "joint_physical_outer_group_and_C_95ci_pp": [
+        -4.231770833333333,
+        16.27038043478261
+      ],
       "mean_gain_pp": 6.119791666666667,
       "n_selected_action_states": 24,
       "negative_gain": 10,
       "positive_gain": 14
     },
     "utility_PbyT2_plus_half_PexactT3_MULL_minus_KEEP": {
+      "joint_physical_outer_group_and_C_95ci_pp": [
+        -8.707682291666666,
+        5.224609375
+      ],
       "mean_gain_pp": -1.6764322916666667,
       "n_selected_action_states": 24,
       "negative_gain": 16,
