@@ -1,0 +1,1144 @@
+{
+  "schema": "dack_v19_value_model_full_game_trajectory_trace",
+  "status": "PASS",
+  "source_full_game_run": 41260922057,
+  "stat": {
+    "games": 16,
+    "same_keep_depth": 16,
+    "same_final_hand_bottom": 11,
+    "same_T1": 16,
+    "same_T2": 16,
+    "same_T3": 16,
+    "compared_stages": 63,
+    "value_choice_stages": 33,
+    "bottom_different_at_same_stage": 19,
+    "value_bottom_changed": 19,
+    "keep_action_disagreed": 0
+  },
+  "per_game": [
+    {
+      "gid": 72000,
+      "v5_turn": 0,
+      "old_turn": 0,
+      "new_turn": 0,
+      "same_keep_depth": true,
+      "same_final_hand_bottom": true,
+      "compared_stages": [
+        {
+          "stage": 0,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 1,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 2,
+          "keep_n": 6,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": true,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [
+            "Idolized"
+          ],
+          "new_bottom": [
+            "Idolized"
+          ]
+        },
+        {
+          "stage": 3,
+          "keep_n": 5,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": true,
+          "bottom_changed": false,
+          "old_keep": true,
+          "new_keep": true,
+          "old_bottom": [
+            "Twinblade Blessing",
+            "Mantle of the Ancients"
+          ],
+          "new_bottom": [
+            "Twinblade Blessing",
+            "Mantle of the Ancients"
+          ]
+        }
+      ]
+    },
+    {
+      "gid": 72001,
+      "v5_turn": 0,
+      "old_turn": 0,
+      "new_turn": 0,
+      "same_keep_depth": true,
+      "same_final_hand_bottom": false,
+      "compared_stages": [
+        {
+          "stage": 0,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 1,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 2,
+          "keep_n": 6,
+          "old_candidate_index": 0,
+          "new_candidate_index": 1,
+          "value_used": true,
+          "bottom_changed": true,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [
+            "Floating Shield"
+          ],
+          "new_bottom": [
+            "Unwanted Remake"
+          ]
+        },
+        {
+          "stage": 3,
+          "keep_n": 5,
+          "old_candidate_index": 0,
+          "new_candidate_index": 1,
+          "value_used": true,
+          "bottom_changed": true,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [
+            "Roaming Throne",
+            "Hardlight Containment"
+          ],
+          "new_bottom": [
+            "Roaming Throne",
+            "Sheltered by Ghosts"
+          ]
+        },
+        {
+          "stage": 4,
+          "keep_n": 4,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": true,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [
+            "Void Mirror",
+            "Unwanted Remake",
+            "Idolized"
+          ],
+          "new_bottom": [
+            "Void Mirror",
+            "Unwanted Remake",
+            "Idolized"
+          ]
+        },
+        {
+          "stage": 5,
+          "keep_n": 3,
+          "old_candidate_index": 0,
+          "new_candidate_index": 2,
+          "value_used": true,
+          "bottom_changed": true,
+          "old_keep": true,
+          "new_keep": true,
+          "old_bottom": [
+            "Razorgrass Ambush",
+            "Untaidake, the Cloud Keeper",
+            "Mind Stone",
+            "Plains"
+          ],
+          "new_bottom": [
+            "Razorgrass Ambush",
+            "Untaidake, the Cloud Keeper",
+            "Gleaming Splendor",
+            "Plains"
+          ]
+        }
+      ]
+    },
+    {
+      "gid": 72002,
+      "v5_turn": 2,
+      "old_turn": 0,
+      "new_turn": 0,
+      "same_keep_depth": true,
+      "same_final_hand_bottom": true,
+      "compared_stages": [
+        {
+          "stage": 0,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 1,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 2,
+          "keep_n": 6,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": true,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [
+            "Gift of Immortality"
+          ],
+          "new_bottom": [
+            "Gift of Immortality"
+          ]
+        },
+        {
+          "stage": 3,
+          "keep_n": 5,
+          "old_candidate_index": 0,
+          "new_candidate_index": 2,
+          "value_used": true,
+          "bottom_changed": true,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [
+            "Vexing Bauble",
+            "Super State"
+          ],
+          "new_bottom": [
+            "Vexing Bauble",
+            "Unwanted Remake"
+          ]
+        },
+        {
+          "stage": 4,
+          "keep_n": 4,
+          "old_candidate_index": 0,
+          "new_candidate_index": 1,
+          "value_used": true,
+          "bottom_changed": true,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [
+            "March of Otherworldly Light",
+            "Touch the Spirit Realm",
+            "Homeward Path"
+          ],
+          "new_bottom": [
+            "March of Otherworldly Light",
+            "Touch the Spirit Realm",
+            "Ruins of Trokair"
+          ]
+        },
+        {
+          "stage": 5,
+          "keep_n": 3,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": true,
+          "bottom_changed": false,
+          "old_keep": true,
+          "new_keep": true,
+          "old_bottom": [
+            "Vexing Bauble",
+            "Deafening Silence",
+            "Mana Tithe",
+            "Erode"
+          ],
+          "new_bottom": [
+            "Vexing Bauble",
+            "Deafening Silence",
+            "Mana Tithe",
+            "Erode"
+          ]
+        }
+      ]
+    },
+    {
+      "gid": 72003,
+      "v5_turn": 2,
+      "old_turn": 2,
+      "new_turn": 2,
+      "same_keep_depth": true,
+      "same_final_hand_bottom": true,
+      "compared_stages": [
+        {
+          "stage": 0,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": true,
+          "new_keep": true,
+          "old_bottom": [],
+          "new_bottom": []
+        }
+      ]
+    },
+    {
+      "gid": 72004,
+      "v5_turn": 0,
+      "old_turn": 0,
+      "new_turn": 0,
+      "same_keep_depth": true,
+      "same_final_hand_bottom": true,
+      "compared_stages": [
+        {
+          "stage": 0,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 1,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 2,
+          "keep_n": 6,
+          "old_candidate_index": 0,
+          "new_candidate_index": 1,
+          "value_used": true,
+          "bottom_changed": true,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [
+            "Minimus Containment"
+          ],
+          "new_bottom": [
+            "Static Prison"
+          ]
+        },
+        {
+          "stage": 3,
+          "keep_n": 5,
+          "old_candidate_index": 0,
+          "new_candidate_index": 1,
+          "value_used": true,
+          "bottom_changed": true,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [
+            "Trinisphere",
+            "Defense Grid"
+          ],
+          "new_bottom": [
+            "Trinisphere",
+            "March of Otherworldly Light"
+          ]
+        },
+        {
+          "stage": 4,
+          "keep_n": 4,
+          "old_candidate_index": 2,
+          "new_candidate_index": 2,
+          "value_used": true,
+          "bottom_changed": false,
+          "old_keep": true,
+          "new_keep": true,
+          "old_bottom": [
+            "Charitable Levy",
+            "Orim's Chant",
+            "Floating Shield"
+          ],
+          "new_bottom": [
+            "Charitable Levy",
+            "Orim's Chant",
+            "Floating Shield"
+          ]
+        }
+      ]
+    },
+    {
+      "gid": 72005,
+      "v5_turn": 2,
+      "old_turn": 0,
+      "new_turn": 0,
+      "same_keep_depth": true,
+      "same_final_hand_bottom": true,
+      "compared_stages": [
+        {
+          "stage": 0,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 1,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 2,
+          "keep_n": 6,
+          "old_candidate_index": 3,
+          "new_candidate_index": 0,
+          "value_used": true,
+          "bottom_changed": true,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [
+            "Giant's Boulder"
+          ],
+          "new_bottom": [
+            "Urza's Cave"
+          ]
+        },
+        {
+          "stage": 3,
+          "keep_n": 5,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": true,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [
+            "Vexing Bauble",
+            "Super State"
+          ],
+          "new_bottom": [
+            "Vexing Bauble",
+            "Super State"
+          ]
+        },
+        {
+          "stage": 4,
+          "keep_n": 4,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": true,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [
+            "Portable Hole",
+            "March of Otherworldly Light",
+            "Deafening Silence"
+          ],
+          "new_bottom": [
+            "Portable Hole",
+            "March of Otherworldly Light",
+            "Deafening Silence"
+          ]
+        },
+        {
+          "stage": 5,
+          "keep_n": 3,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": true,
+          "bottom_changed": false,
+          "old_keep": true,
+          "new_keep": true,
+          "old_bottom": [
+            "Treasure Vault",
+            "Paladin Class",
+            "Erode",
+            "Plains"
+          ],
+          "new_bottom": [
+            "Treasure Vault",
+            "Paladin Class",
+            "Erode",
+            "Plains"
+          ]
+        }
+      ]
+    },
+    {
+      "gid": 72006,
+      "v5_turn": 3,
+      "old_turn": 3,
+      "new_turn": 3,
+      "same_keep_depth": true,
+      "same_final_hand_bottom": false,
+      "compared_stages": [
+        {
+          "stage": 0,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 1,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 2,
+          "keep_n": 6,
+          "old_candidate_index": 0,
+          "new_candidate_index": 2,
+          "value_used": true,
+          "bottom_changed": true,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [
+            "Super State"
+          ],
+          "new_bottom": [
+            "Portable Hole"
+          ]
+        },
+        {
+          "stage": 3,
+          "keep_n": 5,
+          "old_candidate_index": 1,
+          "new_candidate_index": 0,
+          "value_used": true,
+          "bottom_changed": true,
+          "old_keep": true,
+          "new_keep": true,
+          "old_bottom": [
+            "Plains",
+            "Plains"
+          ],
+          "new_bottom": [
+            "Plains",
+            "Cavern of Souls"
+          ]
+        }
+      ]
+    },
+    {
+      "gid": 72007,
+      "v5_turn": 3,
+      "old_turn": 0,
+      "new_turn": 0,
+      "same_keep_depth": true,
+      "same_final_hand_bottom": false,
+      "compared_stages": [
+        {
+          "stage": 0,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 1,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 2,
+          "keep_n": 6,
+          "old_candidate_index": 0,
+          "new_candidate_index": 1,
+          "value_used": true,
+          "bottom_changed": true,
+          "old_keep": true,
+          "new_keep": true,
+          "old_bottom": [
+            "Lunarch Mantle"
+          ],
+          "new_bottom": [
+            "Void Mirror"
+          ]
+        }
+      ]
+    },
+    {
+      "gid": 72008,
+      "v5_turn": 0,
+      "old_turn": 2,
+      "new_turn": 2,
+      "same_keep_depth": true,
+      "same_final_hand_bottom": true,
+      "compared_stages": [
+        {
+          "stage": 0,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 1,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": true,
+          "new_keep": true,
+          "old_bottom": [],
+          "new_bottom": []
+        }
+      ]
+    },
+    {
+      "gid": 72009,
+      "v5_turn": 0,
+      "old_turn": 0,
+      "new_turn": 0,
+      "same_keep_depth": true,
+      "same_final_hand_bottom": false,
+      "compared_stages": [
+        {
+          "stage": 0,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 1,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 2,
+          "keep_n": 6,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": true,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [
+            "Preston, the Vanisher"
+          ],
+          "new_bottom": [
+            "Preston, the Vanisher"
+          ]
+        },
+        {
+          "stage": 3,
+          "keep_n": 5,
+          "old_candidate_index": 0,
+          "new_candidate_index": 1,
+          "value_used": true,
+          "bottom_changed": true,
+          "old_keep": true,
+          "new_keep": true,
+          "old_bottom": [
+            "Floating Shield",
+            "Bound by Moonsilver"
+          ],
+          "new_bottom": [
+            "Floating Shield",
+            "Hardlight Containment"
+          ]
+        }
+      ]
+    },
+    {
+      "gid": 72010,
+      "v5_turn": 0,
+      "old_turn": 3,
+      "new_turn": 3,
+      "same_keep_depth": true,
+      "same_final_hand_bottom": true,
+      "compared_stages": [
+        {
+          "stage": 0,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 1,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 2,
+          "keep_n": 6,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": true,
+          "bottom_changed": false,
+          "old_keep": true,
+          "new_keep": true,
+          "old_bottom": [
+            "Gift of Immortality"
+          ],
+          "new_bottom": [
+            "Gift of Immortality"
+          ]
+        }
+      ]
+    },
+    {
+      "gid": 72011,
+      "v5_turn": 2,
+      "old_turn": 0,
+      "new_turn": 0,
+      "same_keep_depth": true,
+      "same_final_hand_bottom": false,
+      "compared_stages": [
+        {
+          "stage": 0,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 1,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 2,
+          "keep_n": 6,
+          "old_candidate_index": 1,
+          "new_candidate_index": 0,
+          "value_used": true,
+          "bottom_changed": true,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [
+            "Ancient Den"
+          ],
+          "new_bottom": [
+            "Plains"
+          ]
+        },
+        {
+          "stage": 3,
+          "keep_n": 5,
+          "old_candidate_index": 0,
+          "new_candidate_index": 2,
+          "value_used": true,
+          "bottom_changed": true,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [
+            "Great Hall of the Citadel",
+            "Trinisphere"
+          ],
+          "new_bottom": [
+            "Homeward Path",
+            "Trinisphere"
+          ]
+        },
+        {
+          "stage": 4,
+          "keep_n": 4,
+          "old_candidate_index": 0,
+          "new_candidate_index": 2,
+          "value_used": true,
+          "bottom_changed": true,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [
+            "Portable Hole",
+            "Static Prison",
+            "Boonweaver Giant"
+          ],
+          "new_bottom": [
+            "Static Prison",
+            "Boonweaver Giant",
+            "Deafening Silence"
+          ]
+        },
+        {
+          "stage": 5,
+          "keep_n": 3,
+          "old_candidate_index": 4,
+          "new_candidate_index": 0,
+          "value_used": true,
+          "bottom_changed": true,
+          "old_keep": true,
+          "new_keep": true,
+          "old_bottom": [
+            "Ancient Den",
+            "Giant's Boulder",
+            "Thorn of Amethyst",
+            "Mana Tithe"
+          ],
+          "new_bottom": [
+            "Ancient Den",
+            "Thorn of Amethyst",
+            "Gemstone Caverns",
+            "Mana Tithe"
+          ]
+        }
+      ]
+    },
+    {
+      "gid": 72012,
+      "v5_turn": 0,
+      "old_turn": 0,
+      "new_turn": 0,
+      "same_keep_depth": true,
+      "same_final_hand_bottom": true,
+      "compared_stages": [
+        {
+          "stage": 0,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 1,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 2,
+          "keep_n": 6,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": true,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [
+            "Orim's Chant"
+          ],
+          "new_bottom": [
+            "Orim's Chant"
+          ]
+        },
+        {
+          "stage": 3,
+          "keep_n": 5,
+          "old_candidate_index": 0,
+          "new_candidate_index": 1,
+          "value_used": true,
+          "bottom_changed": true,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [
+            "March of Otherworldly Light",
+            "Minimus Containment"
+          ],
+          "new_bottom": [
+            "Minimus Containment",
+            "Unwanted Remake"
+          ]
+        },
+        {
+          "stage": 4,
+          "keep_n": 4,
+          "old_candidate_index": 0,
+          "new_candidate_index": 2,
+          "value_used": true,
+          "bottom_changed": true,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [
+            "Talon Gates of Madara",
+            "Plains",
+            "Plains"
+          ],
+          "new_bottom": [
+            "Talon Gates of Madara",
+            "Plains",
+            "Great Hall of the Citadel"
+          ]
+        },
+        {
+          "stage": 5,
+          "keep_n": 3,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": true,
+          "bottom_changed": false,
+          "old_keep": true,
+          "new_keep": true,
+          "old_bottom": [
+            "Plains",
+            "Static Prison",
+            "Thorn of Amethyst",
+            "Super State"
+          ],
+          "new_bottom": [
+            "Plains",
+            "Static Prison",
+            "Thorn of Amethyst",
+            "Super State"
+          ]
+        }
+      ]
+    },
+    {
+      "gid": 72013,
+      "v5_turn": 3,
+      "old_turn": 3,
+      "new_turn": 3,
+      "same_keep_depth": true,
+      "same_final_hand_bottom": true,
+      "compared_stages": [
+        {
+          "stage": 0,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": true,
+          "new_keep": true,
+          "old_bottom": [],
+          "new_bottom": []
+        }
+      ]
+    },
+    {
+      "gid": 72014,
+      "v5_turn": 2,
+      "old_turn": 2,
+      "new_turn": 2,
+      "same_keep_depth": true,
+      "same_final_hand_bottom": true,
+      "compared_stages": [
+        {
+          "stage": 0,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 1,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": true,
+          "new_keep": true,
+          "old_bottom": [],
+          "new_bottom": []
+        }
+      ]
+    },
+    {
+      "gid": 72015,
+      "v5_turn": 2,
+      "old_turn": 2,
+      "new_turn": 2,
+      "same_keep_depth": true,
+      "same_final_hand_bottom": true,
+      "compared_stages": [
+        {
+          "stage": 0,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 1,
+          "keep_n": 7,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": false,
+          "bottom_changed": false,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [],
+          "new_bottom": []
+        },
+        {
+          "stage": 2,
+          "keep_n": 6,
+          "old_candidate_index": 0,
+          "new_candidate_index": 1,
+          "value_used": true,
+          "bottom_changed": true,
+          "old_keep": false,
+          "new_keep": false,
+          "old_bottom": [
+            "Silence"
+          ],
+          "new_bottom": [
+            "Orim's Chant"
+          ]
+        },
+        {
+          "stage": 3,
+          "keep_n": 5,
+          "old_candidate_index": 0,
+          "new_candidate_index": 0,
+          "value_used": true,
+          "bottom_changed": false,
+          "old_keep": true,
+          "new_keep": true,
+          "old_bottom": [
+            "Minimus Containment",
+            "Floating Shield"
+          ],
+          "new_bottom": [
+            "Minimus Containment",
+            "Floating Shield"
+          ]
+        }
+      ]
+    }
+  ],
+  "explanation": "Model changes bottom ranking at stages 3..6 but retains existing keep/reject head; compare all reached stages, not just final outcome.",
+  "model_approved": false
+}
