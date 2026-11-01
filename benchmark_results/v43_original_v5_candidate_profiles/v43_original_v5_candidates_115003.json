@@ -1,0 +1,431 @@
+{
+  "actual_original_v5_scorer_and_selection_archival_parity": true,
+  "candidates": [
+    {
+      "bottom": [
+        "Trinisphere"
+      ],
+      "full_unpruned_original_ev": {
+        "16": {
+          "T1": 0.0,
+          "U": 0.5,
+          "exact_T2": 0.0,
+          "exact_T3": 1.0,
+          "seconds": 3.0362
+        },
+        "8": {
+          "T1": 0.0,
+          "U": 0.5,
+          "exact_T2": 0.0,
+          "exact_T3": 1.0,
+          "seconds": 1.6151
+        }
+      },
+      "hand": [
+        "Blast Zone",
+        "Enlightened Tutor",
+        "Plains",
+        "Remote Farm",
+        "Ruins of Trokair",
+        "Scroll Rack"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        60,
+        0,
+        0
+      ],
+      "structural_candidate_index": 0,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.48985821724307294,
+        "analytic_T2": 0.052144993735,
+        "index": 0,
+        "v14_vote": 0.35002252946999846,
+        "v18_U": 0.5247346045972592
+      }
+    },
+    {
+      "bottom": [
+        "Plains"
+      ],
+      "full_unpruned_original_ev": {
+        "16": {
+          "T1": 0.0,
+          "U": 0.5,
+          "exact_T2": 0.0625,
+          "exact_T3": 0.875,
+          "seconds": 5.8789
+        },
+        "8": {
+          "T1": 0.0,
+          "U": 0.5,
+          "exact_T2": 0.125,
+          "exact_T3": 0.75,
+          "seconds": 3.0059
+        }
+      },
+      "hand": [
+        "Blast Zone",
+        "Enlightened Tutor",
+        "Remote Farm",
+        "Ruins of Trokair",
+        "Scroll Rack",
+        "Trinisphere"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        15,
+        0,
+        0
+      ],
+      "structural_candidate_index": 1,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.4386010733963151,
+        "analytic_T2": 0.03891288834,
+        "index": 1,
+        "v14_vote": 0.10137923084367308,
+        "v18_U": 0.5043032040260155
+      }
+    },
+    {
+      "bottom": [
+        "Ruins of Trokair"
+      ],
+      "full_unpruned_original_ev": {
+        "16": {
+          "T1": 0.0,
+          "U": 0.5,
+          "exact_T2": 0.0625,
+          "exact_T3": 0.875,
+          "seconds": 3.2806
+        },
+        "8": {
+          "T1": 0.0,
+          "U": 0.5,
+          "exact_T2": 0.0,
+          "exact_T3": 1.0,
+          "seconds": 1.5093
+        }
+      },
+      "hand": [
+        "Blast Zone",
+        "Enlightened Tutor",
+        "Plains",
+        "Remote Farm",
+        "Scroll Rack",
+        "Trinisphere"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        15,
+        0,
+        0
+      ],
+      "structural_candidate_index": 2,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.42890078742649784,
+        "analytic_T2": 0.03891288834,
+        "index": 2,
+        "v14_vote": 0.06379907438207735,
+        "v18_U": 0.495223075170496
+      }
+    },
+    {
+      "bottom": [
+        "Blast Zone"
+      ],
+      "full_unpruned_original_ev": {
+        "16": {
+          "T1": 0.0,
+          "U": 0.46875,
+          "exact_T2": 0.0,
+          "exact_T3": 0.9375,
+          "seconds": 4.3975
+        },
+        "8": {
+          "T1": 0.0,
+          "U": 0.4375,
+          "exact_T2": 0.0,
+          "exact_T3": 0.875,
+          "seconds": 2.2086
+        }
+      },
+      "hand": [
+        "Enlightened Tutor",
+        "Plains",
+        "Remote Farm",
+        "Ruins of Trokair",
+        "Scroll Rack",
+        "Trinisphere"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        15,
+        0,
+        0
+      ],
+      "structural_candidate_index": 3,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.4918152662704344,
+        "analytic_T2": 0.052144993735,
+        "index": 3,
+        "v14_vote": 0.0945657828893458,
+        "v18_U": null
+      }
+    },
+    {
+      "bottom": [
+        "Remote Farm"
+      ],
+      "full_unpruned_original_ev": {
+        "16": {
+          "T1": 0.0,
+          "U": 0.5,
+          "exact_T2": 0.125,
+          "exact_T3": 0.75,
+          "seconds": 3.0589
+        },
+        "8": {
+          "T1": 0.0,
+          "U": 0.5,
+          "exact_T2": 0.125,
+          "exact_T3": 0.75,
+          "seconds": 1.6371
+        }
+      },
+      "hand": [
+        "Blast Zone",
+        "Enlightened Tutor",
+        "Plains",
+        "Ruins of Trokair",
+        "Scroll Rack",
+        "Trinisphere"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        15,
+        0,
+        0
+      ],
+      "structural_candidate_index": 4,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.42890078742649784,
+        "analytic_T2": 0.03891288834,
+        "index": 4,
+        "v14_vote": 0.06315540908931884,
+        "v18_U": null
+      }
+    },
+    {
+      "bottom": [
+        "Enlightened Tutor"
+      ],
+      "full_unpruned_original_ev": {
+        "16": {
+          "T1": 0.0,
+          "U": 0.3125,
+          "exact_T2": 0.0625,
+          "exact_T3": 0.5,
+          "seconds": 5.9101
+        },
+        "8": {
+          "T1": 0.0,
+          "U": 0.25,
+          "exact_T2": 0.0,
+          "exact_T3": 0.5,
+          "seconds": 2.9932
+        }
+      },
+      "hand": [
+        "Blast Zone",
+        "Plains",
+        "Remote Farm",
+        "Ruins of Trokair",
+        "Scroll Rack",
+        "Trinisphere"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        0,
+        0,
+        0
+      ],
+      "structural_candidate_index": 5,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.03136045580674483,
+        "analytic_T2": 0.040335762074,
+        "index": 5,
+        "v14_vote": 0.09115894424388862,
+        "v18_U": null
+      }
+    },
+    {
+      "bottom": [
+        "Scroll Rack"
+      ],
+      "full_unpruned_original_ev": {
+        "16": {
+          "T1": 0.0,
+          "U": 0.5625,
+          "exact_T2": 0.125,
+          "exact_T3": 0.875,
+          "seconds": 2.0729
+        },
+        "8": {
+          "T1": 0.0,
+          "U": 0.625,
+          "exact_T2": 0.25,
+          "exact_T3": 0.75,
+          "seconds": 1.0471
+        }
+      },
+      "hand": [
+        "Blast Zone",
+        "Enlightened Tutor",
+        "Plains",
+        "Remote Farm",
+        "Ruins of Trokair",
+        "Trinisphere"
+      ],
+      "original_teacher_choice": true,
+      "struct_rank": [
+        0,
+        0,
+        0
+      ],
+      "structural_candidate_index": 6,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.49054786362556463,
+        "analytic_T2": 0.052144993735,
+        "index": 6,
+        "v14_vote": 0.13920975849881306,
+        "v18_U": null
+      }
+    }
+  ],
+  "case": {
+    "game_id": 115003,
+    "keep_n": 6,
+    "kind": "first_keep_disagreement",
+    "original_v5_score_calculation_seconds": 26.042,
+    "other_learned_candidate_rankers": {
+      "analytic_t2": 0,
+      "v14_frozen": 0,
+      "v18_top3": 0,
+      "v27_Qkeep": 3
+    },
+    "seat": 1,
+    "seven": [
+      "Plains",
+      "Enlightened Tutor",
+      "Ruins of Trokair",
+      "Scroll Rack",
+      "Trinisphere",
+      "Blast Zone",
+      "Remote Farm"
+    ],
+    "stage": 2,
+    "unknown_card_counts": {
+      "Ancient Den": 1,
+      "Ancient Tomb": 1,
+      "Arcane Signet": 1,
+      "Basalt Monolith": 1,
+      "Boonweaver Giant": 1,
+      "Bound by Moonsilver": 1,
+      "Brainstone": 1,
+      "Bucknard's Everfull Purse": 1,
+      "Cavern of Souls": 1,
+      "Charitable Levy": 1,
+      "Chrome Mox": 1,
+      "City of Traitors": 1,
+      "Coalition Relic": 1,
+      "Command Beacon": 1,
+      "Crystal Vein": 1,
+      "Deafening Silence": 1,
+      "Defense Grid": 1,
+      "Disruptor Flute": 1,
+      "Eiganjo, Seat of the Empire": 1,
+      "Eldrazi Confluence": 1,
+      "Emergence Zone": 1,
+      "Emeria's Call": 1,
+      "Erode": 1,
+      "Everflowing Chalice": 1,
+      "Expedition Map": 1,
+      "Feather of Flight": 1,
+      "Fellwar Stone": 1,
+      "Floating Shield": 1,
+      "Gemstone Caverns": 1,
+      "Giant's Boulder": 1,
+      "Gift of Immortality": 1,
+      "Gleaming Splendor": 1,
+      "Great Hall of the Citadel": 1,
+      "Grim Monolith": 1,
+      "Hardlight Containment": 1,
+      "Homeward Path": 1,
+      "Idolized": 1,
+      "Implements of Sacrifice": 1,
+      "Jeweled Amulet": 1,
+      "Krark-Clan Ironworks": 1,
+      "Lion's Eye Diamond": 1,
+      "Lotus Petal": 1,
+      "Lunarch Mantle": 1,
+      "Mana Tithe": 1,
+      "Mana Vault": 1,
+      "Mantle of the Ancients": 1,
+      "March of Otherworldly Light": 1,
+      "Mind Stone": 1,
+      "Minimus Containment": 1,
+      "Mishra's Workshop": 1,
+      "Moonsilver Key": 1,
+      "Mox Diamond": 1,
+      "Mox Opal": 1,
+      "Orim's Chant": 1,
+      "Paladin Class": 1,
+      "Petrified Hamlet": 1,
+      "Plains": 9,
+      "Portable Hole": 1,
+      "Preston, the Vanisher": 1,
+      "Prismatic Lens": 1,
+      "Razorgrass Ambush": 1,
+      "Roaming Throne": 1,
+      "Sheltered by Ghosts": 1,
+      "Silence": 1,
+      "Sol Ring": 1,
+      "Soul Partition": 1,
+      "Staff of Compleation": 1,
+      "Static Prison": 1,
+      "Super State": 1,
+      "Talon Gates of Madara": 1,
+      "Tezzeret, Cruel Captain": 1,
+      "The Mind Stone": 1,
+      "The Mycosynth Gardens": 1,
+      "Thorn of Amethyst": 1,
+      "Touch the Spirit Realm": 1,
+      "Treasure Vault": 1,
+      "Twinblade Blessing": 1,
+      "Untaidake, the Cloud Keeper": 1,
+      "Unwanted Remake": 1,
+      "Urza's Cave": 1,
+      "Urza's Saga": 1,
+      "Vexing Bauble": 1,
+      "Void Mirror": 1,
+      "Voltaic Key": 1
+    },
+    "v27_keep": true,
+    "v27_selected_candidate": 0,
+    "v27_threshold": 0.2225183,
+    "v5_keep": false,
+    "v5_raw": 0.5625,
+    "v5_refined": true,
+    "v5_sampled_T1": 0.0,
+    "v5_selected_candidate": 6,
+    "v5_threshold": 0.63025
+  },
+  "historical_115k_previously_consumed_not_fresh_holdout": true,
+  "no_model_trained_or_promoted": true,
+  "no_unseen_realized_order_in_candidate_scores": true,
+  "schema": "dack_v43_original_v5_top12_candidate_ev_landscape_v1",
+  "status": "PASS",
+  "unpruned_candidate_value_profiles_not_original_pruning_history": true,
+  "v5_original_scorer_uses_deterministic_candidate_specific_sampled_futures": true
+}

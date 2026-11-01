@@ -1,0 +1,381 @@
+{
+  "actual_original_v5_scorer_and_selection_archival_parity": true,
+  "candidates": [
+    {
+      "bottom": [
+        "Floating Shield"
+      ],
+      "full_unpruned_original_ev": {
+        "8": {
+          "T1": 0.0,
+          "U": 0.25,
+          "exact_T2": 0.125,
+          "exact_T3": 0.25,
+          "seconds": 1.9092
+        }
+      },
+      "hand": [
+        "Grim Monolith",
+        "Petrified Hamlet",
+        "Portable Hole",
+        "Sol Ring",
+        "Static Prison",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        80,
+        0,
+        0
+      ],
+      "structural_candidate_index": 0,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.40227683041510726,
+        "analytic_T2": 0.036808316593,
+        "index": 0,
+        "v14_vote": 0.4255061306161566,
+        "v18_U": 0.6770558802123943
+      }
+    },
+    {
+      "bottom": [
+        "Portable Hole"
+      ],
+      "full_unpruned_original_ev": {
+        "8": {
+          "T1": 0.0,
+          "U": 0.375,
+          "exact_T2": 0.25,
+          "exact_T3": 0.25,
+          "seconds": 2.27
+        }
+      },
+      "hand": [
+        "Floating Shield",
+        "Grim Monolith",
+        "Petrified Hamlet",
+        "Sol Ring",
+        "Static Prison",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "original_teacher_choice": true,
+      "struct_rank": [
+        60,
+        0,
+        -1
+      ],
+      "structural_candidate_index": 1,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.37027325530124006,
+        "analytic_T2": 0.032023235436,
+        "index": 1,
+        "v14_vote": 0.15865329421709923,
+        "v18_U": 0.6750060631142377
+      }
+    },
+    {
+      "bottom": [
+        "Static Prison"
+      ],
+      "full_unpruned_original_ev": {
+        "8": {
+          "T1": 0.0,
+          "U": 0.375,
+          "exact_T2": 0.375,
+          "exact_T3": 0.0,
+          "seconds": 1.3541
+        }
+      },
+      "hand": [
+        "Floating Shield",
+        "Grim Monolith",
+        "Petrified Hamlet",
+        "Portable Hole",
+        "Sol Ring",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        60,
+        0,
+        -1
+      ],
+      "structural_candidate_index": 2,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.38641551989520706,
+        "analytic_T2": 0.032023235436,
+        "index": 2,
+        "v14_vote": 0.08882190828083068,
+        "v18_U": 0.6640340002378778
+      }
+    },
+    {
+      "bottom": [
+        "Untaidake, the Cloud Keeper"
+      ],
+      "full_unpruned_original_ev": {
+        "8": {
+          "T1": 0.0,
+          "U": 0.25,
+          "exact_T2": 0.125,
+          "exact_T3": 0.25,
+          "seconds": 1.147
+        }
+      },
+      "hand": [
+        "Floating Shield",
+        "Grim Monolith",
+        "Petrified Hamlet",
+        "Portable Hole",
+        "Sol Ring",
+        "Static Prison"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        15,
+        0,
+        -1
+      ],
+      "structural_candidate_index": 3,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.09276774912196217,
+        "analytic_T2": 0.00714494372,
+        "index": 3,
+        "v14_vote": 0.044010774526405866,
+        "v18_U": null
+      }
+    },
+    {
+      "bottom": [
+        "Petrified Hamlet"
+      ],
+      "full_unpruned_original_ev": {
+        "8": {
+          "T1": 0.0,
+          "U": 0.0625,
+          "exact_T2": 0.0,
+          "exact_T3": 0.125,
+          "seconds": 1.3083
+        }
+      },
+      "hand": [
+        "Floating Shield",
+        "Grim Monolith",
+        "Portable Hole",
+        "Sol Ring",
+        "Static Prison",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        15,
+        0,
+        -1
+      ],
+      "structural_candidate_index": 4,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.09142152836419486,
+        "analytic_T2": 0.00714494372,
+        "index": 4,
+        "v14_vote": 0.04336710923364735,
+        "v18_U": null
+      }
+    },
+    {
+      "bottom": [
+        "Sol Ring"
+      ],
+      "full_unpruned_original_ev": {
+        "8": {
+          "T1": 0.0,
+          "U": 0.0625,
+          "exact_T2": 0.0,
+          "exact_T3": 0.125,
+          "seconds": 0.6897
+        }
+      },
+      "hand": [
+        "Floating Shield",
+        "Grim Monolith",
+        "Petrified Hamlet",
+        "Portable Hole",
+        "Static Prison",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        0,
+        0,
+        -1
+      ],
+      "structural_candidate_index": 5,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.07316637597829098,
+        "analytic_T2": 0.009877698598,
+        "index": 5,
+        "v14_vote": 0.06634456945959442,
+        "v18_U": null
+      }
+    },
+    {
+      "bottom": [
+        "Grim Monolith"
+      ],
+      "full_unpruned_original_ev": {
+        "8": {
+          "T1": 0.0,
+          "U": 0.125,
+          "exact_T2": 0.0,
+          "exact_T3": 0.25,
+          "seconds": 1.1693
+        }
+      },
+      "hand": [
+        "Floating Shield",
+        "Petrified Hamlet",
+        "Portable Hole",
+        "Sol Ring",
+        "Static Prison",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        0,
+        0,
+        -1
+      ],
+      "structural_candidate_index": 6,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.09465505962844804,
+        "analytic_T2": 0.012286290144,
+        "index": 6,
+        "v14_vote": 0.05876280874016506,
+        "v18_U": null
+      }
+    }
+  ],
+  "case": {
+    "game_id": 115004,
+    "keep_n": 6,
+    "kind": "first_keep_disagreement",
+    "original_v5_score_calculation_seconds": 8.966,
+    "other_learned_candidate_rankers": {
+      "analytic_t2": 0,
+      "v14_frozen": 0,
+      "v18_top3": 0,
+      "v27_Qkeep": 0
+    },
+    "seat": 0,
+    "seven": [
+      "Sol Ring",
+      "Portable Hole",
+      "Floating Shield",
+      "Static Prison",
+      "Grim Monolith",
+      "Untaidake, the Cloud Keeper",
+      "Petrified Hamlet"
+    ],
+    "stage": 2,
+    "unknown_card_counts": {
+      "Ancient Den": 1,
+      "Ancient Tomb": 1,
+      "Arcane Signet": 1,
+      "Basalt Monolith": 1,
+      "Blast Zone": 1,
+      "Boonweaver Giant": 1,
+      "Bound by Moonsilver": 1,
+      "Brainstone": 1,
+      "Bucknard's Everfull Purse": 1,
+      "Cavern of Souls": 1,
+      "Charitable Levy": 1,
+      "Chrome Mox": 1,
+      "City of Traitors": 1,
+      "Coalition Relic": 1,
+      "Command Beacon": 1,
+      "Crystal Vein": 1,
+      "Deafening Silence": 1,
+      "Defense Grid": 1,
+      "Disruptor Flute": 1,
+      "Eiganjo, Seat of the Empire": 1,
+      "Eldrazi Confluence": 1,
+      "Emergence Zone": 1,
+      "Emeria's Call": 1,
+      "Enlightened Tutor": 1,
+      "Erode": 1,
+      "Everflowing Chalice": 1,
+      "Expedition Map": 1,
+      "Feather of Flight": 1,
+      "Fellwar Stone": 1,
+      "Gemstone Caverns": 1,
+      "Giant's Boulder": 1,
+      "Gift of Immortality": 1,
+      "Gleaming Splendor": 1,
+      "Great Hall of the Citadel": 1,
+      "Hardlight Containment": 1,
+      "Homeward Path": 1,
+      "Idolized": 1,
+      "Implements of Sacrifice": 1,
+      "Jeweled Amulet": 1,
+      "Krark-Clan Ironworks": 1,
+      "Lion's Eye Diamond": 1,
+      "Lotus Petal": 1,
+      "Lunarch Mantle": 1,
+      "Mana Tithe": 1,
+      "Mana Vault": 1,
+      "Mantle of the Ancients": 1,
+      "March of Otherworldly Light": 1,
+      "Mind Stone": 1,
+      "Minimus Containment": 1,
+      "Mishra's Workshop": 1,
+      "Moonsilver Key": 1,
+      "Mox Diamond": 1,
+      "Mox Opal": 1,
+      "Orim's Chant": 1,
+      "Paladin Class": 1,
+      "Plains": 10,
+      "Preston, the Vanisher": 1,
+      "Prismatic Lens": 1,
+      "Razorgrass Ambush": 1,
+      "Remote Farm": 1,
+      "Roaming Throne": 1,
+      "Ruins of Trokair": 1,
+      "Scroll Rack": 1,
+      "Sheltered by Ghosts": 1,
+      "Silence": 1,
+      "Soul Partition": 1,
+      "Staff of Compleation": 1,
+      "Super State": 1,
+      "Talon Gates of Madara": 1,
+      "Tezzeret, Cruel Captain": 1,
+      "The Mind Stone": 1,
+      "The Mycosynth Gardens": 1,
+      "Thorn of Amethyst": 1,
+      "Touch the Spirit Realm": 1,
+      "Treasure Vault": 1,
+      "Trinisphere": 1,
+      "Twinblade Blessing": 1,
+      "Unwanted Remake": 1,
+      "Urza's Cave": 1,
+      "Urza's Saga": 1,
+      "Vexing Bauble": 1,
+      "Void Mirror": 1,
+      "Voltaic Key": 1
+    },
+    "v27_keep": true,
+    "v27_selected_candidate": 0,
+    "v27_threshold": 0.2292364,
+    "v5_keep": false,
+    "v5_raw": 0.375,
+    "v5_refined": false,
+    "v5_sampled_T1": 0.0,
+    "v5_selected_candidate": 1,
+    "v5_threshold": 0.63025
+  },
+  "historical_115k_previously_consumed_not_fresh_holdout": true,
+  "no_model_trained_or_promoted": true,
+  "no_unseen_realized_order_in_candidate_scores": true,
+  "schema": "dack_v43_original_v5_top12_candidate_ev_landscape_v1",
+  "status": "PASS",
+  "unpruned_candidate_value_profiles_not_original_pruning_history": true,
+  "v5_original_scorer_uses_deterministic_candidate_specific_sampled_futures": true
+}

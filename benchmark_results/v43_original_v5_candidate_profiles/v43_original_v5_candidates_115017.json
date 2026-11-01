@@ -1,0 +1,561 @@
+{
+  "actual_original_v5_scorer_and_selection_archival_parity": true,
+  "candidates": [
+    {
+      "bottom": [
+        "Ruins of Trokair",
+        "Paladin Class"
+      ],
+      "full_unpruned_original_ev": {
+        "8": {
+          "T1": 0.0,
+          "U": 0.0625,
+          "exact_T2": 0.0,
+          "exact_T3": 0.125,
+          "seconds": 0.3436
+        }
+      },
+      "hand": [
+        "Fellwar Stone",
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Tezzeret, Cruel Captain",
+        "Urza's Cave"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        75,
+        0,
+        0
+      ],
+      "structural_candidate_index": 0,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.04049950190009017,
+        "analytic_T2": 0.01623750036,
+        "index": 0,
+        "v14_vote": 0.11731471730544601,
+        "v18_U": 0.42304774839644954
+      }
+    },
+    {
+      "bottom": [
+        "Urza's Cave",
+        "Paladin Class"
+      ],
+      "full_unpruned_original_ev": {
+        "8": {
+          "T1": 0.0,
+          "U": 0.375,
+          "exact_T2": 0.125,
+          "exact_T3": 0.5,
+          "seconds": 0.6274
+        }
+      },
+      "hand": [
+        "Fellwar Stone",
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Ruins of Trokair",
+        "Tezzeret, Cruel Captain"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        75,
+        0,
+        0
+      ],
+      "structural_candidate_index": 1,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.038678587037725275,
+        "analytic_T2": 0.048731957713,
+        "index": 1,
+        "v14_vote": 0.09009009973588407,
+        "v18_U": 0.4238638338632703
+      }
+    },
+    {
+      "bottom": [
+        "Tezzeret, Cruel Captain",
+        "Paladin Class"
+      ],
+      "full_unpruned_original_ev": {
+        "8": {
+          "T1": 0.0,
+          "U": 0.5,
+          "exact_T2": 0.0,
+          "exact_T3": 1.0,
+          "seconds": 1.1103
+        }
+      },
+      "hand": [
+        "Fellwar Stone",
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Ruins of Trokair",
+        "Urza's Cave"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        60,
+        0,
+        0
+      ],
+      "structural_candidate_index": 2,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.2670514647646876,
+        "analytic_T2": 0.183689230557,
+        "index": 2,
+        "v14_vote": 0.11667045289361272,
+        "v18_U": 0.6223525836325962
+      }
+    },
+    {
+      "bottom": [
+        "Fellwar Stone",
+        "Paladin Class"
+      ],
+      "full_unpruned_original_ev": {
+        "8": {
+          "T1": 0.0,
+          "U": 0.625,
+          "exact_T2": 0.25,
+          "exact_T3": 0.75,
+          "seconds": 1.0882
+        }
+      },
+      "hand": [
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Ruins of Trokair",
+        "Tezzeret, Cruel Captain",
+        "Urza's Cave"
+      ],
+      "original_teacher_choice": true,
+      "struct_rank": [
+        60,
+        0,
+        0
+      ],
+      "structural_candidate_index": 3,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.250702922910419,
+        "analytic_T2": 0.12686811994,
+        "index": 3,
+        "v14_vote": 0.08814205025085119,
+        "v18_U": null
+      }
+    },
+    {
+      "bottom": [
+        "Moonsilver Key",
+        "Paladin Class"
+      ],
+      "full_unpruned_original_ev": {
+        "8": {
+          "T1": 0.0,
+          "U": 0.625,
+          "exact_T2": 0.25,
+          "exact_T3": 0.75,
+          "seconds": 0.7862
+        }
+      },
+      "hand": [
+        "Fellwar Stone",
+        "Mox Diamond",
+        "Ruins of Trokair",
+        "Tezzeret, Cruel Captain",
+        "Urza's Cave"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        60,
+        0,
+        0
+      ],
+      "structural_candidate_index": 4,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.22964836678751263,
+        "analytic_T2": 0.183689230557,
+        "index": 4,
+        "v14_vote": 0.08300823447849577,
+        "v18_U": null
+      }
+    },
+    {
+      "bottom": [
+        "Mox Diamond",
+        "Paladin Class"
+      ],
+      "full_unpruned_original_ev": {
+        "8": {
+          "T1": 0.0,
+          "U": 0.4375,
+          "exact_T2": 0.0,
+          "exact_T3": 0.875,
+          "seconds": 0.9193
+        }
+      },
+      "hand": [
+        "Fellwar Stone",
+        "Moonsilver Key",
+        "Ruins of Trokair",
+        "Tezzeret, Cruel Captain",
+        "Urza's Cave"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        60,
+        0,
+        0
+      ],
+      "structural_candidate_index": 5,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.13149398552844752,
+        "analytic_T2": 0.075563575879,
+        "index": 5,
+        "v14_vote": 0.07899391343762402,
+        "v18_U": null
+      }
+    },
+    {
+      "bottom": [
+        "Ruins of Trokair",
+        "Urza's Cave"
+      ],
+      "full_unpruned_original_ev": {
+        "8": {
+          "T1": 0.0,
+          "U": 0.0625,
+          "exact_T2": 0.0,
+          "exact_T3": 0.125,
+          "seconds": 0.27
+        }
+      },
+      "hand": [
+        "Fellwar Stone",
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Paladin Class",
+        "Tezzeret, Cruel Captain"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        30,
+        0,
+        0
+      ],
+      "structural_candidate_index": 6,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.02376065548221074,
+        "analytic_T2": 0.006910037169,
+        "index": 6,
+        "v14_vote": 0.05549111020537992,
+        "v18_U": null
+      }
+    },
+    {
+      "bottom": [
+        "Tezzeret, Cruel Captain",
+        "Ruins of Trokair"
+      ],
+      "full_unpruned_original_ev": {
+        "8": {
+          "T1": 0.0,
+          "U": 0.3125,
+          "exact_T2": 0.125,
+          "exact_T3": 0.375,
+          "seconds": 0.5499
+        }
+      },
+      "hand": [
+        "Fellwar Stone",
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Paladin Class",
+        "Urza's Cave"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        15,
+        0,
+        0
+      ],
+      "structural_candidate_index": 7,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.021686554982228757,
+        "analytic_T2": 0.012619928527,
+        "index": 7,
+        "v14_vote": 0.053314709001997924,
+        "v18_U": null
+      }
+    },
+    {
+      "bottom": [
+        "Tezzeret, Cruel Captain",
+        "Urza's Cave"
+      ],
+      "full_unpruned_original_ev": {
+        "8": {
+          "T1": 0.0,
+          "U": 0.1875,
+          "exact_T2": 0.0,
+          "exact_T3": 0.375,
+          "seconds": 1.2823
+        }
+      },
+      "hand": [
+        "Fellwar Stone",
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Paladin Class",
+        "Ruins of Trokair"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        15,
+        0,
+        0
+      ],
+      "structural_candidate_index": 8,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.02289374146429295,
+        "analytic_T2": 0.037874907447,
+        "index": 8,
+        "v14_vote": 0.07891637728643461,
+        "v18_U": null
+      }
+    },
+    {
+      "bottom": [
+        "Fellwar Stone",
+        "Ruins of Trokair"
+      ],
+      "full_unpruned_original_ev": {
+        "8": {
+          "T1": 0.0,
+          "U": 0.1875,
+          "exact_T2": 0.0,
+          "exact_T3": 0.375,
+          "seconds": 0.6335
+        }
+      },
+      "hand": [
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Paladin Class",
+        "Tezzeret, Cruel Captain",
+        "Urza's Cave"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        15,
+        0,
+        0
+      ],
+      "structural_candidate_index": 9,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.014198924686734988,
+        "analytic_T2": 0.003662134655,
+        "index": 9,
+        "v14_vote": 0.023552288481527826,
+        "v18_U": null
+      }
+    },
+    {
+      "bottom": [
+        "Fellwar Stone",
+        "Urza's Cave"
+      ],
+      "full_unpruned_original_ev": {
+        "8": {
+          "T1": 0.0,
+          "U": 0.25,
+          "exact_T2": 0.0,
+          "exact_T3": 0.5,
+          "seconds": 0.7506
+        }
+      },
+      "hand": [
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Paladin Class",
+        "Ruins of Trokair",
+        "Tezzeret, Cruel Captain"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        15,
+        0,
+        0
+      ],
+      "structural_candidate_index": 10,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.023488413035506767,
+        "analytic_T2": 0.016767407272,
+        "index": 10,
+        "v14_vote": 0.037524197037731244,
+        "v18_U": null
+      }
+    },
+    {
+      "bottom": [
+        "Moonsilver Key",
+        "Ruins of Trokair"
+      ],
+      "full_unpruned_original_ev": {
+        "8": {
+          "T1": 0.0,
+          "U": 0.1875,
+          "exact_T2": 0.0,
+          "exact_T3": 0.375,
+          "seconds": 0.6683
+        }
+      },
+      "hand": [
+        "Fellwar Stone",
+        "Mox Diamond",
+        "Paladin Class",
+        "Tezzeret, Cruel Captain",
+        "Urza's Cave"
+      ],
+      "original_teacher_choice": false,
+      "struct_rank": [
+        15,
+        0,
+        0
+      ],
+      "structural_candidate_index": 11,
+      "v27_and_other_candidate_scores": {
+        "Qkeep_T2": 0.017531094727111396,
+        "analytic_T2": 0.012619928527,
+        "index": 11,
+        "v14_vote": 0.03316057404399374,
+        "v18_U": null
+      }
+    }
+  ],
+  "case": {
+    "game_id": 115017,
+    "keep_n": 5,
+    "kind": "first_keep_disagreement",
+    "original_v5_score_calculation_seconds": 6.313,
+    "other_learned_candidate_rankers": {
+      "analytic_t2": 2,
+      "v14_frozen": 0,
+      "v18_top3": 2,
+      "v27_Qkeep": 2
+    },
+    "seat": 1,
+    "seven": [
+      "Tezzeret, Cruel Captain",
+      "Fellwar Stone",
+      "Moonsilver Key",
+      "Ruins of Trokair",
+      "Mox Diamond",
+      "Urza's Cave",
+      "Paladin Class"
+    ],
+    "stage": 3,
+    "unknown_card_counts": {
+      "Ancient Den": 1,
+      "Ancient Tomb": 1,
+      "Arcane Signet": 1,
+      "Basalt Monolith": 1,
+      "Blast Zone": 1,
+      "Boonweaver Giant": 1,
+      "Bound by Moonsilver": 1,
+      "Brainstone": 1,
+      "Bucknard's Everfull Purse": 1,
+      "Cavern of Souls": 1,
+      "Charitable Levy": 1,
+      "Chrome Mox": 1,
+      "City of Traitors": 1,
+      "Coalition Relic": 1,
+      "Command Beacon": 1,
+      "Crystal Vein": 1,
+      "Deafening Silence": 1,
+      "Defense Grid": 1,
+      "Disruptor Flute": 1,
+      "Eiganjo, Seat of the Empire": 1,
+      "Eldrazi Confluence": 1,
+      "Emergence Zone": 1,
+      "Emeria's Call": 1,
+      "Enlightened Tutor": 1,
+      "Erode": 1,
+      "Everflowing Chalice": 1,
+      "Expedition Map": 1,
+      "Feather of Flight": 1,
+      "Floating Shield": 1,
+      "Gemstone Caverns": 1,
+      "Giant's Boulder": 1,
+      "Gift of Immortality": 1,
+      "Gleaming Splendor": 1,
+      "Great Hall of the Citadel": 1,
+      "Grim Monolith": 1,
+      "Hardlight Containment": 1,
+      "Homeward Path": 1,
+      "Idolized": 1,
+      "Implements of Sacrifice": 1,
+      "Jeweled Amulet": 1,
+      "Krark-Clan Ironworks": 1,
+      "Lion's Eye Diamond": 1,
+      "Lotus Petal": 1,
+      "Lunarch Mantle": 1,
+      "Mana Tithe": 1,
+      "Mana Vault": 1,
+      "Mantle of the Ancients": 1,
+      "March of Otherworldly Light": 1,
+      "Mind Stone": 1,
+      "Minimus Containment": 1,
+      "Mishra's Workshop": 1,
+      "Mox Opal": 1,
+      "Orim's Chant": 1,
+      "Petrified Hamlet": 1,
+      "Plains": 10,
+      "Portable Hole": 1,
+      "Preston, the Vanisher": 1,
+      "Prismatic Lens": 1,
+      "Razorgrass Ambush": 1,
+      "Remote Farm": 1,
+      "Roaming Throne": 1,
+      "Scroll Rack": 1,
+      "Sheltered by Ghosts": 1,
+      "Silence": 1,
+      "Sol Ring": 1,
+      "Soul Partition": 1,
+      "Staff of Compleation": 1,
+      "Static Prison": 1,
+      "Super State": 1,
+      "Talon Gates of Madara": 1,
+      "The Mind Stone": 1,
+      "The Mycosynth Gardens": 1,
+      "Thorn of Amethyst": 1,
+      "Touch the Spirit Realm": 1,
+      "Treasure Vault": 1,
+      "Trinisphere": 1,
+      "Twinblade Blessing": 1,
+      "Untaidake, the Cloud Keeper": 1,
+      "Unwanted Remake": 1,
+      "Urza's Saga": 1,
+      "Vexing Bauble": 1,
+      "Void Mirror": 1,
+      "Voltaic Key": 1
+    },
+    "v27_keep": false,
+    "v27_selected_candidate": 0,
+    "v27_threshold": 0.1287871,
+    "v5_keep": true,
+    "v5_raw": 0.625,
+    "v5_refined": false,
+    "v5_sampled_T1": 0.0,
+    "v5_selected_candidate": 3,
+    "v5_threshold": 0.47768
+  },
+  "historical_115k_previously_consumed_not_fresh_holdout": true,
+  "no_model_trained_or_promoted": true,
+  "no_unseen_realized_order_in_candidate_scores": true,
+  "schema": "dack_v43_original_v5_top12_candidate_ev_landscape_v1",
+  "status": "PASS",
+  "unpruned_candidate_value_profiles_not_original_pruning_history": true,
+  "v5_original_scorer_uses_deterministic_candidate_specific_sampled_futures": true
+}
