@@ -260,39 +260,39 @@
         }
       },
       "different_london_stage_confounded": {
-        "N": 107,
+        "N": 110,
         "endpoints": {
           "T1": {
-            "a_successes": 2,
+            "a_successes": 3,
             "b_successes": 2,
-            "delta_pp": 0.0,
-            "gains": 1,
+            "delta_pp": 0.9090909090909091,
+            "gains": 2,
             "losses": 1,
             "paired_bootstrap_95ci_pp": [
-              -2.803738317757009,
-              2.803738317757009
+              -1.8181818181818181,
+              3.6363636363636362
             ]
           },
           "T2": {
-            "a_successes": 20,
-            "b_successes": 21,
-            "delta_pp": -0.9345794392523364,
-            "gains": 15,
+            "a_successes": 23,
+            "b_successes": 22,
+            "delta_pp": 0.9090909090909091,
+            "gains": 17,
             "losses": 16,
             "paired_bootstrap_95ci_pp": [
-              -11.214953271028037,
-              9.345794392523365
+              -9.090909090909092,
+              10.909090909090908
             ]
           },
           "T3": {
-            "a_successes": 80,
-            "b_successes": 65,
-            "delta_pp": 14.018691588785046,
+            "a_successes": 83,
+            "b_successes": 68,
+            "delta_pp": 13.636363636363637,
             "gains": 26,
             "losses": 11,
             "paired_bootstrap_95ci_pp": [
-              3.7383177570093458,
-              24.299065420560748
+              2.727272727272727,
+              24.545454545454547
             ]
           }
         }
@@ -336,39 +336,39 @@
         }
       },
       "same_stage_different_hand": {
-        "N": 56,
+        "N": 53,
         "endpoints": {
           "T1": {
-            "a_successes": 7,
+            "a_successes": 6,
             "b_successes": 6,
-            "delta_pp": 1.7857142857142858,
-            "gains": 1,
+            "delta_pp": 0.0,
+            "gains": 0,
             "losses": 0,
             "paired_bootstrap_95ci_pp": [
               0.0,
-              5.357142857142857
+              0.0
             ]
           },
           "T2": {
-            "a_successes": 34,
-            "b_successes": 26,
-            "delta_pp": 14.285714285714286,
-            "gains": 8,
+            "a_successes": 31,
+            "b_successes": 25,
+            "delta_pp": 11.320754716981131,
+            "gains": 6,
             "losses": 0,
             "paired_bootstrap_95ci_pp": [
-              5.357142857142857,
-              25.0
+              3.7735849056603774,
+              20.754716981132077
             ]
           },
           "T3": {
-            "a_successes": 47,
-            "b_successes": 48,
-            "delta_pp": -1.7857142857142858,
+            "a_successes": 44,
+            "b_successes": 45,
+            "delta_pp": -1.8867924528301887,
             "gains": 2,
             "losses": 3,
             "paired_bootstrap_95ci_pp": [
-              -10.714285714285714,
-              5.357142857142857
+              -9.433962264150944,
+              5.660377358490566
             ]
           }
         }
@@ -414,39 +414,39 @@
         }
       },
       "different_london_stage_confounded": {
-        "N": 102,
+        "N": 105,
         "endpoints": {
           "T1": {
-            "a_successes": 2,
+            "a_successes": 3,
             "b_successes": 2,
-            "delta_pp": 0.0,
-            "gains": 1,
+            "delta_pp": 0.9523809523809523,
+            "gains": 2,
             "losses": 1,
             "paired_bootstrap_95ci_pp": [
-              -2.9411764705882355,
-              2.9411764705882355
+              -1.9047619047619047,
+              3.8095238095238093
             ]
           },
           "T2": {
-            "a_successes": 23,
-            "b_successes": 20,
-            "delta_pp": 2.9411764705882355,
-            "gains": 16,
+            "a_successes": 26,
+            "b_successes": 21,
+            "delta_pp": 4.761904761904762,
+            "gains": 18,
             "losses": 13,
             "paired_bootstrap_95ci_pp": [
-              -7.8431372549019605,
-              13.72549019607843
+              -5.714285714285714,
+              15.238095238095237
             ]
           },
           "T3": {
-            "a_successes": 82,
-            "b_successes": 64,
-            "delta_pp": 17.647058823529413,
+            "a_successes": 85,
+            "b_successes": 67,
+            "delta_pp": 17.142857142857142,
             "gains": 30,
             "losses": 12,
             "paired_bootstrap_95ci_pp": [
-              4.901960784313726,
-              29.41176470588235
+              4.761904761904762,
+              28.571428571428573
             ]
           }
         }
@@ -490,39 +490,39 @@
         }
       },
       "same_stage_different_hand": {
-        "N": 62,
+        "N": 59,
         "endpoints": {
           "T1": {
-            "a_successes": 7,
+            "a_successes": 6,
             "b_successes": 6,
-            "delta_pp": 1.6129032258064515,
-            "gains": 1,
+            "delta_pp": 0.0,
+            "gains": 0,
             "losses": 0,
             "paired_bootstrap_95ci_pp": [
               0.0,
-              4.838709677419355
+              0.0
             ]
           },
           "T2": {
-            "a_successes": 32,
-            "b_successes": 25,
-            "delta_pp": 11.290322580645162,
-            "gains": 7,
+            "a_successes": 29,
+            "b_successes": 24,
+            "delta_pp": 8.474576271186441,
+            "gains": 5,
             "losses": 0,
             "paired_bootstrap_95ci_pp": [
-              4.838709677419355,
-              19.35483870967742
+              1.694915254237288,
+              16.949152542372882
             ]
           },
           "T3": {
-            "a_successes": 46,
-            "b_successes": 48,
-            "delta_pp": -3.225806451612903,
+            "a_successes": 43,
+            "b_successes": 45,
+            "delta_pp": -3.389830508474576,
             "gains": 1,
             "losses": 3,
             "paired_bootstrap_95ci_pp": [
-              -9.67741935483871,
-              3.225806451612903
+              -10.169491525423728,
+              3.389830508474576
             ]
           }
         }
@@ -556,7 +556,7 @@
     }
   },
   "schema": "dack_v33_readonly_attribution_audit",
-  "scope": "retrospective, no beam simulations, no fitting, no policy changes",
+  "scope": "retrospective, no beam simulations, no fitting, no policy changes; London stage means recorded stage index, not keep_n",
   "source_full_game_ids": [
     110000,
     110255
