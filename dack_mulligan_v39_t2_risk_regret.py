@@ -21,7 +21,7 @@ T2_SIGN_MARGIN=.02
 T3_MAX_PREDICTED_CUMULATIVE_LOSS=.25
 STAGES=(0,1,2)
 
-def ensemble(model,x):
+def model_check(model):\n    v37.validate(model)\n    assert model["policy_approved"] is False\n    assert model["training_group_n"]==384\n    return model\n\ndef ensemble(model,x):
     v37.validate(model)
     assert len(x)==len(feat.NAMES)
     a2=[];a3=[]
