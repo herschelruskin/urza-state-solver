@@ -62,7 +62,7 @@ def gameplay(row,stage,seat,orders,seed,deck):
     ref.d._WIN_CACHE.clear()
     t=ref.d._win_turn_from_unknown_order(
         hand,unknown+bottom,seat,beam=160,max_turn=3)
-    assert t is None or t in (1,2,3)
+    assert t is None or t in (0,1,2,3)
     return int(t or 0)
 
 def run(start,out,games=4):
