@@ -1,0 +1,74 @@
+name: DACK v26 prospective 97k physical N256 strict v5 vs v22 v26
+on:
+  push:
+    branches: [dack-v26-trace-repair-20261031]
+    paths:
+      - 'models/dack_v26_expanded_real_keep_value_EXPERIMENTAL.json'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  full_physical:
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        start: [97000, 97004, 97008, 97012, 97016, 97020, 97024, 97028, 97032, 97036, 97040, 97044, 97048, 97052, 97056, 97060, 97064, 97068, 97072, 97076, 97080, 97084, 97088, 97092, 97096, 97100, 97104, 97108, 97112, 97116, 97120, 97124, 97128, 97132, 97136, 97140, 97144, 97148, 97152, 97156, 97160, 97164, 97168, 97172, 97176, 97180, 97184, 97188, 97192, 97196, 97200, 97204, 97208, 97212, 97216, 97220, 97224, 97228, 97232, 97236, 97240, 97244, 97248, 97252]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v26-trace-repair-20261031
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit frozen new and old learned-model sha-bound London DP with strict beam160 gameplay
+        run: |
+          python -m compileall -q dack_simulator/validation/compare_v26_fresh_n256.py dack_simulator/validation/pool_v26_fresh_n256.py
+          python dack_paired_counterfactual_v26_expanded_keep_DP_20261101.py --audit
+      - name: Fresh actual 97k 99-slot game, three independent policy processes per seed
+        run: |
+          python -u dack_simulator/validation/compare_v26_fresh_n256.py \
+            --start ${{ matrix.start }} --games 4 \
+            --out shards/v26_97k_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v26-97k-${{ matrix.start }}
+          path: shards/v26_97k_*.json.gz
+          retention-days: 30
+  pool_and_archive:
+    needs: full_physical
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v26-trace-repair-20261031
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v26-97k-*
+          merge-multiple: true
+          path: collected
+      - name: Require all N256 unseen games and quantify primary Turn 2 against frozen v5 reference
+        run: python -u dack_simulator/validation/pool_v26_fresh_n256.py
+      - name: Archive independent results without model promotion
+        run: |
+          mkdir -p benchmark_results/v26_97k_full_game_shards
+          cp collected/v26_97k_*.json.gz benchmark_results/v26_97k_full_game_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v26_prospective_97k_vs_v5_v22_N256.json benchmark_results/v26_97k_full_game_shards
+          git commit -m "Archive v26 prospective N256 97k strict beam160 v5 v22 value-DP comparison"
+          git pull --rebase origin dack-v26-trace-repair-20261031
+          git push origin HEAD:dack-v26-trace-repair-20261031
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v26-prospective-97k-N256-result
+          path: benchmark_results/v26_prospective_97k_vs_v5_v22_N256.json
+          retention-days: 30
