@@ -1,0 +1,116 @@
+name: DACK v12 margin-gated hybrid versus v5 independent paired N16
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_hybrid_v12_vs_v5_n16.yml'
+      - 'dack_simulator/validation/compare_hybrid_v12_vs_v5.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          python -m compileall -q dack_simulator/validation/compare_hybrid_v12_vs_v5.py dack_paired_counterfactual_v12_hybrid_m075_20261031.py
+          python dack_paired_counterfactual_v12_hybrid_m075_20261031.py --audit
+  pairs:
+    needs: audit
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - start: 43000
+          - start: 43002
+          - start: 43004
+          - start: 43006
+          - start: 43008
+          - start: 43010
+          - start: 43012
+          - start: 43014
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Fresh outer seed, actual deployment beam 160, learned-only or exact London fallback
+        run: |
+          python -u dack_simulator/validation/compare_hybrid_v12_vs_v5.py \
+            --start ${{ matrix.start }} --games 2 \
+            --out shards/hybrid_pair_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hybrid-pair-${{ matrix.start }}
+          path: shards/hybrid_pair_*.json.gz
+          retention-days: 14
+  pool:
+    needs: pairs
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: hybrid-pair-*
+          merge-multiple: true
+          path: paired/
+      - name: Pool independent N16 T1 T2 T3, runtime and actual fallback usage
+        run: |
+          python - <<'PY'
+          import gzip,glob,json,math
+          from pathlib import Path
+          files=sorted(glob.glob('paired/hybrid_pair_*.json.gz'))
+          assert len(files)==8
+          rows=[]
+          for f in files:
+              with gzip.open(f,'rt') as h:r=json.load(h)
+              assert r['status']=='PASS' and r['experimental_model_approved'] is False
+              rows.extend(r['rows'])
+          rows.sort(key=lambda x:x['game_id'])
+          assert [r['game_id'] for r in rows]==list(range(43000,43016))
+          def metric(name):
+              v=[row[name] for row in rows]
+              return {'n':16,
+                      'T1':sum(x['win_turn']==1 for x in v),
+                      'T2':sum(0<x['win_turn']<=2 for x in v),
+                      'T3':sum(0<x['win_turn']<=3 for x in v),
+                      'mean_keep':sum(x['keep_n'] for x in v)/16,
+                      'runtime_seconds':round(sum(x['seconds'] for x in v),3),
+                      'fallback_stages':sum(x.get('fallback_stages',0) for x in v),
+                      'london_stages':sum(x.get('total_london_stages',0) for x in v)}
+          base=metric('v5');hybrid=metric('hybrid_m075')
+          ds=[int(0<r['hybrid_m075']['win_turn']<=2)-
+              int(0<r['v5']['win_turn']<=2) for r in rows]
+          m=sum(ds)/16;se=(sum((x-m)**2 for x in ds)/(16*15))**.5
+          output={'status':'PASS','schema':'dack_v12_hybrid_paired_n16',
+                  'game_ids':[43000,43015],
+                  'development_42k_not_reused':True,
+                  'margin_chosen_after_development_42k':.075,
+                  'learned_model_approved':False,
+                  'v5':base,'hybrid_m075':hybrid,
+                  'runtime_ratio':base['runtime_seconds']/max(.001,hybrid['runtime_seconds']),
+                  'T2_net_pp':100*m,'T2_gains':ds.count(1),
+                  'T2_losses':ds.count(-1),
+                  'paired_95ci_pp':[100*(m-1.96*se),100*(m+1.96*se)],
+                  'warning':'N16 no noninferiority claim; training compute excluded from online time.'}
+          Path('benchmark_results').mkdir(exist_ok=True)
+          Path('benchmark_results/hybrid_v12_vs_v5_n16_RESEARCH.json').write_text(json.dumps(output,indent=2)+'\n')
+          print('HYBRID_V12_VS_V5_N16_RESEARCH',json.dumps(output),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-hybrid-v12-vs-v5-n16-research
+          path: benchmark_results/hybrid_v12_vs_v5_n16_RESEARCH.json
+          retention-days: 14
