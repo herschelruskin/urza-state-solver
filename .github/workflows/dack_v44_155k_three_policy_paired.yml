@@ -1,0 +1,68 @@
+name: DACK v44 conditional opt-in actual physical 155k N256 after 154k dev
+on:
+  push:
+    branches: [dack-v44-physical-candidate-values-20261101]
+    paths:
+      - 'DACK_V44_START_155K_AFTER_DEV_PASS.txt'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  games:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        start: [155000,155032,155064,155096,155128,155160,155192,155224]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v44-physical-candidate-values-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit frozen physically supervised ranker, no v5 lookahead
+        run: |
+          python -m py_compile dack_paired_counterfactual_v44_physical_candidate_Q2_20261101.py dack_simulator/validation/v44_fresh_155k_matched_three_policy.py
+          python dack_paired_counterfactual_v44_physical_candidate_Q2_20261101.py --audit
+      - name: Paired strict physical goldfish on 32 NEW independent 155k games, each policy isolated
+        run: |
+          python -u dack_simulator/validation/v44_fresh_155k_matched_three_policy.py \
+            --start ${{ matrix.start }} --out shards/v44_155k_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v44-155k-${{ matrix.start }}
+          path: shards/v44_155k_*.json.gz
+          retention-days: 90
+  pool:
+    needs: games
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v44-physical-candidate-values-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v44-155k-*
+          merge-multiple: true
+          path: collected
+      - name: Audit all 256 groups and paired confidence intervals for v27 vs v43 vs v44
+        run: |
+          python -u dack_simulator/validation/v44_pool_fresh_155k.py
+      - name: Archive results and full physical traces without approving any model
+        run: |
+          mkdir -p benchmark_results/v44_fresh_155k_shards
+          cp collected/v44_155k_*.json.gz benchmark_results/v44_fresh_155k_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v44_fresh_155k_three_policy_N256.json benchmark_results/v44_fresh_155k_shards/
+          git commit -m "Archive independent v44 actual physical N256 against v43 and v27, including paired T2/T3 confidence intervals"
+          git pull --rebase origin dack-v44-physical-candidate-values-20261101
+          git push origin HEAD:dack-v44-physical-candidate-values-20261101
