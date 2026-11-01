@@ -1,4 +1,4 @@
-name: DACK v46 real physical Qkeep K16 and full99 C128 for first two sevens
+name: DACK v46 physical first-two-seven K16 C128 corrected canonical ordering
 on:
   push:
     branches: [dack-v46-first-two-sevens-physical-Q2-20261101]
