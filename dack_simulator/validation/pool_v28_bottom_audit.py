@@ -41,6 +41,26 @@ def main():
     assert eligible and all(z["actual_unknown_order_permutation_invariance_verified"] for z in eligible)
     assert all(z["sampled_independent_futures_per_candidate"]==16 for z in eligible)
     assert all(z["independent_same_future_for_all_candidates"] for z in eligible)
+    def choice(r,name):
+        return next(z for z in r["candidate_results"] if z["candidate_index"]==r[name])
+    teacher_cards=collections.Counter(c for z in eligible for c in choice(z,"v5_candidate_index")["bottom"])
+    student_cards=collections.Counter(c for z in eligible for c in choice(z,"v14_candidate_index")["bottom"])
+    structural_cards=collections.Counter(c for z in eligible for c in choice(z,"first_index")["bottom"])
+    teacher_only_bottomed=collections.Counter()
+    student_only_bottomed=collections.Counter()
+    for z in eligible:
+        t=collections.Counter(choice(z,"v5_candidate_index")["bottom"])
+        v=collections.Counter(choice(z,"v14_candidate_index")["bottom"])
+        teacher_only_bottomed.update(t-v)
+        student_only_bottomed.update(v-t)
+    card_behavior={
+       "v5_bottom_frequency":dict(teacher_cards.most_common()),
+       "frozen_v14_bottom_frequency":dict(student_cards.most_common()),
+       "structural_first_bottom_frequency":dict(structural_cards.most_common()),
+       "v5_bottomed_but_v14_kept_cards":dict(teacher_only_bottomed.most_common()),
+       "v14_bottomed_but_v5_kept_cards":dict(student_only_bottomed.most_common()),
+       "note":"Descriptive among v5-kept hands with actual London bottom, not population attribution or oracle proof."
+    }
     report={
        "schema":"dack_v28_frozen_v5_bottom_hidden_order_and_unseen_utility_N64",
        "status":"PASS",
@@ -54,6 +74,7 @@ def main():
        "observed_teacher_choice_differs_v14":sum(z["v5_changes_bottom_vs_v14"] for z in eligible),
        "v5_struct_first_agreement":sum(z["v5_candidate_index"]==0 for z in eligible),
        "v5_v14_agreement":sum(z["v5_candidate_index"]==z["v14_candidate_index"] for z in eligible),
+       "card_level_bottoming_behavior":card_behavior,
        "keep_n_distribution":dict(sorted(collections.Counter(str(z["keep_n"]) for z in eligible).items())),
        "seat_distribution":dict(sorted(collections.Counter(str(z["seat"]) for z in eligible).items())),
        "paired_independent_16_future_comparisons":{
