@@ -1,0 +1,74 @@
+name: DACK v43 independent physical check of v5 candidate choices on two real conflicts
+on:
+  push:
+    branches: [dack-v43-v5-candidate-forensics-20261101]
+    paths:
+      - '.github/workflows/dack_v43_independent_candidate_16_futures.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        gid: [115003,115017]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v43-v5-candidate-forensics-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Independently recheck all v5 top12 bottoms with 16 strict physical blind futures
+        run: |
+          python -m py_compile dack_simulator/validation/v43_independent_candidate_physical.py
+          python -u dack_simulator/validation/v43_independent_candidate_physical.py \
+             --gid ${{ matrix.gid }} --out profiles/v43_independent_candidate_physical_${{ matrix.gid }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v43-independent-candidates-${{ matrix.gid }}
+          path: profiles/*.json
+          retention-days: 90
+  archive:
+    needs: candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v43-v5-candidate-forensics-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v43-independent-candidates-*
+          merge-multiple: true
+          path: collected
+      - name: Validate both physical candidate checks and archive no population inference
+        run: |
+          python - <<'PY'
+          import glob,json
+          a=glob.glob("collected/*.json")
+          assert len(a)==2
+          assert {json.load(open(p))['gid'] for p in a}=={115003,115017}
+          for p in a:
+            q=json.load(open(p))
+            assert q['status']=='PASS' and q['new_physical_16_futures_blind_unseen92_beam160']
+            assert q['physical_futures_per_candidate']==16 and not q['not_population_random_sevens'] is False
+          print("DACK_V43_INDEPENDENT_SELECTED_CANDIDATE_PHYSICAL_PASS")
+          PY
+      - name: Archive strict physical candidate-trial datasets
+        run: |
+          mkdir -p benchmark_results/v43_independent_candidate_physical
+          cp collected/*.json benchmark_results/v43_independent_candidate_physical/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v43_independent_candidate_physical/
+          git commit -m "Archive physical blind 16-future values of original-v5 candidate bottom choices for two fixed conflict sevens"
+          git pull --rebase origin dack-v43-v5-candidate-forensics-20261101
+          git push origin HEAD:dack-v43-v5-candidate-forensics-20261101
