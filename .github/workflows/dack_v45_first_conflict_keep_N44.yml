@@ -1,0 +1,77 @@
+name: DACK v45 actual first v5-v43 stage disagreement physical KEEP N44
+on:
+  push:
+    branches: [dack-v45-v5-v43-residual-gap-audit-20261101]
+    paths:
+      - '.github/workflows/dack_v45_first_conflict_keep_N44.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  keep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        shard: [0,1,2,3]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v45-v5-v43-residual-gap-audit-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: True physical KEEP exact v43 legal retained hand at first actual v5-v43 action conflict
+        run: |
+          python -m py_compile dack_simulator/validation/v45_first_v5_v43_conflict_physical_K.py
+          python -u dack_simulator/validation/v45_first_v5_v43_conflict_physical_K.py \
+             --shard ${{ matrix.shard }} --out shards/v45_v5_v43_firstK_${{ matrix.shard }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v45-first-v5v43-K-${{ matrix.shard }}
+          path: shards/v45_v5_v43_firstK_*.json.gz
+          retention-days: 90
+  archive:
+    needs: keep
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v45-v5-v43-residual-gap-audit-20261101
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v45-first-v5v43-K-*
+          merge-multiple: true
+          path: collected
+      - name: Verify 44 source groups 32 forced KEEP blind trials each
+        run: |
+          python - <<'PY'
+          import glob,gzip,json
+          p=sorted(glob.glob("collected/v45_v5_v43_firstK_*.json.gz"))
+          assert len(p)==4
+          rows=[]
+          for f in p:
+            with gzip.open(f,'rt') as z:d=json.load(z)
+            assert d['status']=='PASS'
+            assert d['original_v43_candidate_hand_and_bottom_replayed_exactly']
+            assert d['K_real_unknown92_future_rollouts_per_group']==32
+            rows+=d['rows']
+          assert len(rows)==44 and len(set(x['gid'] for x in rows))==44
+          assert sum(x['v5_earlier'] for x in rows)==16
+          assert sum(x['v43_earlier'] for x in rows)==28
+          print('DACK_V45_TRUE_PHYSICAL_K_FIRST_CONFLICT_N44_PASS')
+          PY
+      - name: Archive source hand-group physical KEEP futures
+        run: |
+          mkdir -p benchmark_results/v45_v5_v43_first_conflict_physical_K_shards
+          cp collected/*.json.gz benchmark_results/v45_v5_v43_first_conflict_physical_K_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v45_v5_v43_first_conflict_physical_K_shards/
+          git commit -m "Archive 44 genuine v5-v43 first-conflict KEEP physical groups with 32 new blind rollouts each"
+          git pull --rebase origin dack-v45-v5-v43-residual-gap-audit-20261101
+          git push origin HEAD:dack-v45-v5-v43-residual-gap-audit-20261101
