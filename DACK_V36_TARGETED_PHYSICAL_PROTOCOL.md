@@ -113,20 +113,20 @@ not formal statistical confidence intervals.
 
 ## Untouched population validation, independent of all development
 
-**124000..124127** 128 randomly dealt independent games,
+**124000..124255** 256 randomly dealt independent games,
 all early actual stages0,1,2, 12 blind physical unseen92
-futures per state: **4,608 KEEP outcomes**.
+futures per state: **9,216 KEEP outcomes**.
 Separately fresh Qmull for 4×3 seat-stage cells
 ×64 full99 physical futures =**768 MULL outcomes**.
-Total **5,376 independent beam160 validations**.
+Total **9,984 independent beam160 validations**.
 Both strata fully separate from 123k/115k/116k/121k,
 and from any model fitting.
 
 Compare changed policy to frozen v27 action using
 actual heldout Qkeep and shared C. Report unconditional
-conditional-action improvement over all 384 stage
+conditional-action improvement over all 768 stage
 decisions, by-stage improvement, directions and counts.
-Paired hierarchical bootstrap resamples 128 physical
+Paired hierarchical bootstrap resamples 256 physical
 outer game groups, 12 fresh unseen92 per hand and
 each seat-stage C lottery ONCE per resample.
 
