@@ -1,0 +1,93 @@
+{
+  "C_futures_per_seat_stage": 64,
+  "K_futures_per_early_stage": 8,
+  "N_early_stage_K_states": 192,
+  "N_independent_new_physical_deals": 64,
+  "by_changed": {
+    "N_independent_groups": 9,
+    "N_stage_observations": 10,
+    "changed_stages": 10,
+    "conditional_T1_one_step_gain_pp": 3.75,
+    "conditional_T2_one_step_gain_pp": -18.28125,
+    "conditional_T3_one_step_gain_pp": -7.1875,
+    "keep_to_mull": 9,
+    "mull_to_keep": 1
+  },
+  "by_stage": {
+    "0": {
+      "N_independent_groups": 64,
+      "N_stage_observations": 64,
+      "changed_stages": 1,
+      "conditional_T1_one_step_gain_pp": 0.1220703125,
+      "conditional_T2_one_step_gain_pp": -0.87890625,
+      "conditional_T3_one_step_gain_pp": -0.4150390625,
+      "keep_to_mull": 1,
+      "mull_to_keep": 0
+    },
+    "1": {
+      "N_independent_groups": 64,
+      "N_stage_observations": 64,
+      "changed_stages": 6,
+      "conditional_T1_one_step_gain_pp": 0.341796875,
+      "conditional_T2_one_step_gain_pp": -1.220703125,
+      "conditional_T3_one_step_gain_pp": 0.146484375,
+      "keep_to_mull": 6,
+      "mull_to_keep": 0
+    },
+    "2": {
+      "N_independent_groups": 64,
+      "N_stage_observations": 64,
+      "changed_stages": 3,
+      "conditional_T1_one_step_gain_pp": 0.1220703125,
+      "conditional_T2_one_step_gain_pp": -0.7568359375,
+      "conditional_T3_one_step_gain_pp": -0.8544921875,
+      "keep_to_mull": 2,
+      "mull_to_keep": 1
+    }
+  },
+  "decisions_frozen_before_new_outcomes": true,
+  "independent_shared_C_lottery_rollouts": 768,
+  "models_approved": false,
+  "not_a_full_game_winrate_test": true,
+  "physical_group_and_K_future_and_shared_C_bootstrap": true,
+  "same_downstream_continuation_v27_keep_v33b_bottom": true,
+  "schema": "dack_v41_148k_fresh_conditional_T2_T3_validation_1",
+  "source_model_sha256": "67cf0354e35dba0e290b9b7216e394341982357054c991837f6c6cc5e689ccfc",
+  "status": "PASS",
+  "summary_all_192_hypothetical_stage_states": {
+    "N_independent_groups": 64,
+    "N_stage_observations": 192,
+    "changed_stages": 10,
+    "conditional_T1_one_step_gain_pp": 0.1953125,
+    "conditional_T2_one_step_gain_pp": -0.9521484375,
+    "conditional_T3_one_step_gain_pp": -0.3743489583333333,
+    "keep_to_mull": 9,
+    "mull_to_keep": 1
+  },
+  "true_K_gameplay_rollouts": 1536,
+  "two_source_ci": {
+    "T1": {
+      "mean_delta_pp": 0.1953125,
+      "two_source_group_bootstrap_95ci_pp": [
+        0.016276041666666668,
+        0.4638671875
+      ]
+    },
+    "T2": {
+      "mean_delta_pp": -0.9521484375,
+      "two_source_group_bootstrap_95ci_pp": [
+        -2.4820963541666665,
+        0.3662109375
+      ]
+    },
+    "T3": {
+      "mean_delta_pp": -0.3743489583333333,
+      "two_source_group_bootstrap_95ci_pp": [
+        -1.5462239583333333,
+        0.9195963541666666
+      ]
+    }
+  },
+  "unseen_original_v5_teacher_not_used": true,
+  "warning": "N64 initial diagnostic and hypothetical stages not necessarily path-reached; T2 one-step conditional gain is not whole-game policy improvement."
+}
