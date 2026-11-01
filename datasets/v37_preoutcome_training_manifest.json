@@ -1,0 +1,2869 @@
+{
+  "candidate_pool_game_ids": [
+    126256,
+    127023
+  ],
+  "enriched_groups": [
+    {
+      "abs_margin": 0.0010474175766532479,
+      "game_id": 126439,
+      "proxy_teacher_score": 0.14638918163309964,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.0010474175766532479
+    },
+    {
+      "abs_margin": 0.0010656951070067144,
+      "game_id": 126828,
+      "proxy_teacher_score": 0.3037785303161304,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.0010656951070067144
+    },
+    {
+      "abs_margin": 0.0017658889919171805,
+      "game_id": 126983,
+      "proxy_teacher_score": 0.5823681803590351,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.0017658889919171805
+    },
+    {
+      "abs_margin": 0.002676420008114494,
+      "game_id": 126635,
+      "proxy_teacher_score": 0.4515339708721419,
+      "sample": "discordant_boundary",
+      "seat": 1,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.002676420008114494
+    },
+    {
+      "abs_margin": 0.00408023030050686,
+      "game_id": 126359,
+      "proxy_teacher_score": 0.28865703747724525,
+      "sample": "discordant_boundary",
+      "seat": 3,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.00408023030050686
+    },
+    {
+      "abs_margin": 0.004607267325080849,
+      "game_id": 127009,
+      "proxy_teacher_score": 0.7428905390859616,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.004607267325080849
+    },
+    {
+      "abs_margin": 0.004695675490830775,
+      "game_id": 126393,
+      "proxy_teacher_score": 0.23572605651088102,
+      "sample": "discordant_boundary",
+      "seat": 1,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.004695675490830775
+    },
+    {
+      "abs_margin": 0.004762980398927752,
+      "game_id": 126451,
+      "proxy_teacher_score": 0.33139003520276805,
+      "sample": "discordant_boundary",
+      "seat": 1,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.004762980398927752
+    },
+    {
+      "abs_margin": 0.005425982612365654,
+      "game_id": 126294,
+      "proxy_teacher_score": 0.40467800403894344,
+      "sample": "discordant_boundary",
+      "seat": 2,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.005425982612365654
+    },
+    {
+      "abs_margin": 0.006432491942343799,
+      "game_id": 126627,
+      "proxy_teacher_score": 0.2609248846296839,
+      "sample": "discordant_boundary",
+      "seat": 3,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.006432491942343799
+    },
+    {
+      "abs_margin": 0.006493246374227407,
+      "game_id": 126883,
+      "proxy_teacher_score": 0.4369781491572776,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.006493246374227407
+    },
+    {
+      "abs_margin": 0.007396281181023812,
+      "game_id": 126963,
+      "proxy_teacher_score": 0.38706622007856006,
+      "sample": "discordant_boundary",
+      "seat": 3,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.007396281181023812
+    },
+    {
+      "abs_margin": 0.00882031497421093,
+      "game_id": 126320,
+      "proxy_teacher_score": 0.53834367899515,
+      "sample": "discordant_boundary",
+      "seat": 3,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.00882031497421093
+    },
+    {
+      "abs_margin": 0.00895646409214243,
+      "game_id": 126794,
+      "proxy_teacher_score": 0.6170155133003834,
+      "sample": "discordant_boundary",
+      "seat": 3,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.00895646409214243
+    },
+    {
+      "abs_margin": 0.009843952089027497,
+      "game_id": 126845,
+      "proxy_teacher_score": 0.3857067533130142,
+      "sample": "discordant_boundary",
+      "seat": 3,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.009843952089027497
+    },
+    {
+      "abs_margin": 0.010588496352299137,
+      "game_id": 126622,
+      "proxy_teacher_score": 0.4408572378192823,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.010588496352299137
+    },
+    {
+      "abs_margin": 0.011088014400719715,
+      "game_id": 126787,
+      "proxy_teacher_score": 0.26182096853275577,
+      "sample": "discordant_boundary",
+      "seat": 3,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.011088014400719715
+    },
+    {
+      "abs_margin": 0.011598730589898631,
+      "game_id": 126696,
+      "proxy_teacher_score": 0.3544317890792967,
+      "sample": "discordant_boundary",
+      "seat": 2,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.011598730589898631
+    },
+    {
+      "abs_margin": 0.011981919047617418,
+      "game_id": 126503,
+      "proxy_teacher_score": 0.3060717007526944,
+      "sample": "discordant_boundary",
+      "seat": 3,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.011981919047617418
+    },
+    {
+      "abs_margin": 0.012438836890356575,
+      "game_id": 126578,
+      "proxy_teacher_score": 0.3732984588081969,
+      "sample": "discordant_boundary",
+      "seat": 3,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.012438836890356575
+    },
+    {
+      "abs_margin": 0.012579518015745417,
+      "game_id": 126876,
+      "proxy_teacher_score": 0.4749125145783756,
+      "sample": "discordant_boundary",
+      "seat": 3,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.012579518015745417
+    },
+    {
+      "abs_margin": 0.013531420918477755,
+      "game_id": 126420,
+      "proxy_teacher_score": 0.4351449313837165,
+      "sample": "discordant_boundary",
+      "seat": 1,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.013531420918477755
+    },
+    {
+      "abs_margin": 0.014253272328497102,
+      "game_id": 126668,
+      "proxy_teacher_score": 0.30374121771710144,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.014253272328497102
+    },
+    {
+      "abs_margin": 0.01603238512340527,
+      "game_id": 126540,
+      "proxy_teacher_score": 0.4588048374864664,
+      "sample": "discordant_boundary",
+      "seat": 3,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.01603238512340527
+    },
+    {
+      "abs_margin": 0.017701463015392493,
+      "game_id": 126728,
+      "proxy_teacher_score": 0.47458451570467,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.017701463015392493
+    },
+    {
+      "abs_margin": 0.019064222712615708,
+      "game_id": 126917,
+      "proxy_teacher_score": 0.2980690472842539,
+      "sample": "discordant_boundary",
+      "seat": 1,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.019064222712615708
+    },
+    {
+      "abs_margin": 0.02086800637162925,
+      "game_id": 126912,
+      "proxy_teacher_score": 0.7143191335228981,
+      "sample": "discordant_boundary",
+      "seat": 2,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.02086800637162925
+    },
+    {
+      "abs_margin": 0.021469523080382746,
+      "game_id": 126506,
+      "proxy_teacher_score": 0.2752350797610305,
+      "sample": "discordant_boundary",
+      "seat": 1,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.021469523080382746
+    },
+    {
+      "abs_margin": 0.022028507531734298,
+      "game_id": 126690,
+      "proxy_teacher_score": 0.2860989070557633,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.022028507531734298
+    },
+    {
+      "abs_margin": 0.02282683387780665,
+      "game_id": 126749,
+      "proxy_teacher_score": 0.2977779993298785,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.02282683387780665
+    },
+    {
+      "abs_margin": 0.02452223918023866,
+      "game_id": 126548,
+      "proxy_teacher_score": 0.4953244567088021,
+      "sample": "discordant_boundary",
+      "seat": 1,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.02452223918023866
+    },
+    {
+      "abs_margin": 0.024832748460382692,
+      "game_id": 126810,
+      "proxy_teacher_score": 0.40174950144903965,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.024832748460382692
+    },
+    {
+      "abs_margin": 0.026617966363573387,
+      "game_id": 126264,
+      "proxy_teacher_score": 0.6388977338021433,
+      "sample": "discordant_boundary",
+      "seat": 3,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.026617966363573387
+    },
+    {
+      "abs_margin": 0.02675868497060596,
+      "game_id": 126789,
+      "proxy_teacher_score": 0.3964775297978801,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.02675868497060596
+    },
+    {
+      "abs_margin": 0.027273133390872395,
+      "game_id": 126884,
+      "proxy_teacher_score": 0.5896177448992982,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.027273133390872395
+    },
+    {
+      "abs_margin": 0.028097448347792597,
+      "game_id": 126835,
+      "proxy_teacher_score": 0.2802795331762815,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.028097448347792597
+    },
+    {
+      "abs_margin": 0.028606869257803563,
+      "game_id": 126340,
+      "proxy_teacher_score": 0.6826464975497188,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.028606869257803563
+    },
+    {
+      "abs_margin": 0.028978958388921783,
+      "game_id": 126397,
+      "proxy_teacher_score": 0.3265383515482612,
+      "sample": "discordant_boundary",
+      "seat": 2,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.028978958388921783
+    },
+    {
+      "abs_margin": 0.03221607989770009,
+      "game_id": 126820,
+      "proxy_teacher_score": 0.4289293336637038,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.03221607989770009
+    },
+    {
+      "abs_margin": 0.0323871320908799,
+      "game_id": 126667,
+      "proxy_teacher_score": 0.6077556205678152,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.0323871320908799
+    },
+    {
+      "abs_margin": 0.03426522825992798,
+      "game_id": 126332,
+      "proxy_teacher_score": 0.6313050181868941,
+      "sample": "discordant_boundary",
+      "seat": 3,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.03426522825992798
+    },
+    {
+      "abs_margin": 0.03453929180511481,
+      "game_id": 126957,
+      "proxy_teacher_score": 0.5890896474619267,
+      "sample": "discordant_boundary",
+      "seat": 3,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.03453929180511481
+    },
+    {
+      "abs_margin": 0.03517001216727744,
+      "game_id": 126786,
+      "proxy_teacher_score": 0.33953880936486014,
+      "sample": "discordant_boundary",
+      "seat": 3,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.03517001216727744
+    },
+    {
+      "abs_margin": 0.0377318195014158,
+      "game_id": 126372,
+      "proxy_teacher_score": 0.48503633397107615,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.0377318195014158
+    },
+    {
+      "abs_margin": 0.038662493840478596,
+      "game_id": 126455,
+      "proxy_teacher_score": 0.33970905272929436,
+      "sample": "discordant_boundary",
+      "seat": 2,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.038662493840478596
+    },
+    {
+      "abs_margin": 0.038756247769448804,
+      "game_id": 126974,
+      "proxy_teacher_score": 0.6145506049938592,
+      "sample": "discordant_boundary",
+      "seat": 2,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.038756247769448804
+    },
+    {
+      "abs_margin": 0.039878516196791086,
+      "game_id": 126926,
+      "proxy_teacher_score": 0.5535971017008907,
+      "sample": "discordant_boundary",
+      "seat": 1,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.039878516196791086
+    },
+    {
+      "abs_margin": 0.04022327976842777,
+      "game_id": 126652,
+      "proxy_teacher_score": 0.5217350100137124,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.04022327976842777
+    },
+    {
+      "abs_margin": 0.041347814763312896,
+      "game_id": 126534,
+      "proxy_teacher_score": 0.3323644718158138,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.041347814763312896
+    },
+    {
+      "abs_margin": 0.04194424237795974,
+      "game_id": 126788,
+      "proxy_teacher_score": 0.40357737833679036,
+      "sample": "discordant_boundary",
+      "seat": 2,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.04194424237795974
+    },
+    {
+      "abs_margin": 0.04253458698527807,
+      "game_id": 126689,
+      "proxy_teacher_score": 0.2480973974942591,
+      "sample": "discordant_boundary",
+      "seat": 1,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.04253458698527807
+    },
+    {
+      "abs_margin": 0.0428919211683238,
+      "game_id": 126619,
+      "proxy_teacher_score": 0.4989701288901402,
+      "sample": "discordant_boundary",
+      "seat": 1,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.0428919211683238
+    },
+    {
+      "abs_margin": 0.043532746080471085,
+      "game_id": 126659,
+      "proxy_teacher_score": 0.496749519596457,
+      "sample": "discordant_boundary",
+      "seat": 2,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.043532746080471085
+    },
+    {
+      "abs_margin": 0.049435003946596584,
+      "game_id": 126609,
+      "proxy_teacher_score": 0.5539029453230577,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.049435003946596584
+    },
+    {
+      "abs_margin": 0.052373879721293204,
+      "game_id": 126466,
+      "proxy_teacher_score": 0.43078191766882007,
+      "sample": "discordant_boundary",
+      "seat": 2,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.052373879721293204
+    },
+    {
+      "abs_margin": 0.05321548206929563,
+      "game_id": 126375,
+      "proxy_teacher_score": 0.5797906155553865,
+      "sample": "discordant_boundary",
+      "seat": 3,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.05321548206929563
+    },
+    {
+      "abs_margin": 0.05440043930358396,
+      "game_id": 126716,
+      "proxy_teacher_score": 0.7400659358226668,
+      "sample": "discordant_boundary",
+      "seat": 1,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.05440043930358396
+    },
+    {
+      "abs_margin": 0.05533713878852853,
+      "game_id": 126519,
+      "proxy_teacher_score": 0.3563766517679274,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.05533713878852853
+    },
+    {
+      "abs_margin": 0.0560122828204247,
+      "game_id": 126928,
+      "proxy_teacher_score": 0.3414773776540756,
+      "sample": "discordant_boundary",
+      "seat": 0,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.0560122828204247
+    },
+    {
+      "abs_margin": 0.05703561232000859,
+      "game_id": 126764,
+      "proxy_teacher_score": 0.10858662944655005,
+      "sample": "discordant_boundary",
+      "seat": 3,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.05703561232000859
+    },
+    {
+      "abs_margin": 0.05733476255193967,
+      "game_id": 126323,
+      "proxy_teacher_score": 0.6408318244584743,
+      "sample": "discordant_boundary",
+      "seat": 1,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.05733476255193967
+    },
+    {
+      "abs_margin": 0.05794226684226361,
+      "game_id": 126658,
+      "proxy_teacher_score": 0.6397299695242721,
+      "sample": "discordant_boundary",
+      "seat": 1,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.05794226684226361
+    },
+    {
+      "abs_margin": 0.058712184310411475,
+      "game_id": 126603,
+      "proxy_teacher_score": 0.37626855982159246,
+      "sample": "discordant_boundary",
+      "seat": 1,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.058712184310411475
+    },
+    {
+      "abs_margin": 0.06316583532748687,
+      "game_id": 126692,
+      "proxy_teacher_score": 0.28575597322941426,
+      "sample": "discordant_boundary",
+      "seat": 1,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.06316583532748687
+    },
+    {
+      "abs_margin": 0.6048301166021347,
+      "game_id": 126950,
+      "proxy_teacher_score": 0.490827067717309,
+      "sample": "discordant_confident",
+      "seat": 2,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.6048301166021347
+    },
+    {
+      "abs_margin": 0.5930387454481754,
+      "game_id": 126408,
+      "proxy_teacher_score": 0.4350944220807236,
+      "sample": "discordant_confident",
+      "seat": 1,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.5930387454481754
+    },
+    {
+      "abs_margin": 0.5924493800133028,
+      "game_id": 126544,
+      "proxy_teacher_score": 0.49143011337620135,
+      "sample": "discordant_confident",
+      "seat": 1,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.5924493800133028
+    },
+    {
+      "abs_margin": 0.5762905770788609,
+      "game_id": 126427,
+      "proxy_teacher_score": 0.4415529587081138,
+      "sample": "discordant_confident",
+      "seat": 3,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.5762905770788609
+    },
+    {
+      "abs_margin": 0.5483763311269235,
+      "game_id": 126889,
+      "proxy_teacher_score": 0.44781957913946663,
+      "sample": "discordant_confident",
+      "seat": 1,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.5483763311269235
+    },
+    {
+      "abs_margin": 0.5237187511045827,
+      "game_id": 126739,
+      "proxy_teacher_score": 0.4812487994364751,
+      "sample": "discordant_confident",
+      "seat": 2,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.5237187511045827
+    },
+    {
+      "abs_margin": 0.49010688791929485,
+      "game_id": 126671,
+      "proxy_teacher_score": 0.49897846359773307,
+      "sample": "discordant_confident",
+      "seat": 0,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.49010688791929485
+    },
+    {
+      "abs_margin": 0.4846730668468551,
+      "game_id": 126328,
+      "proxy_teacher_score": 0.4829560374355302,
+      "sample": "discordant_confident",
+      "seat": 1,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.4846730668468551
+    },
+    {
+      "abs_margin": 0.4830919814806731,
+      "game_id": 126280,
+      "proxy_teacher_score": 0.3847032751998761,
+      "sample": "discordant_confident",
+      "seat": 2,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.4830919814806731
+    },
+    {
+      "abs_margin": 0.4730729285390775,
+      "game_id": 126642,
+      "proxy_teacher_score": 0.41153716545542257,
+      "sample": "discordant_confident",
+      "seat": 3,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.4730729285390775
+    },
+    {
+      "abs_margin": 0.4182296276130317,
+      "game_id": 126483,
+      "proxy_teacher_score": 0.43104823320345564,
+      "sample": "discordant_confident",
+      "seat": 0,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.4182296276130317
+    },
+    {
+      "abs_margin": 0.4012446234787621,
+      "game_id": 126775,
+      "proxy_teacher_score": 0.42390724787572615,
+      "sample": "discordant_confident",
+      "seat": 2,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.4012446234787621
+    },
+    {
+      "abs_margin": 0.3854668635702307,
+      "game_id": 126840,
+      "proxy_teacher_score": 0.4225176766478763,
+      "sample": "discordant_confident",
+      "seat": 1,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.3854668635702307
+    },
+    {
+      "abs_margin": 0.3705729010358113,
+      "game_id": 126493,
+      "proxy_teacher_score": 0.47666758614517857,
+      "sample": "discordant_confident",
+      "seat": 2,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.3705729010358113
+    },
+    {
+      "abs_margin": 0.3603320804442564,
+      "game_id": 126444,
+      "proxy_teacher_score": 0.4255178160273,
+      "sample": "discordant_confident",
+      "seat": 3,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.3603320804442564
+    },
+    {
+      "abs_margin": 0.3558937904650155,
+      "game_id": 126735,
+      "proxy_teacher_score": 0.4505609117256947,
+      "sample": "discordant_confident",
+      "seat": 3,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.3558937904650155
+    },
+    {
+      "abs_margin": 0.34023353162560743,
+      "game_id": 126269,
+      "proxy_teacher_score": 0.49579232839069054,
+      "sample": "discordant_confident",
+      "seat": 1,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.34023353162560743
+    },
+    {
+      "abs_margin": 0.2986322379476587,
+      "game_id": 127018,
+      "proxy_teacher_score": 0.46259122609977127,
+      "sample": "discordant_confident",
+      "seat": 2,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.2986322379476587
+    },
+    {
+      "abs_margin": 0.27804608626564153,
+      "game_id": 126634,
+      "proxy_teacher_score": 0.5282767672262105,
+      "sample": "discordant_confident",
+      "seat": 2,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.27804608626564153
+    },
+    {
+      "abs_margin": 0.2726355430304522,
+      "game_id": 126752,
+      "proxy_teacher_score": 0.4510689171791146,
+      "sample": "discordant_confident",
+      "seat": 1,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.2726355430304522
+    },
+    {
+      "abs_margin": 0.27132569811272117,
+      "game_id": 126906,
+      "proxy_teacher_score": 0.4360096518463909,
+      "sample": "discordant_confident",
+      "seat": 3,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.27132569811272117
+    },
+    {
+      "abs_margin": 0.2587108582962077,
+      "game_id": 126833,
+      "proxy_teacher_score": 0.303561724710955,
+      "sample": "discordant_confident",
+      "seat": 2,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.2587108582962077
+    },
+    {
+      "abs_margin": 0.2585050957290463,
+      "game_id": 126650,
+      "proxy_teacher_score": 0.4489880485157835,
+      "sample": "discordant_confident",
+      "seat": 2,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.2585050957290463
+    },
+    {
+      "abs_margin": 0.2584379585410752,
+      "game_id": 126792,
+      "proxy_teacher_score": 0.33868648005889973,
+      "sample": "discordant_confident",
+      "seat": 0,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.2584379585410752
+    },
+    {
+      "abs_margin": 0.2580449491237665,
+      "game_id": 126570,
+      "proxy_teacher_score": 0.4000002766924063,
+      "sample": "discordant_confident",
+      "seat": 2,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.2580449491237665
+    },
+    {
+      "abs_margin": 0.2531678904799875,
+      "game_id": 126769,
+      "proxy_teacher_score": 0.441550439599735,
+      "sample": "discordant_confident",
+      "seat": 0,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.2531678904799875
+    },
+    {
+      "abs_margin": 0.2507497743127895,
+      "game_id": 126953,
+      "proxy_teacher_score": 0.4638039908935597,
+      "sample": "discordant_confident",
+      "seat": 3,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.2507497743127895
+    },
+    {
+      "abs_margin": 0.2504892350778889,
+      "game_id": 126675,
+      "proxy_teacher_score": 0.46980309391079234,
+      "sample": "discordant_confident",
+      "seat": 2,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.2504892350778889
+    },
+    {
+      "abs_margin": 0.24668797083778204,
+      "game_id": 126283,
+      "proxy_teacher_score": 0.3854273196205186,
+      "sample": "discordant_confident",
+      "seat": 1,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.24668797083778204
+    },
+    {
+      "abs_margin": 0.24367711130332453,
+      "game_id": 126724,
+      "proxy_teacher_score": 0.292050548332045,
+      "sample": "discordant_confident",
+      "seat": 3,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.24367711130332453
+    },
+    {
+      "abs_margin": 0.2424600608154796,
+      "game_id": 126342,
+      "proxy_teacher_score": 0.24636182519380898,
+      "sample": "discordant_confident",
+      "seat": 1,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.2424600608154796
+    },
+    {
+      "abs_margin": 0.24230456428937563,
+      "game_id": 126528,
+      "proxy_teacher_score": 0.39053480017669956,
+      "sample": "discordant_confident",
+      "seat": 2,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.24230456428937563
+    },
+    {
+      "abs_margin": 0.2399727424005451,
+      "game_id": 126623,
+      "proxy_teacher_score": 0.4919558259839515,
+      "sample": "discordant_confident",
+      "seat": 1,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.2399727424005451
+    },
+    {
+      "abs_margin": 0.23849002273634784,
+      "game_id": 126303,
+      "proxy_teacher_score": 0.47648416458843773,
+      "sample": "discordant_confident",
+      "seat": 3,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.23849002273634784
+    },
+    {
+      "abs_margin": 0.23736036482387513,
+      "game_id": 126925,
+      "proxy_teacher_score": 0.4384230853935117,
+      "sample": "discordant_confident",
+      "seat": 1,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.23736036482387513
+    },
+    {
+      "abs_margin": 0.2366311711275167,
+      "game_id": 126698,
+      "proxy_teacher_score": 0.45125491431529774,
+      "sample": "discordant_confident",
+      "seat": 1,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.2366311711275167
+    },
+    {
+      "abs_margin": 0.23527761779785467,
+      "game_id": 126456,
+      "proxy_teacher_score": 0.3117013338848328,
+      "sample": "discordant_confident",
+      "seat": 3,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.23527761779785467
+    },
+    {
+      "abs_margin": 0.2345751067851906,
+      "game_id": 126962,
+      "proxy_teacher_score": 0.3721465929094197,
+      "sample": "discordant_confident",
+      "seat": 2,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.2345751067851906
+    },
+    {
+      "abs_margin": 0.23339136837191737,
+      "game_id": 126643,
+      "proxy_teacher_score": 0.43122857579242546,
+      "sample": "discordant_confident",
+      "seat": 1,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.23339136837191737
+    },
+    {
+      "abs_margin": 0.23215872049944192,
+      "game_id": 126688,
+      "proxy_teacher_score": 0.18465698709465272,
+      "sample": "discordant_confident",
+      "seat": 2,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.23215872049944192
+    },
+    {
+      "abs_margin": 0.23028025058097384,
+      "game_id": 126566,
+      "proxy_teacher_score": 0.44886670723129873,
+      "sample": "discordant_confident",
+      "seat": 1,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.23028025058097384
+    },
+    {
+      "abs_margin": 0.22693691025056872,
+      "game_id": 126916,
+      "proxy_teacher_score": 0.386007295542315,
+      "sample": "discordant_confident",
+      "seat": 0,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.22693691025056872
+    },
+    {
+      "abs_margin": 0.22611827793543768,
+      "game_id": 127004,
+      "proxy_teacher_score": 0.5139702695288185,
+      "sample": "discordant_confident",
+      "seat": 2,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.22611827793543768
+    },
+    {
+      "abs_margin": 0.22110353092455642,
+      "game_id": 126793,
+      "proxy_teacher_score": 0.4513378093126947,
+      "sample": "discordant_confident",
+      "seat": 3,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.22110353092455642
+    },
+    {
+      "abs_margin": 0.2175126491670193,
+      "game_id": 126318,
+      "proxy_teacher_score": 0.3992005704088915,
+      "sample": "discordant_confident",
+      "seat": 1,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.2175126491670193
+    },
+    {
+      "abs_margin": 0.2150412828933242,
+      "game_id": 126824,
+      "proxy_teacher_score": 0.443884226377281,
+      "sample": "discordant_confident",
+      "seat": 3,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.2150412828933242
+    },
+    {
+      "abs_margin": 0.21373886250796753,
+      "game_id": 126573,
+      "proxy_teacher_score": 0.4284980593065386,
+      "sample": "discordant_confident",
+      "seat": 3,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.21373886250796753
+    },
+    {
+      "abs_margin": 0.210489065283816,
+      "game_id": 126586,
+      "proxy_teacher_score": 0.4359354748775154,
+      "sample": "discordant_confident",
+      "seat": 1,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.210489065283816
+    },
+    {
+      "abs_margin": 0.2072095537664087,
+      "game_id": 126625,
+      "proxy_teacher_score": 0.4636267352873924,
+      "sample": "discordant_confident",
+      "seat": 1,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.2072095537664087
+    },
+    {
+      "abs_margin": 0.2023860426411137,
+      "game_id": 127014,
+      "proxy_teacher_score": 0.14027747716996494,
+      "sample": "discordant_confident",
+      "seat": 2,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.2023860426411137
+    },
+    {
+      "abs_margin": 0.2010106410593238,
+      "game_id": 126802,
+      "proxy_teacher_score": 0.47543022709095356,
+      "sample": "discordant_confident",
+      "seat": 3,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.2010106410593238
+    },
+    {
+      "abs_margin": 0.19741672664616533,
+      "game_id": 126934,
+      "proxy_teacher_score": 0.5533619512524941,
+      "sample": "discordant_confident",
+      "seat": 3,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.19741672664616533
+    },
+    {
+      "abs_margin": 0.19501144220816008,
+      "game_id": 126333,
+      "proxy_teacher_score": 0.3242327369408838,
+      "sample": "discordant_confident",
+      "seat": 0,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.19501144220816008
+    },
+    {
+      "abs_margin": 0.19336212436830819,
+      "game_id": 126500,
+      "proxy_teacher_score": 0.47273000983871655,
+      "sample": "discordant_confident",
+      "seat": 3,
+      "stage": 1,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.19336212436830819
+    },
+    {
+      "abs_margin": 0.18810590153984977,
+      "game_id": 126347,
+      "proxy_teacher_score": 0.5713342790057172,
+      "sample": "discordant_confident",
+      "seat": 3,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.18810590153984977
+    },
+    {
+      "abs_margin": 0.18598681742522272,
+      "game_id": 126628,
+      "proxy_teacher_score": 0.5083319187634152,
+      "sample": "discordant_confident",
+      "seat": 0,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.18598681742522272
+    },
+    {
+      "abs_margin": 0.1838287426951632,
+      "game_id": 126396,
+      "proxy_teacher_score": 0.1352169215153187,
+      "sample": "discordant_confident",
+      "seat": 2,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.1838287426951632
+    },
+    {
+      "abs_margin": 0.18172238529972268,
+      "game_id": 126706,
+      "proxy_teacher_score": 0.48956440717762173,
+      "sample": "discordant_confident",
+      "seat": 3,
+      "stage": 0,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.18172238529972268
+    },
+    {
+      "abs_margin": 0.18022820126254543,
+      "game_id": 126707,
+      "proxy_teacher_score": 0.6052245852968552,
+      "sample": "discordant_confident",
+      "seat": 3,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.18022820126254543
+    },
+    {
+      "abs_margin": 0.17750824333775478,
+      "game_id": 126376,
+      "proxy_teacher_score": 0.4421665880471195,
+      "sample": "discordant_confident",
+      "seat": 2,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.17750824333775478
+    },
+    {
+      "abs_margin": 0.1743681881133664,
+      "game_id": 126922,
+      "proxy_teacher_score": 0.5256192855493146,
+      "sample": "discordant_confident",
+      "seat": 0,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.1743681881133664
+    },
+    {
+      "abs_margin": 0.17122655508265755,
+      "game_id": 126633,
+      "proxy_teacher_score": 0.1540790020203465,
+      "sample": "discordant_confident",
+      "seat": 1,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": false,
+      "v27_keep": true,
+      "v27_margin": 0.17122655508265755
+    },
+    {
+      "abs_margin": 0.17084901852759143,
+      "game_id": 126278,
+      "proxy_teacher_score": 0.6742506023796806,
+      "sample": "discordant_confident",
+      "seat": 3,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.17084901852759143
+    },
+    {
+      "abs_margin": 0.170656091143915,
+      "game_id": 126759,
+      "proxy_teacher_score": 0.5670874540354559,
+      "sample": "discordant_confident",
+      "seat": 2,
+      "stage": 2,
+      "teacher_cutoff": 0.5,
+      "teacher_proxy_keep": true,
+      "v27_keep": false,
+      "v27_margin": -0.170656091143915
+    }
+  ],
+  "known_london_stages": [
+    7,
+    7,
+    6,
+    5,
+    4,
+    3,
+    2,
+    1
+  ],
+  "n_candidate_disagreement_stage_states": 229,
+  "n_discordant_enriched_groups": 128,
+  "n_random_groups": 256,
+  "no_teacher_action_used_as_training_label": true,
+  "policy_approved": false,
+  "random_game_ids": [
+    126000,
+    126255
+  ],
+  "random_groups": [
+    {
+      "game_id": 126000,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126001,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126002,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126003,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126004,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126005,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126006,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126007,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126008,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126009,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126010,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126011,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126012,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126013,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126014,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126015,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126016,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126017,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126018,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126019,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126020,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126021,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126022,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126023,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126024,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126025,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126026,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126027,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126028,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126029,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126030,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126031,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126032,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126033,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126034,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126035,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126036,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126037,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126038,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126039,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126040,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126041,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126042,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126043,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126044,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126045,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126046,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126047,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126048,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126049,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126050,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126051,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126052,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126053,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126054,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126055,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126056,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126057,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126058,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126059,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126060,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126061,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126062,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126063,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126064,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126065,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126066,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126067,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126068,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126069,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126070,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126071,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126072,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126073,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126074,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126075,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126076,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126077,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126078,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126079,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126080,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126081,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126082,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126083,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126084,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126085,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126086,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126087,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126088,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126089,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126090,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126091,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126092,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126093,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126094,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126095,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126096,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126097,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126098,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126099,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126100,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126101,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126102,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126103,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126104,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126105,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126106,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126107,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126108,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126109,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126110,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126111,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126112,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126113,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126114,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126115,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126116,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126117,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126118,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126119,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126120,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126121,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126122,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126123,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126124,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126125,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126126,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126127,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126128,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126129,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126130,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126131,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126132,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126133,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126134,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126135,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126136,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126137,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126138,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126139,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126140,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126141,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126142,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126143,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126144,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126145,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126146,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126147,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126148,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126149,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126150,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126151,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126152,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126153,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126154,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126155,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126156,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126157,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126158,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126159,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126160,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126161,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126162,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126163,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126164,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126165,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126166,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126167,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126168,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126169,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126170,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126171,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126172,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126173,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126174,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126175,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126176,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126177,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126178,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126179,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126180,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126181,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126182,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126183,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126184,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126185,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126186,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126187,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126188,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126189,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126190,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126191,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126192,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126193,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126194,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126195,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126196,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126197,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126198,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126199,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126200,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126201,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126202,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126203,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126204,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126205,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126206,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126207,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126208,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126209,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126210,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126211,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126212,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126213,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126214,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126215,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126216,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126217,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126218,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126219,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126220,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126221,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126222,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126223,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126224,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126225,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126226,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126227,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126228,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126229,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126230,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126231,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126232,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126233,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126234,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126235,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126236,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126237,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126238,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126239,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126240,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126241,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126242,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126243,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126244,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126245,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126246,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126247,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126248,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126249,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126250,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126251,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126252,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126253,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126254,
+      "sample": "unconditional_random",
+      "stage": null
+    },
+    {
+      "game_id": 126255,
+      "sample": "unconditional_random",
+      "stage": null
+    }
+  ],
+  "sample_64_near_and_64_far_margins": true,
+  "schema": "dack_v37_outcome_blind_three_strata_manifest_v1",
+  "selection_outcome_blind": true,
+  "source_99_variant": "one_key_34",
+  "status": "PASS",
+  "stratum_action_stage_counts": {
+    "discordant_boundary": {
+      "(0, 0)": 4,
+      "(0, 1)": 16,
+      "(1, 0)": 1,
+      "(1, 1)": 18,
+      "(2, 0)": 14,
+      "(2, 1)": 11
+    },
+    "discordant_confident": {
+      "(0, 0)": 2,
+      "(0, 1)": 19,
+      "(1, 1)": 24,
+      "(2, 0)": 7,
+      "(2, 1)": 12
+    }
+  },
+  "v13_is_proxy_NOT_original_v5": true,
+  "v33b_frozen_sha256": "3a93ecb0c62fd973a9d32c744bfb2fabdffcc8046e9ed9b7bfd9986bb2961c5a"
+}
