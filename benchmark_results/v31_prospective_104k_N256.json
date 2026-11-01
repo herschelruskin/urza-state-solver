@@ -1,0 +1,574 @@
+{
+  "all_games_independent_of_103k_model_and_99k_bottoming_audit": true,
+  "changed_decision_examples": [
+    {
+      "first_change_stage": 5,
+      "game_id": 104001,
+      "v27_bottom": [
+        "Talon Gates of Madara",
+        "Command Beacon",
+        "Ancient Tomb",
+        "Great Hall of the Citadel"
+      ],
+      "v27_keep_n": 3,
+      "v27_win_turn": 0,
+      "v31_bottom": [
+        "Talon Gates of Madara",
+        "Command Beacon",
+        "Ancient Tomb",
+        "Great Hall of the Citadel"
+      ],
+      "v31_keep_n": 1,
+      "v31_win_turn": 0
+    },
+    {
+      "first_change_stage": 4,
+      "game_id": 104015,
+      "v27_bottom": [
+        "Unwanted Remake",
+        "Portable Hole",
+        "Preston, the Vanisher"
+      ],
+      "v27_keep_n": 4,
+      "v27_win_turn": 0,
+      "v31_bottom": [
+        "Unwanted Remake",
+        "Portable Hole",
+        "Preston, the Vanisher"
+      ],
+      "v31_keep_n": 3,
+      "v31_win_turn": 2
+    },
+    {
+      "first_change_stage": 6,
+      "game_id": 104055,
+      "v27_bottom": [
+        "Jeweled Amulet",
+        "Orim's Chant",
+        "Silence",
+        "Thorn of Amethyst",
+        "Floating Shield"
+      ],
+      "v27_keep_n": 1,
+      "v27_win_turn": 0,
+      "v31_bottom": [
+        "Jeweled Amulet",
+        "Orim's Chant",
+        "Silence",
+        "Thorn of Amethyst",
+        "Floating Shield"
+      ],
+      "v31_keep_n": 2,
+      "v31_win_turn": 0
+    },
+    {
+      "first_change_stage": 0,
+      "game_id": 104056,
+      "v27_bottom": [],
+      "v27_keep_n": 7,
+      "v27_win_turn": 3,
+      "v31_bottom": [],
+      "v31_keep_n": 5,
+      "v31_win_turn": 3
+    },
+    {
+      "first_change_stage": 0,
+      "game_id": 104070,
+      "v27_bottom": [],
+      "v27_keep_n": 7,
+      "v27_win_turn": 0,
+      "v31_bottom": [],
+      "v31_keep_n": 7,
+      "v31_win_turn": 2
+    },
+    {
+      "first_change_stage": 2,
+      "game_id": 104072,
+      "v27_bottom": [
+        "Talon Gates of Madara"
+      ],
+      "v27_keep_n": 6,
+      "v27_win_turn": 0,
+      "v31_bottom": [
+        "Talon Gates of Madara"
+      ],
+      "v31_keep_n": 3,
+      "v31_win_turn": 0
+    },
+    {
+      "first_change_stage": 6,
+      "game_id": 104099,
+      "v27_bottom": [
+        "Gemstone Caverns",
+        "Lion's Eye Diamond",
+        "Lotus Petal",
+        "Soul Partition",
+        "The Mycosynth Gardens"
+      ],
+      "v27_keep_n": 1,
+      "v27_win_turn": 0,
+      "v31_bottom": [
+        "Gemstone Caverns",
+        "Lion's Eye Diamond",
+        "Lotus Petal",
+        "Soul Partition",
+        "The Mycosynth Gardens"
+      ],
+      "v31_keep_n": 2,
+      "v31_win_turn": 0
+    },
+    {
+      "first_change_stage": 0,
+      "game_id": 104107,
+      "v27_bottom": [],
+      "v27_keep_n": 7,
+      "v27_win_turn": 0,
+      "v31_bottom": [],
+      "v31_keep_n": 6,
+      "v31_win_turn": 3
+    },
+    {
+      "first_change_stage": 4,
+      "game_id": 104109,
+      "v27_bottom": [
+        "Plains",
+        "Gemstone Caverns",
+        "Paladin Class"
+      ],
+      "v27_keep_n": 1,
+      "v27_win_turn": 0,
+      "v31_bottom": [
+        "Plains",
+        "Gemstone Caverns",
+        "Paladin Class"
+      ],
+      "v31_keep_n": 4,
+      "v31_win_turn": 0
+    },
+    {
+      "first_change_stage": 6,
+      "game_id": 104115,
+      "v27_bottom": [
+        "Eldrazi Confluence",
+        "Cavern of Souls",
+        "Mana Tithe",
+        "Boonweaver Giant",
+        "Gift of Immortality"
+      ],
+      "v27_keep_n": 1,
+      "v27_win_turn": 0,
+      "v31_bottom": [
+        "Eldrazi Confluence",
+        "Cavern of Souls",
+        "Mana Tithe",
+        "Boonweaver Giant",
+        "Gift of Immortality"
+      ],
+      "v31_keep_n": 2,
+      "v31_win_turn": 0
+    },
+    {
+      "first_change_stage": 2,
+      "game_id": 104120,
+      "v27_bottom": [
+        "Floating Shield"
+      ],
+      "v27_keep_n": 6,
+      "v27_win_turn": 3,
+      "v31_bottom": [
+        "Floating Shield"
+      ],
+      "v31_keep_n": 4,
+      "v31_win_turn": 2
+    },
+    {
+      "first_change_stage": 2,
+      "game_id": 104126,
+      "v27_bottom": [
+        "Roaming Throne"
+      ],
+      "v27_keep_n": 6,
+      "v27_win_turn": 0,
+      "v31_bottom": [
+        "Roaming Throne"
+      ],
+      "v31_keep_n": 5,
+      "v31_win_turn": 1
+    },
+    {
+      "first_change_stage": 3,
+      "game_id": 104127,
+      "v27_bottom": [
+        "Vexing Bauble",
+        "Sheltered by Ghosts"
+      ],
+      "v27_keep_n": 5,
+      "v27_win_turn": 2,
+      "v31_bottom": [
+        "Vexing Bauble",
+        "Sheltered by Ghosts"
+      ],
+      "v31_keep_n": 2,
+      "v31_win_turn": 0
+    },
+    {
+      "first_change_stage": 3,
+      "game_id": 104129,
+      "v27_bottom": [
+        "Orim's Chant",
+        "Preston, the Vanisher"
+      ],
+      "v27_keep_n": 3,
+      "v27_win_turn": 0,
+      "v31_bottom": [
+        "Orim's Chant",
+        "Preston, the Vanisher"
+      ],
+      "v31_keep_n": 5,
+      "v31_win_turn": 3
+    },
+    {
+      "first_change_stage": 0,
+      "game_id": 104146,
+      "v27_bottom": [],
+      "v27_keep_n": 7,
+      "v27_win_turn": 2,
+      "v31_bottom": [],
+      "v31_keep_n": 4,
+      "v31_win_turn": 3
+    },
+    {
+      "first_change_stage": 6,
+      "game_id": 104148,
+      "v27_bottom": [
+        "Krark-Clan Ironworks",
+        "Hardlight Containment",
+        "March of Otherworldly Light",
+        "Super State",
+        "Razorgrass Ambush"
+      ],
+      "v27_keep_n": 1,
+      "v27_win_turn": 0,
+      "v31_bottom": [
+        "Krark-Clan Ironworks",
+        "Hardlight Containment",
+        "March of Otherworldly Light",
+        "Super State",
+        "Razorgrass Ambush"
+      ],
+      "v31_keep_n": 2,
+      "v31_win_turn": 0
+    },
+    {
+      "first_change_stage": 3,
+      "game_id": 104165,
+      "v27_bottom": [
+        "Homeward Path",
+        "Soul Partition"
+      ],
+      "v27_keep_n": 5,
+      "v27_win_turn": 0,
+      "v31_bottom": [
+        "Homeward Path",
+        "Soul Partition"
+      ],
+      "v31_keep_n": 4,
+      "v31_win_turn": 3
+    },
+    {
+      "first_change_stage": 6,
+      "game_id": 104170,
+      "v27_bottom": [
+        "Twinblade Blessing",
+        "Paladin Class",
+        "Hardlight Containment",
+        "Minimus Containment",
+        "Silence"
+      ],
+      "v27_keep_n": 2,
+      "v27_win_turn": 0,
+      "v31_bottom": [
+        "Twinblade Blessing",
+        "Paladin Class",
+        "Hardlight Containment",
+        "Minimus Containment",
+        "Silence"
+      ],
+      "v31_keep_n": 1,
+      "v31_win_turn": 0
+    },
+    {
+      "first_change_stage": 6,
+      "game_id": 104171,
+      "v27_bottom": [
+        "Homeward Path",
+        "Plains",
+        "Preston, the Vanisher",
+        "The Mind Stone",
+        "Portable Hole"
+      ],
+      "v27_keep_n": 1,
+      "v27_win_turn": 0,
+      "v31_bottom": [
+        "Homeward Path",
+        "Plains",
+        "Preston, the Vanisher",
+        "The Mind Stone",
+        "Portable Hole"
+      ],
+      "v31_keep_n": 2,
+      "v31_win_turn": 0
+    },
+    {
+      "first_change_stage": 3,
+      "game_id": 104181,
+      "v27_bottom": [
+        "March of Otherworldly Light",
+        "Soul Partition"
+      ],
+      "v27_keep_n": 5,
+      "v27_win_turn": 0,
+      "v31_bottom": [
+        "March of Otherworldly Light",
+        "Soul Partition"
+      ],
+      "v31_keep_n": 3,
+      "v31_win_turn": 0
+    },
+    {
+      "first_change_stage": 6,
+      "game_id": 104183,
+      "v27_bottom": [
+        "Homeward Path",
+        "Touch the Spirit Realm",
+        "Chrome Mox",
+        "Plains",
+        "Paladin Class"
+      ],
+      "v27_keep_n": 1,
+      "v27_win_turn": 0,
+      "v31_bottom": [
+        "Homeward Path",
+        "Touch the Spirit Realm",
+        "Chrome Mox",
+        "Plains",
+        "Paladin Class"
+      ],
+      "v31_keep_n": 2,
+      "v31_win_turn": 0
+    },
+    {
+      "first_change_stage": 2,
+      "game_id": 104187,
+      "v27_bottom": [
+        "Deafening Silence"
+      ],
+      "v27_keep_n": 6,
+      "v27_win_turn": 2,
+      "v31_bottom": [
+        "Deafening Silence"
+      ],
+      "v31_keep_n": 2,
+      "v31_win_turn": 0
+    },
+    {
+      "first_change_stage": 3,
+      "game_id": 104188,
+      "v27_bottom": [
+        "Erode",
+        "Roaming Throne"
+      ],
+      "v27_keep_n": 5,
+      "v27_win_turn": 3,
+      "v31_bottom": [
+        "Erode",
+        "Roaming Throne"
+      ],
+      "v31_keep_n": 4,
+      "v31_win_turn": 3
+    },
+    {
+      "first_change_stage": 1,
+      "game_id": 104192,
+      "v27_bottom": [],
+      "v27_keep_n": 7,
+      "v27_win_turn": 3,
+      "v31_bottom": [],
+      "v31_keep_n": 5,
+      "v31_win_turn": 2
+    },
+    {
+      "first_change_stage": 6,
+      "game_id": 104202,
+      "v27_bottom": [
+        "Scroll Rack",
+        "Urza's Cave",
+        "Mantle of the Ancients",
+        "Defense Grid",
+        "Twinblade Blessing"
+      ],
+      "v27_keep_n": 2,
+      "v27_win_turn": 0,
+      "v31_bottom": [
+        "Scroll Rack",
+        "Urza's Cave",
+        "Mantle of the Ancients",
+        "Defense Grid",
+        "Twinblade Blessing"
+      ],
+      "v31_keep_n": 1,
+      "v31_win_turn": 0
+    },
+    {
+      "first_change_stage": 0,
+      "game_id": 104220,
+      "v27_bottom": [],
+      "v27_keep_n": 7,
+      "v27_win_turn": 3,
+      "v31_bottom": [],
+      "v31_keep_n": 2,
+      "v31_win_turn": 0
+    },
+    {
+      "first_change_stage": 3,
+      "game_id": 104226,
+      "v27_bottom": [
+        "Petrified Hamlet",
+        "Erode"
+      ],
+      "v27_keep_n": 5,
+      "v27_win_turn": 3,
+      "v31_bottom": [
+        "Petrified Hamlet",
+        "Erode"
+      ],
+      "v31_keep_n": 3,
+      "v31_win_turn": 0
+    },
+    {
+      "first_change_stage": 1,
+      "game_id": 104230,
+      "v27_bottom": [],
+      "v27_keep_n": 7,
+      "v27_win_turn": 0,
+      "v31_bottom": [],
+      "v31_keep_n": 1,
+      "v31_win_turn": 0
+    },
+    {
+      "first_change_stage": 3,
+      "game_id": 104249,
+      "v27_bottom": [
+        "Minimus Containment",
+        "Feather of Flight"
+      ],
+      "v27_keep_n": 5,
+      "v27_win_turn": 3,
+      "v31_bottom": [
+        "Minimus Containment",
+        "Feather of Flight"
+      ],
+      "v31_keep_n": 3,
+      "v31_win_turn": 0
+    },
+    {
+      "first_change_stage": 2,
+      "game_id": 104252,
+      "v27_bottom": [
+        "Minimus Containment"
+      ],
+      "v27_keep_n": 6,
+      "v27_win_turn": 3,
+      "v31_bottom": [
+        "Minimus Containment"
+      ],
+      "v31_keep_n": 3,
+      "v31_win_turn": 0
+    },
+    {
+      "first_change_stage": 1,
+      "game_id": 104255,
+      "v27_bottom": [],
+      "v27_keep_n": 7,
+      "v27_win_turn": 3,
+      "v31_bottom": [],
+      "v31_keep_n": 6,
+      "v31_win_turn": 2
+    }
+  ],
+  "decision_changes": {
+    "different_final_keep_depth": 30,
+    "same_depth_different_final_kept_hand": 1,
+    "same_final_hand": 225,
+    "some_London_decision_change": 31
+  },
+  "goldfish_not_multiplayer_winrate": true,
+  "limitation": "Student bottom selector unchanged; v31 modifies only frozen v27's keep threshold using actual 103k Q advantage, but N256 alone cannot establish equivalence. This is not multiplayer cEDH win probability.",
+  "metrics": {
+    "v27_frozen": {
+      "T1": 11,
+      "T2": 109,
+      "T3": 184,
+      "mean_keep_n": 5.37109375,
+      "n": 256,
+      "simulation_seconds": 92.6649
+    },
+    "v31_action_regret": {
+      "T1": 12,
+      "T2": 112,
+      "T3": 184,
+      "mean_keep_n": 5.22265625,
+      "n": 256,
+      "simulation_seconds": 83.316
+    }
+  },
+  "model_approved": false,
+  "model_sha256": {
+    "models/dack_v27_T2_only_continuations_EXPERIMENTAL.json": "4166c2045d66b08f0943900a2d68ec901d7048aca6de057695fc84dee883097b",
+    "models/dack_v27_expanded_T2_only_value_EXPERIMENTAL.json": "a01f46260164342f2f0f6ec15766b341338baa27c51dcf0a3ec3f164492e3134",
+    "models/dack_v31_Q_advantage_residual_EXPERIMENTAL.json": "3cb2b9923adf4364a355f2a3cb5ba0e39e9468c18451a0987ace5ca4dd561ae1",
+    "models/v14_curve/v14_teacher_groups_128.json": "19fdbf300afc1e4545b81767f8fbf3bbe6ebd7b33ad139e2aa9231e3215df8ff"
+  },
+  "n_independent_physical_game_ids": 256,
+  "no_prospective_train_or_model_selection": true,
+  "paired_v31_minus_v27": {
+    "T1": {
+      "difference_pp": 0.390625,
+      "exploratory_exact_mcnemar_p": 1.0,
+      "gains": 1,
+      "losses": 0,
+      "paired_bootstrap_95ci_pp": [
+        0.0,
+        1.171875
+      ]
+    },
+    "T2": {
+      "difference_pp": 1.171875,
+      "exploratory_exact_mcnemar_p": 0.5078125,
+      "gains": 6,
+      "losses": 3,
+      "paired_bootstrap_95ci_pp": [
+        -1.171875,
+        3.515625
+      ]
+    },
+    "T3": {
+      "difference_pp": 0.0,
+      "exploratory_exact_mcnemar_p": 1.0,
+      "gains": 6,
+      "losses": 6,
+      "paired_bootstrap_95ci_pp": [
+        -2.734375,
+        2.734375
+      ]
+    }
+  },
+  "physical_ids": [
+    104000,
+    104255
+  ],
+  "primary_outcome": "cumulative Dack deployment by T2",
+  "schema": "dack_v31_prospective_104k_N256_frozen_v27_vs_regret_student",
+  "speed_ratio_v27_over_v31": 1.1122101397090596,
+  "status": "PASS"
+}
