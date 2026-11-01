@@ -4,6 +4,7 @@ on:
     branches: [dack-v26-trace-repair-20261031]
     paths:
       - '.github/workflows/dack_v26_loss_trace.yml'
+      - 'dack_simulator/validation/trace_v25_96k_loss_v26.py'
   workflow_dispatch:
 permissions:
   contents: write
