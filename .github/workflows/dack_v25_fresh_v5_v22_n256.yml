@@ -4,6 +4,8 @@ on:
     branches: [dack-candidate-v25-fresh-reference-20261031]
     paths:
       - '.github/workflows/dack_v25_fresh_v5_v22_n256.yml'
+      - 'dack_simulator/validation/compare_v25_fresh_v5_v22.py'
+      - 'dack_simulator/validation/pool_v25_fresh_v5_v22.py'
   workflow_dispatch:
 permissions:
   contents: write
