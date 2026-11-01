@@ -1,0 +1,27 @@
+name: DACK v46 read-only old 151k v5-v43 early-conflict transfer diagnostic
+on:
+  push:
+    branches: [dack-v46-first-two-sevens-physical-Q2-20261101]
+    paths: ['.github/workflows/dack_v46_old151k_early_conflict_transfer.yml']
+permissions:
+  contents: write
+jobs:
+  readonly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v46-first-two-sevens-physical-Q2-20261101
+      - name: Measure early actions fixed by physical v46 on previously inspected real v5-v43 conflicts
+        run: |
+          python -m py_compile dack_simulator/validation/v46_retrospective_151k_first_conflict_transfer.py
+          python -u dack_simulator/validation/v46_retrospective_151k_first_conflict_transfer.py
+      - name: Archive diagnostic without promotion claims
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f benchmark_results/v46_old_151k_first_conflict_early_transfer_audit.json
+          git commit -m "Archive v46 physical early-score actions on consumed true-v5/v43 151k early conflicts"
+          git pull --rebase origin dack-v46-first-two-sevens-physical-Q2-20261101
+          git push origin HEAD:dack-v46-first-two-sevens-physical-Q2-20261101
