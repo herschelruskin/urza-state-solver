@@ -1,0 +1,39 @@
+{
+  "T2_delta_pp": 3.90625,
+  "T2_gains": 12,
+  "T2_losses": 7,
+  "both_mulligan_beams_removed": true,
+  "games_with_different_keep_depth": 63,
+  "ids": [
+    87000,
+    87127
+  ],
+  "n_independent_game_seeds": 128,
+  "no_model_promotion": true,
+  "paired_exploratory_normal_95ci_pp": [
+    -2.7600105862831583,
+    10.572510586283158
+  ],
+  "same_bottom_selection_model": true,
+  "same_physical_shuffle_seat_strict_gameplay": true,
+  "schema": "dack_v22_value_DP_paired_128_independent_games",
+  "status": "PASS",
+  "student_runtime_ratio": 0.9754503566436464,
+  "v14_128": {
+    "T1": 4,
+    "T2": 49,
+    "T3": 93,
+    "average_kept_hand_size": 5.1484375,
+    "n": 128,
+    "sum_gameplay_seconds": 44.7323
+  },
+  "v22_real_keep_DP": {
+    "T1": 5,
+    "T2": 54,
+    "T3": 105,
+    "average_kept_hand_size": 5.796875,
+    "n": 128,
+    "sum_gameplay_seconds": 45.8581
+  },
+  "warning": "Learned goldfish deployment through T3 only; no four-player cEDH win rate. Models still unapproved."
+}
