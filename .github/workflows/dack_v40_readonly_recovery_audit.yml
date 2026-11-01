@@ -1,0 +1,31 @@
+name: DACK v40 read-only v38-v39 evidence recovery and source replay
+on:
+  push:
+    branches: [dack-v40-true-disagreement-reassessment-20261101]
+    paths: ['.github/workflows/dack_v40_readonly_recovery_audit.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Python static validation; no new game physics
+        run: |
+          python -m py_compile dack_simulator/validation/v40_prior_artifact_readonly_audit.py
+          test -f DACK_V40_RECOVERY_REASSESSMENT_AND_NEXT_PROTOCOL_DRAFT.md
+      - name: Check frozen v38 and v39 census counts and correlated utility algebra
+        run: python -u -m dack_simulator.validation.v40_prior_artifact_readonly_audit
+      - name: Recompute original v39 grouped bootstrap on archived 28 source shards only
+        run: python -u -m dack_simulator.validation.v40_prior_artifact_readonly_audit --repool
+      - name: Guarantee all audit stages were read-only
+        run: |
+          test -z "$(git status --porcelain)"
+          echo DACK_V40_READONLY_ARCHIVE_REPLAY_PASS
