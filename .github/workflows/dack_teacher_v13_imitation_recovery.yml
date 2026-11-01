@@ -1,0 +1,37 @@
+name: DACK v13 recover sealed teacher imitation report without resimulating teacher
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_teacher_v13_imitation_recovery.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 41256642223
+          github-token: ${{ github.token }}
+          pattern: teacher-test-v13-*
+          merge-multiple: true
+          path: datasets/teacher_test_v13/
+      - name: Evaluate frozen v13 model against all eight prior independent v5 teacher groups
+        run: |
+          python dack_simulator/validation/evaluate_teacher_distillation_v13.py \
+            --labels datasets/teacher_test_v13/*.jsonl.gz \
+            --model models/dack_teacher_distill_v13_EXPERIMENTAL.json \
+            --out benchmark_results/teacher_distill_v13_independent_accuracy.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recovered-v13-sealed-imitation
+          path: benchmark_results/teacher_distill_v13_independent_accuracy.json
+          retention-days: 14
