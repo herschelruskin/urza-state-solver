@@ -1,0 +1,302 @@
+{
+  "actual_beam160": true,
+  "limits": [
+    "8 paired futures per hand; uncertainty near zero",
+    "Selection under frozen v27 natural kept hands, not v5",
+    "v27 Qkeep is off-policy when used to pick other bottoms",
+    "Chance coupling not perfect across action paths",
+    "T2 primary, T1/T3 safeguards, not multiplayer cEDH"
+  ],
+  "methods": [
+    "v14_frozen",
+    "v27_Qkeep",
+    "v18_top3",
+    "analytic_t2"
+  ],
+  "model_fitting": false,
+  "no_110k_training": true,
+  "not_full_policy_deployment": true,
+  "primary_predeclared": "v27_Qkeep vs v14_frozen",
+  "prior_bottom_v18_is_oob_beyond_top3": false,
+  "schema": "dack_v33b_existing_bottom_ranker_conditional_screen",
+  "source_ids": {
+    "train": [
+      112000,
+      112127
+    ],
+    "validation": [
+      113000,
+      113063
+    ]
+  },
+  "source_sha": {
+    "models/dack_v18_paired_candidate_utility_EXPERIMENTAL.json": "21ccd91152f341bd2abb558ed2dfec47e2d11639519b311fec5bfa5ffaf94db6",
+    "models/dack_v27_T2_only_continuations_EXPERIMENTAL.json": "4166c2045d66b08f0943900a2d68ec901d7048aca6de057695fc84dee883097b",
+    "models/dack_v27_expanded_T2_only_value_EXPERIMENTAL.json": "a01f46260164342f2f0f6ec15766b341338baa27c51dcf0a3ec3f164492e3134",
+    "models/v14_curve/v14_teacher_groups_128.json": "19fdbf300afc1e4545b81767f8fbf3bbe6ebd7b33ad139e2aa9231e3215df8ff"
+  },
+  "splits": {
+    "train": {
+      "bottom_eligible_groups": 77,
+      "metrics": {
+        "analytic_t2": {
+          "T1": {
+            "changed_bottom_groups": 33,
+            "changed_fraction": 0.42857142857142855,
+            "mean_delta_pp": -0.16233766233766234,
+            "negative_group_differences": 1,
+            "observed_group_ties": 76,
+            "paired_group_bootstrap_95ci_pp": [
+              -0.487012987012987,
+              0.0
+            ],
+            "physical_groups": 77,
+            "positive_group_differences": 0
+          },
+          "T2": {
+            "changed_bottom_groups": 33,
+            "changed_fraction": 0.42857142857142855,
+            "mean_delta_pp": 7.792207792207792,
+            "negative_group_differences": 1,
+            "observed_group_ties": 64,
+            "paired_group_bootstrap_95ci_pp": [
+              3.409090909090909,
+              12.987012987012987
+            ],
+            "physical_groups": 77,
+            "positive_group_differences": 12
+          },
+          "T3": {
+            "changed_bottom_groups": 33,
+            "changed_fraction": 0.42857142857142855,
+            "mean_delta_pp": 5.032467532467533,
+            "negative_group_differences": 3,
+            "observed_group_ties": 59,
+            "paired_group_bootstrap_95ci_pp": [
+              1.7857142857142858,
+              8.603896103896103
+            ],
+            "physical_groups": 77,
+            "positive_group_differences": 15
+          }
+        },
+        "v18_top3": {
+          "T1": {
+            "changed_bottom_groups": 37,
+            "changed_fraction": 0.4805194805194805,
+            "mean_delta_pp": 0.16233766233766234,
+            "negative_group_differences": 1,
+            "observed_group_ties": 74,
+            "paired_group_bootstrap_95ci_pp": [
+              -0.3246753246753247,
+              0.6493506493506493
+            ],
+            "physical_groups": 77,
+            "positive_group_differences": 2
+          },
+          "T2": {
+            "changed_bottom_groups": 37,
+            "changed_fraction": 0.4805194805194805,
+            "mean_delta_pp": 3.5714285714285716,
+            "negative_group_differences": 4,
+            "observed_group_ties": 65,
+            "paired_group_bootstrap_95ci_pp": [
+              0.16233766233766234,
+              7.467532467532467
+            ],
+            "physical_groups": 77,
+            "positive_group_differences": 8
+          },
+          "T3": {
+            "changed_bottom_groups": 37,
+            "changed_fraction": 0.4805194805194805,
+            "mean_delta_pp": -1.1363636363636365,
+            "negative_group_differences": 10,
+            "observed_group_ties": 59,
+            "paired_group_bootstrap_95ci_pp": [
+              -4.707792207792208,
+              2.435064935064935
+            ],
+            "physical_groups": 77,
+            "positive_group_differences": 8
+          }
+        },
+        "v27_Qkeep": {
+          "T1": {
+            "changed_bottom_groups": 50,
+            "changed_fraction": 0.6493506493506493,
+            "mean_delta_pp": 0.16233766233766234,
+            "negative_group_differences": 0,
+            "observed_group_ties": 76,
+            "paired_group_bootstrap_95ci_pp": [
+              0.0,
+              0.487012987012987
+            ],
+            "physical_groups": 77,
+            "positive_group_differences": 1
+          },
+          "T2": {
+            "changed_bottom_groups": 50,
+            "changed_fraction": 0.6493506493506493,
+            "mean_delta_pp": 7.142857142857143,
+            "negative_group_differences": 4,
+            "observed_group_ties": 60,
+            "paired_group_bootstrap_95ci_pp": [
+              1.948051948051948,
+              12.824675324675324
+            ],
+            "physical_groups": 77,
+            "positive_group_differences": 13
+          },
+          "T3": {
+            "changed_bottom_groups": 50,
+            "changed_fraction": 0.6493506493506493,
+            "mean_delta_pp": 4.707792207792208,
+            "negative_group_differences": 7,
+            "observed_group_ties": 52,
+            "paired_group_bootstrap_95ci_pp": [
+              0.974025974025974,
+              8.766233766233766
+            ],
+            "physical_groups": 77,
+            "positive_group_differences": 18
+          }
+        }
+      },
+      "no_bottom_groups": 51,
+      "total_groups": 128
+    },
+    "validation": {
+      "bottom_eligible_groups": 45,
+      "metrics": {
+        "analytic_t2": {
+          "T1": {
+            "changed_bottom_groups": 15,
+            "changed_fraction": 0.3333333333333333,
+            "mean_delta_pp": 0.0,
+            "negative_group_differences": 0,
+            "observed_group_ties": 45,
+            "paired_group_bootstrap_95ci_pp": [
+              0.0,
+              0.0
+            ],
+            "physical_groups": 45,
+            "positive_group_differences": 0
+          },
+          "T2": {
+            "changed_bottom_groups": 15,
+            "changed_fraction": 0.3333333333333333,
+            "mean_delta_pp": 1.3888888888888888,
+            "negative_group_differences": 1,
+            "observed_group_ties": 39,
+            "paired_group_bootstrap_95ci_pp": [
+              0.0,
+              3.0555555555555554
+            ],
+            "physical_groups": 45,
+            "positive_group_differences": 5
+          },
+          "T3": {
+            "changed_bottom_groups": 15,
+            "changed_fraction": 0.3333333333333333,
+            "mean_delta_pp": 2.7777777777777777,
+            "negative_group_differences": 2,
+            "observed_group_ties": 36,
+            "paired_group_bootstrap_95ci_pp": [
+              -0.2777777777777778,
+              6.111111111111111
+            ],
+            "physical_groups": 45,
+            "positive_group_differences": 7
+          }
+        },
+        "v18_top3": {
+          "T1": {
+            "changed_bottom_groups": 16,
+            "changed_fraction": 0.35555555555555557,
+            "mean_delta_pp": 0.0,
+            "negative_group_differences": 0,
+            "observed_group_ties": 45,
+            "paired_group_bootstrap_95ci_pp": [
+              0.0,
+              0.0
+            ],
+            "physical_groups": 45,
+            "positive_group_differences": 0
+          },
+          "T2": {
+            "changed_bottom_groups": 16,
+            "changed_fraction": 0.35555555555555557,
+            "mean_delta_pp": -0.8333333333333334,
+            "negative_group_differences": 1,
+            "observed_group_ties": 43,
+            "paired_group_bootstrap_95ci_pp": [
+              -3.3333333333333335,
+              0.8333333333333334
+            ],
+            "physical_groups": 45,
+            "positive_group_differences": 1
+          },
+          "T3": {
+            "changed_bottom_groups": 16,
+            "changed_fraction": 0.35555555555555557,
+            "mean_delta_pp": 0.0,
+            "negative_group_differences": 1,
+            "observed_group_ties": 41,
+            "paired_group_bootstrap_95ci_pp": [
+              -2.7777777777777777,
+              2.2222222222222223
+            ],
+            "physical_groups": 45,
+            "positive_group_differences": 3
+          }
+        },
+        "v27_Qkeep": {
+          "T1": {
+            "changed_bottom_groups": 27,
+            "changed_fraction": 0.6,
+            "mean_delta_pp": 0.0,
+            "negative_group_differences": 0,
+            "observed_group_ties": 45,
+            "paired_group_bootstrap_95ci_pp": [
+              0.0,
+              0.0
+            ],
+            "physical_groups": 45,
+            "positive_group_differences": 0
+          },
+          "T2": {
+            "changed_bottom_groups": 27,
+            "changed_fraction": 0.6,
+            "mean_delta_pp": 0.5555555555555556,
+            "negative_group_differences": 3,
+            "observed_group_ties": 35,
+            "paired_group_bootstrap_95ci_pp": [
+              -5.0,
+              4.722222222222222
+            ],
+            "physical_groups": 45,
+            "positive_group_differences": 7
+          },
+          "T3": {
+            "changed_bottom_groups": 27,
+            "changed_fraction": 0.6,
+            "mean_delta_pp": 2.7777777777777777,
+            "negative_group_differences": 3,
+            "observed_group_ties": 34,
+            "paired_group_bootstrap_95ci_pp": [
+              -2.5,
+              8.333333333333334
+            ],
+            "physical_groups": 45,
+            "positive_group_differences": 8
+          }
+        }
+      },
+      "no_bottom_groups": 19,
+      "total_groups": 64
+    }
+  },
+  "status": "PASS",
+  "winner_selection_is_not_training": true
+}
