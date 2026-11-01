@@ -1,0 +1,89 @@
+name: DACK v11 corrective model-bound London DP for all nine variants
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v11_corrective_dp.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  table:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: one_key_34
+          - variant: staff_plains_35
+          - variant: mindstone_plains_35
+          - variant: everflow_plains_35
+          - variant: coalition_plains_35
+          - variant: lens_plains_35
+          - variant: amulet_plains_35
+          - variant: implements_plains_35
+          - variant: basalt_plains_35
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          python -u dack_simulator/validation/derive_learned_london_dp_v8.py \
+            --model models/dack_v11_corrective_EXPERIMENTAL.json \
+            --variant ${{ matrix.variant }} --samples 64 --start 51000 \
+            --out models/v11_dp/dack_london_v8_dp_${{ matrix.variant }}.json
+      - name: Verify table is bound to V11 model not V10
+        run: |
+          python - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          m=json.loads(Path('models/dack_v11_corrective_EXPERIMENTAL.json').read_text())
+          sha=hashlib.sha256(json.dumps(m,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+          fs=list(Path('models/v11_dp').glob('*.json'))
+          assert len(fs)==1
+          table=json.loads(fs[0].read_text())
+          assert table['model_sha256']==sha
+          assert table['samples_per_seat_per_keep_n']==64
+          print('V11_MODEL_DP_PROVENANCE_PASS',table['variant'],flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v11-dp-${{ matrix.variant }}
+          path: models/v11_dp/*.json
+          retention-days: 14
+  pool:
+    needs: table
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v11-dp-*
+          merge-multiple: true
+          path: models/v11_dp/
+      - name: Verify all nine per-seat tables pass frozen learned-policy audit
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          import dack_paired_counterfactual_v8_learned_london_20261031 as p
+          assert len(list(Path('models/v11_dp').glob('*.json')))==9
+          audit=p.audit('models/dack_v11_corrective_EXPERIMENTAL.json',
+                         'models/v11_dp',allow_diagnostic=True)
+          assert audit['mulligan_beam']==0 and audit['gameplay_beam']==160
+          assert p.MODEL['deployed_policy_approved'] is False
+          print('ALL_V11_CONTINUATIONS_VALIDATED_UNAPPROVED',audit['policy_hash'],flush=True)
+          PY
+      - name: Archive v11 thresholds separately from v10 source-model thresholds
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f models/v11_dp/
+          git commit -m "Archive corrective V11 model-bound seat-specific London continuation tables"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
