@@ -31,7 +31,7 @@ def features(seven,unknown,seat,stage,q,old_C):
     assert stage in (0,1)
     assert len(seven)==7 and len(unknown)==92
     cand=finalists(seven,7,unknown)
-    assert len(cand)==1 and tuple(cand[0]["hand"])==tuple(seven)
+    assert len(cand)==1 and Counter(cand[0]["hand"])==Counter(seven)
     assert len(cand[0]["bottom"])==0
     x=f.extract(seven,seven,(),Counter(unknown),seat,7,stage,
                 cand[0]["struct_rank"],0)
