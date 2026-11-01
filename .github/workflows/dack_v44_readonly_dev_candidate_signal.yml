@@ -1,0 +1,32 @@
+name: DACK v44 readonly physical candidate T2 equivalence signal audit
+on:
+  push:
+    branches: [dack-v44-physical-candidate-values-20261101]
+    paths:
+      - '.github/workflows/dack_v44_readonly_dev_candidate_signal.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  signal_audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v44-physical-candidate-values-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Inspect all original legal alternative physical outcomes without fitting
+        run: |
+          python -m py_compile dack_simulator/validation/v44_readonly_dev_physical_signal.py
+          python -u dack_simulator/validation/v44_readonly_dev_physical_signal.py
+      - name: Archive unbiased source sample counts and descriptive equivalence audit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v44_154k_dev_candidate_signal_equivalence_audit.json
+          git commit -m "Archive read-only source evidence of v44 T2-equivalent bottoms and real learnable candidate-value spread"
+          git pull --rebase origin dack-v44-physical-candidate-values-20261101
+          git push origin HEAD:dack-v44-physical-candidate-values-20261101
