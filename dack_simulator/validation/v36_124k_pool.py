@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """v36 independent 124k validation of ONE precommitted policy.
 
-No refit. 128 independent random game IDs, each actual stage0,1,2,
+No refit. 256 independent random game IDs, each actual stage0,1,2,
 12 truly shuffled unknown-92 beam160 game futures per stage.
 Separately 4 seats×3 stages×64 blind full99 Qmull futures under
 EXACT frozen v27 future keep and v33b bottom.
@@ -31,7 +31,7 @@ def load(K,C):
     model=modelrun.read_model(json.loads(raw))
     sha=hashlib.sha256(raw).hexdigest()
     files=sorted(glob.glob(K));cfiles=sorted(glob.glob(C))
-    assert len(files)==32 and len(cfiles)==12,("incomplete 124k",len(files),len(cfiles))
+    assert len(files)==64 and len(cfiles)==12,("incomplete 124k",len(files),len(cfiles))
     groups={}
     for file in files:
         with gzip.open(file,"rt") as f:d=json.load(f)
