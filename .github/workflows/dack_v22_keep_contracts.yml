@@ -1,0 +1,38 @@
+name: DACK v21 and v22 true keep-value and DP contracts
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v22_keep_contracts.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile all-stage real labeler, regressor, DP and actual London deployment code
+        run: |
+          python -m compileall -q \
+            dack_simulator/validation/label_all_stage_keep_values_v21.py \
+            dack_simulator/validation/train_all_stage_keep_value_v22.py \
+            dack_simulator/validation/derive_keep_continuation_v22.py \
+            dack_mulligan_keep_value_v22_20261101.py \
+            dack_paired_counterfactual_v22_all_stage_real_keep_DP_20261101.py
+          python dack_mulligan_keep_value_v22_20261101.py
+          python - <<'PY'
+          import inspect
+          import dack_paired_counterfactual_v22_all_stage_real_keep_DP_20261101 as policy
+          s=inspect.getsource(policy.choose_keep)
+          assert 'next_value' in s
+          assert 'old_keep_vote' in s
+          assert 'keep=(kn==1 or estimate>=next_value)' in s
+          assert 'teacher_chosen' not in s
+          assert 'future_index' not in s
+          print('V22_NO_MULLIGAN_BEAM_AND_MODEL_ONLY_KEEP_CONTRACT_PASS',flush=True)
+          PY
