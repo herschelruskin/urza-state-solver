@@ -1,0 +1,122 @@
+{
+  "actual_gameplay_beam": 160,
+  "continuation_independent_of_rejected_seven": true,
+  "fixed_predeclared_real_weight": 0.75,
+  "frozen_v14_bottom_policy": true,
+  "frozen_v27_downstream_policy": true,
+  "keep_estimator_unchanged_v27_93k_all_eight_stages": true,
+  "model_approved": false,
+  "no_sampling_at_inference": true,
+  "schema": "dack_v32_physical_Qmull_shared_continuation_UNAPPROVED",
+  "seat_continuations": {
+    "0": {
+      "independent_validation_per_cell": 32,
+      "old_v27_thresholds_by_london_stage": [
+        0.37958422593006097,
+        0.3132809519162122,
+        0.2292364215116222,
+        0.1100763095290652,
+        0.06369014197522778,
+        0.027510847628408636,
+        0.008759329978845994,
+        -1.0
+      ],
+      "samples_per_london_cell": 96,
+      "thresholds_by_london_stage": [
+        0.43083355648251526,
+        0.3517577379790531,
+        0.22137160537790557,
+        0.1681440773822663,
+        0.03936003549380694,
+        0.02250271190710216,
+        0.0021898324947114984,
+        -1.0
+      ]
+    },
+    "1": {
+      "independent_validation_per_cell": 32,
+      "old_v27_thresholds_by_london_stage": [
+        0.3642451882966713,
+        0.31264594158819253,
+        0.22251831758476315,
+        0.1287870531589569,
+        0.08028552048511467,
+        0.02588041387577221,
+        0.006925125626242881,
+        -1.0
+      ],
+      "samples_per_london_cell": 96,
+      "thresholds_by_london_stage": [
+        0.3410612970741678,
+        0.32816148539704815,
+        0.1884420793961908,
+        0.12594676328973922,
+        0.05913388012127867,
+        0.022095103468943052,
+        0.0017312814065607203,
+        -1.0
+      ]
+    },
+    "2": {
+      "independent_validation_per_cell": 32,
+      "old_v27_thresholds_by_london_stage": [
+        0.41192941390333604,
+        0.3306790024739771,
+        0.2418260432734854,
+        0.15926640128863753,
+        0.07548389029941512,
+        0.02111305030660572,
+        0.00772616282388438,
+        -1.0
+      ],
+      "samples_per_london_cell": 96,
+      "thresholds_by_london_stage": [
+        0.423294853475834,
+        0.37173225061849424,
+        0.24795651081837133,
+        0.1804416003221594,
+        0.034495972574853775,
+        0.02090326257665143,
+        0.001931540705971095,
+        -1.0
+      ]
+    },
+    "3": {
+      "independent_validation_per_cell": 32,
+      "old_v27_thresholds_by_london_stage": [
+        0.38170413737189585,
+        0.3157466419812877,
+        0.24177996817221553,
+        0.15538255018956842,
+        0.0912215696733121,
+        0.03265660038630833,
+        0.010316065738294288,
+        -1.0
+      ],
+      "samples_per_london_cell": 96,
+      "thresholds_by_london_stage": [
+        0.361051034342974,
+        0.31331166049532194,
+        0.24794499204305387,
+        0.1169706375473921,
+        0.061867892418328026,
+        0.02378915009657708,
+        0.002579016434573572,
+        -1.0
+      ]
+    }
+  },
+  "source_v14_bottom_file_sha256": "19fdbf300afc1e4545b81767f8fbf3bbe6ebd7b33ad139e2aa9231e3215df8ff",
+  "source_v27_dp_file_sha256": "4166c2045d66b08f0943900a2d68ec901d7048aca6de057695fc84dee883097b",
+  "source_v27_model_file_sha256": "a01f46260164342f2f0f6ec15766b341338baa27c51dcf0a3ec3f164492e3134",
+  "status": "PASS",
+  "train_108k_independent_downstream_goldfish_futures": 2688,
+  "validation_108k_independent_downstream_goldfish_futures": 896,
+  "validation_Brier_T2": {
+    "new": 0.12437704581530687,
+    "old": 0.12500863084408947,
+    "raw": 0.12444583953373016
+  },
+  "validation_not_used_to_choose_shrinkage": true,
+  "warning": "Separate 96-trial cell estimates have residual ~3-5pp standard error. Comparisons on 32 validation futures per cell are noisy. A static shared table is exact in conditioning, not in finite-sample value. Future policy changes invalidate this table."
+}
