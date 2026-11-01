@@ -1,0 +1,222 @@
+name: DACK v15 DAgger true teacher on 32 student train plus 16 student validation games
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_teacher_v15_dagger_expand.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  label:
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        include:
+          - split: train
+            start: 67100
+          - split: train
+            start: 67101
+          - split: train
+            start: 67102
+          - split: train
+            start: 67103
+          - split: train
+            start: 67104
+          - split: train
+            start: 67105
+          - split: train
+            start: 67106
+          - split: train
+            start: 67107
+          - split: train
+            start: 67108
+          - split: train
+            start: 67109
+          - split: train
+            start: 67110
+          - split: train
+            start: 67111
+          - split: train
+            start: 67112
+          - split: train
+            start: 67113
+          - split: train
+            start: 67114
+          - split: train
+            start: 67115
+          - split: train
+            start: 67116
+          - split: train
+            start: 67117
+          - split: train
+            start: 67118
+          - split: train
+            start: 67119
+          - split: train
+            start: 67120
+          - split: train
+            start: 67121
+          - split: train
+            start: 67122
+          - split: train
+            start: 67123
+          - split: train
+            start: 67124
+          - split: train
+            start: 67125
+          - split: train
+            start: 67126
+          - split: train
+            start: 67127
+          - split: train
+            start: 67128
+          - split: train
+            start: 67129
+          - split: train
+            start: 67130
+          - split: train
+            start: 67131
+          - split: validation
+            start: 68100
+          - split: validation
+            start: 68101
+          - split: validation
+            start: 68102
+          - split: validation
+            start: 68103
+          - split: validation
+            start: 68104
+          - split: validation
+            start: 68105
+          - split: validation
+            start: 68106
+          - split: validation
+            start: 68107
+          - split: validation
+            start: 68108
+          - split: validation
+            start: 68109
+          - split: validation
+            start: 68110
+          - split: validation
+            start: 68111
+          - split: validation
+            start: 68112
+          - split: validation
+            start: 68113
+          - split: validation
+            start: 68114
+          - split: validation
+            start: 68115
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Query exact v5 on every state visited by fixed original v13 student
+        run: |
+          python -u dack_simulator/validation/collect_student_visited_teacher_v15.py \
+            --split ${{ matrix.split }} --start ${{ matrix.start }} \
+            --games 1 --variant one_key_34 \
+            --out datasets/v15_${{ matrix.split }}_${{ matrix.start }}.jsonl.gz
+      - name: Validate actual physical 99 and exact v5 teacher decisions
+        run: |
+          python - <<'PY'
+          import glob,gzip,json
+          from collections import Counter
+          fs=glob.glob('datasets/v15_*.jsonl.gz')
+          assert len(fs)==1
+          with gzip.open(fs[0],'rt') as f:
+              meta=json.loads(next(f));rows=[json.loads(s) for s in f]
+          assert rows and meta['student_visited_stage_sampling']
+          assert meta['sampling_protocol']=='dack_v15_student_v13_visited_v5_teacher_labels'
+          assert rows[-1]['source_student_keep']
+          assert sum(x['source_student_keep'] for x in rows)==1
+          assert len({x['game_id'] for x in rows})==1
+          for x in rows:
+              assert len(x['seven'])==7
+              assert sum(x['unknown_counts'].values())==92
+              assert 0<=x['source_student_chosen_candidate']<len(x['candidate_rows'])<=12
+              assert 0<=x['teacher_chosen_candidate']<len(x['candidate_rows'])<=12
+              assert Counter(x['teacher_selected_hand'])+Counter(x['teacher_selected_bottom'])==Counter(x['seven'])
+              assert not any(k in x for k in ('first3','hidden_order','actual_library'))
+          print('V15_TRUE_STUDENT_STATE_PASS',fs[0].name,len(rows),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v15-dagger-${{ matrix.split }}-${{ matrix.start }}
+          path: datasets/v15_*.jsonl.gz
+          retention-days: 21
+  audit_archive:
+    needs: label
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v15-dagger-*
+          merge-multiple: true
+          path: datasets/teacher_v15_student_states/
+      - name: Audit disjoint groups source frozen student and teacher decision mismatch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from collections import Counter
+          import json,gzip,hashlib
+          root=Path('datasets/teacher_v15_student_states')
+          fs=sorted(root.glob('v15_*.jsonl.gz'))
+          assert len(fs)==48,len(fs)
+          man={'schema':'dack_v15_DAgger_student_visited_teacher_dataset',
+               'policy_teacher':'dack_stable_dice_strict_bounded_witness_v5',
+               'student_frozen_model_sha256':None,
+               'not_population_representative':True,
+               'not_outcome_probabilities':True,'split':{},'files':[]}
+          seen=[]
+          for split,base,n in [('train',67100,32),('validation',68100,16)]:
+              ids=set();counts=Counter()
+              files=[p for p in fs if p.name.startswith('v15_'+split+'_')]
+              assert len(files)==n
+              for p in files:
+                  with gzip.open(p,'rt') as f:
+                      meta=json.loads(next(f))
+                      assert meta['split']==split and meta['sampling_protocol']=='dack_v15_student_v13_visited_v5_teacher_labels'
+                      sha=meta['student_policy_sha256']
+                      if man['student_frozen_model_sha256'] is None:man['student_frozen_model_sha256']=sha
+                      assert sha==man['student_frozen_model_sha256']
+                      rows=[json.loads(x) for x in f]
+                  assert rows and rows[-1]['source_student_keep']
+                  assert sum(x['source_student_keep'] for x in rows)==1
+                  assert len({x['game_id'] for x in rows})==1
+                  ids.add(rows[0]['game_id'])
+                  for x in rows:
+                      counts['stages']+=1
+                      counts['candidates']+=len(x['candidate_rows'])
+                      counts['student_accepted']+=int(x['source_student_keep'])
+                      counts['teacher_accepted']+=int(x['teacher_keep'])
+                      counts['keep_mismatches']+=int(x['source_student_keep']!=x['teacher_keep'])
+                      counts['bottom_mismatches']+=int(x['source_student_chosen_candidate']!=x['teacher_chosen_candidate'])
+                  man['files'].append({'path':p.name,'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'bytes':p.stat().st_size,'split':split})
+              assert ids==set(range(base,base+n))
+              man['split'][split]={'groups':n,'game_ids':[base,base+n-1],'counts':dict(counts)}
+              seen.append(ids)
+          assert seen[0].isdisjoint(seen[1])
+          (root/'manifest.json').write_text(json.dumps(man,indent=2,sort_keys=True)+'\n')
+          print('DAgger_V15_DATASET_PASS',json.dumps(man['split']),flush=True)
+          PY
+      - name: Preserve original v13 student and exact teacher labels
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f datasets/teacher_v15_student_states/
+          git commit -m "Archive 48 independent student-visited real v5 teacher games for DAgger correction"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
