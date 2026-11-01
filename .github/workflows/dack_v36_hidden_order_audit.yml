@@ -1,0 +1,24 @@
+name: DACK v36 audit teacher actual-hidden-order leakage
+on:
+  push:
+    branches: [dack-v36-targeted-keep-value-20261101]
+    paths:
+      - '.github/workflows/dack_v36_hidden_order_audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  invariance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 26
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Rule/version and no hindsight of physical unknown order
+        run: |
+          python -m py_compile dack_simulator/validation/v36_reference_hidden_order_audit.py
+          python -u dack_simulator/validation/v36_reference_hidden_order_audit.py
