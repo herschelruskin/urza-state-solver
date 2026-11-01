@@ -1,0 +1,65 @@
+{
+  "action_gate_reason_count": {
+    "T2_supports_change_but_T3_safeguard_blocks": 24,
+    "median_direct_regret_sign_agrees_with_v27": 736,
+    "opposite_median_but_T2_ensemble_stability_or_margin_fails": 8
+  },
+  "all_256_final_physical_hand_and_library_identical": true,
+  "all_768_actions_identical": true,
+  "by_stage_gate_counts": {
+    "0": {
+      "T2_supports_change_but_T3_safeguard_blocks": 2,
+      "median_direct_regret_sign_agrees_with_v27": 253,
+      "opposite_median_but_T2_ensemble_stability_or_margin_fails": 1
+    },
+    "1": {
+      "T2_supports_change_but_T3_safeguard_blocks": 7,
+      "median_direct_regret_sign_agrees_with_v27": 248,
+      "opposite_median_but_T2_ensemble_stability_or_margin_fails": 1
+    },
+    "2": {
+      "T2_supports_change_but_T3_safeguard_blocks": 15,
+      "median_direct_regret_sign_agrees_with_v27": 235,
+      "opposite_median_but_T2_ensemble_stability_or_margin_fails": 6
+    }
+  },
+  "conditional_population_value_difference_exactly_zero_on_this_cohort": true,
+  "full_game_turn_DACK_deployment_difference_exactly_zero_on_this_cohort": true,
+  "n_actual_early_stage_states": 768,
+  "n_unselected_outer_games": 256,
+  "no_new_beam160_games": true,
+  "original_action_counts_by_stage": {
+    "0:0": 214,
+    "0:1": 42,
+    "1:0": 201,
+    "1:1": 55,
+    "2:0": 182,
+    "2:1": 74
+  },
+  "policy_approved": false,
+  "population_generalization_CANNOT_be_assumed_from_cohort_exact_equality": true,
+  "predicted_signed_T2_mean_by_original_action": {
+    "old_KEEP": 0.22831605348908146,
+    "old_MULL": -0.3015507946251289
+  },
+  "schema": "dack_v37_127k_zero_beam_action_sign_and_sampling_audit_v1",
+  "source_census_sha256": "5d06fdfc5482c377d4f6d5afcdd7c85396fdf70c0d4f6273d45b9813762a9fda",
+  "source_model_sha256": "b1aabf15c0f6d7ff8334769d076a505f2cf33848e849232f513499f70e4099c5",
+  "status": "PASS",
+  "training_proxy_discordant_stratum_diagnostics": {
+    "discordant_boundary": {
+      "mean_abs_original_v27_margin": 0.026919621996184206,
+      "mean_abs_v13_teacher_vote_distance_cutoff": 0.13644041216358244,
+      "n": 64,
+      "v13_proxy_KEEP_count": 19,
+      "v27_KEEP_count": 45
+    },
+    "discordant_confident": {
+      "mean_abs_original_v27_margin": 0.2893039349649908,
+      "mean_abs_v13_teacher_vote_distance_cutoff": 0.08712427124902071,
+      "n": 64,
+      "v13_proxy_KEEP_count": 9,
+      "v27_KEEP_count": 55
+    }
+  }
+}
