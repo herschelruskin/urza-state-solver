@@ -1,0 +1,319 @@
+{
+  "candidate_table": [
+    {
+      "analytic_T2_index": 0.036808316593,
+      "bottom": [
+        "Floating Shield"
+      ],
+      "hand": [
+        "Grim Monolith",
+        "Petrified Hamlet",
+        "Portable Hole",
+        "Sol Ring",
+        "Static Prison",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "index": 0,
+      "original_sampler_beam60_16": {
+        "le2": 0.0625,
+        "le3": 0.375,
+        "t1": 0.0,
+        "t2": 0.0625,
+        "t3": 0.3125,
+        "utility": 0.21875
+      },
+      "original_sampler_beam60_8": {
+        "le2": 0.125,
+        "le3": 0.375,
+        "t1": 0.0,
+        "t2": 0.125,
+        "t3": 0.25,
+        "utility": 0.25
+      },
+      "struct_rank": [
+        80,
+        0,
+        0
+      ],
+      "v14_teacher_choice_vote": 0.4255061306161566,
+      "v18_pred_U": 0.6770558802123943,
+      "v27_pred_T2_keep_value": 0.40227683041510726
+    },
+    {
+      "analytic_T2_index": 0.032023235436,
+      "bottom": [
+        "Portable Hole"
+      ],
+      "hand": [
+        "Floating Shield",
+        "Grim Monolith",
+        "Petrified Hamlet",
+        "Sol Ring",
+        "Static Prison",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "index": 1,
+      "original_sampler_beam60_16": {
+        "le2": 0.125,
+        "le3": 0.5625,
+        "t1": 0.0,
+        "t2": 0.125,
+        "t3": 0.4375,
+        "utility": 0.34375
+      },
+      "original_sampler_beam60_8": {
+        "le2": 0.25,
+        "le3": 0.5,
+        "t1": 0.0,
+        "t2": 0.25,
+        "t3": 0.25,
+        "utility": 0.375
+      },
+      "struct_rank": [
+        60,
+        0,
+        -1
+      ],
+      "v14_teacher_choice_vote": 0.15865329421709923,
+      "v18_pred_U": 0.6750060631142377,
+      "v27_pred_T2_keep_value": 0.37027325530124006
+    },
+    {
+      "analytic_T2_index": 0.032023235436,
+      "bottom": [
+        "Static Prison"
+      ],
+      "hand": [
+        "Floating Shield",
+        "Grim Monolith",
+        "Petrified Hamlet",
+        "Portable Hole",
+        "Sol Ring",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "index": 2,
+      "original_sampler_beam60_16": {
+        "le2": 0.1875,
+        "le3": 0.375,
+        "t1": 0.0,
+        "t2": 0.1875,
+        "t3": 0.1875,
+        "utility": 0.28125
+      },
+      "original_sampler_beam60_8": {
+        "le2": 0.375,
+        "le3": 0.375,
+        "t1": 0.0,
+        "t2": 0.375,
+        "t3": 0.0,
+        "utility": 0.375
+      },
+      "struct_rank": [
+        60,
+        0,
+        -1
+      ],
+      "v14_teacher_choice_vote": 0.08882190828083068,
+      "v18_pred_U": 0.6640340002378778,
+      "v27_pred_T2_keep_value": 0.38641551989520706
+    },
+    {
+      "analytic_T2_index": 0.00714494372,
+      "bottom": [
+        "Untaidake, the Cloud Keeper"
+      ],
+      "hand": [
+        "Floating Shield",
+        "Grim Monolith",
+        "Petrified Hamlet",
+        "Portable Hole",
+        "Sol Ring",
+        "Static Prison"
+      ],
+      "index": 3,
+      "original_sampler_beam60_16": {
+        "le2": 0.1875,
+        "le3": 0.5,
+        "t1": 0.0,
+        "t2": 0.1875,
+        "t3": 0.3125,
+        "utility": 0.34375
+      },
+      "original_sampler_beam60_8": {
+        "le2": 0.125,
+        "le3": 0.375,
+        "t1": 0.0,
+        "t2": 0.125,
+        "t3": 0.25,
+        "utility": 0.25
+      },
+      "struct_rank": [
+        15,
+        0,
+        -1
+      ],
+      "v14_teacher_choice_vote": 0.044010774526405866,
+      "v18_pred_U": null,
+      "v27_pred_T2_keep_value": 0.09276774912196217
+    },
+    {
+      "analytic_T2_index": 0.00714494372,
+      "bottom": [
+        "Petrified Hamlet"
+      ],
+      "hand": [
+        "Floating Shield",
+        "Grim Monolith",
+        "Portable Hole",
+        "Sol Ring",
+        "Static Prison",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "index": 4,
+      "original_sampler_beam60_16": {
+        "le2": 0.0625,
+        "le3": 0.1875,
+        "t1": 0.0,
+        "t2": 0.0625,
+        "t3": 0.125,
+        "utility": 0.125
+      },
+      "original_sampler_beam60_8": {
+        "le2": 0.0,
+        "le3": 0.125,
+        "t1": 0.0,
+        "t2": 0.0,
+        "t3": 0.125,
+        "utility": 0.0625
+      },
+      "struct_rank": [
+        15,
+        0,
+        -1
+      ],
+      "v14_teacher_choice_vote": 0.04336710923364735,
+      "v18_pred_U": null,
+      "v27_pred_T2_keep_value": 0.09142152836419486
+    },
+    {
+      "analytic_T2_index": 0.009877698598,
+      "bottom": [
+        "Sol Ring"
+      ],
+      "hand": [
+        "Floating Shield",
+        "Grim Monolith",
+        "Petrified Hamlet",
+        "Portable Hole",
+        "Static Prison",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "index": 5,
+      "original_sampler_beam60_16": {
+        "le2": 0.0,
+        "le3": 0.1875,
+        "t1": 0.0,
+        "t2": 0.0,
+        "t3": 0.1875,
+        "utility": 0.09375
+      },
+      "original_sampler_beam60_8": {
+        "le2": 0.0,
+        "le3": 0.125,
+        "t1": 0.0,
+        "t2": 0.0,
+        "t3": 0.125,
+        "utility": 0.0625
+      },
+      "struct_rank": [
+        0,
+        0,
+        -1
+      ],
+      "v14_teacher_choice_vote": 0.06634456945959442,
+      "v18_pred_U": null,
+      "v27_pred_T2_keep_value": 0.07316637597829098
+    },
+    {
+      "analytic_T2_index": 0.012286290144,
+      "bottom": [
+        "Grim Monolith"
+      ],
+      "hand": [
+        "Floating Shield",
+        "Petrified Hamlet",
+        "Portable Hole",
+        "Sol Ring",
+        "Static Prison",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "index": 6,
+      "original_sampler_beam60_16": {
+        "le2": 0.0625,
+        "le3": 0.375,
+        "t1": 0.0,
+        "t2": 0.0625,
+        "t3": 0.3125,
+        "utility": 0.21875
+      },
+      "original_sampler_beam60_8": {
+        "le2": 0.0,
+        "le3": 0.25,
+        "t1": 0.0,
+        "t2": 0.0,
+        "t3": 0.25,
+        "utility": 0.125
+      },
+      "struct_rank": [
+        0,
+        0,
+        -1
+      ],
+      "v14_teacher_choice_vote": 0.05876280874016506,
+      "v18_pred_U": null,
+      "v27_pred_T2_keep_value": 0.09465505962844804
+    }
+  ],
+  "game_id": 115004,
+  "hidden_92_multiset_sha256": "e6e743cad51c7d22398c254bb4fd6ceeeae2bd1df7e105129b15545bea49fefa",
+  "keep_n": 6,
+  "model_candidate_methods": {
+    "analytic_t2": 0,
+    "v14_frozen": 0,
+    "v18_top3": 0,
+    "v27_Qkeep": 0
+  },
+  "no_model_training_or_promotion": true,
+  "opening_seven": [
+    "Sol Ring",
+    "Portable Hole",
+    "Floating Shield",
+    "Static Prison",
+    "Grim Monolith",
+    "Untaidake, the Cloud Keeper",
+    "Petrified Hamlet"
+  ],
+  "original_physical_future_order_not_used_in_candidate_scoring": true,
+  "schema": "dack_v43_real_original_v5_top12_candidate_profile_v1",
+  "seat": 0,
+  "source_historical_115k_previously_inspected": true,
+  "stage": 2,
+  "stage_profile_evaluation_seconds": 24.43,
+  "status": "PASS",
+  "v27_kept": true,
+  "v27_real_selected_index": 0,
+  "v27_stage_raw": 0.4022768,
+  "v27_stage_threshold": 0.2292364,
+  "v5_archived_winner_and_raw_score_reproduced_exactly": true,
+  "v5_full_16_utility_argmax": 1,
+  "v5_full_8_utility_argmax": 1,
+  "v5_kept": false,
+  "v5_lookahead_evaluated_only_on_opening_seven_not_hindsight": true,
+  "v5_raw": 0.375,
+  "v5_real_selected_index": 1,
+  "v5_refined": false,
+  "v5_threshold": 0.63025,
+  "v5_winner_16_full_score": 0.34375,
+  "v5_winner_8_full_score": 0.375,
+  "warning": "8/16 small deterministic teacher sampler and max-over-candidates are noisy. Do not interpret teacher scores or predicted q27 values as calibrated or comparable; independent physical K futures required."
+}
