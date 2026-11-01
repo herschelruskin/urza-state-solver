@@ -1,0 +1,34 @@
+name: DACK v28 read-only 256-game bottom-choice differences
+on:
+  push:
+    branches: [dack-v28-v5-bottom-information-audit-20261031]
+    paths: ['.github/workflows/dack_v28_readonly_bottom_N256.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v28-v5-bottom-information-audit-20261031
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit full N256 frozen 96k bottom choice differences (do not fit model)
+        run: python -u dack_simulator/validation/v28_readonly_96k_bottom_frequency.py
+      - name: Archive descriptive result on isolated research branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v28_v25_readonly_bottom_choices_N256.json
+          git commit -m "Archive read-only v25 N256 actual bottoming disagreements and card frequencies"
+          git pull --rebase origin dack-v28-v5-bottom-information-audit-20261031
+          git push origin HEAD:dack-v28-v5-bottom-information-audit-20261031
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v28-bottom-frequency-96k-N256-read-only
+          path: benchmark_results/v28_v25_readonly_bottom_choices_N256.json
+          retention-days: 30
