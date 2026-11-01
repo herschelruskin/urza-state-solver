@@ -9,7 +9,7 @@ This model alone is not an approved keep decision. Compare to a separately
 derived continuation expectation C_k under London mulligan rules.
 """
 from __future__ import annotations
-import hashlib,json
+import hashlib,json,struct
 import dack_mulligan_teacher_features_v13_20261031 as feats
 
 SCHEMA="dack_v22_counterfactual_keep_value_forest"
@@ -27,7 +27,11 @@ def predict(model,x):
         i=0;depth=0
         while tree["left"][i]>=0:
             j=int(tree["feature"][i])
-            i=tree["left"][i] if x[j]<=tree["threshold"][i] else tree["right"][i]
+            # scikit-learn tree/forest predict casts the incoming feature
+            # matrix to float32 before taking threshold branches. Match that
+            # numeric contract without requiring NumPy at inference time.
+            x32=struct.unpack("<f",struct.pack("<f",float(x[j])))[0]
+            i=tree["left"][i] if x32<=tree["threshold"][i] else tree["right"][i]
             depth+=1
             if depth>30:raise ValueError("invalid keep regression tree")
         accum+=float(tree["value"][i])
