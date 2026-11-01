@@ -1,0 +1,74 @@
+name: DACK v33b independent 114k pairwise regret validation
+on:
+  push:
+    branches: [dack-v33b-capability-regret-20261101]
+    paths:
+      - '.github/workflows/dack_v33b_regret_114k_validation.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  validate:
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        start: [114000, 114004, 114008, 114012, 114016, 114020, 114024, 114028, 114032, 114036, 114040, 114044, 114048, 114052, 114056, 114060]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v33b-capability-regret-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Confirm frozen source and model, compile strict evaluation
+        run: |
+          python -m py_compile dack_simulator/validation/v33b_validate_pairwise_regret.py dack_simulator/validation/v33b_pool_pairwise_validation.py
+          python dack_mulligan_v33b_pairwise_regret.py
+          test -f models/dack_v33b_ridge_regret_EXPERIMENTAL.json
+      - name: Eight fresh physical futures per legal candidate on four games
+        run: |
+          python -u dack_simulator/validation/v33b_validate_pairwise_regret.py \
+            --start ${{ matrix.start }} --out shards/v33b_regret_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v33b-regret-114k-${{ matrix.start }}
+          path: shards/v33b_regret_*.json.gz
+          retention-days: 30
+  pool:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v33b-capability-regret-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v33b-regret-114k-*
+          merge-multiple: true
+          path: collected
+      - name: Compute group-bootstrap paired T1 T2 T3
+        run: python -u dack_simulator/validation/v33b_pool_pairwise_validation.py
+      - name: Archive research-only validation and raw physical shards
+        run: |
+          mkdir -p benchmark_results/v33b_regret_114k_shards
+          cp collected/v33b_regret_*.json.gz benchmark_results/v33b_regret_114k_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v33b_regret_114k_shards benchmark_results/v33b_regret_114k_validation_N64.json
+          git commit -m "Archive heldout 114k physical pairwise-regret evaluation, no policy promotion"
+          git pull --rebase origin dack-v33b-capability-regret-20261101
+          git push origin HEAD:dack-v33b-capability-regret-20261101
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v33b-independent-regret-114k-validation-report
+          path: benchmark_results/v33b_regret_114k_validation_N64.json
+          retention-days: 30
