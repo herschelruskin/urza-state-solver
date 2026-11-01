@@ -1,0 +1,103 @@
+{
+  "actual_post_keep_beam": 160,
+  "files": [
+    {
+      "bytes": 11924,
+      "name": "stage_train_82000.jsonl.gz",
+      "sha256": "bd64e9464383bcbe13b73f394c54e89030a3f54443b964f3253226def4b5f616",
+      "split": "train"
+    },
+    {
+      "bytes": 11879,
+      "name": "stage_train_82008.jsonl.gz",
+      "sha256": "c9fee3d3b779025dbd31b13d5d0ee48cec8ff457cd15bfd13d77b6684158129c",
+      "split": "train"
+    },
+    {
+      "bytes": 11900,
+      "name": "stage_train_82016.jsonl.gz",
+      "sha256": "72922b84f946d3640a7612c7e034ccf4ebb77311f1203022b7c0eb0223deb57a",
+      "split": "train"
+    },
+    {
+      "bytes": 11872,
+      "name": "stage_train_82024.jsonl.gz",
+      "sha256": "f034058aada8b29fb4191e816b123faf82b7a3465a5785c60e0e3c8ec485b396",
+      "split": "train"
+    },
+    {
+      "bytes": 11848,
+      "name": "stage_train_82032.jsonl.gz",
+      "sha256": "8f3ac3b20a0ac1c08daec51bf6086fe66f44a634f11f85fe48f32610ccf8dc9c",
+      "split": "train"
+    },
+    {
+      "bytes": 11801,
+      "name": "stage_train_82040.jsonl.gz",
+      "sha256": "aa33442e33f77e5c70c3a2588dad135170b4c008ac78bd7ccbdbdb8518499ea2",
+      "split": "train"
+    },
+    {
+      "bytes": 11928,
+      "name": "stage_train_82048.jsonl.gz",
+      "sha256": "4ce4bcd3075c3e26281a45f7b30530f71f60565cbb801600e2549988ba4abfc1",
+      "split": "train"
+    },
+    {
+      "bytes": 11956,
+      "name": "stage_train_82056.jsonl.gz",
+      "sha256": "6339b64d632daf83466e921cc8b257ef9b4b16052fab44ff240baef22cc1763e",
+      "split": "train"
+    },
+    {
+      "bytes": 11959,
+      "name": "stage_validation_83000.jsonl.gz",
+      "sha256": "a46ee1311b312bc0eb4ba74c6b72f41b7a76abe162a436d8e695877482d82a73",
+      "split": "validation"
+    },
+    {
+      "bytes": 11885,
+      "name": "stage_validation_83008.jsonl.gz",
+      "sha256": "d55d359b9e7cfcc3723024cd5d7585b0ae84f724cda5e35f481d62a78e737d92",
+      "split": "validation"
+    }
+  ],
+  "four_futures_per_stage": true,
+  "includes_stages_that_would_be_rejected": true,
+  "independent_stage_shuffles": true,
+  "models_unapproved": true,
+  "not_population_unconditional_policy_winrate": true,
+  "same_frozen_v14_128_student": true,
+  "schema": "dack_v21_all_stage_real_keep_values_dataset",
+  "source_student_sha256": "19fdbf300afc1e4545b81767f8fbf3bbe6ebd7b33ad139e2aa9231e3215df8ff",
+  "splits": {
+    "train": {
+      "counts": {
+        "T0": 1257,
+        "T1": 20,
+        "T2": 224,
+        "T3": 547,
+        "rollouts": 2048,
+        "stages": 512,
+        "would_accept": 279,
+        "would_reject": 233
+      },
+      "eight_stage_decisions": 512,
+      "independent_outer_games": 64
+    },
+    "validation": {
+      "counts": {
+        "T0": 313,
+        "T1": 13,
+        "T2": 53,
+        "T3": 133,
+        "rollouts": 512,
+        "stages": 128,
+        "would_accept": 69,
+        "would_reject": 59
+      },
+      "eight_stage_decisions": 128,
+      "independent_outer_games": 16
+    }
+  }
+}
