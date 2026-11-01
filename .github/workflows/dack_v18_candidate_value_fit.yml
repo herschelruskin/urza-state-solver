@@ -1,0 +1,68 @@
+name: DACK v18 train candidate utility and paired regret on new 40 validation groups
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - 'datasets/v18_paired_real_candidates/manifest.json'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify pure Python hand-value model is inference-only and never accesses hidden future order
+        run: |
+          python -m compileall -q dack_mulligan_candidate_value_v18_20261101.py dack_simulator/validation/train_paired_candidate_utility_v18.py
+          python dack_mulligan_candidate_value_v18_20261101.py
+      - name: Training-only install
+        run: python -m pip install 'scikit-learn>=1.4,<2'
+      - name: Fit real paired utility across legal visible bottom candidates; score on disjoint groups
+        run: |
+          python -u dack_simulator/validation/train_paired_candidate_utility_v18.py \
+            --train datasets/v18_paired_real_candidates/v18_train_*.jsonl.gz \
+            --validation datasets/v18_paired_real_candidates/v18_validation_*.jsonl.gz \
+            --model models/dack_v18_paired_candidate_utility_EXPERIMENTAL.json \
+            --report benchmark_results/v18_paired_candidate_utility_validation.json
+      - name: Require explicit structural baseline, group-clustered uncertainty and no teacher-only option at inference
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path('models/dack_v18_paired_candidate_utility_EXPERIMENTAL.json').read_text())
+          r=json.loads(Path('benchmark_results/v18_paired_candidate_utility_validation.json').read_text())
+          assert m['deployed_policy_approved'] is False
+          assert m['selection_uses_structural_first_three_only']
+          assert m['teacher_only_candidate_is_never_inference_visible']
+          assert m['training_draws_per_candidate']==8
+          assert m['training_groups']>=40 and m['validation_groups']>=12
+          assert 'mean_utility_structural_first' in r['separate_validation_metrics']
+          assert 'mean_utility_empirical_best_top3_noisy_oracle' in r['separate_validation_metrics']
+          assert len(r['separate_validation_metrics']['group_bootstrap_95ci_student_minus_structural'])==2
+          print('V18_VALUE_FOREST_MODEL_PROVENANCE_AND_HOLDOUT_PASS',json.dumps({
+              'train_groups':m['training_groups'],
+              'validation_groups':m['validation_groups'],
+              'validation_metrics':r['separate_validation_metrics']}),flush=True)
+          PY
+      - name: Archive unapproved utility model and original validation scores with checksum provenance
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f models/dack_v18_paired_candidate_utility_EXPERIMENTAL.json benchmark_results/v18_paired_candidate_utility_validation.json
+          git commit -m "Archive experimental paired real-utility bottoming student and independent group-aware structural baseline"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v18-paired-candidate-value-model-and-validation
+          path: |
+            models/dack_v18_paired_candidate_utility_EXPERIMENTAL.json
+            benchmark_results/v18_paired_candidate_utility_validation.json
+          retention-days: 21
