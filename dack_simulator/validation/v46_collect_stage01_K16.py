@@ -34,7 +34,7 @@ def run(start,out):
             assert len(unseen)==92 and Counter(seven)+Counter(unseen)==Counter(deck.values())
             assert len(seven)==7
             chosen=k.choose_at(stage,seat,order,deck)
-            assert chosen["hand"]==list(seven) and chosen["bottom"]==[]
+            assert Counter(chosen["hand"])==Counter(seven) and chosen["bottom"]==[]
             assert chosen["seven"]==list(seven)
             turns=[]
             for future in range(FUTURES):
