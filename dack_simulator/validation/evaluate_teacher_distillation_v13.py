@@ -2,6 +2,8 @@
 from __future__ import annotations
 import argparse,gzip,json,hashlib
 from pathlib import Path
+import sys
+sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 from dack_simulator.validation.train_teacher_distillation_v13 import read,evaluate
 
 def main(files,model_path,output):
