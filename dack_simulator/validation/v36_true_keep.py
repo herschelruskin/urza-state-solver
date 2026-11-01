@@ -38,14 +38,14 @@ def expected(split,index):
         assert sum(x["sample"]=="boundary_enriched" for x in data["groups"])==128
         return data["groups"][index:index+4],hashlib.sha256(MANIFEST.read_bytes()).hexdigest()
     if split=="holdout":
-        if index%4 or not 0<=index<128:raise ValueError("holdout index must be physical 4-group")
+        if index%4 or not 0<=index<256:raise ValueError("holdout index must be physical 4-group")
         return [{"game_id":124000+i,"sample":"unconditional_holdout",
                  "selection":None} for i in range(index,index+4)],"fresh_random_124k_unselected"
     raise ValueError("unrecognized split")
 
 def run(split,index,out):
     kernel.initialize();feats.selftest()
-    if index<0 or index%4 or index>= (256 if split=="train" else 128):
+    if index<0 or index%4 or index>= 256:
         raise ValueError("index four-group shard range")
     groups,manifest_sha=expected(split,index)
     assert len(groups)==4
