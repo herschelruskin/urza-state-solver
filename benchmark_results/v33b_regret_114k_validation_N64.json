@@ -1,0 +1,112 @@
+{
+  "all_groups_T1T2T3": {
+    "T1": {
+      "N_independent_physical_groups": 64,
+      "bootstrap_95ci_pp": [
+        0.0,
+        2.1484375
+      ],
+      "delta_pp": 0.78125,
+      "negative_groups": 0,
+      "observed_tied_groups": 62,
+      "positive_groups": 2
+    },
+    "T2": {
+      "N_independent_physical_groups": 64,
+      "bootstrap_95ci_pp": [
+        0.1953125,
+        6.640625
+      ],
+      "delta_pp": 2.9296875,
+      "negative_groups": 0,
+      "observed_tied_groups": 60,
+      "positive_groups": 4
+    },
+    "T3": {
+      "N_independent_physical_groups": 64,
+      "bootstrap_95ci_pp": [
+        0.1953125,
+        6.25
+      ],
+      "delta_pp": 2.9296875,
+      "negative_groups": 1,
+      "observed_tied_groups": 58,
+      "positive_groups": 5
+    }
+  },
+  "all_independent_physical_groups": 64,
+  "bottom_eligible_groups": 46,
+  "change_stage_counts": {
+    "2": 1,
+    "3": 2,
+    "4": 1,
+    "5": 2,
+    "6": 3,
+    "7": 1
+  },
+  "changed_bottom_groups": 10,
+  "changed_group_conditional_T1T2T3": {
+    "T1": {
+      "N_independent_physical_groups": 10,
+      "bootstrap_95ci_pp": [
+        0.0,
+        12.5
+      ],
+      "delta_pp": 5.0,
+      "negative_groups": 0,
+      "observed_tied_groups": 8,
+      "positive_groups": 2
+    },
+    "T2": {
+      "N_independent_physical_groups": 10,
+      "bootstrap_95ci_pp": [
+        3.75,
+        38.75
+      ],
+      "delta_pp": 18.75,
+      "negative_groups": 0,
+      "observed_tied_groups": 6,
+      "positive_groups": 4
+    },
+    "T3": {
+      "N_independent_physical_groups": 10,
+      "bootstrap_95ci_pp": [
+        3.75,
+        37.5
+      ],
+      "delta_pp": 18.75,
+      "negative_groups": 1,
+      "observed_tied_groups": 4,
+      "positive_groups": 5
+    }
+  },
+  "group_ids": [
+    114000,
+    114063
+  ],
+  "limitations": [
+    "Bootstrap grouped by independently dealt game not rollout",
+    "Only eight new futures per action",
+    "Unseen chance effects imperfectly coupled across different actions",
+    "Keep decisions are frozen v27 not re-optimized",
+    "Deployment is goldfish not opponent-interactive win probability"
+  ],
+  "model_sha256": "3a93ecb0c62fd973a9d32c744bfb2fabdffcc8046e9ed9b7bfd9986bb2961c5a",
+  "no_bottom_groups": 18,
+  "no_validation_fit_or_threshold_tuning": true,
+  "not_prospective_end_to_end_policy": true,
+  "policy_approved": false,
+  "schema": "dack_v33b_regret_114k_heldout_N64",
+  "stage_counts": {
+    "0": 8,
+    "1": 10,
+    "2": 14,
+    "3": 14,
+    "4": 5,
+    "5": 3,
+    "6": 3,
+    "7": 7
+  },
+  "status": "PASS",
+  "strict_actual_beam160": true
+}
