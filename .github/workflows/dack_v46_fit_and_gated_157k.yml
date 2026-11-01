@@ -1,0 +1,119 @@
+name: DACK v46 train physical first-two-sevens and gate sealed 157k
+on:
+  push:
+    branches: [dack-v46-seven-card-physical-calibration-20261101]
+    paths: ['DACK_V46_SOURCE_COMPLETE_156K_TRIGGER.txt']
+permissions:
+  contents: write
+  actions: read
+jobs:
+  fit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      dev_gate: ${{ steps.gate.outputs.dev_gate }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v46-seven-card-physical-calibration-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install physically supervised model dependencies
+        run: python -m pip install 'numpy>=1.26,<3' 'scikit-learn>=1.4,<1.8'
+      - name: Fit only 128 new random 156k training groups then evaluate 64 untouched dev groups
+        run: |
+          python -m py_compile dack_simulator/validation/v46_fit_true_seven_physical.py
+          python -u dack_simulator/validation/v46_fit_true_seven_physical.py \
+            --sources benchmark_results/v46_new_156k_KC_physical_shards \
+            --model models/v46_real_first_two_sevens_RESEARCH.json \
+            --report benchmark_results/v46_156k_two_sevens_physical_train_dev.json
+      - id: gate
+        name: Freeze dev acceptance without fitting or retuning on dev
+        run: |
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          r=json.loads(Path('benchmark_results/v46_156k_two_sevens_physical_train_dev.json').read_text())
+          assert r['status']=='PASS' and r['model_approved'] is False
+          assert r['source_groups_train']==128 and r['source_groups_dev']==64
+          assert r['physical_K_total_futures']==6144 and r['shared_C_total_futures']==1024
+          assert r['dev']['N_random_dev_groups']==64 and r['dev']['dev_source_groups_never_fit']
+          verdict=r['dev']['dev_pass_full_game_gate']
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:
+              f.write('dev_gate='+('true' if verdict else 'false')+'\n')
+          print('DACK_V46_PREDECLARED_EARLY7_GATE',verdict)
+          PY
+      - name: Archive unapproved model and independent development diagnostic
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f models/v46_real_first_two_sevens_RESEARCH.json benchmark_results/v46_156k_two_sevens_physical_train_dev.json
+          git commit -m "Archive frozen physical stage0/1 Q2/Q3 calibration and independent 156k dev gate"
+          git pull --rebase origin dack-v46-seven-card-physical-calibration-20261101
+          git push origin HEAD:dack-v46-seven-card-physical-calibration-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v46-156k-early-seven-train-dev-research
+          path: |
+            models/v46_real_first_two_sevens_RESEARCH.json
+            benchmark_results/v46_156k_two_sevens_physical_train_dev.json
+          retention-days: 90
+  complete_game:
+    needs: fit
+    if: needs.fit.outputs.dev_gate == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        start: [157000,157032,157064,157096,157128,157160,157192,157224]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v46-seven-card-physical-calibration-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit frozen v46 learner and exact original v43 later stages
+        run: |
+          python -m py_compile dack_paired_counterfactual_v46_early_seven_physical_20261101.py
+          python dack_paired_counterfactual_v46_early_seven_physical_20261101.py --audit
+      - name: Matched complete real physical gameplay on 32 untouched 157k deals
+        run: |
+          python -u dack_simulator/validation/v46_new157k_full_game_paired.py \
+             --start ${{ matrix.start }} --out shards/v46_157k_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v46-157k-${{ matrix.start }}
+          path: shards/v46_157k_*.json.gz
+          retention-days: 90
+  full_game_pool:
+    needs: [fit,complete_game]
+    if: needs.fit.outputs.dev_gate == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v46-seven-card-physical-calibration-20261101
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v46-157k-*
+          merge-multiple: true
+          path: collected
+      - name: Group-bootstrap all 256 matched end-to-end Dack deployment games
+        run: python -u dack_simulator/validation/v46_pool_new157k_full_game.py
+      - name: Archive fresh full-game result without approval
+        run: |
+          mkdir -p benchmark_results/v46_new_157k_full_game_shards
+          cp collected/v46_157k_*.json.gz benchmark_results/v46_new_157k_full_game_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v46_fresh_157k_N256_strict_full_game.json benchmark_results/v46_new_157k_full_game_shards
+          git commit -m "Archive 256 independently matched original-v43 vs v46 full goldfish games after gated dev pass"
+          git pull --rebase origin dack-v46-seven-card-physical-calibration-20261101
+          git push origin HEAD:dack-v46-seven-card-physical-calibration-20261101
