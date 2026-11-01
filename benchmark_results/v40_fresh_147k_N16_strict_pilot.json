@@ -1,0 +1,131 @@
+{
+  "N": 16,
+  "metrics": {
+    "v27": {
+      "by_T1": 1,
+      "by_T2": 10,
+      "by_T3": 16,
+      "mean_kept_n": 5.5625,
+      "seconds": 5.7637
+    },
+    "v40_full": {
+      "by_T1": 0,
+      "by_T2": 10,
+      "by_T3": 15,
+      "mean_kept_n": 5.625,
+      "seconds": 6.0775
+    },
+    "v40_portable": {
+      "by_T1": 0,
+      "by_T2": 10,
+      "by_T3": 15,
+      "mean_kept_n": 5.625,
+      "seconds": 6.1187
+    },
+    "v5": {
+      "by_T1": 1,
+      "by_T2": 12,
+      "by_T3": 14,
+      "mean_kept_n": 5.4375,
+      "seconds": 299.94229999999993
+    }
+  },
+  "no_model_tuning_on_test": true,
+  "outcome": "goldfish Dack deployment, not multiplayer cEDH wins",
+  "paired": {
+    "v27": {
+      "T1": {
+        "delta_vs_original_v5_pp": 0.0,
+        "gains": 1,
+        "losses": 1,
+        "paired_bootstrap_95ci_pp": [
+          -18.75,
+          18.75
+        ]
+      },
+      "T2": {
+        "delta_vs_original_v5_pp": -12.5,
+        "gains": 1,
+        "losses": 3,
+        "paired_bootstrap_95ci_pp": [
+          -37.5,
+          12.5
+        ]
+      },
+      "T3": {
+        "delta_vs_original_v5_pp": 12.5,
+        "gains": 2,
+        "losses": 0,
+        "paired_bootstrap_95ci_pp": [
+          0.0,
+          31.25
+        ]
+      }
+    },
+    "v40_full": {
+      "T1": {
+        "delta_vs_original_v5_pp": -6.25,
+        "gains": 0,
+        "losses": 1,
+        "paired_bootstrap_95ci_pp": [
+          -18.75,
+          0.0
+        ]
+      },
+      "T2": {
+        "delta_vs_original_v5_pp": -12.5,
+        "gains": 1,
+        "losses": 3,
+        "paired_bootstrap_95ci_pp": [
+          -37.5,
+          12.5
+        ]
+      },
+      "T3": {
+        "delta_vs_original_v5_pp": 6.25,
+        "gains": 2,
+        "losses": 1,
+        "paired_bootstrap_95ci_pp": [
+          -12.5,
+          25.0
+        ]
+      }
+    },
+    "v40_portable": {
+      "T1": {
+        "delta_vs_original_v5_pp": -6.25,
+        "gains": 0,
+        "losses": 1,
+        "paired_bootstrap_95ci_pp": [
+          -18.75,
+          0.0
+        ]
+      },
+      "T2": {
+        "delta_vs_original_v5_pp": -12.5,
+        "gains": 1,
+        "losses": 3,
+        "paired_bootstrap_95ci_pp": [
+          -37.5,
+          12.5
+        ]
+      },
+      "T3": {
+        "delta_vs_original_v5_pp": 6.25,
+        "gains": 2,
+        "losses": 1,
+        "paired_bootstrap_95ci_pp": [
+          -12.5,
+          25.0
+        ]
+      }
+    }
+  },
+  "schema": "dack_v40_frozen_student_vs_original_v5_147k_N16_engineering_pilot",
+  "small_N_uncertainty_not_a_model_promotion": true,
+  "source_model_sha256": {
+    "full": "ce717c7c228ce2da6988e3be50c0f5782aaa1e6aaf4defe9c8f05a7c9eef4bda",
+    "portable": "e75c9f89c2fe69b4c2697a03e700a247305cc303dc8f92170999ad4d9c5542d3"
+  },
+  "status": "PASS"
+}
