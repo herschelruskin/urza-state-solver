@@ -1,0 +1,108 @@
+name: DACK v11 corrective combined fit from archived disjoint labels
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v11_corrective_archived_fit.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  validate_fit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Require 4 outcome classes in COMBINED training, and independent real T1 calibration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from collections import Counter
+          import glob,gzip,json
+          patterns=[
+            'datasets/natural_v8_20261031/offline_train_*.jsonl.gz',
+            'datasets/stratified_v9_20261031/v9_train_*.jsonl.gz',
+            'datasets/selected_v10_20261031/v10_train_*.jsonl.gz',
+            'datasets/corrective_learned_v11_20261031/v11_train_*.jsonl.gz',
+          ]
+          files=[p for pattern in patterns for p in glob.glob(pattern)]
+          assert len(files)==8+8+16+16,(len(files),files)
+          cal=glob.glob('datasets/corrective_learned_v11_20261031/v11_calibration_*.jsonl.gz')
+          assert len(cal)==16,len(cal)
+          def labels(paths,split):
+              groups=set();classes=Counter()
+              for path in paths:
+                  with gzip.open(path,'rt') as f:
+                      m=json.loads(next(f))
+                      assert m['split']==split
+                      assert m['rules']=='strict_state_stable_dice_actual_beam160'
+                      for line in f:
+                          r=json.loads(line)
+                          assert r['type']=='label'
+                          assert r['label_turn'] in (0,1,2,3)
+                          groups.add(int(r['game_id']))
+                          classes[r['label_turn']]+=1
+              return groups,classes
+          train_ids,train_classes=labels(files,'train')
+          cal_ids,cal_classes=labels(cal,'calibration')
+          assert train_ids.isdisjoint(cal_ids)
+          assert len(train_ids)==320 and len(cal_ids)==128,(len(train_ids),len(cal_ids))
+          assert sum(train_classes.values())==1408
+          assert sum(cal_classes.values())==512
+          assert min(train_classes[k] for k in range(4))>=8,train_classes
+          assert min(cal_classes[k] for k in range(4))>=8,cal_classes
+          print('CORRECTIVE_COMBINED_FIT_ALLOWED',json.dumps({
+              'training_groups':len(train_ids),
+              'calibration_groups':len(cal_ids),
+              'training_class_counts':{str(i):train_classes[i] for i in range(4)},
+              'calibration_class_counts':{str(i):cal_classes[i] for i in range(4)},
+              'corrective_train_T1_alone':5,
+              'reason':'prior enriched and natural training also included'
+          }),flush=True)
+          PY
+      - name: Install training-only statistical libraries
+        run: python -m pip install 'scikit-learn>=1.4,<2'
+      - name: Independently calibrate on never-trained learned-v8-selected natural hands
+        run: |
+          python -u dack_simulator/validation/train_offline_london_v8.py \
+            --train datasets/natural_v8_20261031/offline_train_*.jsonl.gz datasets/stratified_v9_20261031/v9_train_*.jsonl.gz datasets/selected_v10_20261031/v10_train_*.jsonl.gz datasets/corrective_learned_v11_20261031/v11_train_*.jsonl.gz \
+            --calibration datasets/corrective_learned_v11_20261031/v11_calibration_*.jsonl.gz \
+            --model models/dack_v11_corrective_EXPERIMENTAL.json \
+            --report benchmark_results/dack_v11_corrective_calibration_EXPERIMENTAL.json
+      - name: Assert model remains diagnostic-only and calibration scope is correct
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          model=json.loads(Path('models/dack_v11_corrective_EXPERIMENTAL.json').read_text())
+          report=json.loads(Path('benchmark_results/dack_v11_corrective_calibration_EXPERIMENTAL.json').read_text())
+          assert model['deployed_policy_approved'] is False
+          assert model['diagnostic_only'] is True
+          assert model['calibration_scope']=='frozen_learned_v8_policy_selected_hands_only'
+          assert model['calibration_is_enriched'] is False
+          assert report['n_train_groups']==320 and report['n_calibration_groups']==128
+          print('V11_CORRECTIVE_DIAGNOSTIC_MODEL_FIT_PASS',json.dumps({
+            'temperature':model['temperature'],
+            'calibration':report['calibration_metrics_used_to_choose_temperature_not_holdout'],
+            'calibration_scope':model['calibration_scope']}),flush=True)
+          PY
+      - name: Archive new model and report without modifying v10 frozen baseline
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f models/dack_v11_corrective_EXPERIMENTAL.json benchmark_results/dack_v11_corrective_calibration_EXPERIMENTAL.json
+          git commit -m "Train diagnostic v11 corrective four-outcome model with independent learned-policy calibration"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v11-corrective-combined-fit-diagnostic
+          path: |
+            models/dack_v11_corrective_EXPERIMENTAL.json
+            benchmark_results/dack_v11_corrective_calibration_EXPERIMENTAL.json
+          retention-days: 14
