@@ -1,0 +1,32 @@
+name: DACK v36 pre-outcome training seat-balance and weighting method audit
+on:
+  push:
+    branches: [dack-v36-targeted-keep-value-20261101]
+    paths:
+      - '.github/workflows/dack_v36_manifest_methods_audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  method:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: No-gameplay bias and stage-vs-seat quotas audit
+        run: |
+          python -m py_compile dack_simulator/validation/v36_manifest_methods_audit.py
+          python -u dack_simulator/validation/v36_manifest_methods_audit.py
+      - name: Archive selection-method limitation without changing original frozen manifest
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v36_preoutcome_selection_method_audit.json
+          git commit -m "Document selected 123k stage/action quotas and actual unbalanced seat census"
+          git pull --rebase origin dack-v36-targeted-keep-value-20261101
+          git push origin HEAD:dack-v36-targeted-keep-value-20261101
