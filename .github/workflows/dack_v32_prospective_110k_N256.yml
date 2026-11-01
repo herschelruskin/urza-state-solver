@@ -1,0 +1,74 @@
+name: DACK v32 prospective 110k strict physical N256 v5 v27 v32
+on:
+  push:
+    branches: [dack-v32-shared-continuation-calibration-20261031]
+    paths:
+      - '.github/workflows/dack_v32_prospective_110k_N256.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  compare:
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        start: [110000, 110004, 110008, 110012, 110016, 110020, 110024, 110028, 110032, 110036, 110040, 110044, 110048, 110052, 110056, 110060, 110064, 110068, 110072, 110076, 110080, 110084, 110088, 110092, 110096, 110100, 110104, 110108, 110112, 110116, 110120, 110124, 110128, 110132, 110136, 110140, 110144, 110148, 110152, 110156, 110160, 110164, 110168, 110172, 110176, 110180, 110184, 110188, 110192, 110196, 110200, 110204, 110208, 110212, 110216, 110220, 110224, 110228, 110232, 110236, 110240, 110244, 110248, 110252]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v32-shared-continuation-calibration-20261031
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Assert calibrated shared continuation frozen and strict rules
+        run: |
+          python -m compileall -q dack_paired_counterfactual_v32_shared_continuation_DP_20261101.py dack_simulator/validation/v32_compare_fresh_N256.py dack_simulator/validation/v32_pool_fresh_N256.py
+          python dack_paired_counterfactual_v32_shared_continuation_DP_20261101.py --audit
+      - name: Run four paired strict physical Dack goldfish games v5 v27 v32
+        run: |
+          python -u dack_simulator/validation/v32_compare_fresh_N256.py \
+            --start ${{ matrix.start }} --games 4 \
+            --out shards/v32_110k_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v32-110k-${{ matrix.start }}
+          path: shards/v32_110k_*.json.gz
+          retention-days: 30
+  pool:
+    needs: compare
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v32-shared-continuation-calibration-20261031
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v32-110k-*
+          merge-multiple: true
+          path: collected
+      - name: Pool N256 paired physical Turn1 Turn2 Turn3 and uncertainty
+        run: python -u dack_simulator/validation/v32_pool_fresh_N256.py
+      - name: Archive prospective outcomes without model promotion
+        run: |
+          mkdir -p benchmark_results/v32_110k_shards
+          cp collected/v32_110k_*.json.gz benchmark_results/v32_110k_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v32_110k_shards benchmark_results/v32_prospective_110k_N256.json
+          git commit -m "Archive v32 shared continuation prospective strict paired 110k N256 against v5 and v27"
+          git pull --rebase origin dack-v32-shared-continuation-calibration-20261031
+          git push origin HEAD:dack-v32-shared-continuation-calibration-20261031
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v32-110k-prospective-paired-N256-results
+          path: benchmark_results/v32_prospective_110k_N256.json
+          retention-days: 30
