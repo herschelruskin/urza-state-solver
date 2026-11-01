@@ -1,0 +1,146 @@
+{
+  "game_ids": [
+    96000,
+    96255
+  ],
+  "goldfish_gameplay_beam": 160,
+  "independent_paired_physical_game_ids": 256,
+  "interpretation": "Exploratory independent full-game comparison. Goldfish Dack deployment, not multiplayer win rate. No noninferiority claim without a predefined margin and appropriately powered prospective test.",
+  "matched_first_physical_seven_verified": true,
+  "metrics": {
+    "v14_128": {
+      "T1": 11,
+      "T2": 98,
+      "T3": 180,
+      "mean_keep_n": 5.23046875,
+      "n": 256,
+      "sum_simulation_seconds": 98.1517
+    },
+    "v22_real_keep_DP": {
+      "T1": 13,
+      "T2": 103,
+      "T3": 190,
+      "mean_keep_n": 5.83984375,
+      "n": 256,
+      "sum_simulation_seconds": 112.1858
+    },
+    "v5": {
+      "T1": 15,
+      "T2": 127,
+      "T3": 209,
+      "mean_keep_n": 4.984375,
+      "n": 256,
+      "sum_simulation_seconds": 6536.9498
+    }
+  },
+  "model_sha256": {
+    "models/dack_v22_all_stage_continuations_EXPERIMENTAL.json": "33192df51f9c90d054892aa6828ba94a1cfd165ba1a70505b0079b7f7343e5e3",
+    "models/dack_v22_real_all_stage_keep_value_EXPERIMENTAL.json": "b88dfab4e7d0d0b2b6a96e4a5a28b5af815b88408c6ae6f9cd2389ccd3bc4b6b",
+    "models/v14_curve/v14_teacher_groups_128.json": "19fdbf300afc1e4545b81767f8fbf3bbe6ebd7b33ad139e2aa9231e3215df8ff"
+  },
+  "mulligan_model_approved": false,
+  "observed_online_speedup_v5_over_v22": 58.26895917308608,
+  "paired": {
+    "v14_128_minus_v5": {
+      "T1": {
+        "delta_pp": -1.5625,
+        "exploratory_exact_mcnemar_two_sided_p": 0.2890625,
+        "gain_games": 2,
+        "loss_games": 6,
+        "paired_bootstrap_95ci_pp": [
+          -3.90625,
+          0.390625
+        ]
+      },
+      "T2": {
+        "delta_pp": -11.328125,
+        "exploratory_exact_mcnemar_two_sided_p": 0.0003367093494662382,
+        "gain_games": 17,
+        "loss_games": 46,
+        "paired_bootstrap_95ci_pp": [
+          -17.1875,
+          -5.46875
+        ]
+      },
+      "T3": {
+        "delta_pp": -11.328125,
+        "exploratory_exact_mcnemar_two_sided_p": 0.00015388902244434233,
+        "gain_games": 14,
+        "loss_games": 43,
+        "paired_bootstrap_95ci_pp": [
+          -16.796875,
+          -5.859375
+        ]
+      }
+    },
+    "v22_real_keep_DP_minus_v14_128": {
+      "T1": {
+        "delta_pp": 0.78125,
+        "exploratory_exact_mcnemar_two_sided_p": 0.6875,
+        "gain_games": 4,
+        "loss_games": 2,
+        "paired_bootstrap_95ci_pp": [
+          -1.171875,
+          2.734375
+        ]
+      },
+      "T2": {
+        "delta_pp": 1.953125,
+        "exploratory_exact_mcnemar_two_sided_p": 0.5223973804968409,
+        "gain_games": 22,
+        "loss_games": 17,
+        "paired_bootstrap_95ci_pp": [
+          -2.734375,
+          6.640625
+        ]
+      },
+      "T3": {
+        "delta_pp": 3.90625,
+        "exploratory_exact_mcnemar_two_sided_p": 0.19341265286193732,
+        "gain_games": 29,
+        "loss_games": 19,
+        "paired_bootstrap_95ci_pp": [
+          -1.5625,
+          9.375
+        ]
+      }
+    },
+    "v22_real_keep_DP_minus_v5": {
+      "T1": {
+        "delta_pp": -0.78125,
+        "exploratory_exact_mcnemar_two_sided_p": 0.625,
+        "gain_games": 1,
+        "loss_games": 3,
+        "paired_bootstrap_95ci_pp": [
+          -2.34375,
+          0.78125
+        ]
+      },
+      "T2": {
+        "delta_pp": -9.375,
+        "exploratory_exact_mcnemar_two_sided_p": 0.0036899642765400487,
+        "gain_games": 20,
+        "loss_games": 44,
+        "paired_bootstrap_95ci_pp": [
+          -15.234375,
+          -3.515625
+        ]
+      },
+      "T3": {
+        "delta_pp": -7.421875,
+        "exploratory_exact_mcnemar_two_sided_p": 0.018337087779101986,
+        "gain_games": 20,
+        "loss_games": 39,
+        "paired_bootstrap_95ci_pp": [
+          -13.28125,
+          -1.5625
+        ]
+      }
+    }
+  },
+  "prespecified_primary_endpoint": "cumulative by Turn 2; paired v22 minus v5",
+  "schema": "dack_v25_fresh_reference_full_game_N256",
+  "secondary_endpoints": "T1 and cumulative T3 descriptive",
+  "status": "PASS",
+  "training_use_forbidden": "96k outer-game IDs reserved as evaluation only"
+}
