@@ -1,0 +1,44 @@
+name: DACK v35 train ONLY from archived 115k calibration and 116k train
+on:
+  push:
+    branches: [dack-v35-early-action-regret-20261101]
+    paths:
+      - '.github/workflows/dack_v35_train_only.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  train-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Assert feature legality and code compile
+        run: |
+          python -m py_compile dack_mulligan_v35_action_features.py dack_mulligan_v35_action_regret.py dack_simulator/validation/v35_train_action_regret.py
+          python dack_mulligan_v35_action_regret.py
+          python dack_mulligan_v35_action_features.py
+      - name: Train only on 115k calibration and 116k physical outcome labels
+        run: python -u dack_simulator/validation/v35_train_action_regret.py
+      - name: Commit and retain experimental, nonapproved model and source provenance
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f models/dack_v35_early_action_regret_EXPERIMENTAL.json benchmark_results/v35_train_only_diagnostic.json
+          git commit -m "Archive unapproved v35 group-bootstrap action regret trained without validation"
+          git pull --rebase origin dack-v35-early-action-regret-20261101
+          git push origin HEAD:dack-v35-early-action-regret-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v35-train-only-experimental
+          path: |
+            models/dack_v35_early_action_regret_EXPERIMENTAL.json
+            benchmark_results/v35_train_only_diagnostic.json
+          retention-days: 30
