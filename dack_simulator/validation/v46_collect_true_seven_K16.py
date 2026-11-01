@@ -47,7 +47,7 @@ def one(gid):
         for j in range(FUTURES):
             sh=list(unknown)
             random.Random(k.stable_seed("v46_new_K_unseen92",gid,stage,j)).shuffle(sh)
-            state=ref.d.State(1,seven,tuple(sh))
+            state=ref.d.State(1,tuple(sel["hand"]),tuple(sh))
             turns.append(game(state,seat,k.stable_seed("v46_new_K_chance",gid,stage,j)))
         rows.append({
            "gid":gid,"seat":seat,"stage":stage,"seven":list(seven),
