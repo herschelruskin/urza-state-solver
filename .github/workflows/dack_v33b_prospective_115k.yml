@@ -1,0 +1,74 @@
+name: DACK v33b prospective strict physical 115k N256 v5 v27 regret-bottom
+on:
+  push:
+    branches: [dack-v33b-capability-regret-20261101]
+    paths:
+      - '.github/workflows/dack_v33b_prospective_115k.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  compare:
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        start: [115000, 115004, 115008, 115012, 115016, 115020, 115024, 115028, 115032, 115036, 115040, 115044, 115048, 115052, 115056, 115060, 115064, 115068, 115072, 115076, 115080, 115084, 115088, 115092, 115096, 115100, 115104, 115108, 115112, 115116, 115120, 115124, 115128, 115132, 115136, 115140, 115144, 115148, 115152, 115156, 115160, 115164, 115168, 115172, 115176, 115180, 115184, 115188, 115192, 115196, 115200, 115204, 115208, 115212, 115216, 115220, 115224, 115228, 115232, 115236, 115240, 115244, 115248, 115252]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v33b-capability-regret-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and audit unmodified engine/frozen keep/bottom-only policy
+        run: |
+          python -m py_compile dack_paired_counterfactual_v33b_regret_bottom_only_20261101.py dack_simulator/validation/v33b_prospective_115k_compare.py dack_simulator/validation/v33b_pool_prospective_115k.py
+          python dack_paired_counterfactual_v33b_regret_bottom_only_20261101.py --audit
+      - name: Four matched complete goldfish games across three policies
+        run: |
+          python -u dack_simulator/validation/v33b_prospective_115k_compare.py \
+            --start ${{ matrix.start }} --out shards/v33b_115k_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v33b-115k-${{ matrix.start }}
+          path: shards/v33b_115k_*.json.gz
+          retention-days: 30
+  pool:
+    needs: compare
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v33b-capability-regret-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v33b-115k-*
+          merge-multiple: true
+          path: collected
+      - name: Verify 256 histories and pool prospective T1 T2 T3 and CPU
+        run: python -u dack_simulator/validation/v33b_pool_prospective_115k.py
+      - name: Archive research-only 64 complete physical-game shards
+        run: |
+          mkdir -p benchmark_results/v33b_prospective_115k_shards
+          cp collected/v33b_115k_*.json.gz benchmark_results/v33b_prospective_115k_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v33b_prospective_115k_shards benchmark_results/v33b_prospective_115k_N256.json
+          git commit -m "Archive v33b paired full-game strict 115k N256 prospective deployment and runtime"
+          git pull --rebase origin dack-v33b-capability-regret-20261101
+          git push origin HEAD:dack-v33b-capability-regret-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v33b-prospective-115k-paired-N256-results
+          path: benchmark_results/v33b_prospective_115k_N256.json
+          retention-days: 30
