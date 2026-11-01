@@ -1,0 +1,77 @@
+name: DACK v40 frozen teacher-students strict N16 full-game physical pilot
+on:
+  push:
+    branches: [dack-v40-true-disagreement-reassessment-20261101]
+    paths:
+      - '.github/workflows/dack_v40_fresh_physical_n16_pilot.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  paired:
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        start: [147000,147004,147008,147012]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v40-true-disagreement-reassessment-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and audit frozen no-beam teacher-student wrapper
+        run: |
+          python -m py_compile dack_paired_counterfactual_v40_true_v5_student_20261101.py dack_simulator/validation/v40_fresh_physical_n16_pilot.py
+          python dack_paired_counterfactual_v40_true_v5_student_20261101.py --audit --mode portable
+          python dack_paired_counterfactual_v40_true_v5_student_20261101.py --audit --mode full
+      - name: Match original v5 v27 and two frozen students on four physical games
+        run: |
+          python -u dack_simulator/validation/v40_fresh_physical_n16_pilot.py \
+            --start ${{ matrix.start }} --out shards/v40_147k_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v40-147k-physical-${{ matrix.start }}
+          path: shards/v40_147k_*.json.gz
+          retention-days: 60
+  pool:
+    needs: paired
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v40-true-disagreement-reassessment-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v40-147k-physical-*
+          merge-multiple: true
+          path: collected
+      - name: Full N16 denominator and paired deployment outcome audit
+        run: |
+          python -u dack_simulator/validation/v40_pool_fresh_physical_n16.py \
+            --source 'collected/v40_147k_*.json.gz' \
+            --out benchmark_results/v40_fresh_147k_N16_strict_pilot.json
+      - name: Archive pilot, never approve
+        run: |
+          mkdir -p benchmark_results/v40_fresh_147k_N16_shards
+          cp collected/v40_147k_*.json.gz benchmark_results/v40_fresh_147k_N16_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v40_fresh_147k_N16_strict_pilot.json benchmark_results/v40_fresh_147k_N16_shards
+          git commit -m "Archive predeclared physical N16 original-v5-v27-two-v40 student pilot"
+          git pull --rebase origin dack-v40-true-disagreement-reassessment-20261101
+          git push origin HEAD:dack-v40-true-disagreement-reassessment-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v40-147k-N16-physical-results
+          path: benchmark_results/v40_fresh_147k_N16_strict_pilot.json
+          retention-days: 60
