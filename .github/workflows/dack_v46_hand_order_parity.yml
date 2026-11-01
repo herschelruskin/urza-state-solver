@@ -1,0 +1,15 @@
+name: DACK v46 strict seven-hand ordering physical parity
+on:
+  push:
+    branches: [dack-v46-first-two-sevens-physical-Q2-20261101]
+    paths: ['.github/workflows/dack_v46_hand_order_parity.yml']
+jobs:
+  assert_no_hidden_card_ordering_artifact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v46-first-two-sevens-physical-Q2-20261101
+      - name: Verify original physical outcome parity for 48 sevens in both representations
+        run: python -u dack_simulator/validation/v46_seven_hand_order_parity.py
