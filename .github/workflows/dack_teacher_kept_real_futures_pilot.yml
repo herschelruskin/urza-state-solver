@@ -1,0 +1,49 @@
+name: DACK v14 real T1 T2 T3 futures on teacher-kept hand pilot
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_teacher_kept_real_futures_pilot.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  labels:
+    strategy:
+      fail-fast: false
+      matrix:
+        gid: [60000,60001,60002,60003]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Four independent actual physical futures per true v5-kept hand
+        run: |
+          python -m compileall -q dack_simulator/validation/label_teacher_kept_futures_v14.py
+          python -u dack_simulator/validation/label_teacher_kept_futures_v14.py \
+            --teacher-stage-file datasets/teacher_v13_20261031/distill_v13_train_${{ matrix.gid }}.jsonl.gz \
+            --out datasets/true_outcomes_${{ matrix.gid }}.jsonl.gz --draws 4
+      - name: Audit independent conditional outcome labels without future order
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import gzip,json
+          p=list(Path('datasets').glob('true_outcomes_*.jsonl.gz'))
+          assert len(p)==1
+          with gzip.open(p[0],'rt') as fp:
+              m=json.loads(next(fp));rows=[json.loads(x) for x in fp]
+          assert m['source_teacher']=='dack_stable_dice_strict_bounded_witness_v5'
+          assert len(rows)==4 and [r['future_index'] for r in rows]==list(range(4))
+          assert all(x['label_turn'] in (0,1,2,3) for x in rows)
+          assert all(sum(x['unknown_counts'].values())==92 for x in rows)
+          assert all(not any(k in x for k in ('future_order','actual_library','first3','sampled_order')) for x in rows)
+          print('V14_TEACHER_POLICY_REAL_OUTCOME_PILOT_PASS',p[0].name,flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v14-true-teacher-outcomes-${{ matrix.gid }}
+          path: datasets/true_outcomes_*.jsonl.gz
+          retention-days: 21
