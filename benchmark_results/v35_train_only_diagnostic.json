@@ -1,0 +1,25 @@
+{
+  "117k_and_115k_replication_excluded": true,
+  "T2_training_label_nonzero": 548,
+  "feature_dim": 19,
+  "group_bootstrap_models": 24,
+  "groups": 164,
+  "model_sha256": "eb943aa0c65e3d00e7f6f22f32afc3477b9ab1cfdfcbb473f81a0bbf8c911e02",
+  "policy_approved": false,
+  "schema": "dack_v35_train_only_group_bootstrap_ridge",
+  "states": 548,
+  "status": "PASS",
+  "training_source": {
+    "not_used": [
+      "117k validation",
+      "v34c replication",
+      "115k realized full-game win turns",
+      "v5 action imitation"
+    ],
+    "training_115k_selected_disagreement_games": 100,
+    "training_116k_physical_games": 64,
+    "v34_shared_C_train_futures_per_cell": 64,
+    "v34_uniform_train_keep_futures": 8,
+    "v34c_CALIBRATION_only_keep_futures": 16
+  }
+}
