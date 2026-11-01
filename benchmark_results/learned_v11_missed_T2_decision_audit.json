@@ -1,0 +1,525 @@
+{
+  "schema": "dack_v11_learned_policy_missed_T2_diagnostic",
+  "source_workflow": 41255014354,
+  "game_seed_range": [
+    42000,
+    42015
+  ],
+  "n": 16,
+  "lost_T2_games": 3,
+  "gained_T2_games": 0,
+  "model_approved": false,
+  "n_losses_different_keep_stage": 3,
+  "n_losses_same_stage_different_hand": 0,
+  "n_losses_model_values_learner_higher": 1,
+  "note": "Utilities are model predictions conditional on each distinct keep stage; they are not directly comparable to observed oracle win labels in one game.",
+  "loss_details": [
+    {
+      "v5": {
+        "win_turn": 2,
+        "keep_n": 5,
+        "stage": 3,
+        "seven": [
+          "City of Traitors",
+          "The Mycosynth Gardens",
+          "Homeward Path",
+          "Roaming Throne",
+          "Enlightened Tutor",
+          "Mana Tithe",
+          "Plains"
+        ],
+        "kept_hand": [
+          "City of Traitors",
+          "Enlightened Tutor",
+          "Homeward Path",
+          "Plains",
+          "The Mycosynth Gardens"
+        ],
+        "bottom": [
+          "Roaming Throne",
+          "Mana Tithe"
+        ],
+        "predicted_by_v11_model": {
+          "p0": 0.07816727142858756,
+          "p1": 0.006609818263706282,
+          "p2": 0.5043062794157012,
+          "p3": 0.410916630892005,
+          "utility": 0.71637441312541
+        },
+        "mulligan_history": [
+          {
+            "stage": 0,
+            "keep_n": 7,
+            "raw": 0.0,
+            "threshold": 0.75603,
+            "kept": false
+          },
+          {
+            "stage": 1,
+            "keep_n": 7,
+            "raw": 0.59375,
+            "threshold": 0.75603,
+            "kept": false
+          },
+          {
+            "stage": 2,
+            "keep_n": 6,
+            "raw": 0.5625,
+            "threshold": 0.63025,
+            "kept": false
+          },
+          {
+            "stage": 3,
+            "keep_n": 5,
+            "raw": 1.0,
+            "threshold": 0.47768,
+            "kept": true
+          }
+        ]
+      },
+      "learned": {
+        "win_turn": 3,
+        "keep_n": 6,
+        "stage": 2,
+        "seven": [
+          "Enlightened Tutor",
+          "Plains",
+          "Floating Shield",
+          "Cavern of Souls",
+          "Voltaic Key",
+          "Mana Tithe",
+          "Everflowing Chalice"
+        ],
+        "kept_hand": [
+          "Cavern of Souls",
+          "Enlightened Tutor",
+          "Everflowing Chalice",
+          "Mana Tithe",
+          "Plains",
+          "Voltaic Key"
+        ],
+        "bottom": [
+          "Floating Shield"
+        ],
+        "predicted_by_v11_model": {
+          "p0": 0.1940837936756419,
+          "p1": 0.001618423616898214,
+          "p2": 0.3941959031449822,
+          "p3": 0.41010187956247773,
+          "utility": 0.6008652665431193
+        },
+        "mulligan_history": [
+          {
+            "stage": 0,
+            "keep_n": 7,
+            "raw": 0.522957,
+            "threshold": 0.621402,
+            "kept": false
+          },
+          {
+            "stage": 1,
+            "keep_n": 7,
+            "raw": 0.5422059,
+            "threshold": 0.6027718,
+            "kept": false
+          },
+          {
+            "stage": 2,
+            "keep_n": 6,
+            "raw": 0.6008653,
+            "threshold": 0.5589054,
+            "kept": true
+          }
+        ]
+      },
+      "same_kept_stage": false,
+      "same_kept_hand": false,
+      "learned_minus_reference_model_utility": -0.11550914658229061,
+      "game_id": 42004,
+      "T2_regret_realized": 1
+    },
+    {
+      "v5": {
+        "win_turn": 2,
+        "keep_n": 3,
+        "stage": 5,
+        "seven": [
+          "Eldrazi Confluence",
+          "Ruins of Trokair",
+          "Enlightened Tutor",
+          "Plains",
+          "Razorgrass Ambush",
+          "The Mycosynth Gardens",
+          "Static Prison"
+        ],
+        "kept_hand": [
+          "Enlightened Tutor",
+          "Plains",
+          "The Mycosynth Gardens"
+        ],
+        "bottom": [
+          "Eldrazi Confluence",
+          "Ruins of Trokair",
+          "Razorgrass Ambush",
+          "Static Prison"
+        ],
+        "predicted_by_v11_model": {
+          "p0": 0.20489885181810202,
+          "p1": 0.0032177952150889044,
+          "p2": 0.16902221504140214,
+          "p3": 0.6228611379254069,
+          "utility": 0.4836705792191945
+        },
+        "mulligan_history": [
+          {
+            "stage": 0,
+            "keep_n": 7,
+            "raw": 0.1875,
+            "threshold": 0.75603,
+            "kept": false
+          },
+          {
+            "stage": 1,
+            "keep_n": 7,
+            "raw": 0.53125,
+            "threshold": 0.75603,
+            "kept": false
+          },
+          {
+            "stage": 2,
+            "keep_n": 6,
+            "raw": 0.5625,
+            "threshold": 0.63025,
+            "kept": false
+          },
+          {
+            "stage": 3,
+            "keep_n": 5,
+            "raw": 0.1875,
+            "threshold": 0.47768,
+            "kept": false
+          },
+          {
+            "stage": 4,
+            "keep_n": 4,
+            "raw": 0.1875,
+            "threshold": 0.32919,
+            "kept": false
+          },
+          {
+            "stage": 5,
+            "keep_n": 3,
+            "raw": 1.0,
+            "threshold": 0.19234,
+            "kept": true
+          }
+        ]
+      },
+      "learned": {
+        "win_turn": 0,
+        "keep_n": 7,
+        "stage": 1,
+        "seven": [
+          "Tezzeret, Cruel Captain",
+          "Mox Opal",
+          "Grim Monolith",
+          "Command Beacon",
+          "Plains",
+          "Blast Zone",
+          "Trinisphere"
+        ],
+        "kept_hand": [
+          "Blast Zone",
+          "Command Beacon",
+          "Grim Monolith",
+          "Mox Opal",
+          "Plains",
+          "Tezzeret, Cruel Captain",
+          "Trinisphere"
+        ],
+        "bottom": [],
+        "predicted_by_v11_model": {
+          "p0": 0.2457887966506108,
+          "p1": 0.02822711020201771,
+          "p2": 0.5306719285937633,
+          "p3": 0.19531216455360814,
+          "utility": 0.6565551210725852
+        },
+        "mulligan_history": [
+          {
+            "stage": 0,
+            "keep_n": 7,
+            "raw": 0.2826041,
+            "threshold": 0.6338212,
+            "kept": false
+          },
+          {
+            "stage": 1,
+            "keep_n": 7,
+            "raw": 0.6565551,
+            "threshold": 0.6020901,
+            "kept": true
+          }
+        ]
+      },
+      "same_kept_stage": false,
+      "same_kept_hand": false,
+      "learned_minus_reference_model_utility": 0.1728845418533907,
+      "game_id": 42007,
+      "T2_regret_realized": 1
+    },
+    {
+      "v5": {
+        "win_turn": 2,
+        "keep_n": 7,
+        "stage": 0,
+        "seven": [
+          "Ancient Den",
+          "Mind Stone",
+          "Gemstone Caverns",
+          "The Mycosynth Gardens",
+          "Enlightened Tutor",
+          "Plains",
+          "Basalt Monolith"
+        ],
+        "kept_hand": [
+          "Ancient Den",
+          "Basalt Monolith",
+          "Enlightened Tutor",
+          "Gemstone Caverns",
+          "Mind Stone",
+          "Plains",
+          "The Mycosynth Gardens"
+        ],
+        "bottom": [],
+        "predicted_by_v11_model": {
+          "p0": 0.029782175449872324,
+          "p1": 0.010271275567571948,
+          "p2": 0.2401997230469081,
+          "p3": 0.7197468259356478,
+          "utility": 0.6103444115823039
+        },
+        "mulligan_history": [
+          {
+            "stage": 0,
+            "keep_n": 7,
+            "raw": 1.0,
+            "threshold": 0.75603,
+            "kept": true
+          }
+        ]
+      },
+      "learned": {
+        "win_turn": 0,
+        "keep_n": 3,
+        "stage": 5,
+        "seven": [
+          "Vexing Bauble",
+          "Ancient Den",
+          "Great Hall of the Citadel",
+          "Mind Stone",
+          "Lotus Petal",
+          "Plains",
+          "Plains"
+        ],
+        "kept_hand": [
+          "Ancient Den",
+          "Mind Stone",
+          "Plains"
+        ],
+        "bottom": [
+          "Vexing Bauble",
+          "Great Hall of the Citadel",
+          "Lotus Petal",
+          "Plains"
+        ],
+        "predicted_by_v11_model": {
+          "p0": 0.48936699892050006,
+          "p1": 0.0014339831831646185,
+          "p2": 0.03157473842458255,
+          "p3": 0.4776242794717527,
+          "utility": 0.2718208613436235
+        },
+        "mulligan_history": [
+          {
+            "stage": 0,
+            "keep_n": 7,
+            "raw": 0.6103444,
+            "threshold": 0.6338212,
+            "kept": false
+          },
+          {
+            "stage": 1,
+            "keep_n": 7,
+            "raw": 0.3082973,
+            "threshold": 0.6020901,
+            "kept": false
+          },
+          {
+            "stage": 2,
+            "keep_n": 6,
+            "raw": 0.2377882,
+            "threshold": 0.5513132,
+            "kept": false
+          },
+          {
+            "stage": 3,
+            "keep_n": 5,
+            "raw": 0.2656381,
+            "threshold": 0.4615957,
+            "kept": false
+          },
+          {
+            "stage": 4,
+            "keep_n": 4,
+            "raw": 0.1824044,
+            "threshold": 0.3529406,
+            "kept": false
+          },
+          {
+            "stage": 5,
+            "keep_n": 3,
+            "raw": 0.2718209,
+            "threshold": 0.2636904,
+            "kept": true
+          }
+        ]
+      },
+      "same_kept_stage": false,
+      "same_kept_hand": false,
+      "learned_minus_reference_model_utility": -0.3385235502386804,
+      "game_id": 42008,
+      "T2_regret_realized": 1
+    }
+  ],
+  "all_games_minimal": [
+    {
+      "game_id": 42000,
+      "v5_win": 0,
+      "learned_win": 0,
+      "v5_keep_n": 4,
+      "learned_keep_n": 6,
+      "same_stage": false
+    },
+    {
+      "game_id": 42001,
+      "v5_win": 3,
+      "learned_win": 3,
+      "v5_keep_n": 4,
+      "learned_keep_n": 4,
+      "same_stage": true
+    },
+    {
+      "game_id": 42002,
+      "v5_win": 3,
+      "learned_win": 3,
+      "v5_keep_n": 4,
+      "learned_keep_n": 4,
+      "same_stage": true
+    },
+    {
+      "game_id": 42003,
+      "v5_win": 3,
+      "learned_win": 3,
+      "v5_keep_n": 5,
+      "learned_keep_n": 7,
+      "same_stage": false
+    },
+    {
+      "game_id": 42004,
+      "v5_win": 2,
+      "learned_win": 3,
+      "v5_keep_n": 5,
+      "learned_keep_n": 6,
+      "same_stage": false
+    },
+    {
+      "game_id": 42005,
+      "v5_win": 3,
+      "learned_win": 3,
+      "v5_keep_n": 2,
+      "learned_keep_n": 2,
+      "same_stage": true
+    },
+    {
+      "game_id": 42006,
+      "v5_win": 3,
+      "learned_win": 3,
+      "v5_keep_n": 5,
+      "learned_keep_n": 5,
+      "same_stage": true
+    },
+    {
+      "game_id": 42007,
+      "v5_win": 2,
+      "learned_win": 0,
+      "v5_keep_n": 3,
+      "learned_keep_n": 7,
+      "same_stage": false
+    },
+    {
+      "game_id": 42008,
+      "v5_win": 2,
+      "learned_win": 0,
+      "v5_keep_n": 7,
+      "learned_keep_n": 3,
+      "same_stage": false
+    },
+    {
+      "game_id": 42009,
+      "v5_win": 3,
+      "learned_win": 3,
+      "v5_keep_n": 6,
+      "learned_keep_n": 6,
+      "same_stage": true
+    },
+    {
+      "game_id": 42010,
+      "v5_win": 3,
+      "learned_win": 3,
+      "v5_keep_n": 4,
+      "learned_keep_n": 4,
+      "same_stage": true
+    },
+    {
+      "game_id": 42011,
+      "v5_win": 0,
+      "learned_win": 0,
+      "v5_keep_n": 2,
+      "learned_keep_n": 2,
+      "same_stage": true
+    },
+    {
+      "game_id": 42012,
+      "v5_win": 3,
+      "learned_win": 3,
+      "v5_keep_n": 3,
+      "learned_keep_n": 3,
+      "same_stage": true
+    },
+    {
+      "game_id": 42013,
+      "v5_win": 3,
+      "learned_win": 0,
+      "v5_keep_n": 6,
+      "learned_keep_n": 4,
+      "same_stage": false
+    },
+    {
+      "game_id": 42014,
+      "v5_win": 0,
+      "learned_win": 3,
+      "v5_keep_n": 6,
+      "learned_keep_n": 4,
+      "same_stage": false
+    },
+    {
+      "game_id": 42015,
+      "v5_win": 0,
+      "learned_win": 3,
+      "v5_keep_n": 3,
+      "learned_keep_n": 6,
+      "same_stage": false
+    }
+  ]
+}
