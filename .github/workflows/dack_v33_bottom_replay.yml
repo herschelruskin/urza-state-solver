@@ -1,0 +1,74 @@
+name: DACK v33 conditional bottom replay N56 x 16 (strict beam160)
+on:
+  push:
+    branches: [dack-v33-attribution-first-20261101]
+    paths:
+      - '.github/workflows/dack_v33_bottom_replay.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  matched-bottom:
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        block: [0,1,2,3,4,5,6,7]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v33-attribution-first-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile bounded experiment and verify full v5 strict rules
+        run: |
+          python -m py_compile dack_simulator/validation/v33_same_stage_bottom_replay.py dack_simulator/validation/v33_pool_same_stage_bottom.py
+          python dack_paired_counterfactual_v5_stable_chance_20261031.py --audit
+      - name: Eight plus eight fresh futures per arm for seven selected groups
+        run: |
+          python -u dack_simulator/validation/v33_same_stage_bottom_replay.py \
+            --block ${{ matrix.block }} --out shards/v33_bottom_${{ matrix.block }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v33-conditional-bottom-block-${{ matrix.block }}
+          path: shards/v33_bottom_*.json.gz
+          retention-days: 30
+  pool:
+    needs: matched-bottom
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v33-attribution-first-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v33-conditional-bottom-block-*
+          merge-multiple: true
+          path: collected
+      - name: Independent physical-group bootstrap, both splits and pooled
+        run: python -u dack_simulator/validation/v33_pool_same_stage_bottom.py
+      - name: Archive immutable v33 results to isolated branch
+        run: |
+          mkdir -p benchmark_results/v33_bottom_replay_shards
+          cp collected/v33_bottom_*.json.gz benchmark_results/v33_bottom_replay_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v33_bottom_replay_shards benchmark_results/v33_bottom_replay_N56_x16.json
+          git commit -m "Archive v33 matched-bottom independent physical future counterfactuals"
+          git pull --rebase origin dack-v33-attribution-first-20261101
+          git push origin HEAD:dack-v33-attribution-first-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v33-conditional-bottom-pooled-results
+          path: benchmark_results/v33_bottom_replay_N56_x16.json
+          retention-days: 30
