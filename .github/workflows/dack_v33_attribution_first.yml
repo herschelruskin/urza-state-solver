@@ -1,0 +1,43 @@
+name: DACK v33 attribution-first frozen archives (no beam)
+on:
+  push:
+    branches: [dack-v33-attribution-first-20261101]
+    paths:
+      - '.github/workflows/dack_v33_attribution_first.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  readonly-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v33-attribution-first-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and self-test attribution without engine imports
+        run: |
+          python -m py_compile dack_simulator/validation/v33_attribution_first_readonly.py
+          python dack_simulator/validation/v33_attribution_first_readonly.py --selftest
+      - name: Compare archived paired games and controlled interventions
+        run: |
+          python dack_simulator/validation/v33_attribution_first_readonly.py \
+            --out benchmark_results/v33_attribution_first_readonly.json
+      - name: Archive diagnostic only to isolated branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v33_attribution_first_readonly.json
+          git commit -m "Archive v33 read-only attribution audit (no model promotion)"
+          git pull --rebase origin dack-v33-attribution-first-20261101
+          git push origin HEAD:dack-v33-attribution-first-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v33-readonly-attribution
+          path: benchmark_results/v33_attribution_first_readonly.json
+          retention-days: 30
