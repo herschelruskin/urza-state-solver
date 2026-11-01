@@ -30,7 +30,9 @@ CHILD=(
     "print('RESEARCH_GAME',json.dumps({'seat':r['seat'],"
     "'win_turn':r['win_turn'],'keep_n':r['keep_n'],"
     "'hand':r['hand'],'history':r['history'],"
-    "'first3':r['first3'],'seconds':round(time.perf_counter()-start,4),"\n    "'fallback_stages':int(getattr(p,'STATS',{}).get('beam_fallback_stages',0)),"\n    "'total_london_stages':int(getattr(p,'STATS',{}).get('london_stages',0))}),flush=True)\n"
+    "'first3':r['first3'],'seconds':round(time.perf_counter()-start,4),"
+    "'fallback_stages':int(getattr(p,'STATS',{}).get('beam_fallback_stages',0)),"
+    "'total_london_stages':int(getattr(p,'STATS',{}).get('london_stages',0))}),flush=True)\n"
 )
 
 def one(policy,game_id,variant):
