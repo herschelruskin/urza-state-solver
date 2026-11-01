@@ -1,0 +1,65 @@
+name: DACK v46 fit physical early-seven ridge and stage-isolated heldout N64 dev gate
+on:
+  push:
+    branches: [dack-v46-first-two-sevens-physical-Q2-20261101]
+    paths:
+      - '.github/workflows/dack_v46_fit_dev_N64.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  train_and_gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v46-first-two-sevens-physical-Q2-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Offline-only scientific fitting dependencies
+        run: python -m pip install 'numpy>=1.26,<3' 'scikit-learn>=1.4,<1.8'
+      - name: Validate archived K/C source, physics, sample disjointness and stage-isolated model
+        run: |
+          python -m py_compile dack_simulator/validation/v46_fit_and_dev_stage01.py
+          python -u dack_simulator/validation/v46_fit_and_dev_stage01.py \
+            --folder benchmark_results/v46_163k_early_K_C_shards \
+            --model models/v46_early_Q2_residual_RESEARCH.json \
+            --out benchmark_results/v46_first_two_sevens_random_dev_N64.json
+      - name: Prevent accidental combined-stage approval or development-as-validation claims
+        run: |
+          python - <<'PY'
+          import json,hashlib
+          from pathlib import Path
+          p=Path('benchmark_results/v46_first_two_sevens_random_dev_N64.json')
+          d=json.loads(p.read_text())
+          m=Path('models/v46_early_Q2_residual_RESEARCH.json')
+          r=json.loads(m.read_text())
+          assert d['status']=='PASS' and d['train_outer_independent_deals']==192
+          assert d['dev_outer_independent_deals']==64
+          assert d['train_K_physical_futures']==6144 and d['dev_K_physical_futures']==2048
+          assert d['new_shared_C_real_futures']==1024
+          assert d['no_model_or_policy_approved'] and not r['policy_approved']
+          assert d['DO_NOT_combine_stage0_and_stage1_without_NEW_stage0_C']
+          assert d['source_model_sha256']==hashlib.sha256(m.read_bytes()).hexdigest()
+          assert d['new_164k_future_full_game_test_UNOPENED']
+          print("DACK_V46_N192_TRAIN_N64_DEV_PHYSICAL_CONTINUATION_AND_UNOPENED_164K_GATE_PASS")
+          print("DACK_V46_DEV_GATE",json.dumps(d['preferred_development_candidate_if_any'],sort_keys=True))
+          PY
+      - name: Archive original data split and frozen research-only model with no promotion
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f models/v46_early_Q2_residual_RESEARCH.json benchmark_results/v46_first_two_sevens_random_dev_N64.json
+          git commit -m "Archive stage0-stage1 real physical Q2 calibration model and untouched-group development screen"
+          git pull --rebase origin dack-v46-first-two-sevens-physical-Q2-20261101
+          git push origin HEAD:dack-v46-first-two-sevens-physical-Q2-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v46-first-two-seven-N192fit-N64dev-physical-conditional
+          path: |
+            models/v46_early_Q2_residual_RESEARCH.json
+            benchmark_results/v46_first_two_sevens_random_dev_N64.json
+          retention-days: 90
