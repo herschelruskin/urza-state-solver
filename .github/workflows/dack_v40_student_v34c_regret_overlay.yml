@@ -1,0 +1,55 @@
+name: DACK v40 read-only physical action regret overlay on 100 archived disagreements
+on:
+  push:
+    branches: [dack-v40-true-disagreement-reassessment-20261101]
+    paths:
+      - '.github/workflows/dack_v40_student_v34c_regret_overlay.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  overlay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v40-true-disagreement-reassessment-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile read-only physical overlay
+        run: python -m py_compile dack_simulator/validation/v40_student_115k_physical_overlay.py
+      - name: Compare both frozen students to v5/v27 on previously physically audited first disagreements
+        run: |
+          python -u dack_simulator/validation/v40_student_115k_physical_overlay.py \
+            --out benchmark_results/v40_student_v5_vs_v27_115k_physical_overlay.json
+      - name: Assert all first-disagreement source groups and no outcomes for model fitting
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('benchmark_results/v40_student_v5_vs_v27_115k_physical_overlay.json')
+          r=json.loads(p.read_text())
+          assert r['status']=='PASS' and not r['population_winrate_claim_permitted']
+          assert r['no_new_physics_no_fit_no_v5_lookahead']
+          for mode in ('full','portable'):
+              assert r['models'][mode]['counts']['total']==100
+              assert len(r['models'][mode]['per_game'])==100
+          print('DACK_V40_OVERLAY_GUARDS_PASS')
+          PY
+      - name: Archive outcome-blind policy audit (NOT a prospective winrate)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v40_student_v5_vs_v27_115k_physical_overlay.json
+          git commit -m "Archive v40 true-v5 imitation model's conditional physical action-regret overlay on 115k"
+          git pull --rebase origin dack-v40-true-disagreement-reassessment-20261101
+          git push origin HEAD:dack-v40-true-disagreement-reassessment-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v40-student-archived-first-regret-overlay
+          path: benchmark_results/v40_student_v5_vs_v27_115k_physical_overlay.json
+          retention-days: 60
