@@ -1,0 +1,114 @@
+name: DACK v46 real physical Qkeep K16 and full99 C128 for first two sevens
+on:
+  push:
+    branches: [dack-v46-first-two-sevens-physical-Q2-20261101]
+    paths:
+      - '.github/workflows/dack_v46_163k_physical_early_K_C.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  K:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        start: [163000,163016,163032,163048,163064,163080,163096,163112,163128,163144,163160,163176,163192,163208,163224,163240]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v46-first-two-sevens-physical-Q2-20261101
+      - name: Physically sample 16 independent unseen92 futures for both legal seven-card stages
+        run: |
+          python -m py_compile dack_simulator/validation/v46_collect_stage01_K16.py
+          python -u dack_simulator/validation/v46_collect_stage01_K16.py \
+            --start ${{ matrix.start }} --out shards/v46_K_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v46-K-${{ matrix.start }}
+          path: shards/v46_K_*.json.gz
+          retention-days: 90
+  C:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        seat: [0,1,2,3]
+        stage: [0,1]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v46-first-two-sevens-physical-Q2-20261101
+      - name: Build true frozen v43 new all99 shared C128 for each seat and stage
+        run: |
+          python -m py_compile dack_simulator/validation/v46_collect_stage01_C128.py
+          python -u dack_simulator/validation/v46_collect_stage01_C128.py \
+            --seat ${{ matrix.seat }} --stage ${{ matrix.stage }} \
+            --out shards/v46_C_${{ matrix.seat }}_${{ matrix.stage }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v46-C-${{ matrix.seat }}-${{ matrix.stage }}
+          path: shards/v46_C_*.json.gz
+          retention-days: 90
+  archive:
+    needs: [K,C]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v46-first-two-sevens-physical-Q2-20261101
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v46-K-*
+          merge-multiple: true
+          path: collected
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v46-C-*
+          merge-multiple: true
+          path: collected
+      - name: Ensure complete independent 256-deal and eight-cell denominators
+        run: |
+          python - <<'PY'
+          import glob,gzip,json
+          K=sorted(glob.glob('collected/v46_K_*.json.gz'))
+          C=sorted(glob.glob('collected/v46_C_*.json.gz'))
+          assert len(K)==16 and len(C)==8,(len(K),len(C))
+          gids=[]
+          for p in K:
+              with gzip.open(p,'rt') as f:z=json.load(f)
+              assert z['status']=='PASS' and z['N_independent_physical_groups']==16
+              assert z['strict_99_card_beam160_original_dice']
+              assert z['stage0_and_stage1_have_no_bottom_choices']
+              assert z['source_data_is_new_random_physical_not_teacher_selected']
+              ids={r['gid'] for r in z['rows']}
+              assert len(ids)==16
+              assert all(sum(r['physical_keep_turns'].count(v) for v in range(4))==16 for r in z['rows'])
+              gids+=list(ids)
+          assert sorted(gids)==list(range(163000,163256))
+          cells=set()
+          for p in C:
+              with gzip.open(p,'rt') as f:z=json.load(f)
+              assert z['status']=='PASS' and len(z['turns'])==128
+              assert z['all_99_cards_restored_before_each_London_draw']
+              cells.add((z['seat'],z['stage']))
+          assert cells=={(s,t) for s in range(4) for t in (0,1)}
+          print('DACK_V46_NEW_K8192_C1024_GROUP_AND_PHYSICS_AUDIT_PASS')
+          PY
+      - name: Archive raw independent physics, not model fit or policy approval
+        run: |
+          mkdir -p benchmark_results/v46_163k_early_K_C_shards
+          cp collected/v46_*.json.gz benchmark_results/v46_163k_early_K_C_shards/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f benchmark_results/v46_163k_early_K_C_shards/
+          git commit -m "Archive N256 random seven-deal v46 early K8192 and exact v43 full99 C1024 physical results"
+          git pull --rebase origin dack-v46-first-two-sevens-physical-Q2-20261101
+          git push origin HEAD:dack-v46-first-two-sevens-physical-Q2-20261101
