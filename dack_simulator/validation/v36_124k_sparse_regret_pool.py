@@ -41,7 +41,10 @@ def load(K,C):
     assert len(changed)==c["changed_actions"]
     assert all(r["old_keep"]!=r["new_keep"] for r in changed.values())
     Kfiles=sorted(glob.glob(K));Cfiles=sorted(glob.glob(C))
-    assert len(Kfiles)==16 and len(Cfiles)==12,("missing sparse physical replay shards",len(Kfiles),len(Cfiles))
+    required_cells=set((r["seat"],r["stage"]) for r in changed.values())
+    assert len(Kfiles)==16 and len(Cfiles)==len(required_cells),(
+           "missing sparse physical replay/required continuation cells",
+           len(Kfiles),len(Cfiles),len(required_cells))
     real={}
     for path in Kfiles:
         with gzip.open(path,"rt") as f:d=json.load(f)
@@ -73,11 +76,11 @@ def load(K,C):
         assert d["all_99_shuffled_at_each_later_stage"]
         assert d["source_frozen_v33b_sha256"]==c["source_frozen_v33b_model_sha256"]
         key=(d["seat"],d["stage"])
-        assert key not in shared and key[0] in range(4) and key[1] in STAGES
+        assert key not in shared and key in required_cells
         turns=d["physical_turns"]
         assert len(turns)==FUTURES_C and all(t in (0,1,2,3) for t in turns)
         shared[key]=turns
-    assert len(shared)==12
+    assert set(shared)==required_cells
     return c,allstates,changed,real,shared
 
 def estimate(allstates,changed,real,shared,t):
@@ -150,11 +153,12 @@ def main(K,C,out):
       "population_early_stage_states":768,
       "unchanged_actions_exact_zero_contribution":768-len(changed),
       "changed_actions_true_outcomes_simulated":len(changed),
+      "required_seat_stage_C_cells_only":len(shared),
       "new_KEEP_futures_per_changed_state":FUTURES_K,
       "new_actual_KEEP_beam160_outcomes":len(changed)*FUTURES_K,
-      "new_full99_C_beam160_outcomes":12*FUTURES_C,
-      "new_total_physical_beam160_outcomes":len(changed)*FUTURES_K+12*FUTURES_C,
-      "physical_futures_saved_vs_all_768_12_each":768*12-len(changed)*FUTURES_K,
+      "new_full99_C_beam160_outcomes":len(shared)*FUTURES_C,
+      "new_total_physical_beam160_outcomes":len(changed)*FUTURES_K+len(shared)*FUTURES_C,
+      "physical_futures_saved_vs_all_768_12_each_and_full_12_C":768*12+12*FUTURES_C-len(changed)*FUTURES_K-len(shared)*FUTURES_C,
       "original_768_population_denominator_retained":True,
       "no_outcome_dependence_in_counterfactual_sampling_selection":True,
       "true_ZERO_if_same_action_is_exact_identity":True,
