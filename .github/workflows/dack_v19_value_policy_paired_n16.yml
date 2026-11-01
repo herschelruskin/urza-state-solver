@@ -1,0 +1,118 @@
+name: DACK v19 real-utility bottoms versus v14-128 and v5 matched N16
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - 'models/dack_v18_paired_candidate_utility_EXPERIMENTAL.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate all three policies, pure Python models and untouched beam-160 outcome engine
+        run: |
+          python -m compileall -q dack_paired_counterfactual_v19_real_candidate_value_20261101.py dack_simulator/validation/compare_v19_candidate_value_policy.py
+          python dack_paired_counterfactual_v19_real_candidate_value_20261101.py --audit
+  pairs:
+    needs: audit
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        include:
+          - start: 72000
+          - start: 72002
+          - start: 72004
+          - start: 72006
+          - start: 72008
+          - start: 72010
+          - start: 72012
+          - start: 72014
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Three-policy same-physical-99 real beam-160 gameplay with new 72k test seeds
+        run: |
+          python -u dack_simulator/validation/compare_v19_candidate_value_policy.py \
+            --start ${{ matrix.start }} --games 2 \
+            --out shards/v19_value_pair_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v19-value-pair-${{ matrix.start }}
+          path: shards/v19_value_pair_*.json.gz
+          retention-days: 21
+  pool:
+    needs: pairs
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v19-value-pair-*
+          merge-multiple: true
+          path: paired/
+      - name: Estimate paired T2 policy regret and runtime without filtering slow/difficult games
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import gzip,glob,json,math
+          files=glob.glob('paired/v19_value_pair_*.json.gz')
+          assert len(files)==8,len(files)
+          rows=[]
+          policies=['v5','v14_128','v19_value']
+          for path in files:
+              with gzip.open(path,'rt') as fp:r=json.load(fp)
+              assert r['status']=='PASS' and r['all_models_unapproved']
+              rows.extend(r['rows'])
+          rows.sort(key=lambda r:r['game_id'])
+          assert [r['game_id'] for r in rows]==list(range(72000,72016))
+          def metrics(p):
+              s=[r[p] for r in rows]
+              return {'n':16,'T1':sum(x['turn']==1 for x in s),
+                      'T2':sum(x['turn'] in (1,2) for x in s),
+                      'T3':sum(x['turn'] in (1,2,3) for x in s),
+                      'mean_keep':sum(x['keep_n'] for x in s)/16,
+                      'seconds':round(sum(x['seconds'] for x in s),4)}
+          m={p:metrics(p) for p in policies}
+          paired={}
+          for base in ('v5','v14_128'):
+              d=[int(r['v19_value']['turn'] in (1,2))-
+                  int(r[base]['turn'] in (1,2)) for r in rows]
+              delta=sum(d)/len(d)
+              se=(sum((x-delta)**2 for x in d)/(len(d)*(len(d)-1)))**.5
+              paired['v19_minus_'+base]={
+                  'T2_gains':d.count(1),'T2_losses':d.count(-1),
+                  'T2_difference_percentage_points':100*delta,
+                  'exploratory_95ci_pp':[100*(delta-1.96*se),100*(delta+1.96*se)]}
+          out={'schema':'dack_v19_paired_real_candidate_policy_n16',
+               'status':'PASS','new_physical_game_ids':[72000,72015],
+               'models_approved':False,
+               'metrics':m,'paired_T2':paired,
+               'runtime_ratio_vs_v5':m['v5']['seconds']/max(.001,m['v19_value']['seconds']),
+               'note':'Actual T2/T3 performance is measured end-to-end; N16 is only a small exploratory comparison.'}
+          dest=Path('benchmark_results/v19_real_value_vs_v14_v5_paired_n16.json')
+          dest.parent.mkdir(exist_ok=True)
+          dest.write_text(json.dumps(out,indent=2,sort_keys=True)+'\n')
+          print('V19_PAIRED_NEW_GAME_RESULTS_PASS',json.dumps(out,sort_keys=True),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v19-real-bottom-value-versus-v5-n16
+          path: benchmark_results/v19_real_value_vs_v14_v5_paired_n16.json
+          retention-days: 21
