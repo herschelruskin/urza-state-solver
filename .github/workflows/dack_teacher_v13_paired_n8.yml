@@ -99,3 +99,5 @@ jobs:
           name: dack-v13-paired-N8-summary
           path: benchmark_results/teacher_v13_paired_N8_RESEARCH.json
           retention-days: 14
+
+# Frozen 16-train/8-val teacher distillation model archived before this independent holdout.
