@@ -1,0 +1,75 @@
+name: DACK v22 independent N128 paired T1 T2 T3 inference audit
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v22_independent_paired_significance.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  infer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - name: Recompute per-turn paired confidence intervals from archived original game shards
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import math,random,gzip,json
+          folder=Path('benchmark_results/v22_student_value_DP_n128_shards')
+          fs=sorted(folder.glob('v22_student_pair_*.json.gz'))
+          assert len(fs)==16,len(fs)
+          rows=[]
+          for path in fs:
+              with gzip.open(path,'rt') as f:r=json.load(f)
+              assert r['status']=='PASS' and r['models_approved'] is False
+              assert r['gameplay_beam']==160 and r['mulligan_beam']==0
+              rows.extend(r['rows'])
+          rows.sort(key=lambda x:x['game_id'])
+          assert [x['game_id'] for x in rows]==list(range(87000,87128))
+          def mcnemar_exact(gains,losses):
+              n=gains+losses
+              if n==0:return 1.
+              return min(1.,2*sum(math.comb(n,k) for k in range(min(gains,losses)+1))/(2**n))
+          result={'schema':'dack_v22_paired_outcomes_128_group_robustness',
+                  'source':'benchmark_results/v22_student_value_DP_n128_shards/',
+                  'game_ids':[87000,87127],
+                  'independent_physical_games':128,
+                  'same_bottom_selector':True,
+                  'models_not_approved':True,
+                  'outcomes':{}}
+          for turn in (1,2,3):
+              a=[int(0<x['v14_128']['turn']<=turn) for x in rows]
+              b=[int(0<x['v22_real_keep_DP']['turn']<=turn) for x in rows]
+              ds=[y-x for x,y in zip(a,b)]
+              gains=ds.count(1);losses=ds.count(-1);tie=ds.count(0)
+              mean=sum(ds)/len(ds)
+              rng=random.Random(170000+turn);boots=[]
+              for _ in range(3000):
+                  bs=[ds[rng.randrange(len(ds))] for i in range(len(ds))]
+                  boots.append(sum(bs)/len(bs))
+              boots.sort()
+              result['outcomes'][f'cumulative_T{turn}']={
+                  'v14_successes':sum(a),'v22_successes':sum(b),
+                  'v22_gain_games':gains,'v22_loss_games':losses,
+                  'paired_ties':tie,
+                  'delta_percentage_points':100*mean,
+                  'paired_bootstrap_95ci_pp':[100*boots[75],100*boots[2924]],
+                  'mcnemar_exact_two_sided_p':mcnemar_exact(gains,losses)}
+          result['warning']='No pre-registered multiple endpoint testing. Interpret intervals as exploratory, not proof of positive T2 effect or near-reference quality.'
+          dest=Path('benchmark_results/v22_independent_n128_paired_inference.json')
+          dest.write_text(json.dumps(result,sort_keys=True,indent=2)+'\n')
+          print('V22_PAIRED_128_OUTCOMES_GROUP_INFERENCE_PASS',json.dumps(result['outcomes'],sort_keys=True),flush=True)
+          PY
+      - name: Preserve exact posthoc inference separately from gameplay results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v22_independent_n128_paired_inference.json
+          git commit -m "Archive paired 128-game T1/T2/T3 bootstrap intervals and exact discordant McNemar diagnostics"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
