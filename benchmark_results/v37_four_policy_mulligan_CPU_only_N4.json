@@ -1,0 +1,138 @@
+{
+  "policy_approved": false,
+  "purpose": "CPU time choose_keep only, excludes actual beam160 game",
+  "speedup_v5_over_v33b_London_only": 1308.632445623333,
+  "speedup_v5_over_v37_London_only": 579.6639533619061,
+  "v27": {
+    "per_game": [
+      {
+        "gid": 128900,
+        "keep_n": 5,
+        "seat": 3,
+        "seconds": 0.012622688000021753,
+        "stage": 3
+      },
+      {
+        "gid": 128901,
+        "keep_n": 1,
+        "seat": 0,
+        "seconds": 0.03444125900000472,
+        "stage": 7
+      },
+      {
+        "gid": 128902,
+        "keep_n": 3,
+        "seat": 2,
+        "seconds": 0.024755510999966646,
+        "stage": 5
+      },
+      {
+        "gid": 128903,
+        "keep_n": 4,
+        "seat": 0,
+        "seconds": 0.01860858900005269,
+        "stage": 4
+      }
+    ],
+    "sum_london_seconds": 0.09042804700004581
+  },
+  "v33b": {
+    "per_game": [
+      {
+        "gid": 128900,
+        "keep_n": 5,
+        "seat": 3,
+        "seconds": 0.03166511899996749,
+        "stage": 3
+      },
+      {
+        "gid": 128901,
+        "keep_n": 1,
+        "seat": 0,
+        "seconds": 0.04314851699996325,
+        "stage": 7
+      },
+      {
+        "gid": 128902,
+        "keep_n": 3,
+        "seat": 2,
+        "seconds": 0.03929424199998266,
+        "stage": 5
+      },
+      {
+        "gid": 128903,
+        "keep_n": 4,
+        "seat": 0,
+        "seconds": 0.03381713199996739,
+        "stage": 4
+      }
+    ],
+    "sum_london_seconds": 0.14792500999988079
+  },
+  "v37": {
+    "per_game": [
+      {
+        "gid": 128900,
+        "keep_n": 5,
+        "seat": 3,
+        "seconds": 0.052575010999987626,
+        "stage": 3
+      },
+      {
+        "gid": 128901,
+        "keep_n": 1,
+        "seat": 0,
+        "seconds": 0.1228729240000348,
+        "stage": 7
+      },
+      {
+        "gid": 128902,
+        "keep_n": 3,
+        "seat": 2,
+        "seconds": 0.090266626000016,
+        "stage": 5
+      },
+      {
+        "gid": 128903,
+        "keep_n": 4,
+        "seat": 0,
+        "seconds": 0.06823663000000124,
+        "stage": 4
+      }
+    ],
+    "sum_london_seconds": 0.33395119100003967
+  },
+  "v5": {
+    "per_game": [
+      {
+        "gid": 128900,
+        "keep_n": 3,
+        "seat": 3,
+        "seconds": 69.654758056,
+        "stage": 5
+      },
+      {
+        "gid": 128901,
+        "keep_n": 2,
+        "seat": 0,
+        "seconds": 57.37627311899999,
+        "stage": 6
+      },
+      {
+        "gid": 128902,
+        "keep_n": 3,
+        "seat": 2,
+        "seconds": 40.652287908000005,
+        "stage": 5
+      },
+      {
+        "gid": 128903,
+        "keep_n": 4,
+        "seat": 0,
+        "seconds": 25.896148521999976,
+        "stage": 4
+      }
+    ],
+    "sum_london_seconds": 193.579467605
+  }
+}
