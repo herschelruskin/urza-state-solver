@@ -1,0 +1,5433 @@
+{
+  "N_matched_games": 128,
+  "T2_discordant_outers": [
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 1,
+      "gid": 151005,
+      "last_stage_v43": 1,
+      "last_stage_v5": 3,
+      "seat": 0,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 0,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Cavern of Souls",
+        "Deafening Silence",
+        "Feather of Flight",
+        "Gift of Immortality",
+        "Lion's Eye Diamond",
+        "Prismatic Lens",
+        "Soul Partition"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": true,
+      "v5_original_bottom": [
+        "Gleaming Splendor",
+        "Orim's Chant"
+      ],
+      "v5_original_hand": [
+        "Basalt Monolith",
+        "City of Traitors",
+        "Enlightened Tutor",
+        "Everflowing Chalice",
+        "Plains"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 0,
+      "gid": 151009,
+      "last_stage_v43": 6,
+      "last_stage_v5": 0,
+      "seat": 1,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 0,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Floating Shield",
+        "Plains",
+        "Charitable Levy",
+        "Giant's Boulder",
+        "Talon Gates of Madara"
+      ],
+      "v43_hand": [
+        "Crystal Vein",
+        "Tezzeret, Cruel Captain"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": true,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Coalition Relic",
+        "Gemstone Caverns",
+        "Mantle of the Ancients",
+        "March of Otherworldly Light",
+        "Mox Diamond",
+        "Plains",
+        "Plains"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 0,
+      "gid": 151012,
+      "last_stage_v43": 0,
+      "last_stage_v5": 2,
+      "seat": 1,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 0,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Arcane Signet",
+        "Brainstone",
+        "Erode",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Preston, the Vanisher",
+        "Void Mirror"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": true,
+      "v5_original_bottom": [
+        "Erode"
+      ],
+      "v5_original_hand": [
+        "Eiganjo, Seat of the Empire",
+        "Enlightened Tutor",
+        "Moonsilver Key",
+        "Plains",
+        "Plains",
+        "Urza's Cave"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 0,
+      "gid": 151019,
+      "last_stage_v43": 0,
+      "last_stage_v5": 2,
+      "seat": 0,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 3,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Emeria's Call",
+        "Erode",
+        "Lion's Eye Diamond",
+        "Paladin Class",
+        "Petrified Hamlet",
+        "Plains",
+        "Sheltered by Ghosts"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": true,
+      "v5_original_bottom": [
+        "Gleaming Splendor"
+      ],
+      "v5_original_hand": [
+        "Bucknard's Everfull Purse",
+        "Gift of Immortality",
+        "Jeweled Amulet",
+        "Mishra's Workshop",
+        "Mox Opal",
+        "Treasure Vault"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 0,
+      "gid": 151022,
+      "last_stage_v43": 4,
+      "last_stage_v5": 0,
+      "seat": 0,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 3,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "March of Otherworldly Light",
+        "Orim's Chant",
+        "Idolized"
+      ],
+      "v43_hand": [
+        "Lion's Eye Diamond",
+        "Plains",
+        "Silence",
+        "Urza's Saga"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": true,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Disruptor Flute",
+        "Grim Monolith",
+        "Homeward Path",
+        "Mishra's Workshop",
+        "Moonsilver Key",
+        "Soul Partition",
+        "The Mycosynth Gardens"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 1,
+      "gid": 151038,
+      "last_stage_v43": 4,
+      "last_stage_v5": 1,
+      "seat": 2,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 3,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Tezzeret, Cruel Captain",
+        "Vexing Bauble",
+        "Soul Partition"
+      ],
+      "v43_hand": [
+        "Cavern of Souls",
+        "Crystal Vein",
+        "Moonsilver Key",
+        "Plains"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": true,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Cavern of Souls",
+        "City of Traitors",
+        "Coalition Relic",
+        "Gemstone Caverns",
+        "Razorgrass Ambush",
+        "The Mycosynth Gardens",
+        "Urza's Saga"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 2,
+      "gid": 151062,
+      "last_stage_v43": 5,
+      "last_stage_v5": 2,
+      "seat": 2,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 2,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Mantle of the Ancients",
+        "Ruins of Trokair",
+        "Everflowing Chalice",
+        "Touch the Spirit Realm"
+      ],
+      "v43_hand": [
+        "Krark-Clan Ironworks",
+        "Lotus Petal",
+        "Mishra's Workshop"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": true,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Blast Zone"
+      ],
+      "v5_original_hand": [
+        "Arcane Signet",
+        "Crystal Vein",
+        "Eldrazi Confluence",
+        "Mishra's Workshop",
+        "Mox Opal",
+        "Razorgrass Ambush"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 2,
+      "gid": 151080,
+      "last_stage_v43": 2,
+      "last_stage_v5": 4,
+      "seat": 3,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 0,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Feather of Flight"
+      ],
+      "v43_hand": [
+        "Ancient Den",
+        "Eiganjo, Seat of the Empire",
+        "Everflowing Chalice",
+        "Gift of Immortality",
+        "Sol Ring",
+        "Thorn of Amethyst"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": true,
+      "v5_original_bottom": [
+        "Bound by Moonsilver",
+        "Defense Grid",
+        "Chrome Mox"
+      ],
+      "v5_original_hand": [
+        "Idolized",
+        "Lotus Petal",
+        "Plains",
+        "Tezzeret, Cruel Captain"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 4,
+      "gid": 151081,
+      "last_stage_v43": 4,
+      "last_stage_v5": 4,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Prismatic Lens",
+        "Portable Hole",
+        "Implements of Sacrifice"
+      ],
+      "v43_hand": [
+        "Moonsilver Key",
+        "Plains",
+        "Plains",
+        "Sol Ring"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": true,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Plains",
+        "Portable Hole",
+        "Implements of Sacrifice"
+      ],
+      "v5_original_hand": [
+        "Moonsilver Key",
+        "Plains",
+        "Prismatic Lens",
+        "Sol Ring"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 0,
+      "gid": 151082,
+      "last_stage_v43": 0,
+      "last_stage_v5": 3,
+      "seat": 2,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 2,
+      "turn_v5": 0,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Defense Grid",
+        "Floating Shield",
+        "Grim Monolith",
+        "Plains",
+        "Sol Ring",
+        "Soul Partition",
+        "Urza's Saga"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": true,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Mana Tithe",
+        "Crystal Vein"
+      ],
+      "v5_original_hand": [
+        "Arcane Signet",
+        "Grim Monolith",
+        "March of Otherworldly Light",
+        "Minimus Containment",
+        "Mishra's Workshop"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 3,
+      "gid": 151084,
+      "last_stage_v43": 4,
+      "last_stage_v5": 3,
+      "seat": 2,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 2,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "The Mycosynth Gardens",
+        "Deafening Silence",
+        "Portable Hole"
+      ],
+      "v43_hand": [
+        "Basalt Monolith",
+        "Mox Diamond",
+        "Plains",
+        "Plains"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": true,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Idolized",
+        "Sheltered by Ghosts"
+      ],
+      "v5_original_hand": [
+        "Bucknard's Everfull Purse",
+        "Command Beacon",
+        "Homeward Path",
+        "Ruins of Trokair",
+        "Soul Partition"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 1,
+      "gid": 151085,
+      "last_stage_v43": 3,
+      "last_stage_v5": 1,
+      "seat": 0,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 3,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Static Prison",
+        "Staff of Compleation"
+      ],
+      "v43_hand": [
+        "Arcane Signet",
+        "Fellwar Stone",
+        "Mox Diamond",
+        "Plains",
+        "Urza's Saga"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": true,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Chrome Mox",
+        "Command Beacon",
+        "Krark-Clan Ironworks",
+        "Mishra's Workshop",
+        "Mox Diamond",
+        "Plains",
+        "Plains"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 1,
+      "gid": 151088,
+      "last_stage_v43": 1,
+      "last_stage_v5": 4,
+      "seat": 2,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 2,
+      "turn_v5": 0,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Defense Grid",
+        "Feather of Flight",
+        "Homeward Path",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Treasure Vault",
+        "Voltaic Key"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": true,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Paladin Class",
+        "Erode",
+        "Unwanted Remake"
+      ],
+      "v5_original_hand": [
+        "City of Traitors",
+        "Disruptor Flute",
+        "Razorgrass Ambush",
+        "The Mycosynth Gardens"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 0,
+      "gid": 151091,
+      "last_stage_v43": 0,
+      "last_stage_v5": 1,
+      "seat": 2,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 3,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Brainstone",
+        "Cavern of Souls",
+        "Emergence Zone",
+        "Grim Monolith",
+        "Mind Stone",
+        "Moonsilver Key",
+        "Mox Opal"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": true,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Ancient Den",
+        "Crystal Vein",
+        "Enlightened Tutor",
+        "Grim Monolith",
+        "Mantle of the Ancients",
+        "Plains",
+        "Sol Ring"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 1,
+      "gid": 151092,
+      "last_stage_v43": 1,
+      "last_stage_v5": 2,
+      "seat": 3,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 3,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Cavern of Souls",
+        "City of Traitors",
+        "Hardlight Containment",
+        "Krark-Clan Ironworks",
+        "Sol Ring",
+        "Touch the Spirit Realm",
+        "Voltaic Key"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": true,
+      "v5_original_bottom": [
+        "Sheltered by Ghosts"
+      ],
+      "v5_original_hand": [
+        "Jeweled Amulet",
+        "Mana Vault",
+        "March of Otherworldly Light",
+        "Mox Opal",
+        "Static Prison",
+        "The Mycosynth Gardens"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 0,
+      "gid": 151093,
+      "last_stage_v43": 5,
+      "last_stage_v5": 0,
+      "seat": 0,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 3,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Paladin Class",
+        "Thorn of Amethyst",
+        "The Mind Stone",
+        "Command Beacon"
+      ],
+      "v43_hand": [
+        "Blast Zone",
+        "Lotus Petal",
+        "Plains"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": true,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Charitable Levy",
+        "Enlightened Tutor",
+        "Plains",
+        "Razorgrass Ambush",
+        "Staff of Compleation",
+        "Twinblade Blessing",
+        "Untaidake, the Cloud Keeper"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 2,
+      "gid": 151104,
+      "last_stage_v43": 2,
+      "last_stage_v5": 4,
+      "seat": 2,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 0,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Sheltered by Ghosts"
+      ],
+      "v43_hand": [
+        "Arcane Signet",
+        "Eiganjo, Seat of the Empire",
+        "Grim Monolith",
+        "Mind Stone",
+        "Prismatic Lens",
+        "The Mycosynth Gardens"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": true,
+      "v5_original_bottom": [
+        "Plains",
+        "Crystal Vein",
+        "The Mycosynth Gardens"
+      ],
+      "v5_original_hand": [
+        "Grim Monolith",
+        "Razorgrass Ambush",
+        "Ruins of Trokair",
+        "Sol Ring"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 2,
+      "gid": 151110,
+      "last_stage_v43": 2,
+      "last_stage_v5": 3,
+      "seat": 0,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 3,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Scroll Rack"
+      ],
+      "v43_hand": [
+        "Ancient Tomb",
+        "Eldrazi Confluence",
+        "Erode",
+        "Grim Monolith",
+        "Ruins of Trokair",
+        "The Mind Stone"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": true,
+      "v5_original_bottom": [
+        "Roaming Throne",
+        "Erode"
+      ],
+      "v5_original_hand": [
+        "Ancient Tomb",
+        "Bound by Moonsilver",
+        "Bucknard's Everfull Purse",
+        "Lotus Petal",
+        "Mana Tithe"
+      ]
+    }
+  ],
+  "all_real_strict_beam160_deployment_outcomes_matched_by_99slot_game_id": true,
+  "all_records": [
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 0,
+      "gid": 151000,
+      "last_stage_v43": 0,
+      "last_stage_v5": 0,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Basalt Monolith",
+        "Blast Zone",
+        "Chrome Mox",
+        "Crystal Vein",
+        "Emeria's Call",
+        "Enlightened Tutor",
+        "Staff of Compleation"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Basalt Monolith",
+        "Blast Zone",
+        "Chrome Mox",
+        "Crystal Vein",
+        "Emeria's Call",
+        "Enlightened Tutor",
+        "Staff of Compleation"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 0,
+      "gid": 151001,
+      "last_stage_v43": 0,
+      "last_stage_v5": 0,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Basalt Monolith",
+        "Great Hall of the Citadel",
+        "Mox Diamond",
+        "Petrified Hamlet",
+        "Plains",
+        "Scroll Rack",
+        "Sol Ring"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Basalt Monolith",
+        "Great Hall of the Citadel",
+        "Mox Diamond",
+        "Petrified Hamlet",
+        "Plains",
+        "Scroll Rack",
+        "Sol Ring"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 1,
+      "gid": 151002,
+      "last_stage_v43": 1,
+      "last_stage_v5": 1,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Chrome Mox",
+        "Deafening Silence",
+        "Mana Vault",
+        "Petrified Hamlet",
+        "Plains",
+        "Ruins of Trokair",
+        "Thorn of Amethyst"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Chrome Mox",
+        "Deafening Silence",
+        "Mana Vault",
+        "Petrified Hamlet",
+        "Plains",
+        "Ruins of Trokair",
+        "Thorn of Amethyst"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 0,
+      "gid": 151003,
+      "last_stage_v43": 0,
+      "last_stage_v5": 2,
+      "seat": 3,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 0,
+      "turn_v5": 3,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Command Beacon",
+        "Disruptor Flute",
+        "Emeria's Call",
+        "Fellwar Stone",
+        "Krark-Clan Ironworks",
+        "Mox Opal",
+        "Plains"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Plains"
+      ],
+      "v5_original_hand": [
+        "Deafening Silence",
+        "Fellwar Stone",
+        "Mana Vault",
+        "Plains",
+        "Plains",
+        "Vexing Bauble"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 1,
+      "gid": 151004,
+      "last_stage_v43": 1,
+      "last_stage_v5": 6,
+      "seat": 2,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Crystal Vein",
+        "Giant's Boulder",
+        "Jeweled Amulet",
+        "Mantle of the Ancients",
+        "Mox Opal",
+        "Remote Farm",
+        "Voltaic Key"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Vexing Bauble",
+        "Everflowing Chalice",
+        "Plains",
+        "March of Otherworldly Light",
+        "Feather of Flight"
+      ],
+      "v5_original_hand": [
+        "Crystal Vein",
+        "Moonsilver Key"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 1,
+      "gid": 151005,
+      "last_stage_v43": 1,
+      "last_stage_v5": 3,
+      "seat": 0,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 0,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Cavern of Souls",
+        "Deafening Silence",
+        "Feather of Flight",
+        "Gift of Immortality",
+        "Lion's Eye Diamond",
+        "Prismatic Lens",
+        "Soul Partition"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": true,
+      "v5_original_bottom": [
+        "Gleaming Splendor",
+        "Orim's Chant"
+      ],
+      "v5_original_hand": [
+        "Basalt Monolith",
+        "City of Traitors",
+        "Enlightened Tutor",
+        "Everflowing Chalice",
+        "Plains"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 1,
+      "gid": 151006,
+      "last_stage_v43": 1,
+      "last_stage_v5": 1,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Crystal Vein",
+        "Enlightened Tutor",
+        "Hardlight Containment",
+        "Plains",
+        "Remote Farm",
+        "Static Prison",
+        "Vexing Bauble"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Crystal Vein",
+        "Enlightened Tutor",
+        "Hardlight Containment",
+        "Plains",
+        "Remote Farm",
+        "Static Prison",
+        "Vexing Bauble"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 4,
+      "gid": 151007,
+      "last_stage_v43": 4,
+      "last_stage_v5": 4,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Arcane Signet",
+        "Plains",
+        "Erode"
+      ],
+      "v43_hand": [
+        "Ancient Tomb",
+        "Emeria's Call",
+        "Mox Diamond",
+        "Sol Ring"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Mox Diamond",
+        "Plains",
+        "Erode"
+      ],
+      "v5_original_hand": [
+        "Ancient Tomb",
+        "Arcane Signet",
+        "Emeria's Call",
+        "Sol Ring"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 2,
+      "gid": 151008,
+      "last_stage_v43": 2,
+      "last_stage_v5": 2,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Voltaic Key"
+      ],
+      "v43_hand": [
+        "Emeria's Call",
+        "Fellwar Stone",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Plains",
+        "Soul Partition"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Plains"
+      ],
+      "v5_original_hand": [
+        "Emeria's Call",
+        "Fellwar Stone",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Soul Partition",
+        "Voltaic Key"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 0,
+      "gid": 151009,
+      "last_stage_v43": 6,
+      "last_stage_v5": 0,
+      "seat": 1,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 0,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Floating Shield",
+        "Plains",
+        "Charitable Levy",
+        "Giant's Boulder",
+        "Talon Gates of Madara"
+      ],
+      "v43_hand": [
+        "Crystal Vein",
+        "Tezzeret, Cruel Captain"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": true,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Coalition Relic",
+        "Gemstone Caverns",
+        "Mantle of the Ancients",
+        "March of Otherworldly Light",
+        "Mox Diamond",
+        "Plains",
+        "Plains"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 2,
+      "gid": 151010,
+      "last_stage_v43": 2,
+      "last_stage_v5": 2,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Charitable Levy"
+      ],
+      "v43_hand": [
+        "Cavern of Souls",
+        "Enlightened Tutor",
+        "Homeward Path",
+        "Mana Vault",
+        "Plains",
+        "Sheltered by Ghosts"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Homeward Path"
+      ],
+      "v5_original_hand": [
+        "Cavern of Souls",
+        "Charitable Levy",
+        "Enlightened Tutor",
+        "Mana Vault",
+        "Plains",
+        "Sheltered by Ghosts"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 2,
+      "gid": 151011,
+      "last_stage_v43": 2,
+      "last_stage_v5": 2,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Static Prison"
+      ],
+      "v43_hand": [
+        "Everflowing Chalice",
+        "Grim Monolith",
+        "Lotus Petal",
+        "Plains",
+        "Razorgrass Ambush",
+        "Silence"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Static Prison"
+      ],
+      "v5_original_hand": [
+        "Everflowing Chalice",
+        "Grim Monolith",
+        "Lotus Petal",
+        "Plains",
+        "Razorgrass Ambush",
+        "Silence"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 0,
+      "gid": 151012,
+      "last_stage_v43": 0,
+      "last_stage_v5": 2,
+      "seat": 1,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 0,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Arcane Signet",
+        "Brainstone",
+        "Erode",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Preston, the Vanisher",
+        "Void Mirror"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": true,
+      "v5_original_bottom": [
+        "Erode"
+      ],
+      "v5_original_hand": [
+        "Eiganjo, Seat of the Empire",
+        "Enlightened Tutor",
+        "Moonsilver Key",
+        "Plains",
+        "Plains",
+        "Urza's Cave"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 5,
+      "gid": 151013,
+      "last_stage_v43": 5,
+      "last_stage_v5": 5,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Coalition Relic",
+        "Talon Gates of Madara",
+        "Idolized",
+        "The Mycosynth Gardens"
+      ],
+      "v43_hand": [
+        "City of Traitors",
+        "Krark-Clan Ironworks",
+        "Mind Stone"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Talon Gates of Madara",
+        "Krark-Clan Ironworks",
+        "Idolized",
+        "The Mycosynth Gardens"
+      ],
+      "v5_original_hand": [
+        "City of Traitors",
+        "Coalition Relic",
+        "Mind Stone"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 1,
+      "gid": 151014,
+      "last_stage_v43": 1,
+      "last_stage_v5": 1,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Fellwar Stone",
+        "Homeward Path",
+        "Mana Vault",
+        "Minimus Containment",
+        "Plains",
+        "Scroll Rack",
+        "Urza's Saga"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Fellwar Stone",
+        "Homeward Path",
+        "Mana Vault",
+        "Minimus Containment",
+        "Plains",
+        "Scroll Rack",
+        "Urza's Saga"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 1,
+      "gid": 151015,
+      "last_stage_v43": 1,
+      "last_stage_v5": 1,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Great Hall of the Citadel",
+        "Lion's Eye Diamond",
+        "Lunarch Mantle",
+        "Mantle of the Ancients",
+        "Minimus Containment",
+        "Plains",
+        "Tezzeret, Cruel Captain"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Great Hall of the Citadel",
+        "Lion's Eye Diamond",
+        "Lunarch Mantle",
+        "Mantle of the Ancients",
+        "Minimus Containment",
+        "Plains",
+        "Tezzeret, Cruel Captain"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 2,
+      "gid": 151016,
+      "last_stage_v43": 2,
+      "last_stage_v5": 2,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Idolized"
+      ],
+      "v43_hand": [
+        "Emergence Zone",
+        "Enlightened Tutor",
+        "Plains",
+        "Sol Ring",
+        "Tezzeret, Cruel Captain",
+        "Trinisphere"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Idolized"
+      ],
+      "v5_original_hand": [
+        "Emergence Zone",
+        "Enlightened Tutor",
+        "Plains",
+        "Sol Ring",
+        "Tezzeret, Cruel Captain",
+        "Trinisphere"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 1,
+      "gid": 151017,
+      "last_stage_v43": 1,
+      "last_stage_v5": 1,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Ancient Den",
+        "Chrome Mox",
+        "Command Beacon",
+        "Deafening Silence",
+        "Grim Monolith",
+        "Lotus Petal",
+        "Prismatic Lens"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Ancient Den",
+        "Chrome Mox",
+        "Command Beacon",
+        "Deafening Silence",
+        "Grim Monolith",
+        "Lotus Petal",
+        "Prismatic Lens"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 3,
+      "gid": 151018,
+      "last_stage_v43": 5,
+      "last_stage_v5": 3,
+      "seat": 2,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Prismatic Lens",
+        "Twinblade Blessing",
+        "Static Prison",
+        "Urza's Cave"
+      ],
+      "v43_hand": [
+        "Arcane Signet",
+        "Plains",
+        "Plains"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Plains",
+        "Plains"
+      ],
+      "v5_original_hand": [
+        "Ancient Tomb",
+        "Gleaming Splendor",
+        "Plains",
+        "Plains",
+        "Prismatic Lens"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 0,
+      "gid": 151019,
+      "last_stage_v43": 0,
+      "last_stage_v5": 2,
+      "seat": 0,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 3,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Emeria's Call",
+        "Erode",
+        "Lion's Eye Diamond",
+        "Paladin Class",
+        "Petrified Hamlet",
+        "Plains",
+        "Sheltered by Ghosts"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": true,
+      "v5_original_bottom": [
+        "Gleaming Splendor"
+      ],
+      "v5_original_hand": [
+        "Bucknard's Everfull Purse",
+        "Gift of Immortality",
+        "Jeweled Amulet",
+        "Mishra's Workshop",
+        "Mox Opal",
+        "Treasure Vault"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 3,
+      "gid": 151020,
+      "last_stage_v43": 3,
+      "last_stage_v5": 3,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Gleaming Splendor",
+        "Lunarch Mantle"
+      ],
+      "v43_hand": [
+        "Ancient Tomb",
+        "Expedition Map",
+        "Mantle of the Ancients",
+        "Moonsilver Key",
+        "Plains"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Gleaming Splendor",
+        "Mantle of the Ancients"
+      ],
+      "v5_original_hand": [
+        "Ancient Tomb",
+        "Expedition Map",
+        "Lunarch Mantle",
+        "Moonsilver Key",
+        "Plains"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 1,
+      "gid": 151021,
+      "last_stage_v43": 1,
+      "last_stage_v5": 1,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Lotus Petal",
+        "Mana Vault",
+        "Plains",
+        "Remote Farm",
+        "Soul Partition",
+        "Urza's Saga",
+        "Voltaic Key"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Lotus Petal",
+        "Mana Vault",
+        "Plains",
+        "Remote Farm",
+        "Soul Partition",
+        "Urza's Saga",
+        "Voltaic Key"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 0,
+      "gid": 151022,
+      "last_stage_v43": 4,
+      "last_stage_v5": 0,
+      "seat": 0,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 3,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "March of Otherworldly Light",
+        "Orim's Chant",
+        "Idolized"
+      ],
+      "v43_hand": [
+        "Lion's Eye Diamond",
+        "Plains",
+        "Silence",
+        "Urza's Saga"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": true,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Disruptor Flute",
+        "Grim Monolith",
+        "Homeward Path",
+        "Mishra's Workshop",
+        "Moonsilver Key",
+        "Soul Partition",
+        "The Mycosynth Gardens"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 2,
+      "gid": 151023,
+      "last_stage_v43": 2,
+      "last_stage_v5": 2,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Twinblade Blessing"
+      ],
+      "v43_hand": [
+        "Defense Grid",
+        "Floating Shield",
+        "Mana Vault",
+        "Plains",
+        "Scroll Rack",
+        "Tezzeret, Cruel Captain"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Twinblade Blessing"
+      ],
+      "v5_original_hand": [
+        "Defense Grid",
+        "Floating Shield",
+        "Mana Vault",
+        "Plains",
+        "Scroll Rack",
+        "Tezzeret, Cruel Captain"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 3,
+      "gid": 151024,
+      "last_stage_v43": 3,
+      "last_stage_v5": 3,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Soul Partition",
+        "Scroll Rack"
+      ],
+      "v43_hand": [
+        "Emeria's Call",
+        "Gemstone Caverns",
+        "Lion's Eye Diamond",
+        "Super State",
+        "Urza's Cave"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Super State",
+        "Urza's Cave"
+      ],
+      "v5_original_hand": [
+        "Emeria's Call",
+        "Gemstone Caverns",
+        "Lion's Eye Diamond",
+        "Scroll Rack",
+        "Soul Partition"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 2,
+      "gid": 151025,
+      "last_stage_v43": 2,
+      "last_stage_v5": 2,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "March of Otherworldly Light"
+      ],
+      "v43_hand": [
+        "Great Hall of the Citadel",
+        "Lion's Eye Diamond",
+        "Mana Tithe",
+        "Plains",
+        "Prismatic Lens",
+        "Ruins of Trokair"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "March of Otherworldly Light"
+      ],
+      "v5_original_hand": [
+        "Great Hall of the Citadel",
+        "Lion's Eye Diamond",
+        "Mana Tithe",
+        "Plains",
+        "Prismatic Lens",
+        "Ruins of Trokair"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 4,
+      "gid": 151026,
+      "last_stage_v43": 4,
+      "last_stage_v5": 4,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 0,
+      "turn_v5": 0,
+      "v43_bottom": [
+        "Plains",
+        "Vexing Bauble",
+        "Coalition Relic"
+      ],
+      "v43_hand": [
+        "Arcane Signet",
+        "Cavern of Souls",
+        "Lion's Eye Diamond",
+        "Urza's Cave"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Plains",
+        "Vexing Bauble",
+        "Coalition Relic"
+      ],
+      "v5_original_hand": [
+        "Arcane Signet",
+        "Cavern of Souls",
+        "Lion's Eye Diamond",
+        "Urza's Cave"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 5,
+      "gid": 151027,
+      "last_stage_v43": 5,
+      "last_stage_v5": 5,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Boonweaver Giant",
+        "Talon Gates of Madara",
+        "Homeward Path",
+        "Thorn of Amethyst"
+      ],
+      "v43_hand": [
+        "Lotus Petal",
+        "Plains",
+        "Ruins of Trokair"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Boonweaver Giant",
+        "Talon Gates of Madara",
+        "Homeward Path",
+        "Thorn of Amethyst"
+      ],
+      "v5_original_hand": [
+        "Lotus Petal",
+        "Plains",
+        "Ruins of Trokair"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 1,
+      "gid": 151028,
+      "last_stage_v43": 1,
+      "last_stage_v5": 1,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Bound by Moonsilver",
+        "City of Traitors",
+        "Enlightened Tutor",
+        "Plains",
+        "Silence",
+        "Tezzeret, Cruel Captain",
+        "Treasure Vault"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Bound by Moonsilver",
+        "City of Traitors",
+        "Enlightened Tutor",
+        "Plains",
+        "Silence",
+        "Tezzeret, Cruel Captain",
+        "Treasure Vault"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 5,
+      "gid": 151029,
+      "last_stage_v43": 5,
+      "last_stage_v5": 5,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Scroll Rack",
+        "Emergence Zone",
+        "Mind Stone",
+        "Plains"
+      ],
+      "v43_hand": [
+        "Mox Diamond",
+        "Plains",
+        "Sol Ring"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Scroll Rack",
+        "Emergence Zone",
+        "Plains",
+        "Mox Diamond"
+      ],
+      "v5_original_hand": [
+        "Mind Stone",
+        "Plains",
+        "Sol Ring"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 1,
+      "gid": 151030,
+      "last_stage_v43": 1,
+      "last_stage_v5": 1,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 0,
+      "turn_v5": 0,
+      "v43_bottom": [],
+      "v43_hand": [
+        "City of Traitors",
+        "Emeria's Call",
+        "Enlightened Tutor",
+        "Expedition Map",
+        "Mantle of the Ancients",
+        "Mishra's Workshop",
+        "Talon Gates of Madara"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "City of Traitors",
+        "Emeria's Call",
+        "Enlightened Tutor",
+        "Expedition Map",
+        "Mantle of the Ancients",
+        "Mishra's Workshop",
+        "Talon Gates of Madara"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 0,
+      "gid": 151031,
+      "last_stage_v43": 0,
+      "last_stage_v5": 3,
+      "seat": 1,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Crystal Vein",
+        "Eldrazi Confluence",
+        "Grim Monolith",
+        "Lotus Petal",
+        "Plains",
+        "Portable Hole",
+        "Void Mirror"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Plains",
+        "Command Beacon"
+      ],
+      "v5_original_hand": [
+        "Charitable Levy",
+        "Implements of Sacrifice",
+        "Mana Vault",
+        "Plains",
+        "Talon Gates of Madara"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 4,
+      "gid": 151032,
+      "last_stage_v43": 5,
+      "last_stage_v5": 4,
+      "seat": 3,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 0,
+      "turn_v5": 0,
+      "v43_bottom": [
+        "Static Prison",
+        "Feather of Flight",
+        "Super State",
+        "Implements of Sacrifice"
+      ],
+      "v43_hand": [
+        "Emeria's Call",
+        "Gemstone Caverns",
+        "Mind Stone"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Mantle of the Ancients",
+        "Urza's Cave",
+        "Tezzeret, Cruel Captain"
+      ],
+      "v5_original_hand": [
+        "Chrome Mox",
+        "March of Otherworldly Light",
+        "Moonsilver Key",
+        "Talon Gates of Madara"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 5,
+      "gid": 151033,
+      "last_stage_v43": 5,
+      "last_stage_v5": 5,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Mox Diamond",
+        "Basalt Monolith",
+        "Plains",
+        "Boonweaver Giant"
+      ],
+      "v43_hand": [
+        "Plains",
+        "Razorgrass Ambush",
+        "Sol Ring"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Mox Diamond",
+        "Basalt Monolith",
+        "Plains",
+        "Boonweaver Giant"
+      ],
+      "v5_original_hand": [
+        "Plains",
+        "Razorgrass Ambush",
+        "Sol Ring"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 1,
+      "gid": 151034,
+      "last_stage_v43": 1,
+      "last_stage_v5": 1,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Cavern of Souls",
+        "Lotus Petal",
+        "Mox Diamond",
+        "Petrified Hamlet",
+        "Plains",
+        "Silence",
+        "Tezzeret, Cruel Captain"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Cavern of Souls",
+        "Lotus Petal",
+        "Mox Diamond",
+        "Petrified Hamlet",
+        "Plains",
+        "Silence",
+        "Tezzeret, Cruel Captain"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 3,
+      "gid": 151035,
+      "last_stage_v43": 3,
+      "last_stage_v5": 3,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Disruptor Flute",
+        "Paladin Class"
+      ],
+      "v43_hand": [
+        "Command Beacon",
+        "Emergence Zone",
+        "Homeward Path",
+        "Mana Vault",
+        "Ruins of Trokair"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Disruptor Flute",
+        "Paladin Class"
+      ],
+      "v5_original_hand": [
+        "Command Beacon",
+        "Emergence Zone",
+        "Homeward Path",
+        "Mana Vault",
+        "Ruins of Trokair"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 1,
+      "gid": 151036,
+      "last_stage_v43": 1,
+      "last_stage_v5": 2,
+      "seat": 1,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Basalt Monolith",
+        "Erode",
+        "Lion's Eye Diamond",
+        "Mox Opal",
+        "Razorgrass Ambush",
+        "The Mind Stone",
+        "Vexing Bauble"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Minimus Containment"
+      ],
+      "v5_original_hand": [
+        "Ancient Tomb",
+        "Deafening Silence",
+        "Jeweled Amulet",
+        "Mana Vault",
+        "Plains",
+        "Touch the Spirit Realm"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 4,
+      "gid": 151037,
+      "last_stage_v43": 4,
+      "last_stage_v5": 4,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Portable Hole",
+        "Plains",
+        "Void Mirror"
+      ],
+      "v43_hand": [
+        "Lotus Petal",
+        "Mox Opal",
+        "Remote Farm",
+        "The Mind Stone"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Portable Hole",
+        "Plains",
+        "Void Mirror"
+      ],
+      "v5_original_hand": [
+        "Lotus Petal",
+        "Mox Opal",
+        "Remote Farm",
+        "The Mind Stone"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 1,
+      "gid": 151038,
+      "last_stage_v43": 4,
+      "last_stage_v5": 1,
+      "seat": 2,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 3,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Tezzeret, Cruel Captain",
+        "Vexing Bauble",
+        "Soul Partition"
+      ],
+      "v43_hand": [
+        "Cavern of Souls",
+        "Crystal Vein",
+        "Moonsilver Key",
+        "Plains"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": true,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Cavern of Souls",
+        "City of Traitors",
+        "Coalition Relic",
+        "Gemstone Caverns",
+        "Razorgrass Ambush",
+        "The Mycosynth Gardens",
+        "Urza's Saga"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 2,
+      "gid": 151039,
+      "last_stage_v43": 2,
+      "last_stage_v5": 2,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Arcane Signet"
+      ],
+      "v43_hand": [
+        "Bucknard's Everfull Purse",
+        "Crystal Vein",
+        "Everflowing Chalice",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Arcane Signet"
+      ],
+      "v5_original_hand": [
+        "Bucknard's Everfull Purse",
+        "Crystal Vein",
+        "Everflowing Chalice",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Untaidake, the Cloud Keeper"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 0,
+      "gid": 151040,
+      "last_stage_v43": 0,
+      "last_stage_v5": 0,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Bucknard's Everfull Purse",
+        "Giant's Boulder",
+        "Great Hall of the Citadel",
+        "Orim's Chant",
+        "Razorgrass Ambush",
+        "Sheltered by Ghosts",
+        "Sol Ring"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Bucknard's Everfull Purse",
+        "Giant's Boulder",
+        "Great Hall of the Citadel",
+        "Orim's Chant",
+        "Razorgrass Ambush",
+        "Sheltered by Ghosts",
+        "Sol Ring"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 3,
+      "gid": 151041,
+      "last_stage_v43": 3,
+      "last_stage_v5": 3,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Roaming Throne",
+        "Unwanted Remake"
+      ],
+      "v43_hand": [
+        "Crystal Vein",
+        "Grim Monolith",
+        "Plains",
+        "Portable Hole",
+        "Sol Ring"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Roaming Throne",
+        "Unwanted Remake"
+      ],
+      "v5_original_hand": [
+        "Crystal Vein",
+        "Grim Monolith",
+        "Plains",
+        "Portable Hole",
+        "Sol Ring"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 4,
+      "gid": 151042,
+      "last_stage_v43": 6,
+      "last_stage_v5": 4,
+      "seat": 2,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 0,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Soul Partition",
+        "Boonweaver Giant",
+        "Idolized",
+        "Mox Diamond",
+        "Plains"
+      ],
+      "v43_hand": [
+        "Ancient Tomb",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Super State",
+        "Orim's Chant",
+        "Remote Farm"
+      ],
+      "v5_original_hand": [
+        "Command Beacon",
+        "Homeward Path",
+        "Scroll Rack",
+        "Urza's Saga"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 2,
+      "gid": 151043,
+      "last_stage_v43": 2,
+      "last_stage_v5": 4,
+      "seat": 0,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 0,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Unwanted Remake"
+      ],
+      "v43_hand": [
+        "Bucknard's Everfull Purse",
+        "Gemstone Caverns",
+        "Lotus Petal",
+        "Portable Hole",
+        "The Mycosynth Gardens",
+        "Trinisphere"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Hardlight Containment",
+        "Minimus Containment",
+        "Urza's Cave"
+      ],
+      "v5_original_hand": [
+        "Ancient Tomb",
+        "Basalt Monolith",
+        "Feather of Flight",
+        "Plains"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 3,
+      "gid": 151044,
+      "last_stage_v43": 3,
+      "last_stage_v5": 3,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 0,
+      "turn_v5": 0,
+      "v43_bottom": [
+        "Touch the Spirit Realm",
+        "Charitable Levy"
+      ],
+      "v43_hand": [
+        "Emeria's Call",
+        "Mishra's Workshop",
+        "Plains",
+        "Sol Ring",
+        "The Mind Stone"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Touch the Spirit Realm",
+        "Mishra's Workshop"
+      ],
+      "v5_original_hand": [
+        "Charitable Levy",
+        "Emeria's Call",
+        "Plains",
+        "Sol Ring",
+        "The Mind Stone"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 3,
+      "gid": 151045,
+      "last_stage_v43": 3,
+      "last_stage_v5": 3,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Vexing Bauble",
+        "Charitable Levy"
+      ],
+      "v43_hand": [
+        "Ancient Tomb",
+        "Moonsilver Key",
+        "Plains",
+        "Plains",
+        "Plains"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Vexing Bauble",
+        "Plains"
+      ],
+      "v5_original_hand": [
+        "Ancient Tomb",
+        "Charitable Levy",
+        "Moonsilver Key",
+        "Plains",
+        "Plains"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 2,
+      "gid": 151046,
+      "last_stage_v43": 2,
+      "last_stage_v5": 2,
+      "seat": 2,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Idolized"
+      ],
+      "v43_hand": [
+        "Ancient Tomb",
+        "Arcane Signet",
+        "Fellwar Stone",
+        "Krark-Clan Ironworks",
+        "Sheltered by Ghosts",
+        "Talon Gates of Madara"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Idolized"
+      ],
+      "v5_original_hand": [
+        "Ancient Tomb",
+        "Arcane Signet",
+        "Fellwar Stone",
+        "Krark-Clan Ironworks",
+        "Sheltered by Ghosts",
+        "Talon Gates of Madara"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 3,
+      "gid": 151047,
+      "last_stage_v43": 3,
+      "last_stage_v5": 3,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Disruptor Flute",
+        "Hardlight Containment"
+      ],
+      "v43_hand": [
+        "Cavern of Souls",
+        "Lion's Eye Diamond",
+        "Orim's Chant",
+        "Plains",
+        "Tezzeret, Cruel Captain"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Orim's Chant",
+        "Hardlight Containment"
+      ],
+      "v5_original_hand": [
+        "Cavern of Souls",
+        "Disruptor Flute",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Tezzeret, Cruel Captain"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 5,
+      "gid": 151048,
+      "last_stage_v43": 5,
+      "last_stage_v5": 5,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Voltaic Key",
+        "Treasure Vault",
+        "Mind Stone",
+        "Roaming Throne"
+      ],
+      "v43_hand": [
+        "City of Traitors",
+        "Fellwar Stone",
+        "Tezzeret, Cruel Captain"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Voltaic Key",
+        "Treasure Vault",
+        "Mind Stone",
+        "Roaming Throne"
+      ],
+      "v5_original_hand": [
+        "City of Traitors",
+        "Fellwar Stone",
+        "Tezzeret, Cruel Captain"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 2,
+      "gid": 151049,
+      "last_stage_v43": 3,
+      "last_stage_v5": 2,
+      "seat": 0,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 0,
+      "turn_v5": 0,
+      "v43_bottom": [
+        "Hardlight Containment",
+        "Twinblade Blessing"
+      ],
+      "v43_hand": [
+        "Crystal Vein",
+        "Expedition Map",
+        "Grim Monolith",
+        "Mox Diamond",
+        "Talon Gates of Madara"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Urza's Cave"
+      ],
+      "v5_original_hand": [
+        "Bucknard's Everfull Purse",
+        "Floating Shield",
+        "Mishra's Workshop",
+        "Plains",
+        "Sheltered by Ghosts",
+        "Talon Gates of Madara"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 2,
+      "gid": 151050,
+      "last_stage_v43": 2,
+      "last_stage_v5": 2,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Floating Shield"
+      ],
+      "v43_hand": [
+        "Basalt Monolith",
+        "Brainstone",
+        "Mana Vault",
+        "Plains",
+        "Talon Gates of Madara",
+        "The Mind Stone"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Brainstone"
+      ],
+      "v5_original_hand": [
+        "Basalt Monolith",
+        "Floating Shield",
+        "Mana Vault",
+        "Plains",
+        "Talon Gates of Madara",
+        "The Mind Stone"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 3,
+      "gid": 151051,
+      "last_stage_v43": 3,
+      "last_stage_v5": 3,
+      "seat": 2,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Mishra's Workshop",
+        "Plains"
+      ],
+      "v43_hand": [
+        "City of Traitors",
+        "Moonsilver Key",
+        "Mox Opal",
+        "Plains",
+        "Remote Farm"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Plains",
+        "Remote Farm"
+      ],
+      "v5_original_hand": [
+        "City of Traitors",
+        "Mishra's Workshop",
+        "Moonsilver Key",
+        "Mox Opal",
+        "Plains"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 1,
+      "gid": 151052,
+      "last_stage_v43": 1,
+      "last_stage_v5": 1,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Command Beacon",
+        "Gemstone Caverns",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Talon Gates of Madara",
+        "The Mind Stone",
+        "Thorn of Amethyst"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Command Beacon",
+        "Gemstone Caverns",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Talon Gates of Madara",
+        "The Mind Stone",
+        "Thorn of Amethyst"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 3,
+      "gid": 151053,
+      "last_stage_v43": 3,
+      "last_stage_v5": 3,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Minimus Containment",
+        "Paladin Class"
+      ],
+      "v43_hand": [
+        "Blast Zone",
+        "Lion's Eye Diamond",
+        "Mind Stone",
+        "Untaidake, the Cloud Keeper",
+        "Urza's Cave"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Urza's Cave",
+        "Minimus Containment"
+      ],
+      "v5_original_hand": [
+        "Blast Zone",
+        "Lion's Eye Diamond",
+        "Mind Stone",
+        "Paladin Class",
+        "Untaidake, the Cloud Keeper"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 5,
+      "gid": 151054,
+      "last_stage_v43": 5,
+      "last_stage_v5": 5,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "The Mind Stone",
+        "Mox Opal",
+        "Vexing Bauble",
+        "Expedition Map"
+      ],
+      "v43_hand": [
+        "Lion's Eye Diamond",
+        "Remote Farm",
+        "Sol Ring"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "The Mind Stone",
+        "Mox Opal",
+        "Vexing Bauble",
+        "Expedition Map"
+      ],
+      "v5_original_hand": [
+        "Lion's Eye Diamond",
+        "Remote Farm",
+        "Sol Ring"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 0,
+      "gid": 151055,
+      "last_stage_v43": 0,
+      "last_stage_v5": 0,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 0,
+      "turn_v5": 0,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Bound by Moonsilver",
+        "City of Traitors",
+        "Jeweled Amulet",
+        "Lion's Eye Diamond",
+        "Silence",
+        "Thorn of Amethyst",
+        "Void Mirror"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Bound by Moonsilver",
+        "City of Traitors",
+        "Jeweled Amulet",
+        "Lion's Eye Diamond",
+        "Silence",
+        "Thorn of Amethyst",
+        "Void Mirror"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 1,
+      "gid": 151056,
+      "last_stage_v43": 1,
+      "last_stage_v5": 2,
+      "seat": 0,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Ancient Tomb",
+        "City of Traitors",
+        "Giant's Boulder",
+        "Krark-Clan Ironworks",
+        "Minimus Containment",
+        "Scroll Rack",
+        "Super State"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Giant's Boulder"
+      ],
+      "v5_original_hand": [
+        "Chrome Mox",
+        "Command Beacon",
+        "Emergence Zone",
+        "Moonsilver Key",
+        "Paladin Class",
+        "Plains"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 4,
+      "gid": 151057,
+      "last_stage_v43": 4,
+      "last_stage_v5": 4,
+      "seat": 2,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Bound by Moonsilver",
+        "Charitable Levy",
+        "Hardlight Containment"
+      ],
+      "v43_hand": [
+        "Lion's Eye Diamond",
+        "Plains",
+        "Prismatic Lens",
+        "Unwanted Remake"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Unwanted Remake",
+        "Bound by Moonsilver",
+        "Charitable Levy"
+      ],
+      "v5_original_hand": [
+        "Hardlight Containment",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Prismatic Lens"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 2,
+      "gid": 151058,
+      "last_stage_v43": 2,
+      "last_stage_v5": 2,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Hardlight Containment"
+      ],
+      "v43_hand": [
+        "Chrome Mox",
+        "Expedition Map",
+        "Great Hall of the Citadel",
+        "Mana Vault",
+        "Plains",
+        "Plains"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Hardlight Containment"
+      ],
+      "v5_original_hand": [
+        "Chrome Mox",
+        "Expedition Map",
+        "Great Hall of the Citadel",
+        "Mana Vault",
+        "Plains",
+        "Plains"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 1,
+      "gid": 151059,
+      "last_stage_v43": 1,
+      "last_stage_v5": 1,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Bucknard's Everfull Purse",
+        "Emergence Zone",
+        "Gemstone Caverns",
+        "Lion's Eye Diamond",
+        "Minimus Containment",
+        "Plains",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Bucknard's Everfull Purse",
+        "Emergence Zone",
+        "Gemstone Caverns",
+        "Lion's Eye Diamond",
+        "Minimus Containment",
+        "Plains",
+        "Untaidake, the Cloud Keeper"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 3,
+      "gid": 151060,
+      "last_stage_v43": 3,
+      "last_stage_v5": 3,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Expedition Map",
+        "Idolized"
+      ],
+      "v43_hand": [
+        "Arcane Signet",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Prismatic Lens",
+        "Touch the Spirit Realm"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Touch the Spirit Realm",
+        "Idolized"
+      ],
+      "v5_original_hand": [
+        "Arcane Signet",
+        "Expedition Map",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Prismatic Lens"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 3,
+      "gid": 151061,
+      "last_stage_v43": 3,
+      "last_stage_v5": 3,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Blast Zone",
+        "Floating Shield"
+      ],
+      "v43_hand": [
+        "Chrome Mox",
+        "Mana Vault",
+        "Plains",
+        "Static Prison",
+        "Urza's Cave"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Blast Zone",
+        "Floating Shield"
+      ],
+      "v5_original_hand": [
+        "Chrome Mox",
+        "Mana Vault",
+        "Plains",
+        "Static Prison",
+        "Urza's Cave"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 2,
+      "gid": 151062,
+      "last_stage_v43": 5,
+      "last_stage_v5": 2,
+      "seat": 2,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 2,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Mantle of the Ancients",
+        "Ruins of Trokair",
+        "Everflowing Chalice",
+        "Touch the Spirit Realm"
+      ],
+      "v43_hand": [
+        "Krark-Clan Ironworks",
+        "Lotus Petal",
+        "Mishra's Workshop"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": true,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Blast Zone"
+      ],
+      "v5_original_hand": [
+        "Arcane Signet",
+        "Crystal Vein",
+        "Eldrazi Confluence",
+        "Mishra's Workshop",
+        "Mox Opal",
+        "Razorgrass Ambush"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 0,
+      "gid": 151063,
+      "last_stage_v43": 0,
+      "last_stage_v5": 0,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Ancient Den",
+        "Bucknard's Everfull Purse",
+        "City of Traitors",
+        "Homeward Path",
+        "Mox Opal",
+        "Plains",
+        "Sheltered by Ghosts"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Ancient Den",
+        "Bucknard's Everfull Purse",
+        "City of Traitors",
+        "Homeward Path",
+        "Mox Opal",
+        "Plains",
+        "Sheltered by Ghosts"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 0,
+      "gid": 151064,
+      "last_stage_v43": 0,
+      "last_stage_v5": 0,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 1,
+      "turn_v5": 1,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Basalt Monolith",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Static Prison",
+        "Vexing Bauble"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Basalt Monolith",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Static Prison",
+        "Vexing Bauble"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 1,
+      "gid": 151065,
+      "last_stage_v43": 1,
+      "last_stage_v5": 1,
+      "seat": 2,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Ancient Den",
+        "Ancient Tomb",
+        "Brainstone",
+        "Enlightened Tutor",
+        "Great Hall of the Citadel",
+        "Mana Vault",
+        "Talon Gates of Madara"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Ancient Den",
+        "Ancient Tomb",
+        "Brainstone",
+        "Enlightened Tutor",
+        "Great Hall of the Citadel",
+        "Mana Vault",
+        "Talon Gates of Madara"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 5,
+      "gid": 151066,
+      "last_stage_v43": 5,
+      "last_stage_v5": 5,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Voltaic Key",
+        "Petrified Hamlet",
+        "Paladin Class",
+        "Charitable Levy"
+      ],
+      "v43_hand": [
+        "Lion's Eye Diamond",
+        "Plains",
+        "Plains"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Petrified Hamlet",
+        "Paladin Class",
+        "Charitable Levy",
+        "Plains"
+      ],
+      "v5_original_hand": [
+        "Lion's Eye Diamond",
+        "Plains",
+        "Voltaic Key"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 4,
+      "gid": 151067,
+      "last_stage_v43": 5,
+      "last_stage_v5": 4,
+      "seat": 2,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 0,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Everflowing Chalice",
+        "Floating Shield",
+        "Prismatic Lens",
+        "Defense Grid"
+      ],
+      "v43_hand": [
+        "Lotus Petal",
+        "Plains",
+        "Sol Ring"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Orim's Chant",
+        "Erode",
+        "Floating Shield"
+      ],
+      "v5_original_hand": [
+        "Eiganjo, Seat of the Empire",
+        "Ruins of Trokair",
+        "Talon Gates of Madara",
+        "Urza's Saga"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 2,
+      "gid": 151068,
+      "last_stage_v43": 2,
+      "last_stage_v5": 2,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Unwanted Remake"
+      ],
+      "v43_hand": [
+        "Eiganjo, Seat of the Empire",
+        "Mana Vault",
+        "Plains",
+        "The Mind Stone",
+        "Touch the Spirit Realm",
+        "Voltaic Key"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Unwanted Remake"
+      ],
+      "v5_original_hand": [
+        "Eiganjo, Seat of the Empire",
+        "Mana Vault",
+        "Plains",
+        "The Mind Stone",
+        "Touch the Spirit Realm",
+        "Voltaic Key"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 3,
+      "gid": 151069,
+      "last_stage_v43": 3,
+      "last_stage_v5": 3,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Roaming Throne",
+        "Brainstone"
+      ],
+      "v43_hand": [
+        "Moonsilver Key",
+        "Plains",
+        "Sol Ring",
+        "Static Prison",
+        "Super State"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Roaming Throne",
+        "Super State"
+      ],
+      "v5_original_hand": [
+        "Brainstone",
+        "Moonsilver Key",
+        "Plains",
+        "Sol Ring",
+        "Static Prison"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 1,
+      "gid": 151070,
+      "last_stage_v43": 1,
+      "last_stage_v5": 1,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Chrome Mox",
+        "Eiganjo, Seat of the Empire",
+        "Fellwar Stone",
+        "Mox Diamond",
+        "Sol Ring",
+        "The Mycosynth Gardens",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Chrome Mox",
+        "Eiganjo, Seat of the Empire",
+        "Fellwar Stone",
+        "Mox Diamond",
+        "Sol Ring",
+        "The Mycosynth Gardens",
+        "Untaidake, the Cloud Keeper"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 2,
+      "gid": 151071,
+      "last_stage_v43": 2,
+      "last_stage_v5": 2,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Petrified Hamlet"
+      ],
+      "v43_hand": [
+        "Emergence Zone",
+        "Grim Monolith",
+        "Homeward Path",
+        "Mishra's Workshop",
+        "Moonsilver Key",
+        "The Mind Stone"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Homeward Path"
+      ],
+      "v5_original_hand": [
+        "Emergence Zone",
+        "Grim Monolith",
+        "Mishra's Workshop",
+        "Moonsilver Key",
+        "Petrified Hamlet",
+        "The Mind Stone"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 2,
+      "gid": 151072,
+      "last_stage_v43": 2,
+      "last_stage_v5": 2,
+      "seat": 2,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Eldrazi Confluence"
+      ],
+      "v43_hand": [
+        "Ancient Den",
+        "Basalt Monolith",
+        "Enlightened Tutor",
+        "Petrified Hamlet",
+        "Sol Ring",
+        "Talon Gates of Madara"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Petrified Hamlet"
+      ],
+      "v5_original_hand": [
+        "Ancient Den",
+        "Basalt Monolith",
+        "Eldrazi Confluence",
+        "Enlightened Tutor",
+        "Sol Ring",
+        "Talon Gates of Madara"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 0,
+      "gid": 151073,
+      "last_stage_v43": 0,
+      "last_stage_v5": 6,
+      "seat": 0,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 3,
+      "turn_v5": 0,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Grim Monolith",
+        "Minimus Containment",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Static Prison",
+        "Voltaic Key"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Ruins of Trokair",
+        "Unwanted Remake",
+        "Soul Partition",
+        "Gift of Immortality",
+        "Mind Stone"
+      ],
+      "v5_original_hand": [
+        "Ancient Den",
+        "Bucknard's Everfull Purse"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 3,
+      "gid": 151074,
+      "last_stage_v43": 3,
+      "last_stage_v5": 3,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Urza's Cave",
+        "Gleaming Splendor"
+      ],
+      "v43_hand": [
+        "Great Hall of the Citadel",
+        "Lotus Petal",
+        "Plains",
+        "Tezzeret, Cruel Captain",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Untaidake, the Cloud Keeper",
+        "Great Hall of the Citadel"
+      ],
+      "v5_original_hand": [
+        "Gleaming Splendor",
+        "Lotus Petal",
+        "Plains",
+        "Tezzeret, Cruel Captain",
+        "Urza's Cave"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 0,
+      "gid": 151075,
+      "last_stage_v43": 0,
+      "last_stage_v5": 0,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Brainstone",
+        "Emeria's Call",
+        "Great Hall of the Citadel",
+        "Lotus Petal",
+        "Mana Vault",
+        "Urza's Cave",
+        "Voltaic Key"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Brainstone",
+        "Emeria's Call",
+        "Great Hall of the Citadel",
+        "Lotus Petal",
+        "Mana Vault",
+        "Urza's Cave",
+        "Voltaic Key"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 1,
+      "gid": 151076,
+      "last_stage_v43": 1,
+      "last_stage_v5": 1,
+      "seat": 2,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Basalt Monolith",
+        "Bound by Moonsilver",
+        "Cavern of Souls",
+        "Mana Vault",
+        "Plains",
+        "Sol Ring",
+        "The Mind Stone"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Basalt Monolith",
+        "Bound by Moonsilver",
+        "Cavern of Souls",
+        "Mana Vault",
+        "Plains",
+        "Sol Ring",
+        "The Mind Stone"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 1,
+      "gid": 151077,
+      "last_stage_v43": 1,
+      "last_stage_v5": 1,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Blast Zone",
+        "Erode",
+        "Grim Monolith",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Plains",
+        "Portable Hole"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Blast Zone",
+        "Erode",
+        "Grim Monolith",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Plains",
+        "Portable Hole"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 4,
+      "gid": 151078,
+      "last_stage_v43": 4,
+      "last_stage_v5": 4,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Scroll Rack",
+        "Mana Tithe",
+        "Gleaming Splendor"
+      ],
+      "v43_hand": [
+        "Bucknard's Everfull Purse",
+        "Coalition Relic",
+        "Lotus Petal",
+        "Treasure Vault"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Scroll Rack",
+        "Coalition Relic",
+        "Mana Tithe"
+      ],
+      "v5_original_hand": [
+        "Bucknard's Everfull Purse",
+        "Gleaming Splendor",
+        "Lotus Petal",
+        "Treasure Vault"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 5,
+      "gid": 151079,
+      "last_stage_v43": 5,
+      "last_stage_v5": 5,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Mantle of the Ancients",
+        "Charitable Levy",
+        "Silence",
+        "Basalt Monolith"
+      ],
+      "v43_hand": [
+        "Arcane Signet",
+        "Remote Farm",
+        "Sol Ring"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Mantle of the Ancients",
+        "Charitable Levy",
+        "Silence",
+        "Basalt Monolith"
+      ],
+      "v5_original_hand": [
+        "Arcane Signet",
+        "Remote Farm",
+        "Sol Ring"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 2,
+      "gid": 151080,
+      "last_stage_v43": 2,
+      "last_stage_v5": 4,
+      "seat": 3,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 0,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Feather of Flight"
+      ],
+      "v43_hand": [
+        "Ancient Den",
+        "Eiganjo, Seat of the Empire",
+        "Everflowing Chalice",
+        "Gift of Immortality",
+        "Sol Ring",
+        "Thorn of Amethyst"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": true,
+      "v5_original_bottom": [
+        "Bound by Moonsilver",
+        "Defense Grid",
+        "Chrome Mox"
+      ],
+      "v5_original_hand": [
+        "Idolized",
+        "Lotus Petal",
+        "Plains",
+        "Tezzeret, Cruel Captain"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 4,
+      "gid": 151081,
+      "last_stage_v43": 4,
+      "last_stage_v5": 4,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Prismatic Lens",
+        "Portable Hole",
+        "Implements of Sacrifice"
+      ],
+      "v43_hand": [
+        "Moonsilver Key",
+        "Plains",
+        "Plains",
+        "Sol Ring"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": true,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Plains",
+        "Portable Hole",
+        "Implements of Sacrifice"
+      ],
+      "v5_original_hand": [
+        "Moonsilver Key",
+        "Plains",
+        "Prismatic Lens",
+        "Sol Ring"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 0,
+      "gid": 151082,
+      "last_stage_v43": 0,
+      "last_stage_v5": 3,
+      "seat": 2,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 2,
+      "turn_v5": 0,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Defense Grid",
+        "Floating Shield",
+        "Grim Monolith",
+        "Plains",
+        "Sol Ring",
+        "Soul Partition",
+        "Urza's Saga"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": true,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Mana Tithe",
+        "Crystal Vein"
+      ],
+      "v5_original_hand": [
+        "Arcane Signet",
+        "Grim Monolith",
+        "March of Otherworldly Light",
+        "Minimus Containment",
+        "Mishra's Workshop"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 1,
+      "gid": 151083,
+      "last_stage_v43": 1,
+      "last_stage_v5": 3,
+      "seat": 2,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 0,
+      "turn_v5": 0,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Chrome Mox",
+        "Everflowing Chalice",
+        "Gemstone Caverns",
+        "Krark-Clan Ironworks",
+        "Mox Diamond",
+        "Plains",
+        "The Mycosynth Gardens"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "The Mind Stone",
+        "Plains"
+      ],
+      "v5_original_hand": [
+        "Chrome Mox",
+        "Crystal Vein",
+        "Expedition Map",
+        "Fellwar Stone",
+        "Mana Tithe"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 3,
+      "gid": 151084,
+      "last_stage_v43": 4,
+      "last_stage_v5": 3,
+      "seat": 2,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 2,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "The Mycosynth Gardens",
+        "Deafening Silence",
+        "Portable Hole"
+      ],
+      "v43_hand": [
+        "Basalt Monolith",
+        "Mox Diamond",
+        "Plains",
+        "Plains"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": true,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Idolized",
+        "Sheltered by Ghosts"
+      ],
+      "v5_original_hand": [
+        "Bucknard's Everfull Purse",
+        "Command Beacon",
+        "Homeward Path",
+        "Ruins of Trokair",
+        "Soul Partition"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 1,
+      "gid": 151085,
+      "last_stage_v43": 3,
+      "last_stage_v5": 1,
+      "seat": 0,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 3,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Static Prison",
+        "Staff of Compleation"
+      ],
+      "v43_hand": [
+        "Arcane Signet",
+        "Fellwar Stone",
+        "Mox Diamond",
+        "Plains",
+        "Urza's Saga"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": true,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Chrome Mox",
+        "Command Beacon",
+        "Krark-Clan Ironworks",
+        "Mishra's Workshop",
+        "Mox Diamond",
+        "Plains",
+        "Plains"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 3,
+      "gid": 151086,
+      "last_stage_v43": 5,
+      "last_stage_v5": 3,
+      "seat": 2,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 0,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Implements of Sacrifice",
+        "Hardlight Containment",
+        "Portable Hole",
+        "Thorn of Amethyst"
+      ],
+      "v43_hand": [
+        "Mox Diamond",
+        "Petrified Hamlet",
+        "Remote Farm"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Sheltered by Ghosts",
+        "Plains"
+      ],
+      "v5_original_hand": [
+        "Brainstone",
+        "City of Traitors",
+        "Homeward Path",
+        "Ruins of Trokair",
+        "Tezzeret, Cruel Captain"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 0,
+      "gid": 151087,
+      "last_stage_v43": 0,
+      "last_stage_v5": 0,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Enlightened Tutor",
+        "Floating Shield",
+        "Grim Monolith",
+        "Homeward Path",
+        "Plains",
+        "Razorgrass Ambush",
+        "Trinisphere"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Enlightened Tutor",
+        "Floating Shield",
+        "Grim Monolith",
+        "Homeward Path",
+        "Plains",
+        "Razorgrass Ambush",
+        "Trinisphere"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 1,
+      "gid": 151088,
+      "last_stage_v43": 1,
+      "last_stage_v5": 4,
+      "seat": 2,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 2,
+      "turn_v5": 0,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Defense Grid",
+        "Feather of Flight",
+        "Homeward Path",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Treasure Vault",
+        "Voltaic Key"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": true,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Paladin Class",
+        "Erode",
+        "Unwanted Remake"
+      ],
+      "v5_original_hand": [
+        "City of Traitors",
+        "Disruptor Flute",
+        "Razorgrass Ambush",
+        "The Mycosynth Gardens"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 1,
+      "gid": 151089,
+      "last_stage_v43": 1,
+      "last_stage_v5": 3,
+      "seat": 0,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Chrome Mox",
+        "Enlightened Tutor",
+        "Gleaming Splendor",
+        "Grim Monolith",
+        "Lotus Petal",
+        "Lunarch Mantle",
+        "The Mycosynth Gardens"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Homeward Path",
+        "Floating Shield"
+      ],
+      "v5_original_hand": [
+        "Eiganjo, Seat of the Empire",
+        "Emeria's Call",
+        "Grim Monolith",
+        "Mana Vault",
+        "Static Prison"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 2,
+      "gid": 151090,
+      "last_stage_v43": 2,
+      "last_stage_v5": 2,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Preston, the Vanisher"
+      ],
+      "v43_hand": [
+        "Basalt Monolith",
+        "Emeria's Call",
+        "Enlightened Tutor",
+        "Fellwar Stone",
+        "Implements of Sacrifice",
+        "Razorgrass Ambush"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Preston, the Vanisher"
+      ],
+      "v5_original_hand": [
+        "Basalt Monolith",
+        "Emeria's Call",
+        "Enlightened Tutor",
+        "Fellwar Stone",
+        "Implements of Sacrifice",
+        "Razorgrass Ambush"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 0,
+      "gid": 151091,
+      "last_stage_v43": 0,
+      "last_stage_v5": 1,
+      "seat": 2,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 3,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Brainstone",
+        "Cavern of Souls",
+        "Emergence Zone",
+        "Grim Monolith",
+        "Mind Stone",
+        "Moonsilver Key",
+        "Mox Opal"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": true,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Ancient Den",
+        "Crystal Vein",
+        "Enlightened Tutor",
+        "Grim Monolith",
+        "Mantle of the Ancients",
+        "Plains",
+        "Sol Ring"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 1,
+      "gid": 151092,
+      "last_stage_v43": 1,
+      "last_stage_v5": 2,
+      "seat": 3,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 3,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Cavern of Souls",
+        "City of Traitors",
+        "Hardlight Containment",
+        "Krark-Clan Ironworks",
+        "Sol Ring",
+        "Touch the Spirit Realm",
+        "Voltaic Key"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": true,
+      "v5_original_bottom": [
+        "Sheltered by Ghosts"
+      ],
+      "v5_original_hand": [
+        "Jeweled Amulet",
+        "Mana Vault",
+        "March of Otherworldly Light",
+        "Mox Opal",
+        "Static Prison",
+        "The Mycosynth Gardens"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 0,
+      "gid": 151093,
+      "last_stage_v43": 5,
+      "last_stage_v5": 0,
+      "seat": 0,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 3,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Paladin Class",
+        "Thorn of Amethyst",
+        "The Mind Stone",
+        "Command Beacon"
+      ],
+      "v43_hand": [
+        "Blast Zone",
+        "Lotus Petal",
+        "Plains"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": true,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Charitable Levy",
+        "Enlightened Tutor",
+        "Plains",
+        "Razorgrass Ambush",
+        "Staff of Compleation",
+        "Twinblade Blessing",
+        "Untaidake, the Cloud Keeper"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 1,
+      "gid": 151094,
+      "last_stage_v43": 1,
+      "last_stage_v5": 3,
+      "seat": 3,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Ancient Den",
+        "Brainstone",
+        "City of Traitors",
+        "Erode",
+        "Lunarch Mantle",
+        "Plains",
+        "Sol Ring"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Trinisphere",
+        "Soul Partition"
+      ],
+      "v5_original_hand": [
+        "Emeria's Call",
+        "Gift of Immortality",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Prismatic Lens"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 5,
+      "gid": 151095,
+      "last_stage_v43": 5,
+      "last_stage_v5": 5,
+      "seat": 2,
+      "stage_direction": "same_stage",
+      "turn_v43": 0,
+      "turn_v5": 0,
+      "v43_bottom": [
+        "The Mycosynth Gardens",
+        "Void Mirror",
+        "Implements of Sacrifice",
+        "Moonsilver Key"
+      ],
+      "v43_hand": [
+        "Fellwar Stone",
+        "Plains",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Void Mirror",
+        "Plains",
+        "Untaidake, the Cloud Keeper",
+        "Fellwar Stone"
+      ],
+      "v5_original_hand": [
+        "Implements of Sacrifice",
+        "Moonsilver Key",
+        "The Mycosynth Gardens"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 2,
+      "gid": 151096,
+      "last_stage_v43": 2,
+      "last_stage_v5": 3,
+      "seat": 3,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Boonweaver Giant"
+      ],
+      "v43_hand": [
+        "Brainstone",
+        "Crystal Vein",
+        "Floating Shield",
+        "Mana Vault",
+        "Plains",
+        "Plains"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Cavern of Souls",
+        "Ruins of Trokair"
+      ],
+      "v5_original_hand": [
+        "Enlightened Tutor",
+        "Fellwar Stone",
+        "Great Hall of the Citadel",
+        "Jeweled Amulet",
+        "Mox Opal"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 0,
+      "gid": 151097,
+      "last_stage_v43": 2,
+      "last_stage_v5": 0,
+      "seat": 1,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Scroll Rack"
+      ],
+      "v43_hand": [
+        "City of Traitors",
+        "Emergence Zone",
+        "Enlightened Tutor",
+        "Implements of Sacrifice",
+        "Lion's Eye Diamond",
+        "Unwanted Remake"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Ancient Tomb",
+        "Bound by Moonsilver",
+        "Bucknard's Everfull Purse",
+        "Expedition Map",
+        "Lunarch Mantle",
+        "Portable Hole",
+        "Voltaic Key"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 4,
+      "gid": 151098,
+      "last_stage_v43": 4,
+      "last_stage_v5": 4,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Defense Grid",
+        "Gift of Immortality",
+        "Static Prison"
+      ],
+      "v43_hand": [
+        "Homeward Path",
+        "Lion's Eye Diamond",
+        "Razorgrass Ambush",
+        "The Mind Stone"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Defense Grid",
+        "The Mind Stone",
+        "Gift of Immortality"
+      ],
+      "v5_original_hand": [
+        "Homeward Path",
+        "Lion's Eye Diamond",
+        "Razorgrass Ambush",
+        "Static Prison"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 3,
+      "gid": 151099,
+      "last_stage_v43": 3,
+      "last_stage_v5": 4,
+      "seat": 2,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 0,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Thorn of Amethyst",
+        "Bound by Moonsilver"
+      ],
+      "v43_hand": [
+        "Arcane Signet",
+        "Homeward Path",
+        "Krark-Clan Ironworks",
+        "Moonsilver Key",
+        "The Mind Stone"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Floating Shield",
+        "Feather of Flight",
+        "Hardlight Containment"
+      ],
+      "v5_original_hand": [
+        "Arcane Signet",
+        "Crystal Vein",
+        "Moonsilver Key",
+        "Plains"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 5,
+      "gid": 151100,
+      "last_stage_v43": 5,
+      "last_stage_v5": 5,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Krark-Clan Ironworks",
+        "Trinisphere",
+        "Mantle of the Ancients",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v43_hand": [
+        "Gemstone Caverns",
+        "Mishra's Workshop",
+        "Plains"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Trinisphere",
+        "Gemstone Caverns",
+        "Mantle of the Ancients",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v5_original_hand": [
+        "Krark-Clan Ironworks",
+        "Mishra's Workshop",
+        "Plains"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 1,
+      "gid": 151101,
+      "last_stage_v43": 1,
+      "last_stage_v5": 1,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 0,
+      "turn_v5": 0,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Coalition Relic",
+        "Disruptor Flute",
+        "Giant's Boulder",
+        "Krark-Clan Ironworks",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Twinblade Blessing"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Coalition Relic",
+        "Disruptor Flute",
+        "Giant's Boulder",
+        "Krark-Clan Ironworks",
+        "Lion's Eye Diamond",
+        "Plains",
+        "Twinblade Blessing"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 0,
+      "gid": 151102,
+      "last_stage_v43": 0,
+      "last_stage_v5": 0,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Enlightened Tutor",
+        "Great Hall of the Citadel",
+        "Implements of Sacrifice",
+        "Jeweled Amulet",
+        "Razorgrass Ambush",
+        "Urza's Saga",
+        "Vexing Bauble"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Enlightened Tutor",
+        "Great Hall of the Citadel",
+        "Implements of Sacrifice",
+        "Jeweled Amulet",
+        "Razorgrass Ambush",
+        "Urza's Saga",
+        "Vexing Bauble"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 1,
+      "gid": 151103,
+      "last_stage_v43": 1,
+      "last_stage_v5": 1,
+      "seat": 2,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Ancient Tomb",
+        "Bound by Moonsilver",
+        "Enlightened Tutor",
+        "Expedition Map",
+        "Petrified Hamlet",
+        "Plains",
+        "The Mind Stone"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Ancient Tomb",
+        "Bound by Moonsilver",
+        "Enlightened Tutor",
+        "Expedition Map",
+        "Petrified Hamlet",
+        "Plains",
+        "The Mind Stone"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 2,
+      "gid": 151104,
+      "last_stage_v43": 2,
+      "last_stage_v5": 4,
+      "seat": 2,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 0,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Sheltered by Ghosts"
+      ],
+      "v43_hand": [
+        "Arcane Signet",
+        "Eiganjo, Seat of the Empire",
+        "Grim Monolith",
+        "Mind Stone",
+        "Prismatic Lens",
+        "The Mycosynth Gardens"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": true,
+      "v5_original_bottom": [
+        "Plains",
+        "Crystal Vein",
+        "The Mycosynth Gardens"
+      ],
+      "v5_original_hand": [
+        "Grim Monolith",
+        "Razorgrass Ambush",
+        "Ruins of Trokair",
+        "Sol Ring"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 3,
+      "gid": 151105,
+      "last_stage_v43": 3,
+      "last_stage_v5": 3,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Bucknard's Everfull Purse",
+        "Everflowing Chalice"
+      ],
+      "v43_hand": [
+        "Basalt Monolith",
+        "Blast Zone",
+        "Grim Monolith",
+        "Lotus Petal",
+        "Plains"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Plains",
+        "Basalt Monolith"
+      ],
+      "v5_original_hand": [
+        "Blast Zone",
+        "Bucknard's Everfull Purse",
+        "Everflowing Chalice",
+        "Grim Monolith",
+        "Lotus Petal"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 1,
+      "gid": 151106,
+      "last_stage_v43": 1,
+      "last_stage_v5": 1,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Grim Monolith",
+        "Implements of Sacrifice",
+        "Mana Vault",
+        "Moonsilver Key",
+        "Portable Hole",
+        "Sol Ring",
+        "The Mycosynth Gardens"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Grim Monolith",
+        "Implements of Sacrifice",
+        "Mana Vault",
+        "Moonsilver Key",
+        "Portable Hole",
+        "Sol Ring",
+        "The Mycosynth Gardens"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 3,
+      "gid": 151107,
+      "last_stage_v43": 3,
+      "last_stage_v5": 3,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Untaidake, the Cloud Keeper",
+        "Portable Hole"
+      ],
+      "v43_hand": [
+        "Command Beacon",
+        "Gemstone Caverns",
+        "Grim Monolith",
+        "Soul Partition",
+        "Unwanted Remake"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Soul Partition",
+        "Unwanted Remake"
+      ],
+      "v5_original_hand": [
+        "Command Beacon",
+        "Gemstone Caverns",
+        "Grim Monolith",
+        "Portable Hole",
+        "Untaidake, the Cloud Keeper"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 3,
+      "gid": 151108,
+      "last_stage_v43": 3,
+      "last_stage_v5": 5,
+      "seat": 1,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Feather of Flight",
+        "Sheltered by Ghosts"
+      ],
+      "v43_hand": [
+        "Arcane Signet",
+        "Bucknard's Everfull Purse",
+        "Eiganjo, Seat of the Empire",
+        "Giant's Boulder",
+        "Krark-Clan Ironworks"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "City of Traitors",
+        "Treasure Vault",
+        "Great Hall of the Citadel",
+        "The Mind Stone"
+      ],
+      "v5_original_hand": [
+        "Ancient Tomb",
+        "Basalt Monolith",
+        "Tezzeret, Cruel Captain"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 0,
+      "gid": 151109,
+      "last_stage_v43": 0,
+      "last_stage_v5": 0,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "City of Traitors",
+        "Crystal Vein",
+        "Gleaming Splendor",
+        "Mana Vault",
+        "Mishra's Workshop",
+        "Moonsilver Key",
+        "Void Mirror"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "City of Traitors",
+        "Crystal Vein",
+        "Gleaming Splendor",
+        "Mana Vault",
+        "Mishra's Workshop",
+        "Moonsilver Key",
+        "Void Mirror"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 2,
+      "gid": 151110,
+      "last_stage_v43": 2,
+      "last_stage_v5": 3,
+      "seat": 0,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 3,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Scroll Rack"
+      ],
+      "v43_hand": [
+        "Ancient Tomb",
+        "Eldrazi Confluence",
+        "Erode",
+        "Grim Monolith",
+        "Ruins of Trokair",
+        "The Mind Stone"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": true,
+      "v5_original_bottom": [
+        "Roaming Throne",
+        "Erode"
+      ],
+      "v5_original_hand": [
+        "Ancient Tomb",
+        "Bound by Moonsilver",
+        "Bucknard's Everfull Purse",
+        "Lotus Petal",
+        "Mana Tithe"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 0,
+      "gid": 151111,
+      "last_stage_v43": 0,
+      "last_stage_v5": 4,
+      "seat": 2,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Ancient Den",
+        "Cavern of Souls",
+        "Enlightened Tutor",
+        "Mishra's Workshop",
+        "Plains",
+        "Portable Hole",
+        "Urza's Saga"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Portable Hole",
+        "Untaidake, the Cloud Keeper",
+        "Mana Tithe"
+      ],
+      "v5_original_hand": [
+        "Fellwar Stone",
+        "Mishra's Workshop",
+        "Plains",
+        "Staff of Compleation"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 1,
+      "gid": 151112,
+      "last_stage_v43": 1,
+      "last_stage_v5": 1,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "City of Traitors",
+        "Disruptor Flute",
+        "Great Hall of the Citadel",
+        "Krark-Clan Ironworks",
+        "Mantle of the Ancients",
+        "Plains",
+        "Sol Ring"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "City of Traitors",
+        "Disruptor Flute",
+        "Great Hall of the Citadel",
+        "Krark-Clan Ironworks",
+        "Mantle of the Ancients",
+        "Plains",
+        "Sol Ring"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 3,
+      "gid": 151113,
+      "last_stage_v43": 3,
+      "last_stage_v5": 3,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Orim's Chant",
+        "Portable Hole"
+      ],
+      "v43_hand": [
+        "Ancient Den",
+        "Ancient Tomb",
+        "Mana Vault",
+        "Mox Diamond",
+        "Voltaic Key"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Orim's Chant",
+        "Portable Hole"
+      ],
+      "v5_original_hand": [
+        "Ancient Den",
+        "Ancient Tomb",
+        "Mana Vault",
+        "Mox Diamond",
+        "Voltaic Key"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 2,
+      "gid": 151114,
+      "last_stage_v43": 3,
+      "last_stage_v5": 2,
+      "seat": 2,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Super State",
+        "Eldrazi Confluence"
+      ],
+      "v43_hand": [
+        "Bucknard's Everfull Purse",
+        "Giant's Boulder",
+        "Lion's Eye Diamond",
+        "Petrified Hamlet",
+        "Unwanted Remake"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Bucknard's Everfull Purse"
+      ],
+      "v5_original_hand": [
+        "Disruptor Flute",
+        "Gemstone Caverns",
+        "Grim Monolith",
+        "Idolized",
+        "Prismatic Lens",
+        "Tezzeret, Cruel Captain"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 1,
+      "gid": 151115,
+      "last_stage_v43": 1,
+      "last_stage_v5": 4,
+      "seat": 3,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 0,
+      "turn_v5": 0,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Blast Zone",
+        "City of Traitors",
+        "Command Beacon",
+        "Gemstone Caverns",
+        "Preston, the Vanisher",
+        "Scroll Rack",
+        "The Mind Stone"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Bound by Moonsilver",
+        "Plains",
+        "Remote Farm"
+      ],
+      "v5_original_hand": [
+        "Ancient Tomb",
+        "Giant's Boulder",
+        "Mind Stone",
+        "Tezzeret, Cruel Captain"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 4,
+      "gid": 151116,
+      "last_stage_v43": 4,
+      "last_stage_v5": 4,
+      "seat": 2,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Bucknard's Everfull Purse",
+        "Chrome Mox",
+        "Plains"
+      ],
+      "v43_hand": [
+        "Arcane Signet",
+        "Lion's Eye Diamond",
+        "The Mind Stone",
+        "Treasure Vault"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Bucknard's Everfull Purse",
+        "Plains",
+        "The Mind Stone"
+      ],
+      "v5_original_hand": [
+        "Arcane Signet",
+        "Chrome Mox",
+        "Lion's Eye Diamond",
+        "Treasure Vault"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 1,
+      "gid": 151117,
+      "last_stage_v43": 1,
+      "last_stage_v5": 1,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 1,
+      "turn_v5": 1,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Ancient Den",
+        "Lion's Eye Diamond",
+        "Mana Vault",
+        "Plains",
+        "Scroll Rack",
+        "Sol Ring",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Ancient Den",
+        "Lion's Eye Diamond",
+        "Mana Vault",
+        "Plains",
+        "Scroll Rack",
+        "Sol Ring",
+        "Untaidake, the Cloud Keeper"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 5,
+      "gid": 151118,
+      "last_stage_v43": 5,
+      "last_stage_v5": 5,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Erode",
+        "Plains",
+        "Floating Shield",
+        "Soul Partition"
+      ],
+      "v43_hand": [
+        "Bucknard's Everfull Purse",
+        "Cavern of Souls",
+        "Lion's Eye Diamond"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Erode",
+        "Plains",
+        "Floating Shield",
+        "Soul Partition"
+      ],
+      "v5_original_hand": [
+        "Bucknard's Everfull Purse",
+        "Cavern of Souls",
+        "Lion's Eye Diamond"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 4,
+      "gid": 151119,
+      "last_stage_v43": 4,
+      "last_stage_v5": 4,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Boonweaver Giant",
+        "Minimus Containment",
+        "Feather of Flight"
+      ],
+      "v43_hand": [
+        "Enlightened Tutor",
+        "March of Otherworldly Light",
+        "Plains",
+        "Touch the Spirit Realm"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Boonweaver Giant",
+        "March of Otherworldly Light",
+        "Minimus Containment"
+      ],
+      "v5_original_hand": [
+        "Enlightened Tutor",
+        "Feather of Flight",
+        "Plains",
+        "Touch the Spirit Realm"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 4,
+      "gid": 151120,
+      "last_stage_v43": 4,
+      "last_stage_v5": 4,
+      "seat": 0,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [
+        "Ancient Den",
+        "March of Otherworldly Light",
+        "Voltaic Key"
+      ],
+      "v43_hand": [
+        "Charitable Levy",
+        "Enlightened Tutor",
+        "Lotus Petal",
+        "Ruins of Trokair"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Ancient Den",
+        "March of Otherworldly Light",
+        "Voltaic Key"
+      ],
+      "v5_original_hand": [
+        "Charitable Levy",
+        "Enlightened Tutor",
+        "Lotus Petal",
+        "Ruins of Trokair"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 2,
+      "gid": 151121,
+      "last_stage_v43": 2,
+      "last_stage_v5": 2,
+      "seat": 3,
+      "stage_direction": "same_stage",
+      "turn_v43": 1,
+      "turn_v5": 1,
+      "v43_bottom": [
+        "Boonweaver Giant"
+      ],
+      "v43_hand": [
+        "Ancient Tomb",
+        "Gemstone Caverns",
+        "Jeweled Amulet",
+        "Lion's Eye Diamond",
+        "Talon Gates of Madara",
+        "The Mycosynth Gardens"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Boonweaver Giant"
+      ],
+      "v5_original_hand": [
+        "Ancient Tomb",
+        "Gemstone Caverns",
+        "Jeweled Amulet",
+        "Lion's Eye Diamond",
+        "Talon Gates of Madara",
+        "The Mycosynth Gardens"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 3,
+      "gid": 151122,
+      "last_stage_v43": 4,
+      "last_stage_v5": 3,
+      "seat": 2,
+      "stage_direction": "v5_earlier",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Plains",
+        "Prismatic Lens",
+        "Jeweled Amulet"
+      ],
+      "v43_hand": [
+        "Expedition Map",
+        "Fellwar Stone",
+        "Lotus Petal",
+        "Urza's Saga"
+      ],
+      "v43_keep_on_first_comparable_stage": false,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Prismatic Lens",
+        "Unwanted Remake"
+      ],
+      "v5_original_hand": [
+        "Bucknard's Everfull Purse",
+        "Emergence Zone",
+        "Gleaming Splendor",
+        "Orim's Chant",
+        "Remote Farm"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 4,
+      "gid": 151123,
+      "last_stage_v43": 4,
+      "last_stage_v5": 5,
+      "seat": 2,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Implements of Sacrifice",
+        "Erode",
+        "Basalt Monolith"
+      ],
+      "v43_hand": [
+        "Chrome Mox",
+        "Fellwar Stone",
+        "Lion's Eye Diamond",
+        "Mox Diamond"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Plains",
+        "Deafening Silence",
+        "Erode",
+        "Voltaic Key"
+      ],
+      "v5_original_hand": [
+        "City of Traitors",
+        "Eiganjo, Seat of the Empire",
+        "Tezzeret, Cruel Captain"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 1,
+      "gid": 151124,
+      "last_stage_v43": 1,
+      "last_stage_v5": 3,
+      "seat": 3,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Blast Zone",
+        "Cavern of Souls",
+        "Enlightened Tutor",
+        "Grim Monolith",
+        "Implements of Sacrifice",
+        "Ruins of Trokair",
+        "Voltaic Key"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Expedition Map",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v5_original_hand": [
+        "Disruptor Flute",
+        "Moonsilver Key",
+        "Plains",
+        "Sol Ring",
+        "Void Mirror"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_different_bottom",
+      "first_conflict_stage": 2,
+      "gid": 151125,
+      "last_stage_v43": 2,
+      "last_stage_v5": 2,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 3,
+      "turn_v5": 3,
+      "v43_bottom": [
+        "Feather of Flight"
+      ],
+      "v43_hand": [
+        "Eiganjo, Seat of the Empire",
+        "Idolized",
+        "Lotus Petal",
+        "Moonsilver Key",
+        "Plains",
+        "Sol Ring"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [
+        "Idolized"
+      ],
+      "v5_original_hand": [
+        "Eiganjo, Seat of the Empire",
+        "Feather of Flight",
+        "Lotus Petal",
+        "Moonsilver Key",
+        "Plains",
+        "Sol Ring"
+      ]
+    },
+    {
+      "comparison_stratum": "same_stage_same_final_hand_bottom",
+      "first_conflict_stage": 1,
+      "gid": 151126,
+      "last_stage_v43": 1,
+      "last_stage_v5": 1,
+      "seat": 1,
+      "stage_direction": "same_stage",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Cavern of Souls",
+        "Homeward Path",
+        "Lunarch Mantle",
+        "Mana Tithe",
+        "Moonsilver Key",
+        "Orim's Chant",
+        "Sol Ring"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": true,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "Cavern of Souls",
+        "Homeward Path",
+        "Lunarch Mantle",
+        "Mana Tithe",
+        "Moonsilver Key",
+        "Orim's Chant",
+        "Sol Ring"
+      ]
+    },
+    {
+      "comparison_stratum": "different_keep_stage",
+      "first_conflict_stage": 0,
+      "gid": 151127,
+      "last_stage_v43": 0,
+      "last_stage_v5": 1,
+      "seat": 0,
+      "stage_direction": "v43_earlier",
+      "turn_v43": 2,
+      "turn_v5": 2,
+      "v43_bottom": [],
+      "v43_hand": [
+        "Fellwar Stone",
+        "Gemstone Caverns",
+        "Mana Vault",
+        "Plains",
+        "Plains",
+        "Razorgrass Ambush",
+        "Sol Ring"
+      ],
+      "v43_keep_on_first_comparable_stage": true,
+      "v43_only_T2": false,
+      "v5_keep_on_first_comparable_stage": false,
+      "v5_only_T2": false,
+      "v5_original_bottom": [],
+      "v5_original_hand": [
+        "City of Traitors",
+        "Enlightened Tutor",
+        "Krark-Clan Ironworks",
+        "Mana Tithe",
+        "Plains",
+        "Sheltered by Ghosts",
+        "Voltaic Key"
+      ]
+    }
+  ],
+  "first_comparable_stage_by_direction": {
+    "0": {
+      "same_stage": 10,
+      "v43_earlier": 9,
+      "v5_earlier": 4
+    },
+    "1": {
+      "same_stage": 21,
+      "v43_earlier": 11,
+      "v5_earlier": 2
+    },
+    "2": {
+      "same_stage": 16,
+      "v43_earlier": 5,
+      "v5_earlier": 3
+    },
+    "3": {
+      "same_stage": 16,
+      "v43_earlier": 2,
+      "v5_earlier": 4
+    },
+    "4": {
+      "same_stage": 10,
+      "v43_earlier": 1,
+      "v5_earlier": 3
+    },
+    "5": {
+      "same_stage": 11
+    }
+  },
+  "identical_final_hand_has_exact_terminal_parity": true,
+  "no_model_training_or_selection": true,
+  "no_new_v5_or_student_gameplay": true,
+  "old_151k_cohort_already_inspected_not_fresh_acceptance": true,
+  "outcome_is_goldfish_Dack_deployment_not_multiplayer_win": true,
+  "schema": "dack_v45_original_v5_vs_coupled_v43_matched_151k_N128_residual_audit",
+  "status": "PASS",
+  "strata": {
+    "different_keep_stage": {
+      "N_physical_outer_groups": 44,
+      "v43_only_byT1": 0,
+      "v43_only_byT2": 4,
+      "v43_only_byT3": 3,
+      "v5_minus_v43_byT1_net_games": 0,
+      "v5_minus_v43_byT2_net_games": 9,
+      "v5_minus_v43_byT3_net_games": 8,
+      "v5_only_byT1": 0,
+      "v5_only_byT2": 13,
+      "v5_only_byT3": 11
+    },
+    "same_stage": {
+      "N_physical_outer_groups": 84,
+      "v43_only_byT1": 0,
+      "v43_only_byT2": 1,
+      "v43_only_byT3": 0,
+      "v5_minus_v43_byT1_net_games": 0,
+      "v5_minus_v43_byT2_net_games": -1,
+      "v5_minus_v43_byT3_net_games": 0,
+      "v5_only_byT1": 0,
+      "v5_only_byT2": 0,
+      "v5_only_byT3": 0
+    },
+    "same_stage_different_bottom": {
+      "N_physical_outer_groups": 30,
+      "v43_only_byT1": 0,
+      "v43_only_byT2": 1,
+      "v43_only_byT3": 0,
+      "v5_minus_v43_byT1_net_games": 0,
+      "v5_minus_v43_byT2_net_games": -1,
+      "v5_minus_v43_byT3_net_games": 0,
+      "v5_only_byT1": 0,
+      "v5_only_byT2": 0,
+      "v5_only_byT3": 0
+    },
+    "same_stage_same_final_hand_bottom": {
+      "N_physical_outer_groups": 54,
+      "v43_only_byT1": 0,
+      "v43_only_byT2": 0,
+      "v43_only_byT3": 0,
+      "v5_minus_v43_byT1_net_games": 0,
+      "v5_minus_v43_byT2_net_games": 0,
+      "v5_minus_v43_byT3_net_games": 0,
+      "v5_only_byT1": 0,
+      "v5_only_byT2": 0,
+      "v5_only_byT3": 0
+    },
+    "v43_earlier": {
+      "N_physical_outer_groups": 28,
+      "v43_only_byT1": 0,
+      "v43_only_byT2": 2,
+      "v43_only_byT3": 3,
+      "v5_minus_v43_byT1_net_games": 0,
+      "v5_minus_v43_byT2_net_games": 6,
+      "v5_minus_v43_byT3_net_games": 4,
+      "v5_only_byT1": 0,
+      "v5_only_byT2": 8,
+      "v5_only_byT3": 7
+    },
+    "v5_earlier": {
+      "N_physical_outer_groups": 16,
+      "v43_only_byT1": 0,
+      "v43_only_byT2": 2,
+      "v43_only_byT3": 0,
+      "v5_minus_v43_byT1_net_games": 0,
+      "v5_minus_v43_byT2_net_games": 3,
+      "v5_minus_v43_byT3_net_games": 4,
+      "v5_only_byT1": 0,
+      "v5_only_byT2": 5,
+      "v5_only_byT3": 4
+    }
+  },
+  "total": {
+    "N_physical_outer_groups": 128,
+    "v43_only_byT1": 0,
+    "v43_only_byT2": 5,
+    "v43_only_byT3": 3,
+    "v5_minus_v43_byT1_net_games": 0,
+    "v5_minus_v43_byT2_net_games": 8,
+    "v5_minus_v43_byT3_net_games": 8,
+    "v5_only_byT1": 0,
+    "v5_only_byT2": 13,
+    "v5_only_byT3": 11
+  },
+  "v43_coupled_byT2": 65,
+  "v5_original_byT2": 73,
+  "warning": "This is a selected same-seed outcome decomposition, not causal identification of exact bottom and stage effects."
+}
