@@ -1,0 +1,74 @@
+name: DACK v28 audit v5 bottom oracle vs unseen real futures N64
+on:
+  push:
+    branches: [dack-v28-v5-bottom-information-audit-20261031]
+    paths:
+      - '.github/workflows/dack_v28_bottom_oracle_audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  audit:
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        start: [99000, 99004, 99008, 99012, 99016, 99020, 99024, 99028, 99032, 99036, 99040, 99044, 99048, 99052, 99056, 99060]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v28-v5-bottom-information-audit-20261031
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile strict reference & independent future audit
+        run: |
+          python -m compileall -q dack_simulator/validation/audit_v28_bottom_peeking_vs_value.py dack_simulator/validation/pool_v28_bottom_audit.py
+          python dack_paired_counterfactual_v5_stable_chance_20261031.py --audit
+      - name: Verify v5 hidden library permutation invariant and evaluate independent hypothetical futures
+        run: |
+          python -u dack_simulator/validation/audit_v28_bottom_peeking_vs_value.py \
+            --start ${{ matrix.start }} --games 4 --samples 16 \
+            --out shards/v28_99k_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v28-99k-${{ matrix.start }}
+          path: shards/v28_99k_*.json.gz
+          retention-days: 30
+  pool:
+    needs: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v28-v5-bottom-information-audit-20261031
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v28-99k-*
+          merge-multiple: true
+          path: collected
+      - name: Verify complete independent 64-game audit and paired bootstrap
+        run: python -u dack_simulator/validation/pool_v28_bottom_audit.py
+      - name: Preserve immutable v28 audit data on isolated branch
+        run: |
+          mkdir -p benchmark_results/v28_bottom_audit_99k_shards
+          cp collected/v28_99k_*.json.gz benchmark_results/v28_bottom_audit_99k_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v28_bottom_hidden_order_and_unseen_value_N64.json benchmark_results/v28_bottom_audit_99k_shards
+          git commit -m "Archive v5 bottom hidden-order invariance and independent N64 sampled futures"
+          git pull --rebase origin dack-v28-v5-bottom-information-audit-20261031
+          git push origin HEAD:dack-v28-v5-bottom-information-audit-20261031
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v28-99k-v5-bottom-oracle-audit-N64
+          path: benchmark_results/v28_bottom_hidden_order_and_unseen_value_N64.json
+          retention-days: 30
