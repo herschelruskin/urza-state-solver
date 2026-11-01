@@ -1,0 +1,44 @@
+name: DACK v45 original v5 versus v43 exact first KEEP disagreement N128
+on:
+  push:
+    branches: [dack-v45-v5-v43-earliest-conflict-20261101]
+    paths:
+      - '.github/workflows/dack_v45_v5_v43_first_conflict.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  exact_readonly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v45-v5-v43-earliest-conflict-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Reconstruct both original natural London histories on identical physical 151k N128 deals
+        run: |
+          python -m py_compile dack_simulator/validation/v45_readonly_v5_v43_first_conflict.py
+          python -u dack_simulator/validation/v45_readonly_v5_v43_first_conflict.py
+      - name: Enforce counts, actual first reach, exact physical parity
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          q=json.loads(Path('benchmark_results/v45_v5_v43_matched_151k_N128_first_conflict.json').read_text())
+          assert q['status']=='PASS' and q['counts']=={'N':128,'v5_byT2':73,'v43_byT2':65}
+          assert q['identical_final_hand_ensures_physical_gameplay_parity']
+          assert q['first_stage_selected_only_if_actually_both_policies_reached']
+          assert q['already_inspected_151k_not_fresh_validation']
+          print('DACK_V45_EXACT_MATCHED_FIRST_CONFLICT_DIAGNOSTIC_PASS')
+          PY
+      - name: Archive read-only causal design census, no model approval
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v45_v5_v43_matched_151k_N128_first_conflict.json
+          git commit -m "Archive real original-v5 versus v43 first London disagreement and retained-hand contribution"
+          git pull --rebase origin dack-v45-v5-v43-earliest-conflict-20261101
+          git push origin HEAD:dack-v45-v5-v43-earliest-conflict-20261101
