@@ -1,0 +1,20 @@
+{
+  "groups": 384,
+  "model_sha256": "b1aabf15c0f6d7ff8334769d076a505f2cf33848e849232f513499f70e4099c5",
+  "no_v5_action_teacher_supervision": true,
+  "policy_approved": false,
+  "schema": "dack_v37_train_direct_true_action_regret_126k_v1",
+  "shared_C_resampled_per_group_bootstrap": true,
+  "states": 896,
+  "status": "PASS",
+  "train_C": 3072,
+  "train_K": 12288,
+  "train_only_action_counts_not_validation": {
+    "('discordant_boundary', 'frozen_v27_fallback')": 61,
+    "('discordant_boundary', 'v37_true_regret_keep')": 1,
+    "('discordant_boundary', 'v37_true_regret_mull')": 2,
+    "('discordant_confident', 'frozen_v27_fallback')": 64,
+    "('unconditional_random', 'frozen_v27_fallback')": 766,
+    "('unconditional_random', 'v37_true_regret_keep')": 2
+  }
+}
