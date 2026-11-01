@@ -1,0 +1,25 @@
+{
+  "boundary_enriched_training_groups": 128,
+  "model_sha256": "3b52271ec600e2bedb35d3f5698e39b980d0695bdd3d5295e5f4ff108e5c2b48",
+  "n_early_stage_states": 768,
+  "n_feature_dimensions": 73,
+  "n_independent_group_ids": 256,
+  "n_true_physical_keep_rollouts": 12288,
+  "n_true_physical_mull_continuations": 1536,
+  "no_training_outcomes_from_124k_121k_or_115k": true,
+  "policy_approved": false,
+  "schema": "dack_v36_predeclared_train_only_123k_value_model",
+  "status": "PASS",
+  "training_descriptive_changes_not_holdout": {
+    "boundary_enriched": {
+      "frozen_v27_fallback": 378,
+      "v36_real_action_keep": 5,
+      "v36_real_action_mull": 1
+    },
+    "random": {
+      "frozen_v27_fallback": 382,
+      "v36_real_action_keep": 2
+    }
+  },
+  "unbiased_training_groups": 128
+}
