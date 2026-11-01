@@ -122,7 +122,7 @@ if __name__=="__main__":
     p.add_argument("--out",default="shards/hybrid_m075_43000.json.gz")
     p.add_argument("--store",default=None)
     a=p.parse_args()
-    if not a.audit and not 43000<=a.start and a.start+a.games<=44000:
+    if not a.audit and not (43000<=a.start and a.start+a.games<=44000):
         raise ValueError("Hybrid experiments must run exclusively on fresh 43k seed band")
     result=audit()
     if a.audit:
