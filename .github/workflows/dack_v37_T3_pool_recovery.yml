@@ -1,5 +1,5 @@
 name: DACK v37 RECOVER already completed posthoc physical shards corrected cumulative pool
-# Second recovery launch: source syntax repaired, original 20 physical archives unchanged
+# Third recovery launch: jointly bootstrap both composite utility definitions; original physical shards unchanged
 on:
   push:
     branches: [dack-v37-direct-action-regret-20261101]
