@@ -1,0 +1,14 @@
+{
+  "eligible": 77,
+  "groups_with_paired_signal": 61,
+  "model_hash_sha256": "3a93ecb0c62fd973a9d32c744bfb2fabdffcc8046e9ed9b7bfd9986bb2961c5a",
+  "models_fit": 16,
+  "no_validation_data_fit": true,
+  "nonzero_empirical_T2_pair_labels": 27,
+  "nonzero_empirical_T3_pair_labels": 44,
+  "pairs": 90,
+  "physical_groups": 128,
+  "policy_approved": false,
+  "schema": "dack_v33b_training_diagnostic",
+  "status": "PASS"
+}
