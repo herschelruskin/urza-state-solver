@@ -1,0 +1,44 @@
+name: DACK v43 independently reshuffled physical bottom-choice comparison on four conflicts
+on:
+  push:
+    branches: [dack-v43-v5-candidate-mechanism-20261101]
+    paths:
+      - '.github/workflows/dack_v43_physical_bottom_pair_N32.yml'
+permissions:
+  contents: write
+jobs:
+  paired_physical_bottom:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        gid: [115003,115004,115119,115153]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v43-v5-candidate-mechanism-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Exact hidden92 card slots and stateless gameplay per paired bottom policy
+        run: |
+          python -m py_compile dack_simulator/validation/v43_physical_pair_bottoms.py
+          python -u dack_simulator/validation/v43_physical_pair_bottoms.py \
+            --gid ${{ matrix.gid }} \
+            --out benchmark_results/v43_independent_physical_bottom_pairs/v43_bottom_${{ matrix.gid }}_N32.json.gz
+      - name: Commit paired original v5 and v27 bottom-only physical result without learner promotion
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v43_independent_physical_bottom_pairs/v43_bottom_${{ matrix.gid }}_N32.json.gz
+          git commit -m "Archive genuine v5 versus v27 retained bottom physical paired 32 futures ${{ matrix.gid }}"
+          git pull --rebase origin dack-v43-v5-candidate-mechanism-20261101
+          git push origin HEAD:dack-v43-v5-candidate-mechanism-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v43-paired-bottom-N32-${{ matrix.gid }}
+          path: benchmark_results/v43_independent_physical_bottom_pairs/v43_bottom_${{ matrix.gid }}_N32.json.gz
+          retention-days: 90
