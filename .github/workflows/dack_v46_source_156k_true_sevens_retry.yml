@@ -1,0 +1,118 @@
+name: DACK v46 retry corrected seven-card hand ordering with full99 K and C
+on:
+  push:
+    branches: [dack-v46-seven-card-physical-calibration-20261101]
+    paths: ['.github/workflows/dack_v46_source_156k_true_sevens_retry.yml']
+permissions:
+  contents: write
+  actions: read
+jobs:
+  keep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        start: [156000,156016,156032,156048,156064,156080,156096,156112,156128,156144,156160,156176]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v46-seven-card-physical-calibration-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Sample two complete seven-card London KEEP states using strict beam160 real gameplay
+        run: |
+          python -m py_compile dack_simulator/validation/v46_collect_true_seven_K16.py
+          if [ ${{ matrix.start }} -lt 156128 ]; then SET=train; else SET=dev; fi
+          python -u dack_simulator/validation/v46_collect_true_seven_K16.py \
+            --split "$SET" --start ${{ matrix.start }} --out shards/v46_K_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v46-seven-K-${{ matrix.start }}
+          path: shards/v46_K_*.json.gz
+          retention-days: 90
+  mull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        seat: [0,1,2,3]
+        stage: [0,1]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v46-seven-card-physical-calibration-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Independent shared C128 all99 London mull continuation on frozen v43
+        run: |
+          python -m py_compile dack_simulator/validation/v46_collect_true_seven_C128.py
+          python -u dack_simulator/validation/v46_collect_true_seven_C128.py \
+            --seat ${{ matrix.seat }} --stage ${{ matrix.stage }} --out shards/v46_C_${{ matrix.seat }}_${{ matrix.stage }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v46-seven-C-${{ matrix.seat }}-${{ matrix.stage }}
+          path: shards/v46_C_*.json.gz
+          retention-days: 90
+  archive:
+    needs: [keep,mull]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v46-seven-card-physical-calibration-20261101
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v46-seven-K-*
+          merge-multiple: true
+          path: collected
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v46-seven-C-*
+          merge-multiple: true
+          path: collected
+      - name: Check physical denominators without fitting to dev
+        run: |
+          python - <<'PY'
+          import glob,gzip,json
+          a=glob.glob('collected/v46_K_*.json.gz')
+          b=glob.glob('collected/v46_C_*.json.gz')
+          assert len(a)==12 and len(b)==8,(len(a),len(b))
+          gids=[];train=dev=0
+          for p in a:
+              with gzip.open(p,'rt') as f:z=json.load(f)
+              assert z['schema']=='dack_v46_first_two_sevens_new_physical_K16_v1'
+              assert z['status']=='PASS'
+              assert z['frozen_v43_24_deal_continuation_parity_passed']
+              assert len(z['rows'])==32
+              assert all(len(x['turns'])==16 and x['no_bottom_cards'] for x in z['rows'])
+              gids.extend({x['gid'] for x in z['rows']})
+              if z['split']=='train':train+=16
+              else:dev+=16
+          assert sorted(gids)==list(range(156000,156192))
+          assert (train,dev)==(128,64)
+          for p in b:
+              with gzip.open(p,'rt') as f:z=json.load(f)
+              assert z['schema']=='dack_v46_first_two_sevens_shared_full99_C128_v1'
+              assert z['status']=='PASS' and len(z['turns'])==128
+              assert z['full99_returned_at_every_later_stage']
+          print('DACK_V46_PHYSICAL_SEVENS_N192_K6144_C1024_SOURCE_PASS')
+          PY
+      - name: Archive sealed train/dev physics, no policy promoted
+        run: |
+          mkdir -p benchmark_results/v46_new_156k_KC_physical_shards
+          cp collected/v46_*.json.gz benchmark_results/v46_new_156k_KC_physical_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v46_new_156k_KC_physical_shards/
+          git commit -m "Archive new independent 156k N192 two-seven blind physical K16 and 8 shared C128 cells"
+          git pull --rebase origin dack-v46-seven-card-physical-calibration-20261101
+          git push origin HEAD:dack-v46-seven-card-physical-calibration-20261101
