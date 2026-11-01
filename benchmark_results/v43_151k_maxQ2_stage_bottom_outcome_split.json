@@ -1,0 +1,58 @@
+{
+  "N": 256,
+  "groups": {
+    "different_final_london_stage": {
+      "N": 33,
+      "T1_gains": 0,
+      "T1_losses": 0,
+      "T1_net_game_gain": 0,
+      "T2_gains": 6,
+      "T2_losses": 1,
+      "T2_net_game_gain": 5,
+      "T3_gains": 17,
+      "T3_losses": 1,
+      "T3_net_game_gain": 16
+    },
+    "identical_final_stage_hand_bottom": {
+      "N": 154,
+      "T1_gains": 0,
+      "T1_losses": 0,
+      "T1_net_game_gain": 0,
+      "T2_gains": 0,
+      "T2_losses": 0,
+      "T2_net_game_gain": 0,
+      "T3_gains": 0,
+      "T3_losses": 0,
+      "T3_net_game_gain": 0
+    },
+    "maxQ2_kept_earlier": {
+      "N": 33,
+      "T1_gains": 0,
+      "T1_losses": 0,
+      "T1_net_game_gain": 0,
+      "T2_gains": 6,
+      "T2_losses": 1,
+      "T2_net_game_gain": 5,
+      "T3_gains": 17,
+      "T3_losses": 1,
+      "T3_net_game_gain": 16
+    },
+    "same_final_stage_different_bottom": {
+      "N": 69,
+      "T1_gains": 0,
+      "T1_losses": 1,
+      "T1_net_game_gain": -1,
+      "T2_gains": 9,
+      "T2_losses": 3,
+      "T2_net_game_gain": 6,
+      "T3_gains": 5,
+      "T3_losses": 4,
+      "T3_net_game_gain": 1
+    }
+  },
+  "new_151k_already_inspected_not_sealed": true,
+  "purely_descriptive_noncausal_between_selection_groups": true,
+  "schema": "dack_v43_151k_coupled_candidate_gain_stage_bottom_descriptive_split",
+  "status": "PASS",
+  "strict_identical_final_hand_gameplay_parity": true
+}
