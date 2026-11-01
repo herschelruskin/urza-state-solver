@@ -136,8 +136,8 @@ if __name__=="__main__":
     if a.audit:
         print("V23_T2_ONLY_KEEP_LONDON_DP_AUDIT_PASS",json.dumps(status),flush=True)
     else:
-        if not 88000<=a.game<87000:
-            raise ValueError("v23 only unseen 86k full-game physical IDs")
+        if not 87000<=a.game<88000:
+            raise ValueError("v23 requires fresh 87k full-game physical IDs")
         r=ref.game("one_key_34",a.game)
         print("V23_REAL_KEEP_GAME",json.dumps(r),flush=True)
         print("V23_POLICY_STATS",json.dumps(dict(STATS)),flush=True)
