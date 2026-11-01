@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """v30 contract tests: separate concrete exceptions from candidate neutral ties."""
 from collections import Counter
+import sys
+from pathlib import Path
+sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 import dack_paired_counterfactual_v5_stable_chance_20261031 as t
 from dack_simulator.validation.v30_functional_bottom_equivalence import (
     candidate_distance,functional_fingerprint,compare_observed_futures,land
