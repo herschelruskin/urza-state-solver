@@ -1,0 +1,193 @@
+name: DACK v13 exact v5 teacher stages collect and train forest
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_teacher_v13_corpus_fit.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  teacher:
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        include:
+          - split: train
+            start: 60000
+          - split: train
+            start: 60001
+          - split: train
+            start: 60002
+          - split: train
+            start: 60003
+          - split: train
+            start: 60004
+          - split: train
+            start: 60005
+          - split: train
+            start: 60006
+          - split: train
+            start: 60007
+          - split: train
+            start: 60008
+          - split: train
+            start: 60009
+          - split: train
+            start: 60010
+          - split: train
+            start: 60011
+          - split: train
+            start: 60012
+          - split: train
+            start: 60013
+          - split: train
+            start: 60014
+          - split: train
+            start: 60015
+          - split: validation
+            start: 61000
+          - split: validation
+            start: 61001
+          - split: validation
+            start: 61002
+          - split: validation
+            start: 61003
+          - split: validation
+            start: 61004
+          - split: validation
+            start: 61005
+          - split: validation
+            start: 61006
+          - split: validation
+            start: 61007
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Collect true v5 optimal-under-search London teacher choice and keep labels
+        run: |
+          python -u dack_simulator/validation/collect_teacher_london_v13.py \
+            --split ${{ matrix.split }} --start ${{ matrix.start }} \
+            --games 1 --variant one_key_34 \
+            --out datasets/distill_v13_${{ matrix.split }}_${{ matrix.start }}.jsonl.gz
+      - name: Verify exact physical groups and candidate labels
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import gzip,json
+          paths=list(Path('datasets').glob('distill_v13_*.jsonl.gz'))
+          assert len(paths)==1
+          with gzip.open(paths[0],'rt') as f:
+              meta=json.loads(next(f));rows=[json.loads(s) for s in f]
+          assert rows and meta['teacher']=='dack_stable_dice_strict_bounded_witness_v5'
+          assert len({r['game_id'] for r in rows})==1
+          assert all(len(r['seven'])==7 for r in rows)
+          assert all(sum(r['unknown_counts'].values())==92 for r in rows)
+          assert all(r['candidate_rows'] for r in rows)
+          assert all(0<=r['teacher_chosen_candidate']<len(r['candidate_rows'])<=12 for r in rows)
+          assert sum(bool(x['teacher_keep']) for x in rows)==1
+          assert rows[-1]['teacher_keep'] is True
+          assert not any('first3' in r or 'actual_library' in r for r in rows)
+          print('TEACHER_V13_PHYSICAL_STAGE_SHARD_PASS',paths[0].name,len(rows),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: teacher-v13-${{ matrix.split }}-${{ matrix.start }}
+          path: datasets/distill_v13_*.jsonl.gz
+          retention-days: 14
+  train:
+    needs: teacher
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: teacher-v13-*
+          merge-multiple: true
+          path: datasets/teacher_v13_20261031/
+      - name: Verify strict group splits and save immutable teacher manifest
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from collections import Counter
+          import gzip,hashlib,json
+          root=Path('datasets/teacher_v13_20261031')
+          files=sorted(root.glob('distill_v13_*.jsonl.gz'))
+          assert len(files)==24,len(files)
+          man={'schema':'dack_v13_true_v5_teacher_corpus','teacher':'dack_stable_dice_strict_bounded_witness_v5',
+               'only_reached_teacher_stages':True,'label_source_is_teacher_beam':True,
+               'future_order_saved':False,'source_manifest_sha256':None,
+               'splits':{},'files':[]}
+          all_ids=[]
+          for split,start,n in [('train',60000,16),('validation',61000,8)]:
+              fs=[p for p in files if p.name.startswith('distill_v13_'+split+'_')]
+              assert len(fs)==n,(split,len(fs))
+              gidset=set();counts=Counter()
+              for file in fs:
+                  with gzip.open(file,'rt') as f:
+                      meta=json.loads(next(f))
+                      assert meta['type']=='metadata' and meta['split']==split
+                      src=meta['source_manifest_sha256']
+                      if man['source_manifest_sha256'] is None:man['source_manifest_sha256']=src
+                      assert src==man['source_manifest_sha256']
+                      for line in f:
+                          r=json.loads(line)
+                          gidset.add(r['game_id'])
+                          counts['stages']+=1
+                          counts['candidates']+=len(r['candidate_rows'])
+                          counts['keep']+=int(r['teacher_keep'])
+                          counts['mull']+=int(not r['teacher_keep'])
+                  man['files'].append({'name':file.name,'sha256':hashlib.sha256(file.read_bytes()).hexdigest(),
+                     'bytes':file.stat().st_size,'split':split})
+              assert gidset==set(range(start,start+n))
+              assert counts['keep']==n and counts['mull']>=n
+              all_ids.append(gidset)
+              man['splits'][split]={'games':len(gidset),
+                  'game_ids':[start,start+n-1],'counts':dict(counts)}
+          assert all_ids[0].isdisjoint(all_ids[1])
+          (root/'manifest.json').write_text(json.dumps(man,indent=2,sort_keys=True)+'\n')
+          print('DACK_V13_TEACHER_CORPUS_AUDIT_PASS',json.dumps(man['splits']),flush=True)
+          PY
+      - name: Install training-only statistical library
+        run: python -m pip install 'scikit-learn>=1.4,<2'
+      - name: Train two-head bottom-rank and keep classifiers; verify sklearn-vs-pure-Python parity
+        run: |
+          python -u dack_simulator/validation/train_teacher_distillation_v13.py \
+            --train datasets/teacher_v13_20261031/distill_v13_train_*.jsonl.gz \
+            --validation datasets/teacher_v13_20261031/distill_v13_validation_*.jsonl.gz \
+            --model models/dack_teacher_distill_v13_EXPERIMENTAL.json \
+            --report benchmark_results/teacher_distill_v13_validation.json \
+            --trees 64 --depth 7
+      - name: Run learned-only London runtime audit with unchanged full-game beam
+        run: |
+          python dack_paired_counterfactual_v13_teacher_distill_20261031.py --audit
+      - name: Archive teacher labels and unapproved forest model to isolated branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f datasets/teacher_v13_20261031 models/dack_teacher_distill_v13_EXPERIMENTAL.json benchmark_results/teacher_distill_v13_validation.json
+          git commit -m "Archive real v5 mulligan teacher labels and first experimental forest distillation"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-teacher-v13-first-model-and-validation
+          path: |
+            datasets/teacher_v13_20261031/manifest.json
+            models/dack_teacher_distill_v13_EXPERIMENTAL.json
+            benchmark_results/teacher_distill_v13_validation.json
+          retention-days: 14
