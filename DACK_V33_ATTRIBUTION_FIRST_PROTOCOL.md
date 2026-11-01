@@ -83,3 +83,14 @@ and prospective full games, paired T1/T2/T3 and actual runtime.
 * Goldfish Dack deployment never establishes interactive cEDH winrate.
 
 No deployment policy, engine module, existing branch, or model is changed.
+
+## 2026-11-01 correction to initial v33 report
+
+The first read-only v33 run incorrectly equated identical `keep_n` with the
+same London **stage**. London stages 0 and 1 both have `keep_n=7`, so
+this comparison is invalid. The initial 56-case `same_stage` tally and
+its +8/-0 T2 outcome are **superseded, not verified** until recalculated.
+The correction compares the actual `history[-1]["stage"]` values, and the
+unit self-test separately covers repeated 7-card London stages. The next
+counterfactual replay must select only actual-index-matched groups.
+This is a v33 attribution script error, not a proven engine defect.
