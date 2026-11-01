@@ -1,0 +1,31 @@
+name: DACK v37 read-only 127k failure diagnostics no physical outcomes
+on:
+  push:
+    branches: [dack-v37-direct-action-regret-20261101]
+    paths: ['.github/workflows/dack_v37_pitfalls.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Frozen 768 state direct-regret sign and gate attribution
+        run: |
+          python -m py_compile dack_simulator/validation/v37_readonly_pitfall_audit.py
+          python -u dack_simulator/validation/v37_readonly_pitfall_audit.py
+      - name: Archive signed-regret failure attribution and teacher sampling skew
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f benchmark_results/v37_readonly_action_sign_and_sampling_pitfalls.json
+          git commit -m 'Audit v37 observed zero-action coverage and direct model sign, teacher sampling pitfalls'
+          git pull --rebase origin dack-v37-direct-action-regret-20261101
+          git push origin HEAD:dack-v37-direct-action-regret-20261101
