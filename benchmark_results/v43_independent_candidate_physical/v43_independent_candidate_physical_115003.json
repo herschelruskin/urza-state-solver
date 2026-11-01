@@ -1,0 +1,286 @@
+{
+  "candidate_count": 7,
+  "candidate_results": {
+    "0": {
+      "bottom": [
+        "Trinisphere"
+      ],
+      "by_T1": 0,
+      "by_T2": 0,
+      "by_T3": 16,
+      "frozen_v27_Q2": 0.48985821724307294,
+      "hand": [
+        "Blast Zone",
+        "Enlightened Tutor",
+        "Plains",
+        "Remote Farm",
+        "Ruins of Trokair",
+        "Scroll Rack"
+      ],
+      "original_teacher_U16": 0.5,
+      "original_teacher_U8": 0.5,
+      "physical_U_T2_plus_half_exactT3": 0.5,
+      "turns": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ]
+    },
+    "1": {
+      "bottom": [
+        "Plains"
+      ],
+      "by_T1": 0,
+      "by_T2": 0,
+      "by_T3": 15,
+      "frozen_v27_Q2": 0.4386010733963151,
+      "hand": [
+        "Blast Zone",
+        "Enlightened Tutor",
+        "Remote Farm",
+        "Ruins of Trokair",
+        "Scroll Rack",
+        "Trinisphere"
+      ],
+      "original_teacher_U16": 0.5,
+      "original_teacher_U8": 0.5,
+      "physical_U_T2_plus_half_exactT3": 0.46875,
+      "turns": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        0,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ]
+    },
+    "2": {
+      "bottom": [
+        "Ruins of Trokair"
+      ],
+      "by_T1": 0,
+      "by_T2": 0,
+      "by_T3": 15,
+      "frozen_v27_Q2": 0.42890078742649784,
+      "hand": [
+        "Blast Zone",
+        "Enlightened Tutor",
+        "Plains",
+        "Remote Farm",
+        "Scroll Rack",
+        "Trinisphere"
+      ],
+      "original_teacher_U16": 0.5,
+      "original_teacher_U8": 0.5,
+      "physical_U_T2_plus_half_exactT3": 0.46875,
+      "turns": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        0,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ]
+    },
+    "3": {
+      "bottom": [
+        "Blast Zone"
+      ],
+      "by_T1": 0,
+      "by_T2": 0,
+      "by_T3": 16,
+      "frozen_v27_Q2": 0.4918152662704344,
+      "hand": [
+        "Enlightened Tutor",
+        "Plains",
+        "Remote Farm",
+        "Ruins of Trokair",
+        "Scroll Rack",
+        "Trinisphere"
+      ],
+      "original_teacher_U16": 0.46875,
+      "original_teacher_U8": 0.4375,
+      "physical_U_T2_plus_half_exactT3": 0.5,
+      "turns": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ]
+    },
+    "4": {
+      "bottom": [
+        "Remote Farm"
+      ],
+      "by_T1": 0,
+      "by_T2": 0,
+      "by_T3": 14,
+      "frozen_v27_Q2": 0.42890078742649784,
+      "hand": [
+        "Blast Zone",
+        "Enlightened Tutor",
+        "Plains",
+        "Ruins of Trokair",
+        "Scroll Rack",
+        "Trinisphere"
+      ],
+      "original_teacher_U16": 0.5,
+      "original_teacher_U8": 0.5,
+      "physical_U_T2_plus_half_exactT3": 0.4375,
+      "turns": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        0,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        0
+      ]
+    },
+    "5": {
+      "bottom": [
+        "Enlightened Tutor"
+      ],
+      "by_T1": 0,
+      "by_T2": 0,
+      "by_T3": 10,
+      "frozen_v27_Q2": 0.03136045580674483,
+      "hand": [
+        "Blast Zone",
+        "Plains",
+        "Remote Farm",
+        "Ruins of Trokair",
+        "Scroll Rack",
+        "Trinisphere"
+      ],
+      "original_teacher_U16": 0.3125,
+      "original_teacher_U8": 0.25,
+      "physical_U_T2_plus_half_exactT3": 0.3125,
+      "turns": [
+        3,
+        3,
+        3,
+        0,
+        0,
+        0,
+        0,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        0,
+        0
+      ]
+    },
+    "6": {
+      "bottom": [
+        "Scroll Rack"
+      ],
+      "by_T1": 0,
+      "by_T2": 0,
+      "by_T3": 14,
+      "frozen_v27_Q2": 0.49054786362556463,
+      "hand": [
+        "Blast Zone",
+        "Enlightened Tutor",
+        "Plains",
+        "Remote Farm",
+        "Ruins of Trokair",
+        "Trinisphere"
+      ],
+      "original_teacher_U16": 0.5625,
+      "original_teacher_U8": 0.625,
+      "physical_U_T2_plus_half_exactT3": 0.4375,
+      "turns": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        0,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        0
+      ]
+    }
+  },
+  "gid": 115003,
+  "new_physical_16_futures_blind_unseen92_beam160": true,
+  "not_a_new_mulligan_policy": true,
+  "not_population_random_sevens": true,
+  "physical_futures_per_candidate": 16,
+  "same_hidden92_per_future_across_candidates": true,
+  "same_stateless_chance_seed_per_future_across_candidates": true,
+  "schema": "dack_v43_selected_conflict_original_8_sample_vs_independent_16_future_beam160_1",
+  "seat": 1,
+  "selected_frozen_v14": 0,
+  "selected_frozen_v27_Q2_max": 3,
+  "selected_original_v5": 6,
+  "stage": 2,
+  "status": "PASS",
+  "teacher_v5_uses_original_8_16_sample_beam60": true
+}

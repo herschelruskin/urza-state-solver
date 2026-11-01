@@ -1,0 +1,476 @@
+{
+  "candidate_count": 12,
+  "candidate_results": {
+    "0": {
+      "bottom": [
+        "Ruins of Trokair",
+        "Paladin Class"
+      ],
+      "by_T1": 0,
+      "by_T2": 2,
+      "by_T3": 9,
+      "frozen_v27_Q2": 0.04049950190009017,
+      "hand": [
+        "Fellwar Stone",
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Tezzeret, Cruel Captain",
+        "Urza's Cave"
+      ],
+      "original_teacher_U16": null,
+      "original_teacher_U8": 0.0625,
+      "physical_U_T2_plus_half_exactT3": 0.34375,
+      "turns": [
+        0,
+        3,
+        2,
+        3,
+        0,
+        3,
+        3,
+        0,
+        0,
+        2,
+        0,
+        3,
+        0,
+        3,
+        3,
+        0
+      ]
+    },
+    "1": {
+      "bottom": [
+        "Urza's Cave",
+        "Paladin Class"
+      ],
+      "by_T1": 0,
+      "by_T2": 2,
+      "by_T3": 9,
+      "frozen_v27_Q2": 0.038678587037725275,
+      "hand": [
+        "Fellwar Stone",
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Ruins of Trokair",
+        "Tezzeret, Cruel Captain"
+      ],
+      "original_teacher_U16": null,
+      "original_teacher_U8": 0.375,
+      "physical_U_T2_plus_half_exactT3": 0.34375,
+      "turns": [
+        0,
+        3,
+        2,
+        3,
+        0,
+        3,
+        3,
+        0,
+        0,
+        2,
+        0,
+        3,
+        0,
+        3,
+        3,
+        0
+      ]
+    },
+    "10": {
+      "bottom": [
+        "Fellwar Stone",
+        "Urza's Cave"
+      ],
+      "by_T1": 0,
+      "by_T2": 2,
+      "by_T3": 10,
+      "frozen_v27_Q2": 0.023488413035506767,
+      "hand": [
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Paladin Class",
+        "Ruins of Trokair",
+        "Tezzeret, Cruel Captain"
+      ],
+      "original_teacher_U16": null,
+      "original_teacher_U8": 0.25,
+      "physical_U_T2_plus_half_exactT3": 0.375,
+      "turns": [
+        0,
+        3,
+        2,
+        3,
+        0,
+        3,
+        3,
+        0,
+        0,
+        2,
+        0,
+        3,
+        3,
+        3,
+        3,
+        0
+      ]
+    },
+    "11": {
+      "bottom": [
+        "Moonsilver Key",
+        "Ruins of Trokair"
+      ],
+      "by_T1": 0,
+      "by_T2": 2,
+      "by_T3": 8,
+      "frozen_v27_Q2": 0.017531094727111396,
+      "hand": [
+        "Fellwar Stone",
+        "Mox Diamond",
+        "Paladin Class",
+        "Tezzeret, Cruel Captain",
+        "Urza's Cave"
+      ],
+      "original_teacher_U16": null,
+      "original_teacher_U8": 0.1875,
+      "physical_U_T2_plus_half_exactT3": 0.3125,
+      "turns": [
+        0,
+        0,
+        2,
+        3,
+        0,
+        3,
+        3,
+        0,
+        0,
+        2,
+        0,
+        3,
+        0,
+        3,
+        3,
+        0
+      ]
+    },
+    "2": {
+      "bottom": [
+        "Tezzeret, Cruel Captain",
+        "Paladin Class"
+      ],
+      "by_T1": 0,
+      "by_T2": 4,
+      "by_T3": 16,
+      "frozen_v27_Q2": 0.2670514647646876,
+      "hand": [
+        "Fellwar Stone",
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Ruins of Trokair",
+        "Urza's Cave"
+      ],
+      "original_teacher_U16": null,
+      "original_teacher_U8": 0.5,
+      "physical_U_T2_plus_half_exactT3": 0.625,
+      "turns": [
+        3,
+        3,
+        2,
+        2,
+        3,
+        3,
+        3,
+        3,
+        3,
+        2,
+        3,
+        3,
+        3,
+        2,
+        3,
+        3
+      ]
+    },
+    "3": {
+      "bottom": [
+        "Fellwar Stone",
+        "Paladin Class"
+      ],
+      "by_T1": 0,
+      "by_T2": 4,
+      "by_T3": 16,
+      "frozen_v27_Q2": 0.250702922910419,
+      "hand": [
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Ruins of Trokair",
+        "Tezzeret, Cruel Captain",
+        "Urza's Cave"
+      ],
+      "original_teacher_U16": null,
+      "original_teacher_U8": 0.625,
+      "physical_U_T2_plus_half_exactT3": 0.625,
+      "turns": [
+        3,
+        3,
+        2,
+        2,
+        3,
+        3,
+        3,
+        3,
+        3,
+        2,
+        3,
+        3,
+        3,
+        2,
+        3,
+        3
+      ]
+    },
+    "4": {
+      "bottom": [
+        "Moonsilver Key",
+        "Paladin Class"
+      ],
+      "by_T1": 0,
+      "by_T2": 2,
+      "by_T3": 16,
+      "frozen_v27_Q2": 0.22964836678751263,
+      "hand": [
+        "Fellwar Stone",
+        "Mox Diamond",
+        "Ruins of Trokair",
+        "Tezzeret, Cruel Captain",
+        "Urza's Cave"
+      ],
+      "original_teacher_U16": null,
+      "original_teacher_U8": 0.625,
+      "physical_U_T2_plus_half_exactT3": 0.5625,
+      "turns": [
+        3,
+        3,
+        2,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        2,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ]
+    },
+    "5": {
+      "bottom": [
+        "Mox Diamond",
+        "Paladin Class"
+      ],
+      "by_T1": 0,
+      "by_T2": 0,
+      "by_T3": 15,
+      "frozen_v27_Q2": 0.13149398552844752,
+      "hand": [
+        "Fellwar Stone",
+        "Moonsilver Key",
+        "Ruins of Trokair",
+        "Tezzeret, Cruel Captain",
+        "Urza's Cave"
+      ],
+      "original_teacher_U16": null,
+      "original_teacher_U8": 0.4375,
+      "physical_U_T2_plus_half_exactT3": 0.46875,
+      "turns": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        0,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3
+      ]
+    },
+    "6": {
+      "bottom": [
+        "Ruins of Trokair",
+        "Urza's Cave"
+      ],
+      "by_T1": 0,
+      "by_T2": 0,
+      "by_T3": 2,
+      "frozen_v27_Q2": 0.02376065548221074,
+      "hand": [
+        "Fellwar Stone",
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Paladin Class",
+        "Tezzeret, Cruel Captain"
+      ],
+      "original_teacher_U16": null,
+      "original_teacher_U8": 0.0625,
+      "physical_U_T2_plus_half_exactT3": 0.0625,
+      "turns": [
+        0,
+        0,
+        3,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        3,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "7": {
+      "bottom": [
+        "Tezzeret, Cruel Captain",
+        "Ruins of Trokair"
+      ],
+      "by_T1": 0,
+      "by_T2": 2,
+      "by_T3": 7,
+      "frozen_v27_Q2": 0.021686554982228757,
+      "hand": [
+        "Fellwar Stone",
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Paladin Class",
+        "Urza's Cave"
+      ],
+      "original_teacher_U16": null,
+      "original_teacher_U8": 0.3125,
+      "physical_U_T2_plus_half_exactT3": 0.28125,
+      "turns": [
+        0,
+        3,
+        2,
+        0,
+        0,
+        3,
+        3,
+        0,
+        0,
+        2,
+        0,
+        3,
+        0,
+        0,
+        3,
+        0
+      ]
+    },
+    "8": {
+      "bottom": [
+        "Tezzeret, Cruel Captain",
+        "Urza's Cave"
+      ],
+      "by_T1": 0,
+      "by_T2": 2,
+      "by_T3": 8,
+      "frozen_v27_Q2": 0.02289374146429295,
+      "hand": [
+        "Fellwar Stone",
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Paladin Class",
+        "Ruins of Trokair"
+      ],
+      "original_teacher_U16": null,
+      "original_teacher_U8": 0.1875,
+      "physical_U_T2_plus_half_exactT3": 0.3125,
+      "turns": [
+        0,
+        3,
+        2,
+        3,
+        0,
+        3,
+        3,
+        0,
+        0,
+        2,
+        0,
+        3,
+        0,
+        0,
+        3,
+        0
+      ]
+    },
+    "9": {
+      "bottom": [
+        "Fellwar Stone",
+        "Ruins of Trokair"
+      ],
+      "by_T1": 0,
+      "by_T2": 2,
+      "by_T3": 9,
+      "frozen_v27_Q2": 0.014198924686734988,
+      "hand": [
+        "Moonsilver Key",
+        "Mox Diamond",
+        "Paladin Class",
+        "Tezzeret, Cruel Captain",
+        "Urza's Cave"
+      ],
+      "original_teacher_U16": null,
+      "original_teacher_U8": 0.1875,
+      "physical_U_T2_plus_half_exactT3": 0.34375,
+      "turns": [
+        0,
+        3,
+        2,
+        3,
+        0,
+        3,
+        3,
+        0,
+        0,
+        2,
+        0,
+        3,
+        0,
+        3,
+        3,
+        0
+      ]
+    }
+  },
+  "gid": 115017,
+  "new_physical_16_futures_blind_unseen92_beam160": true,
+  "not_a_new_mulligan_policy": true,
+  "not_population_random_sevens": true,
+  "physical_futures_per_candidate": 16,
+  "same_hidden92_per_future_across_candidates": true,
+  "same_stateless_chance_seed_per_future_across_candidates": true,
+  "schema": "dack_v43_selected_conflict_original_8_sample_vs_independent_16_future_beam160_1",
+  "seat": 1,
+  "selected_frozen_v14": 0,
+  "selected_frozen_v27_Q2_max": 2,
+  "selected_original_v5": 3,
+  "stage": 3,
+  "status": "PASS",
+  "teacher_v5_uses_original_8_16_sample_beam60": true
+}
