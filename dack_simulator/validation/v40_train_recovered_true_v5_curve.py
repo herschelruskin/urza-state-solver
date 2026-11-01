@@ -216,7 +216,7 @@ def export(choice,keep,indices,mode,size,train_ids,source_hash):
         "teacher_labels_not_win_probabilities":True,
         "historical_validation_is_consumed":True,
         "feature_schema_sha256":feat.feature_hash(),
-        "feature_indices":list(indices),
+        "feature_indices":[int(i) for i in indices],
         "feature_names":[feat.FEATURES[k] for k in indices],
         "mode":mode,"train_group_n":size,
         "training_game_ids_sha256":hashlib.sha256(
