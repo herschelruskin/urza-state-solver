@@ -1,0 +1,138 @@
+name: DACK v34 consistent frozen-v33b Qkeep Qmull physical regret screen
+on:
+  push:
+    branches: [dack-v34-consistent-keep-regret-20261101]
+    paths:
+      - '.github/workflows/dack_v34_consistent_regret.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  physical:
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        include:
+          - {kind: C, seat: 0, stage: 0, split: unused, start: 0}
+          - {kind: C, seat: 0, stage: 1, split: unused, start: 0}
+          - {kind: C, seat: 0, stage: 2, split: unused, start: 0}
+          - {kind: C, seat: 0, stage: 3, split: unused, start: 0}
+          - {kind: C, seat: 0, stage: 4, split: unused, start: 0}
+          - {kind: C, seat: 0, stage: 5, split: unused, start: 0}
+          - {kind: C, seat: 0, stage: 6, split: unused, start: 0}
+          - {kind: C, seat: 1, stage: 0, split: unused, start: 0}
+          - {kind: C, seat: 1, stage: 1, split: unused, start: 0}
+          - {kind: C, seat: 1, stage: 2, split: unused, start: 0}
+          - {kind: C, seat: 1, stage: 3, split: unused, start: 0}
+          - {kind: C, seat: 1, stage: 4, split: unused, start: 0}
+          - {kind: C, seat: 1, stage: 5, split: unused, start: 0}
+          - {kind: C, seat: 1, stage: 6, split: unused, start: 0}
+          - {kind: C, seat: 2, stage: 0, split: unused, start: 0}
+          - {kind: C, seat: 2, stage: 1, split: unused, start: 0}
+          - {kind: C, seat: 2, stage: 2, split: unused, start: 0}
+          - {kind: C, seat: 2, stage: 3, split: unused, start: 0}
+          - {kind: C, seat: 2, stage: 4, split: unused, start: 0}
+          - {kind: C, seat: 2, stage: 5, split: unused, start: 0}
+          - {kind: C, seat: 2, stage: 6, split: unused, start: 0}
+          - {kind: C, seat: 3, stage: 0, split: unused, start: 0}
+          - {kind: C, seat: 3, stage: 1, split: unused, start: 0}
+          - {kind: C, seat: 3, stage: 2, split: unused, start: 0}
+          - {kind: C, seat: 3, stage: 3, split: unused, start: 0}
+          - {kind: C, seat: 3, stage: 4, split: unused, start: 0}
+          - {kind: C, seat: 3, stage: 5, split: unused, start: 0}
+          - {kind: C, seat: 3, stage: 6, split: unused, start: 0}
+          - {kind: K, seat: 0, stage: 0, split: train, start: 116000}
+          - {kind: K, seat: 0, stage: 0, split: train, start: 116004}
+          - {kind: K, seat: 0, stage: 0, split: train, start: 116008}
+          - {kind: K, seat: 0, stage: 0, split: train, start: 116012}
+          - {kind: K, seat: 0, stage: 0, split: train, start: 116016}
+          - {kind: K, seat: 0, stage: 0, split: train, start: 116020}
+          - {kind: K, seat: 0, stage: 0, split: train, start: 116024}
+          - {kind: K, seat: 0, stage: 0, split: train, start: 116028}
+          - {kind: K, seat: 0, stage: 0, split: train, start: 116032}
+          - {kind: K, seat: 0, stage: 0, split: train, start: 116036}
+          - {kind: K, seat: 0, stage: 0, split: train, start: 116040}
+          - {kind: K, seat: 0, stage: 0, split: train, start: 116044}
+          - {kind: K, seat: 0, stage: 0, split: train, start: 116048}
+          - {kind: K, seat: 0, stage: 0, split: train, start: 116052}
+          - {kind: K, seat: 0, stage: 0, split: train, start: 116056}
+          - {kind: K, seat: 0, stage: 0, split: train, start: 116060}
+          - {kind: K, seat: 0, stage: 0, split: untouched_validation, start: 117000}
+          - {kind: K, seat: 0, stage: 0, split: untouched_validation, start: 117004}
+          - {kind: K, seat: 0, stage: 0, split: untouched_validation, start: 117008}
+          - {kind: K, seat: 0, stage: 0, split: untouched_validation, start: 117012}
+          - {kind: K, seat: 0, stage: 0, split: untouched_validation, start: 117016}
+          - {kind: K, seat: 0, stage: 0, split: untouched_validation, start: 117020}
+          - {kind: K, seat: 0, stage: 0, split: untouched_validation, start: 117024}
+          - {kind: K, seat: 0, stage: 0, split: untouched_validation, start: 117028}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and exact frozen v33b history/library parity
+        run: |
+          python -m py_compile dack_simulator/validation/v34_frozen_v33b_continuation.py dack_simulator/validation/v34_true_Qkeep.py dack_simulator/validation/v34_shared_Qmull.py dack_simulator/validation/v34_pool_consistent_regret.py
+          python -m dack_simulator.validation.v34_frozen_v33b_continuation
+      - name: Evaluate physical beam160 keep or consistent shared mull
+        run: |
+          if [ "${{ matrix.kind }}" = "C" ]; then
+            python -u dack_simulator/validation/v34_shared_Qmull.py \
+              --seat ${{ matrix.seat }} --stage ${{ matrix.stage }} \
+              --out shards/v34_C_${{ matrix.seat }}_${{ matrix.stage }}.json.gz
+          else
+            python -u dack_simulator/validation/v34_true_Qkeep.py \
+              --split ${{ matrix.split }} --start ${{ matrix.start }} \
+              --out shards/v34_K_${{ matrix.split }}_${{ matrix.start }}.json.gz
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v34-${{ matrix.kind }}-${{ matrix.seat }}-${{ matrix.stage }}-${{ matrix.split }}-${{ matrix.start }}
+          path: shards/v34_*.json.gz
+          retention-days: 30
+  pool:
+    needs: physical
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v34-*
+          path: collected
+          merge-multiple: true
+      - name: Pool completely independent training and validation, two-source bootstrap
+        run: |
+          test "$(find collected -maxdepth 1 -name 'v34_C_*.json.gz' | wc -l)" -eq 28
+          test "$(find collected -maxdepth 1 -name 'v34_K_*.json.gz' | wc -l)" -eq 24
+          python -u dack_simulator/validation/v34_pool_consistent_regret.py
+      - name: Archive all physical shards, frozen candidate coefficients and honest diagnostics
+        run: |
+          mkdir -p benchmark_results/v34_consistent_regret_shards
+          cp collected/v34_*.json.gz benchmark_results/v34_consistent_regret_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v34_consistent_regret_shards benchmark_results/v34_consistent_keep_mull_117k_screen.json models/dack_v34_fixed_shrunk_keep_mull_EXPERIMENTAL.json
+          git commit -m "Archive v34 frozen consistent physical Qkeep Qmull and untouched paired validation"
+          git pull --rebase origin dack-v34-consistent-keep-regret-20261101
+          git push origin HEAD:dack-v34-consistent-keep-regret-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v34-shared-continuation-regret-pooled
+          path: |
+            benchmark_results/v34_consistent_keep_mull_117k_screen.json
+            models/dack_v34_fixed_shrunk_keep_mull_EXPERIMENTAL.json
+          retention-days: 30
