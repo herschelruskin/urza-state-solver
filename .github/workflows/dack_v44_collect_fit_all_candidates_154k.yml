@@ -1,0 +1,120 @@
+name: DACK v44 all legal candidate actual physical Q2 train192 dev64 grouped
+on:
+  push:
+    branches: [dack-v44-physical-candidate-values-20261101]
+    paths:
+      - '.github/workflows/dack_v44_collect_fit_all_candidates_154k.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        start: [154000,154016,154032,154048,154064,154080,154096,154112,154128,154144,154160,154176]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v44-physical-candidate-values-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Generate all physically evaluated legal candidate bottom rows from 16 independent training deals
+        run: |
+          python -m py_compile dack_simulator/validation/v44_collect_real_candidate_Q2.py
+          python -u dack_simulator/validation/v44_collect_real_candidate_Q2.py \
+            --split train --start ${{ matrix.start }} --groups 16 \
+            --out shards/v44_train_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v44-real-candidate-train-${{ matrix.start }}
+          path: shards/v44_train_*.json.gz
+          retention-days: 90
+  dev:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        start: [154192,154208,154224,154240]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v44-physical-candidate-values-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Independently observe every candidate value in 16 dev physical groups, unused for training
+        run: |
+          python -u dack_simulator/validation/v44_collect_real_candidate_Q2.py \
+            --split dev --start ${{ matrix.start }} --groups 16 \
+            --out shards/v44_dev_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v44-real-candidate-dev-${{ matrix.start }}
+          path: shards/v44_dev_*.json.gz
+          retention-days: 90
+  fit_and_archive:
+    needs: [train,dev]
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v44-physical-candidate-values-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install light forest training dependencies
+        run: python -m pip install 'numpy>=1.26,<3' 'scikit-learn>=1.4,<1.8'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v44-real-candidate-*
+          merge-multiple: true
+          path: collected
+      - name: Validate 256 fully distinct source group identities and train phys residual forest
+        run: |
+          python -m py_compile dack_simulator/validation/v44_fit_physical_candidate_residual.py dack_mulligan_v44_candidate_residual_20261101.py
+          python -u dack_simulator/validation/v44_fit_physical_candidate_residual.py \
+            --source-dir collected \
+            --model models/v44_all_candidate_Q2_residual_RESEARCH.json \
+            --report benchmark_results/v44_all_candidate_Q2_residual_dev_N64.json
+      - name: Verify dev not trained on, correct physical source counts and production guard
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('benchmark_results/v44_all_candidate_Q2_residual_dev_N64.json').read_text())
+          m=json.loads(Path('models/v44_all_candidate_Q2_residual_RESEARCH.json').read_text())
+          assert r['status']=='PASS' and r['train_independent_groups']==192 and r['dev_independent_groups']==64
+          assert r['train_candidate_rows']>1300 and r['dev_candidate_rows']>430
+          assert r['dev_not_in_fit_or_model_hyperparameter_selection'] and not r['not_a_prospective_policy_promotion'] is False
+          assert m['policy_approved'] is False and m['training_physical_game_groups']==192
+          assert m['source_sha256_by_shard'] and r['model_sha256']
+          print("DACK_V44_154K_ALL_PHYSICAL_TRAIN_DEV_GUARDS_PASS")
+          PY
+      - name: Archive models, regression Dev diagnostics and ALL raw independent physical candidates
+        run: |
+          mkdir -p datasets/v44_original_legal_candidates_154k_shards
+          cp collected/*.json.gz datasets/v44_original_legal_candidates_154k_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f datasets/v44_original_legal_candidates_154k_shards/ models/v44_all_candidate_Q2_residual_RESEARCH.json benchmark_results/v44_all_candidate_Q2_residual_dev_N64.json
+          git commit -m "Archive 256 independently dealt all-legal-candidate physical source groups, frozen model and separate 64-group dev evidence"
+          git pull --rebase origin dack-v44-physical-candidate-values-20261101
+          git push origin HEAD:dack-v44-physical-candidate-values-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v44-true-physical-candidate-value-model-dev
+          path: |
+            models/v44_all_candidate_Q2_residual_RESEARCH.json
+            benchmark_results/v44_all_candidate_Q2_residual_dev_N64.json
+          retention-days: 90
