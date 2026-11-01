@@ -1,0 +1,319 @@
+{
+  "candidate_table": [
+    {
+      "analytic_T2_index": 0.170847157398,
+      "bottom": [
+        "Mantle of the Ancients"
+      ],
+      "hand": [
+        "Ancient Tomb",
+        "City of Traitors",
+        "Everflowing Chalice",
+        "Gift of Immortality",
+        "Plains",
+        "Plains"
+      ],
+      "index": 0,
+      "original_sampler_beam60_16": {
+        "le2": 0.0,
+        "le3": 0.5625,
+        "t1": 0.0,
+        "t2": 0.0,
+        "t3": 0.5625,
+        "utility": 0.28125
+      },
+      "original_sampler_beam60_8": {
+        "le2": 0.0,
+        "le3": 0.375,
+        "t1": 0.0,
+        "t2": 0.0,
+        "t3": 0.375,
+        "utility": 0.1875
+      },
+      "struct_rank": [
+        80,
+        0,
+        -1
+      ],
+      "v14_teacher_choice_vote": 0.4101970827495439,
+      "v18_pred_U": 0.5441765774149775,
+      "v27_pred_T2_keep_value": 0.3340558304630441
+    },
+    {
+      "analytic_T2_index": 0.170847157398,
+      "bottom": [
+        "Gift of Immortality"
+      ],
+      "hand": [
+        "Ancient Tomb",
+        "City of Traitors",
+        "Everflowing Chalice",
+        "Mantle of the Ancients",
+        "Plains",
+        "Plains"
+      ],
+      "index": 1,
+      "original_sampler_beam60_16": {
+        "le2": 0.0,
+        "le3": 0.5,
+        "t1": 0.0,
+        "t2": 0.0,
+        "t3": 0.5,
+        "utility": 0.25
+      },
+      "original_sampler_beam60_8": {
+        "le2": 0.0,
+        "le3": 0.25,
+        "t1": 0.0,
+        "t2": 0.0,
+        "t3": 0.25,
+        "utility": 0.125
+      },
+      "struct_rank": [
+        80,
+        0,
+        -1
+      ],
+      "v14_teacher_choice_vote": 0.13266595807301743,
+      "v18_pred_U": 0.5441765774149775,
+      "v27_pred_T2_keep_value": 0.3340558304630441
+    },
+    {
+      "analytic_T2_index": 0.075351538976,
+      "bottom": [
+        "Plains"
+      ],
+      "hand": [
+        "Ancient Tomb",
+        "City of Traitors",
+        "Everflowing Chalice",
+        "Gift of Immortality",
+        "Mantle of the Ancients",
+        "Plains"
+      ],
+      "index": 2,
+      "original_sampler_beam60_16": {
+        "le2": 0.0,
+        "le3": 0.4375,
+        "t1": 0.0,
+        "t2": 0.0,
+        "t3": 0.4375,
+        "utility": 0.21875
+      },
+      "original_sampler_beam60_8": {
+        "le2": 0.0,
+        "le3": 0.25,
+        "t1": 0.0,
+        "t2": 0.0,
+        "t3": 0.25,
+        "utility": 0.125
+      },
+      "struct_rank": [
+        15,
+        0,
+        -2
+      ],
+      "v14_teacher_choice_vote": 0.056725415018005605,
+      "v18_pred_U": 0.5473249233124118,
+      "v27_pred_T2_keep_value": 0.3388558563457438
+    },
+    {
+      "analytic_T2_index": 0.075351538976,
+      "bottom": [
+        "Plains"
+      ],
+      "hand": [
+        "Ancient Tomb",
+        "City of Traitors",
+        "Everflowing Chalice",
+        "Gift of Immortality",
+        "Mantle of the Ancients",
+        "Plains"
+      ],
+      "index": 3,
+      "original_sampler_beam60_16": {
+        "le2": 0.0,
+        "le3": 0.4375,
+        "t1": 0.0,
+        "t2": 0.0,
+        "t3": 0.4375,
+        "utility": 0.21875
+      },
+      "original_sampler_beam60_8": {
+        "le2": 0.0,
+        "le3": 0.25,
+        "t1": 0.0,
+        "t2": 0.0,
+        "t3": 0.25,
+        "utility": 0.125
+      },
+      "struct_rank": [
+        15,
+        0,
+        -2
+      ],
+      "v14_teacher_choice_vote": 0.056725415018005605,
+      "v18_pred_U": null,
+      "v27_pred_T2_keep_value": 0.3388558563457438
+    },
+    {
+      "analytic_T2_index": 0.070849890221,
+      "bottom": [
+        "Ancient Tomb"
+      ],
+      "hand": [
+        "City of Traitors",
+        "Everflowing Chalice",
+        "Gift of Immortality",
+        "Mantle of the Ancients",
+        "Plains",
+        "Plains"
+      ],
+      "index": 4,
+      "original_sampler_beam60_16": {
+        "le2": 0.0625,
+        "le3": 0.5625,
+        "t1": 0.0,
+        "t2": 0.0625,
+        "t3": 0.5,
+        "utility": 0.3125
+      },
+      "original_sampler_beam60_8": {
+        "le2": 0.0,
+        "le3": 0.375,
+        "t1": 0.0,
+        "t2": 0.0,
+        "t3": 0.375,
+        "utility": 0.1875
+      },
+      "struct_rank": [
+        15,
+        0,
+        -2
+      ],
+      "v14_teacher_choice_vote": 0.056607577680216285,
+      "v18_pred_U": null,
+      "v27_pred_T2_keep_value": 0.06803172410404192
+    },
+    {
+      "analytic_T2_index": 0.070849890221,
+      "bottom": [
+        "City of Traitors"
+      ],
+      "hand": [
+        "Ancient Tomb",
+        "Everflowing Chalice",
+        "Gift of Immortality",
+        "Mantle of the Ancients",
+        "Plains",
+        "Plains"
+      ],
+      "index": 5,
+      "original_sampler_beam60_16": {
+        "le2": 0.125,
+        "le3": 0.5,
+        "t1": 0.0,
+        "t2": 0.125,
+        "t3": 0.375,
+        "utility": 0.3125
+      },
+      "original_sampler_beam60_8": {
+        "le2": 0.0,
+        "le3": 0.5,
+        "t1": 0.0,
+        "t2": 0.0,
+        "t3": 0.5,
+        "utility": 0.25
+      },
+      "struct_rank": [
+        15,
+        0,
+        -2
+      ],
+      "v14_teacher_choice_vote": 0.06000913310682538,
+      "v18_pred_U": null,
+      "v27_pred_T2_keep_value": 0.06569091138423981
+    },
+    {
+      "analytic_T2_index": 0.110757146069,
+      "bottom": [
+        "Everflowing Chalice"
+      ],
+      "hand": [
+        "Ancient Tomb",
+        "City of Traitors",
+        "Gift of Immortality",
+        "Mantle of the Ancients",
+        "Plains",
+        "Plains"
+      ],
+      "index": 6,
+      "original_sampler_beam60_16": {
+        "le2": 0.0625,
+        "le3": 0.625,
+        "t1": 0.0,
+        "t2": 0.0625,
+        "t3": 0.5625,
+        "utility": 0.34375
+      },
+      "original_sampler_beam60_8": {
+        "le2": 0.125,
+        "le3": 0.5,
+        "t1": 0.0,
+        "t2": 0.125,
+        "t3": 0.375,
+        "utility": 0.3125
+      },
+      "struct_rank": [
+        0,
+        0,
+        -2
+      ],
+      "v14_teacher_choice_vote": 0.07185338857995235,
+      "v18_pred_U": null,
+      "v27_pred_T2_keep_value": 0.14731988173572638
+    }
+  ],
+  "game_id": 115086,
+  "hidden_92_multiset_sha256": "cf63580d958e04ca18180a5a71c45f26f34da7124fe3dbd235c95b275930c72c",
+  "keep_n": 6,
+  "model_candidate_methods": {
+    "analytic_t2": 0,
+    "v14_frozen": 0,
+    "v18_top3": 2,
+    "v27_Qkeep": 2
+  },
+  "no_model_training_or_promotion": true,
+  "opening_seven": [
+    "Everflowing Chalice",
+    "Plains",
+    "Mantle of the Ancients",
+    "Plains",
+    "Ancient Tomb",
+    "City of Traitors",
+    "Gift of Immortality"
+  ],
+  "original_physical_future_order_not_used_in_candidate_scoring": true,
+  "schema": "dack_v43_real_original_v5_top12_candidate_profile_v1",
+  "seat": 1,
+  "source_historical_115k_previously_inspected": true,
+  "stage": 2,
+  "stage_profile_evaluation_seconds": 20.1,
+  "status": "PASS",
+  "v27_kept": true,
+  "v27_real_selected_index": 0,
+  "v27_stage_raw": 0.3340558,
+  "v27_stage_threshold": 0.2225183,
+  "v5_archived_winner_and_raw_score_reproduced_exactly": true,
+  "v5_full_16_utility_argmax": 6,
+  "v5_full_8_utility_argmax": 6,
+  "v5_kept": false,
+  "v5_lookahead_evaluated_only_on_opening_seven_not_hindsight": true,
+  "v5_raw": 0.3125,
+  "v5_real_selected_index": 6,
+  "v5_refined": false,
+  "v5_threshold": 0.63025,
+  "v5_winner_16_full_score": 0.34375,
+  "v5_winner_8_full_score": 0.3125,
+  "warning": "8/16 small deterministic teacher sampler and max-over-candidates are noisy. Do not interpret teacher scores or predicted q27 values as calibrated or comparable; independent physical K futures required."
+}
