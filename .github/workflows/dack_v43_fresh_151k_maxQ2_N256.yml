@@ -1,0 +1,67 @@
+name: DACK v43 prospective 151k N256 v27 vs best predicted candidate Q2
+on:
+  push:
+    branches: [dack-v43-v5-candidate-forensics-20261101]
+    paths:
+      - '.github/workflows/dack_v43_fresh_151k_maxQ2_N256.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  games:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        start: [151000,151032,151064,151096,151128,151160,151192,151224]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v43-v5-candidate-forensics-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify frozen Q2 candidate-max runtime and zero v5-beam
+        run: |
+          python -m py_compile dack_paired_counterfactual_v43_v27_max_Q2_20261101.py dack_simulator/validation/v43_fresh_151k_v27_vs_maxQ2.py
+          python dack_paired_counterfactual_v43_v27_max_Q2_20261101.py --audit
+      - name: Play 32 matched physical games baseline v27 and frozen maxQ2 candidate choice
+        run: |
+          python -u dack_simulator/validation/v43_fresh_151k_v27_vs_maxQ2.py \
+            --start ${{ matrix.start }} --out shards/v43_151k_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v43-151k-${{ matrix.start }}
+          path: shards/v43_151k_*.json.gz
+          retention-days: 90
+  pool:
+    needs: games
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v43-v5-candidate-forensics-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v43-151k-*
+          merge-multiple: true
+          path: collected
+      - name: Audit 256 fresh paired physical games and full confidence intervals
+        run: python -u dack_simulator/validation/v43_pool_fresh_151k_maxQ2.py
+      - name: Archive new real goldfish outcomes, keep both policies unapproved
+        run: |
+          mkdir -p benchmark_results/v43_fresh_151k_maxQ2_shards
+          cp collected/v43_151k_*.json.gz benchmark_results/v43_fresh_151k_maxQ2_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v43_fresh_151k_v27_vs_maxQ2_N256.json benchmark_results/v43_fresh_151k_maxQ2_shards/
+          git commit -m "Archive independently dealt N256 physical experiment for self-consistent v27 max-candidate KEEP"
+          git pull --rebase origin dack-v43-v5-candidate-forensics-20261101
+          git push origin HEAD:dack-v43-v5-candidate-forensics-20261101
