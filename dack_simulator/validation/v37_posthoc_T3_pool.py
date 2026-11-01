@@ -104,6 +104,34 @@ def bootstrap(initial,keep,C,t,rep=5000):
     out.sort()
     return [out[int(.025*rep)],out[int(.975*rep)-1]]
 
+def bootstrap_utility(initial,keep,C,profile,rep=5000):
+    """Jointly resample physical T2/T3 outcomes; never combine marginal CI endpoints."""
+    assert profile in ("cumulative_T3","exact_T3")
+    def reward(turn):
+        p2=y(2,turn);p3=y(3,turn)
+        return p2+.5*p3 if profile=="cumulative_T3" else .5*(p2+p3)
+    bygid=defaultdict(list)
+    for key,r in initial.items():bygid[r["game_id"]].append((key,r))
+    gids=sorted(bygid)
+    rng=random.Random(371350 if profile=="cumulative_T3" else 371351)
+    vals=[]
+    for i in range(rep):
+        means={}
+        for cell,arr in C.items():
+            if arr:
+                means[cell]=sum(reward(arr[rng.randrange(NC)]) for _ in range(NC))/NC
+        total=0.;denom=0
+        for _ in gids:
+            gid=gids[rng.randrange(len(gids))]
+            for key,r in bygid[gid]:
+                a=keep[key]
+                q=sum(reward(a[rng.randrange(NKEEP)]) for _ in range(NKEEP))/NKEEP
+                total+=means[(r["seat"],r["stage"])]-q
+                denom+=1
+        vals.append(100*total/denom)
+    vals.sort()
+    return [vals[int(.025*rep)],vals[int(.975*rep)-1]]
+
 def main(K,C,out):
     assert y(1,0)==0 and y(1,1)==1 and y(1,2)==0 and y(2,2)==1 and y(3,3)==1
     assert all(y(1,turn)<=y(2,turn)<=y(3,turn) for turn in (0,1,2,3))
@@ -118,6 +146,12 @@ def main(K,C,out):
               "utility_PbyT2_plus_half_PbyT3_MULL_minus_KEEP",
               "model_pred_MULL_minus_KEEP_T2","model_pred_MULL_minus_KEEP_T3"):
         s[k]=summary(rows,k)
+    s["utility_PbyT2_plus_half_PexactT3_MULL_minus_KEEP"][
+        "joint_physical_outer_group_and_C_95ci_pp"]=bootstrap_utility(
+           initial,keep,cont,"exact_T3")
+    s["utility_PbyT2_plus_half_PbyT3_MULL_minus_KEEP"][
+        "joint_physical_outer_group_and_C_95ci_pp"]=bootstrap_utility(
+           initial,keep,cont,"cumulative_T3")
     report={
       "schema":"dack_v37_POSTHOC_T3_blocked_true_physical_tradeoff_1",
       "status":"PASS","policy_approved":False,
