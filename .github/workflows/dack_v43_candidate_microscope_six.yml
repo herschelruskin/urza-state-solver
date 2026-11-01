@@ -1,0 +1,43 @@
+name: DACK v43 exact original teacher candidate profiles on six additional disagreements
+on:
+  push:
+    branches: [dack-v43-v5-candidate-mechanism-20261101]
+    paths:
+      - '.github/workflows/dack_v43_candidate_microscope_six.yml'
+permissions:
+  contents: write
+jobs:
+  traced_v5_candidates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        gid: [115004,115119,115153,115066,115086,115005]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v43-v5-candidate-mechanism-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Score all original teacher top12 and frozen v27 model bottom candidates, enforce exact teacher parity
+        run: |
+          python -u dack_simulator/validation/v43_candidate_microscope.py \
+             --gid ${{ matrix.gid }} \
+             --out benchmark_results/v43_candidate_profiles/v43_candidate_${{ matrix.gid }}.json
+      - name: Commit read-only diagnostic for this sampled real historical stage
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v43_candidate_profiles/v43_candidate_${{ matrix.gid }}.json
+          git commit -m "Archive genuine v5 full top12 lookahead profile vs v27 on game ${{ matrix.gid }}"
+          git pull --rebase origin dack-v43-v5-candidate-mechanism-20261101
+          git push origin HEAD:dack-v43-v5-candidate-mechanism-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v43-candidate-${{ matrix.gid }}
+          path: benchmark_results/v43_candidate_profiles/v43_candidate_${{ matrix.gid }}.json
+          retention-days: 90
