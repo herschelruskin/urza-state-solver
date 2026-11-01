@@ -1,0 +1,32 @@
+name: DACK v37 independent four-policy London chooser CPU benchmark
+on:
+  push:
+    branches: [dack-v37-direct-action-regret-20261101]
+    paths: ['.github/workflows/dack_v37_speed.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          python -m py_compile dack_simulator/validation/v37_mulligan_runtime.py
+          python dack_paired_counterfactual_v37_direct_regret_20261101.py
+      - name: Physical 99-slot same four actual London deals, four isolated policies
+        run: python -u dack_simulator/validation/v37_mulligan_runtime.py
+      - name: Preserve time totals for benchmark interpretation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f benchmark_results/v37_four_policy_mulligan_CPU_only_N4.json
+          git commit -m 'Archive v37 matched four-policy real London chooser timings'
+          git pull --rebase origin dack-v37-direct-action-regret-20261101
+          git push origin HEAD:dack-v37-direct-action-regret-20261101
