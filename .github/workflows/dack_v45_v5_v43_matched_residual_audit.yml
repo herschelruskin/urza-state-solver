@@ -1,0 +1,32 @@
+name: DACK v45 readonly real v5 versus v43 same 151k N128 residual T2 mechanism audit
+on:
+  push:
+    branches: [dack-v45-v5-v43-residual-gap-audit-20261101]
+    paths:
+      - '.github/workflows/dack_v45_v5_v43_matched_residual_audit.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v45-v5-v43-residual-gap-audit-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Confirm all original v5 and v43 matched 128 physical seeds, exact same-hand terminal parity
+        run: |
+          python -m py_compile dack_simulator/validation/v45_readonly_v5_v43_remaining_gap.py
+          python -u dack_simulator/validation/v45_readonly_v5_v43_remaining_gap.py
+      - name: Archive same-seed mechanistic attribution and disagreement cases
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v45_v5_v43_remaining_T2_gap_same151k_N128.json
+          git commit -m "Archive real original v5-v43 128-deal T2 gap by stage and bottom with identical-hand physical parity"
+          git pull --rebase origin dack-v45-v5-v43-residual-gap-audit-20261101
+          git push origin HEAD:dack-v45-v5-v43-residual-gap-audit-20261101
