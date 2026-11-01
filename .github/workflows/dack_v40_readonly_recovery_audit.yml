@@ -19,8 +19,10 @@ jobs:
           python-version: '3.11'
       - name: Python static validation; no new game physics
         run: |
-          python -m py_compile dack_simulator/validation/v40_prior_artifact_readonly_audit.py
+          python -m py_compile dack_simulator/validation/v40_prior_artifact_readonly_audit.py dack_simulator/validation/v40_v5_information_boundary_smoke.py
           test -f DACK_V40_RECOVERY_REASSESSMENT_AND_NEXT_PROTOCOL_DRAFT.md
+      - name: Confirm v5 candidate sampler ignores physical future order (synthetic outcomes, zero game rollouts)
+        run: python -u -m dack_simulator.validation.v40_v5_information_boundary_smoke
       - name: Check frozen v38 and v39 census counts and correlated utility algebra
         run: python -u -m dack_simulator.validation.v40_prior_artifact_readonly_audit
       - name: Recompute original v39 grouped bootstrap on archived 28 source shards only
