@@ -1,0 +1,571 @@
+{
+  "actual_bottom_intervention_v28": {
+    "futures_per_candidate": 16,
+    "n_v5_selected_kept_decision_groups": 50,
+    "sample_selection_warning": "V5-selected decisions; conditional 99k, not population-wide causal effect.",
+    "v5_vs_v14": {
+      "heldout_blended_utility": {
+        "mean_paired_difference": 0.04625,
+        "n_independent_decision_groups": 50,
+        "paired_bootstrap_95ci": [
+          0.004375,
+          0.09625
+        ],
+        "strict_negative_groups": 12,
+        "strict_positive_groups": 12,
+        "tied_groups": 26
+      },
+      "heldout_by_T2": {
+        "mean_paired_difference": 0.01375,
+        "n_independent_decision_groups": 50,
+        "paired_bootstrap_95ci": [
+          -0.02,
+          0.05875
+        ],
+        "strict_negative_groups": 8,
+        "strict_positive_groups": 6,
+        "tied_groups": 36
+      },
+      "heldout_by_T3": {
+        "mean_paired_difference": 0.07875,
+        "n_independent_decision_groups": 50,
+        "paired_bootstrap_95ci": [
+          0.0175,
+          0.14875
+        ],
+        "strict_negative_groups": 9,
+        "strict_positive_groups": 13,
+        "tied_groups": 28
+      }
+    }
+  },
+  "actual_keep_mull_intervention_v31": {
+    "independent_103k_test": {
+      "corrected_changed_action_count": 5,
+      "corrected_improves_on_sampled_Q_n": 1,
+      "corrected_mean_actual_T2_of_paired_action": 0.2578125,
+      "corrected_mean_empirical_regret": 0.036458333333333336,
+      "corrected_minus_frozen_mean_actual_T2": -0.0026041666666666665,
+      "corrected_worsens_on_sampled_Q_n": 2,
+      "frozen_mean_actual_T2_of_paired_action": 0.26041666666666663,
+      "frozen_mean_empirical_regret": 0.033854166666666664,
+      "observed_T2_ties": 21,
+      "paired_game_group_bootstrap_95ci_delta": [
+        -0.010416666666666666,
+        0.005208333333333333
+      ],
+      "physical_groups": 16,
+      "stage_states": 64,
+      "warning": "Six sampled futures each: per-state max Q is optimistic. This comparison is an off-policy counterfactual estimate, not prospective full-game performance. Stage draws are correlated within physical group."
+    },
+    "stages_sampled": [
+      0,
+      1,
+      3,
+      5
+    ],
+    "warning": "6 rollouts per arm; 16 physical groups, not sufficient for high-confidence individual-action regret."
+  },
+  "constraints": {
+    "110k_heldout_games_never_retrained_on": true,
+    "actual_goldfish_not_multiplayer_win_probability": true,
+    "no_changes_to_gameplay_or_actual_99_card_shuffle": true,
+    "no_counterfactual_replay_claimed_for_stage_partitions": true,
+    "policy_approved": false,
+    "same_final_hand_different_turn_is_an_audit_signal_not_performance_regret": true
+  },
+  "matched_256_game_descriptive_partitions": {
+    "v32_shared_C_minus_v27_frozen": {
+      "all_games": {
+        "N": 256,
+        "endpoints": {
+          "T1": {
+            "a_successes": 18,
+            "b_successes": 18,
+            "delta_pp": 0.0,
+            "gains": 0,
+            "losses": 0,
+            "paired_bootstrap_95ci_pp": [
+              0.0,
+              0.0
+            ]
+          },
+          "T2": {
+            "a_successes": 121,
+            "b_successes": 124,
+            "delta_pp": -1.171875,
+            "gains": 2,
+            "losses": 5,
+            "paired_bootstrap_95ci_pp": [
+              -3.515625,
+              0.78125
+            ]
+          },
+          "T3": {
+            "a_successes": 196,
+            "b_successes": 198,
+            "delta_pp": -0.78125,
+            "gains": 3,
+            "losses": 5,
+            "paired_bootstrap_95ci_pp": [
+              -3.125,
+              1.171875
+            ]
+          }
+        }
+      },
+      "different_london_stage_confounded": {
+        "N": 26,
+        "endpoints": {
+          "T1": {
+            "a_successes": 0,
+            "b_successes": 0,
+            "delta_pp": 0.0,
+            "gains": 0,
+            "losses": 0,
+            "paired_bootstrap_95ci_pp": [
+              0.0,
+              0.0
+            ]
+          },
+          "T2": {
+            "a_successes": 2,
+            "b_successes": 5,
+            "delta_pp": -11.538461538461538,
+            "gains": 2,
+            "losses": 5,
+            "paired_bootstrap_95ci_pp": [
+              -30.76923076923077,
+              7.6923076923076925
+            ]
+          },
+          "T3": {
+            "a_successes": 7,
+            "b_successes": 9,
+            "delta_pp": -7.6923076923076925,
+            "gains": 3,
+            "losses": 5,
+            "paired_bootstrap_95ci_pp": [
+              -30.76923076923077,
+              11.538461538461538
+            ]
+          }
+        }
+      },
+      "same_final_hand": {
+        "N": 230,
+        "endpoints": {
+          "T1": {
+            "a_successes": 18,
+            "b_successes": 18,
+            "delta_pp": 0.0,
+            "gains": 0,
+            "losses": 0,
+            "paired_bootstrap_95ci_pp": [
+              0.0,
+              0.0
+            ]
+          },
+          "T2": {
+            "a_successes": 119,
+            "b_successes": 119,
+            "delta_pp": 0.0,
+            "gains": 0,
+            "losses": 0,
+            "paired_bootstrap_95ci_pp": [
+              0.0,
+              0.0
+            ]
+          },
+          "T3": {
+            "a_successes": 189,
+            "b_successes": 189,
+            "delta_pp": 0.0,
+            "gains": 0,
+            "losses": 0,
+            "paired_bootstrap_95ci_pp": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "same_stage_different_hand": {
+        "N": 0,
+        "endpoints": {
+          "T1": {
+            "a_successes": 0,
+            "b_successes": 0,
+            "delta_pp": null,
+            "gains": 0,
+            "losses": 0,
+            "paired_bootstrap_95ci_pp": null
+          },
+          "T2": {
+            "a_successes": 0,
+            "b_successes": 0,
+            "delta_pp": null,
+            "gains": 0,
+            "losses": 0,
+            "paired_bootstrap_95ci_pp": null
+          },
+          "T3": {
+            "a_successes": 0,
+            "b_successes": 0,
+            "delta_pp": null,
+            "gains": 0,
+            "losses": 0,
+            "paired_bootstrap_95ci_pp": null
+          }
+        }
+      }
+    },
+    "v5_minus_v27_frozen": {
+      "all_games": {
+        "N": 256,
+        "endpoints": {
+          "T1": {
+            "a_successes": 19,
+            "b_successes": 18,
+            "delta_pp": 0.390625,
+            "gains": 2,
+            "losses": 1,
+            "paired_bootstrap_95ci_pp": [
+              -0.78125,
+              1.953125
+            ]
+          },
+          "T2": {
+            "a_successes": 131,
+            "b_successes": 124,
+            "delta_pp": 2.734375,
+            "gains": 23,
+            "losses": 16,
+            "paired_bootstrap_95ci_pp": [
+              -1.953125,
+              7.421875
+            ]
+          },
+          "T3": {
+            "a_successes": 212,
+            "b_successes": 198,
+            "delta_pp": 5.46875,
+            "gains": 28,
+            "losses": 14,
+            "paired_bootstrap_95ci_pp": [
+              0.390625,
+              10.546875
+            ]
+          }
+        }
+      },
+      "different_london_stage_confounded": {
+        "N": 107,
+        "endpoints": {
+          "T1": {
+            "a_successes": 2,
+            "b_successes": 2,
+            "delta_pp": 0.0,
+            "gains": 1,
+            "losses": 1,
+            "paired_bootstrap_95ci_pp": [
+              -2.803738317757009,
+              2.803738317757009
+            ]
+          },
+          "T2": {
+            "a_successes": 20,
+            "b_successes": 21,
+            "delta_pp": -0.9345794392523364,
+            "gains": 15,
+            "losses": 16,
+            "paired_bootstrap_95ci_pp": [
+              -11.214953271028037,
+              9.345794392523365
+            ]
+          },
+          "T3": {
+            "a_successes": 80,
+            "b_successes": 65,
+            "delta_pp": 14.018691588785046,
+            "gains": 26,
+            "losses": 11,
+            "paired_bootstrap_95ci_pp": [
+              3.7383177570093458,
+              24.299065420560748
+            ]
+          }
+        }
+      },
+      "same_final_hand": {
+        "N": 93,
+        "endpoints": {
+          "T1": {
+            "a_successes": 10,
+            "b_successes": 10,
+            "delta_pp": 0.0,
+            "gains": 0,
+            "losses": 0,
+            "paired_bootstrap_95ci_pp": [
+              0.0,
+              0.0
+            ]
+          },
+          "T2": {
+            "a_successes": 77,
+            "b_successes": 77,
+            "delta_pp": 0.0,
+            "gains": 0,
+            "losses": 0,
+            "paired_bootstrap_95ci_pp": [
+              0.0,
+              0.0
+            ]
+          },
+          "T3": {
+            "a_successes": 85,
+            "b_successes": 85,
+            "delta_pp": 0.0,
+            "gains": 0,
+            "losses": 0,
+            "paired_bootstrap_95ci_pp": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "same_stage_different_hand": {
+        "N": 56,
+        "endpoints": {
+          "T1": {
+            "a_successes": 7,
+            "b_successes": 6,
+            "delta_pp": 1.7857142857142858,
+            "gains": 1,
+            "losses": 0,
+            "paired_bootstrap_95ci_pp": [
+              0.0,
+              5.357142857142857
+            ]
+          },
+          "T2": {
+            "a_successes": 34,
+            "b_successes": 26,
+            "delta_pp": 14.285714285714286,
+            "gains": 8,
+            "losses": 0,
+            "paired_bootstrap_95ci_pp": [
+              5.357142857142857,
+              25.0
+            ]
+          },
+          "T3": {
+            "a_successes": 47,
+            "b_successes": 48,
+            "delta_pp": -1.7857142857142858,
+            "gains": 2,
+            "losses": 3,
+            "paired_bootstrap_95ci_pp": [
+              -10.714285714285714,
+              5.357142857142857
+            ]
+          }
+        }
+      }
+    },
+    "v5_minus_v32_shared_C": {
+      "all_games": {
+        "N": 256,
+        "endpoints": {
+          "T1": {
+            "a_successes": 19,
+            "b_successes": 18,
+            "delta_pp": 0.390625,
+            "gains": 2,
+            "losses": 1,
+            "paired_bootstrap_95ci_pp": [
+              -0.78125,
+              1.5625
+            ]
+          },
+          "T2": {
+            "a_successes": 131,
+            "b_successes": 121,
+            "delta_pp": 3.90625,
+            "gains": 23,
+            "losses": 13,
+            "paired_bootstrap_95ci_pp": [
+              -0.78125,
+              8.203125
+            ]
+          },
+          "T3": {
+            "a_successes": 212,
+            "b_successes": 196,
+            "delta_pp": 6.25,
+            "gains": 31,
+            "losses": 15,
+            "paired_bootstrap_95ci_pp": [
+              1.171875,
+              11.328125
+            ]
+          }
+        }
+      },
+      "different_london_stage_confounded": {
+        "N": 102,
+        "endpoints": {
+          "T1": {
+            "a_successes": 2,
+            "b_successes": 2,
+            "delta_pp": 0.0,
+            "gains": 1,
+            "losses": 1,
+            "paired_bootstrap_95ci_pp": [
+              -2.9411764705882355,
+              2.9411764705882355
+            ]
+          },
+          "T2": {
+            "a_successes": 23,
+            "b_successes": 20,
+            "delta_pp": 2.9411764705882355,
+            "gains": 16,
+            "losses": 13,
+            "paired_bootstrap_95ci_pp": [
+              -7.8431372549019605,
+              13.72549019607843
+            ]
+          },
+          "T3": {
+            "a_successes": 82,
+            "b_successes": 64,
+            "delta_pp": 17.647058823529413,
+            "gains": 30,
+            "losses": 12,
+            "paired_bootstrap_95ci_pp": [
+              4.901960784313726,
+              29.41176470588235
+            ]
+          }
+        }
+      },
+      "same_final_hand": {
+        "N": 92,
+        "endpoints": {
+          "T1": {
+            "a_successes": 10,
+            "b_successes": 10,
+            "delta_pp": 0.0,
+            "gains": 0,
+            "losses": 0,
+            "paired_bootstrap_95ci_pp": [
+              0.0,
+              0.0
+            ]
+          },
+          "T2": {
+            "a_successes": 76,
+            "b_successes": 76,
+            "delta_pp": 0.0,
+            "gains": 0,
+            "losses": 0,
+            "paired_bootstrap_95ci_pp": [
+              0.0,
+              0.0
+            ]
+          },
+          "T3": {
+            "a_successes": 84,
+            "b_successes": 84,
+            "delta_pp": 0.0,
+            "gains": 0,
+            "losses": 0,
+            "paired_bootstrap_95ci_pp": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "same_stage_different_hand": {
+        "N": 62,
+        "endpoints": {
+          "T1": {
+            "a_successes": 7,
+            "b_successes": 6,
+            "delta_pp": 1.6129032258064515,
+            "gains": 1,
+            "losses": 0,
+            "paired_bootstrap_95ci_pp": [
+              0.0,
+              4.838709677419355
+            ]
+          },
+          "T2": {
+            "a_successes": 32,
+            "b_successes": 25,
+            "delta_pp": 11.290322580645162,
+            "gains": 7,
+            "losses": 0,
+            "paired_bootstrap_95ci_pp": [
+              4.838709677419355,
+              19.35483870967742
+            ]
+          },
+          "T3": {
+            "a_successes": 46,
+            "b_successes": 48,
+            "delta_pp": -3.225806451612903,
+            "gains": 1,
+            "losses": 3,
+            "paired_bootstrap_95ci_pp": [
+              -9.67741935483871,
+              3.225806451612903
+            ]
+          }
+        }
+      }
+    }
+  },
+  "prior_prospective_counts": {
+    "v27_frozen": {
+      "N": 256,
+      "T1_count": 18,
+      "T2_count": 124,
+      "T3_count": 198,
+      "mean_keep_n": 5.3671875,
+      "sum_gameplay_seconds": 84.45167999999995
+    },
+    "v32_shared_C": {
+      "N": 256,
+      "T1_count": 18,
+      "T2_count": 121,
+      "T3_count": 196,
+      "mean_keep_n": 5.4609375,
+      "sum_gameplay_seconds": 87.50041999999993
+    },
+    "v5": {
+      "N": 256,
+      "T1_count": 19,
+      "T2_count": 131,
+      "T3_count": 212,
+      "mean_keep_n": 5.14453125,
+      "sum_gameplay_seconds": 5633.34967
+    }
+  },
+  "schema": "dack_v33_readonly_attribution_audit",
+  "scope": "retrospective, no beam simulations, no fitting, no policy changes",
+  "source_full_game_ids": [
+    110000,
+    110255
+  ],
+  "source_model_shas": {
+    "models/dack_v27_T2_only_continuations_EXPERIMENTAL.json": "4166c2045d66b08f0943900a2d68ec901d7048aca6de057695fc84dee883097b",
+    "models/dack_v27_expanded_T2_only_value_EXPERIMENTAL.json": "a01f46260164342f2f0f6ec15766b341338baa27c51dcf0a3ec3f164492e3134",
+    "models/dack_v32_shared_Qmull_continuation_EXPERIMENTAL.json": "31823135bc4be307d5597dfb22e8cea1a99933497282555e51d0a640bca54078",
+    "models/v14_curve/v14_teacher_groups_128.json": "19fdbf300afc1e4545b81767f8fbf3bbe6ebd7b33ad139e2aa9231e3215df8ff"
+  },
+  "status": "PASS"
+}
