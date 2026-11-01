@@ -1,0 +1,66 @@
+{
+  "all_models_unapproved": true,
+  "independent_paired_physical_games": 256,
+  "paired_v22_minus_v14": {
+    "T1": {
+      "difference_pp": 0.390625,
+      "gain_games": 4,
+      "loss_games": 3,
+      "paired_bootstrap_95ci_pp": [
+        -1.5625,
+        2.34375
+      ]
+    },
+    "T2": {
+      "difference_pp": 2.734375,
+      "gain_games": 23,
+      "loss_games": 16,
+      "paired_bootstrap_95ci_pp": [
+        -1.953125,
+        7.421875
+      ]
+    },
+    "T3": {
+      "difference_pp": 7.03125,
+      "gain_games": 28,
+      "loss_games": 10,
+      "paired_bootstrap_95ci_pp": [
+        2.734375,
+        11.71875
+      ]
+    }
+  },
+  "physical_seed_bands": [
+    [
+      87000,
+      87127
+    ],
+    [
+      88000,
+      88127
+    ]
+  ],
+  "provenance_runs": [
+    41261927266,
+    41262335296
+  ],
+  "schema": "dack_v24_pooled_v22_vs_v14_256_physical_games",
+  "status": "PASS",
+  "v14": {
+    "CPU_seconds": 93.5545,
+    "T1": 9,
+    "T2": 106,
+    "T3": 190,
+    "mean_keep": 5.2109375,
+    "n": 256
+  },
+  "v22": {
+    "CPU_seconds": 105.8374,
+    "T1": 10,
+    "T2": 113,
+    "T3": 208,
+    "mean_keep": 5.8046875,
+    "n": 256
+  },
+  "warning": "The 88k second band overlaps the separate v5 benchmark by design; no game is double-counted within pooled N256. Goldfish deployment not multiplayer win rate."
+}

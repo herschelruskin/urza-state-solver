@@ -1,0 +1,172 @@
+{
+  "metrics": {
+    "v14": {
+      "CPU_seconds": 23.8998,
+      "T1": 3,
+      "T2": 29,
+      "T3": 48,
+      "mean_keep": 5.28125,
+      "n": 64
+    },
+    "v22": {
+      "CPU_seconds": 32.7334,
+      "T1": 2,
+      "T2": 31,
+      "T3": 51,
+      "mean_keep": 6.109375,
+      "n": 64
+    },
+    "v23": {
+      "CPU_seconds": 33.3858,
+      "T1": 1,
+      "T2": 32,
+      "T3": 47,
+      "mean_keep": 5.71875,
+      "n": 64
+    },
+    "v5": {
+      "CPU_seconds": 1507.1724,
+      "T1": 4,
+      "T2": 32,
+      "T3": 53,
+      "mean_keep": 5.1875,
+      "n": 64
+    }
+  },
+  "models_approved": false,
+  "pairwise_v23_vs_v22": {
+    "T1": {
+      "difference_pp": -1.5625,
+      "gain_games": 1,
+      "loss_games": 2,
+      "paired_bootstrap_95ci_pp": [
+        -6.25,
+        3.125
+      ]
+    },
+    "T2": {
+      "difference_pp": 1.5625,
+      "gain_games": 4,
+      "loss_games": 3,
+      "paired_bootstrap_95ci_pp": [
+        -6.25,
+        9.375
+      ]
+    },
+    "T3": {
+      "difference_pp": -6.25,
+      "gain_games": 1,
+      "loss_games": 5,
+      "paired_bootstrap_95ci_pp": [
+        -14.0625,
+        1.5625
+      ]
+    }
+  },
+  "pairwise_vs_v5": {
+    "v14": {
+      "T1": {
+        "difference_pp": -1.5625,
+        "gain_games": 0,
+        "loss_games": 1,
+        "paired_bootstrap_95ci_pp": [
+          -4.6875,
+          0.0
+        ]
+      },
+      "T2": {
+        "difference_pp": -4.6875,
+        "gain_games": 4,
+        "loss_games": 7,
+        "paired_bootstrap_95ci_pp": [
+          -15.625,
+          4.6875
+        ]
+      },
+      "T3": {
+        "difference_pp": -7.8125,
+        "gain_games": 3,
+        "loss_games": 8,
+        "paired_bootstrap_95ci_pp": [
+          -17.1875,
+          1.5625
+        ]
+      }
+    },
+    "v22": {
+      "T1": {
+        "difference_pp": -3.125,
+        "gain_games": 0,
+        "loss_games": 2,
+        "paired_bootstrap_95ci_pp": [
+          -7.8125,
+          0.0
+        ]
+      },
+      "T2": {
+        "difference_pp": -1.5625,
+        "gain_games": 6,
+        "loss_games": 7,
+        "paired_bootstrap_95ci_pp": [
+          -12.5,
+          9.375
+        ]
+      },
+      "T3": {
+        "difference_pp": -3.125,
+        "gain_games": 5,
+        "loss_games": 7,
+        "paired_bootstrap_95ci_pp": [
+          -12.5,
+          7.8125
+        ]
+      }
+    },
+    "v23": {
+      "T1": {
+        "difference_pp": -4.6875,
+        "gain_games": 0,
+        "loss_games": 3,
+        "paired_bootstrap_95ci_pp": [
+          -10.9375,
+          0.0
+        ]
+      },
+      "T2": {
+        "difference_pp": 0.0,
+        "gain_games": 7,
+        "loss_games": 7,
+        "paired_bootstrap_95ci_pp": [
+          -12.5,
+          12.5
+        ]
+      },
+      "T3": {
+        "difference_pp": -9.375,
+        "gain_games": 4,
+        "loss_games": 10,
+        "paired_bootstrap_95ci_pp": [
+          -20.3125,
+          1.5625
+        ]
+      }
+    }
+  },
+  "physical_games": 64,
+  "physical_seed_band": [
+    88000,
+    88063
+  ],
+  "repeated_student_policy_results_reproduced_exactly": {
+    "n_paired_replayed_games": 64,
+    "v14_identical": 64,
+    "v22_identical": 64
+  },
+  "schema": "dack_v24_full_v5_v14_v22_v23_64_same_physical_games",
+  "source_runs": [
+    41262221020,
+    41262335296
+  ],
+  "status": "PASS",
+  "warning": "N64 is not sufficient to establish equivalence and 88k games share seeds with another evaluation; comparison internally paired, no training leak."
+}
