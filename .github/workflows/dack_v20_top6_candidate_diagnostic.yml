@@ -87,7 +87,7 @@ jobs:
           path.parent.mkdir(exist_ok=True)
           path.write_text(json.dumps(o,indent=2)+'\n')
           print('V20_TOP6_SHORTLIST_DIAGNOSTIC_PASS',json.dumps({
-              k:v for k,v in o.items() if k!='rows'},flush=True))
+              k:v for k,v in o.items() if k!='rows'}),flush=True)
           PY
       - uses: actions/upload-artifact@v4
         with:
