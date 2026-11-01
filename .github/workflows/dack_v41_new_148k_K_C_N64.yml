@@ -1,0 +1,127 @@
+name: DACK v41 new 148k physical early action K-vs-C N64 validation
+on:
+  push:
+    branches: [dack-v41-early-action-regret-20261101]
+    paths:
+      - '.github/workflows/dack_v41_new_148k_K_C_N64.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  keep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        start: [148000,148008,148016,148024,148032,148040,148048,148056]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v41-early-action-regret-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install reproducible science dependencies (model weights frozen)
+        run: python -m pip install 'numpy>=1.26,<3' 'scikit-learn>=1.4,<1.8'
+      - name: Syntax check fresh blind physical-game sample and fixed model
+        run: python -m py_compile dack_simulator/validation/v41_fresh_148k_physical_conditional.py
+      - name: Real strict beam160 KEEP games on new 99-slot deck groups
+        run: |
+          python -u dack_simulator/validation/v41_fresh_148k_physical_conditional.py \
+            --action K --start ${{ matrix.start }} \
+            --out shards/v41_148k_K_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v41-148k-K-${{ matrix.start }}
+          path: shards/v41_148k_K_*.json.gz
+          retention-days: 60
+  mull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        seat: [0,1,2,3]
+        stage: [0,1,2]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v41-early-action-regret-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install reproducible science dependencies (model weights frozen)
+        run: python -m pip install 'numpy>=1.26,<3' 'scikit-learn>=1.4,<1.8'
+      - name: True all-99 returned, separate full reshuffle and downstream v27/v33b
+        run: |
+          python -u dack_simulator/validation/v41_fresh_148k_physical_conditional.py \
+            --action C --seat ${{ matrix.seat }} --stage ${{ matrix.stage }} \
+            --out shards/v41_148k_C_${{ matrix.seat }}_${{ matrix.stage }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v41-148k-C-${{ matrix.seat }}-${{ matrix.stage }}
+          path: shards/v41_148k_C_*.json.gz
+          retention-days: 60
+  pool_and_archive:
+    needs: [keep,mull]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v41-early-action-regret-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v41-148k-K-*
+          merge-multiple: true
+          path: collected
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v41-148k-C-*
+          merge-multiple: true
+          path: collected
+      - name: Verify all 64 groups and 12 independently sampled C cells; two-source bootstrap
+        run: |
+          python -m py_compile dack_simulator/validation/v41_pool_fresh_148k_conditional.py
+          python -u dack_simulator/validation/v41_pool_fresh_148k_conditional.py \
+            --K 'collected/v41_148k_K_*.json.gz' \
+            --C 'collected/v41_148k_C_*.json.gz' \
+            --out benchmark_results/v41_fresh_148k_N64_conditional.json
+      - name: Verify research-only status and complete sample denominator
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('benchmark_results/v41_fresh_148k_N64_conditional.json').read_text())
+          assert r['status']=='PASS' and r['N_independent_new_physical_deals']==64
+          assert r['N_early_stage_K_states']==192
+          assert r['true_K_gameplay_rollouts']==1536
+          assert r['independent_shared_C_lottery_rollouts']==768
+          assert not r['models_approved'] and r['not_a_full_game_winrate_test']
+          assert r['decisions_frozen_before_new_outcomes']
+          print('DACK_V41_NEW_148K_CONDITIONAL_ACCEPTANCE_GUARDS_PASS')
+          PY
+      - name: Archive raw physics and conditional findings, do not promote
+        run: |
+          mkdir -p benchmark_results/v41_148k_conditional_physical_shards
+          cp collected/v41_148k_*.json.gz benchmark_results/v41_148k_conditional_physical_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v41_fresh_148k_N64_conditional.json benchmark_results/v41_148k_conditional_physical_shards/
+          git commit -m "Archive new independent N64 early v41 physical KEEP and shared full99 MULL lotteries"
+          git pull --rebase origin dack-v41-early-action-regret-20261101
+          git push origin HEAD:dack-v41-early-action-regret-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v41-148k-N64-new-physical-conditional-results
+          path: benchmark_results/v41_fresh_148k_N64_conditional.json
+          retention-days: 90
