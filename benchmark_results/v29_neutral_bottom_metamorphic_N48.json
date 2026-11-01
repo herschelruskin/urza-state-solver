@@ -1,0 +1,840 @@
+{
+  "n_independent_future_orders_per_scenario": 12,
+  "n_scenarios": 4,
+  "no_model_training": true,
+  "protected_v5_v14_v26_v27_unchanged": true,
+  "scenario_results": {
+    "bucknard_key": {
+      "by_keep_blank_and_mode": {
+        "coupled_filler_dice": {
+          "Charitable Levy": {
+            "T1": 0,
+            "T2": 11,
+            "T3": 11
+          },
+          "Touch the Spirit Realm": {
+            "T1": 0,
+            "T2": 11,
+            "T3": 11
+          },
+          "Void Mirror": {
+            "T1": 0,
+            "T2": 11,
+            "T3": 11
+          }
+        },
+        "original_full_state_dice": {
+          "Charitable Levy": {
+            "T1": 1,
+            "T2": 11,
+            "T3": 11
+          },
+          "Touch the Spirit Realm": {
+            "T1": 0,
+            "T2": 11,
+            "T3": 11
+          },
+          "Void Mirror": {
+            "T1": 2,
+            "T2": 11,
+            "T3": 11
+          }
+        }
+      },
+      "coupled_turn_all_equal": 12,
+      "coupled_turn_differ": 0,
+      "n": 12,
+      "original_turn_all_equal": 10,
+      "original_turn_differ": 2,
+      "per_game_original_and_coupled_turn_triplets": [
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101000,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101001,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101002,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101003,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101004,
+          "original": [
+            1,
+            1,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101005,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101006,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101007,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101008,
+          "original": [
+            1,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101009,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101010,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            0,
+            0,
+            0
+          ],
+          "game_id": 101011,
+          "original": [
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "reference_core": [
+        "Bucknard's Everfull Purse",
+        "Plains",
+        "Sol Ring",
+        "Voltaic Key"
+      ]
+    },
+    "chrome_mox_exception": {
+      "by_keep_blank_and_mode": {
+        "coupled_filler_dice": {
+          "Charitable Levy": {
+            "T1": 2,
+            "T2": 12,
+            "T3": 12
+          },
+          "Touch the Spirit Realm": {
+            "T1": 2,
+            "T2": 12,
+            "T3": 12
+          },
+          "Void Mirror": {
+            "T1": 2,
+            "T2": 6,
+            "T3": 10
+          }
+        },
+        "original_full_state_dice": {
+          "Charitable Levy": {
+            "T1": 2,
+            "T2": 12,
+            "T3": 12
+          },
+          "Touch the Spirit Realm": {
+            "T1": 2,
+            "T2": 12,
+            "T3": 12
+          },
+          "Void Mirror": {
+            "T1": 2,
+            "T2": 6,
+            "T3": 10
+          }
+        }
+      },
+      "coupled_turn_all_equal": 6,
+      "coupled_turn_differ": 6,
+      "n": 12,
+      "original_turn_all_equal": 6,
+      "original_turn_differ": 6,
+      "per_game_original_and_coupled_turn_triplets": [
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101000,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            0,
+            2,
+            2
+          ],
+          "game_id": 101001,
+          "original": [
+            0,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            0,
+            2,
+            2
+          ],
+          "game_id": 101002,
+          "original": [
+            0,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            3,
+            2,
+            2
+          ],
+          "game_id": 101003,
+          "original": [
+            3,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            1,
+            1,
+            1
+          ],
+          "game_id": 101004,
+          "original": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "coupled": [
+            3,
+            2,
+            2
+          ],
+          "game_id": 101005,
+          "original": [
+            3,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101006,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101007,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            1,
+            1,
+            1
+          ],
+          "game_id": 101008,
+          "original": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "coupled": [
+            3,
+            2,
+            2
+          ],
+          "game_id": 101009,
+          "original": [
+            3,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            3,
+            2,
+            2
+          ],
+          "game_id": 101010,
+          "original": [
+            3,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101011,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        }
+      ],
+      "reference_core": [
+        "Chrome Mox",
+        "Plains",
+        "Sol Ring",
+        "Mana Vault"
+      ]
+    },
+    "mana_vault_tutor": {
+      "by_keep_blank_and_mode": {
+        "coupled_filler_dice": {
+          "Charitable Levy": {
+            "T1": 1,
+            "T2": 12,
+            "T3": 12
+          },
+          "Touch the Spirit Realm": {
+            "T1": 1,
+            "T2": 12,
+            "T3": 12
+          },
+          "Void Mirror": {
+            "T1": 1,
+            "T2": 12,
+            "T3": 12
+          }
+        },
+        "original_full_state_dice": {
+          "Charitable Levy": {
+            "T1": 1,
+            "T2": 12,
+            "T3": 12
+          },
+          "Touch the Spirit Realm": {
+            "T1": 1,
+            "T2": 12,
+            "T3": 12
+          },
+          "Void Mirror": {
+            "T1": 1,
+            "T2": 12,
+            "T3": 12
+          }
+        }
+      },
+      "coupled_turn_all_equal": 12,
+      "coupled_turn_differ": 0,
+      "n": 12,
+      "original_turn_all_equal": 12,
+      "original_turn_differ": 0,
+      "per_game_original_and_coupled_turn_triplets": [
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101000,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101001,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101002,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101003,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101004,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101005,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101006,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101007,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101008,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            1,
+            1,
+            1
+          ],
+          "game_id": 101009,
+          "original": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101010,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101011,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        }
+      ],
+      "reference_core": [
+        "Ancient Tomb",
+        "Mana Vault",
+        "Plains",
+        "Enlightened Tutor"
+      ]
+    },
+    "mox_opal_exception": {
+      "by_keep_blank_and_mode": {
+        "coupled_filler_dice": {
+          "Charitable Levy": {
+            "T1": 0,
+            "T2": 12,
+            "T3": 12
+          },
+          "Touch the Spirit Realm": {
+            "T1": 0,
+            "T2": 12,
+            "T3": 12
+          },
+          "Void Mirror": {
+            "T1": 0,
+            "T2": 12,
+            "T3": 12
+          }
+        },
+        "original_full_state_dice": {
+          "Charitable Levy": {
+            "T1": 0,
+            "T2": 12,
+            "T3": 12
+          },
+          "Touch the Spirit Realm": {
+            "T1": 0,
+            "T2": 12,
+            "T3": 12
+          },
+          "Void Mirror": {
+            "T1": 0,
+            "T2": 12,
+            "T3": 12
+          }
+        }
+      },
+      "coupled_turn_all_equal": 12,
+      "coupled_turn_differ": 0,
+      "n": 12,
+      "original_turn_all_equal": 12,
+      "original_turn_differ": 0,
+      "per_game_original_and_coupled_turn_triplets": [
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101000,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101001,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101002,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101003,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101004,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101005,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101006,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101007,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101008,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101009,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101010,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        },
+        {
+          "coupled": [
+            2,
+            2,
+            2
+          ],
+          "game_id": 101011,
+          "original": [
+            2,
+            2,
+            2
+          ]
+        }
+      ],
+      "reference_core": [
+        "Mox Opal",
+        "Plains",
+        "Sol Ring",
+        "Mana Vault"
+      ]
+    }
+  },
+  "schema": "dack_v29_neutral_bottom_metamorphic_N48",
+  "simulations": 288,
+  "status": "PASS",
+  "warning": "A single card may be non-ramp but still relevant to imprints, artifacts, tutor access, defensive effects, or search pruning. Research-only chance coupling is an audit, NOT validated gameplay. Do not treat these 48 designed states as random game winrates."
+}
