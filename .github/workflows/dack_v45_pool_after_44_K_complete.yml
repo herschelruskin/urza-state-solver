@@ -4,6 +4,7 @@ on:
     branches: [dack-v45-v5-v43-residual-gap-audit-20261101]
     paths:
       - 'benchmark_results/v45_v5_v43_first_conflict_physical_K_shards/**'
+      - '.github/workflows/dack_v45_pool_after_44_K_complete.yml'
 permissions:
   contents: write
   actions: read
