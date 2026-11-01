@@ -1,0 +1,34 @@
+name: DACK v37 freeze new 127k random 768-action census before ANY gameplay labels
+on:
+  push:
+    branches: [dack-v37-direct-action-regret-20261101]
+    paths: ['.github/workflows/dack_v37_127k_census.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  census:
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Frozen physical model, feature parity and exact v33b bottom
+        run: |
+          test -f models/dack_v37_direct_regret_EXPERIMENTAL.json
+          python -m py_compile dack_simulator/validation/v37_127k_census.py dack_paired_counterfactual_v37_direct_regret_20261101.py
+          python dack_paired_counterfactual_v37_direct_regret_20261101.py
+      - name: Outcome-blind ALL 256 independent game IDs and 768 early London states
+        run: python -u dack_simulator/validation/v37_127k_census.py
+      - name: Archive physical census before any 127k gameplay outcomes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f datasets/v37_127k_outcome_blind_census.json
+          git commit -m 'Freeze v37 new 127k complete physical 768-action census and exact London path reachability'
+          git pull --rebase origin dack-v37-direct-action-regret-20261101
+          git push origin HEAD:dack-v37-direct-action-regret-20261101
