@@ -1,0 +1,1828 @@
+{
+  "candidate_pool_ids": [
+    123128,
+    123639
+  ],
+  "frozen_v33b_bottom_sha256": "3a93ecb0c62fd973a9d32c744bfb2fabdffcc8046e9ed9b7bfd9986bb2961c5a",
+  "groups": [
+    {
+      "game_id": 123000,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123001,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123002,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123003,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123004,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123005,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123006,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123007,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123008,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123009,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123010,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123011,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123012,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123013,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123014,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123015,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123016,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123017,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123018,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123019,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123020,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123021,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123022,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123023,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123024,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123025,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123026,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123027,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123028,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123029,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123030,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123031,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123032,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123033,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123034,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123035,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123036,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123037,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123038,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123039,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123040,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123041,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123042,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123043,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123044,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123045,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123046,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123047,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123048,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123049,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123050,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123051,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123052,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123053,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123054,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123055,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123056,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123057,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123058,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123059,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123060,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123061,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123062,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123063,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123064,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123065,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123066,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123067,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123068,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123069,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123070,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123071,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123072,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123073,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123074,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123075,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123076,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123077,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123078,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123079,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123080,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123081,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123082,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123083,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123084,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123085,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123086,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123087,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123088,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123089,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123090,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123091,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123092,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123093,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123094,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123095,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123096,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123097,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123098,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123099,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123100,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123101,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123102,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123103,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123104,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123105,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123106,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123107,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123108,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123109,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123110,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123111,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123112,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123113,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123114,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123115,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123116,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123117,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123118,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123119,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123120,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123121,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123122,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123123,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123124,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123125,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123126,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123127,
+      "sample": "random",
+      "selection": null
+    },
+    {
+      "game_id": 123129,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.03010354396479592,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123137,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.028501081995072036,
+        "original_v27_keep": false,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123141,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.037721718459623244,
+        "original_v27_keep": true,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123144,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.05889579613934348,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123145,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.030581890920269694,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123146,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.04808035062859328,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123149,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.033535216291941616,
+        "original_v27_keep": false,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123156,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.0017543296427434685,
+        "original_v27_keep": false,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123158,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.0682715199626287,
+        "original_v27_keep": true,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123161,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.10505151260217016,
+        "original_v27_keep": true,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123169,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.03837022987570565,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123171,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.057321900747628274,
+        "original_v27_keep": true,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123172,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.047035291464493645,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123175,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.06035032817839686,
+        "original_v27_keep": false,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123184,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.007775413330584069,
+        "original_v27_keep": true,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123194,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.02014153214868225,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123196,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.07565026509823586,
+        "original_v27_keep": true,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123198,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.08608249748640873,
+        "original_v27_keep": true,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123200,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.01316209529054363,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123203,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.08801587427366114,
+        "original_v27_keep": false,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123205,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.07299879027294909,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123207,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.005102992601499545,
+        "original_v27_keep": true,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123210,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.04371409895485118,
+        "original_v27_keep": false,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123222,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.06671110517526671,
+        "original_v27_keep": false,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123224,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.037918650162091394,
+        "original_v27_keep": true,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123228,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.04510072458686293,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123229,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.0348914574748006,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123230,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.0858968464355816,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123234,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.010374826148358773,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123248,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.05794641766892966,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123253,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.05175193650014215,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123256,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.04994043567256767,
+        "original_v27_keep": false,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123258,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.005948019766397278,
+        "original_v27_keep": true,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123260,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.034337560832346625,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123261,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.005280223034409726,
+        "original_v27_keep": false,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123263,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.08607952987901424,
+        "original_v27_keep": false,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123264,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.04080906589012814,
+        "original_v27_keep": false,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123265,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.015847041167947717,
+        "original_v27_keep": false,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123268,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.01556558225945015,
+        "original_v27_keep": false,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123269,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.021139800802817688,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123277,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.01457071711409938,
+        "original_v27_keep": true,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123279,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.10826601035594163,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123289,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.07292578048271015,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123291,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.06405928333500271,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123295,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.02085917762844447,
+        "original_v27_keep": false,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123301,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.042594823015084826,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123303,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.08903326477018558,
+        "original_v27_keep": true,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123314,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.06544482046541417,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123315,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.04344201863728364,
+        "original_v27_keep": false,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123320,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.033844437841685004,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123322,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.10079542902092548,
+        "original_v27_keep": true,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123323,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.02143598268032354,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123328,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.06823370568749926,
+        "original_v27_keep": false,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123333,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.061185608752449855,
+        "original_v27_keep": false,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123338,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.030994505149802565,
+        "original_v27_keep": true,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123342,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.008185324746766254,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123349,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.10740788129061235,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123358,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.012059581080316378,
+        "original_v27_keep": false,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123369,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.018428432810511874,
+        "original_v27_keep": true,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123370,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.05801993887345008,
+        "original_v27_keep": true,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123371,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.05902167295717775,
+        "original_v27_keep": true,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123372,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.005374294388090284,
+        "original_v27_keep": true,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123373,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.08401237153121255,
+        "original_v27_keep": true,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123378,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.025615024634576822,
+        "original_v27_keep": true,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123383,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.025027709912968932,
+        "original_v27_keep": true,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123389,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.06584700618273726,
+        "original_v27_keep": false,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123390,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.025676906779773717,
+        "original_v27_keep": false,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123392,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.0803804655907038,
+        "original_v27_keep": false,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123394,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.03392573485394429,
+        "original_v27_keep": true,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123397,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.06868499949039278,
+        "original_v27_keep": false,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123403,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.04871302048472051,
+        "original_v27_keep": false,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123406,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.059894189989746216,
+        "original_v27_keep": false,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123411,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.11015762469794016,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123419,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.017567064587637654,
+        "original_v27_keep": true,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123420,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.047179799315242854,
+        "original_v27_keep": false,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123423,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.0643807284323018,
+        "original_v27_keep": false,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123426,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.06849353282453219,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123439,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.03246926528338834,
+        "original_v27_keep": true,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123444,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.007815798485602099,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123446,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.06707289629549004,
+        "original_v27_keep": false,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123447,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.028817046015513326,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123452,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.03286678395497933,
+        "original_v27_keep": true,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123464,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.02367987332342758,
+        "original_v27_keep": true,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123467,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.04451880972342129,
+        "original_v27_keep": false,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123471,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.09325630106369814,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123473,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.056738748136833994,
+        "original_v27_keep": true,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123476,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.01004200772418401,
+        "original_v27_keep": true,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123482,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.011603164519844167,
+        "original_v27_keep": false,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123489,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.043991385554842666,
+        "original_v27_keep": false,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123490,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.032729147033623285,
+        "original_v27_keep": true,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123491,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.01733437745456623,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123497,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.03515419261213848,
+        "original_v27_keep": true,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123514,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.08281385642069766,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123522,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.06325060986702846,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123524,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.023161494371352065,
+        "original_v27_keep": true,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123525,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.06543223428346426,
+        "original_v27_keep": false,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123531,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.06040366540742809,
+        "original_v27_keep": false,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123540,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.06955940311638481,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123548,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.01043740199280041,
+        "original_v27_keep": true,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123552,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.10734297318414915,
+        "original_v27_keep": true,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123555,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.047047614979195795,
+        "original_v27_keep": false,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123562,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.05105805237867156,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123563,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.026621796267769948,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123566,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.038320632932439425,
+        "original_v27_keep": true,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123567,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.057406061497530164,
+        "original_v27_keep": false,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123569,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.034623989386654064,
+        "original_v27_keep": false,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123578,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.11542286139113772,
+        "original_v27_keep": true,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123579,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.046223799480491545,
+        "original_v27_keep": true,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123586,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.09314884561672532,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123588,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.04436097274942996,
+        "original_v27_keep": true,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123589,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.10938456514449779,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123591,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.0037463451000854797,
+        "original_v27_keep": false,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123592,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.02897746367095727,
+        "original_v27_keep": false,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123595,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.06019187778057522,
+        "original_v27_keep": true,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123597,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.1047394991171951,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123598,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.0017143134370693203,
+        "original_v27_keep": true,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123599,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.022425971500278363,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123603,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.08669599703442685,
+        "original_v27_keep": false,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123606,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.02017085779187644,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123607,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.01193883065262591,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123610,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.038297925955087075,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123615,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.029129177018914765,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123622,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.022477086796569457,
+        "original_v27_keep": false,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123628,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.04174070489693693,
+        "original_v27_keep": true,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123629,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.07161187253063778,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    },
+    {
+      "game_id": 123634,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.05342780518000606,
+        "original_v27_keep": true,
+        "selection_stage": 2
+      }
+    },
+    {
+      "game_id": 123637,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.039137431315089455,
+        "original_v27_keep": false,
+        "selection_stage": 1
+      }
+    },
+    {
+      "game_id": 123638,
+      "sample": "boundary_enriched",
+      "selection": {
+        "absolute_margin": 0.0285758781028021,
+        "original_v27_keep": false,
+        "selection_stage": 0
+      }
+    }
+  ],
+  "labels_available_only_after_manifest_frozen": true,
+  "no_gameplay_rollouts_at_selection": true,
+  "outcome_blind_balanced_seat_stage_action_strata": true,
+  "per_action_selection_counts": {
+    "0:0": 24,
+    "0:1": 24,
+    "1:0": 20,
+    "1:1": 20,
+    "2:0": 20,
+    "2:1": 20
+  },
+  "random_unconditional_count": 128,
+  "random_unconditional_physical_ids": [
+    123000,
+    123127
+  ],
+  "schema": "dack_v36_preoutcome_stratified_123k_physical_training_manifest_1",
+  "selected_near_boundary_count": 128,
+  "selection_by_predecision_features_only": true,
+  "selection_quotas_per_action_per_stage": {
+    "0": 24,
+    "1": 20,
+    "2": 20
+  },
+  "source_99_deck": "one_key_34",
+  "stage0_stage1_separate": true,
+  "status": "PASS"
+}
