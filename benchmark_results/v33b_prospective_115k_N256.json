@@ -1,0 +1,157 @@
+{
+  "bottom_change_stats": {
+    "bottom_changed": 52,
+    "bottom_changed_T2_gain": 5,
+    "bottom_changed_T2_loss": 0,
+    "bottom_changed_T3_gain": 9,
+    "bottom_changed_T3_loss": 2,
+    "same_bottom": 204
+  },
+  "bottom_only_intervention": true,
+  "goldfish_not_multiplayer_win_probability": true,
+  "no_prospective_training_or_tuning": true,
+  "paired": {
+    "v27_frozen_minus_v5_T1": {
+      "delta_pp": 0.0,
+      "exploratory_exact_mcnemar_p": 1.0,
+      "gain_games": 1,
+      "loss_games": 1,
+      "paired_game_bootstrap_95ci_pp": [
+        -1.171875,
+        1.171875
+      ],
+      "paired_ties": 254
+    },
+    "v27_frozen_minus_v5_T2": {
+      "delta_pp": -10.15625,
+      "exploratory_exact_mcnemar_p": 6.877111491121468e-05,
+      "gain_games": 8,
+      "loss_games": 34,
+      "paired_game_bootstrap_95ci_pp": [
+        -15.234375,
+        -5.46875
+      ],
+      "paired_ties": 214
+    },
+    "v27_frozen_minus_v5_T3": {
+      "delta_pp": -9.765625,
+      "exploratory_exact_mcnemar_p": 0.0004697573180081349,
+      "gain_games": 12,
+      "loss_games": 37,
+      "paired_game_bootstrap_95ci_pp": [
+        -15.234375,
+        -4.6875
+      ],
+      "paired_ties": 207
+    },
+    "v33b_regret_bottom_minus_v27_frozen_T1": {
+      "delta_pp": 0.390625,
+      "exploratory_exact_mcnemar_p": 1.0,
+      "gain_games": 1,
+      "loss_games": 0,
+      "paired_game_bootstrap_95ci_pp": [
+        0.0,
+        1.171875
+      ],
+      "paired_ties": 255
+    },
+    "v33b_regret_bottom_minus_v27_frozen_T2": {
+      "delta_pp": 1.953125,
+      "exploratory_exact_mcnemar_p": 0.0625,
+      "gain_games": 5,
+      "loss_games": 0,
+      "paired_game_bootstrap_95ci_pp": [
+        0.390625,
+        3.90625
+      ],
+      "paired_ties": 251
+    },
+    "v33b_regret_bottom_minus_v27_frozen_T3": {
+      "delta_pp": 2.734375,
+      "exploratory_exact_mcnemar_p": 0.0654296875,
+      "gain_games": 9,
+      "loss_games": 2,
+      "paired_game_bootstrap_95ci_pp": [
+        0.390625,
+        5.46875
+      ],
+      "paired_ties": 245
+    },
+    "v33b_regret_bottom_minus_v5_T1": {
+      "delta_pp": 0.390625,
+      "exploratory_exact_mcnemar_p": 1.0,
+      "gain_games": 1,
+      "loss_games": 0,
+      "paired_game_bootstrap_95ci_pp": [
+        0.0,
+        1.171875
+      ],
+      "paired_ties": 255
+    },
+    "v33b_regret_bottom_minus_v5_T2": {
+      "delta_pp": -8.203125,
+      "exploratory_exact_mcnemar_p": 0.0014504910141113214,
+      "gain_games": 10,
+      "loss_games": 31,
+      "paired_game_bootstrap_95ci_pp": [
+        -13.28125,
+        -3.515625
+      ],
+      "paired_ties": 215
+    },
+    "v33b_regret_bottom_minus_v5_T3": {
+      "delta_pp": -7.03125,
+      "exploratory_exact_mcnemar_p": 0.009559878856634896,
+      "gain_games": 13,
+      "loss_games": 31,
+      "paired_game_bootstrap_95ci_pp": [
+        -12.109375,
+        -1.953125
+      ],
+      "paired_ties": 212
+    }
+  },
+  "per_policy": {
+    "v27_frozen": {
+      "N": 256,
+      "T1_exact_count": 7,
+      "by_T2_count": 106,
+      "by_T3_count": 189,
+      "mean_kept_n": 5.2265625,
+      "sum_gameplay_seconds": 98.98113000000001
+    },
+    "v33b_regret_bottom": {
+      "N": 256,
+      "T1_exact_count": 8,
+      "by_T2_count": 111,
+      "by_T3_count": 196,
+      "mean_kept_n": 5.2265625,
+      "sum_gameplay_seconds": 99.96972599999992
+    },
+    "v5": {
+      "N": 256,
+      "T1_exact_count": 7,
+      "by_T2_count": 132,
+      "by_T3_count": 214,
+      "mean_kept_n": 5.0625,
+      "sum_gameplay_seconds": 6158.463920999995
+    }
+  },
+  "policy_approved": false,
+  "schema": "dack_v33b_prospective_115k_N256_goldfish_deployment",
+  "source_ids": [
+    115000,
+    115255
+  ],
+  "source_model_file_sha256": {
+    "models/dack_v27_T2_only_continuations_EXPERIMENTAL.json": "4166c2045d66b08f0943900a2d68ec901d7048aca6de057695fc84dee883097b",
+    "models/dack_v27_expanded_T2_only_value_EXPERIMENTAL.json": "a01f46260164342f2f0f6ec15766b341338baa27c51dcf0a3ec3f164492e3134",
+    "models/dack_v33b_ridge_regret_EXPERIMENTAL.json": "3a93ecb0c62fd973a9d32c744bfb2fabdffcc8046e9ed9b7bfd9986bb2961c5a",
+    "models/v14_curve/v14_teacher_groups_128.json": "19fdbf300afc1e4545b81767f8fbf3bbe6ebd7b33ad139e2aa9231e3215df8ff"
+  },
+  "speedup_v5_over_v27_gameplay": 62.218565508395336,
+  "speedup_v5_over_v33b_gameplay": 61.603288989708744,
+  "status": "PASS",
+  "strict_physical_99_and_beam160": true,
+  "warning": "N256 is not powered to detect ~1-2pp gains reliably; training/conditional validation runtime excluded, only end-to-end policy gameplay measured. Do not promote without clear prospective evidence."
+}
