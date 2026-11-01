@@ -1,0 +1,30 @@
+name: DACK v37 posthoc no-outcome T3 safeguard 24-case reachability
+on:
+  push:
+    branches: [dack-v37-direct-action-regret-20261101]
+    paths: ['.github/workflows/dack_v37_T3_exploratory_manifest.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 19
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          python -m py_compile dack_simulator/validation/v37_posthoc_T3_manifest.py
+          python -u dack_simulator/validation/v37_posthoc_T3_manifest.py
+      - name: Archive clearly exploratory POSTHOC outcome-blind candidate census
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f datasets/v37_POSTHOC_T3_blocked_physical_diagnostic_manifest.json
+          git commit -m 'Archive exploratory v37 T2-T3 conflict and actual London reachability of 24 posthoc cases'
+          git pull --rebase origin dack-v37-direct-action-regret-20261101
+          git push origin HEAD:dack-v37-direct-action-regret-20261101
