@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""v39 goldfish research-only weighted direct-action-regret London policy.
+"""v39 goldfish research-only T2 priority with bounded per-hand T3 risk.
 
 Exactly reproduce frozen v27 current Qkeep and original v33b bottom
 for each observed stage seven; v39 changes ONLY KEEP vs MULL at stages
-0..2 via a paired-ensemble utility U=PbyT2+0.5*PbyT3, not exact3.
+0..2 via direct ensemble T2 action regret and an explicit 25pp T3 risk cap.
 No mulligan beam searches. Retain same actual physical library after
 KEEP; full 99 reshuffled at each new London seven stage. No peeking.
 """
