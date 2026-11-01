@@ -1,0 +1,88 @@
+{
+  "N": 128,
+  "already_inspected_151k_not_fresh_acceptance": true,
+  "counts": {
+    "maxQ2": {
+      "T1": 3,
+      "T2": 65,
+      "T3": 107
+    },
+    "v27": {
+      "T1": 4,
+      "T2": 57,
+      "T3": 93
+    },
+    "v5": {
+      "T1": 3,
+      "T2": 73,
+      "T3": 115
+    }
+  },
+  "original_v5_engine_unmodified": true,
+  "outcome_goldfish_dack_deployment_not_multiplayer_wr": true,
+  "paired": {
+    "maxQ2_minus_v5_T1": {
+      "delta_pp": 0.0,
+      "gains": 0,
+      "losses": 0,
+      "net_games": 0,
+      "paired_95ci_pp": [
+        0.0,
+        0.0
+      ]
+    },
+    "maxQ2_minus_v5_T2": {
+      "delta_pp": -6.25,
+      "gains": 5,
+      "losses": 13,
+      "net_games": -8,
+      "paired_95ci_pp": [
+        -12.5,
+        0.0
+      ]
+    },
+    "maxQ2_minus_v5_T3": {
+      "delta_pp": -6.25,
+      "gains": 3,
+      "losses": 11,
+      "net_games": -8,
+      "paired_95ci_pp": [
+        -11.71875,
+        -0.78125
+      ]
+    },
+    "v27_minus_v5_T1": {
+      "delta_pp": 0.78125,
+      "gains": 1,
+      "losses": 0,
+      "net_games": 1,
+      "paired_95ci_pp": [
+        0.0,
+        2.34375
+      ]
+    },
+    "v27_minus_v5_T2": {
+      "delta_pp": -12.5,
+      "gains": 3,
+      "losses": 19,
+      "net_games": -16,
+      "paired_95ci_pp": [
+        -19.53125,
+        -5.46875
+      ]
+    },
+    "v27_minus_v5_T3": {
+      "delta_pp": -17.1875,
+      "gains": 3,
+      "losses": 25,
+      "net_games": -22,
+      "paired_95ci_pp": [
+        -25.0,
+        -9.375
+      ]
+    }
+  },
+  "same_physical_99_and_stable_dice": true,
+  "schema": "dack_v43_original_v5_vs_v27_maxQ2_matched_151k_retro_N128",
+  "status": "PASS"
+}
