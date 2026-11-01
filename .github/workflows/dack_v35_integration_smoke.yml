@@ -1,0 +1,24 @@
+name: DACK v35 integration audit (no new beam training or validation)
+on:
+  push:
+    branches: [dack-v35-early-action-regret-20261101]
+    paths:
+      - '.github/workflows/dack_v35_integration_smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and verify exact frozen game physics and bottom
+        run: |
+          python -m py_compile dack_paired_counterfactual_v35_early_action_regret_20261101.py
+          python dack_paired_counterfactual_v35_early_action_regret_20261101.py --audit
