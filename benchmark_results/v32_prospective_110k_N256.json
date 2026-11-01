@@ -1,0 +1,521 @@
+{
+  "actual_goldfish_not_interactive_cEDH": true,
+  "all_models_unapproved": true,
+  "final_hand_changes": {
+    "relative_to_v27_frozen": {
+      "sample": [
+        {
+          "baseline_keep_n": 3,
+          "baseline_turn": 0,
+          "game_id": 110015,
+          "v32_keep_n": 4,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 1,
+          "baseline_turn": 0,
+          "game_id": 110021,
+          "v32_keep_n": 3,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 1,
+          "baseline_turn": 0,
+          "game_id": 110023,
+          "v32_keep_n": 2,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 1,
+          "baseline_turn": 0,
+          "game_id": 110027,
+          "v32_keep_n": 2,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 1,
+          "baseline_turn": 0,
+          "game_id": 110040,
+          "v32_keep_n": 2,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 1,
+          "baseline_turn": 0,
+          "game_id": 110041,
+          "v32_keep_n": 2,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 4,
+          "baseline_turn": 2,
+          "game_id": 110050,
+          "v32_keep_n": 7,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 3,
+          "baseline_turn": 0,
+          "game_id": 110054,
+          "v32_keep_n": 4,
+          "v32_turn": 3
+        },
+        {
+          "baseline_keep_n": 1,
+          "baseline_turn": 0,
+          "game_id": 110083,
+          "v32_keep_n": 2,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 7,
+          "baseline_turn": 3,
+          "game_id": 110097,
+          "v32_keep_n": 6,
+          "v32_turn": 2
+        },
+        {
+          "baseline_keep_n": 1,
+          "baseline_turn": 0,
+          "game_id": 110112,
+          "v32_keep_n": 2,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 7,
+          "baseline_turn": 2,
+          "game_id": 110130,
+          "v32_keep_n": 4,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 1,
+          "baseline_turn": 0,
+          "game_id": 110136,
+          "v32_keep_n": 2,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 1,
+          "baseline_turn": 0,
+          "game_id": 110158,
+          "v32_keep_n": 4,
+          "v32_turn": 3
+        },
+        {
+          "baseline_keep_n": 1,
+          "baseline_turn": 0,
+          "game_id": 110168,
+          "v32_keep_n": 2,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 1,
+          "baseline_turn": 0,
+          "game_id": 110191,
+          "v32_keep_n": 3,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 3,
+          "baseline_turn": 2,
+          "game_id": 110194,
+          "v32_keep_n": 4,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 3,
+          "baseline_turn": 2,
+          "game_id": 110196,
+          "v32_keep_n": 4,
+          "v32_turn": 3
+        },
+        {
+          "baseline_keep_n": 5,
+          "baseline_turn": 3,
+          "game_id": 110200,
+          "v32_keep_n": 7,
+          "v32_turn": 2
+        },
+        {
+          "baseline_keep_n": 5,
+          "baseline_turn": 3,
+          "game_id": 110201,
+          "v32_keep_n": 2,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 3,
+          "baseline_turn": 0,
+          "game_id": 110205,
+          "v32_keep_n": 4,
+          "v32_turn": 3
+        },
+        {
+          "baseline_keep_n": 1,
+          "baseline_turn": 0,
+          "game_id": 110206,
+          "v32_keep_n": 2,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 1,
+          "baseline_turn": 0,
+          "game_id": 110215,
+          "v32_keep_n": 2,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 1,
+          "baseline_turn": 0,
+          "game_id": 110217,
+          "v32_keep_n": 2,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 4,
+          "baseline_turn": 2,
+          "game_id": 110221,
+          "v32_keep_n": 6,
+          "v32_turn": 3
+        },
+        {
+          "baseline_keep_n": 2,
+          "baseline_turn": 3,
+          "game_id": 110225,
+          "v32_keep_n": 3,
+          "v32_turn": 0
+        }
+      ],
+      "summary": {
+        "different_final_keep_depth": 26,
+        "same_final_hand": 230
+      }
+    },
+    "relative_to_v5": {
+      "sample": [
+        {
+          "baseline_keep_n": 2,
+          "baseline_turn": 0,
+          "game_id": 110001,
+          "v32_keep_n": 7,
+          "v32_turn": 3
+        },
+        {
+          "baseline_keep_n": 3,
+          "baseline_turn": 0,
+          "game_id": 110004,
+          "v32_keep_n": 3,
+          "v32_turn": 3
+        },
+        {
+          "baseline_keep_n": 4,
+          "baseline_turn": 2,
+          "game_id": 110005,
+          "v32_keep_n": 3,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 4,
+          "baseline_turn": 3,
+          "game_id": 110006,
+          "v32_keep_n": 7,
+          "v32_turn": 3
+        },
+        {
+          "baseline_keep_n": 5,
+          "baseline_turn": 1,
+          "game_id": 110007,
+          "v32_keep_n": 7,
+          "v32_turn": 3
+        },
+        {
+          "baseline_keep_n": 5,
+          "baseline_turn": 3,
+          "game_id": 110008,
+          "v32_keep_n": 6,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 4,
+          "baseline_turn": 0,
+          "game_id": 110011,
+          "v32_keep_n": 4,
+          "v32_turn": 3
+        },
+        {
+          "baseline_keep_n": 2,
+          "baseline_turn": 3,
+          "game_id": 110012,
+          "v32_keep_n": 7,
+          "v32_turn": 2
+        },
+        {
+          "baseline_keep_n": 4,
+          "baseline_turn": 1,
+          "game_id": 110013,
+          "v32_keep_n": 4,
+          "v32_turn": 1
+        },
+        {
+          "baseline_keep_n": 6,
+          "baseline_turn": 3,
+          "game_id": 110014,
+          "v32_keep_n": 7,
+          "v32_turn": 3
+        },
+        {
+          "baseline_keep_n": 3,
+          "baseline_turn": 3,
+          "game_id": 110015,
+          "v32_keep_n": 4,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 5,
+          "baseline_turn": 3,
+          "game_id": 110016,
+          "v32_keep_n": 4,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 6,
+          "baseline_turn": 0,
+          "game_id": 110017,
+          "v32_keep_n": 5,
+          "v32_turn": 2
+        },
+        {
+          "baseline_keep_n": 3,
+          "baseline_turn": 3,
+          "game_id": 110019,
+          "v32_keep_n": 6,
+          "v32_turn": 2
+        },
+        {
+          "baseline_keep_n": 4,
+          "baseline_turn": 3,
+          "game_id": 110021,
+          "v32_keep_n": 3,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 7,
+          "baseline_turn": 2,
+          "game_id": 110023,
+          "v32_keep_n": 2,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 6,
+          "baseline_turn": 2,
+          "game_id": 110024,
+          "v32_keep_n": 5,
+          "v32_turn": 3
+        },
+        {
+          "baseline_keep_n": 5,
+          "baseline_turn": 2,
+          "game_id": 110025,
+          "v32_keep_n": 5,
+          "v32_turn": 3
+        },
+        {
+          "baseline_keep_n": 2,
+          "baseline_turn": 0,
+          "game_id": 110027,
+          "v32_keep_n": 2,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 3,
+          "baseline_turn": 0,
+          "game_id": 110029,
+          "v32_keep_n": 3,
+          "v32_turn": 3
+        },
+        {
+          "baseline_keep_n": 7,
+          "baseline_turn": 2,
+          "game_id": 110030,
+          "v32_keep_n": 4,
+          "v32_turn": 3
+        },
+        {
+          "baseline_keep_n": 6,
+          "baseline_turn": 2,
+          "game_id": 110031,
+          "v32_keep_n": 6,
+          "v32_turn": 2
+        },
+        {
+          "baseline_keep_n": 3,
+          "baseline_turn": 3,
+          "game_id": 110034,
+          "v32_keep_n": 7,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 5,
+          "baseline_turn": 3,
+          "game_id": 110036,
+          "v32_keep_n": 5,
+          "v32_turn": 3
+        },
+        {
+          "baseline_keep_n": 2,
+          "baseline_turn": 0,
+          "game_id": 110037,
+          "v32_keep_n": 7,
+          "v32_turn": 3
+        },
+        {
+          "baseline_keep_n": 6,
+          "baseline_turn": 2,
+          "game_id": 110039,
+          "v32_keep_n": 6,
+          "v32_turn": 2
+        },
+        {
+          "baseline_keep_n": 3,
+          "baseline_turn": 3,
+          "game_id": 110040,
+          "v32_keep_n": 2,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 2,
+          "baseline_turn": 0,
+          "game_id": 110041,
+          "v32_keep_n": 2,
+          "v32_turn": 0
+        },
+        {
+          "baseline_keep_n": 6,
+          "baseline_turn": 3,
+          "game_id": 110042,
+          "v32_keep_n": 7,
+          "v32_turn": 2
+        },
+        {
+          "baseline_keep_n": 5,
+          "baseline_turn": 1,
+          "game_id": 110043,
+          "v32_keep_n": 5,
+          "v32_turn": 1
+        }
+      ],
+      "summary": {
+        "different_final_keep_depth": 102,
+        "same_depth_different_hand": 62,
+        "same_final_hand": 92
+      }
+    }
+  },
+  "limitations": "N256 paired evidence does not establish equivalence; v32 continuation estimates are one-step deviations under frozen v27 future policy, not fixed-point DP. Goldfish ignores opponent responses.",
+  "n_independent_physical_games": 256,
+  "no_110k_training_or_calibration": true,
+  "paired": {
+    "v32_minus_v27_frozen_T1": {
+      "bootstrap_95ci_pp": [
+        0.0,
+        0.0
+      ],
+      "delta_pp": 0.0,
+      "exploratory_exact_mcnemar_p": 1.0,
+      "gains": 0,
+      "losses": 0
+    },
+    "v32_minus_v27_frozen_T2": {
+      "bootstrap_95ci_pp": [
+        -3.125,
+        0.78125
+      ],
+      "delta_pp": -1.171875,
+      "exploratory_exact_mcnemar_p": 0.453125,
+      "gains": 2,
+      "losses": 5
+    },
+    "v32_minus_v27_frozen_T3": {
+      "bootstrap_95ci_pp": [
+        -3.125,
+        1.5625
+      ],
+      "delta_pp": -0.78125,
+      "exploratory_exact_mcnemar_p": 0.7265625,
+      "gains": 3,
+      "losses": 5
+    },
+    "v32_minus_v5_T1": {
+      "bootstrap_95ci_pp": [
+        -1.953125,
+        0.78125
+      ],
+      "delta_pp": -0.390625,
+      "exploratory_exact_mcnemar_p": 1.0,
+      "gains": 1,
+      "losses": 2
+    },
+    "v32_minus_v5_T2": {
+      "bootstrap_95ci_pp": [
+        -8.59375,
+        0.78125
+      ],
+      "delta_pp": -3.90625,
+      "exploratory_exact_mcnemar_p": 0.13249816396273673,
+      "gains": 13,
+      "losses": 23
+    },
+    "v32_minus_v5_T3": {
+      "bootstrap_95ci_pp": [
+        -11.328125,
+        -1.171875
+      ],
+      "delta_pp": -6.25,
+      "exploratory_exact_mcnemar_p": 0.02589608179323477,
+      "gains": 15,
+      "losses": 31
+    }
+  },
+  "per_policy": {
+    "v27_frozen": {
+      "N": 256,
+      "T1_count": 18,
+      "T2_count": 124,
+      "T3_count": 198,
+      "mean_keep_n": 5.3671875,
+      "sum_gameplay_seconds": 84.45167999999995
+    },
+    "v32_shared_C": {
+      "N": 256,
+      "T1_count": 18,
+      "T2_count": 121,
+      "T3_count": 196,
+      "mean_keep_n": 5.4609375,
+      "sum_gameplay_seconds": 87.50041999999993
+    },
+    "v5": {
+      "N": 256,
+      "T1_count": 19,
+      "T2_count": 131,
+      "T3_count": 212,
+      "mean_keep_n": 5.14453125,
+      "sum_gameplay_seconds": 5633.34967
+    }
+  },
+  "primary_endpoint": "cumulative deployment by Turn 2",
+  "schema": "dack_v32_prospective_110k_N256_strict_v5_v27_v32",
+  "source_sha256": {
+    "models/dack_v27_T2_only_continuations_EXPERIMENTAL.json": "4166c2045d66b08f0943900a2d68ec901d7048aca6de057695fc84dee883097b",
+    "models/dack_v27_expanded_T2_only_value_EXPERIMENTAL.json": "a01f46260164342f2f0f6ec15766b341338baa27c51dcf0a3ec3f164492e3134",
+    "models/dack_v32_shared_Qmull_continuation_EXPERIMENTAL.json": "31823135bc4be307d5597dfb22e8cea1a99933497282555e51d0a640bca54078",
+    "models/v14_curve/v14_teacher_groups_128.json": "19fdbf300afc1e4545b81767f8fbf3bbe6ebd7b33ad139e2aa9231e3215df8ff"
+  },
+  "status": "PASS",
+  "test_ids": [
+    110000,
+    110255
+  ],
+  "unchanged_physical_99_seat_first_seven_beam160": true,
+  "v5_to_v32_gameplay_speedup": 64.38083005773005
+}
