@@ -1,0 +1,123 @@
+{
+  "actual_gameplay_beam": 160,
+  "all_mulligan_beams_zero": true,
+  "frozen_bottom_selection_same_for_all_policies": true,
+  "independent_games": 128,
+  "metrics": {
+    "v14_128": {
+      "T1": 11,
+      "T2": 57,
+      "T3": 95,
+      "mean_kept_cards": 5.1796875,
+      "n": 128,
+      "total_simulated_gameplay_seconds": 41.571
+    },
+    "v22_real_keep_DP": {
+      "T1": 12,
+      "T2": 59,
+      "T3": 102,
+      "mean_kept_cards": 5.8515625,
+      "n": 128,
+      "total_simulated_gameplay_seconds": 54.809
+    },
+    "v23_T2_only": {
+      "T1": 12,
+      "T2": 55,
+      "T3": 91,
+      "mean_kept_cards": 5.0703125,
+      "n": 128,
+      "total_simulated_gameplay_seconds": 44.0221
+    }
+  },
+  "models_approved_for_deployment": false,
+  "paired": {
+    "v22_real_keep_DP_minus_v14_128_T1": {
+      "difference_pp": 0.78125,
+      "gains": 1,
+      "losses": 0,
+      "paired_bootstrap_95ci_pp": [
+        0.0,
+        2.34375
+      ]
+    },
+    "v22_real_keep_DP_minus_v14_128_T2": {
+      "difference_pp": 1.5625,
+      "gains": 8,
+      "losses": 6,
+      "paired_bootstrap_95ci_pp": [
+        -3.90625,
+        7.8125
+      ]
+    },
+    "v22_real_keep_DP_minus_v14_128_T3": {
+      "difference_pp": 5.46875,
+      "gains": 11,
+      "losses": 4,
+      "paired_bootstrap_95ci_pp": [
+        0.0,
+        11.71875
+      ]
+    },
+    "v23_T2_only_minus_v14_128_T1": {
+      "difference_pp": 0.78125,
+      "gains": 1,
+      "losses": 0,
+      "paired_bootstrap_95ci_pp": [
+        0.0,
+        2.34375
+      ]
+    },
+    "v23_T2_only_minus_v14_128_T2": {
+      "difference_pp": -1.5625,
+      "gains": 5,
+      "losses": 7,
+      "paired_bootstrap_95ci_pp": [
+        -7.03125,
+        3.90625
+      ]
+    },
+    "v23_T2_only_minus_v14_128_T3": {
+      "difference_pp": -3.125,
+      "gains": 5,
+      "losses": 9,
+      "paired_bootstrap_95ci_pp": [
+        -9.375,
+        2.34375
+      ]
+    },
+    "v23_T2_only_minus_v22_real_keep_DP_T1": {
+      "difference_pp": 0.0,
+      "gains": 0,
+      "losses": 0,
+      "paired_bootstrap_95ci_pp": [
+        0.0,
+        0.0
+      ]
+    },
+    "v23_T2_only_minus_v22_real_keep_DP_T2": {
+      "difference_pp": -3.125,
+      "gains": 3,
+      "losses": 7,
+      "paired_bootstrap_95ci_pp": [
+        -7.8125,
+        1.5625
+      ]
+    },
+    "v23_T2_only_minus_v22_real_keep_DP_T3": {
+      "difference_pp": -8.59375,
+      "gains": 4,
+      "losses": 15,
+      "paired_bootstrap_95ci_pp": [
+        -14.84375,
+        -2.34375
+      ]
+    }
+  },
+  "physical_game_ids": [
+    89000,
+    89127
+  ],
+  "schema": "dack_v23_T2_only_vs_v22_mixed_and_v14_N128",
+  "status": "PASS",
+  "warning": "Unconditional goldfish deployment conditional on each specific mulligan policy; not a multiplayer cEDH win rate. Exploratory multiple comparisons."
+}
