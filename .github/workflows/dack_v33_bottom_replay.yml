@@ -1,9 +1,11 @@
-name: DACK v33 conditional bottom replay N56 x 16 (strict beam160)
+name: DACK v33 conditional bottom replay actual stage index x16 (strict beam160)
 on:
   push:
     branches: [dack-v33-attribution-first-20261101]
     paths:
       - '.github/workflows/dack_v33_bottom_replay.yml'
+      - 'dack_simulator/validation/v33_same_stage_bottom_replay.py'
+      - 'dack_simulator/validation/v33_pool_same_stage_bottom.py'
   workflow_dispatch:
 permissions:
   contents: write
@@ -28,7 +30,7 @@ jobs:
         run: |
           python -m py_compile dack_simulator/validation/v33_same_stage_bottom_replay.py dack_simulator/validation/v33_pool_same_stage_bottom.py
           python dack_paired_counterfactual_v5_stable_chance_20261031.py --audit
-      - name: Eight plus eight fresh futures per arm for seven selected groups
+      - name: Eight plus eight fresh futures per arm for actual stage-index-matched groups
         run: |
           python -u dack_simulator/validation/v33_same_stage_bottom_replay.py \
             --block ${{ matrix.block }} --out shards/v33_bottom_${{ matrix.block }}.json.gz
@@ -62,7 +64,7 @@ jobs:
           cp collected/v33_bottom_*.json.gz benchmark_results/v33_bottom_replay_shards/
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f benchmark_results/v33_bottom_replay_shards benchmark_results/v33_bottom_replay_N56_x16.json
+          git add -f benchmark_results/v33_bottom_replay_shards benchmark_results/v33_bottom_replay_actual_stage_x16.json
           git commit -m "Archive v33 matched-bottom independent physical future counterfactuals"
           git pull --rebase origin dack-v33-attribution-first-20261101
           git push origin HEAD:dack-v33-attribution-first-20261101
@@ -70,5 +72,5 @@ jobs:
         if: always()
         with:
           name: dack-v33-conditional-bottom-pooled-results
-          path: benchmark_results/v33_bottom_replay_N56_x16.json
+          path: benchmark_results/v33_bottom_replay_actual_stage_x16.json
           retention-days: 30
