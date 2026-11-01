@@ -1,0 +1,64 @@
+{
+  "all_population_stage_states": 3072,
+  "full_random_outer_physical_games": 1024,
+  "new_beam160_rollouts": 0,
+  "outcomes": {
+    "cumulative": {
+      "beneficial_changed": 29,
+      "by_stage": {
+        "0": {
+          "changes": 4,
+          "mean_gain_pp": -0.135040283203125
+        },
+        "1": {
+          "changes": 18,
+          "mean_gain_pp": 0.1720428466796875
+        },
+        "2": {
+          "changes": 25,
+          "mean_gain_pp": -0.11749267578125
+        }
+      },
+      "changed_action_count": 47,
+      "harmful_changed": 18,
+      "mean_action_policy_gain_pp": -0.026830037434895832,
+      "physical_outer_group_shared_C_two_source_95ci_pp": [
+        -0.19556681315104166,
+        0.13300577799479166
+      ]
+    },
+    "exact3": {
+      "beneficial_changed": 19,
+      "by_stage": {
+        "0": {
+          "changes": 4,
+          "mean_gain_pp": -0.0751495361328125
+        },
+        "1": {
+          "changes": 18,
+          "mean_gain_pp": 0.0152587890625
+        },
+        "2": {
+          "changes": 25,
+          "mean_gain_pp": -0.1758575439453125
+        }
+      },
+      "changed_action_count": 47,
+      "harmful_changed": 27,
+      "mean_action_policy_gain_pp": -0.078582763671875,
+      "physical_outer_group_shared_C_two_source_95ci_pp": [
+        -0.180816650390625,
+        0.017547607421875
+      ]
+    }
+  },
+  "policy_approved": false,
+  "policy_changes": 47,
+  "posthoc_descriptive_not_a_second_independent_validation": true,
+  "reused_all_original_131k_true_physical_outcomes": true,
+  "schema": "dack_v39_131k_POSTHOC_readonly_correlated_two_utility_comparison",
+  "shared_outcome_turn_for_T2_and_T3_metric_in_every_bootstrap": true,
+  "source_census_sha256": "80d746059d735659d7e59557676c07c5ae63ed5a04f9ac92591aee014da75798",
+  "status": "PASS",
+  "two_independent_reward_definitions_not_interchangeable": true
+}
