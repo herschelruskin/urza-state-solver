@@ -1,0 +1,190 @@
+name: DACK v37 direct physical action-regret 126k training 15360 rollouts
+on:
+  push:
+    branches: [dack-v37-direct-action-regret-20261101]
+    paths: ['.github/workflows/dack_v37_train.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  physical:
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        include:
+          - {kind: K, part: random, index: 0, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 4, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 8, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 12, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 16, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 20, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 24, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 28, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 32, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 36, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 40, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 44, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 48, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 52, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 56, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 60, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 64, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 68, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 72, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 76, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 80, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 84, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 88, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 92, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 96, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 100, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 104, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 108, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 112, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 116, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 120, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 124, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 128, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 132, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 136, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 140, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 144, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 148, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 152, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 156, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 160, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 164, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 168, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 172, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 176, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 180, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 184, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 188, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 192, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 196, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 200, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 204, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 208, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 212, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 216, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 220, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 224, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 228, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 232, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 236, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 240, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 244, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 248, seat: 0, stage: 0}
+          - {kind: K, part: random, index: 252, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 0, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 4, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 8, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 12, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 16, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 20, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 24, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 28, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 32, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 36, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 40, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 44, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 48, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 52, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 56, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 60, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 64, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 68, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 72, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 76, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 80, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 84, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 88, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 92, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 96, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 100, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 104, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 108, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 112, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 116, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 120, seat: 0, stage: 0}
+          - {kind: K, part: enriched, index: 124, seat: 0, stage: 0}
+          - {kind: C, part: random, index: 0, seat: 0, stage: 0}
+          - {kind: C, part: random, index: 0, seat: 0, stage: 1}
+          - {kind: C, part: random, index: 0, seat: 0, stage: 2}
+          - {kind: C, part: random, index: 0, seat: 1, stage: 0}
+          - {kind: C, part: random, index: 0, seat: 1, stage: 1}
+          - {kind: C, part: random, index: 0, seat: 1, stage: 2}
+          - {kind: C, part: random, index: 0, seat: 2, stage: 0}
+          - {kind: C, part: random, index: 0, seat: 2, stage: 1}
+          - {kind: C, part: random, index: 0, seat: 2, stage: 2}
+          - {kind: C, part: random, index: 0, seat: 3, stage: 0}
+          - {kind: C, part: random, index: 0, seat: 3, stage: 1}
+          - {kind: C, part: random, index: 0, seat: 3, stage: 2}
+    runs-on: ubuntu-latest
+    timeout-minutes: 48
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify sealed manifest before any gameplay
+        run: |
+          test -f datasets/v37_preoutcome_training_manifest.json
+          python -m py_compile dack_simulator/validation/v37_true_keep.py dack_simulator/validation/v37_true_mull.py
+          python -m dack_simulator.validation.v34_frozen_v33b_continuation
+      - name: Strict physical source label (blind shuffled unknown 92 or full99 future)
+        run: |
+          if [ "${{ matrix.kind }}" = "K" ]; then
+            python -u dack_simulator/validation/v37_true_keep.py \
+              --part ${{ matrix.part }} --index ${{ matrix.index }} \
+              --out shards/v37_K_${{ matrix.part }}_${{ matrix.index }}.json.gz
+          else
+            python -u dack_simulator/validation/v37_true_mull.py \
+              --seat ${{ matrix.seat }} --stage ${{ matrix.stage }} \
+              --out shards/v37_C_${{ matrix.seat }}_${{ matrix.stage }}.json.gz
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v37-126k-${{ matrix.kind }}-${{ matrix.part }}-${{ matrix.index }}-${{ matrix.seat }}-${{ matrix.stage }}
+          path: shards/v37_*.json.gz
+          retention-days: 30
+  fit:
+    needs: physical
+    runs-on: ubuntu-latest
+    timeout-minutes: 32
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v37-126k-*
+          path: collected
+          merge-multiple: true
+      - name: Verify complete physical data before fitting
+        run: |
+          test "$(find collected -maxdepth 1 -name 'v37_K_*.json.gz' | wc -l)" -eq 96
+          test "$(find collected -maxdepth 1 -name 'v37_C_*.json.gz' | wc -l)" -eq 12
+          python -m py_compile dack_simulator/validation/v37_train.py dack_mulligan_v37_direct_regret.py
+          python dack_mulligan_v37_direct_regret.py
+      - run: python -m pip install 'scikit-learn>=1.4,<2'
+      - name: Train DIRECT signed regrets with outer physical group and shared C bootstraps
+        run: python -u dack_simulator/validation/v37_train.py
+      - name: Archive frozen model plus all underlying 15360 physical results
+        run: |
+          mkdir -p benchmark_results/v37_126k_physical_training_shards
+          cp collected/v37_*.json.gz benchmark_results/v37_126k_physical_training_shards/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f benchmark_results/v37_126k_physical_training_shards models/dack_v37_direct_regret_EXPERIMENTAL.json benchmark_results/v37_train_only_direct_regret.json
+          git commit -m 'Archive v37 physical signed-regret training and frozen unapproved model'
+          git pull --rebase origin dack-v37-direct-action-regret-20261101
+          git push origin HEAD:dack-v37-direct-action-regret-20261101
