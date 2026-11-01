@@ -1,0 +1,86 @@
+name: DACK v42 original-v5 no-bump N256 physical threshold ablation after parity PASS
+on:
+  push:
+    branches: [dack-v42-v5-decision-mechanism-audit-20261101]
+    paths:
+      - '.github/workflows/dack_v42_native_vs_assertive_N256.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  physical:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        start: [115000,115032,115064,115096,115128,115160,115192,115224]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v42-v5-decision-mechanism-audit-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Reproduce 32 archived original-v5 games exact and native no-bump physical alternative
+        run: |
+          python -u dack_simulator/validation/v42_replay_original_native_no_bump.py \
+            --start ${{ matrix.start }} --games 32 \
+            --out shards/v42_native_115k_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v42-native-v5-115k-${{ matrix.start }}
+          path: shards/v42_native_115k_*.json.gz
+          retention-days: 90
+  pool:
+    needs: physical
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v42-v5-decision-mechanism-audit-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v42-native-v5-115k-*
+          merge-multiple: true
+          path: collected
+      - name: Pool all 256 paired original-v5 physical game outcomes and verify source parity
+        run: |
+          python -u dack_simulator/validation/v42_pool_native_no_bump_N256.py \
+            --source 'collected/v42_native_115k_*.json.gz' \
+            --out benchmark_results/v42_native_no_bump_v5_physical_N256.json
+      - name: Verify no new policy promotions or prospective claims
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('benchmark_results/v42_native_no_bump_v5_physical_N256.json').read_text())
+          assert r['status']=='PASS' and r['N']==256
+          assert r['all_archived_original_v5_win_turns_verified_exactly']
+          assert r['same_original_v5_candidates_scores_and_retained_bottoms']
+          assert r['historic_115k_previously_inspected_NOT_PROSPECTIVE']
+          assert set(r['paired'])=={'native_minus_v5_T1','native_minus_v5_T2','native_minus_v5_T3'}
+          print('DACK_V42_NO_BUMP_OLD_COARSE_MULL_ABLATION_PASS')
+          PY
+      - name: Archive immutable original-game replay results and original physical 8 shards
+        run: |
+          mkdir -p benchmark_results/v42_native_no_bump_115k_physical_shards
+          cp collected/v42_native_115k_*.json.gz benchmark_results/v42_native_no_bump_115k_physical_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v42_native_no_bump_v5_physical_N256.json benchmark_results/v42_native_no_bump_115k_physical_shards
+          git commit -m "Archive 256 original-v5 physical replay parity and exact threshold-only no-bump counterfactual"
+          git pull --rebase origin dack-v42-v5-decision-mechanism-audit-20261101
+          git push origin HEAD:dack-v42-v5-decision-mechanism-audit-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v42-v5-native-threshold-N256-results
+          path: benchmark_results/v42_native_no_bump_v5_physical_N256.json
+          retention-days: 90
