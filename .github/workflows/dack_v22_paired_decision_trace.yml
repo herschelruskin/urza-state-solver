@@ -1,0 +1,93 @@
+name: DACK v22 128-game paired London keep decision trace
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v22_paired_decision_trace.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - name: Identify changed keep depth, first discordant London stage, unchanged bottom selection
+        run: |
+          python - <<'PY'
+          import gzip,json
+          from collections import Counter,defaultdict
+          from pathlib import Path
+          fs=list(Path('benchmark_results/v22_student_value_DP_n128_shards').glob('*.json.gz'))
+          assert len(fs)==16,len(fs)
+          rows=[]
+          for path in fs:
+              with gzip.open(path,'rt') as f:data=json.load(f)
+              assert data['status']=='PASS' and data['models_approved'] is False
+              rows.extend(data['rows'])
+          rows.sort(key=lambda x:x['game_id'])
+          assert [x['game_id'] for x in rows]==list(range(87000,87128))
+          stats=Counter();by_seat=defaultdict(Counter);changes=[];anomalies=[]
+          for r in rows:
+              a=r['v14_128'];b=r['v22_real_keep_DP'];gid=r['game_id']
+              assert a['seat']==b['seat']
+              ha=a['history'];hb=b['history'];first_diff=None
+              for i,(x,y) in enumerate(zip(ha,hb)):
+                  assert x['stage']==y['stage']==i
+                  if x['hand']!=y['hand'] or x['bottom']!=y['bottom']:
+                      anomalies.append({'game_id':gid,'stage':i,
+                                        'reason':'same bottom model picked different candidate'})
+                  if x['kept']!=y['kept'] and first_diff is None:
+                      first_diff=i
+              changed_depth=a['keep_n']!=b['keep_n']
+              if changed_depth!= (first_diff is not None):
+                  anomalies.append({'game_id':gid,'reason':'keep depth did not match changed decision',
+                                    'first_diff':first_diff,'old_keep':a['keep_n'],'new_keep':b['keep_n']})
+              if changed_depth:
+                  stats['different_keep_depth']+=1
+                  stats['v22_kept_more_cards' if b['keep_n']>a['keep_n'] else 'v22_kept_fewer_cards']+=1
+                  stats['first_disagreement_stage_'+str(first_diff)]+=1
+              else:
+                  stats['same_keep_depth']+=1
+                  if a['turn']!=b['turn']:
+                      anomalies.append({'game_id':gid,'reason':'different outcome with identical choices',
+                                       'v14':a['turn'],'v22':b['turn']})
+              seat=a['seat']
+              for turn in (1,2,3):
+                  old=int(0<a['turn']<=turn);new=int(0<b['turn']<=turn)
+                  by_seat[str(seat)][f'T{turn}_v14']+=old
+                  by_seat[str(seat)][f'T{turn}_v22']+=new
+                  stats[f'T{turn}_gain']+=int(new>old)
+                  stats[f'T{turn}_loss']+=int(new<old)
+              by_seat[str(seat)]['games']+=1
+              if first_diff is not None or a['turn']!=b['turn']:
+                  changes.append({'game_id':gid,'seat':seat,
+                                  'v14_turn':a['turn'],'v22_turn':b['turn'],
+                                  'v14_keep_n':a['keep_n'],'v22_keep_n':b['keep_n'],
+                                  'first_changed_keep_stage':first_diff})
+          result={'schema':'dack_v22_128_game_actual_London_decision_trace',
+                  'status':'PASS' if not anomalies else 'CONTRACT_WARNING',
+                  'games':128,'comparison':'same frozen v14 bottom ranker; only keep-vs-DP changed',
+                  'stats':dict(stats),'by_seat':{k:dict(v) for k,v in sorted(by_seat.items())},
+                  'anomalies':anomalies,
+                  'changed_games':changes,
+                  'policy_not_approved':True,
+                  'warning':'Stage differences are observational, not causal estimates of individual London stages.'}
+          path=Path('benchmark_results/v22_independent_n128_keep_decision_traces.json')
+          path.write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
+          print('V22_REAL_KEEP_DECISION_TRACE',json.dumps({
+             'status':result['status'],'stats':result['stats'],
+             'by_seat':result['by_seat'],'anomalies':result['anomalies'][:4]},flush=True)
+          assert not anomalies,'unexpected changed bottom or stable dice while keeping same hand'
+          PY
+      - name: Persist decision audit with checksum-preserved original paired shards
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v22_independent_n128_keep_decision_traces.json
+          git commit -m "Audit 128 paired student London trajectories and identify first keep-stage divergence"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
