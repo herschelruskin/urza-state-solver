@@ -233,3 +233,108 @@ training corpora for diverse learning, but DO NOT simply concatenate
 both calibration sets and present the unweighted result as a natural
 deployment probability. The final paired v5-versus-learned policy
 comparison must use entirely new unused game seeds.
+
+## October 31 continued experimentation — policy-selected data, corrective training, and hybrid screening
+
+**Total persisted actual beam-160 conditional outcome labels:** 3,328
+across (a) natural v8=448, (b) deliberately enriched v9=320,
+(c) v7-policy-kept v10=1,024, (d) independent v7-selected predictive
+holdout=512, and (e) learned-v8-selected corrective v11=1,024.
+The holdout outcomes are NOT training data. Independent splits and
+per-file SHA-256 manifests are preserved in their respective datasets.
+
+### Naturally policy-kept calibration
+
+The v10 model trained on 896 mixed real outcomes (192 independent
+training scenarios) and fit temperature on 512 new v7-policy-kept
+outcomes (128 calibration scenarios). The independent 128-scenario
+predictive holdout (512 rollouts; GitHub Actions 41254178107)
+showed: P(T1) expected 8.50% vs actual 5.27%; P(T<=2) 35.61%
+vs 40.04%; P(T<=3) 70.11% vs 76.17%. Four-class Brier=.63566,
+log-loss=1.12148. The model is not fully calibrated.
+
+All nine per-deck/per-seat London DP tables were computed with
+64 independent sampled sevens per seat and keep size. These tables
+are hashed to the exact corresponding model; do not swap v10 and
+v11 DP tables.
+
+### First realized learned-policy comparison (fresh 41k game IDs)
+
+Actions 41254412065, 16 paired complete games:
+- Strict beam-v5: T1=1, cumulative T2=4, T3=12, mean keep=4.625,
+  CPU 555.688 seconds.
+- Experimental learned-v8: T1=0, T2=2, T3=11, mean keep=5.0625,
+  CPU 3.801 seconds.
+- Paired T2 gains 1, losses 3. Approx 146.2x online runtime ratio,
+  but *worse nominal T2*, not non-inferior.
+
+### Corrective model and second full-policy comparison
+
+Collect actual teacher outcomes on independent hands selected by the
+first learned policy (fresh 22k training / 32k calibration groups).
+In the corrective dataset, training T1 was scarce (5/512) and
+calibration T1=24/512. The corrected training model reused the archived
+natural/enriched/v7-selected training data, which provide sufficient
+T1 examples: 1,408 training outcomes across 320 independent scenarios.
+Temperature was calibrated only on the 512 corrective calibration
+outcomes, not the first 41k game comparison.
+
+v11 independent corrective calibration (Actions 41254895641):
+temperature 1.73675; Brier .52462, log-loss .91026;
+T1 predicted 4.23% vs observed 4.69%;
+cumulative T2 34.82% vs 31.64%;
+cumulative T3 69.07% vs 68.55%.
+These are calibration-set numbers, NOT fresh-policy win rates.
+
+Independent 42k full-game comparison (Actions 41255014354, N16):
+- v5: T1=0, T2=3, T3=12; mean keep 4.3125; 563.979 s.
+- corrective learned v11: T1=0, T2=0, T3=11;
+  mean keep 4.5625; 7.412 s.
+- Approx 76.1x faster but 3 lost T2s and no gains.
+  Do NOT promote model.
+
+Decision trace audit (Actions 41255286014;
+benchmark_results/learned_v11_missed_T2_decision_audit.json):
+ALL THREE lost T2s were **different mulligan keep stages**, not
+a bottom-choice dispute at the same keep stage. One seven with
+Gemstone Caverns + Enlightened Tutor + Mycosynth Gardens scored
+0.610, just below the learned cutoff 0.634, then the learned policy
+mulliganed deeply while v5 kept and won by T2. Another seven with
+Grim Monolith/Mox Opal/Tezzeret/Trinisphere was kept by the learned
+policy but rejected by v5 in favor of a later winning 3-card keep.
+
+### Confidence-gated hybrid test: FAILED as a speed–performance tradeoff
+
+A development-only v12 branch calls the original exact-sampled beam
+mulligan evaluator when |learned score − DP cutoff| <= 0.075.
+This band was chosen AFTER inspecting the 42k failure traces and
+was then tested only on new 43k game IDs.
+
+Dry-run on 256 separate sampled scenarios found 156/932 London stages
+(16.74%) eligible for exact fallback.
+
+Independent N16 paired full-game result, Actions 41255514274:
+- v5: T1=2, T2=11, T3=13; mean keep=5.8125; CPU 210.442 s.
+- hybrid v12: T1=2, T2=6, T3=10; mean keep=5.8125;
+  CPU 74.650 s. Seven actual fallback stages over 44.
+- Hybrid 2.82x faster, but 0 T2 gains and 5 T2 losses.
+  Even a relatively low fallback frequency imposes substantial
+  runtime cost and did not recover early deployment.
+  N16 remains too small for precise population noninferiority claims.
+
+**Current project choice:** Preserve strict stable-dice v5 as the
+reference and all experimental models unapproved. Stop iterative
+threshold tuning on reviewed holdouts. The strongest next research
+option is a *line-aware teacher-policy distillation* model:
+learn keep/mull and bottom-choice ranking directly from paired
+v5 decisions and structural synergy features (tutor, white,
+LED, Gardens, gemstone, untap/recovery), while separately
+calibrating objective game-outcome probabilities. Use categorical
+nonlinear interactions or modest tree ensembles; test exact
+data provenance and unseen lines. Reassess on a completely fresh
+physical-game-ID band (44k+) only AFTER freezing the next model.
+
+A JSON research handoff with distinct seed bands and all results is
+archived as benchmark_results/learned_mulligan_v8_v11_v12_research_handoff.json.
+None of these experimental win rates should be presented as actual
+four-player cEDH win probability, or pooled with old stochastic rules.
