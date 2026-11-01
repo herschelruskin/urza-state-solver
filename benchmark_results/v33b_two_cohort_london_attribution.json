@@ -1,0 +1,426 @@
+{
+  "110k": {
+    "categories": {
+      "different_actual_london_stage": {
+        "N": 110,
+        "T2": {
+          "N": 110,
+          "delta_pp": 0.390625,
+          "gains": 17,
+          "losses": 16,
+          "net_games": 1,
+          "rate_within_subset_pp": 0.9090909090909091
+        },
+        "T3": {
+          "N": 110,
+          "delta_pp": 5.859375,
+          "gains": 26,
+          "losses": 11,
+          "net_games": 15,
+          "rate_within_subset_pp": 13.636363636363637
+        }
+      },
+      "same_final_hand": {
+        "N": 93,
+        "T2": {
+          "N": 93,
+          "delta_pp": 0.0,
+          "gains": 0,
+          "losses": 0,
+          "net_games": 0,
+          "rate_within_subset_pp": 0.0
+        },
+        "T3": {
+          "N": 93,
+          "delta_pp": 0.0,
+          "gains": 0,
+          "losses": 0,
+          "net_games": 0,
+          "rate_within_subset_pp": 0.0
+        }
+      },
+      "same_stage_different_cards": {
+        "N": 53,
+        "T2": {
+          "N": 53,
+          "delta_pp": 2.34375,
+          "gains": 6,
+          "losses": 0,
+          "net_games": 6,
+          "rate_within_subset_pp": 11.320754716981131
+        },
+        "T3": {
+          "N": 53,
+          "delta_pp": -0.390625,
+          "gains": 2,
+          "losses": 3,
+          "net_games": -1,
+          "rate_within_subset_pp": -1.8867924528301887
+        }
+      }
+    },
+    "cohort": "110k",
+    "different_stage_direction_counts": {
+      "v27_keeps_earlier": 58,
+      "v27_keeps_later": 52
+    },
+    "seat_strata": {
+      "0": {
+        "N": 62,
+        "v27_T1": 4,
+        "v27_T2": 33,
+        "v5_T1": 4,
+        "v5_T2": 39
+      },
+      "1": {
+        "N": 58,
+        "v27_T1": 5,
+        "v27_T2": 27,
+        "v5_T1": 5,
+        "v5_T2": 30
+      },
+      "2": {
+        "N": 66,
+        "v27_T1": 4,
+        "v27_T2": 28,
+        "v5_T1": 5,
+        "v5_T2": 31
+      },
+      "3": {
+        "N": 70,
+        "v27_T1": 5,
+        "v27_T2": 36,
+        "v5_T1": 5,
+        "v5_T2": 31
+      }
+    },
+    "stage_distribution": {
+      "v27_frozen": {
+        "0": {
+          "N": 57,
+          "T2": 38,
+          "T3": 53
+        },
+        "1": {
+          "N": 47,
+          "T2": 27,
+          "T3": 42
+        },
+        "2": {
+          "N": 42,
+          "T2": 28,
+          "T3": 39
+        },
+        "3": {
+          "N": 34,
+          "T2": 14,
+          "T3": 28
+        },
+        "4": {
+          "N": 33,
+          "T2": 13,
+          "T3": 24
+        },
+        "5": {
+          "N": 20,
+          "T2": 4,
+          "T3": 9
+        },
+        "6": {
+          "N": 9,
+          "T2": 0,
+          "T3": 3
+        },
+        "7": {
+          "N": 14,
+          "T2": 0,
+          "T3": 0
+        }
+      },
+      "v5": {
+        "0": {
+          "N": 47,
+          "T2": 39,
+          "T3": 43
+        },
+        "1": {
+          "N": 28,
+          "T2": 25,
+          "T3": 27
+        },
+        "2": {
+          "N": 43,
+          "T2": 30,
+          "T3": 40
+        },
+        "3": {
+          "N": 45,
+          "T2": 18,
+          "T3": 42
+        },
+        "4": {
+          "N": 53,
+          "T2": 16,
+          "T3": 45
+        },
+        "5": {
+          "N": 17,
+          "T2": 2,
+          "T3": 11
+        },
+        "6": {
+          "N": 23,
+          "T2": 1,
+          "T3": 4
+        },
+        "7": {
+          "N": 0,
+          "T2": 0,
+          "T3": 0
+        }
+      }
+    },
+    "v27_T1_exact": 18,
+    "v5_T1_exact": 19,
+    "v5_vs_v27_T2": {
+      "N": 256,
+      "delta_pp": 2.734375,
+      "gains": 23,
+      "losses": 16,
+      "net_games": 7,
+      "rate_within_subset_pp": 2.734375
+    },
+    "v5_vs_v27_T3": {
+      "N": 256,
+      "delta_pp": 5.46875,
+      "gains": 28,
+      "losses": 14,
+      "net_games": 14,
+      "rate_within_subset_pp": 5.46875
+    }
+  },
+  "110k_source": "archived v32 paired prospective",
+  "115k": {
+    "categories": {
+      "different_actual_london_stage": {
+        "N": 100,
+        "T2": {
+          "N": 100,
+          "delta_pp": 7.421875,
+          "gains": 25,
+          "losses": 6,
+          "net_games": 19,
+          "rate_within_subset_pp": 19.0
+        },
+        "T3": {
+          "N": 100,
+          "delta_pp": 7.8125,
+          "gains": 31,
+          "losses": 11,
+          "net_games": 20,
+          "rate_within_subset_pp": 20.0
+        }
+      },
+      "same_final_hand": {
+        "N": 86,
+        "T2": {
+          "N": 86,
+          "delta_pp": 0.0,
+          "gains": 0,
+          "losses": 0,
+          "net_games": 0,
+          "rate_within_subset_pp": 0.0
+        },
+        "T3": {
+          "N": 86,
+          "delta_pp": 0.0,
+          "gains": 0,
+          "losses": 0,
+          "net_games": 0,
+          "rate_within_subset_pp": 0.0
+        }
+      },
+      "same_stage_different_cards": {
+        "N": 70,
+        "T2": {
+          "N": 70,
+          "delta_pp": 2.734375,
+          "gains": 9,
+          "losses": 2,
+          "net_games": 7,
+          "rate_within_subset_pp": 10.0
+        },
+        "T3": {
+          "N": 70,
+          "delta_pp": 1.953125,
+          "gains": 6,
+          "losses": 1,
+          "net_games": 5,
+          "rate_within_subset_pp": 7.142857142857143
+        }
+      }
+    },
+    "cohort": "115k",
+    "different_stage_direction_counts": {
+      "v27_keeps_earlier": 61,
+      "v27_keeps_later": 39
+    },
+    "seat_strata": {
+      "0": {
+        "N": 60,
+        "v27_T1": 2,
+        "v27_T2": 23,
+        "v5_T1": 1,
+        "v5_T2": 28
+      },
+      "1": {
+        "N": 86,
+        "v27_T1": 2,
+        "v27_T2": 38,
+        "v5_T1": 3,
+        "v5_T2": 48
+      },
+      "2": {
+        "N": 57,
+        "v27_T1": 1,
+        "v27_T2": 24,
+        "v5_T1": 1,
+        "v5_T2": 30
+      },
+      "3": {
+        "N": 53,
+        "v27_T1": 2,
+        "v27_T2": 21,
+        "v5_T1": 2,
+        "v5_T2": 26
+      }
+    },
+    "stage_distribution": {
+      "v27_frozen": {
+        "0": {
+          "N": 51,
+          "T2": 36,
+          "T3": 47
+        },
+        "1": {
+          "N": 40,
+          "T2": 19,
+          "T3": 34
+        },
+        "2": {
+          "N": 42,
+          "T2": 18,
+          "T3": 34
+        },
+        "3": {
+          "N": 47,
+          "T2": 20,
+          "T3": 42
+        },
+        "4": {
+          "N": 29,
+          "T2": 9,
+          "T3": 19
+        },
+        "5": {
+          "N": 18,
+          "T2": 3,
+          "T3": 8
+        },
+        "6": {
+          "N": 15,
+          "T2": 1,
+          "T3": 4
+        },
+        "7": {
+          "N": 14,
+          "T2": 0,
+          "T3": 1
+        }
+      },
+      "v5": {
+        "0": {
+          "N": 44,
+          "T2": 37,
+          "T3": 42
+        },
+        "1": {
+          "N": 21,
+          "T2": 18,
+          "T3": 18
+        },
+        "2": {
+          "N": 34,
+          "T2": 22,
+          "T3": 30
+        },
+        "3": {
+          "N": 74,
+          "T2": 33,
+          "T3": 69
+        },
+        "4": {
+          "N": 41,
+          "T2": 11,
+          "T3": 35
+        },
+        "5": {
+          "N": 20,
+          "T2": 8,
+          "T3": 14
+        },
+        "6": {
+          "N": 21,
+          "T2": 3,
+          "T3": 6
+        },
+        "7": {
+          "N": 1,
+          "T2": 0,
+          "T3": 0
+        }
+      }
+    },
+    "v27_T1_exact": 7,
+    "v5_T1_exact": 7,
+    "v5_vs_v27_T2": {
+      "N": 256,
+      "delta_pp": 10.15625,
+      "gains": 34,
+      "losses": 8,
+      "net_games": 26,
+      "rate_within_subset_pp": 10.15625
+    },
+    "v5_vs_v27_T3": {
+      "N": 256,
+      "delta_pp": 9.765625,
+      "gains": 37,
+      "losses": 12,
+      "net_games": 25,
+      "rate_within_subset_pp": 9.765625
+    }
+  },
+  "115k_source": "archived v33b paired prospective",
+  "independent_cohort_T2_gap_shift": {
+    "independent_cohort_group_bootstrap_95ci_pp": [
+      0.78125,
+      14.0625
+    ],
+    "new_minus_old_gap_pp": 7.421875
+  },
+  "independent_cohort_T3_gap_shift": {
+    "independent_cohort_group_bootstrap_95ci_pp": [
+      -3.125,
+      11.328125
+    ],
+    "new_minus_old_gap_pp": 4.296875
+  },
+  "limitation": "Repeated seven card counts must use stage index; cohort variation and descriptive partitions are NOT causal keep/bottom regrets. n256 each has material sampling uncertainty.",
+  "new_beam160_evaluations": 0,
+  "new_model_fitting": false,
+  "policy_approved": false,
+  "schema": "dack_v33b_readonly_two_cohort_london_attribution",
+  "status": "PASS",
+  "v27_vs_v33b_different_final_hands": 52,
+  "v27_vs_v33b_same_hand_exact_turn_parity_verified": 204
+}
