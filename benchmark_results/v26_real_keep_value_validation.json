@@ -1,0 +1,470 @@
+{
+  "actual_full_beam160_future_labels": 10240,
+  "frozen_bottom_policy_sha256": "19fdbf300afc1e4545b81767f8fbf3bbe6ebd7b33ad139e2aa9231e3215df8ff",
+  "independent_94k_validation_frozen_v22": {
+    "forest_minus_prior_MSE": -0.03517752044918053,
+    "group_bootstrap_95ci_forest_minus_prior_MSE": [
+      -0.04201959390549477,
+      -0.028836972708845048
+    ],
+    "independent_outer_groups": 64,
+    "nonlinear_forest": {
+      "MAE": 0.12114796464446916,
+      "MSE": 0.027894028489570687
+    },
+    "rejected_stage_fraction": 0.470703125,
+    "stage_diagnostics": {
+      "0": {
+        "baseline_train_stage_mean": 0.3427734375,
+        "keep_n": 7,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.353515625,
+        "predicted_mean_u": 0.37212189635197473,
+        "rejected_stages_with_observed_T2_positive": 13,
+        "student_classifier_keep_fraction": 0.203125
+      },
+      "1": {
+        "baseline_train_stage_mean": 0.31787109375,
+        "keep_n": 7,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.361328125,
+        "predicted_mean_u": 0.3674906345606649,
+        "rejected_stages_with_observed_T2_positive": 12,
+        "student_classifier_keep_fraction": 0.125
+      },
+      "2": {
+        "baseline_train_stage_mean": 0.3828125,
+        "keep_n": 6,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.34375,
+        "predicted_mean_u": 0.3417644519539875,
+        "rejected_stages_with_observed_T2_positive": 5,
+        "student_classifier_keep_fraction": 0.3125
+      },
+      "3": {
+        "baseline_train_stage_mean": 0.380859375,
+        "keep_n": 5,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.384765625,
+        "predicted_mean_u": 0.36003150971699754,
+        "rejected_stages_with_observed_T2_positive": 7,
+        "student_classifier_keep_fraction": 0.390625
+      },
+      "4": {
+        "baseline_train_stage_mean": 0.298828125,
+        "keep_n": 4,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.275390625,
+        "predicted_mean_u": 0.2563492157532971,
+        "rejected_stages_with_observed_T2_positive": 7,
+        "student_classifier_keep_fraction": 0.265625
+      },
+      "5": {
+        "baseline_train_stage_mean": 0.19091796875,
+        "keep_n": 3,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.1484375,
+        "predicted_mean_u": 0.13915877320395947,
+        "rejected_stages_with_observed_T2_positive": 0,
+        "student_classifier_keep_fraction": 0.953125
+      },
+      "6": {
+        "baseline_train_stage_mean": 0.068359375,
+        "keep_n": 2,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.064453125,
+        "predicted_mean_u": 0.06493845669387352,
+        "rejected_stages_with_observed_T2_positive": 0,
+        "student_classifier_keep_fraction": 0.984375
+      },
+      "7": {
+        "baseline_train_stage_mean": 0.0205078125,
+        "keep_n": 1,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.025390625,
+        "predicted_mean_u": 0.03380745123311834,
+        "rejected_stages_with_observed_T2_positive": 0,
+        "student_classifier_keep_fraction": 1.0
+      }
+    },
+    "stage_specific_constant_prior": {
+      "MAE": 0.18848800659179688,
+      "MSE": 0.06307154893875122
+    },
+    "stage_state_groups": 512
+  },
+  "independent_94k_validation_v26": {
+    "forest_minus_prior_MSE": -0.038171872599749135,
+    "group_bootstrap_95ci_forest_minus_prior_MSE": [
+      -0.045395989343635854,
+      -0.03166774960267578
+    ],
+    "independent_outer_groups": 64,
+    "nonlinear_forest": {
+      "MAE": 0.11320638384652737,
+      "MSE": 0.02489967633900209
+    },
+    "rejected_stage_fraction": 0.470703125,
+    "stage_diagnostics": {
+      "0": {
+        "baseline_train_stage_mean": 0.3427734375,
+        "keep_n": 7,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.353515625,
+        "predicted_mean_u": 0.3533435759494205,
+        "rejected_stages_with_observed_T2_positive": 13,
+        "student_classifier_keep_fraction": 0.203125
+      },
+      "1": {
+        "baseline_train_stage_mean": 0.31787109375,
+        "keep_n": 7,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.361328125,
+        "predicted_mean_u": 0.3541183416848032,
+        "rejected_stages_with_observed_T2_positive": 12,
+        "student_classifier_keep_fraction": 0.125
+      },
+      "2": {
+        "baseline_train_stage_mean": 0.3828125,
+        "keep_n": 6,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.34375,
+        "predicted_mean_u": 0.339428120316996,
+        "rejected_stages_with_observed_T2_positive": 5,
+        "student_classifier_keep_fraction": 0.3125
+      },
+      "3": {
+        "baseline_train_stage_mean": 0.380859375,
+        "keep_n": 5,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.384765625,
+        "predicted_mean_u": 0.3759395985323048,
+        "rejected_stages_with_observed_T2_positive": 7,
+        "student_classifier_keep_fraction": 0.390625
+      },
+      "4": {
+        "baseline_train_stage_mean": 0.298828125,
+        "keep_n": 4,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.275390625,
+        "predicted_mean_u": 0.28042154022743904,
+        "rejected_stages_with_observed_T2_positive": 7,
+        "student_classifier_keep_fraction": 0.265625
+      },
+      "5": {
+        "baseline_train_stage_mean": 0.19091796875,
+        "keep_n": 3,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.1484375,
+        "predicted_mean_u": 0.15781789454116996,
+        "rejected_stages_with_observed_T2_positive": 0,
+        "student_classifier_keep_fraction": 0.953125
+      },
+      "6": {
+        "baseline_train_stage_mean": 0.068359375,
+        "keep_n": 2,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.064453125,
+        "predicted_mean_u": 0.08021097966598095,
+        "rejected_stages_with_observed_T2_positive": 0,
+        "student_classifier_keep_fraction": 0.984375
+      },
+      "7": {
+        "baseline_train_stage_mean": 0.0205078125,
+        "keep_n": 1,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.025390625,
+        "predicted_mean_u": 0.03207012614294346,
+        "rejected_stages_with_observed_T2_positive": 0,
+        "student_classifier_keep_fraction": 1.0
+      }
+    },
+    "stage_specific_constant_prior": {
+      "MAE": 0.18848800659179688,
+      "MSE": 0.06307154893875122
+    },
+    "stage_state_groups": 512
+  },
+  "model_approved": false,
+  "new_forest_hyperparameters": {
+    "max_depth": 9,
+    "max_features": 0.65,
+    "min_samples_leaf": 6,
+    "n_estimators": 192,
+    "random_state": 262626
+  },
+  "no_v25_96k_training_or_hyperparameter_selection": true,
+  "schema": "dack_v26_expanded_real_keep_value_heldout_stage_validation",
+  "status": "PASS",
+  "train_id_range": [
+    93000,
+    93255
+  ],
+  "training_file_checksums": [
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93000.jsonl.gz",
+      "sha256": "61088695f0dd37d304f2326e7d1ba7139470c57780c318878c6713300f27ad00"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93008.jsonl.gz",
+      "sha256": "092c2e3c0dc1f65eed1f83af9e1ccd3745b58e954cd080bfd09780803f64b188"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93016.jsonl.gz",
+      "sha256": "895fc6acb5385ece268a86db0360c079abe53a3196cf9e4fc12ccd2b38fa3416"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93024.jsonl.gz",
+      "sha256": "18b83acbf5aa73eb9ca38d298c572aeec3cd82bc66be813a918468d2bb4c2a7d"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93032.jsonl.gz",
+      "sha256": "938357a0a117326aab6c14f5968e2daca4c526cb9735acbbf86e858f66dfb46f"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93040.jsonl.gz",
+      "sha256": "1835b929c9f68d88d30b197ac89557ecca132acafae121a9cbe29c5b0aba2c91"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93048.jsonl.gz",
+      "sha256": "622bc14f5b50c765df1c3020d4270e8240b5fd8864122ced95524c5c70c7348c"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93056.jsonl.gz",
+      "sha256": "f69397c6a6785e7568a8ab9e4c8f9d5d7b0e99806946a0feb8ea5850398958b1"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93064.jsonl.gz",
+      "sha256": "833d08bbcae3265849e5082dd22ad72bc773c101fcde89d5ff0214e92cea5d9b"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93072.jsonl.gz",
+      "sha256": "7c2390a69a450941f54a2f1b74b0259011313076b9ef3117b131230f868d45ac"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93080.jsonl.gz",
+      "sha256": "cc92e3e55f689ea30713b6bc2eb4a62f224eb0e8b605598f181051e97cba40c9"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93088.jsonl.gz",
+      "sha256": "d79843580ceaf432ba4d6b0d990213cde3d16eac4e72f241d386c9a70002b697"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93096.jsonl.gz",
+      "sha256": "d30e14fc4824b903fd28c7d323cd5cb450014ed7784c6092a4b25a7885379b0c"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93104.jsonl.gz",
+      "sha256": "5328eb5810021393576a7dfe3fd900cfc39670614fbfba11e1e9f9f1436eb0c9"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93112.jsonl.gz",
+      "sha256": "ba3a4ddfa38835f6d2a87e94610d1eaf39dcf3b3929ace3466d348f6a86d0a8e"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93120.jsonl.gz",
+      "sha256": "2b5716bb5d2823258630e1c428ff0be309b383afef2f15804b5d36cbff12205f"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93128.jsonl.gz",
+      "sha256": "54570a32235b06745f99796ff0d395eececcbf0777e099d001b14cd70bd4f567"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93136.jsonl.gz",
+      "sha256": "1b4290b929282df085424f06d421ec39fc70fb9aedb39904d3af5968155d518e"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93144.jsonl.gz",
+      "sha256": "0618c56399999c10229b7cac11a26e29151bfa50b80daa5122717879872488ce"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93152.jsonl.gz",
+      "sha256": "6ce543a34ca40e8919b2e4c93ef41be3d76883044a0936a9dee21f8a7f648317"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93160.jsonl.gz",
+      "sha256": "4148c2abce8236460c5dd876d60f16906d2ac65b97692983c9f2f948dd761292"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93168.jsonl.gz",
+      "sha256": "1ab68880b9f909c08addc25c079c3c2a5c32b15d5cf91e0761f7f98ea94377df"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93176.jsonl.gz",
+      "sha256": "0df5af612b95b89b6e7831e1ed4273bbcabb291ac42cc9f7af5a42b258af1506"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93184.jsonl.gz",
+      "sha256": "24e2f680dd0b41e4e56ed2a78310b6ea4043eb8d4250d728f1e775cb9098171d"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93192.jsonl.gz",
+      "sha256": "2d9d53d2d7eca1001b93809ce6696aa77365b8e8efb2578d2a2d51959035d9e1"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93200.jsonl.gz",
+      "sha256": "2314af410002d5f0649d34c487d38594764b2fb21fcacc458fac0cf4b16891e9"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93208.jsonl.gz",
+      "sha256": "9c24e66ca7801c934c9f1d16ff288065423eeb5c9102e76c9fb604701381921a"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93216.jsonl.gz",
+      "sha256": "f660a138e259d8719ba3704342845b87980152b4b8fb915f2e378dd8d954b150"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93224.jsonl.gz",
+      "sha256": "8d600e17724c7e10810ab519254110c20ee463693deaf31cd619b4a86379b0cc"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93232.jsonl.gz",
+      "sha256": "fcf7cac0d7714d636fc732a1c8685fb138cee1581fdf6d4e67c4c4d7e221300c"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93240.jsonl.gz",
+      "sha256": "65149ab98aa8992b80fb4e13cece9ea62ede2be528ae8ba70f0e7531cb8a7226"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_train_93248.jsonl.gz",
+      "sha256": "5b14f33cb73be64d26c504f5bc0908d900d32fe901dba4999c21c9cf5d5bc352"
+    }
+  ],
+  "training_games": 256,
+  "training_metrics_not_holdout": {
+    "forest_minus_prior_MSE": -0.05073241976429228,
+    "group_bootstrap_95ci_forest_minus_prior_MSE": [
+      -0.05477809968276066,
+      -0.04666584775265786
+    ],
+    "independent_outer_groups": 256,
+    "nonlinear_forest": {
+      "MAE": 0.09460365620360585,
+      "MSE": 0.016423358643758258
+    },
+    "rejected_stage_fraction": 0.46630859375,
+    "stage_diagnostics": {
+      "0": {
+        "baseline_train_stage_mean": 0.3427734375,
+        "keep_n": 7,
+        "n_independent_games": 256,
+        "observed_mean_u": 0.3427734375,
+        "predicted_mean_u": 0.34444635355211123,
+        "rejected_stages_with_observed_T2_positive": 56,
+        "student_classifier_keep_fraction": 0.109375
+      },
+      "1": {
+        "baseline_train_stage_mean": 0.31787109375,
+        "keep_n": 7,
+        "n_independent_games": 256,
+        "observed_mean_u": 0.31787109375,
+        "predicted_mean_u": 0.31801186983345253,
+        "rejected_stages_with_observed_T2_positive": 47,
+        "student_classifier_keep_fraction": 0.1171875
+      },
+      "2": {
+        "baseline_train_stage_mean": 0.3828125,
+        "keep_n": 6,
+        "n_independent_games": 256,
+        "observed_mean_u": 0.3828125,
+        "predicted_mean_u": 0.37110808327532624,
+        "rejected_stages_with_observed_T2_positive": 27,
+        "student_classifier_keep_fraction": 0.3203125
+      },
+      "3": {
+        "baseline_train_stage_mean": 0.380859375,
+        "keep_n": 5,
+        "n_independent_games": 256,
+        "observed_mean_u": 0.380859375,
+        "predicted_mean_u": 0.3605566173187805,
+        "rejected_stages_with_observed_T2_positive": 26,
+        "student_classifier_keep_fraction": 0.45703125
+      },
+      "4": {
+        "baseline_train_stage_mean": 0.298828125,
+        "keep_n": 4,
+        "n_independent_games": 256,
+        "observed_mean_u": 0.298828125,
+        "predicted_mean_u": 0.30174508661820915,
+        "rejected_stages_with_observed_T2_positive": 23,
+        "student_classifier_keep_fraction": 0.30078125
+      },
+      "5": {
+        "baseline_train_stage_mean": 0.19091796875,
+        "keep_n": 3,
+        "n_independent_games": 256,
+        "observed_mean_u": 0.19091796875,
+        "predicted_mean_u": 0.19727466809312358,
+        "rejected_stages_with_observed_T2_positive": 0,
+        "student_classifier_keep_fraction": 0.9765625
+      },
+      "6": {
+        "baseline_train_stage_mean": 0.068359375,
+        "keep_n": 2,
+        "n_independent_games": 256,
+        "observed_mean_u": 0.068359375,
+        "predicted_mean_u": 0.07724012056042802,
+        "rejected_stages_with_observed_T2_positive": 0,
+        "student_classifier_keep_fraction": 0.98828125
+      },
+      "7": {
+        "baseline_train_stage_mean": 0.0205078125,
+        "keep_n": 1,
+        "n_independent_games": 256,
+        "observed_mean_u": 0.0205078125,
+        "predicted_mean_u": 0.02911833627100739,
+        "rejected_stages_with_observed_T2_positive": 0,
+        "student_classifier_keep_fraction": 1.0
+      }
+    },
+    "stage_specific_constant_prior": {
+      "MAE": 0.1966996192932129,
+      "MSE": 0.06715577840805054
+    },
+    "stage_state_groups": 2048
+  },
+  "training_stage_states": 2048,
+  "v22_model_sha256": "9854c5be8bb58cf6bf8b232287555819008a2088cfbf556254c766a097ca9c6a",
+  "v26_model_sha256": "f0aaf4b2850ce7e39c5247a71f5fb30f0aaf48310d00d84b9ebef981f9fc4c3e",
+  "validation_file_checksums": [
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_validation_94000.jsonl.gz",
+      "sha256": "9c5c5f1743d717bdc346574e956e631c20dc71085de66d3e6358ad3f27160846"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_validation_94008.jsonl.gz",
+      "sha256": "db9ce8b67fbb4af4809a2393546be9ace6d401d7b24fe59ec725cdb506511282"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_validation_94016.jsonl.gz",
+      "sha256": "09974ebe7f8f2b643cac8ba5f3d4c68d61d7e5c7b8701bbcd9442d5e515a4947"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_validation_94024.jsonl.gz",
+      "sha256": "a4f4b696baee04ca06c64113b13ef81a6f54cd2e9a9590a5220d6176b7ea47cd"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_validation_94032.jsonl.gz",
+      "sha256": "5a3ed96cd8e019958914eacdae7495d5da71d541d31156d8950a27566d55ea00"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_validation_94040.jsonl.gz",
+      "sha256": "d99fb3d1e9d53b4cf2d057bb625dc7feb923d47a397cfe13839807b2e0274586"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_validation_94048.jsonl.gz",
+      "sha256": "e047962d986538f6abe6e58353974a26d6a8998ecbf4ab57d97cbf9770d68740"
+    },
+    {
+      "path": "datasets/v26_expanded_keep_values/stage_validation_94056.jsonl.gz",
+      "sha256": "25fa3a07bc9c0cba0bf86bc4542520ff61c7604c4ef7e5a2606ae54fe717db44"
+    }
+  ],
+  "validation_games": 64,
+  "validation_id_range": [
+    94000,
+    94063
+  ],
+  "validation_stage_states": 512,
+  "warning": "Value-model MSE improvement is not full-game improvement. Neither holdout nor 96k diagnosis was used to select model hyperparameters."
+}
