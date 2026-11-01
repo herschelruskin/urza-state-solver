@@ -1,0 +1,34 @@
+name: DACK v36 independent mulligan-only speed measurement
+on:
+  push:
+    branches: [dack-v36-targeted-keep-value-20261101]
+    paths:
+      - '.github/workflows/dack_v36_mulligan_runtime.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  london-timing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit v36 rules and no-beam exact v33b fallback
+        run: |
+          python -m py_compile dack_simulator/validation/v36_mulligan_CPU_benchmark.py dack_paired_counterfactual_v36_targeted_keep_20261101.py
+          python dack_paired_counterfactual_v36_targeted_keep_20261101.py --audit
+      - name: Same four physical 99-game seeds per policy, London only
+        run: python -u dack_simulator/validation/v36_mulligan_CPU_benchmark.py
+      - name: Archive measured chooser-only wall time, not gameplay time
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v36_four_policy_mulligan_CPU_only_N4.json
+          git commit -m "Archive v36 4-policy real London chooser CPU runtime bench"
+          git pull --rebase origin dack-v36-targeted-keep-value-20261101
+          git push origin HEAD:dack-v36-targeted-keep-value-20261101
