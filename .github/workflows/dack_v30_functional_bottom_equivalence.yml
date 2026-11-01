@@ -2,7 +2,10 @@ name: DACK v30 functional bottom equivalence frozen N50 audit
 on:
   push:
     branches: [dack-v30-functional-bottom-equivalence-20261031]
-    paths: ['.github/workflows/dack_v30_functional_bottom_equivalence.yml']
+    paths:
+      - '.github/workflows/dack_v30_functional_bottom_equivalence.yml'
+      - 'dack_simulator/validation/v30_functional_bottom_equivalence.py'
+      - 'dack_simulator/validation/test_v30_functional_bottom_equivalence.py'
   workflow_dispatch:
 permissions:
   contents: write
