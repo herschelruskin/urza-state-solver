@@ -1,0 +1,95 @@
+{
+  "data_path": "datasets/v40_recovered_original_v5_history_1592.jsonl.gz",
+  "data_sha256": "18813bff1747dbf6b54110edc5d81b77ae7e023de92490d2d85ad918bda5e48f",
+  "group_n": 1592,
+  "groups_not_rows_are_independent": true,
+  "historical_holdout_status": "ALL_CONSUMED__not_independent_new_validation",
+  "no_gameplay_executed": true,
+  "no_v5_teacher_resampled": true,
+  "not_model_approved": true,
+  "schema": "dack_v40_reused_original_v5_historical_teacher_observations_v1",
+  "source_counts": {
+    "v13_teacher": {
+      "nonstructural_teacher_bottom": 25,
+      "physical_groups": 24,
+      "shards": 24,
+      "stage_records": 82
+    },
+    "v14_teacher": {
+      "nonstructural_teacher_bottom": 212,
+      "physical_groups": 160,
+      "shards": 160,
+      "stage_records": 614
+    },
+    "v15_student_visited": {
+      "nonstructural_teacher_bottom": 106,
+      "physical_groups": 48,
+      "shards": 48,
+      "stage_records": 231
+    },
+    "v22_86k": {
+      "nonstructural_teacher_bottom": 20,
+      "original_outcome_used_as_model_label": 0,
+      "physical_groups": 16,
+      "shards": 8,
+      "stage_records": 58
+    },
+    "v22_88k": {
+      "nonstructural_teacher_bottom": 70,
+      "original_outcome_used_as_model_label": 0,
+      "physical_groups": 64,
+      "shards": 32,
+      "stage_records": 235
+    },
+    "v25_96k": {
+      "nonstructural_teacher_bottom": 328,
+      "original_outcome_used_as_model_label": 0,
+      "physical_groups": 256,
+      "shards": 64,
+      "stage_records": 1000
+    },
+    "v26_97k": {
+      "nonstructural_teacher_bottom": 321,
+      "original_outcome_used_as_model_label": 0,
+      "physical_groups": 256,
+      "shards": 64,
+      "stage_records": 980
+    },
+    "v27_98k": {
+      "nonstructural_teacher_bottom": 360,
+      "original_outcome_used_as_model_label": 0,
+      "physical_groups": 256,
+      "shards": 64,
+      "stage_records": 997
+    },
+    "v32_110k": {
+      "nonstructural_teacher_bottom": 320,
+      "original_outcome_used_as_model_label": 0,
+      "physical_groups": 256,
+      "shards": 64,
+      "stage_records": 940
+    },
+    "v33b_115k": {
+      "nonstructural_teacher_bottom": 345,
+      "original_outcome_used_as_model_label": 0,
+      "physical_groups": 256,
+      "shards": 64,
+      "stage_records": 964
+    }
+  },
+  "stage_counts": {
+    "london_stage_0": 1592,
+    "london_stage_1": 1378,
+    "london_stage_2": 1214,
+    "london_stage_3": 947,
+    "london_stage_4": 555,
+    "london_stage_5": 274,
+    "london_stage_6": 123,
+    "london_stage_7": 18,
+    "teacher_keeps": 1624,
+    "teacher_mulls": 4477
+  },
+  "stage_n": 6101,
+  "status": "PASS",
+  "v15_student_state_sampling_not_population_representative": true
+}
