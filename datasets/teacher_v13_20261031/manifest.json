@@ -1,0 +1,182 @@
+{
+  "files": [
+    {
+      "bytes": 2641,
+      "name": "distill_v13_train_60000.jsonl.gz",
+      "sha256": "0d0a450bb10f0165bdfd1a5800ee6e25814454bcf442730c9aca40c02cc5fe03",
+      "split": "train"
+    },
+    {
+      "bytes": 2366,
+      "name": "distill_v13_train_60001.jsonl.gz",
+      "sha256": "b7b1bf090cdad6b47ffc3db1455ca9fff952589d35a8cc0f297f56f38990631b",
+      "split": "train"
+    },
+    {
+      "bytes": 2055,
+      "name": "distill_v13_train_60002.jsonl.gz",
+      "sha256": "fd87e8fdd961eec6e8ba326cdeda8bad4093052a873fa08b7d7e9d22b6949f28",
+      "split": "train"
+    },
+    {
+      "bytes": 3151,
+      "name": "distill_v13_train_60003.jsonl.gz",
+      "sha256": "6b7d32f5968fe9b3afaece05d9e496ee620b33d247a6f216a1306328070256af",
+      "split": "train"
+    },
+    {
+      "bytes": 2380,
+      "name": "distill_v13_train_60004.jsonl.gz",
+      "sha256": "641ca6054cdb0d6f8be519fb69de05a3087a9e8421d7deb5e27c1e974975f49c",
+      "split": "train"
+    },
+    {
+      "bytes": 2319,
+      "name": "distill_v13_train_60005.jsonl.gz",
+      "sha256": "3c85610f3e52eb6fda3c32facfcc812a5defa7505ceeed88ca87d96eee0dba6b",
+      "split": "train"
+    },
+    {
+      "bytes": 2346,
+      "name": "distill_v13_train_60006.jsonl.gz",
+      "sha256": "6624b53a6ca2c797a4d26223d100f6b36747e65a80f4db1a8a3f1d4ce5c55291",
+      "split": "train"
+    },
+    {
+      "bytes": 2079,
+      "name": "distill_v13_train_60007.jsonl.gz",
+      "sha256": "a0b32a0e5b78ad36dc326c34a985c5eb1660fed152d6641ca79effb697e931c7",
+      "split": "train"
+    },
+    {
+      "bytes": 1696,
+      "name": "distill_v13_train_60008.jsonl.gz",
+      "sha256": "24beeed9da79fac2a47499a71bcea1b5d590512589adf45ff04f23c95cc9e324",
+      "split": "train"
+    },
+    {
+      "bytes": 1693,
+      "name": "distill_v13_train_60009.jsonl.gz",
+      "sha256": "feeca916844cd35f33e661f7de18a3bdd099924645e5f0b7e908359ae8977495",
+      "split": "train"
+    },
+    {
+      "bytes": 2034,
+      "name": "distill_v13_train_60010.jsonl.gz",
+      "sha256": "246f866021025918a54f07f9c11aae74274e91a6f441c0fbedd2df46b34518a0",
+      "split": "train"
+    },
+    {
+      "bytes": 1696,
+      "name": "distill_v13_train_60011.jsonl.gz",
+      "sha256": "a8e243fbba96019f73eaa4f0ed297e0ca94125f84c9a3ac6ab4a76d7844654c1",
+      "split": "train"
+    },
+    {
+      "bytes": 2348,
+      "name": "distill_v13_train_60012.jsonl.gz",
+      "sha256": "5c3fc428e7b6fcd39bb5d0cf2a72e74487310bda01847f6b7a5191dc7daed902",
+      "split": "train"
+    },
+    {
+      "bytes": 2878,
+      "name": "distill_v13_train_60013.jsonl.gz",
+      "sha256": "6777c5e905c23a3a2dd592fe2521271600f9ef26ef2cbf52aa2c76f4b6ac279e",
+      "split": "train"
+    },
+    {
+      "bytes": 2315,
+      "name": "distill_v13_train_60014.jsonl.gz",
+      "sha256": "90c0abe8aed786a54415bd743aca7b60e24eb975b5c74c78bf65a8466262ea47",
+      "split": "train"
+    },
+    {
+      "bytes": 1697,
+      "name": "distill_v13_train_60015.jsonl.gz",
+      "sha256": "c21944c9ae1cbd29b72c699da233ab43727c876706a73143f1fc2e9bd2544f3d",
+      "split": "train"
+    },
+    {
+      "bytes": 2373,
+      "name": "distill_v13_validation_61000.jsonl.gz",
+      "sha256": "2cb8b521fd86dd86be9a94eabd824a7ec6ccbdf43796c32b80bb5e17c7d29929",
+      "split": "validation"
+    },
+    {
+      "bytes": 2639,
+      "name": "distill_v13_validation_61001.jsonl.gz",
+      "sha256": "895971330b19bd9391538e28a755f85c31f73d5d7cbca263f732c1d7e5fdf2d6",
+      "split": "validation"
+    },
+    {
+      "bytes": 2915,
+      "name": "distill_v13_validation_61002.jsonl.gz",
+      "sha256": "b6013102777efeda89fdbfbba742d2ea8929cc5d1401e12a28356fe016ccd8a4",
+      "split": "validation"
+    },
+    {
+      "bytes": 1709,
+      "name": "distill_v13_validation_61003.jsonl.gz",
+      "sha256": "b32e7917e46869825471702fcc0a2fe667b89bad4d20c21cd92842b41492ab4b",
+      "split": "validation"
+    },
+    {
+      "bytes": 2077,
+      "name": "distill_v13_validation_61004.jsonl.gz",
+      "sha256": "30de92916992c46379d1197f03e16f98bcd05cb54e15f87fd90e022ffdeb5649",
+      "split": "validation"
+    },
+    {
+      "bytes": 1704,
+      "name": "distill_v13_validation_61005.jsonl.gz",
+      "sha256": "070373ac741f5540c60fb78c5125249dcbb08628b812b384f3c114313672f997",
+      "split": "validation"
+    },
+    {
+      "bytes": 2374,
+      "name": "distill_v13_validation_61006.jsonl.gz",
+      "sha256": "2bfb35d151406065611e414d9324aef3200dc92e183713e752ed276e04b24290",
+      "split": "validation"
+    },
+    {
+      "bytes": 2075,
+      "name": "distill_v13_validation_61007.jsonl.gz",
+      "sha256": "211b9c8e1cc543dbed393c19d1f5f8894d275759c2925776a86f970616931609",
+      "split": "validation"
+    }
+  ],
+  "future_order_saved": false,
+  "label_source_is_teacher_beam": true,
+  "only_reached_teacher_stages": true,
+  "schema": "dack_v13_true_v5_teacher_corpus",
+  "source_manifest_sha256": "174448e8336125fd3cb933647a89819605453ade4084ed36ed77db2649027f7d",
+  "splits": {
+    "train": {
+      "counts": {
+        "candidates": 292,
+        "keep": 16,
+        "mull": 39,
+        "stages": 55
+      },
+      "game_ids": [
+        60000,
+        60015
+      ],
+      "games": 16
+    },
+    "validation": {
+      "counts": {
+        "candidates": 140,
+        "keep": 8,
+        "mull": 19,
+        "stages": 27
+      },
+      "game_ids": [
+        61000,
+        61007
+      ],
+      "games": 8
+    }
+  },
+  "teacher": "dack_stable_dice_strict_bounded_witness_v5"
+}
