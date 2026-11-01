@@ -1,0 +1,197 @@
+{
+  "includes_first_free_seven": true,
+  "independent_validation_metrics": {
+    "forest_minus_prior_MSE": -0.03542843506776174,
+    "group_bootstrap_95ci_forest_minus_prior_MSE": [
+      -0.05068719727001511,
+      -0.020172854469597715
+    ],
+    "independent_outer_groups": 16,
+    "nonlinear_forest": {
+      "MAE": 0.12042175161588613,
+      "MSE": 0.028287022848498024
+    },
+    "rejected_stage_fraction": 0.4609375,
+    "stage_diagnostics": {
+      "0": {
+        "baseline_train_stage_mean": 0.3359375,
+        "keep_n": 7,
+        "n_independent_games": 16,
+        "observed_mean_u": 0.375,
+        "predicted_mean_u": 0.39028048759865275,
+        "rejected_stages_with_observed_T2_positive": 3,
+        "student_classifier_keep_fraction": 0.1875
+      },
+      "1": {
+        "baseline_train_stage_mean": 0.392578125,
+        "keep_n": 7,
+        "n_independent_games": 16,
+        "observed_mean_u": 0.4921875,
+        "predicted_mean_u": 0.4614727801893522,
+        "rejected_stages_with_observed_T2_positive": 4,
+        "student_classifier_keep_fraction": 0.3125
+      },
+      "2": {
+        "baseline_train_stage_mean": 0.384765625,
+        "keep_n": 6,
+        "n_independent_games": 16,
+        "observed_mean_u": 0.4296875,
+        "predicted_mean_u": 0.3440503716964696,
+        "rejected_stages_with_observed_T2_positive": 3,
+        "student_classifier_keep_fraction": 0.25
+      },
+      "3": {
+        "baseline_train_stage_mean": 0.412109375,
+        "keep_n": 5,
+        "n_independent_games": 16,
+        "observed_mean_u": 0.2734375,
+        "predicted_mean_u": 0.2956106727155487,
+        "rejected_stages_with_observed_T2_positive": 2,
+        "student_classifier_keep_fraction": 0.1875
+      },
+      "4": {
+        "baseline_train_stage_mean": 0.291015625,
+        "keep_n": 4,
+        "n_independent_games": 16,
+        "observed_mean_u": 0.3125,
+        "predicted_mean_u": 0.31843819175762506,
+        "rejected_stages_with_observed_T2_positive": 2,
+        "student_classifier_keep_fraction": 0.4375
+      },
+      "5": {
+        "baseline_train_stage_mean": 0.12890625,
+        "keep_n": 3,
+        "n_independent_games": 16,
+        "observed_mean_u": 0.1640625,
+        "predicted_mean_u": 0.156456633541484,
+        "rejected_stages_with_observed_T2_positive": 0,
+        "student_classifier_keep_fraction": 1.0
+      },
+      "6": {
+        "baseline_train_stage_mean": 0.05859375,
+        "keep_n": 2,
+        "n_independent_games": 16,
+        "observed_mean_u": 0.0,
+        "predicted_mean_u": 0.038698989605033964,
+        "rejected_stages_with_observed_T2_positive": 0,
+        "student_classifier_keep_fraction": 0.9375
+      },
+      "7": {
+        "baseline_train_stage_mean": 0.017578125,
+        "keep_n": 1,
+        "n_independent_games": 16,
+        "observed_mean_u": 0.0234375,
+        "predicted_mean_u": 0.024400116254349583,
+        "rejected_stages_with_observed_T2_positive": 0,
+        "student_classifier_keep_fraction": 1.0
+      }
+    },
+    "stage_specific_constant_prior": {
+      "MAE": 0.190643310546875,
+      "MSE": 0.06371545791625977
+    },
+    "stage_state_groups": 128
+  },
+  "model_approved": false,
+  "no_future_order_in_model_inputs": true,
+  "rejected_hands_are_labeled_directly": true,
+  "schema": "dack_v22_all_london_keep_value_regression_diagnostic",
+  "status": "PASS",
+  "training_game_groups": 64,
+  "training_metrics_not_holdout": {
+    "forest_minus_prior_MSE": -0.05002197823524529,
+    "group_bootstrap_95ci_forest_minus_prior_MSE": [
+      -0.05738299589420107,
+      -0.04302356619995656
+    ],
+    "independent_outer_groups": 64,
+    "nonlinear_forest": {
+      "MAE": 0.08319365121499965,
+      "MSE": 0.013124136114119946
+    },
+    "rejected_stage_fraction": 0.455078125,
+    "stage_diagnostics": {
+      "0": {
+        "baseline_train_stage_mean": 0.3359375,
+        "keep_n": 7,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.3359375,
+        "predicted_mean_u": 0.35219050936010105,
+        "rejected_stages_with_observed_T2_positive": 10,
+        "student_classifier_keep_fraction": 0.125
+      },
+      "1": {
+        "baseline_train_stage_mean": 0.392578125,
+        "keep_n": 7,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.392578125,
+        "predicted_mean_u": 0.3763552192846837,
+        "rejected_stages_with_observed_T2_positive": 12,
+        "student_classifier_keep_fraction": 0.15625
+      },
+      "2": {
+        "baseline_train_stage_mean": 0.384765625,
+        "keep_n": 6,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.384765625,
+        "predicted_mean_u": 0.3647184533014447,
+        "rejected_stages_with_observed_T2_positive": 13,
+        "student_classifier_keep_fraction": 0.25
+      },
+      "3": {
+        "baseline_train_stage_mean": 0.412109375,
+        "keep_n": 5,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.412109375,
+        "predicted_mean_u": 0.3867551223509331,
+        "rejected_stages_with_observed_T2_positive": 6,
+        "student_classifier_keep_fraction": 0.484375
+      },
+      "4": {
+        "baseline_train_stage_mean": 0.291015625,
+        "keep_n": 4,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.291015625,
+        "predicted_mean_u": 0.2959695382810313,
+        "rejected_stages_with_observed_T2_positive": 2,
+        "student_classifier_keep_fraction": 0.390625
+      },
+      "5": {
+        "baseline_train_stage_mean": 0.12890625,
+        "keep_n": 3,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.12890625,
+        "predicted_mean_u": 0.13778601753277014,
+        "rejected_stages_with_observed_T2_positive": 0,
+        "student_classifier_keep_fraction": 0.953125
+      },
+      "6": {
+        "baseline_train_stage_mean": 0.05859375,
+        "keep_n": 2,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.05859375,
+        "predicted_mean_u": 0.07156567974810948,
+        "rejected_stages_with_observed_T2_positive": 0,
+        "student_classifier_keep_fraction": 1.0
+      },
+      "7": {
+        "baseline_train_stage_mean": 0.017578125,
+        "keep_n": 1,
+        "n_independent_games": 64,
+        "observed_mean_u": 0.017578125,
+        "predicted_mean_u": 0.02992613181818034,
+        "rejected_stages_with_observed_T2_positive": 0,
+        "student_classifier_keep_fraction": 1.0
+      }
+    },
+    "stage_specific_constant_prior": {
+      "MAE": 0.18860626220703125,
+      "MSE": 0.06314611434936523
+    },
+    "stage_state_groups": 512
+  },
+  "training_states": 512,
+  "validation_game_groups": 16,
+  "validation_states": 128,
+  "warning": "Only four actual futures per state and 16 validation games. All values are conditional on v14-128 chosen bottoms, not universally calibrated for every legal hand or multiplayer win rate."
+}
