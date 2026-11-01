@@ -42,9 +42,10 @@ only among changed states as the whole-deck improvement.
    stable-dice beam160 physics. 16 deterministic
    game-ID shards, including archived empty shards
    if no disagreements occur in a shard.
-3. Separately generate ALL 4-seat×3-stage 64-future
-   full99 frozen-v27-plus-v33b downstream Q(MULL)
-   cells = 768 independent full99 physical rollouts.
+3. Separately generate 64-future full99 frozen-v27-plus-v33b
+   downstream Q(MULL) cells **ONLY** for seat/stage
+   pairs containing a changed action, exactly because
+   all other cells multiply an action-difference of zero.
    No current rejected seven enters the future reshuffle.
 4. For each of 768 original states, compute the
    action difference D_i. For unchanged actions,
@@ -65,14 +66,14 @@ only among changed states as the whole-deck improvement.
    benchmark to test Bellman policy feedback and
    runtime. If fails, stop without 125k run.
 
-Expected physical cost = 768 shared C deployments
-+ 32×[number of changed actions], rather than
-768+9,216 deployments. The accuracy for each relevant
+Expected physical cost = 64×[number of distinct changed
+seat/stage cells] + 32×[number of changed actions],
+rather than 768+9,216 deployments. The accuracy for each relevant
 KEEP Q is INCREASED from 12 to 32 independent futures.
 If the original 123k training action-change count
-(8/768) carries over, validation will use only
-1,024 beam160 gameplay outcomes, saving 8,960
-simulations without losing any contribution to
+(8/768) carries over, validation will use only the regret-relevant
+beam160 outcomes, saving most simulations without
+losing any contribution to
 the one-step action-value comparison.
 
 **Critical limits:** This only preserves EXACT
@@ -91,3 +92,30 @@ all-hands KEEP-label collection instructions in
 training selection and model remain as originally
 predeclared. All project research branches remain
 isolated and unapproved.
+
+## Exact frozen 124k census result (no gameplay outcomes)
+
+Census workflow completed successfully before any 124k physical
+outcome evaluation: 256 games × 3 early actual London stages = 768,
+**only 2 different actions** (game124022 stage2 seat0;
+game124189 stage1 seat2). The original minimum eight changed
+actions gate therefore **cannot pass**; candidate is stopped
+regardless of the two measured conditional outcomes. For a
+purely descriptive physical diagnostic, only two KEEP hand
+states need 32 unknown92 futures each, and exactly two
+seat-stage C cells need 64 full99 futures each:
+**192 total new beam160 gameplay outcomes**. No 125k
+prospective run is permitted after the failed coverage gate.
+
+Even if both altered actions were each perfect improvements,
+the uniform 768-stage conditional action gain could not
+exceed 2/768 = 0.2604167 percentage points on this
+fixed 124k cohort. Since the two action discrepancies
+occur in only two of the 256 physical game IDs,
+a complete full-game T2 difference between v36 and
+v33b on these exact 256 deals would have absolute
+magnitude at most 2/256 = 0.78125 percentage points,
+assuming deterministic unchanged downstream physics.
+These are COHORT-SPECIFIC bounds, NOT population-wide
+confidence intervals; they do not imply that v36
+is intrinsically worse on other random cohorts.
