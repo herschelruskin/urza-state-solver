@@ -1,0 +1,74 @@
+name: DACK v27 T2-focused prospective N256 physical 98k vs v26 v5
+on:
+  push:
+    branches: [dack-v27-t2-value-20261031]
+    paths:
+      - '.github/workflows/dack_v27_T2_only_prospective_98k.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  physical_games:
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        start: [98000, 98004, 98008, 98012, 98016, 98020, 98024, 98028, 98032, 98036, 98040, 98044, 98048, 98052, 98056, 98060, 98064, 98068, 98072, 98076, 98080, 98084, 98088, 98092, 98096, 98100, 98104, 98108, 98112, 98116, 98120, 98124, 98128, 98132, 98136, 98140, 98144, 98148, 98152, 98156, 98160, 98164, 98168, 98172, 98176, 98180, 98184, 98188, 98192, 98196, 98200, 98204, 98208, 98212, 98216, 98220, 98224, 98228, 98232, 98236, 98240, 98244, 98248, 98252]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v27-t2-value-20261031
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check frozen T2-only model and strict physical game oracle no learned-policy promotion
+        run: |
+          python -m compileall -q dack_simulator/validation/compare_v27_fresh_n256.py dack_simulator/validation/pool_v27_fresh_n256.py
+          python dack_paired_counterfactual_v27_T2_only_DP_20261101.py --audit
+      - name: Four independent seed-matched physical 99-card goldfish games under v5 v26 v27
+        run: |
+          python -u dack_simulator/validation/compare_v27_fresh_n256.py \
+             --start ${{ matrix.start }} --games 4 \
+             --out shards/v27_98k_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v27-98k-${{ matrix.start }}
+          path: shards/v27_98k_*.json.gz
+          retention-days: 30
+  pool:
+    needs: physical_games
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v27-t2-value-20261031
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v27-98k-*
+          merge-multiple: true
+          path: collected
+      - name: Require exact N256 98k denominator and compare paired T2 v27 versus v26 and v5
+        run: python -u dack_simulator/validation/pool_v27_fresh_n256.py
+      - name: Archive final experimental 98k results and every physical-game shard
+        run: |
+          mkdir -p benchmark_results/v27_98k_full_game_shards
+          cp collected/v27_98k_*.json.gz benchmark_results/v27_98k_full_game_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v27_prospective_T2_98k_N256.json benchmark_results/v27_98k_full_game_shards
+          git commit -m "Archive v27 prospective 98k N256 physical v5 v26 T2-only comparison without model promotion"
+          git pull --rebase origin dack-v27-t2-value-20261031
+          git push origin HEAD:dack-v27-t2-value-20261031
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v27-prospective-T2-98k-N256-report
+          path: benchmark_results/v27_prospective_T2_98k_N256.json
+          retention-days: 30
