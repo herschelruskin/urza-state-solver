@@ -1,0 +1,64 @@
+name: DACK v43 matched original-v5 reference on previously inspected 151k N128
+on:
+  push:
+    branches: [dack-v43-v5-candidate-forensics-20261101]
+    paths:
+      - '.github/workflows/dack_v43_v5_reference_151k_N128.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  reference:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        start: [151000,151016,151032,151048,151064,151080,151096,151112]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v43-v5-candidate-forensics-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Execute original untouched v5 goldfish on each of 16 already inspected 151k hands
+        run: |
+          python -m py_compile dack_simulator/validation/v43_original_v5_151k_N128_reference.py
+          python -u dack_simulator/validation/v43_original_v5_151k_N128_reference.py \
+             --start ${{ matrix.start }} --out shards/v43_original_v5_151k_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v43-151k-original-v5-${{ matrix.start }}
+          path: shards/v43_original_v5_151k_*.json.gz
+          retention-days: 90
+  pool:
+    needs: reference
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v43-v5-candidate-forensics-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v43-151k-original-v5-*
+          merge-multiple: true
+          path: collected
+      - name: Measure original v5 goldfish on identical 128 baseline/maxQ2 151k hands
+        run: python -u dack_simulator/validation/v43_pool_151k_original_v5_N128.py
+      - name: Archive retrospective same-seed original v5 reference without acceptance claims
+        run: |
+          mkdir -p benchmark_results/v43_v5_151k_N128_shards
+          cp collected/*.json.gz benchmark_results/v43_v5_151k_N128_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v43_v5_vs_maxQ2_on_151k_retro_N128.json benchmark_results/v43_v5_151k_N128_shards/
+          git commit -m "Archive original v5 same-seed N128 reference and maxQ2-v27 three-policy comparison"
+          git pull --rebase origin dack-v43-v5-candidate-forensics-20261101
+          git push origin HEAD:dack-v43-v5-candidate-forensics-20261101
