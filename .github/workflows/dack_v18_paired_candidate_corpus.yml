@@ -1,0 +1,206 @@
+name: DACK v18 paired bottom-candidate outcomes 144 train and 40 validation groups
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v18_paired_candidate_corpus.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  label:
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        include:
+          - split: train
+            start: 60000
+            games: 8
+          - split: train
+            start: 60008
+            games: 8
+          - split: train
+            start: 60016
+            games: 8
+          - split: train
+            start: 60024
+            games: 8
+          - split: train
+            start: 60032
+            games: 8
+          - split: train
+            start: 60040
+            games: 8
+          - split: train
+            start: 60048
+            games: 8
+          - split: train
+            start: 60056
+            games: 8
+          - split: train
+            start: 60064
+            games: 8
+          - split: train
+            start: 60072
+            games: 8
+          - split: train
+            start: 60080
+            games: 8
+          - split: train
+            start: 60088
+            games: 8
+          - split: train
+            start: 60096
+            games: 8
+          - split: train
+            start: 60104
+            games: 8
+          - split: train
+            start: 60112
+            games: 8
+          - split: train
+            start: 60120
+            games: 8
+          - split: train
+            start: 60128
+            games: 8
+          - split: train
+            start: 60136
+            games: 8
+          - split: validation
+            start: 61000
+            games: 8
+          - split: validation
+            start: 61008
+            games: 8
+          - split: validation
+            start: 61016
+            games: 8
+          - split: validation
+            start: 61024
+            games: 8
+          - split: validation
+            start: 61032
+            games: 8
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Matched real hidden futures for each structural top-three and v5 preferred bottom
+        run: |
+          python -m compileall -q dack_simulator/validation/label_paired_candidate_values_v18.py
+          python -u dack_simulator/validation/label_paired_candidate_values_v18.py \
+            --split ${{ matrix.split }} --start ${{ matrix.start }} \
+            --games ${{ matrix.games }} --draws 8 --first-k 3 \
+            --out sampled/v18_${{ matrix.split }}_${{ matrix.start }}.jsonl.gz
+      - name: Verify paired randomness, legal physical deck, grouped candidate outcomes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from collections import Counter
+          import gzip,json
+          files=list(Path('sampled').glob('v18_*.jsonl.gz'))
+          assert len(files)==1
+          with gzip.open(files[0],'rt') as fp:
+              meta=json.loads(next(fp));rows=[json.loads(x) for x in fp]
+          assert meta['status']=='PASS' and meta['requested_groups']==8
+          assert meta['paired_draws_per_option']==8
+          assert len(rows)+len(meta['ineligible_game_ids'])==8
+          ids=[x['source_teacher_game_id'] for x in rows]
+          assert len(set(ids))==len(ids)
+          for r in rows:
+              assert r['future_order_shared_across_candidates'] is True
+              assert r['stable_dice_seed_shared_across_candidates'] is True
+              assert r['teacher_chosen_index'] in r['candidate_indices'] and 0 in r['candidate_indices']
+              assert r['hidden_future_order_never_saved'] is True
+              assert sum(r['unknown_counts'].values())==92
+              assert len(r['candidates'])<=4
+              for c in r['candidates']:
+                  assert len(c['outcomes'])==8 and all(z in (0,1,2,3) for z in c['outcomes'])
+                  assert Counter(c['hand'])+Counter(c['bottom'])==Counter(r['seven'])
+                  assert sum(c['counts'].values())==8
+          print('V18_PAIRED_REAL_GROUPS_VALIDATED',files[0].name,len(rows),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v18-paired-${{ matrix.split }}-${{ matrix.start }}
+          path: sampled/v18_*.jsonl.gz
+          retention-days: 21
+  archive:
+    needs: label
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v18-paired-*
+          merge-multiple: true
+          path: datasets/v18_paired_real_candidates/
+      - name: Archive reproducible group-split candidate utility labels and checksums
+        run: |
+          python - <<'PY'
+          import hashlib,gzip,json
+          from pathlib import Path
+          from collections import Counter
+          root=Path('datasets/v18_paired_real_candidates')
+          files=sorted(root.glob('v18_*.jsonl.gz'))
+          assert len(files)==23,len(files)
+          report={'schema':'dack_v18_paired_real_candidate_outcomes',
+                  'actual_beam':160,'common_random_numbers':True,
+                  'selection':'v5_visited_stage_last_eligible',
+                  'distribution':'v5_reached_stages_not_unconditional',
+                  'all_models_unapproved':True,'splits':{},'files':[]}
+          allids=[]
+          for split,lo,ng in [('train',60000,144),('validation',61000,40)]:
+              fs=[p for p in files if p.name.startswith('v18_'+split+'_')]
+              assert len(fs)==(18 if split=='train' else 5)
+              ids=[];skipped=[];count=Counter()
+              for p in fs:
+                  with gzip.open(p,'rt') as f:
+                      meta=json.loads(next(f))
+                      assert meta['split']==split and meta['requested_groups']==8
+                      assert meta['paired_draws_per_option']==8
+                      skipped.extend(meta['ineligible_game_ids'])
+                      for line in f:
+                          row=json.loads(line)
+                          ids.append(row['source_teacher_game_id'])
+                          count['groups']+=1
+                          count['candidates']+=len(row['candidates'])
+                          count['rollouts']+=8*len(row['candidates'])
+                          count['teacher_better_than_structural']+=int(row['teacher_minus_structural_first_u']>0)
+                          count['teacher_worse_than_structural']+=int(row['teacher_minus_structural_first_u']<0)
+                  report['files'].append({'name':p.name,'split':split,
+                      'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'bytes':p.stat().st_size})
+              assert len(ids)==len(set(ids))
+              assert set(ids).isdisjoint(set(skipped))
+              assert set(ids)|set(skipped)==set(range(lo,lo+ng))
+              allids.append(set(ids))
+              report['splits'][split]={'requested_independent_groups':ng,
+                  'eligible_groups':len(ids),'ineligible_groups':len(skipped),
+                  'counts':dict(count)}
+          assert allids[0].isdisjoint(allids[1])
+          (root/'manifest.json').write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
+          print('V18_REAL_CANDIDATE_CORPUS_ARCHIVE_PASS',json.dumps(report['splits']),flush=True)
+          PY
+      - name: Archive actual beam outcomes, never replace original v5 data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f datasets/v18_paired_real_candidates/
+          git commit -m "Archive paired physical bottom candidate T1/T2/T3 outcomes with disjoint train/validation groups"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v18-paired-real-candidate-dataset-manifest
+          path: datasets/v18_paired_real_candidates/manifest.json
+          retention-days: 21
