@@ -1,0 +1,116 @@
+{
+  "bottom_changed_games": 134,
+  "bottom_changed_v14_T2_better": 3,
+  "bottom_changed_v5_T2_better": 14,
+  "cross_component_interaction_not_estimated": true,
+  "experiment_is_bottom_only_at_same_v5_keep_stage": true,
+  "frozen_v14_bottom_at_v5_stage": {
+    "by_T1": {
+      "count": 6,
+      "delta_vs_original_v5_pp": -0.390625,
+      "negative_games": 1,
+      "paired_bootstrap_95ci_pp": [
+        -1.171875,
+        0.0
+      ],
+      "positive_games": 0
+    },
+    "by_T2": {
+      "count": 121,
+      "delta_vs_original_v5_pp": -4.296875,
+      "negative_games": 14,
+      "paired_bootstrap_95ci_pp": [
+        -7.421875,
+        -1.171875
+      ],
+      "positive_games": 3
+    },
+    "by_T3": {
+      "count": 197,
+      "delta_vs_original_v5_pp": -6.640625,
+      "negative_games": 18,
+      "paired_bootstrap_95ci_pp": [
+        -10.15625,
+        -3.515625
+      ],
+      "positive_games": 1
+    }
+  },
+  "independent_physical_outer_groups": 256,
+  "no_original_v5_beam_recalculation": true,
+  "original_archived_v5_replay_exact_parity": true,
+  "original_v5_by_turn": {
+    "by_T1": 7,
+    "by_T2": 132,
+    "by_T3": 214
+  },
+  "other_existing_polices": {
+    "original_v27_final_turn": {
+      "by_T1": {
+        "count": 7,
+        "delta_vs_original_v5_pp": 0.0,
+        "negative_games": 1,
+        "paired_bootstrap_95ci_pp": [
+          -1.171875,
+          1.171875
+        ],
+        "positive_games": 1
+      },
+      "by_T2": {
+        "count": 106,
+        "delta_vs_original_v5_pp": -10.15625,
+        "negative_games": 34,
+        "paired_bootstrap_95ci_pp": [
+          -15.234375,
+          -5.46875
+        ],
+        "positive_games": 8
+      },
+      "by_T3": {
+        "count": 189,
+        "delta_vs_original_v5_pp": -9.765625,
+        "negative_games": 37,
+        "paired_bootstrap_95ci_pp": [
+          -15.234375,
+          -4.6875
+        ],
+        "positive_games": 12
+      }
+    },
+    "original_v33b_final_turn": {
+      "by_T1": {
+        "count": 8,
+        "delta_vs_original_v5_pp": 0.390625,
+        "negative_games": 0,
+        "paired_bootstrap_95ci_pp": [
+          0.0,
+          1.171875
+        ],
+        "positive_games": 1
+      },
+      "by_T2": {
+        "count": 111,
+        "delta_vs_original_v5_pp": -8.203125,
+        "negative_games": 31,
+        "paired_bootstrap_95ci_pp": [
+          -13.28125,
+          -3.515625
+        ],
+        "positive_games": 10
+      },
+      "by_T3": {
+        "count": 196,
+        "delta_vs_original_v5_pp": -7.03125,
+        "negative_games": 31,
+        "paired_bootstrap_95ci_pp": [
+          -12.109375,
+          -2.34375
+        ],
+        "positive_games": 13
+      }
+    }
+  },
+  "past_cohort_NOT_new_prospective_validation": true,
+  "schema": "dack_v43_115k_fixed_original_v5_stage_hybrid_N256",
+  "status": "PASS"
+}
