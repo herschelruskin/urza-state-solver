@@ -1,0 +1,148 @@
+{
+  "actual_beam160_goldfish_gameplay": true,
+  "experimental_model_approved": false,
+  "game_ids": [
+    97000,
+    97255
+  ],
+  "identical_final_hand_different_outcome_cases": 0,
+  "independent_physical_groups": 256,
+  "metrics": {
+    "v22_real_keep_DP": {
+      "T1": 10,
+      "T2": 100,
+      "T3": 203,
+      "mean_keep_n": 5.81640625,
+      "n": 256,
+      "simulation_seconds": 104.7773
+    },
+    "v26_expanded_keep_DP": {
+      "T1": 10,
+      "T2": 101,
+      "T3": 215,
+      "mean_keep_n": 5.65234375,
+      "n": 256,
+      "simulation_seconds": 106.3967
+    },
+    "v5": {
+      "T1": 17,
+      "T2": 127,
+      "T3": 215,
+      "mean_keep_n": 5.07421875,
+      "n": 256,
+      "simulation_seconds": 6237.4831
+    }
+  },
+  "models_frozen_before_97k_test": true,
+  "paired": {
+    "v22_real_keep_DP_minus_v5": {
+      "T1": {
+        "difference_pp": -2.734375,
+        "exploratory_exact_mcnemar_two_sided_p": 0.015625,
+        "gains": 0,
+        "losses": 7,
+        "paired_bootstrap_95ci_pp": [
+          -4.6875,
+          -0.78125
+        ]
+      },
+      "T2": {
+        "difference_pp": -10.546875,
+        "exploratory_exact_mcnemar_two_sided_p": 0.0003552811186314786,
+        "gains": 14,
+        "losses": 41,
+        "paired_bootstrap_95ci_pp": [
+          -16.015625,
+          -5.078125
+        ]
+      },
+      "T3": {
+        "difference_pp": -4.6875,
+        "exploratory_exact_mcnemar_two_sided_p": 0.14800580076020597,
+        "gains": 23,
+        "losses": 35,
+        "paired_bootstrap_95ci_pp": [
+          -10.546875,
+          1.171875
+        ]
+      }
+    },
+    "v26_expanded_keep_DP_minus_v22_real_keep_DP": {
+      "T1": {
+        "difference_pp": 0.0,
+        "exploratory_exact_mcnemar_two_sided_p": 1.0,
+        "gains": 0,
+        "losses": 0,
+        "paired_bootstrap_95ci_pp": [
+          0.0,
+          0.0
+        ]
+      },
+      "T2": {
+        "difference_pp": 0.390625,
+        "exploratory_exact_mcnemar_two_sided_p": 1.0,
+        "gains": 7,
+        "losses": 6,
+        "paired_bootstrap_95ci_pp": [
+          -2.34375,
+          3.125
+        ]
+      },
+      "T3": {
+        "difference_pp": 4.6875,
+        "exploratory_exact_mcnemar_two_sided_p": 0.01181793212890625,
+        "gains": 16,
+        "losses": 4,
+        "paired_bootstrap_95ci_pp": [
+          1.171875,
+          8.203125
+        ]
+      }
+    },
+    "v26_expanded_keep_DP_minus_v5": {
+      "T1": {
+        "difference_pp": -2.734375,
+        "exploratory_exact_mcnemar_two_sided_p": 0.015625,
+        "gains": 0,
+        "losses": 7,
+        "paired_bootstrap_95ci_pp": [
+          -4.6875,
+          -0.78125
+        ]
+      },
+      "T2": {
+        "difference_pp": -10.15625,
+        "exploratory_exact_mcnemar_two_sided_p": 0.00022224496262168714,
+        "gains": 11,
+        "losses": 37,
+        "paired_bootstrap_95ci_pp": [
+          -15.234375,
+          -5.078125
+        ]
+      },
+      "T3": {
+        "difference_pp": 0.0,
+        "exploratory_exact_mcnemar_two_sided_p": 1.0,
+        "gains": 23,
+        "losses": 23,
+        "paired_bootstrap_95ci_pp": [
+          -5.078125,
+          5.078125
+        ]
+      }
+    }
+  },
+  "primary_endpoint": "Cumulative Turn 2: v26 vs v5; compare against frozen v22 as mechanism check",
+  "schema": "dack_v26_prospective_real_value_N256_97k",
+  "sha256": {
+    "models/dack_v22_all_stage_continuations_EXPERIMENTAL.json": "33192df51f9c90d054892aa6828ba94a1cfd165ba1a70505b0079b7f7343e5e3",
+    "models/dack_v22_real_all_stage_keep_value_EXPERIMENTAL.json": "b88dfab4e7d0d0b2b6a96e4a5a28b5af815b88408c6ae6f9cd2389ccd3bc4b6b",
+    "models/dack_v26_expanded_all_stage_continuations_EXPERIMENTAL.json": "d508d0cd3224cf7403f65b261edfc2487040feb16a7c786d5e65f479f1430d74",
+    "models/dack_v26_expanded_real_keep_value_EXPERIMENTAL.json": "2843f150135a4135a8d68bdd621f246fea040be86b85abe2b61c5f399329bb70",
+    "models/v14_curve/v14_teacher_groups_128.json": "19fdbf300afc1e4545b81767f8fbf3bbe6ebd7b33ad139e2aa9231e3215df8ff"
+  },
+  "speedup_v5_over_v26": 58.62477971591225,
+  "status": "PASS",
+  "v25_96k_evaluation_not_training": true,
+  "warning": "No four-player multiplayer win rates. N256 confidence interval does not prove equivalence unless precision meets a predefined noninferiority margin."
+}
