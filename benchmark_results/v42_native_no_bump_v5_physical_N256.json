@@ -1,0 +1,91 @@
+{
+  "N": 256,
+  "N_groups_with_native_kept_earlier": 68,
+  "N_groups_with_no_difference": 188,
+  "all_archived_original_v5_win_turns_verified_exactly": true,
+  "changed_only": {
+    "N": 68,
+    "earlier_native_kept_stage_counts": {
+      "0": 25,
+      "1": 21,
+      "2": 16,
+      "3": 6
+    },
+    "native_better_T2": 8,
+    "native_better_T3": 11,
+    "v5_better_T2": 16,
+    "v5_better_T3": 6
+  },
+  "historic_115k_previously_inspected_NOT_PROSPECTIVE": true,
+  "limitations": [
+    "This is a same-physical-game counterfactual with archived original v5 candidate scores and bottoms; it isolates threshold penalty, not v5 versus later-score differences.",
+    "Historical 115k already observed for earlier models and cannot be used as a new acceptance set.",
+    "Native KEEP at a previously rejected stage is evaluated only from original-v5 history; no hindsight about future stage cards in policy decision.",
+    "Outcome is goldfish Dack deployment, not multiplayer cEDH victory.",
+    "No claim that original v5 is globally optimal or that these score thresholds transfer to another deck."
+  ],
+  "mean_actual_keep_stage_delta_native_minus_assertive": -0.7265625,
+  "native_no_bump_policy_has_no_v5_beam_calls_in_replay": true,
+  "paired": {
+    "native_minus_v5_T1": {
+      "delta_pp": 0.0,
+      "gains": 0,
+      "losses": 0,
+      "paired_group_bootstrap_95ci_pp": [
+        0.0,
+        0.0
+      ],
+      "two_source_original_shuffles_shared": true
+    },
+    "native_minus_v5_T2": {
+      "delta_pp": -3.125,
+      "gains": 8,
+      "losses": 16,
+      "paired_group_bootstrap_95ci_pp": [
+        -7.03125,
+        0.390625
+      ],
+      "two_source_original_shuffles_shared": true
+    },
+    "native_minus_v5_T3": {
+      "delta_pp": 1.953125,
+      "gains": 11,
+      "losses": 6,
+      "paired_group_bootstrap_95ci_pp": [
+        -1.171875,
+        5.078125
+      ],
+      "two_source_original_shuffles_shared": true
+    }
+  },
+  "per_policy_counts": {
+    "native_no_bump_real_turn": {
+      "by_T1": 7,
+      "by_T2": 124,
+      "by_T3": 219
+    },
+    "original_v5_turn_replayed": {
+      "by_T1": 7,
+      "by_T2": 132,
+      "by_T3": 214
+    },
+    "v27_frozen_original_turn": {
+      "by_T1": 7,
+      "by_T2": 106,
+      "by_T3": 189
+    },
+    "v33b_frozen_original_turn": {
+      "by_T1": 8,
+      "by_T2": 111,
+      "by_T3": 196
+    }
+  },
+  "same_original_v5_candidates_scores_and_retained_bottoms": true,
+  "schema": "dack_v42_v5_assertive_bumps_only_physical_N256_reused_115k",
+  "source_groups": [
+    115000,
+    115255
+  ],
+  "status": "PASS",
+  "strict_99_real_physical_slots_and_beam160": true
+}
