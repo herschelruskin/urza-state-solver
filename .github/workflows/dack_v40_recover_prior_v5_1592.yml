@@ -1,0 +1,56 @@
+name: DACK v40 recover archived original-v5 full London traces without resimulation
+on:
+  push:
+    branches: [dack-v40-true-disagreement-reassessment-20261101]
+    paths:
+      - '.github/workflows/dack_v40_recover_prior_v5_1592.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  historical_teacher_recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v40-true-disagreement-reassessment-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify no-physics source and run deterministic historical archival extraction
+        run: |
+          python -m py_compile dack_simulator/validation/v40_recover_old_v5_histories.py
+          python -u -m dack_simulator.validation.v40_recover_old_v5_histories \
+            --out datasets/v40_recovered_original_v5_history_1592.jsonl.gz \
+            --report benchmark_results/v40_recovered_original_v5_1592_summary.json
+      - name: Validate independent physical group totals and output checksum
+        run: |
+          python - <<'PY'
+          import json, pathlib, hashlib
+          p=pathlib.Path('benchmark_results/v40_recovered_original_v5_1592_summary.json')
+          r=json.loads(p.read_text())
+          assert r['status']=='PASS' and r['group_n']==1592
+          q=pathlib.Path(r['data_path'])
+          assert hashlib.sha256(q.read_bytes()).hexdigest()==r['data_sha256']
+          assert r['stage_n']>=1592
+          assert r['no_gameplay_executed'] and r['no_v5_teacher_resampled']
+          print('DACK_V40_HISTORICAL_V5_EXTRACT_REPLAY_PASS',r['group_n'],r['stage_n'])
+          PY
+      - name: Archive verified true-v5 observations as new experimental training source
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f datasets/v40_recovered_original_v5_history_1592.jsonl.gz benchmark_results/v40_recovered_original_v5_1592_summary.json
+          git commit -m "Archive 1592 groups of previous actual-v5 keep, mull and bottom histories as training annotations"
+          git pull --rebase origin dack-v40-true-disagreement-reassessment-20261101
+          git push origin HEAD:dack-v40-true-disagreement-reassessment-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v40-recovered-prior-v5-stage-histories
+          path: |
+            datasets/v40_recovered_original_v5_history_1592.jsonl.gz
+            benchmark_results/v40_recovered_original_v5_1592_summary.json
+          retention-days: 90
