@@ -1,0 +1,39 @@
+name: DACK v33b read-only 110k versus 115k London gap attribution
+on:
+  push:
+    branches: [dack-v33b-capability-regret-20261101]
+    paths:
+      - '.github/workflows/dack_v33b_two_cohort_audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  readonly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v33b-capability-regret-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Assert both 64-shard archives and compare without beam calls
+        run: |
+          python -m py_compile dack_simulator/validation/v33b_readonly_two_cohort_audit.py
+          python -u dack_simulator/validation/v33b_readonly_two_cohort_audit.py
+      - name: Archive descriptive London-stage diagnostic without model changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v33b_two_cohort_london_attribution.json
+          git commit -m "Archive v33b zero-beam two-cohort London-stage and same-hand parity audit"
+          git pull --rebase origin dack-v33b-capability-regret-20261101
+          git push origin HEAD:dack-v33b-capability-regret-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v33b-two-cohort-attribution
+          path: benchmark_results/v33b_two_cohort_london_attribution.json
+          retention-days: 30
