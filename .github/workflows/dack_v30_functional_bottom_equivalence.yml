@@ -1,0 +1,38 @@
+name: DACK v30 functional bottom equivalence frozen N50 audit
+on:
+  push:
+    branches: [dack-v30-functional-bottom-equivalence-20261031]
+    paths: ['.github/workflows/dack_v30_functional_bottom_equivalence.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  frozen-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v30-functional-bottom-equivalence-20261031
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify pure Python code and protected physical rules
+        run: |
+          python -m compileall -q dack_simulator/validation/v30_functional_bottom_equivalence.py dack_simulator/validation/test_v30_functional_bottom_equivalence.py
+          python -u dack_simulator/validation/test_v30_functional_bottom_equivalence.py
+      - name: Separate exact-card disagreement, capability-key differences, observed speed equivalence
+        run: python -u dack_simulator/validation/v30_functional_bottom_equivalence.py
+      - name: Archive unchanged-data read-only audit on isolated branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v30_functional_bottom_equivalence_N50.json
+          git commit -m "Archive experimental functional-bottom equivalence N50; keep search state strict"
+          git pull --rebase origin dack-v30-functional-bottom-equivalence-20261031
+          git push origin HEAD:dack-v30-functional-bottom-equivalence-20261031
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v30-bottom-functionality-diagnostic-N50
+          path: benchmark_results/v30_functional_bottom_equivalence_N50.json
+          retention-days: 30
