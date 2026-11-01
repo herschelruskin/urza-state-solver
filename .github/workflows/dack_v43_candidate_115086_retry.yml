@@ -1,0 +1,32 @@
+name: DACK v43 candidate-profile 115086 archive-retry isolated after concurrent push conflict
+on:
+  push:
+    branches: [dack-v43-v5-candidate-mechanism-20261101]
+    paths:
+      - '.github/workflows/dack_v43_candidate_115086_retry.yml'
+permissions:
+  contents: write
+jobs:
+  single_case:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v43-v5-candidate-mechanism-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Reproduce exact original teacher bottom with candidate EV8 EV16 and later-model values
+        run: |
+          python -u dack_simulator/validation/v43_candidate_microscope.py \
+             --gid 115086 \
+             --out benchmark_results/v43_candidate_profiles/v43_candidate_115086.json
+      - name: Archive separate verified source profile
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v43_candidate_profiles/v43_candidate_115086.json
+          git commit -m "Archive original-v5 candidate-profile source 115086"
+          git pull --rebase origin dack-v43-v5-candidate-mechanism-20261101
+          git push origin HEAD:dack-v43-v5-candidate-mechanism-20261101
