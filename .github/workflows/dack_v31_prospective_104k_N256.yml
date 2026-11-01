@@ -1,0 +1,74 @@
+name: DACK v31 independent prospective full-game 104k N256
+on:
+  push:
+    branches: [dack-v31-action-regret-counterfactual-20261031]
+    paths:
+      - '.github/workflows/dack_v31_prospective_104k_N256.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  sample:
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        start: [104000, 104004, 104008, 104012, 104016, 104020, 104024, 104028, 104032, 104036, 104040, 104044, 104048, 104052, 104056, 104060, 104064, 104068, 104072, 104076, 104080, 104084, 104088, 104092, 104096, 104100, 104104, 104108, 104112, 104116, 104120, 104124, 104128, 104132, 104136, 104140, 104144, 104148, 104152, 104156, 104160, 104164, 104168, 104172, 104176, 104180, 104184, 104188, 104192, 104196, 104200, 104204, 104208, 104212, 104216, 104220, 104224, 104228, 104232, 104236, 104240, 104244, 104248, 104252]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v31-action-regret-counterfactual-20261031
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit v31 model dependency and pure Python policy
+        run: |
+          python -m compileall -q dack_paired_counterfactual_v31_action_regret_DP_20261101.py dack_simulator/validation/v31_compare_fresh_N256.py dack_simulator/validation/v31_pool_fresh_N256.py
+          python dack_paired_counterfactual_v31_action_regret_DP_20261101.py --audit
+      - name: Evaluate four independent physical games with frozen v27 and Q-regret v31
+        run: |
+          python -u dack_simulator/validation/v31_compare_fresh_N256.py \
+            --start ${{ matrix.start }} --games 4 \
+            --out shards/v31_104k_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v31-104k-${{ matrix.start }}
+          path: shards/v31_104k_*.json.gz
+          retention-days: 30
+  pool:
+    needs: sample
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v31-action-regret-counterfactual-20261031
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v31-104k-*
+          merge-multiple: true
+          path: collected
+      - name: Pool matched physical N256 T1/T2/T3 and paired uncertainty
+        run: python -u dack_simulator/validation/v31_pool_fresh_N256.py
+      - name: Archive prospective actual full-game outcomes without promotion
+        run: |
+          mkdir -p benchmark_results/v31_104k_shards
+          cp collected/v31_104k_*.json.gz benchmark_results/v31_104k_shards
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v31_104k_shards benchmark_results/v31_prospective_104k_N256.json
+          git commit -m "Archive fresh independent v31-v27 physical goldfish N256 performance"
+          git pull --rebase origin dack-v31-action-regret-counterfactual-20261031
+          git push origin HEAD:dack-v31-action-regret-counterfactual-20261031
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v31-prospective-104k-N256
+          path: benchmark_results/v31_prospective_104k_N256.json
+          retention-days: 30
