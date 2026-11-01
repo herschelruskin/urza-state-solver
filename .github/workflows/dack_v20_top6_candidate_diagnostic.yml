@@ -1,0 +1,96 @@
+name: DACK v20 top-six bottom-candidate coverage diagnostic
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v20_top6_candidate_diagnostic.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  paired:
+    strategy:
+      fail-fast: false
+      matrix:
+        start: [61000,61008]
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Six structural bottoms and v5 preferred on identical independent real futures
+        run: |
+          python -u dack_simulator/validation/label_paired_candidate_values_v18.py \
+            --split validation --start ${{ matrix.start }} --games 8 \
+            --draws 8 --first-k 6 \
+            --out sampled/top6_${{ matrix.start }}.jsonl.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: top6-real-pairs-${{ matrix.start }}
+          path: sampled/top6_*.jsonl.gz
+          retention-days: 21
+  compare:
+    needs: paired
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: top6-real-pairs-*
+          merge-multiple: true
+          path: sampled/
+      - name: Measure physical candidate shortlist coverage and optimistic top-six utility ceiling
+        run: |
+          python - <<'PY'
+          import gzip,glob,json
+          files=glob.glob('sampled/top6_*.jsonl.gz')
+          assert len(files)==2
+          rows=[]
+          for path in files:
+              with gzip.open(path,'rt') as f:
+                  m=json.loads(next(f));r=[json.loads(x) for x in f]
+              assert m['candidate_limit_structural_first_plus_teacher']==6
+              assert m['paired_draws_per_option']==8
+              rows.extend(r)
+          assert rows and len(set(x['source_teacher_game_id'] for x in rows))==len(rows)
+          results=[]
+          for r in rows:
+              top3=[c for c in r['candidates'] if c['candidate_index']<3]
+              top6=[c for c in r['candidates'] if c['candidate_index']<6]
+              assert top3 and top6
+              t3=max(c['empirical_U'] for c in top3)
+              t6=max(c['empirical_U'] for c in top6)
+              results.append({'gid':r['source_teacher_game_id'],
+                'teacher_idx':r['teacher_chosen_index'],
+                'empirical_best_top3':t3,'empirical_best_top6':t6,
+                'teacher_outside_top3':r['teacher_chosen_index']>=3,
+                'teacher_outside_top6':r['teacher_chosen_index']>=6})
+          n=len(results)
+          o={'schema':'dack_v20_top_six_candidate_shortlist_diagnostic',
+             'groups':n,
+             'teacher_outside_top3':sum(x['teacher_outside_top3'] for x in results),
+             'teacher_outside_top6':sum(x['teacher_outside_top6'] for x in results),
+             'mean_empirical_best_top3':sum(x['empirical_best_top3'] for x in results)/n,
+             'mean_empirical_best_top6':sum(x['empirical_best_top6'] for x in results)/n,
+             'noisy_oracle_top6_minus_top3':sum(x['empirical_best_top6']-x['empirical_best_top3'] for x in results)/n,
+             'warning':'Best-of-8-futures maxima are upward-biased noisy oracles; diagnostic shortlist coverage only. These validation IDs are development data and cannot be used as untouched generalization holdout.',
+             'rows':results}
+          from pathlib import Path
+          path=Path('benchmark_results/v20_top6_candidate_coverage_development.json')
+          path.parent.mkdir(exist_ok=True)
+          path.write_text(json.dumps(o,indent=2)+'\n')
+          print('V20_TOP6_SHORTLIST_DIAGNOSTIC_PASS',json.dumps({
+              k:v for k,v in o.items() if k!='rows'},flush=True))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v20-top6-shortlist-development-diagnostic
+          path: benchmark_results/v20_top6_candidate_coverage_development.json
+          retention-days: 21
