@@ -13,6 +13,9 @@ from __future__ import annotations
 import argparse,json,random,hashlib
 from collections import defaultdict
 from pathlib import Path
+import sys
+ROOT=Path(__file__).resolve().parents[2]
+sys.path.insert(0,str(ROOT))
 from dack_simulator.validation import v39_131k_pool as base
 
 def by2(t):return int(0<int(t)<=2)
