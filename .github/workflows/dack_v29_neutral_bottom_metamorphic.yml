@@ -1,0 +1,71 @@
+name: DACK v29 neutral bottom equivalence chance-coupling audit
+on:
+  push:
+    branches: [dack-v29-neutral-bottom-equivalence-20261031]
+    paths: ['.github/workflows/dack_v29_neutral_bottom_metamorphic.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  scenario:
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        scenario: [bucknard_key, mana_vault_tutor, mox_opal_exception, chrome_mox_exception]
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v29-neutral-bottom-equivalence-20261031
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify isolated metamorphic test and strict full-game evaluator
+        run: |
+          python -m compileall -q dack_simulator/validation/v29_neutral_bottom_equivalence.py dack_simulator/validation/v29_pool_neutral_bottom.py
+          python dack_paired_counterfactual_v5_stable_chance_20261031.py --audit
+      - name: Hold real 92 unseen cards constant and exchange only three visible presumed blank cards
+        run: |
+          python -u dack_simulator/validation/v29_neutral_bottom_equivalence.py \
+             --scenario ${{ matrix.scenario }} --start 101000 --samples 12 \
+             --out shards/v29_${{ matrix.scenario }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v29-${{ matrix.scenario }}
+          path: shards/v29_*.json.gz
+          retention-days: 30
+  pool:
+    needs: scenario
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v29-neutral-bottom-equivalence-20261031
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v29-*
+          merge-multiple: true
+          path: collected
+      - name: Pool all 48 controlled hidden-order pairs with original and research-coupled dice
+        run: python -u dack_simulator/validation/v29_pool_neutral_bottom.py
+      - name: Archive results in isolated research branch; do not promote policy
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v29_neutral_bottom_metamorphic_N48.json
+          git commit -m "Archive controlled bottoming equivalence and chance key metamorphic audit"
+          git pull --rebase origin dack-v29-neutral-bottom-equivalence-20261031
+          git push origin HEAD:dack-v29-neutral-bottom-equivalence-20261031
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v29-neutral-bottom-metamorphic-report
+          path: benchmark_results/v29_neutral_bottom_metamorphic_N48.json
+          retention-days: 30
