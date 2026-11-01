@@ -1,0 +1,1724 @@
+{
+  "DO_NOT_collapse_search_states_by_heuristic_fingerprint": true,
+  "mean_v5_minus_student_T2": 0.01375,
+  "model_training": false,
+  "n_teacher_final_kept_groups": 50,
+  "per_group_details": [
+    {
+      "changed_hand_cards": [
+        "Static Prison",
+        "Urza's Saga"
+      ],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity",
+        "lands_in_hand"
+      ],
+      "game_id": 99001,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 5,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Command Beacon",
+        "Remote Farm"
+      ],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 3,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Urza's Saga",
+        "Static Prison"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Command Beacon",
+        "Remote Farm"
+      ]
+    },
+    {
+      "changed_hand_cards": [],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": true,
+      "functional_field_differences": [],
+      "game_id": 99002,
+      "hypothesized_same_deployment_capability": true,
+      "keep_n": 3,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 2,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Orim's Chant",
+        "Silence",
+        "Great Hall of the Citadel",
+        "Roaming Throne"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Orim's Chant",
+        "Silence",
+        "Great Hall of the Citadel",
+        "Roaming Throne"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Emergence Zone"
+      ],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity"
+      ],
+      "game_id": 99004,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 4,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Urza's Saga"
+      ],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 1,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Emergence Zone",
+        "Mantle of the Ancients",
+        "Static Prison"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Mantle of the Ancients",
+        "Urza's Saga",
+        "Static Prison"
+      ]
+    },
+    {
+      "changed_hand_cards": [],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": true,
+      "functional_field_differences": [],
+      "game_id": 99005,
+      "hypothesized_same_deployment_capability": true,
+      "keep_n": 5,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 1,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Blast Zone",
+        "Static Prison"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Blast Zone",
+        "Static Prison"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Defense Grid"
+      ],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity"
+      ],
+      "game_id": 99006,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 5,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Arcane Signet"
+      ],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 3,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Defense Grid",
+        "March of Otherworldly Light"
+      ],
+      "unproven_card_ability_may_matter": true,
+      "v5_bottom": [
+        "March of Otherworldly Light",
+        "Arcane Signet"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Mana Tithe"
+      ],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": -0.0625,
+      "delta_v5_minus_student_U": -0.03125,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity",
+        "lands_in_hand"
+      ],
+      "game_id": 99007,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 6,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Eiganjo, Seat of the Empire"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 2,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Mana Tithe"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Eiganjo, Seat of the Empire"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Crystal Vein"
+      ],
+      "delta_v5_minus_student_T2": 0.125,
+      "delta_v5_minus_student_T3": 0.125,
+      "delta_v5_minus_student_U": 0.125,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity",
+        "lands_in_hand"
+      ],
+      "game_id": 99009,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 2,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Jeweled Amulet"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 3,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Feather of Flight",
+        "Ancient Den",
+        "Portable Hole",
+        "Trinisphere",
+        "Crystal Vein"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Feather of Flight",
+        "Jeweled Amulet",
+        "Ancient Den",
+        "Portable Hole",
+        "Trinisphere"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Plains",
+        "Urza's Saga"
+      ],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.6875,
+      "delta_v5_minus_student_U": 0.34375,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity",
+        "lands_in_hand"
+      ],
+      "game_id": 99010,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 3,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Everflowing Chalice",
+        "Moonsilver Key"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 1,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Orim's Chant",
+        "Urza's Saga",
+        "Silence",
+        "Plains"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Orim's Chant",
+        "Moonsilver Key",
+        "Silence",
+        "Everflowing Chalice"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Moonsilver Key"
+      ],
+      "delta_v5_minus_student_T2": -0.1875,
+      "delta_v5_minus_student_T3": -0.125,
+      "delta_v5_minus_student_U": -0.15625,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity"
+      ],
+      "game_id": 99011,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 3,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Mana Vault"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 1,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Mox Diamond",
+        "Portable Hole",
+        "Twinblade Blessing",
+        "Moonsilver Key"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Mox Diamond",
+        "Mana Vault",
+        "Portable Hole",
+        "Twinblade Blessing"
+      ]
+    },
+    {
+      "changed_hand_cards": [],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": true,
+      "functional_field_differences": [],
+      "game_id": 99012,
+      "hypothesized_same_deployment_capability": true,
+      "keep_n": 4,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 3,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Paladin Class",
+        "Staff of Compleation",
+        "Trinisphere"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Paladin Class",
+        "Staff of Compleation",
+        "Trinisphere"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Untaidake, the Cloud Keeper"
+      ],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity",
+        "lands_in_hand"
+      ],
+      "game_id": 99013,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 5,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Everflowing Chalice"
+      ],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 3,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Twinblade Blessing",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Twinblade Blessing",
+        "Everflowing Chalice"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Urza's Cave"
+      ],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity"
+      ],
+      "game_id": 99015,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 6,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Homeward Path"
+      ],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 3,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Urza's Cave"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Homeward Path"
+      ]
+    },
+    {
+      "changed_hand_cards": [],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": true,
+      "functional_field_differences": [],
+      "game_id": 99017,
+      "hypothesized_same_deployment_capability": true,
+      "keep_n": 6,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 1,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Minimus Containment"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Minimus Containment"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Urza's Saga"
+      ],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.625,
+      "delta_v5_minus_student_U": 0.3125,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity",
+        "lands_in_hand"
+      ],
+      "game_id": 99018,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 3,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Disruptor Flute"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 1,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Urza's Saga",
+        "Plains",
+        "Super State",
+        "Ancient Tomb"
+      ],
+      "unproven_card_ability_may_matter": true,
+      "v5_bottom": [
+        "Plains",
+        "Super State",
+        "Disruptor Flute",
+        "Ancient Tomb"
+      ]
+    },
+    {
+      "changed_hand_cards": [],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": true,
+      "functional_field_differences": [],
+      "game_id": 99019,
+      "hypothesized_same_deployment_capability": true,
+      "keep_n": 5,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 1,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Mantle of the Ancients",
+        "Bound by Moonsilver"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Mantle of the Ancients",
+        "Bound by Moonsilver"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Minimus Containment"
+      ],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": -0.3125,
+      "delta_v5_minus_student_U": -0.15625,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "auras_bottomed",
+        "auras_in_hand",
+        "critical_card_identity",
+        "lands_in_hand"
+      ],
+      "game_id": 99020,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 5,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Plains"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 3,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Touch the Spirit Realm",
+        "Minimus Containment"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Touch the Spirit Realm",
+        "Plains"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Feather of Flight"
+      ],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "auras_bottomed",
+        "auras_in_hand",
+        "critical_card_identity",
+        "lands_in_hand"
+      ],
+      "game_id": 99021,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 5,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Command Beacon"
+      ],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 1,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Feather of Flight",
+        "Roaming Throne"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Command Beacon",
+        "Roaming Throne"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Bound by Moonsilver",
+        "Urza's Saga"
+      ],
+      "delta_v5_minus_student_T2": -0.0625,
+      "delta_v5_minus_student_T3": 0.5625,
+      "delta_v5_minus_student_U": 0.25,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "auras_bottomed",
+        "auras_in_hand",
+        "critical_card_identity"
+      ],
+      "game_id": 99022,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 4,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Eldrazi Confluence",
+        "The Mycosynth Gardens"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 3,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Preston, the Vanisher",
+        "Urza's Saga",
+        "Bound by Moonsilver"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Preston, the Vanisher",
+        "The Mycosynth Gardens",
+        "Eldrazi Confluence"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Untaidake, the Cloud Keeper"
+      ],
+      "delta_v5_minus_student_T2": -0.0625,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": -0.03125,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity",
+        "lands_in_hand"
+      ],
+      "game_id": 99023,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 5,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Implements of Sacrifice"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 2,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Ancient Tomb",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Ancient Tomb",
+        "Implements of Sacrifice"
+      ]
+    },
+    {
+      "changed_hand_cards": [],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": true,
+      "functional_field_differences": [],
+      "game_id": 99026,
+      "hypothesized_same_deployment_capability": true,
+      "keep_n": 6,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 2,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Void Mirror"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Void Mirror"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Unwanted Remake"
+      ],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": -0.0625,
+      "delta_v5_minus_student_U": -0.03125,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity"
+      ],
+      "game_id": 99027,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 4,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Enlightened Tutor"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 1,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Mantle of the Ancients",
+        "Mana Tithe",
+        "Unwanted Remake"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Mantle of the Ancients",
+        "Mana Tithe",
+        "Enlightened Tutor"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Idolized"
+      ],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "auras_bottomed",
+        "auras_in_hand",
+        "critical_card_identity"
+      ],
+      "game_id": 99028,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 6,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Disruptor Flute"
+      ],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 3,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Idolized"
+      ],
+      "unproven_card_ability_may_matter": true,
+      "v5_bottom": [
+        "Disruptor Flute"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Minimus Containment"
+      ],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "auras_bottomed",
+        "auras_in_hand",
+        "critical_card_identity",
+        "metalcraft_artifact_count"
+      ],
+      "game_id": 99029,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 5,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Mind Stone"
+      ],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 0,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Minimus Containment",
+        "Floating Shield"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Floating Shield",
+        "Mind Stone"
+      ]
+    },
+    {
+      "changed_hand_cards": [],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": true,
+      "functional_field_differences": [],
+      "game_id": 99030,
+      "hypothesized_same_deployment_capability": true,
+      "keep_n": 2,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 1,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Soul Partition",
+        "Mantle of the Ancients",
+        "Ancient Den",
+        "Portable Hole",
+        "Super State"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Soul Partition",
+        "Mantle of the Ancients",
+        "Ancient Den",
+        "Portable Hole",
+        "Super State"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Sheltered by Ghosts"
+      ],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "auras_bottomed",
+        "auras_in_hand",
+        "critical_card_identity"
+      ],
+      "game_id": 99031,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 6,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Expedition Map"
+      ],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 1,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Sheltered by Ghosts"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Expedition Map"
+      ]
+    },
+    {
+      "changed_hand_cards": [],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": true,
+      "functional_field_differences": [],
+      "game_id": 99032,
+      "hypothesized_same_deployment_capability": true,
+      "keep_n": 5,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 0,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Hardlight Containment",
+        "Preston, the Vanisher"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Hardlight Containment",
+        "Preston, the Vanisher"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "City of Traitors",
+        "Portable Hole"
+      ],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.25,
+      "delta_v5_minus_student_U": 0.125,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity",
+        "lands_in_hand"
+      ],
+      "game_id": 99033,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 3,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Basalt Monolith",
+        "Scroll Rack"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 1,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "City of Traitors",
+        "Portable Hole",
+        "Static Prison",
+        "Preston, the Vanisher"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Basalt Monolith",
+        "Scroll Rack",
+        "Static Prison",
+        "Preston, the Vanisher"
+      ]
+    },
+    {
+      "changed_hand_cards": [],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": true,
+      "functional_field_differences": [],
+      "game_id": 99034,
+      "hypothesized_same_deployment_capability": true,
+      "keep_n": 2,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 1,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Mox Opal",
+        "Plains",
+        "Staff of Compleation",
+        "Gift of Immortality",
+        "Portable Hole"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Mox Opal",
+        "Plains",
+        "Staff of Compleation",
+        "Gift of Immortality",
+        "Portable Hole"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Untaidake, the Cloud Keeper"
+      ],
+      "delta_v5_minus_student_T2": 0.0625,
+      "delta_v5_minus_student_T3": 0.1875,
+      "delta_v5_minus_student_U": 0.125,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity",
+        "lands_in_hand"
+      ],
+      "game_id": 99035,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 5,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Tezzeret, Cruel Captain"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 2,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Sheltered by Ghosts",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Tezzeret, Cruel Captain",
+        "Sheltered by Ghosts"
+      ]
+    },
+    {
+      "changed_hand_cards": [],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": true,
+      "functional_field_differences": [],
+      "game_id": 99036,
+      "hypothesized_same_deployment_capability": true,
+      "keep_n": 4,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 2,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Idolized",
+        "Roaming Throne",
+        "Feather of Flight"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Idolized",
+        "Roaming Throne",
+        "Feather of Flight"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Erode"
+      ],
+      "delta_v5_minus_student_T2": -0.0625,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": -0.03125,
+      "exact_same_bottom": false,
+      "functional_field_differences": [],
+      "game_id": 99038,
+      "hypothesized_same_deployment_capability": true,
+      "keep_n": 5,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "March of Otherworldly Light"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 0,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Erode",
+        "Sheltered by Ghosts"
+      ],
+      "unproven_card_ability_may_matter": true,
+      "v5_bottom": [
+        "March of Otherworldly Light",
+        "Sheltered by Ghosts"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Bucknard's Everfull Purse"
+      ],
+      "delta_v5_minus_student_T2": -0.3125,
+      "delta_v5_minus_student_T3": 0.0625,
+      "delta_v5_minus_student_U": -0.125,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity",
+        "lands_in_hand"
+      ],
+      "game_id": 99039,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 2,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Crystal Vein"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 0,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Void Mirror",
+        "Bucknard's Everfull Purse",
+        "Eldrazi Confluence",
+        "The Mycosynth Gardens",
+        "Blast Zone"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Void Mirror",
+        "Crystal Vein",
+        "Eldrazi Confluence",
+        "The Mycosynth Gardens",
+        "Blast Zone"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Crystal Vein",
+        "Urza's Saga"
+      ],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.875,
+      "delta_v5_minus_student_U": 0.4375,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity",
+        "lands_in_hand"
+      ],
+      "game_id": 99041,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 3,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Staff of Compleation",
+        "Urza's Cave"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 3,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Urza's Saga",
+        "Erode",
+        "Crystal Vein",
+        "Feather of Flight"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Staff of Compleation",
+        "Erode",
+        "Feather of Flight",
+        "Urza's Cave"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Emergence Zone"
+      ],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity"
+      ],
+      "game_id": 99042,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 5,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Plains"
+      ],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 0,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Emergence Zone",
+        "Mantle of the Ancients"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Plains",
+        "Mantle of the Ancients"
+      ]
+    },
+    {
+      "changed_hand_cards": [],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": true,
+      "functional_field_differences": [],
+      "game_id": 99043,
+      "hypothesized_same_deployment_capability": true,
+      "keep_n": 6,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 2,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Super State"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Super State"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Paladin Class"
+      ],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity",
+        "metalcraft_artifact_count"
+      ],
+      "game_id": 99044,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 4,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Mox Opal"
+      ],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 1,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Trinisphere",
+        "Paladin Class",
+        "Vexing Bauble"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Trinisphere",
+        "Mox Opal",
+        "Vexing Bauble"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Plains"
+      ],
+      "delta_v5_minus_student_T2": 0.0625,
+      "delta_v5_minus_student_T3": 0.125,
+      "delta_v5_minus_student_U": 0.09375,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity",
+        "lands_in_hand"
+      ],
+      "game_id": 99045,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 2,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Lotus Petal"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 3,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Plains",
+        "Krark-Clan Ironworks",
+        "Vexing Bauble",
+        "Plains",
+        "Preston, the Vanisher"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Plains",
+        "Krark-Clan Ironworks",
+        "Vexing Bauble",
+        "Lotus Petal",
+        "Preston, the Vanisher"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Untaidake, the Cloud Keeper",
+        "Urza's Cave"
+      ],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": -0.125,
+      "delta_v5_minus_student_U": -0.0625,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "chrome_imprintable_fuel",
+        "chrome_white_imprintable_fuel",
+        "critical_card_identity",
+        "lands_in_hand"
+      ],
+      "game_id": 99046,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 4,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Chrome Mox",
+        "Plains"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 3,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Urza's Cave",
+        "Untaidake, the Cloud Keeper",
+        "Void Mirror"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Void Mirror",
+        "Plains",
+        "Chrome Mox"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Mishra's Workshop"
+      ],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.125,
+      "delta_v5_minus_student_U": 0.0625,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity"
+      ],
+      "game_id": 99047,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 4,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Plains"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 0,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Mishra's Workshop",
+        "Scroll Rack",
+        "March of Otherworldly Light"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Plains",
+        "Scroll Rack",
+        "March of Otherworldly Light"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Orim's Chant"
+      ],
+      "delta_v5_minus_student_T2": -0.0625,
+      "delta_v5_minus_student_T3": -0.0625,
+      "delta_v5_minus_student_U": -0.0625,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity"
+      ],
+      "game_id": 99048,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 5,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Giant's Boulder"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 2,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Orim's Chant",
+        "Super State"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Giant's Boulder",
+        "Super State"
+      ]
+    },
+    {
+      "changed_hand_cards": [],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": true,
+      "functional_field_differences": [],
+      "game_id": 99049,
+      "hypothesized_same_deployment_capability": true,
+      "keep_n": 4,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 3,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Feather of Flight",
+        "Thorn of Amethyst",
+        "Vexing Bauble"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Feather of Flight",
+        "Thorn of Amethyst",
+        "Vexing Bauble"
+      ]
+    },
+    {
+      "changed_hand_cards": [],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": true,
+      "functional_field_differences": [],
+      "game_id": 99050,
+      "hypothesized_same_deployment_capability": true,
+      "keep_n": 4,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 0,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Plains",
+        "Petrified Hamlet",
+        "Static Prison"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Plains",
+        "Petrified Hamlet",
+        "Static Prison"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Mishra's Workshop"
+      ],
+      "delta_v5_minus_student_T2": 0.875,
+      "delta_v5_minus_student_T3": 0.75,
+      "delta_v5_minus_student_U": 0.8125,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity",
+        "lands_in_hand"
+      ],
+      "game_id": 99052,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 4,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Arcane Signet"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 2,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Preston, the Vanisher",
+        "Mishra's Workshop",
+        "Thorn of Amethyst"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Preston, the Vanisher",
+        "Thorn of Amethyst",
+        "Arcane Signet"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Twinblade Blessing"
+      ],
+      "delta_v5_minus_student_T2": -0.0625,
+      "delta_v5_minus_student_T3": -0.1875,
+      "delta_v5_minus_student_U": -0.125,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "auras_bottomed",
+        "auras_in_hand",
+        "critical_card_identity",
+        "lands_in_hand",
+        "mDFC_in_hand"
+      ],
+      "game_id": 99053,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 5,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Emeria's Call"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 1,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Twinblade Blessing",
+        "Void Mirror"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Emeria's Call",
+        "Void Mirror"
+      ]
+    },
+    {
+      "changed_hand_cards": [],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": true,
+      "functional_field_differences": [],
+      "game_id": 99056,
+      "hypothesized_same_deployment_capability": true,
+      "keep_n": 5,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 3,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Paladin Class",
+        "Boonweaver Giant"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Paladin Class",
+        "Boonweaver Giant"
+      ]
+    },
+    {
+      "changed_hand_cards": [],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": 0.0,
+      "delta_v5_minus_student_U": 0.0,
+      "exact_same_bottom": true,
+      "functional_field_differences": [],
+      "game_id": 99057,
+      "hypothesized_same_deployment_capability": true,
+      "keep_n": 5,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [],
+      "same_T2_and_T3_observed_fractions": true,
+      "same_blended_utility": true,
+      "seat": 3,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Sheltered by Ghosts",
+        "Deafening Silence"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Sheltered by Ghosts",
+        "Deafening Silence"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "City of Traitors"
+      ],
+      "delta_v5_minus_student_T2": 0.25,
+      "delta_v5_minus_student_T3": 0.125,
+      "delta_v5_minus_student_U": 0.1875,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity",
+        "lands_in_hand"
+      ],
+      "game_id": 99060,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 4,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Krark-Clan Ironworks"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 2,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "The Mycosynth Gardens",
+        "Emeria's Call",
+        "City of Traitors"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "The Mycosynth Gardens",
+        "Krark-Clan Ironworks",
+        "Emeria's Call"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "The Mycosynth Gardens"
+      ],
+      "delta_v5_minus_student_T2": 0.1875,
+      "delta_v5_minus_student_T3": 0.5625,
+      "delta_v5_minus_student_U": 0.375,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity",
+        "lands_in_hand"
+      ],
+      "game_id": 99061,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 2,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Expedition Map"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 1,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "The Mycosynth Gardens",
+        "Gift of Immortality",
+        "Thorn of Amethyst",
+        "City of Traitors",
+        "Crystal Vein"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Expedition Map",
+        "Gift of Immortality",
+        "Thorn of Amethyst",
+        "City of Traitors",
+        "Crystal Vein"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Paladin Class"
+      ],
+      "delta_v5_minus_student_T2": -0.0625,
+      "delta_v5_minus_student_T3": -0.0625,
+      "delta_v5_minus_student_U": -0.0625,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "critical_card_identity"
+      ],
+      "game_id": 99062,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 4,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Everflowing Chalice"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 3,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "Urza's Saga",
+        "Paladin Class",
+        "Boonweaver Giant"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "Everflowing Chalice",
+        "Urza's Saga",
+        "Boonweaver Giant"
+      ]
+    },
+    {
+      "changed_hand_cards": [
+        "Hardlight Containment"
+      ],
+      "delta_v5_minus_student_T2": 0.0,
+      "delta_v5_minus_student_T3": -0.125,
+      "delta_v5_minus_student_U": -0.0625,
+      "exact_same_bottom": false,
+      "functional_field_differences": [
+        "auras_bottomed",
+        "auras_in_hand",
+        "critical_card_identity",
+        "lands_in_hand"
+      ],
+      "game_id": 99063,
+      "hypothesized_same_deployment_capability": false,
+      "keep_n": 2,
+      "matching_signature_is_not_rules_equivalence": true,
+      "net_T2_value_difference_is_primary_not_card_identity": true,
+      "opposite_changed_hand_cards": [
+        "Mishra's Workshop"
+      ],
+      "same_T2_and_T3_observed_fractions": false,
+      "same_blended_utility": false,
+      "seat": 0,
+      "sparse_16_future_labels_not_equivalence_proof": true,
+      "student_bottom": [
+        "The Mycosynth Gardens",
+        "Minimus Containment",
+        "Portable Hole",
+        "March of Otherworldly Light",
+        "Hardlight Containment"
+      ],
+      "unproven_card_ability_may_matter": false,
+      "v5_bottom": [
+        "The Mycosynth Gardens",
+        "Mishra's Workshop",
+        "Minimus Containment",
+        "Portable Hole",
+        "March of Otherworldly Light"
+      ]
+    }
+  ],
+  "read_only_eval_band": "99000..99063",
+  "recommended_online_objective": "T2 outcome first, T3 as secondary, combo integrity mandatory, protection retained as tie-breaker among proven or well-supported near-equals",
+  "replaced_exact_bottom_accuracy_with_outcome_equivalence_metric": true,
+  "schema": "dack_v30_functional_bottom_equivalence_audit_N50",
+  "status": "PASS",
+  "summary_counts": {
+    "difference_field:auras_bottomed": 8,
+    "difference_field:auras_in_hand": 8,
+    "difference_field:chrome_imprintable_fuel": 1,
+    "difference_field:chrome_white_imprintable_fuel": 1,
+    "difference_field:critical_card_identity": 34,
+    "difference_field:lands_in_hand": 20,
+    "difference_field:mDFC_in_hand": 1,
+    "difference_field:metalcraft_artifact_count": 2,
+    "different_bottoms": 35,
+    "different_bottoms_but_same_observed_speed": 11,
+    "different_bottoms_observed_speed_tie": 11,
+    "different_bottoms_same_visible_capability_key": 1,
+    "different_bottoms_with_critical_changes": 34,
+    "different_bottoms_with_identical_visible_capability": 1,
+    "observed_speed_tie": 26,
+    "same_bottoms": 15,
+    "same_bottoms_observed_speed_tie": 15,
+    "same_bottoms_same_visible_capability_key": 15,
+    "same_visible_capability_key": 16
+  },
+  "warning": "Same role key or observed rates do not establish exact functional equivalence, particularly for imprints, metalcraft, utility spells, card draw, tutors, and chance-model coupling."
+}
