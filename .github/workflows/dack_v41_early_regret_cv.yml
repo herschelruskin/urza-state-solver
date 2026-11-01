@@ -1,0 +1,65 @@
+name: DACK v41 early physically labeled action-regret grouped CV pilot
+on:
+  push:
+    branches: [dack-v41-early-action-regret-20261101]
+    paths:
+      - '.github/workflows/dack_v41_early_regret_cv.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  fit_research_baselines:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v41-early-action-regret-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install fixed sklearn and numpy
+        run: python -m pip install 'numpy>=1.26,<3' 'scikit-learn>=1.4,<1.8'
+      - name: Syntax and original v34 physical source reproducibility
+        run: |
+          python -m py_compile dack_simulator/validation/v41_train_early_physical_regret.py
+          python dack_mulligan_learned_features_v8_20261031.py
+      - name: Five group-disjoint folds on 125 physically sampled source deals
+        run: |
+          python -u dack_simulator/validation/v41_train_early_physical_regret.py \
+            --out benchmark_results/v41_early_physical_regret_cv.json \
+            --models-dir models/v41_early_physical_regret
+      - name: Source and leakage checks
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('benchmark_results/v41_early_physical_regret_cv.json').read_text())
+          assert r['status']=='PASS' and r['N_original_groups']==125
+          assert r['N_observed_stage_states']==253
+          assert r['train_teacher_label_used'] is False
+          assert r['old_cohorts_115k_116k_117k_ALREADY_consumed']
+          for name in ('capability','anchored'):
+              m=json.loads(Path('models/v41_early_physical_regret/v41_'+name+'_early_physical_regret_RESEARCH.json').read_text())
+              assert m['model_approved'] is False and m['source_physical_groups']==125
+              assert m['no_v5_teacher_features_or_labels_in_fit']
+              assert r['modes'][name]['unseen_prospective_validation_passed'] is False
+          print('DACK_V41_ARCHIVAL_AND_CAUSAL_GUARDS_PASS')
+          PY
+      - name: Preserve unapproved experimental fits and observed fold results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v41_early_physical_regret_cv.json models/v41_early_physical_regret/*.json
+          git commit -m "Archive physically labeled early-stage v41 grouped CV and two frozen research-only models"
+          git pull --rebase origin dack-v41-early-action-regret-20261101
+          git push origin HEAD:dack-v41-early-action-regret-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v41-physical-regret-group-cv-experimental
+          path: |
+            benchmark_results/v41_early_physical_regret_cv.json
+            models/v41_early_physical_regret/*.json
+          retention-days: 60
