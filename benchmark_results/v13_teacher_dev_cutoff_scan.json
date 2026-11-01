@@ -1,0 +1,212 @@
+{
+  "schema": "dack_v13_teacher_val_keep_cutoff_scan",
+  "status": "PASS",
+  "validation_ids": [
+    61000,
+    61007
+  ],
+  "rows": 27,
+  "reference_cutoff": 0.5,
+  "selected_cutoff": 0.25,
+  "validation_only_no_full_game_outcomes": true,
+  "baseline": {
+    "visited_teacher_stages": 27,
+    "candidate_top1_accuracy": 0.7037037037037037,
+    "keep_decision_accuracy_under_student_selected_bottom": 0.7777777777777778,
+    "joint_stage_accuracy": 0.5925925925925926,
+    "teacher_selects_structural_first_rate": 0.7407407407407407,
+    "teacher_keep_rate": 0.2962962962962963,
+    "student_keep_rate": 0.07407407407407407,
+    "distinct_game_groups": 8
+  },
+  "tuned": {
+    "visited_teacher_stages": 27,
+    "candidate_top1_accuracy": 0.7037037037037037,
+    "keep_decision_accuracy_under_student_selected_bottom": 0.7037037037037037,
+    "joint_stage_accuracy": 0.48148148148148145,
+    "teacher_selects_structural_first_rate": 0.7407407407407407,
+    "teacher_keep_rate": 0.2962962962962963,
+    "student_keep_rate": 0.4444444444444444,
+    "distinct_game_groups": 8
+  },
+  "scan": [
+    {
+      "cutoff": 0.1,
+      "balanced_accuracy": 0.569078947368421,
+      "raw_accuracy": 0.4444444444444444,
+      "predicted_keeps": 21,
+      "teacher_keeps": 8,
+      "tp": 7,
+      "tn": 5,
+      "fp": 14,
+      "fn": 1
+    },
+    {
+      "cutoff": 0.15,
+      "balanced_accuracy": 0.6743421052631579,
+      "raw_accuracy": 0.5925925925925926,
+      "predicted_keeps": 17,
+      "teacher_keeps": 8,
+      "tp": 7,
+      "tn": 9,
+      "fp": 10,
+      "fn": 1
+    },
+    {
+      "cutoff": 0.2,
+      "balanced_accuracy": 0.6907894736842105,
+      "raw_accuracy": 0.6666666666666666,
+      "predicted_keeps": 13,
+      "teacher_keeps": 8,
+      "tp": 6,
+      "tn": 12,
+      "fp": 7,
+      "fn": 2
+    },
+    {
+      "cutoff": 0.25,
+      "balanced_accuracy": 0.7171052631578947,
+      "raw_accuracy": 0.7037037037037037,
+      "predicted_keeps": 12,
+      "teacher_keeps": 8,
+      "tp": 6,
+      "tn": 13,
+      "fp": 6,
+      "fn": 2
+    },
+    {
+      "cutoff": 0.3,
+      "balanced_accuracy": 0.680921052631579,
+      "raw_accuracy": 0.7037037037037037,
+      "predicted_keeps": 10,
+      "teacher_keeps": 8,
+      "tp": 5,
+      "tn": 14,
+      "fp": 5,
+      "fn": 3
+    },
+    {
+      "cutoff": 0.35,
+      "balanced_accuracy": 0.618421052631579,
+      "raw_accuracy": 0.6666666666666666,
+      "predicted_keeps": 9,
+      "teacher_keeps": 8,
+      "tp": 4,
+      "tn": 14,
+      "fp": 5,
+      "fn": 4
+    },
+    {
+      "cutoff": 0.4,
+      "balanced_accuracy": 0.6348684210526316,
+      "raw_accuracy": 0.7407407407407407,
+      "predicted_keeps": 5,
+      "teacher_keeps": 8,
+      "tp": 3,
+      "tn": 17,
+      "fp": 2,
+      "fn": 5
+    },
+    {
+      "cutoff": 0.45,
+      "balanced_accuracy": 0.6611842105263157,
+      "raw_accuracy": 0.7777777777777778,
+      "predicted_keeps": 4,
+      "teacher_keeps": 8,
+      "tp": 3,
+      "tn": 18,
+      "fp": 1,
+      "fn": 5
+    },
+    {
+      "cutoff": 0.5,
+      "balanced_accuracy": 0.625,
+      "raw_accuracy": 0.7777777777777778,
+      "predicted_keeps": 2,
+      "teacher_keeps": 8,
+      "tp": 2,
+      "tn": 19,
+      "fp": 0,
+      "fn": 6
+    },
+    {
+      "cutoff": 0.55,
+      "balanced_accuracy": 0.5625,
+      "raw_accuracy": 0.7407407407407407,
+      "predicted_keeps": 1,
+      "teacher_keeps": 8,
+      "tp": 1,
+      "tn": 19,
+      "fp": 0,
+      "fn": 7
+    },
+    {
+      "cutoff": 0.6,
+      "balanced_accuracy": 0.5,
+      "raw_accuracy": 0.7037037037037037,
+      "predicted_keeps": 0,
+      "teacher_keeps": 8,
+      "tp": 0,
+      "tn": 19,
+      "fp": 0,
+      "fn": 8
+    },
+    {
+      "cutoff": 0.65,
+      "balanced_accuracy": 0.5,
+      "raw_accuracy": 0.7037037037037037,
+      "predicted_keeps": 0,
+      "teacher_keeps": 8,
+      "tp": 0,
+      "tn": 19,
+      "fp": 0,
+      "fn": 8
+    },
+    {
+      "cutoff": 0.7,
+      "balanced_accuracy": 0.5,
+      "raw_accuracy": 0.7037037037037037,
+      "predicted_keeps": 0,
+      "teacher_keeps": 8,
+      "tp": 0,
+      "tn": 19,
+      "fp": 0,
+      "fn": 8
+    },
+    {
+      "cutoff": 0.75,
+      "balanced_accuracy": 0.5,
+      "raw_accuracy": 0.7037037037037037,
+      "predicted_keeps": 0,
+      "teacher_keeps": 8,
+      "tp": 0,
+      "tn": 19,
+      "fp": 0,
+      "fn": 8
+    },
+    {
+      "cutoff": 0.8,
+      "balanced_accuracy": 0.5,
+      "raw_accuracy": 0.7037037037037037,
+      "predicted_keeps": 0,
+      "teacher_keeps": 8,
+      "tp": 0,
+      "tn": 19,
+      "fp": 0,
+      "fn": 8
+    },
+    {
+      "cutoff": 0.85,
+      "balanced_accuracy": 0.5,
+      "raw_accuracy": 0.7037037037037037,
+      "predicted_keeps": 0,
+      "teacher_keeps": 8,
+      "tp": 0,
+      "tn": 19,
+      "fp": 0,
+      "fn": 8
+    }
+  ],
+  "model_approved": false,
+  "warning": "Only eight outer validation groups; must evaluate on new 65k holdout"
+}
