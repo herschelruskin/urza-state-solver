@@ -192,7 +192,7 @@ def train(trainpaths,valpaths,modelpath,reportpath):
     path.write_text(json.dumps(report,sort_keys=True,indent=2)+"\n")
     print("V22_ALL_STAGE_REAL_KEEP_VALUE_FIT_PASS",json.dumps({
         "training_games":64,"validation_games":16,
-        "validation":valscore,"model_approved":False},flush=True))
+        "validation":valscore,"model_approved":False}),flush=True)
     return report
 
 if __name__=="__main__":
