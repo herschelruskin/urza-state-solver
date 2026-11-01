@@ -1,0 +1,26 @@
+name: DACK v46 readonly physically misvalued seven-card hand forensics
+on:
+  push:
+    branches: [dack-v46-seven-card-physical-calibration-20261101]
+    paths: ['.github/workflows/dack_v46_readonly_seven_dev_outliers.yml']
+permissions:
+  contents: write
+jobs:
+  read_only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v46-seven-card-physical-calibration-20261101
+      - name: Extract genuine seven-card examples where observed QKEEP-C differs from v43 action
+        run: |
+          python -m py_compile dack_simulator/validation/v46_readonly_dev_early7_outliers.py
+          python -u dack_simulator/validation/v46_readonly_dev_early7_outliers.py
+      - name: Archive dev as consumed with source hand identities, not new acceptance
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v46_exploratory_dev_early_seven_hand_failures.json
+          git commit -m "Archive read-only missed full-seven hand examples and mark v46 dev consumed"
+          git pull --rebase origin dack-v46-seven-card-physical-calibration-20261101
+          git push origin HEAD:dack-v46-seven-card-physical-calibration-20261101
