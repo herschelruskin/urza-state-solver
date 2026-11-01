@@ -43,7 +43,7 @@ def rowcase(row):
     a2=0<a["turn"]<=2;b2=0<b["turn"]<=2
     ak=a["history"][-1];bk=b["history"][-1]
     kdiff,bdiff,hdiff=prefix_decisions(a,b)
-    same_final=sorted(a["hand"])==sorted(b["hand"])
+    same_final=sorted(ak["hand"])==sorted(bk["hand"])
     if same_final:
         kind="same_kept_multiset"
     elif a["keep_n"]==b["keep_n"]:
@@ -59,7 +59,7 @@ def rowcase(row):
        "first_bottom_disagreement_stage":bdiff,
        "first_proposed_hand_disagreement_stage":hdiff,
        "v5_first_seven":a["history"][0]["seven"],
-       "v5_final_hand":a["hand"],"v22_final_hand":b["hand"],
+       "v5_final_hand":ak["hand"],"v22_final_hand":bk["hand"],
        "v5_final_decision":{k:ak.get(k) for k in
              ("stage","raw","threshold","sampled_t1","kept","hand","bottom")},
        "v22_final_decision":{k:bk.get(k) for k in
