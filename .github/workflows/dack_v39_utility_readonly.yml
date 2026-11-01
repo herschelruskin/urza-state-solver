@@ -1,0 +1,32 @@
+name: DACK v39 READONLY correlated cumulative versus exact-T3 utility audit
+on:
+  push:
+    branches: [dack-v39-t2-risk-bounded-regret-20261101]
+    paths: ['.github/workflows/dack_v39_utility_readonly.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: No new gameplay, preserve physical-group T2 T3 correlations
+        run: |
+          test -f benchmark_results/v39_131k_independent_action_regret.json
+          python -m py_compile dack_simulator/validation/v39_utility_readonly_audit.py
+          python -u dack_simulator/validation/v39_utility_readonly_audit.py
+      - name: Archive descriptive distinct-utility comparison, no new validation claims
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f benchmark_results/v39_131k_readonly_two_utility_comparison.json
+          git commit -m "Archive correlated exact-T3 versus cumulative-T3 utility physical regret audit"
+          git pull --rebase origin dack-v39-t2-risk-bounded-regret-20261101
+          git push origin HEAD:dack-v39-t2-risk-bounded-regret-20261101
