@@ -1,0 +1,53 @@
+{
+  "game_ids": [
+    87000,
+    87127
+  ],
+  "independent_physical_games": 128,
+  "models_not_approved": true,
+  "outcomes": {
+    "cumulative_T1": {
+      "delta_percentage_points": 0.78125,
+      "mcnemar_exact_two_sided_p": 1.0,
+      "paired_bootstrap_95ci_pp": [
+        -2.34375,
+        4.6875
+      ],
+      "paired_ties": 123,
+      "v14_successes": 4,
+      "v22_gain_games": 3,
+      "v22_loss_games": 2,
+      "v22_successes": 5
+    },
+    "cumulative_T2": {
+      "delta_percentage_points": 3.90625,
+      "mcnemar_exact_two_sided_p": 0.359283447265625,
+      "paired_bootstrap_95ci_pp": [
+        -2.34375,
+        10.9375
+      ],
+      "paired_ties": 109,
+      "v14_successes": 49,
+      "v22_gain_games": 12,
+      "v22_loss_games": 7,
+      "v22_successes": 54
+    },
+    "cumulative_T3": {
+      "delta_percentage_points": 9.375,
+      "mcnemar_exact_two_sided_p": 0.01181793212890625,
+      "paired_bootstrap_95ci_pp": [
+        3.125,
+        15.625
+      ],
+      "paired_ties": 108,
+      "v14_successes": 93,
+      "v22_gain_games": 16,
+      "v22_loss_games": 4,
+      "v22_successes": 105
+    }
+  },
+  "same_bottom_selector": true,
+  "schema": "dack_v22_paired_outcomes_128_group_robustness",
+  "source": "benchmark_results/v22_student_value_DP_n128_shards/",
+  "warning": "No pre-registered multiple endpoint testing. Interpret intervals as exploratory, not proof of positive T2 effect or near-reference quality."
+}
