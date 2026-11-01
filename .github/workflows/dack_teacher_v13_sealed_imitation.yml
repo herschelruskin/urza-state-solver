@@ -62,3 +62,5 @@ jobs:
           name: v13-frozen-teacher-imitation-accuracy
           path: benchmark_results/teacher_distill_v13_independent_accuracy.json
           retention-days: 14
+
+# Frozen 16-train/8-val teacher distillation model archived before this independent holdout.
