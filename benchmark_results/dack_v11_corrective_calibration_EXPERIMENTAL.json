@@ -1,0 +1,41 @@
+{
+  "schema": "dack_london_model_calibration_report_v8",
+  "diagnostic_only": true,
+  "deployed_policy_approved": false,
+  "training_contains_enriched_strata": true,
+  "calibration_represents_population": false,
+  "calibration_scope": "frozen_learned_v8_policy_selected_hands_only",
+  "calibration_is_enriched": false,
+  "synthetic_training_labels": false,
+  "separate_training_and_calibration_game_ids": true,
+  "no_hidden_draws_as_model_inputs": true,
+  "n_train_groups": 320,
+  "n_calibration_groups": 128,
+  "train_rollouts": 1408,
+  "calibration_rollouts": 512,
+  "temperature": 1.7367496760773884,
+  "training_metrics_resubstitution_not_holdout": {
+    "brier_multiclass": 0.38197653238229634,
+    "log_loss": 0.6687562133749795,
+    "accuracy": 0.7428977272727273,
+    "t1_expected": 0.07924506150383083,
+    "t1_observed": 0.07670454545454546,
+    "t2_or_earlier_expected": 0.3248916464039079,
+    "t2_or_earlier_observed": 0.31889204545454547,
+    "t3_or_earlier_expected": 0.6470279230606532,
+    "t3_or_earlier_observed": 0.6370738636363636
+  },
+  "calibration_metrics_used_to_choose_temperature_not_holdout": {
+    "brier_multiclass": 0.52461500825239,
+    "log_loss": 0.9102587264808653,
+    "accuracy": 0.60546875,
+    "t1_expected": 0.042272037912314854,
+    "t1_observed": 0.046875,
+    "t2_or_earlier_expected": 0.3481880063041243,
+    "t2_or_earlier_observed": 0.31640625,
+    "t3_or_earlier_expected": 0.6906888197004132,
+    "t3_or_earlier_observed": 0.685546875
+  },
+  "policy_evaluation_status": "NOT RUN",
+  "warning": "train and calibration scores are not an independent final evaluation"
+}
