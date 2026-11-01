@@ -1,0 +1,89 @@
+name: DACK v22 float32-parity corrected all-stage real keep fit and DP
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v22_keep_fit_float32_retry.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  fit_and_dp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify all physical stage labels were archived and no training/validation leakage
+        run: |
+          python -m compileall -q \
+            dack_simulator/validation/train_all_stage_keep_value_v22.py \
+            dack_simulator/validation/derive_keep_continuation_v22.py \
+            dack_paired_counterfactual_v22_all_stage_real_keep_DP_20261101.py
+          python dack_mulligan_keep_value_v22_20261101.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path('datasets/v21_all_london_keep_values/manifest.json').read_text())
+          assert m['schema']=='dack_v21_all_stage_real_keep_values_dataset'
+          assert m['splits']['train']['counts']['rollouts']==2048
+          assert m['splits']['validation']['counts']['rollouts']==512
+          assert m['splits']['train']['counts']['would_reject']>0
+          assert len(m['files'])==10
+          print('V22_TRAINING_LABEL_PROVENANCE_PASS',m['splits'],flush=True)
+          PY
+      - name: Install training-only sklearn
+        run: python -m pip install 'scikit-learn>=1.4,<2'
+      - name: Train direct real-outcome keep U for each of all eight London stages, group-disjoint
+        run: |
+          python -u dack_simulator/validation/train_all_stage_keep_value_v22.py \
+            --train datasets/v21_all_london_keep_values/stage_train_*.jsonl.gz \
+            --validation datasets/v21_all_london_keep_values/stage_validation_*.jsonl.gz \
+            --model models/dack_v22_real_all_stage_keep_value_EXPERIMENTAL.json \
+            --report benchmark_results/v22_real_keep_value_validation.json
+      - name: Derive independent 512-physical-game seat-specific London backward continuation thresholds, no gameplay beams
+        run: |
+          python -u dack_simulator/validation/derive_keep_continuation_v22.py \
+            --model models/dack_v22_real_all_stage_keep_value_EXPERIMENTAL.json \
+            --out models/dack_v22_all_stage_continuations_EXPERIMENTAL.json \
+            --start 92000 --games 512
+      - name: Require exact model hash, free mulligan and original beam160 gameplay rules
+        run: |
+          python dack_paired_counterfactual_v22_all_stage_real_keep_DP_20261101.py --audit
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path('models/dack_v22_real_all_stage_keep_value_EXPERIMENTAL.json').read_text())
+          dp=json.loads(Path('models/dack_v22_all_stage_continuations_EXPERIMENTAL.json').read_text())
+          r=json.loads(Path('benchmark_results/v22_real_keep_value_validation.json').read_text())
+          assert m['deployed_policy_approved'] is False and dp['model_approved'] is False
+          assert m['trained_on_all_eight_stages_including_rejected']
+          assert m['training_states']==512 and m['validation_states']==128
+          assert dp['free_first_seven_compares_against_second_seven_value']
+          assert len(dp['seat_continuations'])==4
+          assert r['validation_game_groups']==16
+          print('V22_UNAPPROVED_ALL_STAGE_KEEP_AND_CONTINUATION_DP_PASS',
+            json.dumps({'validation':r['independent_validation_metrics'],
+              'seat0_dp':dp['seat_continuations']['0']['thresholds_by_london_stage']}),flush=True)
+          PY
+      - name: Archive unapproved all-stage value model, validation and model-bound exact-hash London DP
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f models/dack_v22_real_all_stage_keep_value_EXPERIMENTAL.json models/dack_v22_all_stage_continuations_EXPERIMENTAL.json benchmark_results/v22_real_keep_value_validation.json
+          git commit -m "Archive experimental real-utility keep decisions and first-free London continuation DP across four seats"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v22-all-stage-real-keep-utility-and-DP
+          path: |
+            models/dack_v22_real_all_stage_keep_value_EXPERIMENTAL.json
+            models/dack_v22_all_stage_continuations_EXPERIMENTAL.json
+            benchmark_results/v22_real_keep_value_validation.json
+          retention-days: 21
