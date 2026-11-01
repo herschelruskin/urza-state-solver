@@ -1,0 +1,77 @@
+name: DACK v34c actual keep-disagreement causal fresh-future replay
+on:
+  push:
+    branches: [dack-v34c-keep-disagreement-20261101]
+    paths:
+      - '.github/workflows/dack_v34c_actual_disagreement.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  forced-keep:
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        shard: [0,1,2,3,4,5,6,7]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Exact v33b downstream London parity and legal state checks
+        run: |
+          python -m py_compile dack_simulator/validation/v34c_actual_stage_regret_replay.py dack_simulator/validation/v34c_pool_actual_disagreement.py
+          python -m dack_simulator.validation.v34_frozen_v33b_continuation
+      - name: 16+16 fresh KEEP rollouts at each actual first disagreement
+        run: |
+          python -u dack_simulator/validation/v34c_actual_stage_regret_replay.py \
+            --shard ${{ matrix.shard }} \
+            --out shards/v34c_keep_${{ matrix.shard }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v34c-keep-${{ matrix.shard }}
+          path: shards/v34c_keep_*.json.gz
+          retention-days: 30
+  pool:
+    needs: forced-keep
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v34c-keep-*
+          merge-multiple: true
+          path: collected
+      - name: Strict causal action regret with old independent C and two-source bootstrap
+        run: |
+          test "$(find collected -maxdepth 1 -name 'v34c_keep_*.json.gz' | wc -l)" -eq 8
+          test "$(find benchmark_results/v34_consistent_regret_shards -maxdepth 1 -name 'v34_C_*.json.gz' | wc -l)" -eq 28
+          python -u dack_simulator/validation/v34c_pool_actual_disagreement.py
+      - name: Archive all forced-keep physical replays and original action regret report
+        run: |
+          mkdir -p benchmark_results/v34c_forced_keep_shards
+          cp collected/v34c_keep_*.json.gz benchmark_results/v34c_forced_keep_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v34c_forced_keep_shards benchmark_results/v34c_actual_keep_mull_disagreement_regret.json
+          git commit -m "Archive exact v34c original policy disagreement forced-action counterfactual"
+          git pull --rebase origin dack-v34c-keep-disagreement-20261101
+          git push origin HEAD:dack-v34c-keep-disagreement-20261101
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v34c-original-disagreement-causal-regret
+          path: benchmark_results/v34c_actual_keep_mull_disagreement_regret.json
+          retention-days: 30
