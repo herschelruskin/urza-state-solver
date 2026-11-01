@@ -13,7 +13,10 @@ import gzip
 import glob
 import json
 import random
+import sys
 from pathlib import Path
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0,str(ROOT))
 from dack_simulator.validation.v33b_bottom_ranker import METHODS
 
 EXPECTED={"train":list(range(112000,112128)),
