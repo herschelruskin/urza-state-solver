@@ -72,3 +72,14 @@ Raw results `benchmark_results/v43_fresh_151k_maxQ2_shards/` and `benchmark_resu
 - No significant early-predicted-T3 safeguards or unmodeled interaction are included in goldfish; deck recommendation or cEDH win probability cannot be inferred.
 
 **Best new architecture:** learn a **candidate-level physical value ranking and KEEP score jointly**, with realistic physical outcomes on many *candidate alternatives*, more than four independent future labels for key hands, group-aware design, calibrated continuum per stage and seat, with a structural top12 legal candidate limit. Preserve original-v5 maximal-candidate search but remove heavy every-candidate gameplay rollouts. Keep unchanged v43 frozen as strong challenger and evaluate future variants on independent new physical game IDs (not 115k or 151k) against v27 and, when budget permits, v5. All models remain unapproved until these checks pass.
+
+## Fresh 151k N256 descriptive split: why coupled max-Q2 gained +11 net T2 games
+
+Follow-up read-only analysis performed after inspecting 151k outcomes, [GitHub Actions 41357488307](https://github.com/herschelruskin/urza-state-solver/actions/runs/41357488307); `benchmark_results/v43_151k_maxQ2_stage_bottom_outcome_split.json`.
+
+- **33/256** games changed the final London kept stage, **all 33 had coupled max-Q2 KEEP EARLIER** than frozen v27. Among these, max-Q2 gained 6 unique T2 deployments and lost 1 (net **+5 T2**); gained 17 unique T3 and lost 1 (net +16 T3). Earlier keep can therefore help the new max-Q2 candidate, despite the original v5 assertive rule having historically preferred *deeper* London mulligans.
+- **69/256** games kept the same London stage but a **different bottom/retained hand**; max-Q2 gained 9 unique T2 deployments and lost 3 (net **+6 T2**); T3 net +1. This is a direct matched-physical bottom-choice outcome contrast at fixed final stage (although membership is selected by resulting choices).
+- **154/256** games had the same final London stage and identical retained hand/ordered bottom, with **exact terminal gameplay parity**, further eliminating a separate game-engine explanation.
+- These two observed strata sum exactly to the +11 T2 gains and +17 T3 gains of the prospectively frozen v43 experiment. This is a **descriptive** decomposition; causal components and interactions in cross-policy stage differences are not separately identified.
+
+The new faster max-Q2 chooser behaves unlike the original v5 in another important dimension: on fresh 151k it averaged **5.492 kept cards** versus frozen v27 **5.25**; original v5 in prior 115k averaged **5.063**. These are **different cohorts**; never subtract their means as a directly paired effect. It is possible that coupling restores good *earlier* keeps while v5's extra penalties provide protection from *bad* early keeps. Both need calibrated physical validation.
