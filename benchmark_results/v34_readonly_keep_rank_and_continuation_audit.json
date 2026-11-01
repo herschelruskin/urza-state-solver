@@ -1,0 +1,593 @@
+{
+  "continuation_by_seat_stage": [
+    {
+      "independent_training_true_C": 0.34375,
+      "independent_validation_true_C": 0.46875,
+      "old_C": 0.37958422593006097,
+      "seat": 0,
+      "stage": 0,
+      "train_minus_old": -0.03583422593006097,
+      "validation_minus_old": 0.08916577406993903
+    },
+    {
+      "independent_training_true_C": 0.484375,
+      "independent_validation_true_C": 0.5625,
+      "old_C": 0.3642451882966713,
+      "seat": 1,
+      "stage": 0,
+      "train_minus_old": 0.1201298117033287,
+      "validation_minus_old": 0.1982548117033287
+    },
+    {
+      "independent_training_true_C": 0.5,
+      "independent_validation_true_C": 0.5,
+      "old_C": 0.41192941390333604,
+      "seat": 2,
+      "stage": 0,
+      "train_minus_old": 0.08807058609666396,
+      "validation_minus_old": 0.08807058609666396
+    },
+    {
+      "independent_training_true_C": 0.40625,
+      "independent_validation_true_C": 0.53125,
+      "old_C": 0.38170413737189585,
+      "seat": 3,
+      "stage": 0,
+      "train_minus_old": 0.024545862628104154,
+      "validation_minus_old": 0.14954586262810415
+    },
+    {
+      "independent_training_true_C": 0.484375,
+      "independent_validation_true_C": 0.25,
+      "old_C": 0.3132809519162122,
+      "seat": 0,
+      "stage": 1,
+      "train_minus_old": 0.1710940480837878,
+      "validation_minus_old": -0.06328095191621219
+    },
+    {
+      "independent_training_true_C": 0.421875,
+      "independent_validation_true_C": 0.4375,
+      "old_C": 0.31264594158819253,
+      "seat": 1,
+      "stage": 1,
+      "train_minus_old": 0.10922905841180747,
+      "validation_minus_old": 0.12485405841180747
+    },
+    {
+      "independent_training_true_C": 0.5,
+      "independent_validation_true_C": 0.4375,
+      "old_C": 0.3306790024739771,
+      "seat": 2,
+      "stage": 1,
+      "train_minus_old": 0.16932099752602292,
+      "validation_minus_old": 0.10682099752602292
+    },
+    {
+      "independent_training_true_C": 0.34375,
+      "independent_validation_true_C": 0.3125,
+      "old_C": 0.3157466419812877,
+      "seat": 3,
+      "stage": 1,
+      "train_minus_old": 0.028003358018712288,
+      "validation_minus_old": -0.0032466419812877123
+    },
+    {
+      "independent_training_true_C": 0.296875,
+      "independent_validation_true_C": 0.21875,
+      "old_C": 0.2292364215116222,
+      "seat": 0,
+      "stage": 2,
+      "train_minus_old": 0.06763857848837779,
+      "validation_minus_old": -0.010486421511622213
+    },
+    {
+      "independent_training_true_C": 0.34375,
+      "independent_validation_true_C": 0.25,
+      "old_C": 0.22251831758476315,
+      "seat": 1,
+      "stage": 2,
+      "train_minus_old": 0.12123168241523685,
+      "validation_minus_old": 0.027481682415236852
+    },
+    {
+      "independent_training_true_C": 0.21875,
+      "independent_validation_true_C": 0.3125,
+      "old_C": 0.2418260432734854,
+      "seat": 2,
+      "stage": 2,
+      "train_minus_old": -0.02307604327348539,
+      "validation_minus_old": 0.07067395672651461
+    },
+    {
+      "independent_training_true_C": 0.328125,
+      "independent_validation_true_C": 0.375,
+      "old_C": 0.24177996817221553,
+      "seat": 3,
+      "stage": 2,
+      "train_minus_old": 0.08634503182778447,
+      "validation_minus_old": 0.13322003182778447
+    },
+    {
+      "independent_training_true_C": 0.34375,
+      "independent_validation_true_C": 0.21875,
+      "old_C": 0.1100763095290652,
+      "seat": 0,
+      "stage": 3,
+      "train_minus_old": 0.23367369047093478,
+      "validation_minus_old": 0.1086736904709348
+    },
+    {
+      "independent_training_true_C": 0.234375,
+      "independent_validation_true_C": 0.3125,
+      "old_C": 0.1287870531589569,
+      "seat": 1,
+      "stage": 3,
+      "train_minus_old": 0.10558794684104311,
+      "validation_minus_old": 0.1837129468410431
+    },
+    {
+      "independent_training_true_C": 0.1875,
+      "independent_validation_true_C": 0.09375,
+      "old_C": 0.15926640128863753,
+      "seat": 2,
+      "stage": 3,
+      "train_minus_old": 0.028233598711362468,
+      "validation_minus_old": -0.06551640128863753
+    },
+    {
+      "independent_training_true_C": 0.203125,
+      "independent_validation_true_C": 0.125,
+      "old_C": 0.15538255018956842,
+      "seat": 3,
+      "stage": 3,
+      "train_minus_old": 0.047742449810431575,
+      "validation_minus_old": -0.030382550189568425
+    },
+    {
+      "independent_training_true_C": 0.21875,
+      "independent_validation_true_C": 0.125,
+      "old_C": 0.06369014197522778,
+      "seat": 0,
+      "stage": 4,
+      "train_minus_old": 0.15505985802477223,
+      "validation_minus_old": 0.06130985802477222
+    },
+    {
+      "independent_training_true_C": 0.140625,
+      "independent_validation_true_C": 0.25,
+      "old_C": 0.08028552048511467,
+      "seat": 1,
+      "stage": 4,
+      "train_minus_old": 0.06033947951488533,
+      "validation_minus_old": 0.16971447951488533
+    },
+    {
+      "independent_training_true_C": 0.0625,
+      "independent_validation_true_C": 0.03125,
+      "old_C": 0.07548389029941512,
+      "seat": 2,
+      "stage": 4,
+      "train_minus_old": -0.012983890299415116,
+      "validation_minus_old": -0.044233890299415116
+    },
+    {
+      "independent_training_true_C": 0.078125,
+      "independent_validation_true_C": 0.09375,
+      "old_C": 0.0912215696733121,
+      "seat": 3,
+      "stage": 4,
+      "train_minus_old": -0.013096569673312103,
+      "validation_minus_old": 0.002528430326687897
+    },
+    {
+      "independent_training_true_C": 0.078125,
+      "independent_validation_true_C": 0.0,
+      "old_C": 0.027510847628408636,
+      "seat": 0,
+      "stage": 5,
+      "train_minus_old": 0.050614152371591364,
+      "validation_minus_old": -0.027510847628408636
+    },
+    {
+      "independent_training_true_C": 0.03125,
+      "independent_validation_true_C": 0.0,
+      "old_C": 0.02588041387577221,
+      "seat": 1,
+      "stage": 5,
+      "train_minus_old": 0.00536958612422779,
+      "validation_minus_old": -0.02588041387577221
+    },
+    {
+      "independent_training_true_C": 0.0,
+      "independent_validation_true_C": 0.03125,
+      "old_C": 0.02111305030660572,
+      "seat": 2,
+      "stage": 5,
+      "train_minus_old": -0.02111305030660572,
+      "validation_minus_old": 0.010136949693394279
+    },
+    {
+      "independent_training_true_C": 0.015625,
+      "independent_validation_true_C": 0.0625,
+      "old_C": 0.03265660038630833,
+      "seat": 3,
+      "stage": 5,
+      "train_minus_old": -0.017031600386308333,
+      "validation_minus_old": 0.029843399613691667
+    },
+    {
+      "independent_training_true_C": 0.015625,
+      "independent_validation_true_C": 0.0,
+      "old_C": 0.008759329978845994,
+      "seat": 0,
+      "stage": 6,
+      "train_minus_old": 0.006865670021154006,
+      "validation_minus_old": -0.008759329978845994
+    },
+    {
+      "independent_training_true_C": 0.0,
+      "independent_validation_true_C": 0.0,
+      "old_C": 0.006925125626242881,
+      "seat": 1,
+      "stage": 6,
+      "train_minus_old": -0.006925125626242881,
+      "validation_minus_old": -0.006925125626242881
+    },
+    {
+      "independent_training_true_C": 0.0,
+      "independent_validation_true_C": 0.03125,
+      "old_C": 0.00772616282388438,
+      "seat": 2,
+      "stage": 6,
+      "train_minus_old": -0.00772616282388438,
+      "validation_minus_old": 0.02352383717611562
+    },
+    {
+      "independent_training_true_C": 0.015625,
+      "independent_validation_true_C": 0.0,
+      "old_C": 0.010316065738294288,
+      "seat": 3,
+      "stage": 6,
+      "train_minus_old": 0.005308934261705712,
+      "validation_minus_old": -0.010316065738294288
+    }
+  ],
+  "not_new_policy": true,
+  "physical_beam_evaluations_new": 0,
+  "schema": "dack_v34_readonly_keep_score_rank_and_continuation_audit",
+  "source_rollouts": 8064,
+  "status": "PASS",
+  "technical_warnings": [
+    "Only 8 futures per keep Q and 32 per heldout C cell",
+    "Unvisited-stage labels have different distribution from played path",
+    "Noisy per-hand empirical maximum introduces optimistic selection bias",
+    "Posthoc true C threshold contrast is not a deployable validation result",
+    "Big seat-stage C differences can reflect estimation uncertainty and distribution shifts",
+    "Do not treat average calibration as identical to individual hand discrimination",
+    "No rules or physical game engine changed"
+  ],
+  "training_Qkeep_diagnostic": {
+    "N_physical_groups": 64,
+    "N_stage_states": 448,
+    "by_stage": {
+      "0": {
+        "N": 64,
+        "mean_original_Qkeep_minus_old_C": -0.21026423823484347,
+        "mean_true_advantage_keep_minus_mull_among_old_keeps": 0.3203125,
+        "mean_true_advantage_keep_minus_mull_among_old_mulls": -0.35011574074074076,
+        "mean_true_keep_by_T2": 0.18359375,
+        "mean_v27_prediction": 0.1767829225257248,
+        "mean_v27_prediction_bias_true_minus_prediction": 0.0068108274742752035,
+        "old_keeps": 10,
+        "old_mulls": 54,
+        "old_versus_TRUE_C_changed_decisions_diagnostic": 3,
+        "old_versus_TRUE_C_posthoc_one_step_T2_gain_pp_NOT_VALIDATION": -0.341796875,
+        "optimistic_noisy_oracle_T2_regret_pp_NOT_ACTIONABLE": 1.1962890625,
+        "raw_Qkeep_MSE_to_eight_future_empirical_fraction": 0.024741526047075562
+      },
+      "1": {
+        "N": 64,
+        "mean_original_Qkeep_minus_old_C": -0.14925197986550137,
+        "mean_true_advantage_keep_minus_mull_among_old_keeps": 0.2630208333333333,
+        "mean_true_advantage_keep_minus_mull_among_old_mulls": -0.41165865384615385,
+        "mean_true_keep_by_T2": 0.16015625,
+        "mean_v27_prediction": 0.16966277201892105,
+        "mean_v27_prediction_bias_true_minus_prediction": -0.009506522018920986,
+        "old_keeps": 12,
+        "old_mulls": 52,
+        "old_versus_TRUE_C_changed_decisions_diagnostic": 2,
+        "old_versus_TRUE_C_posthoc_one_step_T2_gain_pp_NOT_VALIDATION": -0.5126953125,
+        "optimistic_noisy_oracle_T2_regret_pp_NOT_ACTIONABLE": 0.390625,
+        "raw_Qkeep_MSE_to_eight_future_empirical_fraction": 0.0188844724031845
+      },
+      "2": {
+        "N": 64,
+        "mean_original_Qkeep_minus_old_C": -0.06073037627707219,
+        "mean_true_advantage_keep_minus_mull_among_old_keeps": 0.1154513888888889,
+        "mean_true_advantage_keep_minus_mull_among_old_mulls": -0.20550271739130435,
+        "mean_true_keep_by_T2": 0.173828125,
+        "mean_v27_prediction": 0.17402880883125083,
+        "mean_v27_prediction_bias_true_minus_prediction": -0.00020068383125081005,
+        "old_keeps": 18,
+        "old_mulls": 46,
+        "old_versus_TRUE_C_changed_decisions_diagnostic": 5,
+        "old_versus_TRUE_C_posthoc_one_step_T2_gain_pp_NOT_VALIDATION": 0.146484375,
+        "optimistic_noisy_oracle_T2_regret_pp_NOT_ACTIONABLE": 4.2724609375,
+        "raw_Qkeep_MSE_to_eight_future_empirical_fraction": 0.04131937843675931
+      },
+      "3": {
+        "N": 64,
+        "mean_original_Qkeep_minus_old_C": 0.05869336745012116,
+        "mean_true_advantage_keep_minus_mull_among_old_keeps": 0.17908653846153846,
+        "mean_true_advantage_keep_minus_mull_among_old_mulls": -0.21052631578947367,
+        "mean_true_keep_by_T2": 0.193359375,
+        "mean_v27_prediction": 0.1972075446865025,
+        "mean_v27_prediction_bias_true_minus_prediction": -0.003848169686502475,
+        "old_keeps": 26,
+        "old_mulls": 38,
+        "old_versus_TRUE_C_changed_decisions_diagnostic": 3,
+        "old_versus_TRUE_C_posthoc_one_step_T2_gain_pp_NOT_VALIDATION": 0.634765625,
+        "optimistic_noisy_oracle_T2_regret_pp_NOT_ACTIONABLE": 3.1494140625,
+        "raw_Qkeep_MSE_to_eight_future_empirical_fraction": 0.04024074347642162
+      },
+      "4": {
+        "N": 64,
+        "mean_original_Qkeep_minus_old_C": 0.10682629476254854,
+        "mean_true_advantage_keep_minus_mull_among_old_keeps": 0.3275,
+        "mean_true_advantage_keep_minus_mull_among_old_mulls": -0.038461538461538464,
+        "mean_true_keep_by_T2": 0.23046875,
+        "mean_v27_prediction": 0.1833227148196448,
+        "mean_v27_prediction_bias_true_minus_prediction": 0.04714603518035523,
+        "old_keeps": 25,
+        "old_mulls": 39,
+        "old_versus_TRUE_C_changed_decisions_diagnostic": 5,
+        "old_versus_TRUE_C_posthoc_one_step_T2_gain_pp_NOT_VALIDATION": -0.9521484375,
+        "optimistic_noisy_oracle_T2_regret_pp_NOT_ACTIONABLE": 3.466796875,
+        "raw_Qkeep_MSE_to_eight_future_empirical_fraction": 0.0588439427348862
+      },
+      "5": {
+        "N": 64,
+        "mean_original_Qkeep_minus_old_C": 0.052666217343744055,
+        "mean_true_advantage_keep_minus_mull_among_old_keeps": 0.22991071428571427,
+        "mean_true_advantage_keep_minus_mull_among_old_mulls": -0.024305555555555556,
+        "mean_true_keep_by_T2": 0.119140625,
+        "mean_v27_prediction": 0.07920352389364083,
+        "mean_v27_prediction_bias_true_minus_prediction": 0.039937101106359174,
+        "old_keeps": 28,
+        "old_mulls": 36,
+        "old_versus_TRUE_C_changed_decisions_diagnostic": 17,
+        "old_versus_TRUE_C_posthoc_one_step_T2_gain_pp_NOT_VALIDATION": 0.29296875,
+        "optimistic_noisy_oracle_T2_regret_pp_NOT_ACTIONABLE": 0.78125,
+        "raw_Qkeep_MSE_to_eight_future_empirical_fraction": 0.040749753338176424
+      },
+      "6": {
+        "N": 64,
+        "mean_original_Qkeep_minus_old_C": 0.016002265000480336,
+        "mean_true_advantage_keep_minus_mull_among_old_keeps": 0.06534090909090909,
+        "mean_true_advantage_keep_minus_mull_among_old_mulls": -0.002232142857142857,
+        "mean_true_keep_by_T2": 0.029296875,
+        "mean_v27_prediction": 0.024504479550714137,
+        "mean_v27_prediction_bias_true_minus_prediction": 0.004792395449285866,
+        "old_keeps": 22,
+        "old_mulls": 42,
+        "old_versus_TRUE_C_changed_decisions_diagnostic": 24,
+        "old_versus_TRUE_C_posthoc_one_step_T2_gain_pp_NOT_VALIDATION": 0.48828125,
+        "optimistic_noisy_oracle_T2_regret_pp_NOT_ACTIONABLE": 0.5859375,
+        "raw_Qkeep_MSE_to_eight_future_empirical_fraction": 0.011083739737704068
+      }
+    },
+    "margin_bins": {
+      "keep:far": {
+        "N": 68,
+        "mean_pred_Qkeep": 0.5740792091271709,
+        "mean_predicted_margin": 0.4073639996268711,
+        "mean_real_Qkeep": 0.5845588235294118,
+        "mean_real_advantage_keep_minus_mull": 0.33731617647058826,
+        "mean_true_Qmull": 0.24724264705882354
+      },
+      "keep:medium": {
+        "N": 37,
+        "mean_pred_Qkeep": 0.22180654034482888,
+        "mean_predicted_margin": 0.10770952626386074,
+        "mean_real_Qkeep": 0.3108108108108108,
+        "mean_real_advantage_keep_minus_mull": 0.1545608108108108,
+        "mean_true_Qmull": 0.15625
+      },
+      "keep:near": {
+        "N": 36,
+        "mean_pred_Qkeep": 0.09599184136102859,
+        "mean_predicted_margin": 0.016914457722267608,
+        "mean_real_Qkeep": 0.11458333333333333,
+        "mean_real_advantage_keep_minus_mull": 0.013888888888888888,
+        "mean_true_Qmull": 0.10069444444444445
+      },
+      "mull:far": {
+        "N": 107,
+        "mean_pred_Qkeep": 0.0383344032758983,
+        "mean_predicted_margin": -0.2979342482804701,
+        "mean_real_Qkeep": 0.030373831775700934,
+        "mean_real_advantage_keep_minus_mull": -0.3808411214953271,
+        "mean_true_Qmull": 0.411214953271028
+      },
+      "mull:medium": {
+        "N": 91,
+        "mean_pred_Qkeep": 0.06381987418772513,
+        "mean_predicted_margin": -0.11735867252265536,
+        "mean_real_Qkeep": 0.05357142857142857,
+        "mean_real_advantage_keep_minus_mull": -0.1971153846153846,
+        "mean_true_Qmull": 0.2506868131868132
+      },
+      "mull:near": {
+        "N": 109,
+        "mean_pred_Qkeep": 0.03387424624662471,
+        "mean_predicted_margin": -0.015083137131497532,
+        "mean_real_Qkeep": 0.05733944954128441,
+        "mean_real_advantage_keep_minus_mull": -0.01419151376146789,
+        "mean_true_Qmull": 0.0715309633027523
+      }
+    }
+  },
+  "untouched_v34_117k_Qkeep_diagnostic_consumed": {
+    "N_physical_groups": 32,
+    "N_stage_states": 224,
+    "by_stage": {
+      "0": {
+        "N": 32,
+        "mean_original_Qkeep_minus_old_C": -0.24242295630463578,
+        "mean_true_advantage_keep_minus_mull_among_old_keeps": 0.046875,
+        "mean_true_advantage_keep_minus_mull_among_old_mulls": -0.49399038461538464,
+        "mean_true_keep_by_T2": 0.12890625,
+        "mean_v27_prediction": 0.1394277159360028,
+        "mean_v27_prediction_bias_true_minus_prediction": -0.010521465936002809,
+        "old_keeps": 6,
+        "old_mulls": 26,
+        "old_versus_TRUE_C_changed_decisions_diagnostic": 2,
+        "old_versus_TRUE_C_posthoc_one_step_T2_gain_pp_NOT_VALIDATION": 0.9765625,
+        "optimistic_noisy_oracle_T2_regret_pp_NOT_ACTIONABLE": 2.9296875,
+        "raw_Qkeep_MSE_to_eight_future_empirical_fraction": 0.0317168234981312
+      },
+      "1": {
+        "N": 32,
+        "mean_original_Qkeep_minus_old_C": -0.11009121142132544,
+        "mean_true_advantage_keep_minus_mull_among_old_keeps": 0.3046875,
+        "mean_true_advantage_keep_minus_mull_among_old_mulls": -0.3020833333333333,
+        "mean_true_keep_by_T2": 0.21875,
+        "mean_v27_prediction": 0.20731664895587637,
+        "mean_v27_prediction_bias_true_minus_prediction": 0.01143335104412366,
+        "old_keeps": 8,
+        "old_mulls": 24,
+        "old_versus_TRUE_C_changed_decisions_diagnostic": 1,
+        "old_versus_TRUE_C_posthoc_one_step_T2_gain_pp_NOT_VALIDATION": -0.5859375,
+        "optimistic_noisy_oracle_T2_regret_pp_NOT_ACTIONABLE": 2.734375,
+        "raw_Qkeep_MSE_to_eight_future_empirical_fraction": 0.03434181992855006
+      },
+      "2": {
+        "N": 32,
+        "mean_original_Qkeep_minus_old_C": -0.02146892186991009,
+        "mean_true_advantage_keep_minus_mull_among_old_keeps": 0.45170454545454547,
+        "mean_true_advantage_keep_minus_mull_among_old_mulls": -0.2113095238095238,
+        "mean_true_keep_by_T2": 0.30078125,
+        "mean_v27_prediction": 0.21095603200926666,
+        "mean_v27_prediction_bias_true_minus_prediction": 0.08982521799073331,
+        "old_keeps": 11,
+        "old_mulls": 21,
+        "old_versus_TRUE_C_changed_decisions_diagnostic": 2,
+        "old_versus_TRUE_C_posthoc_one_step_T2_gain_pp_NOT_VALIDATION": -0.1953125,
+        "optimistic_noisy_oracle_T2_regret_pp_NOT_ACTIONABLE": 2.24609375,
+        "raw_Qkeep_MSE_to_eight_future_empirical_fraction": 0.060733997322443146
+      },
+      "3": {
+        "N": 32,
+        "mean_original_Qkeep_minus_old_C": 0.08378574694226172,
+        "mean_true_advantage_keep_minus_mull_among_old_keeps": 0.42045454545454547,
+        "mean_true_advantage_keep_minus_mull_among_old_mulls": -0.17261904761904762,
+        "mean_true_keep_by_T2": 0.234375,
+        "mean_v27_prediction": 0.2209649473109937,
+        "mean_v27_prediction_bias_true_minus_prediction": 0.013410052689006286,
+        "old_keeps": 11,
+        "old_mulls": 21,
+        "old_versus_TRUE_C_changed_decisions_diagnostic": 1,
+        "old_versus_TRUE_C_posthoc_one_step_T2_gain_pp_NOT_VALIDATION": 0.09765625,
+        "optimistic_noisy_oracle_T2_regret_pp_NOT_ACTIONABLE": 0.5859375,
+        "raw_Qkeep_MSE_to_eight_future_empirical_fraction": 0.02194027582063989
+      },
+      "4": {
+        "N": 32,
+        "mean_original_Qkeep_minus_old_C": 0.09915247254415442,
+        "mean_true_advantage_keep_minus_mull_among_old_keeps": 0.18333333333333332,
+        "mean_true_advantage_keep_minus_mull_among_old_mulls": -0.09558823529411764,
+        "mean_true_keep_by_T2": 0.17578125,
+        "mean_v27_prediction": 0.17714965813702777,
+        "mean_v27_prediction_bias_true_minus_prediction": -0.0013684081370277591,
+        "old_keeps": 15,
+        "old_mulls": 17,
+        "old_versus_TRUE_C_changed_decisions_diagnostic": 4,
+        "old_versus_TRUE_C_posthoc_one_step_T2_gain_pp_NOT_VALIDATION": 1.85546875,
+        "optimistic_noisy_oracle_T2_regret_pp_NOT_ACTIONABLE": 3.7109375,
+        "raw_Qkeep_MSE_to_eight_future_empirical_fraction": 0.04611951764879113
+      },
+      "5": {
+        "N": 32,
+        "mean_original_Qkeep_minus_old_C": 0.011373030717646584,
+        "mean_true_advantage_keep_minus_mull_among_old_keeps": 0.07932692307692307,
+        "mean_true_advantage_keep_minus_mull_among_old_mulls": -0.01644736842105263,
+        "mean_true_keep_by_T2": 0.04296875,
+        "mean_v27_prediction": 0.038049531995232616,
+        "mean_v27_prediction_bias_true_minus_prediction": 0.004919218004767384,
+        "old_keeps": 13,
+        "old_mulls": 19,
+        "old_versus_TRUE_C_changed_decisions_diagnostic": 11,
+        "old_versus_TRUE_C_posthoc_one_step_T2_gain_pp_NOT_VALIDATION": 0.390625,
+        "optimistic_noisy_oracle_T2_regret_pp_NOT_ACTIONABLE": 0.68359375,
+        "raw_Qkeep_MSE_to_eight_future_empirical_fraction": 0.0027170578899917415
+      },
+      "6": {
+        "N": 32,
+        "mean_original_Qkeep_minus_old_C": 0.013143011053828835,
+        "mean_true_advantage_keep_minus_mull_among_old_keeps": 0.08088235294117647,
+        "mean_true_advantage_keep_minus_mull_among_old_mulls": 0.035416666666666666,
+        "mean_true_keep_by_T2": 0.06640625,
+        "mean_v27_prediction": 0.02138636391869897,
+        "mean_v27_prediction_bias_true_minus_prediction": 0.04501988608130103,
+        "old_keeps": 17,
+        "old_mulls": 15,
+        "old_versus_TRUE_C_changed_decisions_diagnostic": 15,
+        "old_versus_TRUE_C_posthoc_one_step_T2_gain_pp_NOT_VALIDATION": 2.24609375,
+        "optimistic_noisy_oracle_T2_regret_pp_NOT_ACTIONABLE": 2.34375,
+        "raw_Qkeep_MSE_to_eight_future_empirical_fraction": 0.019719094921255193
+      }
+    },
+    "margin_bins": {
+      "keep:far": {
+        "N": 32,
+        "mean_pred_Qkeep": 0.6225055918548313,
+        "mean_predicted_margin": 0.4373595075674045,
+        "mean_real_Qkeep": 0.69140625,
+        "mean_real_advantage_keep_minus_mull": 0.4423828125,
+        "mean_true_Qmull": 0.2490234375
+      },
+      "keep:medium": {
+        "N": 19,
+        "mean_pred_Qkeep": 0.2890499640806594,
+        "mean_predicted_margin": 0.11359588806094034,
+        "mean_real_Qkeep": 0.39473684210526316,
+        "mean_real_advantage_keep_minus_mull": 0.1611842105263158,
+        "mean_true_Qmull": 0.23355263157894737
+      },
+      "keep:near": {
+        "N": 30,
+        "mean_pred_Qkeep": 0.061994739716616204,
+        "mean_predicted_margin": 0.015839976215878585,
+        "mean_real_Qkeep": 0.05416666666666667,
+        "mean_real_advantage_keep_minus_mull": 0.008333333333333333,
+        "mean_true_Qmull": 0.04583333333333333
+      },
+      "mull:far": {
+        "N": 54,
+        "mean_pred_Qkeep": 0.04015169139142708,
+        "mean_predicted_margin": -0.2992714397197961,
+        "mean_real_Qkeep": 0.03009259259259259,
+        "mean_real_advantage_keep_minus_mull": -0.40335648148148145,
+        "mean_true_Qmull": 0.43344907407407407
+      },
+      "mull:medium": {
+        "N": 43,
+        "mean_pred_Qkeep": 0.04539490905816307,
+        "mean_predicted_margin": -0.11636412678248195,
+        "mean_real_Qkeep": 0.06976744186046512,
+        "mean_real_advantage_keep_minus_mull": -0.1569767441860465,
+        "mean_true_Qmull": 0.22674418604651161
+      },
+      "mull:near": {
+        "N": 46,
+        "mean_pred_Qkeep": 0.023823605899901575,
+        "mean_predicted_margin": -0.017252885045452193,
+        "mean_real_Qkeep": 0.03260869565217391,
+        "mean_real_advantage_keep_minus_mull": -0.022418478260869564,
+        "mean_true_Qmull": 0.05502717391304348
+      }
+    }
+  },
+  "validation_117k_is_already_consumed_no_candidate_tuning": true
+}
