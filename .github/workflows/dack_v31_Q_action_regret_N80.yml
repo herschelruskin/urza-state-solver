@@ -15,26 +15,26 @@ jobs:
       max-parallel: 16
       matrix:
         include:
-          {start: 103000, split: train},
-          {start: 103004, split: train},
-          {start: 103008, split: train},
-          {start: 103012, split: train},
-          {start: 103016, split: train},
-          {start: 103020, split: train},
-          {start: 103024, split: train},
-          {start: 103028, split: train},
-          {start: 103032, split: train},
-          {start: 103036, split: train},
-          {start: 103040, split: train},
-          {start: 103044, split: train},
-          {start: 103048, split: validation},
-          {start: 103052, split: validation},
-          {start: 103056, split: validation},
-          {start: 103060, split: validation},
-          {start: 103064, split: test},
-          {start: 103068, split: test},
-          {start: 103072, split: test},
-          {start: 103076, split: test}
+          - {start: 103000, split: train}
+          - {start: 103004, split: train}
+          - {start: 103008, split: train}
+          - {start: 103012, split: train}
+          - {start: 103016, split: train}
+          - {start: 103020, split: train}
+          - {start: 103024, split: train}
+          - {start: 103028, split: train}
+          - {start: 103032, split: train}
+          - {start: 103036, split: train}
+          - {start: 103040, split: train}
+          - {start: 103044, split: train}
+          - {start: 103048, split: validation}
+          - {start: 103052, split: validation}
+          - {start: 103056, split: validation}
+          - {start: 103060, split: validation}
+          - {start: 103064, split: test}
+          - {start: 103068, split: test}
+          - {start: 103072, split: test}
+          - {start: 103076, split: test}
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
