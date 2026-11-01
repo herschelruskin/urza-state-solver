@@ -1,0 +1,311 @@
+{
+  "C_futures_per_seat_stage": 64,
+  "K_futures_per_stage": 8,
+  "T1_T3_safeguards": true,
+  "T2_primary": true,
+  "by_turn": {
+    "T1": {
+      "T2_or_T3_expected_conditional_gain_pp": 0.026157924107142856,
+      "by_stage": {
+        "0": {
+          "T2_or_T3_expected_conditional_gain_pp": -0.048828125,
+          "changed_actions": 1,
+          "keep_to_mull": 0,
+          "mull_to_keep": 1,
+          "n_physical_stage_states": 128,
+          "negative_group_changes": 1,
+          "positive_group_changes": 0,
+          "zero_group_changes": 127
+        },
+        "1": {
+          "T2_or_T3_expected_conditional_gain_pp": 0.18310546875,
+          "changed_actions": 5,
+          "keep_to_mull": 5,
+          "mull_to_keep": 0,
+          "n_physical_stage_states": 128,
+          "negative_group_changes": 0,
+          "positive_group_changes": 5,
+          "zero_group_changes": 123
+        },
+        "2": {
+          "T2_or_T3_expected_conditional_gain_pp": 0.048828125,
+          "changed_actions": 2,
+          "keep_to_mull": 2,
+          "mull_to_keep": 0,
+          "n_physical_stage_states": 128,
+          "negative_group_changes": 0,
+          "positive_group_changes": 2,
+          "zero_group_changes": 126
+        },
+        "3": {
+          "T2_or_T3_expected_conditional_gain_pp": 0.0,
+          "changed_actions": 0,
+          "keep_to_mull": 0,
+          "mull_to_keep": 0,
+          "n_physical_stage_states": 128,
+          "negative_group_changes": 0,
+          "positive_group_changes": 0,
+          "zero_group_changes": 128
+        },
+        "4": {
+          "T2_or_T3_expected_conditional_gain_pp": 0.0,
+          "changed_actions": 0,
+          "keep_to_mull": 0,
+          "mull_to_keep": 0,
+          "n_physical_stage_states": 128,
+          "negative_group_changes": 0,
+          "positive_group_changes": 0,
+          "zero_group_changes": 128
+        },
+        "5": {
+          "T2_or_T3_expected_conditional_gain_pp": 0.0,
+          "changed_actions": 0,
+          "keep_to_mull": 0,
+          "mull_to_keep": 0,
+          "n_physical_stage_states": 128,
+          "negative_group_changes": 0,
+          "positive_group_changes": 0,
+          "zero_group_changes": 128
+        },
+        "6": {
+          "T2_or_T3_expected_conditional_gain_pp": 0.0,
+          "changed_actions": 0,
+          "keep_to_mull": 0,
+          "mull_to_keep": 0,
+          "n_physical_stage_states": 128,
+          "negative_group_changes": 0,
+          "positive_group_changes": 0,
+          "zero_group_changes": 128
+        }
+      },
+      "changed_actions": 8,
+      "changed_only": {
+        "T2_or_T3_expected_conditional_gain_pp": 2.9296875,
+        "changed_actions": 8,
+        "keep_to_mull": 7,
+        "mull_to_keep": 1,
+        "n_physical_stage_states": 8,
+        "negative_group_changes": 1,
+        "positive_group_changes": 7,
+        "zero_group_changes": 0
+      },
+      "keep_to_mull": 7,
+      "mull_to_keep": 1,
+      "n_physical_stage_states": 896,
+      "negative_group_changes": 1,
+      "positive_group_changes": 7,
+      "two_source_physical_group_bootstrap_95ci_pp": [
+        -0.008719308035714286,
+        0.07149832589285714
+      ],
+      "zero_group_changes": 888
+    },
+    "T2": {
+      "T2_or_T3_expected_conditional_gain_pp": 0.06452287946428571,
+      "by_stage": {
+        "0": {
+          "T2_or_T3_expected_conditional_gain_pp": 0.48828125,
+          "changed_actions": 1,
+          "keep_to_mull": 0,
+          "mull_to_keep": 1,
+          "n_physical_stage_states": 128,
+          "negative_group_changes": 0,
+          "positive_group_changes": 1,
+          "zero_group_changes": 127
+        },
+        "1": {
+          "T2_or_T3_expected_conditional_gain_pp": 0.01220703125,
+          "changed_actions": 5,
+          "keep_to_mull": 5,
+          "mull_to_keep": 0,
+          "n_physical_stage_states": 128,
+          "negative_group_changes": 3,
+          "positive_group_changes": 2,
+          "zero_group_changes": 123
+        },
+        "2": {
+          "T2_or_T3_expected_conditional_gain_pp": -0.048828125,
+          "changed_actions": 2,
+          "keep_to_mull": 2,
+          "mull_to_keep": 0,
+          "n_physical_stage_states": 128,
+          "negative_group_changes": 1,
+          "positive_group_changes": 1,
+          "zero_group_changes": 126
+        },
+        "3": {
+          "T2_or_T3_expected_conditional_gain_pp": 0.0,
+          "changed_actions": 0,
+          "keep_to_mull": 0,
+          "mull_to_keep": 0,
+          "n_physical_stage_states": 128,
+          "negative_group_changes": 0,
+          "positive_group_changes": 0,
+          "zero_group_changes": 128
+        },
+        "4": {
+          "T2_or_T3_expected_conditional_gain_pp": 0.0,
+          "changed_actions": 0,
+          "keep_to_mull": 0,
+          "mull_to_keep": 0,
+          "n_physical_stage_states": 128,
+          "negative_group_changes": 0,
+          "positive_group_changes": 0,
+          "zero_group_changes": 128
+        },
+        "5": {
+          "T2_or_T3_expected_conditional_gain_pp": 0.0,
+          "changed_actions": 0,
+          "keep_to_mull": 0,
+          "mull_to_keep": 0,
+          "n_physical_stage_states": 128,
+          "negative_group_changes": 0,
+          "positive_group_changes": 0,
+          "zero_group_changes": 128
+        },
+        "6": {
+          "T2_or_T3_expected_conditional_gain_pp": 0.0,
+          "changed_actions": 0,
+          "keep_to_mull": 0,
+          "mull_to_keep": 0,
+          "n_physical_stage_states": 128,
+          "negative_group_changes": 0,
+          "positive_group_changes": 0,
+          "zero_group_changes": 128
+        }
+      },
+      "changed_actions": 8,
+      "changed_only": {
+        "T2_or_T3_expected_conditional_gain_pp": 7.2265625,
+        "changed_actions": 8,
+        "keep_to_mull": 7,
+        "mull_to_keep": 1,
+        "n_physical_stage_states": 8,
+        "negative_group_changes": 4,
+        "positive_group_changes": 4,
+        "zero_group_changes": 0
+      },
+      "keep_to_mull": 7,
+      "mull_to_keep": 1,
+      "n_physical_stage_states": 896,
+      "negative_group_changes": 4,
+      "positive_group_changes": 4,
+      "two_source_physical_group_bootstrap_95ci_pp": [
+        -0.15694754464285715,
+        0.3138950892857143
+      ],
+      "zero_group_changes": 888
+    },
+    "T3": {
+      "T2_or_T3_expected_conditional_gain_pp": -0.10114397321428571,
+      "by_stage": {
+        "0": {
+          "T2_or_T3_expected_conditional_gain_pp": 0.20751953125,
+          "changed_actions": 1,
+          "keep_to_mull": 0,
+          "mull_to_keep": 1,
+          "n_physical_stage_states": 128,
+          "negative_group_changes": 0,
+          "positive_group_changes": 1,
+          "zero_group_changes": 127
+        },
+        "1": {
+          "T2_or_T3_expected_conditional_gain_pp": -0.76904296875,
+          "changed_actions": 5,
+          "keep_to_mull": 5,
+          "mull_to_keep": 0,
+          "n_physical_stage_states": 128,
+          "negative_group_changes": 5,
+          "positive_group_changes": 0,
+          "zero_group_changes": 123
+        },
+        "2": {
+          "T2_or_T3_expected_conditional_gain_pp": -0.146484375,
+          "changed_actions": 2,
+          "keep_to_mull": 2,
+          "mull_to_keep": 0,
+          "n_physical_stage_states": 128,
+          "negative_group_changes": 2,
+          "positive_group_changes": 0,
+          "zero_group_changes": 126
+        },
+        "3": {
+          "T2_or_T3_expected_conditional_gain_pp": 0.0,
+          "changed_actions": 0,
+          "keep_to_mull": 0,
+          "mull_to_keep": 0,
+          "n_physical_stage_states": 128,
+          "negative_group_changes": 0,
+          "positive_group_changes": 0,
+          "zero_group_changes": 128
+        },
+        "4": {
+          "T2_or_T3_expected_conditional_gain_pp": 0.0,
+          "changed_actions": 0,
+          "keep_to_mull": 0,
+          "mull_to_keep": 0,
+          "n_physical_stage_states": 128,
+          "negative_group_changes": 0,
+          "positive_group_changes": 0,
+          "zero_group_changes": 128
+        },
+        "5": {
+          "T2_or_T3_expected_conditional_gain_pp": 0.0,
+          "changed_actions": 0,
+          "keep_to_mull": 0,
+          "mull_to_keep": 0,
+          "n_physical_stage_states": 128,
+          "negative_group_changes": 0,
+          "positive_group_changes": 0,
+          "zero_group_changes": 128
+        },
+        "6": {
+          "T2_or_T3_expected_conditional_gain_pp": 0.0,
+          "changed_actions": 0,
+          "keep_to_mull": 0,
+          "mull_to_keep": 0,
+          "n_physical_stage_states": 128,
+          "negative_group_changes": 0,
+          "positive_group_changes": 0,
+          "zero_group_changes": 128
+        }
+      },
+      "changed_actions": 8,
+      "changed_only": {
+        "T2_or_T3_expected_conditional_gain_pp": -11.328125,
+        "changed_actions": 8,
+        "keep_to_mull": 7,
+        "mull_to_keep": 1,
+        "n_physical_stage_states": 8,
+        "negative_group_changes": 7,
+        "positive_group_changes": 1,
+        "zero_group_changes": 0
+      },
+      "keep_to_mull": 7,
+      "mull_to_keep": 1,
+      "n_physical_stage_states": 896,
+      "negative_group_changes": 7,
+      "positive_group_changes": 1,
+      "two_source_physical_group_bootstrap_95ci_pp": [
+        -0.27029854910714285,
+        0.03662109375
+      ],
+      "zero_group_changes": 888
+    }
+  },
+  "candidate_model_sha256": "eb943aa0c65e3d00e7f6f22f32afc3477b9ab1cfdfcbb473f81a0bbf8c911e02",
+  "conditional_stage_states": 896,
+  "frozen_bottom_sha256": "3a93ecb0c62fd973a9d32c744bfb2fabdffcc8046e9ed9b7bfd9986bb2961c5a",
+  "independent_outer_games": 128,
+  "new_physical_game_ids": [
+    121000,
+    121127
+  ],
+  "no_validation_tuning": true,
+  "one_step_frozen_future_policy_not_new_policy_bellman": true,
+  "policy_approved": false,
+  "prediction_frozen_before_outcome_simulation": true,
+  "schema": "dack_v35_121k_independent_conditional_action_regret_screen",
+  "status": "PASS",
+  "total_new_strict_beam160_rollouts": 8960
+}
