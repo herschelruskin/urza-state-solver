@@ -1,0 +1,32 @@
+name: DACK v45 read-only v43 predicted versus measured physical K-C margin
+on:
+  push:
+    branches: [dack-v45-v5-v43-residual-gap-audit-20261101]
+    paths:
+      - '.github/workflows/dack_v45_predicted_physical_margins.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v45-v5-v43-residual-gap-audit-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Read-only actual prior v43 Q2 vs physically sampled 44 first-conflict K-C values
+        run: |
+          python -m py_compile dack_simulator/validation/v45_readonly_predicted_physical_stage_margins.py
+          python -u dack_simulator/validation/v45_readonly_predicted_physical_stage_margins.py
+      - name: Archive error diagnosis, no threshold fitting or fresh-policy claims
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v45_v43_Q2_DP_vs_true_physical_K_C_margin_audit.json
+          git commit -m "Archive measured v43 predicted Q2 versus true physical KEEP and future MULL margins on actual 44 first disagreements"
+          git pull --rebase origin dack-v45-v5-v43-residual-gap-audit-20261101
+          git push origin HEAD:dack-v45-v5-v43-residual-gap-audit-20261101
