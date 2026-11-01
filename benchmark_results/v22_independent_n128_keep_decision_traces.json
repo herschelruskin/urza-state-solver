@@ -1,0 +1,634 @@
+{
+  "anomalies": [],
+  "by_seat": {
+    "0": {
+      "T1_v14": 2,
+      "T1_v22": 0,
+      "T2_v14": 8,
+      "T2_v22": 8,
+      "T3_v14": 19,
+      "T3_v22": 20,
+      "games": 27
+    },
+    "1": {
+      "T1_v14": 1,
+      "T1_v22": 1,
+      "T2_v14": 18,
+      "T2_v22": 20,
+      "T3_v14": 31,
+      "T3_v22": 37,
+      "games": 45
+    },
+    "2": {
+      "T1_v14": 1,
+      "T1_v22": 4,
+      "T2_v14": 13,
+      "T2_v22": 15,
+      "T3_v14": 21,
+      "T3_v22": 23,
+      "games": 27
+    },
+    "3": {
+      "T1_v14": 0,
+      "T1_v22": 0,
+      "T2_v14": 10,
+      "T2_v22": 11,
+      "T3_v14": 22,
+      "T3_v22": 25,
+      "games": 29
+    }
+  },
+  "changed_games": [
+    {
+      "first_changed_keep_stage": 2,
+      "game_id": 87000,
+      "seat": 3,
+      "v14_keep_n": 5,
+      "v14_turn": 2,
+      "v22_keep_n": 6,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 2,
+      "game_id": 87003,
+      "seat": 1,
+      "v14_keep_n": 6,
+      "v14_turn": 0,
+      "v22_keep_n": 5,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 1,
+      "game_id": 87004,
+      "seat": 2,
+      "v14_keep_n": 2,
+      "v14_turn": 0,
+      "v22_keep_n": 7,
+      "v22_turn": 2
+    },
+    {
+      "first_changed_keep_stage": 0,
+      "game_id": 87007,
+      "seat": 0,
+      "v14_keep_n": 6,
+      "v14_turn": 2,
+      "v22_keep_n": 7,
+      "v22_turn": 2
+    },
+    {
+      "first_changed_keep_stage": 2,
+      "game_id": 87008,
+      "seat": 2,
+      "v14_keep_n": 6,
+      "v14_turn": 3,
+      "v22_keep_n": 4,
+      "v22_turn": 1
+    },
+    {
+      "first_changed_keep_stage": 3,
+      "game_id": 87009,
+      "seat": 3,
+      "v14_keep_n": 3,
+      "v14_turn": 0,
+      "v22_keep_n": 5,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 3,
+      "game_id": 87011,
+      "seat": 0,
+      "v14_keep_n": 3,
+      "v14_turn": 3,
+      "v22_keep_n": 5,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 2,
+      "game_id": 87015,
+      "seat": 3,
+      "v14_keep_n": 6,
+      "v14_turn": 0,
+      "v22_keep_n": 4,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 3,
+      "game_id": 87018,
+      "seat": 0,
+      "v14_keep_n": 5,
+      "v14_turn": 3,
+      "v22_keep_n": 3,
+      "v22_turn": 0
+    },
+    {
+      "first_changed_keep_stage": 4,
+      "game_id": 87026,
+      "seat": 1,
+      "v14_keep_n": 3,
+      "v14_turn": 0,
+      "v22_keep_n": 4,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 2,
+      "game_id": 87027,
+      "seat": 1,
+      "v14_keep_n": 5,
+      "v14_turn": 0,
+      "v22_keep_n": 6,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 5,
+      "game_id": 87028,
+      "seat": 1,
+      "v14_keep_n": 3,
+      "v14_turn": 0,
+      "v22_keep_n": 2,
+      "v22_turn": 0
+    },
+    {
+      "first_changed_keep_stage": 4,
+      "game_id": 87030,
+      "seat": 0,
+      "v14_keep_n": 3,
+      "v14_turn": 0,
+      "v22_keep_n": 4,
+      "v22_turn": 0
+    },
+    {
+      "first_changed_keep_stage": 1,
+      "game_id": 87031,
+      "seat": 2,
+      "v14_keep_n": 4,
+      "v14_turn": 3,
+      "v22_keep_n": 7,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 2,
+      "game_id": 87035,
+      "seat": 2,
+      "v14_keep_n": 6,
+      "v14_turn": 3,
+      "v22_keep_n": 4,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 2,
+      "game_id": 87039,
+      "seat": 3,
+      "v14_keep_n": 6,
+      "v14_turn": 3,
+      "v22_keep_n": 5,
+      "v22_turn": 2
+    },
+    {
+      "first_changed_keep_stage": 1,
+      "game_id": 87040,
+      "seat": 2,
+      "v14_keep_n": 6,
+      "v14_turn": 2,
+      "v22_keep_n": 7,
+      "v22_turn": 1
+    },
+    {
+      "first_changed_keep_stage": 4,
+      "game_id": 87044,
+      "seat": 0,
+      "v14_keep_n": 3,
+      "v14_turn": 3,
+      "v22_keep_n": 4,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 1,
+      "game_id": 87045,
+      "seat": 1,
+      "v14_keep_n": 6,
+      "v14_turn": 2,
+      "v22_keep_n": 7,
+      "v22_turn": 2
+    },
+    {
+      "first_changed_keep_stage": 3,
+      "game_id": 87048,
+      "seat": 3,
+      "v14_keep_n": 3,
+      "v14_turn": 3,
+      "v22_keep_n": 5,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 1,
+      "game_id": 87049,
+      "seat": 1,
+      "v14_keep_n": 5,
+      "v14_turn": 3,
+      "v22_keep_n": 7,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 3,
+      "game_id": 87052,
+      "seat": 2,
+      "v14_keep_n": 3,
+      "v14_turn": 0,
+      "v22_keep_n": 5,
+      "v22_turn": 0
+    },
+    {
+      "first_changed_keep_stage": 1,
+      "game_id": 87054,
+      "seat": 2,
+      "v14_keep_n": 3,
+      "v14_turn": 0,
+      "v22_keep_n": 7,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 0,
+      "game_id": 87055,
+      "seat": 3,
+      "v14_keep_n": 3,
+      "v14_turn": 0,
+      "v22_keep_n": 7,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 1,
+      "game_id": 87058,
+      "seat": 0,
+      "v14_keep_n": 5,
+      "v14_turn": 2,
+      "v22_keep_n": 7,
+      "v22_turn": 2
+    },
+    {
+      "first_changed_keep_stage": 1,
+      "game_id": 87059,
+      "seat": 0,
+      "v14_keep_n": 4,
+      "v14_turn": 3,
+      "v22_keep_n": 7,
+      "v22_turn": 2
+    },
+    {
+      "first_changed_keep_stage": 3,
+      "game_id": 87060,
+      "seat": 1,
+      "v14_keep_n": 3,
+      "v14_turn": 0,
+      "v22_keep_n": 5,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 1,
+      "game_id": 87061,
+      "seat": 1,
+      "v14_keep_n": 4,
+      "v14_turn": 2,
+      "v22_keep_n": 7,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 0,
+      "game_id": 87062,
+      "seat": 2,
+      "v14_keep_n": 6,
+      "v14_turn": 2,
+      "v22_keep_n": 7,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 1,
+      "game_id": 87063,
+      "seat": 0,
+      "v14_keep_n": 4,
+      "v14_turn": 3,
+      "v22_keep_n": 7,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 1,
+      "game_id": 87064,
+      "seat": 3,
+      "v14_keep_n": 6,
+      "v14_turn": 3,
+      "v22_keep_n": 7,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 4,
+      "game_id": 87066,
+      "seat": 2,
+      "v14_keep_n": 3,
+      "v14_turn": 0,
+      "v22_keep_n": 4,
+      "v22_turn": 0
+    },
+    {
+      "first_changed_keep_stage": 0,
+      "game_id": 87067,
+      "seat": 1,
+      "v14_keep_n": 3,
+      "v14_turn": 3,
+      "v22_keep_n": 7,
+      "v22_turn": 2
+    },
+    {
+      "first_changed_keep_stage": 0,
+      "game_id": 87069,
+      "seat": 0,
+      "v14_keep_n": 3,
+      "v14_turn": 0,
+      "v22_keep_n": 7,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 1,
+      "game_id": 87072,
+      "seat": 2,
+      "v14_keep_n": 7,
+      "v14_turn": 2,
+      "v22_keep_n": 4,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 0,
+      "game_id": 87074,
+      "seat": 0,
+      "v14_keep_n": 6,
+      "v14_turn": 3,
+      "v22_keep_n": 7,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 1,
+      "game_id": 87075,
+      "seat": 1,
+      "v14_keep_n": 4,
+      "v14_turn": 3,
+      "v22_keep_n": 7,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 1,
+      "game_id": 87077,
+      "seat": 0,
+      "v14_keep_n": 5,
+      "v14_turn": 3,
+      "v22_keep_n": 7,
+      "v22_turn": 2
+    },
+    {
+      "first_changed_keep_stage": 4,
+      "game_id": 87079,
+      "seat": 0,
+      "v14_keep_n": 3,
+      "v14_turn": 3,
+      "v22_keep_n": 4,
+      "v22_turn": 0
+    },
+    {
+      "first_changed_keep_stage": 0,
+      "game_id": 87084,
+      "seat": 1,
+      "v14_keep_n": 3,
+      "v14_turn": 0,
+      "v22_keep_n": 7,
+      "v22_turn": 2
+    },
+    {
+      "first_changed_keep_stage": 0,
+      "game_id": 87087,
+      "seat": 1,
+      "v14_keep_n": 6,
+      "v14_turn": 3,
+      "v22_keep_n": 7,
+      "v22_turn": 2
+    },
+    {
+      "first_changed_keep_stage": 2,
+      "game_id": 87088,
+      "seat": 0,
+      "v14_keep_n": 3,
+      "v14_turn": 0,
+      "v22_keep_n": 6,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 2,
+      "game_id": 87089,
+      "seat": 2,
+      "v14_keep_n": 6,
+      "v14_turn": 3,
+      "v22_keep_n": 5,
+      "v22_turn": 1
+    },
+    {
+      "first_changed_keep_stage": 4,
+      "game_id": 87090,
+      "seat": 2,
+      "v14_keep_n": 3,
+      "v14_turn": 0,
+      "v22_keep_n": 4,
+      "v22_turn": 0
+    },
+    {
+      "first_changed_keep_stage": 1,
+      "game_id": 87091,
+      "seat": 2,
+      "v14_keep_n": 6,
+      "v14_turn": 2,
+      "v22_keep_n": 7,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 1,
+      "game_id": 87094,
+      "seat": 0,
+      "v14_keep_n": 6,
+      "v14_turn": 2,
+      "v22_keep_n": 7,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 2,
+      "game_id": 87095,
+      "seat": 1,
+      "v14_keep_n": 6,
+      "v14_turn": 3,
+      "v22_keep_n": 5,
+      "v22_turn": 0
+    },
+    {
+      "first_changed_keep_stage": 5,
+      "game_id": 87096,
+      "seat": 2,
+      "v14_keep_n": 3,
+      "v14_turn": 0,
+      "v22_keep_n": 2,
+      "v22_turn": 0
+    },
+    {
+      "first_changed_keep_stage": 3,
+      "game_id": 87097,
+      "seat": 2,
+      "v14_keep_n": 3,
+      "v14_turn": 3,
+      "v22_keep_n": 5,
+      "v22_turn": 2
+    },
+    {
+      "first_changed_keep_stage": 2,
+      "game_id": 87101,
+      "seat": 2,
+      "v14_keep_n": 4,
+      "v14_turn": 3,
+      "v22_keep_n": 6,
+      "v22_turn": 2
+    },
+    {
+      "first_changed_keep_stage": 4,
+      "game_id": 87102,
+      "seat": 1,
+      "v14_keep_n": 3,
+      "v14_turn": 0,
+      "v22_keep_n": 4,
+      "v22_turn": 0
+    },
+    {
+      "first_changed_keep_stage": 0,
+      "game_id": 87107,
+      "seat": 0,
+      "v14_keep_n": 4,
+      "v14_turn": 3,
+      "v22_keep_n": 7,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 1,
+      "game_id": 87109,
+      "seat": 3,
+      "v14_keep_n": 6,
+      "v14_turn": 0,
+      "v22_keep_n": 7,
+      "v22_turn": 2
+    },
+    {
+      "first_changed_keep_stage": 3,
+      "game_id": 87111,
+      "seat": 3,
+      "v14_keep_n": 3,
+      "v14_turn": 3,
+      "v22_keep_n": 5,
+      "v22_turn": 0
+    },
+    {
+      "first_changed_keep_stage": 1,
+      "game_id": 87112,
+      "seat": 0,
+      "v14_keep_n": 3,
+      "v14_turn": 0,
+      "v22_keep_n": 7,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 2,
+      "game_id": 87113,
+      "seat": 1,
+      "v14_keep_n": 4,
+      "v14_turn": 3,
+      "v22_keep_n": 6,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 1,
+      "game_id": 87114,
+      "seat": 1,
+      "v14_keep_n": 6,
+      "v14_turn": 0,
+      "v22_keep_n": 7,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 2,
+      "game_id": 87115,
+      "seat": 1,
+      "v14_keep_n": 5,
+      "v14_turn": 3,
+      "v22_keep_n": 6,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 1,
+      "game_id": 87118,
+      "seat": 0,
+      "v14_keep_n": 6,
+      "v14_turn": 1,
+      "v22_keep_n": 7,
+      "v22_turn": 2
+    },
+    {
+      "first_changed_keep_stage": 4,
+      "game_id": 87119,
+      "seat": 0,
+      "v14_keep_n": 3,
+      "v14_turn": 1,
+      "v22_keep_n": 4,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 5,
+      "game_id": 87121,
+      "seat": 1,
+      "v14_keep_n": 3,
+      "v14_turn": 0,
+      "v22_keep_n": 2,
+      "v22_turn": 0
+    },
+    {
+      "first_changed_keep_stage": 0,
+      "game_id": 87125,
+      "seat": 1,
+      "v14_keep_n": 4,
+      "v14_turn": 0,
+      "v22_keep_n": 7,
+      "v22_turn": 3
+    },
+    {
+      "first_changed_keep_stage": 1,
+      "game_id": 87126,
+      "seat": 1,
+      "v14_keep_n": 6,
+      "v14_turn": 2,
+      "v22_keep_n": 7,
+      "v22_turn": 2
+    }
+  ],
+  "comparison": "same frozen v14 bottom ranker; only keep-vs-DP changed",
+  "games": 128,
+  "policy_not_approved": true,
+  "schema": "dack_v22_128_game_actual_London_decision_trace",
+  "stats": {
+    "T1_gain": 3,
+    "T1_loss": 2,
+    "T2_gain": 12,
+    "T2_loss": 7,
+    "T3_gain": 16,
+    "T3_loss": 4,
+    "different_keep_depth": 63,
+    "first_disagreement_stage_0": 10,
+    "first_disagreement_stage_1": 21,
+    "first_disagreement_stage_2": 13,
+    "first_disagreement_stage_3": 8,
+    "first_disagreement_stage_4": 8,
+    "first_disagreement_stage_5": 3,
+    "same_keep_depth": 65,
+    "v22_kept_fewer_cards": 12,
+    "v22_kept_more_cards": 51
+  },
+  "status": "PASS",
+  "warning": "Stage differences are observational, not causal estimates of individual London stages."
+}
