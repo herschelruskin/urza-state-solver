@@ -1,0 +1,163 @@
+name: DACK v21 stage-complete real keep-value labels 64 train 16 validation
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v21_keep_value_corpus.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  evaluate:
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        include:
+          - split: train
+            start: 82000
+          - split: train
+            start: 82008
+          - split: train
+            start: 82016
+          - split: train
+            start: 82024
+          - split: train
+            start: 82032
+          - split: train
+            start: 82040
+          - split: train
+            start: 82048
+          - split: train
+            start: 82056
+          - split: validation
+            start: 83000
+          - split: validation
+            start: 83008
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Four real beam-160 future rollouts for each of all eight physical London stages, including would-reject hands
+        run: |
+          python -u dack_simulator/validation/label_all_stage_keep_values_v21.py \
+            --split ${{ matrix.split }} --start ${{ matrix.start }} \
+            --games 8 --draws 4 \
+            --out sampled/stage_${{ matrix.split }}_${{ matrix.start }}.jsonl.gz
+      - name: Verify per-game per-stage sample integrity and visible-only predictors
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from collections import Counter
+          import gzip,json
+          paths=list(Path('sampled').glob('stage_*.jsonl.gz'))
+          assert len(paths)==1
+          with gzip.open(paths[0],'rt') as fp:
+              meta=json.loads(next(fp));rows=[json.loads(x) for x in fp]
+          assert len(rows)==8*8*4 and meta['games']==8
+          assert meta['stage_keep_numbers']==[7,7,6,5,4,3,2,1]
+          assert meta['new_unseen_library_order_never_saved']
+          ids=set(x['game_id'] for x in rows)
+          assert len(ids)==8
+          for gid in ids:
+              subset=[x for x in rows if x['game_id']==gid]
+              assert Counter(x['stage'] for x in subset)==Counter({i:4 for i in range(8)})
+              for stage in range(8):
+                  s=[x for x in subset if x['stage']==stage]
+                  assert [x['future_index'] for x in s]==[0,1,2,3]
+                  assert len({tuple(x['hand']) for x in s})==1
+          assert all(sum(x['unknown_counts'].values())==92 for x in rows)
+          assert all(x['label_turn'] in (0,1,2,3) for x in rows)
+          assert all(not any(k in x for k in ('first3','actual_library','hidden_order','sampled_order')) for x in rows)
+          print('V21_EIGHT_STAGE_SAMPLES_PASS',paths[0].name,len(ids),len(rows),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: all-stage-v21-${{ matrix.split }}-${{ matrix.start }}
+          path: sampled/stage_*.jsonl.gz
+          retention-days: 21
+  archive:
+    needs: evaluate
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: all-stage-v21-*
+          merge-multiple: true
+          path: datasets/v21_all_london_keep_values/
+      - name: Group-preserving manifest of real rejected/accepted keep outcomes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from collections import Counter
+          import hashlib,json,gzip
+          root=Path('datasets/v21_all_london_keep_values')
+          files=sorted(root.glob('stage_*.jsonl.gz'))
+          assert len(files)==10,len(files)
+          report={'schema':'dack_v21_all_stage_real_keep_values_dataset',
+                  'independent_stage_shuffles':True,
+                  'same_frozen_v14_128_student':True,
+                  'actual_post_keep_beam':160,
+                  'four_futures_per_stage':True,
+                  'includes_stages_that_would_be_rejected':True,
+                  'not_population_unconditional_policy_winrate':True,
+                  'models_unapproved':True,
+                  'splits':{},'files':[]}
+          allids=[]
+          model_hash=None
+          for split,start,ng in [('train',82000,64),('validation',83000,16)]:
+              subset=[p for p in files if p.name.startswith('stage_'+split+'_')]
+              assert len(subset)==ng//8
+              ids=set();counts=Counter()
+              for p in subset:
+                  with gzip.open(p,'rt') as fp:
+                      meta=json.loads(next(fp));rows=[json.loads(x) for x in fp]
+                  assert meta['split']==split
+                  assert meta['games']==8 and meta['draws_per_stage']==4
+                  assert len(rows)==256
+                  if model_hash is None:model_hash=meta['source_student_model_sha256']
+                  assert meta['source_student_model_sha256']==model_hash
+                  groupids={x['game_id'] for x in rows}
+                  assert len(groupids)==8
+                  ids.update(groupids)
+                  counts['rollouts']+=len(rows)
+                  for x in rows:
+                      counts['T'+str(x['label_turn'])]+=1
+                      if x['future_index']==0:
+                          counts['stages']+=1
+                          counts['would_accept']+=int(x['student_would_keep'])
+                          counts['would_reject']+=int(not x['student_would_keep'])
+                  report['files'].append({'name':p.name,'split':split,
+                      'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'bytes':p.stat().st_size})
+              assert ids==set(range(start,start+ng))
+              assert counts['stages']==ng*8 and counts['rollouts']==ng*32
+              report['splits'][split]={'independent_outer_games':ng,
+                  'eight_stage_decisions':counts['stages'],'counts':dict(counts)}
+              allids.append(ids)
+          assert allids[0].isdisjoint(allids[1])
+          report['source_student_sha256']=model_hash
+          (root/'manifest.json').write_text(json.dumps(report,sort_keys=True,indent=2)+'\n')
+          print('V21_ALL_STAGE_DATASET_ARCHIVE_PASS',json.dumps(report['splits']),flush=True)
+          PY
+      - name: Commit permanent real future labels and integrity manifest on isolated branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f datasets/v21_all_london_keep_values/
+          git commit -m "Archive 2560 beam-160 counterfactual real outcomes from all London stages including rejected hands"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v21-all-stage-sampling-manifest
+          path: datasets/v21_all_london_keep_values/manifest.json
+          retention-days: 21
