@@ -1,0 +1,92 @@
+name: DACK v13 teacher keep-cutoff calibration on development validation only
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_teacher_v13_validation_cutoff.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  calibrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - name: Scan teacher keep cutoff on ONLY stage-validation groups, never outcome holdout
+        run: |
+          python - <<'PY'
+          import glob,json
+          from collections import Counter
+          from pathlib import Path
+          from dack_simulator.validation.train_teacher_distillation_v13 import read,evaluate
+          import dack_mulligan_teacher_features_v13_20261031 as feat
+          paths=sorted(glob.glob('datasets/teacher_v13_20261031/distill_v13_validation_*.jsonl.gz'))
+          assert len(paths)==8
+          rows,ids,sha=read(paths,'validation')
+          assert ids==set(range(61000,61008))
+          base=json.loads(Path('models/dack_teacher_distill_v13_EXPERIMENTAL.json').read_text())
+          traces=[]
+          for r in rows:
+              candidates=[]
+              for i,c in enumerate(r['candidate_rows']):
+                  x=feat.extract(r['seven'],c['hand'],c['bottom'],r['unknown_counts'],
+                                 r['seat'],r['keep_n'],r['stage'],c['struct_rank'],i)
+                  candidates.append((feat.score_head(base,'choice_trees',x),-i,x))
+              p,minus_idx,x=max(candidates,key=lambda v:(v[0],v[1]))
+              prob=feat.score_head(base,'keep_trees',x)
+              traces.append((prob,int(r['teacher_keep']),int(r['keep_n']==1)))
+          grid=[i/100 for i in range(10,86,5)]
+          results=[]
+          for cut in grid:
+              preds=[int(terminal or prob>=cut) for prob,label,terminal in traces]
+              labels=[label for _,label,_ in traces]
+              tp=sum(p==1 and y==1 for p,y in zip(preds,labels))
+              tn=sum(p==0 and y==0 for p,y in zip(preds,labels))
+              fp=sum(p==1 and y==0 for p,y in zip(preds,labels))
+              fn=sum(p==0 and y==1 for p,y in zip(preds,labels))
+              recall=tp/max(1,tp+fn)
+              specificity=tn/max(1,tn+fp)
+              balanced=.5*(recall+specificity)
+              results.append({'cutoff':cut,'balanced_accuracy':balanced,
+                              'raw_accuracy':(tp+tn)/len(labels),
+                              'predicted_keeps':tp+fp,'teacher_keeps':tp+fn,
+                              'tp':tp,'tn':tn,'fp':fp,'fn':fn})
+          best=max(results,key=lambda r:(r['balanced_accuracy'],
+                                          r['raw_accuracy'],
+                                          -abs(r['cutoff']-.5)))
+          derived=dict(base)
+          derived['keep_cutoff']=best['cutoff']
+          derived['cutoff_tuned_only_on_dev_validation']=True
+          derived['cutoff_validation_game_ids']=[61000,61007]
+          derived['deployed_policy_approved']=False
+          derived['diagnostic_only']=True
+          path=Path('models/dack_teacher_distill_v13_valcutoff_EXPERIMENTAL.json')
+          path.write_text(json.dumps(derived,sort_keys=True,separators=(',',':'))+'\n')
+          before=evaluate(rows,base)
+          after=evaluate(rows,derived)
+          report={'schema':'dack_v13_teacher_val_keep_cutoff_scan',
+                  'status':'PASS','validation_ids':[61000,61007],
+                  'rows':len(rows),'reference_cutoff':.5,
+                  'selected_cutoff':best['cutoff'],
+                  'validation_only_no_full_game_outcomes':True,
+                  'baseline':{k:v for k,v in before.items() if k!='per_stage_results'},
+                  'tuned':{k:v for k,v in after.items() if k!='per_stage_results'},
+                  'scan':results,'model_approved':False,
+                  'warning':'Only eight outer validation groups; must evaluate on new 65k holdout'}
+          out=Path('benchmark_results/v13_teacher_dev_cutoff_scan.json')
+          out.parent.mkdir(exist_ok=True)
+          out.write_text(json.dumps(report,indent=2)+'\n')
+          print('V13_DEV_KEEP_CUTOFF_SCAN_PASS',json.dumps({
+            'best':best,'baseline':report['baseline'],'tuned':report['tuned']}),flush=True)
+          PY
+      - name: Archive distinct cutoff-tuned experimental model without replacing original
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f models/dack_teacher_distill_v13_valcutoff_EXPERIMENTAL.json benchmark_results/v13_teacher_dev_cutoff_scan.json
+          git commit -m "Archive separately validation-calibrated teacher keep threshold; no game-outcome tuning"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
