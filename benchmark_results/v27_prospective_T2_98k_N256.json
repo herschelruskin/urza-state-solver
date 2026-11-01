@@ -1,0 +1,149 @@
+{
+  "T1_and_T3_secondary": true,
+  "T2_primary_endpoint": "Cumulative by T2, v27 against v5 and previous frozen v26",
+  "goldfish_not_multiplayer_winrate": true,
+  "metrics": {
+    "v26_expanded_keep_DP": {
+      "T1": 13,
+      "T2": 104,
+      "T3": 200,
+      "mean_keep_n": 5.671875,
+      "n": 256,
+      "simulation_seconds": 103.8047
+    },
+    "v27_T2_only_DP": {
+      "T1": 14,
+      "T2": 106,
+      "T3": 183,
+      "mean_keep_n": 5.2265625,
+      "n": 256,
+      "simulation_seconds": 96.6911
+    },
+    "v5": {
+      "T1": 13,
+      "T2": 120,
+      "T3": 214,
+      "mean_keep_n": 4.98828125,
+      "n": 256,
+      "simulation_seconds": 6613.6583
+    }
+  },
+  "model_and_dp_sha256": {
+    "models/dack_v26_expanded_all_stage_continuations_EXPERIMENTAL.json": "d508d0cd3224cf7403f65b261edfc2487040feb16a7c786d5e65f479f1430d74",
+    "models/dack_v26_expanded_real_keep_value_EXPERIMENTAL.json": "2843f150135a4135a8d68bdd621f246fea040be86b85abe2b61c5f399329bb70",
+    "models/dack_v27_T2_only_continuations_EXPERIMENTAL.json": "4166c2045d66b08f0943900a2d68ec901d7048aca6de057695fc84dee883097b",
+    "models/dack_v27_expanded_T2_only_value_EXPERIMENTAL.json": "a01f46260164342f2f0f6ec15766b341338baa27c51dcf0a3ec3f164492e3134",
+    "models/v14_curve/v14_teacher_groups_128.json": "19fdbf300afc1e4545b81767f8fbf3bbe6ebd7b33ad139e2aa9231e3215df8ff"
+  },
+  "model_approved": false,
+  "n_independent_physical_game_ids": 256,
+  "no_previous_96k_97k_outcome_training": true,
+  "original_v5_rule_reference_unchanged": true,
+  "paired": {
+    "v26_expanded_keep_DP_minus_v5": {
+      "T1": {
+        "difference_pp": 0.0,
+        "exploratory_exact_mcnemar_two_sided_p": 1.0,
+        "gains": 4,
+        "losses": 4,
+        "paired_bootstrap_95ci_pp": [
+          -1.953125,
+          1.953125
+        ]
+      },
+      "T2": {
+        "difference_pp": -6.25,
+        "exploratory_exact_mcnemar_two_sided_p": 0.03648340000835981,
+        "gains": 18,
+        "losses": 34,
+        "paired_bootstrap_95ci_pp": [
+          -11.71875,
+          -0.78125
+        ]
+      },
+      "T3": {
+        "difference_pp": -5.46875,
+        "exploratory_exact_mcnemar_two_sided_p": 0.07590472948910143,
+        "gains": 20,
+        "losses": 34,
+        "paired_bootstrap_95ci_pp": [
+          -10.9375,
+          0.0
+        ]
+      }
+    },
+    "v27_T2_only_DP_minus_v26_expanded_keep_DP": {
+      "T1": {
+        "difference_pp": 0.390625,
+        "exploratory_exact_mcnemar_two_sided_p": 1.0,
+        "gains": 2,
+        "losses": 1,
+        "paired_bootstrap_95ci_pp": [
+          -0.78125,
+          1.953125
+        ]
+      },
+      "T2": {
+        "difference_pp": 0.78125,
+        "exploratory_exact_mcnemar_two_sided_p": 0.8145294189453125,
+        "gains": 10,
+        "losses": 8,
+        "paired_bootstrap_95ci_pp": [
+          -2.34375,
+          3.90625
+        ]
+      },
+      "T3": {
+        "difference_pp": -6.640625,
+        "exploratory_exact_mcnemar_two_sided_p": 0.004551384132355452,
+        "gains": 8,
+        "losses": 25,
+        "paired_bootstrap_95ci_pp": [
+          -10.9375,
+          -2.34375
+        ]
+      }
+    },
+    "v27_T2_only_DP_minus_v5": {
+      "T1": {
+        "difference_pp": 0.390625,
+        "exploratory_exact_mcnemar_two_sided_p": 1.0,
+        "gains": 3,
+        "losses": 2,
+        "paired_bootstrap_95ci_pp": [
+          -1.171875,
+          2.34375
+        ]
+      },
+      "T2": {
+        "difference_pp": -5.46875,
+        "exploratory_exact_mcnemar_two_sided_p": 0.054076031858869555,
+        "gains": 16,
+        "losses": 30,
+        "paired_bootstrap_95ci_pp": [
+          -10.546875,
+          -0.390625
+        ]
+      },
+      "T3": {
+        "difference_pp": -12.109375,
+        "exploratory_exact_mcnemar_two_sided_p": 6.530630444913366e-05,
+        "gains": 14,
+        "losses": 45,
+        "paired_bootstrap_95ci_pp": [
+          -17.578125,
+          -6.640625
+        ]
+      }
+    }
+  },
+  "physical_ids": [
+    98000,
+    98255
+  ],
+  "same_final_hand_different_outcome": 0,
+  "schema": "dack_v27_T2_only_prospective_98k_N256",
+  "speedup_v5_over_v27": 68.39986617175727,
+  "status": "PASS",
+  "warning": "Prospective exploratory N256; no equivalence claim. Different policies can trade by-T3 reach for by-T2 speed."
+}
