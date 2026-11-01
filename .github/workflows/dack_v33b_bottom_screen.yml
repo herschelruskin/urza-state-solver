@@ -1,0 +1,74 @@
+name: DACK v33b paired bottom candidate screen (search-free selectors)
+on:
+  push:
+    branches: [dack-v33b-capability-regret-20261101]
+    paths:
+      - '.github/workflows/dack_v33b_bottom_screen.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  compare:
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        include: [{split: train, start: 112000}, {split: train, start: 112004}, {split: train, start: 112008}, {split: train, start: 112012}, {split: train, start: 112016}, {split: train, start: 112020}, {split: train, start: 112024}, {split: train, start: 112028}, {split: train, start: 112032}, {split: train, start: 112036}, {split: train, start: 112040}, {split: train, start: 112044}, {split: train, start: 112048}, {split: train, start: 112052}, {split: train, start: 112056}, {split: train, start: 112060}, {split: train, start: 112064}, {split: train, start: 112068}, {split: train, start: 112072}, {split: train, start: 112076}, {split: train, start: 112080}, {split: train, start: 112084}, {split: train, start: 112088}, {split: train, start: 112092}, {split: train, start: 112096}, {split: train, start: 112100}, {split: train, start: 112104}, {split: train, start: 112108}, {split: train, start: 112112}, {split: train, start: 112116}, {split: train, start: 112120}, {split: train, start: 112124}, {split: validation, start: 113000}, {split: validation, start: 113004}, {split: validation, start: 113008}, {split: validation, start: 113012}, {split: validation, start: 113016}, {split: validation, start: 113020}, {split: validation, start: 113024}, {split: validation, start: 113028}, {split: validation, start: 113032}, {split: validation, start: 113036}, {split: validation, start: 113040}, {split: validation, start: 113044}, {split: validation, start: 113048}, {split: validation, start: 113052}, {split: validation, start: 113056}, {split: validation, start: 113060}]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v33b-capability-regret-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile all and self-test no-beam selector
+        run: |
+          python -m py_compile dack_simulator/validation/v33b_bottom_ranker.py dack_simulator/validation/v33b_screen_existing_rankers.py dack_simulator/validation/v33b_pool_ranker_screen.py
+          python -m dack_simulator.validation.v33b_bottom_ranker
+      - name: Evaluate 4 independent physical kept hands per job
+        run: |
+          python -u dack_simulator/validation/v33b_screen_existing_rankers.py \
+            --split ${{ matrix.split }} --start ${{ matrix.start }} \
+            --out shards/v33b_${{ matrix.split }}_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v33b-${{ matrix.split }}-${{ matrix.start }}
+          path: shards/v33b_*.json.gz
+          retention-days: 30
+  pool:
+    needs: compare
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v33b-capability-regret-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v33b-*
+          path: collected
+          merge-multiple: true
+      - name: Pool grouped independent conditional deployment and uncertainty
+        run: python -u dack_simulator/validation/v33b_pool_ranker_screen.py
+      - name: Archive research-only data
+        run: |
+          mkdir -p benchmark_results/v33b_bottom_screen_shards
+          cp collected/v33b_*.json.gz benchmark_results/v33b_bottom_screen_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v33b_bottom_screen_shards benchmark_results/v33b_existing_bottom_ranker_screen.json
+          git commit -m "Archive v33b paired bottom screen, no model promotion"
+          git pull --rebase origin dack-v33b-capability-regret-20261101
+          git push origin HEAD:dack-v33b-capability-regret-20261101
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v33b-bottom-screen-pooled
+          path: benchmark_results/v33b_existing_bottom_ranker_screen.json
+          retention-days: 30
