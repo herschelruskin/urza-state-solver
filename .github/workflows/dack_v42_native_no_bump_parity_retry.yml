@@ -1,0 +1,31 @@
+name: DACK v42 no-bump physical parity retry allow zero no-deployment
+on:
+  push:
+    branches: [dack-v42-v5-decision-mechanism-audit-20261101]
+    paths:
+      - '.github/workflows/dack_v42_native_no_bump_parity_retry.yml'
+permissions:
+  contents: read
+jobs:
+  exact_original_physical_parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v42-v5-decision-mechanism-audit-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Syntax-check teacher-history-only physical gameplay replay
+        run: python -m py_compile dack_simulator/validation/v42_replay_original_native_no_bump.py
+      - name: Reproduce exact four archived original v5 gameplay results then compute no-bump alternative
+        run: |
+          python -u dack_simulator/validation/v42_replay_original_native_no_bump.py \
+             --start 115000 --games 4 --out shards/v42_native_115000_4.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v42-original-v5-native-parity-four
+          path: shards/v42_native_115000_4.json.gz
+          retention-days: 30
