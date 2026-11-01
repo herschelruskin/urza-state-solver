@@ -1,0 +1,74 @@
+name: DACK v25 fresh N256 strict v5 versus v22 real keep DP
+on:
+  push:
+    branches: [dack-candidate-v25-fresh-reference-20261031]
+    paths:
+      - '.github/workflows/dack_v25_fresh_v5_v22_n256.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  physical_paired:
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        start: [96000, 96004, 96008, 96012, 96016, 96020, 96024, 96028, 96032, 96036, 96040, 96044, 96048, 96052, 96056, 96060, 96064, 96068, 96072, 96076, 96080, 96084, 96088, 96092, 96096, 96100, 96104, 96108, 96112, 96116, 96120, 96124, 96128, 96132, 96136, 96140, 96144, 96148, 96152, 96156, 96160, 96164, 96168, 96172, 96176, 96180, 96184, 96188, 96192, 96196, 96200, 96204, 96208, 96212, 96216, 96220, 96224, 96228, 96232, 96236, 96240, 96244, 96248, 96252]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-candidate-v25-fresh-reference-20261031
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify frozen strict rules and model hashes; never approve experimental policies
+        run: |
+          python -m compileall -q dack_simulator/validation/compare_v25_fresh_v5_v22.py dack_simulator/validation/pool_v25_fresh_v5_v22.py
+          python dack_paired_counterfactual_v22_all_stage_real_keep_DP_20261101.py --audit
+      - name: Independently replay four unexamined 96k physical games per shard
+        run: |
+          python -u dack_simulator/validation/compare_v25_fresh_v5_v22.py \
+            --start ${{ matrix.start }} --games 4 \
+            --out shards/v25_96k_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v25-96k-${{ matrix.start }}
+          path: shards/v25_96k_*.json.gz
+          retention-days: 30
+  pool_and_archive:
+    needs: physical_paired
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-candidate-v25-fresh-reference-20261031
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v25-96k-*
+          merge-multiple: true
+          path: collected
+      - name: Require all 256 IDs and paired physical integrity before inference
+        run: python -u dack_simulator/validation/pool_v25_fresh_v5_v22.py
+      - name: Archive complete shards and summary on isolated branch only
+        run: |
+          mkdir -p benchmark_results/v25_96k_full_game_shards
+          cp collected/v25_96k_*.json.gz benchmark_results/v25_96k_full_game_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v25_96k_fresh_v5_vs_v22_N256.json benchmark_results/v25_96k_full_game_shards
+          git commit -m "Archive independent v25 physical N256 v5 versus learned v22 paired results"
+          git pull --rebase origin dack-candidate-v25-fresh-reference-20261031
+          git push origin HEAD:dack-candidate-v25-fresh-reference-20261031
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v25-full-fresh-N256-comparison
+          path: benchmark_results/v25_96k_fresh_v5_vs_v22_N256.json
+          retention-days: 30
