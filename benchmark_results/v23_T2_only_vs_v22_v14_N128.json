@@ -1,0 +1,63 @@
+{
+  "actual_gameplay_beam": 160,
+  "full_game_metrics": {
+    "v14_128": {
+      "T1": 5,
+      "T2": 57,
+      "T3": 97,
+      "mean_keep": 5.2734375,
+      "n": 128,
+      "seconds": 48.8222
+    },
+    "v22_U_half_T3": {
+      "T1": 5,
+      "T2": 59,
+      "T3": 103,
+      "mean_keep": 5.8125,
+      "n": 128,
+      "seconds": 59.9793
+    },
+    "v23_T2_only": {
+      "T1": 4,
+      "T2": 57,
+      "T3": 94,
+      "mean_keep": 5.40625,
+      "n": 128,
+      "seconds": 61.3072
+    }
+  },
+  "game_ids": [
+    88000,
+    88127
+  ],
+  "keep_depth_changes": {
+    "v14_128": 49,
+    "v22_U_half_T3": 29
+  },
+  "models_approved": false,
+  "no_mulligan_beam": true,
+  "paired_T2": {
+    "v23_minus_v14_128": {
+      "T2_diff_percentage_points": 0.0,
+      "T2_gain_games": 11,
+      "T2_loss_games": 11,
+      "exploratory_normal_95ci_pp": [
+        -7.210420062681158,
+        7.210420062681158
+      ]
+    },
+    "v23_minus_v22_U_half_T3": {
+      "T2_diff_percentage_points": -1.5625,
+      "T2_gain_games": 5,
+      "T2_loss_games": 7,
+      "exploratory_normal_95ci_pp": [
+        -6.880809699615435,
+        3.755809699615435
+      ]
+    }
+  },
+  "physical_games": 128,
+  "schema": "dack_v23_T2_only_value_DP_128_physical_games",
+  "status": "PASS",
+  "warning": "No v5 reference in N128 screen; full gameplay goldfish, not 4-player cEDH win-rate."
+}
