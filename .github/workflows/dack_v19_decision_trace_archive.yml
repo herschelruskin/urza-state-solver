@@ -1,0 +1,116 @@
+name: DACK v19 trace why value-improved candidate rankings did not change full-game T2
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v19_decision_trace_archive.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  compare_decisions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 41260922057
+          github-token: ${{ github.token }}
+          pattern: v19-value-pair-*
+          merge-multiple: true
+          path: saved_pairs/
+      - name: Audit every stored London stage rather than rerunning expensive full games
+        run: |
+          python - <<'PY'
+          import gzip,glob,json
+          from pathlib import Path
+          from collections import Counter
+          fs=glob.glob('saved_pairs/v19_value_pair_*.json.gz')
+          assert len(fs)==8
+          rows=[]
+          for path in fs:
+              with gzip.open(path,'rt') as f:
+                  item=json.load(f)
+                  assert item['status']=='PASS'
+                  rows.extend(item['rows'])
+          rows.sort(key=lambda x:x['game_id'])
+          assert [r['game_id'] for r in rows]==list(range(72000,72016))
+          stats=Counter()
+          details=[]
+          for case in rows:
+              old=case['v14_128'];new=case['v19_value'];baseline=case['v5']
+              oldh=old['history'];newh=new['history']
+              assert oldh and newh and oldh[-1]['kept'] and newh[-1]['kept']
+              def signature(v):
+                  return (tuple(sorted(v['hand'])),tuple(v['bottom']),v['keep_n'])
+              same_keep=old['keep_n']==new['keep_n']
+              same_final_hand=signature(oldh[-1])==signature(newh[-1])
+              stats['games']+=1
+              stats['same_keep_depth']+=int(same_keep)
+              stats['same_final_hand_bottom']+=int(same_final_hand)
+              stats['same_T1']+=int((old['turn']==1)==(new['turn']==1))
+              stats['same_T2']+=int((old['turn'] in (1,2))==(new['turn'] in (1,2)))
+              stats['same_T3']+=int((old['turn'] in (1,2,3))==(new['turn'] in (1,2,3)))
+              observed=[]
+              for a,b in zip(oldh,newh):
+                  assert a['stage']==b['stage']
+                  assert a['keep_n']==b['keep_n']
+                  same_bottom=(Counter(a['bottom'])==Counter(b['bottom']))
+                  same_action=(a['kept']==b['kept'])
+                  value=b.get('selection_head')=='actual_utility_forest'
+                  stats['compared_stages']+=1
+                  stats['value_choice_stages']+=int(value)
+                  stats['bottom_different_at_same_stage']+=int(not same_bottom)
+                  stats['value_bottom_changed']+=int(value and not same_bottom)
+                  stats['keep_action_disagreed']+=int(not same_action)
+                  observed.append({
+                    'stage':a['stage'],'keep_n':a['keep_n'],
+                    'old_candidate_index':a.get('candidate_index'),
+                    'new_candidate_index':b.get('candidate_index'),
+                    'value_used':value,
+                    'bottom_changed':not same_bottom,
+                    'old_keep':a['kept'],'new_keep':b['kept'],
+                    'old_bottom':a['bottom'],'new_bottom':b['bottom']
+                  })
+                  if not same_action:break
+              details.append({
+                'gid':case['game_id'],
+                'v5_turn':baseline['turn'],
+                'old_turn':old['turn'],'new_turn':new['turn'],
+                'same_keep_depth':same_keep,
+                'same_final_hand_bottom':same_final_hand,
+                'compared_stages':observed})
+          result={
+            'schema':'dack_v19_value_model_full_game_trajectory_trace',
+            'status':'PASS','source_full_game_run':41260922057,
+            'stat':dict(stats),
+            'per_game':details,
+            'explanation':'Model changes bottom ranking at stages 3..6 but retains existing keep/reject head; compare all reached stages, not just final outcome.',
+            'model_approved':False}
+          target=Path('benchmark_results/v19_value_model_decision_trace.json')
+          target.parent.mkdir(exist_ok=True)
+          target.write_text(json.dumps(result,indent=2)+'\n')
+          print('V19_VALUE_DECISION_TRAJECTORY_PASS',json.dumps({
+            'stats':result['stat'],
+            'different_final_hands':[x['gid'] for x in details if not x['same_final_hand_bottom']],
+            'changed_stages':[{'gid':x['gid'],
+                'stages':[y for y in x['compared_stages'] if y['bottom_changed']]}
+                for x in details if any(y['bottom_changed'] for y in x['compared_stages'])]}),flush=True)
+          PY
+      - name: Archive inference trajectory audit on original isolated branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v19_value_model_decision_trace.json
+          git commit -m "Audit frozen v19 full-game London decisions against v14 without rerunning any gameplay"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v19-trajectories-compared-no-reruns
+          path: benchmark_results/v19_value_model_decision_trace.json
+          retention-days: 21
