@@ -1,0 +1,158 @@
+{
+  "by_split": {
+    "both_splits_pooled_no_fitting": {
+      "T1": {
+        "difference_percentage_points": 0.3537735849056604,
+        "fresh_futures_per_arm_per_group": 16,
+        "mean_difference_probability": 0.003537735849056604,
+        "n_independent_selected_physical_groups": 53,
+        "negative_group_estimates": 0,
+        "paired_group_bootstrap_95ci_pp": [
+          0.0,
+          0.8254716981132075
+        ],
+        "positive_group_estimates": 3,
+        "zero_group_estimates": 50
+      },
+      "T2": {
+        "difference_percentage_points": 7.193396226415095,
+        "fresh_futures_per_arm_per_group": 16,
+        "mean_difference_probability": 0.07193396226415094,
+        "n_independent_selected_physical_groups": 53,
+        "negative_group_estimates": 6,
+        "paired_group_bootstrap_95ci_pp": [
+          2.0047169811320753,
+          13.561320754716983
+        ],
+        "positive_group_estimates": 12,
+        "zero_group_estimates": 35
+      },
+      "T3": {
+        "difference_percentage_points": 5.5424528301886795,
+        "fresh_futures_per_arm_per_group": 16,
+        "mean_difference_probability": 0.055424528301886794,
+        "n_independent_selected_physical_groups": 53,
+        "negative_group_estimates": 8,
+        "paired_group_bootstrap_95ci_pp": [
+          0.589622641509434,
+          11.320754716981133
+        ],
+        "positive_group_estimates": 14,
+        "zero_group_estimates": 31
+      }
+    },
+    "calibration": {
+      "T1": {
+        "difference_percentage_points": 0.4716981132075472,
+        "fresh_futures_per_arm_per_group": 8,
+        "mean_difference_probability": 0.0047169811320754715,
+        "n_independent_selected_physical_groups": 53,
+        "negative_group_estimates": 0,
+        "paired_group_bootstrap_95ci_pp": [
+          0.0,
+          1.179245283018868
+        ],
+        "positive_group_estimates": 2,
+        "zero_group_estimates": 51
+      },
+      "T2": {
+        "difference_percentage_points": 8.018867924528301,
+        "fresh_futures_per_arm_per_group": 8,
+        "mean_difference_probability": 0.08018867924528301,
+        "n_independent_selected_physical_groups": 53,
+        "negative_group_estimates": 3,
+        "paired_group_bootstrap_95ci_pp": [
+          2.8301886792452833,
+          14.150943396226415
+        ],
+        "positive_group_estimates": 12,
+        "zero_group_estimates": 38
+      },
+      "T3": {
+        "difference_percentage_points": 5.4245283018867925,
+        "fresh_futures_per_arm_per_group": 8,
+        "mean_difference_probability": 0.054245283018867926,
+        "n_independent_selected_physical_groups": 53,
+        "negative_group_estimates": 9,
+        "paired_group_bootstrap_95ci_pp": [
+          0.0,
+          11.556603773584905
+        ],
+        "positive_group_estimates": 10,
+        "zero_group_estimates": 34
+      }
+    },
+    "untouched_validation": {
+      "T1": {
+        "difference_percentage_points": 0.2358490566037736,
+        "fresh_futures_per_arm_per_group": 8,
+        "mean_difference_probability": 0.0023584905660377358,
+        "n_independent_selected_physical_groups": 53,
+        "negative_group_estimates": 0,
+        "paired_group_bootstrap_95ci_pp": [
+          0.0,
+          0.7075471698113208
+        ],
+        "positive_group_estimates": 1,
+        "zero_group_estimates": 52
+      },
+      "T2": {
+        "difference_percentage_points": 6.367924528301887,
+        "fresh_futures_per_arm_per_group": 8,
+        "mean_difference_probability": 0.06367924528301887,
+        "n_independent_selected_physical_groups": 53,
+        "negative_group_estimates": 6,
+        "paired_group_bootstrap_95ci_pp": [
+          0.7075471698113208,
+          13.20754716981132
+        ],
+        "positive_group_estimates": 11,
+        "zero_group_estimates": 36
+      },
+      "T3": {
+        "difference_percentage_points": 5.660377358490567,
+        "fresh_futures_per_arm_per_group": 8,
+        "mean_difference_probability": 0.05660377358490566,
+        "n_independent_selected_physical_groups": 53,
+        "negative_group_estimates": 5,
+        "paired_group_bootstrap_95ci_pp": [
+          0.9433962264150944,
+          10.849056603773585
+        ],
+        "positive_group_estimates": 14,
+        "zero_group_estimates": 34
+      }
+    }
+  },
+  "chance_coupling_limitations": "Common unknown order and stable dice seeds do not guarantee identical event-level chance draws across different action paths.",
+  "evaluation": "conditional same-stage actual v5/v27 bottom choices, physical future shuffles",
+  "n_selected_physical_groups": 53,
+  "no_110k_game_outcomes_used_to_select_groups": true,
+  "no_candidate_training_or_model_promotion": true,
+  "not_prospective_end_to_end_policy_performance": true,
+  "paired_group_CI_not_1792_independent_group_CI": true,
+  "policy_approved": false,
+  "schema": "dack_v33_bottom_replay_actual_stage_index_x16_results",
+  "selection_by_stage": {
+    "0": 0,
+    "1": 0,
+    "2": 16,
+    "3": 16,
+    "4": 13,
+    "5": 6,
+    "6": 2,
+    "7": 0
+  },
+  "source_full_game_select_cohort": [
+    110000,
+    110255
+  ],
+  "source_model_shas": {
+    "models/dack_v27_T2_only_continuations_EXPERIMENTAL.json": "4166c2045d66b08f0943900a2d68ec901d7048aca6de057695fc84dee883097b",
+    "models/dack_v27_expanded_T2_only_value_EXPERIMENTAL.json": "a01f46260164342f2f0f6ec15766b341338baa27c51dcf0a3ec3f164492e3134",
+    "models/dack_v32_shared_Qmull_continuation_EXPERIMENTAL.json": "31823135bc4be307d5597dfb22e8cea1a99933497282555e51d0a640bca54078",
+    "models/v14_curve/v14_teacher_groups_128.json": "19fdbf300afc1e4545b81767f8fbf3bbe6ebd7b33ad139e2aa9231e3215df8ff"
+  },
+  "status": "PASS",
+  "total_new_gameplay_beam160_evaluations": 1696
+}
