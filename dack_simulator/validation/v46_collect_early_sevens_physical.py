@@ -44,13 +44,13 @@ def sample_group(gid,split):
         assert len(seven)==7 and len(unseen)==92
         v43=k.choose_at(stage,seat,order,deck)
         assert v43["keep_n"]==7 and v43["candidate_index"]==0
-        assert tuple(v43["hand"])==seven and not v43["bottom"]
-        assert v43["state"].hand==seven and v43["state"].library==unseen
+        assert Counter(v43["hand"])==Counter(seven) and not v43["bottom"]
+        assert v43["state"].hand==tuple(v43["hand"]) and v43["state"].library==unseen
         turns=[]
         for f in range(K_FUTURES):
             shuffled=list(unseen)
             random.Random(k.stable_seed("v46_K_unknown92",split,gid,stage,f)).shuffle(shuffled)
-            state=ref.d.State(1,seven,tuple(shuffled))
+            state=ref.d.State(1,tuple(v43["hand"]),tuple(shuffled))
             turns.append(win(state,seat,k.stable_seed("v46_K_chance",split,gid,stage,f)))
         rows.append({
             "gid":gid,"stage":stage,"seat":seat,
