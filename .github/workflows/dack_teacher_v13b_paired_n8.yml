@@ -1,0 +1,103 @@
+name: DACK v13b validation-tuned teacher vs v5 paired N8
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_teacher_v13b_paired_n8.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  paired:
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        include:
+          - start: 65000
+          - start: 65001
+          - start: 65002
+          - start: 65003
+          - start: 65004
+          - start: 65005
+          - start: 65006
+          - start: 65007
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Distilled policy vs exact v5 same physical game, full beam gameplay
+        run: |
+          python -u dack_simulator/validation/compare_teacher_distillation_v13b.py \
+            --start ${{ matrix.start }} --games 1 \
+            --out shards/v13b_paired_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v13b-paired-${{ matrix.start }}
+          path: shards/v13b_paired_*.json.gz
+          retention-days: 14
+  pool:
+    needs: paired
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v13b-paired-*
+          merge-multiple: true
+          path: results/
+      - name: Pool fixed unseen full-game results
+        run: |
+          python - <<'PY'
+          import glob,gzip,json,math
+          from pathlib import Path
+          paths=glob.glob('results/v13b_paired_*.json.gz')
+          assert len(paths)==8,len(paths)
+          rows=[]
+          for path in paths:
+              with gzip.open(path,'rt') as fp:r=json.load(fp)
+              assert r['status']=='PASS' and r['student_model_approved'] is False
+              rows.extend(r['rows'])
+          rows.sort(key=lambda r:r['game_id'])
+          assert [r['game_id'] for r in rows]==list(range(65000,65008))
+          def metrics(label):
+              states=[r[label] for r in rows]
+              return {'n':len(states),
+                      'T1':sum(s['win_turn']==1 for s in states),
+                      'T2':sum(s['win_turn'] in (1,2) for s in states),
+                      'T3':sum(s['win_turn'] in (1,2,3) for s in states),
+                      'avg_keep':sum(s['keep_n'] for s in states)/8,
+                      'runtime':round(sum(s['seconds'] for s in states),4)}
+          a,b=metrics('v5'),metrics('student')
+          delta=[int(r['student']['win_turn'] in (1,2))-
+                 int(r['v5']['win_turn'] in (1,2)) for r in rows]
+          mean=sum(delta)/len(delta)
+          se=(sum((x-mean)**2 for x in delta)/(len(delta)*(len(delta)-1)))**.5
+          report={'schema':'dack_v13_teacher_distill_full_game_n8',
+                  'status':'PASS','game_ids':[65000,65007],
+                  'v5':a,'student':b,
+                  'online_speed_ratio':a['runtime']/max(.001,b['runtime']),
+                  'T2_gains':delta.count(1),'T2_losses':delta.count(-1),
+                  'T2_delta_percentage_points':100*mean,
+                  'paired_normal_95ci_pp':[100*(mean-1.96*se),100*(mean+1.96*se)],
+                  'student_model_approved':False,
+                  'warning':'N8 exploratory only; no policy noninferiority claim'}
+          p=Path('benchmark_results/teacher_v13b_paired_N8_RESEARCH.json')
+          p.parent.mkdir(exist_ok=True)
+          p.write_text(json.dumps(report,indent=2)+'\n')
+          print('TEACHER_V13B_PAIRED_N8_PASS',json.dumps(report),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v13b-paired-N8-summary
+          path: benchmark_results/teacher_v13b_paired_N8_RESEARCH.json
+          retention-days: 14
+
+# Frozen 16-train/8-val teacher distillation model archived before this independent holdout.
