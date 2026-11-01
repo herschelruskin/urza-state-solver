@@ -22,6 +22,7 @@ jobs:
           python -m py_compile dack_mulligan_v39_t2_risk_regret.py dack_paired_counterfactual_v39_t2_risk_regret_20261101.py dack_simulator/validation/v39_131k_census.py
           test -f DACK_V39_PREDECLARED_T2_REGRET_T3_RISK_PROTOCOL.md
           python -u dack_paired_counterfactual_v39_t2_risk_regret_20261101.py --audit
+          echo V39_FIXED_SOURCE_SYNTAX_AUDIT_COMPLETE
       - name: Observe 1024 physical 99-slot groups and actual stages0/1/2, no game simulation
         run: python -u dack_simulator/validation/v39_131k_census.py
       - name: Freeze and archive the entire 3072 state original denominator before outcomes
