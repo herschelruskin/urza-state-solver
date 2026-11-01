@@ -1,0 +1,33 @@
+name: DACK v34 zero-new-beam keep-rank boundary diagnostic
+on:
+  push:
+    branches: [dack-v34-consistent-keep-regret-20261101]
+    paths:
+      - '.github/workflows/dack_v34_readonly_rank_diagnostic.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit all archived 8064 rollouts with zero new beams
+        run: |
+          python -m py_compile dack_simulator/validation/v34_readonly_keep_rank_audit.py
+          python -u dack_simulator/validation/v34_readonly_keep_rank_audit.py
+      - name: Archive read-only diagnostic; do not change trained models
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v34_readonly_keep_rank_and_continuation_audit.json
+          git commit -m "Archive read-only v34 keep-value discrimination and continuation gap"
+          git pull --rebase origin dack-v34-consistent-keep-regret-20261101
+          git push origin HEAD:dack-v34-consistent-keep-regret-20261101
