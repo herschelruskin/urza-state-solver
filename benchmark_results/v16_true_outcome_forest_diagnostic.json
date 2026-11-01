@@ -1,0 +1,61 @@
+{
+  "Brier_forest_minus_constant": -0.0842808722321966,
+  "distinct_train_hands": 144,
+  "distinct_validation_hands": 40,
+  "group_bootstrap_95ci_Brier_difference": [
+    -0.18876502818050483,
+    0.011728434397628051
+  ],
+  "model_approved": false,
+  "outcome_labels_train": 576,
+  "outcome_labels_validation": 160,
+  "schema": "dack_v16_conditional_four_class_outcome_diagnostic",
+  "status": "PASS",
+  "training_class_counts": {
+    "0": 101,
+    "1": 20,
+    "2": 259,
+    "3": 196
+  },
+  "validation_class_counts": {
+    "0": 27,
+    "1": 7,
+    "2": 81,
+    "3": 45
+  },
+  "validation_results": {
+    "constant_class_rate_baseline": {
+      "T1": {
+        "observed": 0.04375,
+        "predicted": 0.0347222222222223
+      },
+      "T2_cumulative": {
+        "observed": 0.55,
+        "predicted": 0.484375
+      },
+      "T3_cumulative": {
+        "observed": 0.83125,
+        "predicted": 0.8246527777777748
+      },
+      "multiclass_brier": 0.6410312982253098,
+      "multiclass_logloss": 1.1486288323669673
+    },
+    "trained_nonlinear_forest": {
+      "T1": {
+        "observed": 0.04375,
+        "predicted": 0.035016955499558994
+      },
+      "T2_cumulative": {
+        "observed": 0.55,
+        "predicted": 0.5016541856186967
+      },
+      "T3_cumulative": {
+        "observed": 0.83125,
+        "predicted": 0.8093506348457703
+      },
+      "multiclass_brier": 0.5567504259931132,
+      "multiclass_logloss": 0.9950517266339292
+    }
+  },
+  "warning": "Only 40 held-separate validation hands; this is conditional on v5 keeps, not full-game policy win rate and not safe to deploy on other-selected hands."
+}
