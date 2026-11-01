@@ -4,6 +4,7 @@ on:
     branches: [dack-v26-trace-repair-20261031]
     paths:
       - 'models/dack_v26_expanded_real_keep_value_EXPERIMENTAL.json'
+      - '.github/workflows/dack_v26_prospective_97k_n256.yml'
   workflow_dispatch:
 permissions:
   contents: write
