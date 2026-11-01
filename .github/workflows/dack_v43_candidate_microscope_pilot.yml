@@ -1,0 +1,43 @@
+name: DACK v43 exact candidate microscope correctness pilot
+on:
+  push:
+    branches: [dack-v43-v5-candidate-mechanism-20261101]
+    paths:
+      - '.github/workflows/dack_v43_candidate_microscope_pilot.yml'
+permissions:
+  contents: write
+jobs:
+  traced_teacher:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        gid: [115003,115025]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v43-v5-candidate-mechanism-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify original winning candidate and exact raw score before profiling full candidate set
+        run: |
+          python -m py_compile dack_simulator/validation/v43_candidate_microscope.py
+          python -u dack_simulator/validation/v43_candidate_microscope.py \
+            --gid ${{ matrix.gid }} \
+            --out benchmark_results/v43_candidate_profiles/v43_candidate_${{ matrix.gid }}.json
+      - name: Persist teacher candidate ranking without promotion
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v43_candidate_profiles/v43_candidate_${{ matrix.gid }}.json
+          git commit -m "Archive exact original-v5 candidate score audit for source game ${{ matrix.gid }}"
+          git pull --rebase origin dack-v43-v5-candidate-mechanism-20261101
+          git push origin HEAD:dack-v43-v5-candidate-mechanism-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v43-original-teacher-candidate-${{ matrix.gid }}
+          path: benchmark_results/v43_candidate_profiles/v43_candidate_${{ matrix.gid }}.json
+          retention-days: 90
