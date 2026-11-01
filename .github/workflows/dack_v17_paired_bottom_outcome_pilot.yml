@@ -1,0 +1,60 @@
+name: DACK v17 paired real bottoming-candidate utility pilot
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v17_paired_bottom_outcome_pilot.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Replay existing actual London teacher choices with matched real future orders, no re-running teacher
+        run: |
+          python -m compileall -q dack_simulator/validation/label_paired_candidate_values_v17.py
+          python -u dack_simulator/validation/label_paired_candidate_values_v17.py \
+            --root datasets/teacher_v13_20261031 \
+            --start 60000 --games 8 --draws 8 --first-k 3 \
+            --out datasets/v17_paired_candidate_pilot.jsonl.gz
+      - name: Confirm candidate-specific independent real outcomes and no hidden-library peeking
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from collections import Counter
+          import gzip,json
+          file=Path('datasets/v17_paired_candidate_pilot.jsonl.gz')
+          with gzip.open(file,'rt') as f:
+              meta=json.loads(next(f));rows=[json.loads(s) for s in f]
+          assert meta['status']=='PASS' and meta['gameplay_beam']==160
+          assert rows and len({r['source_teacher_game_id'] for r in rows})==len(rows)
+          n=0
+          for r in rows:
+              assert r['protocol']=='dack_v17_common_random_number_candidate_values'
+              assert r['future_order_shared_across_candidates']
+              assert r['stable_dice_seed_shared_across_candidates']
+              assert r['hidden_future_order_never_saved']
+              assert r['teacher_chosen_index'] in r['candidate_indices']
+              assert 0 in r['candidate_indices']
+              assert 3<=r['keep_n']<=6
+              assert sum(r['unknown_counts'].values())==92
+              for c in r['candidates']:
+                  assert Counter(c['hand'])+Counter(c['bottom'])==Counter(r['seven'])
+                  assert len(c['outcomes'])==8 and all(x in (0,1,2,3) for x in c['outcomes'])
+                  assert abs(sum(c['counts'].values())-8)==0
+                  assert not any(k in c for k in ('unknown_order','actual_library','first3'))
+                  n+=8
+          print('V17_PAIRED_CANDIDATE_OUTCOMES_CHECK_PASS',json.dumps({
+              'hand_groups':len(rows),'actual_rollouts':n}),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v17-paired-real-bottom-outcomes-pilot
+          path: datasets/v17_paired_candidate_pilot.jsonl.gz
+          retention-days: 21
