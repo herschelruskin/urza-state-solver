@@ -48,7 +48,7 @@ def choose_keep(deck_slots,seat,order_by_stage):
             x=features.extract(seven,item["hand"],item["bottom"],pool,seat,keep_n,stage,item["struct_rank"],i)
             p=features.score_head(MODEL,"choice_trees",x)
             candidates.append((p,-i,item,x))
-        _,negative_rank,selected,x=max(candidates,key=lambda a:(a[0],a[1]))
+        selected_vote,negative_rank,selected,x=max(candidates,key=lambda a:(a[0],a[1]))
         keep_vote=features.score_head(MODEL,"keep_trees",x)
         keep=keep_n==1 or keep_vote>=MODEL["keep_cutoff"]
         hand=tuple(selected["hand"]);bottom=tuple(selected["bottom"])
@@ -58,7 +58,7 @@ def choose_keep(deck_slots,seat,order_by_stage):
             "raw":round(keep_vote,7),"sampled_t1":None,
             "threshold":MODEL["keep_cutoff"],"refined":False,
             "policy":POLICY,"model_sha256":MODEL_SHA,
-            "teacher_choice_vote":round(max(0.,candidates[-1][0]),7),
+            "teacher_choice_vote":round(selected_vote,7),
             "candidate_index":-negative_rank,
             "seven_slots":list(order[:7]),"seven":list(seven),
             "hand":list(hand),"bottom":list(bottom),
