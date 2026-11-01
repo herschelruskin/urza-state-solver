@@ -1,0 +1,40 @@
+name: DACK v18/v19 candidate-values unit and static contracts
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v18_v19_contracts.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Parse whole new pipeline and check no teacher index is accessible at runtime
+        run: |
+          python -m compileall -q \
+            dack_simulator/validation/label_paired_candidate_values_v18.py \
+            dack_simulator/validation/train_paired_candidate_utility_v18.py \
+            dack_simulator/validation/compare_v19_candidate_value_policy.py \
+            dack_mulligan_candidate_value_v18_20261101.py \
+            dack_paired_counterfactual_v19_real_candidate_value_20261101.py
+          python dack_mulligan_candidate_value_v18_20261101.py
+          python - <<'PY'
+          import inspect
+          import dack_paired_counterfactual_v19_real_candidate_value_20261101 as p
+          import dack_mulligan_candidate_value_v18_20261101 as m
+          source=inspect.getsource(p.choose_keep)
+          assert 'teacher_chosen' not in source
+          assert 'future_index' not in source
+          assert 'selected' in source
+          assert 'idx>=3' in source
+          assert 'keep_vote=features.score_head' in source
+          assert m.selftest()['status']=='PASS'
+          print('V19_VALUE_BOTTOM_POLICY_NO_TEACHER_PEEK_PASS',flush=True)
+          PY
