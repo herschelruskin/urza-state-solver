@@ -1,0 +1,73 @@
+{
+  "experiment_uses_identical_v14_128_bottom_choices": true,
+  "game_id_range": [
+    86000,
+    86015
+  ],
+  "metrics": {
+    "v14_128": {
+      "by_turn_2": 7,
+      "by_turn_3": 12,
+      "mean_keep": 5.625,
+      "n": 16,
+      "total_gameplay_seconds": 7.2785,
+      "turn_1": 0
+    },
+    "v22_real_keep_DP": {
+      "by_turn_2": 6,
+      "by_turn_3": 15,
+      "mean_keep": 6.1875,
+      "n": 16,
+      "total_gameplay_seconds": 9.1879,
+      "turn_1": 0
+    },
+    "v5": {
+      "by_turn_2": 8,
+      "by_turn_3": 14,
+      "mean_keep": 5.1875,
+      "n": 16,
+      "total_gameplay_seconds": 492.5699,
+      "turn_1": 0
+    }
+  },
+  "model_approved_for_deployment": false,
+  "n_independent_paired_games": 16,
+  "no_beam_in_v22_mulligan": true,
+  "online_speed_ratio_vs_v5": {
+    "v14_128": 67.67464450092739,
+    "v22_real_keep_DP": 53.61071626813526
+  },
+  "paired": {
+    "v14_128_minus_v5": {
+      "T2_delta_pp": -6.25,
+      "T2_gain_games": 1,
+      "T2_loss_games": 2,
+      "exploratory_95ci_pp": [
+        -27.9339994773412,
+        15.433999477341198
+      ]
+    },
+    "v22_real_keep_DP_minus_v14_128": {
+      "T2_delta_pp": -6.25,
+      "T2_gain_games": 0,
+      "T2_loss_games": 1,
+      "exploratory_95ci_pp": [
+        -18.5,
+        6.0
+      ]
+    },
+    "v22_real_keep_DP_minus_v5": {
+      "T2_delta_pp": -12.5,
+      "T2_gain_games": 0,
+      "T2_loss_games": 2,
+      "exploratory_95ci_pp": [
+        -29.236686251067347,
+        4.236686251067343
+      ]
+    }
+  },
+  "schema": "dack_v22_real_keep_DP_research_paired_n16",
+  "status": "PASS",
+  "teacher_v5_gameplay_beam": 160,
+  "warning": "Small exploratory N16. Conditional outcome model trained on 64 games, not proof of noninferiority or multiplayer win rate."
+}
