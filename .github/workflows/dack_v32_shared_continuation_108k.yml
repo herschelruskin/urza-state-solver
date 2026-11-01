@@ -1,0 +1,103 @@
+name: DACK v32 shared physical continuation calibration 108k
+on:
+  push:
+    branches: [dack-v32-shared-continuation-calibration-20261031]
+    paths:
+      - '.github/workflows/dack_v32_shared_continuation_108k.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sample:
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        include:
+          - {seat: 0, stage: 0}
+          - {seat: 0, stage: 1}
+          - {seat: 0, stage: 2}
+          - {seat: 0, stage: 3}
+          - {seat: 0, stage: 4}
+          - {seat: 0, stage: 5}
+          - {seat: 0, stage: 6}
+          - {seat: 1, stage: 0}
+          - {seat: 1, stage: 1}
+          - {seat: 1, stage: 2}
+          - {seat: 1, stage: 3}
+          - {seat: 1, stage: 4}
+          - {seat: 1, stage: 5}
+          - {seat: 1, stage: 6}
+          - {seat: 2, stage: 0}
+          - {seat: 2, stage: 1}
+          - {seat: 2, stage: 2}
+          - {seat: 2, stage: 3}
+          - {seat: 2, stage: 4}
+          - {seat: 2, stage: 5}
+          - {seat: 2, stage: 6}
+          - {seat: 3, stage: 0}
+          - {seat: 3, stage: 1}
+          - {seat: 3, stage: 2}
+          - {seat: 3, stage: 3}
+          - {seat: 3, stage: 4}
+          - {seat: 3, stage: 5}
+          - {seat: 3, stage: 6}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v32-shared-continuation-calibration-20261031
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and audit frozen v27 strict physical rules
+        run: |
+          python -m compileall -q dack_simulator/validation/v32_sample_shared_continuation.py dack_simulator/validation/v32_pool_shared_continuation.py
+          python dack_paired_counterfactual_v27_T2_only_DP_20261101.py --audit
+      - name: Measure independently resampled downstream London continuation by T2
+        run: |
+          python -u dack_simulator/validation/v32_sample_shared_continuation.py \
+            --seat ${{ matrix.seat }} --stage ${{ matrix.stage }} \
+            --out shards/v32_c_${{ matrix.seat }}_${{ matrix.stage }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v32-c-${{ matrix.seat }}-${{ matrix.stage }}
+          path: shards/v32_c_*.json
+          retention-days: 30
+  pool:
+    needs: sample
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v32-shared-continuation-calibration-20261031
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v32-c-*
+          merge-multiple: true
+          path: collected
+      - name: Pool 28 measured shared continuation cells and independent validation Brier
+        run: python -u dack_simulator/validation/v32_pool_shared_continuation.py
+      - name: Archive diagnostic and calibrated shared continuation model
+        run: |
+          mkdir -p datasets/v32_shared_Qmull_cells
+          cp collected/v32_c_*.json datasets/v32_shared_Qmull_cells/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f datasets/v32_shared_Qmull_cells models/dack_v32_shared_Qmull_continuation_EXPERIMENTAL.json benchmark_results/v32_shared_continuation_108k_diagnostic.json
+          git commit -m "Archive fresh shared seat-stage continuation estimators and independent Brier validation"
+          git pull --rebase origin dack-v32-shared-continuation-calibration-20261031
+          git push origin HEAD:dack-v32-shared-continuation-calibration-20261031
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v32-shared-continuation-108k-report
+          path: |
+            models/dack_v32_shared_Qmull_continuation_EXPERIMENTAL.json
+            benchmark_results/v32_shared_continuation_108k_diagnostic.json
+          retention-days: 30
