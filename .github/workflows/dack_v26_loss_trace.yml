@@ -1,0 +1,37 @@
+name: DACK v26 read-only full 256-game v25 decision-loss trace
+on:
+  push:
+    branches: [dack-v26-trace-repair-20261031]
+    paths:
+      - '.github/workflows/dack_v26_loss_trace.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v26-trace-repair-20261031
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Produce loss taxonomy with no new simulation and no training
+        run: |
+          python -m compileall -q dack_simulator/validation/trace_v25_96k_loss_v26.py
+          python -u dack_simulator/validation/trace_v25_96k_loss_v26.py
+      - name: Archive diagnostic on research branch only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v26_v25_loss_diagnosis_EVAL_ONLY.json
+          git commit -m "Archive v25 frozen-evaluation 44-loss decision trace and parity audits"
+          git pull --rebase origin dack-v26-trace-repair-20261031
+          git push origin HEAD:dack-v26-trace-repair-20261031
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v26-loss-diagnosis-256-eval-only
+          path: benchmark_results/v26_v25_loss_diagnosis_EVAL_ONLY.json
+          retention-days: 30
