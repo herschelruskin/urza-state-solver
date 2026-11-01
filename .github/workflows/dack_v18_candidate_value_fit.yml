@@ -1,4 +1,5 @@
 name: DACK v18 train candidate utility and paired regret on new 40 validation groups
+# Launch after all 23 independent candidate-data shards and archive completed.
 on:
   push:
     branches: [dack-counterfactual-engine-v1-20261030]
