@@ -1,0 +1,165 @@
+{
+  "actual_C_beam160_rollouts": 1408,
+  "actual_K_beam160_rollouts": 1504,
+  "all_3072_original_population_denominator_included": true,
+  "census_sha256": "80d746059d735659d7e59557676c07c5ae63ed5a04f9ac92591aee014da75798",
+  "frozen_130k_future_games_unseen": true,
+  "model_sha256": "b1aabf15c0f6d7ff8334769d076a505f2cf33848e849232f513499f70e4099c5",
+  "n_changed_actual_London_games": 30,
+  "n_changed_stage_states": 47,
+  "n_early_stage_states": 3072,
+  "n_outer_physical_groups": 1024,
+  "one_step_same_frozen_future_not_policy_Bellman": true,
+  "physical_group_and_shared_C_lottery_bootstrap": true,
+  "policy_approved": false,
+  "posthoc_retuning_on_131k_prohibited": true,
+  "predeclared_gate_passed": false,
+  "prospective_133k": "STOP",
+  "random_game_ids": [
+    131000,
+    132023
+  ],
+  "results": {
+    "T1": {
+      "action_changes": 47,
+      "by_stage": {
+        "0": {
+          "action_changes": 4,
+          "changed_beneficial": 2,
+          "changed_harmful": 2,
+          "changed_tied": 0,
+          "keep_to_mull": 3,
+          "mean_population_action_gain_pp": -0.0030517578125,
+          "mull_to_keep": 1,
+          "n_stage_states": 1024
+        },
+        "1": {
+          "action_changes": 18,
+          "changed_beneficial": 18,
+          "changed_harmful": 0,
+          "changed_tied": 0,
+          "keep_to_mull": 18,
+          "mean_population_action_gain_pp": 0.08697509765625,
+          "mull_to_keep": 0,
+          "n_stage_states": 1024
+        },
+        "2": {
+          "action_changes": 25,
+          "changed_beneficial": 23,
+          "changed_harmful": 2,
+          "changed_tied": 0,
+          "keep_to_mull": 25,
+          "mean_population_action_gain_pp": 0.067138671875,
+          "mull_to_keep": 0,
+          "n_stage_states": 1024
+        }
+      },
+      "changed_beneficial": 43,
+      "changed_harmful": 4,
+      "changed_tied": 0,
+      "keep_to_mull": 46,
+      "mean_population_action_gain_pp": 0.05035400390625,
+      "mull_to_keep": 1,
+      "n_stage_states": 3072,
+      "two_source_group_bootstrap_95ci_pp": [
+        0.023905436197916668,
+        0.08214314778645833
+      ]
+    },
+    "T2": {
+      "action_changes": 47,
+      "by_stage": {
+        "0": {
+          "action_changes": 4,
+          "changed_beneficial": 1,
+          "changed_harmful": 3,
+          "changed_tied": 0,
+          "keep_to_mull": 3,
+          "mean_population_action_gain_pp": -0.119781494140625,
+          "mull_to_keep": 1,
+          "n_stage_states": 1024
+        },
+        "1": {
+          "action_changes": 18,
+          "changed_beneficial": 16,
+          "changed_harmful": 2,
+          "changed_tied": 0,
+          "keep_to_mull": 18,
+          "mean_population_action_gain_pp": 0.313568115234375,
+          "mull_to_keep": 0,
+          "n_stage_states": 1024
+        },
+        "2": {
+          "action_changes": 25,
+          "changed_beneficial": 20,
+          "changed_harmful": 5,
+          "changed_tied": 0,
+          "keep_to_mull": 25,
+          "mean_population_action_gain_pp": 0.116729736328125,
+          "mull_to_keep": 0,
+          "n_stage_states": 1024
+        }
+      },
+      "changed_beneficial": 37,
+      "changed_harmful": 10,
+      "changed_tied": 0,
+      "keep_to_mull": 46,
+      "mean_population_action_gain_pp": 0.10350545247395833,
+      "mull_to_keep": 1,
+      "n_stage_states": 3072,
+      "two_source_group_bootstrap_95ci_pp": [
+        -0.03509521484375,
+        0.23956298828125
+      ]
+    },
+    "T3": {
+      "action_changes": 47,
+      "by_stage": {
+        "0": {
+          "action_changes": 4,
+          "changed_beneficial": 1,
+          "changed_harmful": 3,
+          "changed_tied": 0,
+          "keep_to_mull": 3,
+          "mean_population_action_gain_pp": -0.030517578125,
+          "mull_to_keep": 1,
+          "n_stage_states": 1024
+        },
+        "1": {
+          "action_changes": 18,
+          "changed_beneficial": 2,
+          "changed_harmful": 16,
+          "changed_tied": 0,
+          "keep_to_mull": 18,
+          "mean_population_action_gain_pp": -0.283050537109375,
+          "mull_to_keep": 0,
+          "n_stage_states": 1024
+        },
+        "2": {
+          "action_changes": 25,
+          "changed_beneficial": 6,
+          "changed_harmful": 19,
+          "changed_tied": 0,
+          "keep_to_mull": 25,
+          "mean_population_action_gain_pp": -0.46844482421875,
+          "mull_to_keep": 0,
+          "n_stage_states": 1024
+        }
+      },
+      "changed_beneficial": 9,
+      "changed_harmful": 38,
+      "changed_tied": 0,
+      "keep_to_mull": 46,
+      "mean_population_action_gain_pp": -0.2606709798177083,
+      "mull_to_keep": 1,
+      "n_stage_states": 3072,
+      "two_source_group_bootstrap_95ci_pp": [
+        -0.3926595052083333,
+        -0.14368693033854166
+      ]
+    }
+  },
+  "schema": "dack_v39_131k_N1024_real_action_regret_two_source_v1",
+  "status": "PASS",
+  "zero_regret_unchanged_stage_states": 3025
+}
