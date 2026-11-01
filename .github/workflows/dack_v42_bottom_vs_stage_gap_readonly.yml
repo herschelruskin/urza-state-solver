@@ -1,0 +1,32 @@
+name: DACK v42 read-only same-hand parity and bottom-vs-stage contribution
+on:
+  push:
+    branches: [dack-v42-v5-decision-mechanism-audit-20261101]
+    paths:
+      - '.github/workflows/dack_v42_bottom_vs_stage_gap_readonly.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  readonly_split:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v42-v5-decision-mechanism-audit-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Enforce exact-gameplay parity for equal retained hands; count v5 bottom and stage effects
+        run: |
+          python -m py_compile dack_simulator/validation/v42_readonly_bottom_vs_stage.py
+          python -u dack_simulator/validation/v42_readonly_bottom_vs_stage.py
+      - name: Archive independent architecture diagnostic without simulation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v42_115k_bottom_vs_stage_split.json
+          git commit -m "Archive v42 original-v5 v27 same-stage bottoming and identical-hand goldfish parity evidence"
+          git pull --rebase origin dack-v42-v5-decision-mechanism-audit-20261101
+          git push origin HEAD:dack-v42-v5-decision-mechanism-audit-20261101
