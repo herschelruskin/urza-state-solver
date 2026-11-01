@@ -1,0 +1,135 @@
+name: DACK v23 T2-only London DP vs v22 mixed-utility and v14 N128
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v23_T2_only_vs_v22_v14_n128.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  paired:
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        include:
+          - start: 89000
+          - start: 89008
+          - start: 89016
+          - start: 89024
+          - start: 89032
+          - start: 89040
+          - start: 89048
+          - start: 89056
+          - start: 89064
+          - start: 89072
+          - start: 89080
+          - start: 89088
+          - start: 89096
+          - start: 89104
+          - start: 89112
+          - start: 89120
+    runs-on: ubuntu-latest
+    timeout-minutes: 23
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Enforce model-bound DP and experimental-only no-beam London
+        run: |
+          python -m compileall -q dack_simulator/validation/compare_v23_T2_only_vs_v22_v14_n128.py
+          python dack_paired_counterfactual_v23_T2_only_keep_DP_20261101.py --audit
+          python dack_paired_counterfactual_v22_all_stage_real_keep_DP_20261101.py --audit
+      - name: Simulate 8 unseen 89k physical games under three distinct frozen policies
+        run: |
+          python -u dack_simulator/validation/compare_v23_T2_only_vs_v22_v14_n128.py \
+            --start ${{ matrix.start }} --games 8 \
+            --out shards/v23_student_pair_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v23-89k-${{ matrix.start }}
+          path: shards/v23_student_pair_*.json.gz
+          retention-days: 21
+  pool:
+    needs: paired
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v23-89k-*
+          merge-multiple: true
+          path: paired/
+      - name: Aggregate independent same-seed three-policy T1 T2 T3 and paired uncertainty
+        run: |
+          python - <<'PY'
+          import gzip,glob,json,math,random
+          from pathlib import Path
+          files=sorted(glob.glob('paired/v23_student_pair_*.json.gz'))
+          assert len(files)==16,len(files)
+          rows=[]
+          ps=['v14_128','v22_real_keep_DP','v23_T2_only']
+          for file in files:
+              with gzip.open(file,'rt') as f:d=json.load(f)
+              assert d['status']=='PASS' and d['models_approved'] is False
+              assert d['gameplay_beam']==160 and d['mulligan_beam']==0
+              rows.extend(d['rows'])
+          rows.sort(key=lambda r:r['game_id'])
+          assert [r['game_id'] for r in rows]==list(range(89000,89128))
+          def metrics(name):
+              arr=[r[name] for r in rows]
+              return {'n':128,'T1':sum(s['turn']==1 for s in arr),
+                      'T2':sum(s['turn'] in (1,2) for s in arr),
+                      'T3':sum(s['turn'] in (1,2,3) for s in arr),
+                      'mean_kept_cards':sum(s['keep_n'] for s in arr)/128,
+                      'total_simulated_gameplay_seconds':round(sum(s['seconds'] for s in arr),4)}
+          m={p:metrics(p) for p in ps}
+          pair={}
+          for a,b in [('v23_T2_only','v22_real_keep_DP'),
+                      ('v23_T2_only','v14_128'),('v22_real_keep_DP','v14_128')]:
+              for turn in (1,2,3):
+                  d=[int(0<r[a]['turn']<=turn)-int(0<r[b]['turn']<=turn) for r in rows]
+                  delta=sum(d)/128
+                  rng=random.Random(89000+len(a)+len(b)+turn)
+                  boots=sorted(sum(d[rng.randrange(128)] for i in range(128))/128
+                               for _ in range(3000))
+                  pair[f'{a}_minus_{b}_T{turn}']={
+                      'gains':d.count(1),'losses':d.count(-1),
+                      'difference_pp':100*delta,
+                      'paired_bootstrap_95ci_pp':[100*boots[75],100*boots[2924]]}
+          report={'schema':'dack_v23_T2_only_vs_v22_mixed_and_v14_N128',
+                  'status':'PASS','physical_game_ids':[89000,89127],
+                  'independent_games':128,
+                  'frozen_bottom_selection_same_for_all_policies':True,
+                  'models_approved_for_deployment':False,
+                  'actual_gameplay_beam':160,'all_mulligan_beams_zero':True,
+                  'metrics':m,'paired':pair,
+                  'warning':'Unconditional goldfish deployment conditional on each specific mulligan policy; not a multiplayer cEDH win rate. Exploratory multiple comparisons.'}
+          out=Path('benchmark_results/v23_T2_only_three_policy_n128.json')
+          out.parent.mkdir(exist_ok=True)
+          out.write_text(json.dumps(report,sort_keys=True,indent=2)+'\n')
+          print('V23_T2_ONLY_PAIRED_N128_PASS',json.dumps(report,sort_keys=True),flush=True)
+          PY
+      - name: Archive original complete 128-game triples and summary without promotion
+        run: |
+          mkdir -p benchmark_results/v23_T2_only_N128_shards
+          cp paired/v23_student_pair_*.json.gz benchmark_results/v23_T2_only_N128_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v23_T2_only_three_policy_n128.json benchmark_results/v23_T2_only_N128_shards/
+          git commit -m "Archive 128 independent T2-only versus blended utility and prior student full physical games"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v23-T2-only-policy-N128-results
+          path: benchmark_results/v23_T2_only_three_policy_n128.json
+          retention-days: 21
