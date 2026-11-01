@@ -1,0 +1,58 @@
+name: DACK v21 counterfactual London keep-value all-stage pilot
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v21_all_stage_keep_pilot.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Four real matched-beam160 futures at every London stage, even rejected stages
+        run: |
+          python -m compileall -q dack_simulator/validation/label_all_stage_keep_values_v21.py
+          python -u dack_simulator/validation/label_all_stage_keep_values_v21.py \
+            --split train --start 82000 --games 2 --draws 4 \
+            --out datasets/v21_keep_pilot_82000.jsonl.gz
+      - name: Prove 99 physical slots, model source ID and all eight London stages
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from collections import Counter
+          import gzip,json
+          path=Path('datasets/v21_keep_pilot_82000.jsonl.gz')
+          with gzip.open(path,'rt') as f:
+              m=json.loads(next(f));r=[json.loads(s) for s in f]
+          assert m['schema']=='dack_v21_counterfactual_london_keep_values'
+          assert m['source_student_may_reject_or_never_reach_stage']
+          assert m['new_unseen_library_order_never_saved']
+          assert m['stage_keep_numbers']==[7,7,6,5,4,3,2,1]
+          assert len(r)==64
+          assert len({x['game_id'] for x in r})==2
+          for gid in [82000,82001]:
+              rows=[x for x in r if x['game_id']==gid]
+              assert len(rows)==32
+              assert Counter(x['stage'] for x in rows)==Counter({k:4 for k in range(8)})
+              assert sum(x['keep_n']==1 for x in rows)==4
+          for x in r:
+              assert Counter(x['hand'])+Counter(x['bottom'])==Counter(x['seven'])
+              assert sum(x['unknown_counts'].values())==92
+              assert x['label_turn'] in (0,1,2,3)
+              assert not any(z in x for z in ('actual_library','hidden_order','sampled_future','first3'))
+          print('V21_COUNTERFACTUAL_KEEP_PILOT_PASS',json.dumps({
+              'distinct_games':2,'physical_stages':16,'actual_beam160_rollouts':64,
+              'classes':dict(Counter(x['label_turn'] for x in r))}),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v21-counterfactual-keep-all-stage-pilot
+          path: datasets/v21_keep_pilot_82000.jsonl.gz
+          retention-days: 21
