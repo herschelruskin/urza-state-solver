@@ -1,0 +1,64 @@
+name: DACK v13 frozen student independent teacher imitation test N8
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_teacher_v13_sealed_imitation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  teacher_test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - start: 62000
+          - start: 62001
+          - start: 62002
+          - start: 62003
+          - start: 62004
+          - start: 62005
+          - start: 62006
+          - start: 62007
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          python -u dack_simulator/validation/collect_teacher_london_v13.py \
+            --split imitation_test --start ${{ matrix.start }} --games 1 \
+            --out datasets/teacher_test_v13_${{ matrix.start }}.jsonl.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: teacher-test-v13-${{ matrix.start }}
+          path: datasets/teacher_test_v13_*.jsonl.gz
+          retention-days: 14
+  evaluation:
+    needs: teacher_test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: teacher-test-v13-*
+          merge-multiple: true
+          path: datasets/teacher_test_v13/
+      - name: Evaluate frozen pure Python student on eight unseen teacher game groups
+        run: |
+          python dack_simulator/validation/evaluate_teacher_distillation_v13.py \
+            --labels datasets/teacher_test_v13/*.jsonl.gz \
+            --model models/dack_teacher_distill_v13_EXPERIMENTAL.json \
+            --out benchmark_results/teacher_distill_v13_independent_accuracy.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v13-frozen-teacher-imitation-accuracy
+          path: benchmark_results/teacher_distill_v13_independent_accuracy.json
+          retention-days: 14
