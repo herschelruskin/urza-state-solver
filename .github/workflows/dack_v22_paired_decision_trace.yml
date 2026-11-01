@@ -80,7 +80,7 @@ jobs:
           path.write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
           print('V22_REAL_KEEP_DECISION_TRACE',json.dumps({
              'status':result['status'],'stats':result['stats'],
-             'by_seat':result['by_seat'],'anomalies':result['anomalies'][:4]},flush=True)
+             'by_seat':result['by_seat'],'anomalies':result['anomalies'][:4]}),flush=True)
           assert not anomalies,'unexpected changed bottom or stable dice while keeping same hand'
           PY
       - name: Persist decision audit with checksum-preserved original paired shards
