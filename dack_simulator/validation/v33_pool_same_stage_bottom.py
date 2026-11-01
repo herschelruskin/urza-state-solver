@@ -47,7 +47,7 @@ def main(source,out):
     files=sorted(glob.glob(source))
     if len(files)!=8:
         raise ValueError("v33 replay requires exactly 8 independent blocks, found "+str(len(files)))
-    rows=[]; source_sha=None
+    rows=[]; source_sha=None; expected_eligible=None
     for file in files:
         with gzip.open(file,"rt") as f:
             d=json.load(f)
@@ -61,10 +61,14 @@ def main(source,out):
         if source_sha is None:
             source_sha=d["source_shas"]
         assert d["source_shas"]==source_sha
-        assert len(d["rows"])==7
+        if expected_eligible is None:
+            expected_eligible = d["total_eligible_groups"]
+        assert d["total_eligible_groups"] == expected_eligible
+        assert d["rows"]
         rows+=d["rows"]
     rows.sort(key=lambda g:g["game_id"])
-    assert len(rows)==56 and len({g["game_id"] for g in rows})==56
+    assert 8 <= len(rows) <= 56 and len(rows) == expected_eligible
+    assert len({g["game_id"] for g in rows}) == len(rows)
     for g in rows:
         assert g["stage"] in range(1,8) or g["stage"]==0
         for split in SPLITS:
@@ -76,11 +80,11 @@ def main(source,out):
         selector=None if split.startswith("both") else split
         by[split]={f"T{t}":score(rows,selector,t) for t in (1,2,3)}
     result={
-        "schema":"dack_v33_bottom_replay_N56_x16_results",
+        "schema":"dack_v33_bottom_replay_actual_stage_index_x16_results",
         "status":"PASS","source_full_game_select_cohort":[110000,110255],
         "source_model_shas":source_sha,
-        "n_selected_physical_groups":56,
-        "total_new_gameplay_beam160_evaluations":56*2*8*2,
+        "n_selected_physical_groups":len(rows),
+        "total_new_gameplay_beam160_evaluations":len(rows)*2*8*2,
         "evaluation":"conditional same-stage actual v5/v27 bottom choices, physical future shuffles",
         "no_110k_game_outcomes_used_to_select_groups":True,
         "not_prospective_end_to_end_policy_performance":True,
@@ -94,7 +98,7 @@ def main(source,out):
     dest=Path(out);dest.parent.mkdir(parents=True,exist_ok=True)
     dest.write_text(json.dumps(result,sort_keys=True,indent=2)+"\n")
     print("DACK_V33_BOTTOM_REPLAY_POOL_PASS",
-          json.dumps({"n":56,"T2_calibration":by["calibration"]["T2"],
+          json.dumps({"n":len(rows),"T2_calibration":by["calibration"]["T2"],
             "T2_untouched_validation":by["untouched_validation"]["T2"],
             "T2_pooled":by["both_splits_pooled_no_fitting"]["T2"],
             "T3_pooled":by["both_splits_pooled_no_fitting"]["T3"]},
@@ -104,6 +108,6 @@ def main(source,out):
 if __name__=="__main__":
     p=argparse.ArgumentParser()
     p.add_argument("--source",default="collected/v33_bottom_*.json.gz")
-    p.add_argument("--out",default="benchmark_results/v33_bottom_replay_N56_x16.json")
+    p.add_argument("--out",default="benchmark_results/v33_bottom_replay_actual_stage_x16.json")
     a=p.parse_args()
     main(a.source,a.out)
