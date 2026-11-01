@@ -11,6 +11,9 @@ import gzip
 import hashlib
 import json
 from pathlib import Path
+import sys
+# Running a nested script directly places its directory, not the repo root, on sys.path.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from dack_simulator.validation.compare_v22_real_keep_DP_n64 import run_game, POLICIES
 
 ROOT = Path(__file__).resolve().parents[2]
