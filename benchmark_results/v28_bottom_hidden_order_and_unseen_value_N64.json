@@ -1,0 +1,6507 @@
+{
+  "bottom_eligible_game_groups": 50,
+  "card_level_bottoming_behavior": {
+    "frozen_v14_bottom_frequency": {
+      "Ancient Den": 2,
+      "Ancient Tomb": 2,
+      "Blast Zone": 2,
+      "Boonweaver Giant": 2,
+      "Bound by Moonsilver": 2,
+      "Bucknard's Everfull Purse": 1,
+      "City of Traitors": 3,
+      "Crystal Vein": 3,
+      "Deafening Silence": 1,
+      "Defense Grid": 1,
+      "Eldrazi Confluence": 1,
+      "Emergence Zone": 2,
+      "Emeria's Call": 1,
+      "Erode": 2,
+      "Feather of Flight": 5,
+      "Floating Shield": 1,
+      "Gift of Immortality": 2,
+      "Great Hall of the Citadel": 1,
+      "Hardlight Containment": 2,
+      "Idolized": 2,
+      "Krark-Clan Ironworks": 1,
+      "Mana Tithe": 2,
+      "Mantle of the Ancients": 5,
+      "March of Otherworldly Light": 3,
+      "Minimus Containment": 4,
+      "Mishra's Workshop": 2,
+      "Moonsilver Key": 1,
+      "Mox Diamond": 1,
+      "Mox Opal": 1,
+      "Orim's Chant": 3,
+      "Paladin Class": 4,
+      "Petrified Hamlet": 1,
+      "Plains": 6,
+      "Portable Hole": 6,
+      "Preston, the Vanisher": 5,
+      "Roaming Throne": 3,
+      "Scroll Rack": 1,
+      "Sheltered by Ghosts": 4,
+      "Silence": 2,
+      "Soul Partition": 1,
+      "Staff of Compleation": 2,
+      "Static Prison": 5,
+      "Super State": 4,
+      "The Mycosynth Gardens": 4,
+      "Thorn of Amethyst": 3,
+      "Touch the Spirit Realm": 1,
+      "Trinisphere": 3,
+      "Twinblade Blessing": 3,
+      "Untaidake, the Cloud Keeper": 4,
+      "Unwanted Remake": 1,
+      "Urza's Cave": 2,
+      "Urza's Saga": 6,
+      "Vexing Bauble": 3,
+      "Void Mirror": 4
+    },
+    "note": "Descriptive among v5-kept hands with actual London bottom, not population attribution or oracle proof.",
+    "structural_first_bottom_frequency": {
+      "Ancient Den": 2,
+      "Ancient Tomb": 2,
+      "Blast Zone": 2,
+      "Boonweaver Giant": 2,
+      "Bound by Moonsilver": 2,
+      "Bucknard's Everfull Purse": 1,
+      "City of Traitors": 3,
+      "Crystal Vein": 4,
+      "Deafening Silence": 1,
+      "Defense Grid": 1,
+      "Emergence Zone": 1,
+      "Emeria's Call": 1,
+      "Erode": 2,
+      "Feather of Flight": 5,
+      "Floating Shield": 1,
+      "Gift of Immortality": 2,
+      "Great Hall of the Citadel": 1,
+      "Hardlight Containment": 2,
+      "Idolized": 2,
+      "Krark-Clan Ironworks": 1,
+      "Lion's Eye Diamond": 1,
+      "Mana Tithe": 2,
+      "Mantle of the Ancients": 5,
+      "March of Otherworldly Light": 3,
+      "Minimus Containment": 4,
+      "Mishra's Workshop": 2,
+      "Mox Opal": 1,
+      "Orim's Chant": 3,
+      "Paladin Class": 4,
+      "Petrified Hamlet": 1,
+      "Plains": 8,
+      "Portable Hole": 6,
+      "Preston, the Vanisher": 5,
+      "Roaming Throne": 3,
+      "Ruins of Trokair": 1,
+      "Sheltered by Ghosts": 4,
+      "Silence": 2,
+      "Soul Partition": 1,
+      "Staff of Compleation": 1,
+      "Static Prison": 5,
+      "Super State": 4,
+      "The Mycosynth Gardens": 5,
+      "Thorn of Amethyst": 3,
+      "Touch the Spirit Realm": 1,
+      "Trinisphere": 3,
+      "Twinblade Blessing": 3,
+      "Untaidake, the Cloud Keeper": 4,
+      "Unwanted Remake": 1,
+      "Urza's Cave": 2,
+      "Urza's Saga": 6,
+      "Vexing Bauble": 3,
+      "Void Mirror": 4
+    },
+    "v14_bottomed_but_v5_kept_cards": {
+      "Bound by Moonsilver": 1,
+      "Bucknard's Everfull Purse": 1,
+      "City of Traitors": 2,
+      "Crystal Vein": 2,
+      "Defense Grid": 1,
+      "Emergence Zone": 2,
+      "Erode": 1,
+      "Feather of Flight": 1,
+      "Hardlight Containment": 1,
+      "Idolized": 1,
+      "Mana Tithe": 1,
+      "Minimus Containment": 2,
+      "Mishra's Workshop": 2,
+      "Moonsilver Key": 1,
+      "Orim's Chant": 1,
+      "Paladin Class": 2,
+      "Plains": 2,
+      "Portable Hole": 1,
+      "Sheltered by Ghosts": 1,
+      "Static Prison": 1,
+      "The Mycosynth Gardens": 1,
+      "Twinblade Blessing": 1,
+      "Untaidake, the Cloud Keeper": 4,
+      "Unwanted Remake": 1,
+      "Urza's Cave": 2,
+      "Urza's Saga": 5
+    },
+    "v5_bottom_frequency": {
+      "Ancient Den": 2,
+      "Ancient Tomb": 2,
+      "Arcane Signet": 2,
+      "Basalt Monolith": 1,
+      "Blast Zone": 2,
+      "Boonweaver Giant": 2,
+      "Bound by Moonsilver": 1,
+      "Chrome Mox": 1,
+      "City of Traitors": 1,
+      "Command Beacon": 2,
+      "Crystal Vein": 2,
+      "Deafening Silence": 1,
+      "Disruptor Flute": 2,
+      "Eiganjo, Seat of the Empire": 1,
+      "Eldrazi Confluence": 2,
+      "Emeria's Call": 2,
+      "Enlightened Tutor": 1,
+      "Erode": 1,
+      "Everflowing Chalice": 3,
+      "Expedition Map": 2,
+      "Feather of Flight": 4,
+      "Floating Shield": 1,
+      "Giant's Boulder": 1,
+      "Gift of Immortality": 2,
+      "Great Hall of the Citadel": 1,
+      "Hardlight Containment": 1,
+      "Homeward Path": 1,
+      "Idolized": 1,
+      "Implements of Sacrifice": 1,
+      "Jeweled Amulet": 1,
+      "Krark-Clan Ironworks": 2,
+      "Lotus Petal": 1,
+      "Mana Tithe": 1,
+      "Mana Vault": 1,
+      "Mantle of the Ancients": 5,
+      "March of Otherworldly Light": 4,
+      "Mind Stone": 1,
+      "Minimus Containment": 2,
+      "Mishra's Workshop": 1,
+      "Moonsilver Key": 1,
+      "Mox Diamond": 1,
+      "Mox Opal": 2,
+      "Orim's Chant": 2,
+      "Paladin Class": 2,
+      "Petrified Hamlet": 1,
+      "Plains": 8,
+      "Portable Hole": 5,
+      "Preston, the Vanisher": 5,
+      "Remote Farm": 1,
+      "Roaming Throne": 3,
+      "Scroll Rack": 2,
+      "Sheltered by Ghosts": 3,
+      "Silence": 2,
+      "Soul Partition": 1,
+      "Staff of Compleation": 3,
+      "Static Prison": 4,
+      "Super State": 4,
+      "Tezzeret, Cruel Captain": 1,
+      "The Mycosynth Gardens": 4,
+      "Thorn of Amethyst": 3,
+      "Touch the Spirit Realm": 1,
+      "Trinisphere": 3,
+      "Twinblade Blessing": 2,
+      "Urza's Cave": 1,
+      "Urza's Saga": 2,
+      "Vexing Bauble": 3,
+      "Void Mirror": 4
+    },
+    "v5_bottomed_but_v14_kept_cards": {
+      "Arcane Signet": 2,
+      "Basalt Monolith": 1,
+      "Chrome Mox": 1,
+      "Command Beacon": 2,
+      "Crystal Vein": 1,
+      "Disruptor Flute": 2,
+      "Eiganjo, Seat of the Empire": 1,
+      "Eldrazi Confluence": 1,
+      "Emeria's Call": 1,
+      "Enlightened Tutor": 1,
+      "Everflowing Chalice": 3,
+      "Expedition Map": 2,
+      "Giant's Boulder": 1,
+      "Homeward Path": 1,
+      "Implements of Sacrifice": 1,
+      "Jeweled Amulet": 1,
+      "Krark-Clan Ironworks": 1,
+      "Lotus Petal": 1,
+      "Mana Vault": 1,
+      "March of Otherworldly Light": 1,
+      "Mind Stone": 1,
+      "Mishra's Workshop": 1,
+      "Moonsilver Key": 1,
+      "Mox Opal": 1,
+      "Plains": 4,
+      "Remote Farm": 1,
+      "Scroll Rack": 1,
+      "Staff of Compleation": 1,
+      "Tezzeret, Cruel Captain": 1,
+      "The Mycosynth Gardens": 1,
+      "Urza's Cave": 1,
+      "Urza's Saga": 1
+    }
+  },
+  "game_ids": [
+    99000,
+    99063
+  ],
+  "individual_research_groups": [
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Urza's Saga",
+            "Static Prison"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Coalition Relic",
+            "Command Beacon",
+            "Jeweled Amulet",
+            "Remote Farm",
+            "Urza's Cave"
+          ],
+          "heldout_blended_utility": 0.5625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.125,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            75,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Static Prison",
+            "Urza's Cave"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Coalition Relic",
+            "Command Beacon",
+            "Jeweled Amulet",
+            "Remote Farm",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.5625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.125,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            75,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Static Prison",
+            "Command Beacon"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Coalition Relic",
+            "Jeweled Amulet",
+            "Remote Farm",
+            "Urza's Cave",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.5625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.125,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            75,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Command Beacon",
+            "Remote Farm"
+          ],
+          "candidate_index": 11,
+          "hand": [
+            "Coalition Relic",
+            "Jeweled Amulet",
+            "Static Prison",
+            "Urza's Cave",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.5625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.125,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            30,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99001,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 5,
+      "kept_stage": 3,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 3,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 11,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Coalition Relic",
+        "Urza's Saga",
+        "Static Prison",
+        "Urza's Cave",
+        "Command Beacon",
+        "Remote Farm",
+        "Jeweled Amulet"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Orim's Chant",
+            "Silence",
+            "Great Hall of the Citadel",
+            "Roaming Throne"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Brainstone",
+            "Gemstone Caverns",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.46875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": true,
+          "structural_rank": [
+            235,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Orim's Chant",
+            "Silence",
+            "Roaming Throne",
+            "Urza's Saga"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Brainstone",
+            "Gemstone Caverns",
+            "Great Hall of the Citadel"
+          ],
+          "heldout_blended_utility": 0.09375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.1875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            235,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Orim's Chant",
+            "Silence",
+            "Roaming Throne",
+            "Gemstone Caverns"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Brainstone",
+            "Great Hall of the Citadel",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.46875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            235,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99002,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 3,
+      "kept_stage": 5,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 2,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 0,
+      "v5_changes_bottom_vs_v14": false,
+      "visible_seven": [
+        "Orim's Chant",
+        "Silence",
+        "Great Hall of the Citadel",
+        "Brainstone",
+        "Roaming Throne",
+        "Urza's Saga",
+        "Gemstone Caverns"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Emergence Zone",
+            "Mantle of the Ancients",
+            "Static Prison"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Jeweled Amulet",
+            "Mana Vault",
+            "Plains",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.75,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.5,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            155,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Plains",
+            "Mantle of the Ancients",
+            "Static Prison"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Emergence Zone",
+            "Jeweled Amulet",
+            "Mana Vault",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.5625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.125,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            155,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Mantle of the Ancients",
+            "Urza's Saga",
+            "Static Prison"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Emergence Zone",
+            "Jeweled Amulet",
+            "Mana Vault",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.75,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.5,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            155,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99004,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 4,
+      "kept_stage": 4,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 1,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 2,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Emergence Zone",
+        "Jeweled Amulet",
+        "Plains",
+        "Mantle of the Ancients",
+        "Urza's Saga",
+        "Static Prison",
+        "Mana Vault"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Blast Zone",
+            "Static Prison"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Command Beacon",
+            "Emergence Zone",
+            "Everflowing Chalice",
+            "Lion's Eye Diamond",
+            "Untaidake, the Cloud Keeper"
+          ],
+          "heldout_blended_utility": 0.9375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.9375,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": true,
+          "structural_rank": [
+            75,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Untaidake, the Cloud Keeper",
+            "Static Prison"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Blast Zone",
+            "Command Beacon",
+            "Emergence Zone",
+            "Everflowing Chalice",
+            "Lion's Eye Diamond"
+          ],
+          "heldout_blended_utility": 0.5625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.1875,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            75,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Static Prison",
+            "Emergence Zone"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Blast Zone",
+            "Command Beacon",
+            "Everflowing Chalice",
+            "Lion's Eye Diamond",
+            "Untaidake, the Cloud Keeper"
+          ],
+          "heldout_blended_utility": 0.9375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.9375,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            75,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99005,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 5,
+      "kept_stage": 3,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 1,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 0,
+      "v5_changes_bottom_vs_v14": false,
+      "visible_seven": [
+        "Blast Zone",
+        "Everflowing Chalice",
+        "Untaidake, the Cloud Keeper",
+        "Lion's Eye Diamond",
+        "Static Prison",
+        "Emergence Zone",
+        "Command Beacon"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Defense Grid",
+            "March of Otherworldly Light"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Arcane Signet",
+            "Cavern of Souls",
+            "Grim Monolith",
+            "Petrified Hamlet",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.46875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.875,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            120,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Cavern of Souls",
+            "Defense Grid"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Arcane Signet",
+            "Grim Monolith",
+            "March of Otherworldly Light",
+            "Petrified Hamlet",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.34375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.625,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            75,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Cavern of Souls",
+            "March of Otherworldly Light"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Arcane Signet",
+            "Defense Grid",
+            "Grim Monolith",
+            "Petrified Hamlet",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.34375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.625,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            75,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "March of Otherworldly Light",
+            "Arcane Signet"
+          ],
+          "candidate_index": 10,
+          "hand": [
+            "Cavern of Souls",
+            "Defense Grid",
+            "Grim Monolith",
+            "Petrified Hamlet",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.46875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            60,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99006,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 5,
+      "kept_stage": 3,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 3,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 10,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Grim Monolith",
+        "Cavern of Souls",
+        "Petrified Hamlet",
+        "Defense Grid",
+        "Plains",
+        "March of Otherworldly Light",
+        "Arcane Signet"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 7,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Mana Tithe"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "City of Traitors",
+            "Eiganjo, Seat of the Empire",
+            "Erode",
+            "Gemstone Caverns",
+            "The Mind Stone",
+            "Urza's Cave"
+          ],
+          "heldout_blended_utility": 0.84375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.6875,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            60,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Erode"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "City of Traitors",
+            "Eiganjo, Seat of the Empire",
+            "Gemstone Caverns",
+            "Mana Tithe",
+            "The Mind Stone",
+            "Urza's Cave"
+          ],
+          "heldout_blended_utility": 0.84375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.6875,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            60,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Eiganjo, Seat of the Empire"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "City of Traitors",
+            "Erode",
+            "Gemstone Caverns",
+            "Mana Tithe",
+            "The Mind Stone",
+            "Urza's Cave"
+          ],
+          "heldout_blended_utility": 0.8125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.6875,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            15,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99007,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 6,
+      "kept_stage": 2,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 2,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 2,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "The Mind Stone",
+        "Eiganjo, Seat of the Empire",
+        "Urza's Cave",
+        "Gemstone Caverns",
+        "Mana Tithe",
+        "City of Traitors",
+        "Erode"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Feather of Flight",
+            "Ancient Den",
+            "Portable Hole",
+            "Trinisphere",
+            "Crystal Vein"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Jeweled Amulet",
+            "Mana Vault"
+          ],
+          "heldout_blended_utility": 0.125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.25,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            230,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Feather of Flight",
+            "Mana Vault",
+            "Ancient Den",
+            "Portable Hole",
+            "Trinisphere"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Crystal Vein",
+            "Jeweled Amulet"
+          ],
+          "heldout_blended_utility": 0.125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.25,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            215,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Feather of Flight",
+            "Mana Vault",
+            "Portable Hole",
+            "Trinisphere",
+            "Crystal Vein"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Ancient Den",
+            "Jeweled Amulet"
+          ],
+          "heldout_blended_utility": 0.0625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.125,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            215,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Feather of Flight",
+            "Jeweled Amulet",
+            "Ancient Den",
+            "Portable Hole",
+            "Trinisphere"
+          ],
+          "candidate_index": 3,
+          "hand": [
+            "Crystal Vein",
+            "Mana Vault"
+          ],
+          "heldout_blended_utility": 0.25,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.125,
+          "heldout_by_T3": 0.375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            215,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99009,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 2,
+      "kept_stage": 6,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 3,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 3,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Feather of Flight",
+        "Mana Vault",
+        "Jeweled Amulet",
+        "Ancient Den",
+        "Portable Hole",
+        "Trinisphere",
+        "Crystal Vein"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Orim's Chant",
+            "Urza's Saga",
+            "Silence",
+            "Plains"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Everflowing Chalice",
+            "Expedition Map",
+            "Moonsilver Key"
+          ],
+          "heldout_blended_utility": 0.125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.25,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            150,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Orim's Chant",
+            "Urza's Saga",
+            "Moonsilver Key",
+            "Silence"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Everflowing Chalice",
+            "Expedition Map",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.03125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.0625,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            135,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Orim's Chant",
+            "Urza's Saga",
+            "Silence",
+            "Everflowing Chalice"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Expedition Map",
+            "Moonsilver Key",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.15625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.3125,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            135,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Orim's Chant",
+            "Moonsilver Key",
+            "Silence",
+            "Everflowing Chalice"
+          ],
+          "candidate_index": 7,
+          "hand": [
+            "Expedition Map",
+            "Plains",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.46875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            120,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99010,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 3,
+      "kept_stage": 5,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 1,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 7,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Orim's Chant",
+        "Urza's Saga",
+        "Moonsilver Key",
+        "Silence",
+        "Everflowing Chalice",
+        "Expedition Map",
+        "Plains"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Ruins of Trokair",
+            "Lion's Eye Diamond",
+            "Portable Hole",
+            "Twinblade Blessing"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Mana Vault",
+            "Moonsilver Key",
+            "Mox Diamond"
+          ],
+          "heldout_blended_utility": 0.09375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.1875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            155,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Ruins of Trokair",
+            "Mox Diamond",
+            "Portable Hole",
+            "Twinblade Blessing"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Lion's Eye Diamond",
+            "Mana Vault",
+            "Moonsilver Key"
+          ],
+          "heldout_blended_utility": 0.6875,
+          "heldout_by_T1": 0.25,
+          "heldout_by_T2": 0.6875,
+          "heldout_by_T3": 0.6875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            155,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Ruins of Trokair",
+            "Mana Vault",
+            "Portable Hole",
+            "Twinblade Blessing"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Lion's Eye Diamond",
+            "Moonsilver Key",
+            "Mox Diamond"
+          ],
+          "heldout_blended_utility": 0.15625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.25,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            155,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Mox Diamond",
+            "Portable Hole",
+            "Twinblade Blessing",
+            "Moonsilver Key"
+          ],
+          "candidate_index": 8,
+          "hand": [
+            "Lion's Eye Diamond",
+            "Mana Vault",
+            "Ruins of Trokair"
+          ],
+          "heldout_blended_utility": 1.0,
+          "heldout_by_T1": 0.25,
+          "heldout_by_T2": 1.0,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            140,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Mox Diamond",
+            "Mana Vault",
+            "Portable Hole",
+            "Twinblade Blessing"
+          ],
+          "candidate_index": 7,
+          "hand": [
+            "Lion's Eye Diamond",
+            "Moonsilver Key",
+            "Ruins of Trokair"
+          ],
+          "heldout_blended_utility": 0.84375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.8125,
+          "heldout_by_T3": 0.875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            140,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99011,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 3,
+      "kept_stage": 5,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 1,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 8,
+      "v5_candidate_index": 7,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Ruins of Trokair",
+        "Lion's Eye Diamond",
+        "Mox Diamond",
+        "Mana Vault",
+        "Portable Hole",
+        "Twinblade Blessing",
+        "Moonsilver Key"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Paladin Class",
+            "Trinisphere",
+            "The Mycosynth Gardens"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Arcane Signet",
+            "Gleaming Splendor",
+            "Sol Ring",
+            "Staff of Compleation"
+          ],
+          "heldout_blended_utility": 0.28125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.125,
+          "heldout_by_T3": 0.4375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            135,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Paladin Class",
+            "Staff of Compleation",
+            "Trinisphere"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Arcane Signet",
+            "Gleaming Splendor",
+            "Sol Ring",
+            "The Mycosynth Gardens"
+          ],
+          "heldout_blended_utility": 0.65625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.3125,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            120,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Paladin Class",
+            "Trinisphere",
+            "Gleaming Splendor"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Arcane Signet",
+            "Sol Ring",
+            "Staff of Compleation",
+            "The Mycosynth Gardens"
+          ],
+          "heldout_blended_utility": 0.6875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.375,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            120,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99012,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 4,
+      "kept_stage": 4,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 3,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 1,
+      "v5_candidate_index": 1,
+      "v5_changes_bottom_vs_v14": false,
+      "visible_seven": [
+        "Paladin Class",
+        "Staff of Compleation",
+        "Trinisphere",
+        "The Mycosynth Gardens",
+        "Gleaming Splendor",
+        "Arcane Signet",
+        "Sol Ring"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Twinblade Blessing",
+            "Untaidake, the Cloud Keeper"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Ancient Tomb",
+            "Bucknard's Everfull Purse",
+            "Chrome Mox",
+            "Enlightened Tutor",
+            "Everflowing Chalice"
+          ],
+          "heldout_blended_utility": 0.875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.875,
+          "heldout_by_T3": 0.875,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            95,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Twinblade Blessing",
+            "Ancient Tomb"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Bucknard's Everfull Purse",
+            "Chrome Mox",
+            "Enlightened Tutor",
+            "Everflowing Chalice",
+            "Untaidake, the Cloud Keeper"
+          ],
+          "heldout_blended_utility": 0.59375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.3125,
+          "heldout_by_T3": 0.875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            95,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Chrome Mox",
+            "Twinblade Blessing"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Ancient Tomb",
+            "Bucknard's Everfull Purse",
+            "Enlightened Tutor",
+            "Everflowing Chalice",
+            "Untaidake, the Cloud Keeper"
+          ],
+          "heldout_blended_utility": 0.75,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.6875,
+          "heldout_by_T3": 0.8125,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            80,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Twinblade Blessing",
+            "Everflowing Chalice"
+          ],
+          "candidate_index": 5,
+          "hand": [
+            "Ancient Tomb",
+            "Bucknard's Everfull Purse",
+            "Chrome Mox",
+            "Enlightened Tutor",
+            "Untaidake, the Cloud Keeper"
+          ],
+          "heldout_blended_utility": 0.875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.875,
+          "heldout_by_T3": 0.875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            80,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99013,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 5,
+      "kept_stage": 3,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 3,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 5,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Chrome Mox",
+        "Twinblade Blessing",
+        "Bucknard's Everfull Purse",
+        "Untaidake, the Cloud Keeper",
+        "Ancient Tomb",
+        "Enlightened Tutor",
+        "Everflowing Chalice"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 7,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Urza's Cave"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Ancient Den",
+            "Gemstone Caverns",
+            "Grim Monolith",
+            "Homeward Path",
+            "Plains",
+            "Tezzeret, Cruel Captain"
+          ],
+          "heldout_blended_utility": 1.0,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 1.0,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            45,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Plains"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Ancient Den",
+            "Gemstone Caverns",
+            "Grim Monolith",
+            "Homeward Path",
+            "Tezzeret, Cruel Captain",
+            "Urza's Cave"
+          ],
+          "heldout_blended_utility": 1.0,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 1.0,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            45,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Gemstone Caverns"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Ancient Den",
+            "Grim Monolith",
+            "Homeward Path",
+            "Plains",
+            "Tezzeret, Cruel Captain",
+            "Urza's Cave"
+          ],
+          "heldout_blended_utility": 0.59375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.1875,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            45,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Homeward Path"
+          ],
+          "candidate_index": 3,
+          "hand": [
+            "Ancient Den",
+            "Gemstone Caverns",
+            "Grim Monolith",
+            "Plains",
+            "Tezzeret, Cruel Captain",
+            "Urza's Cave"
+          ],
+          "heldout_blended_utility": 1.0,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 1.0,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            45,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99015,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 6,
+      "kept_stage": 2,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 3,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 3,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Urza's Cave",
+        "Tezzeret, Cruel Captain",
+        "Plains",
+        "Gemstone Caverns",
+        "Homeward Path",
+        "Ancient Den",
+        "Grim Monolith"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 7,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Minimus Containment"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Ancient Tomb",
+            "Lotus Petal",
+            "Plains",
+            "Plains",
+            "Sol Ring",
+            "Talon Gates of Madara"
+          ],
+          "heldout_blended_utility": 0.9375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.9375,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": true,
+          "structural_rank": [
+            80,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Plains"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Ancient Tomb",
+            "Lotus Petal",
+            "Minimus Containment",
+            "Plains",
+            "Sol Ring",
+            "Talon Gates of Madara"
+          ],
+          "heldout_blended_utility": 0.9375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.9375,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            15,
+            0,
+            -1
+          ]
+        },
+        {
+          "bottom": [
+            "Plains"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Ancient Tomb",
+            "Lotus Petal",
+            "Minimus Containment",
+            "Plains",
+            "Sol Ring",
+            "Talon Gates of Madara"
+          ],
+          "heldout_blended_utility": 0.9375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.9375,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            15,
+            0,
+            -1
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99017,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 6,
+      "kept_stage": 2,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 1,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 0,
+      "v5_changes_bottom_vs_v14": false,
+      "visible_seven": [
+        "Plains",
+        "Sol Ring",
+        "Plains",
+        "Lotus Petal",
+        "Talon Gates of Madara",
+        "Ancient Tomb",
+        "Minimus Containment"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Urza's Saga",
+            "Plains",
+            "Super State",
+            "Ancient Tomb"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Disruptor Flute",
+            "Gemstone Caverns",
+            "The Mind Stone"
+          ],
+          "heldout_blended_utility": 0.125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.25,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            125,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Urza's Saga",
+            "Plains",
+            "Super State",
+            "Gemstone Caverns"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Ancient Tomb",
+            "Disruptor Flute",
+            "The Mind Stone"
+          ],
+          "heldout_blended_utility": 0.125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.25,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            125,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Urza's Saga",
+            "Super State",
+            "Ancient Tomb",
+            "Gemstone Caverns"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Disruptor Flute",
+            "Plains",
+            "The Mind Stone"
+          ],
+          "heldout_blended_utility": 0.0625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.125,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            125,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Plains",
+            "Super State",
+            "Disruptor Flute",
+            "Ancient Tomb"
+          ],
+          "candidate_index": 10,
+          "hand": [
+            "Gemstone Caverns",
+            "The Mind Stone",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.4375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            110,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99018,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 3,
+      "kept_stage": 5,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 1,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 10,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Urza's Saga",
+        "Plains",
+        "Super State",
+        "Disruptor Flute",
+        "Ancient Tomb",
+        "The Mind Stone",
+        "Gemstone Caverns"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Mantle of the Ancients",
+            "Bound by Moonsilver"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Blast Zone",
+            "Cavern of Souls",
+            "Chrome Mox",
+            "Grim Monolith",
+            "Talon Gates of Madara"
+          ],
+          "heldout_blended_utility": 0.46875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.875,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": true,
+          "structural_rank": [
+            160,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Mantle of the Ancients",
+            "Cavern of Souls"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Blast Zone",
+            "Bound by Moonsilver",
+            "Chrome Mox",
+            "Grim Monolith",
+            "Talon Gates of Madara"
+          ],
+          "heldout_blended_utility": 0.28125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.5,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            95,
+            0,
+            -1
+          ]
+        },
+        {
+          "bottom": [
+            "Mantle of the Ancients",
+            "Blast Zone"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Bound by Moonsilver",
+            "Cavern of Souls",
+            "Chrome Mox",
+            "Grim Monolith",
+            "Talon Gates of Madara"
+          ],
+          "heldout_blended_utility": 0.46875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            95,
+            0,
+            -1
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99019,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 5,
+      "kept_stage": 3,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 1,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 0,
+      "v5_changes_bottom_vs_v14": false,
+      "visible_seven": [
+        "Mantle of the Ancients",
+        "Cavern of Souls",
+        "Chrome Mox",
+        "Blast Zone",
+        "Talon Gates of Madara",
+        "Grim Monolith",
+        "Bound by Moonsilver"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Touch the Spirit Realm",
+            "Minimus Containment"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Ancient Tomb",
+            "Arcane Signet",
+            "Plains",
+            "Portable Hole",
+            "Untaidake, the Cloud Keeper"
+          ],
+          "heldout_blended_utility": 0.53125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            140,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Portable Hole",
+            "Minimus Containment"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Ancient Tomb",
+            "Arcane Signet",
+            "Plains",
+            "Touch the Spirit Realm",
+            "Untaidake, the Cloud Keeper"
+          ],
+          "heldout_blended_utility": 0.53125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            140,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Touch the Spirit Realm",
+            "Portable Hole"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Ancient Tomb",
+            "Arcane Signet",
+            "Minimus Containment",
+            "Plains",
+            "Untaidake, the Cloud Keeper"
+          ],
+          "heldout_blended_utility": 0.53125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            120,
+            0,
+            -1
+          ]
+        },
+        {
+          "bottom": [
+            "Touch the Spirit Realm",
+            "Plains"
+          ],
+          "candidate_index": 9,
+          "hand": [
+            "Ancient Tomb",
+            "Arcane Signet",
+            "Minimus Containment",
+            "Portable Hole",
+            "Untaidake, the Cloud Keeper"
+          ],
+          "heldout_blended_utility": 0.375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.6875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            75,
+            0,
+            -1
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99020,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 5,
+      "kept_stage": 3,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 3,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 9,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Ancient Tomb",
+        "Touch the Spirit Realm",
+        "Plains",
+        "Untaidake, the Cloud Keeper",
+        "Portable Hole",
+        "Minimus Containment",
+        "Arcane Signet"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Feather of Flight",
+            "Roaming Throne"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Basalt Monolith",
+            "Command Beacon",
+            "Razorgrass Ambush",
+            "Talon Gates of Madara",
+            "The Mycosynth Gardens"
+          ],
+          "heldout_blended_utility": 0.5,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            180,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Command Beacon",
+            "Roaming Throne"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Basalt Monolith",
+            "Feather of Flight",
+            "Razorgrass Ambush",
+            "Talon Gates of Madara",
+            "The Mycosynth Gardens"
+          ],
+          "heldout_blended_utility": 0.5,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            115,
+            0,
+            -1
+          ]
+        },
+        {
+          "bottom": [
+            "Talon Gates of Madara",
+            "Roaming Throne"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Basalt Monolith",
+            "Command Beacon",
+            "Feather of Flight",
+            "Razorgrass Ambush",
+            "The Mycosynth Gardens"
+          ],
+          "heldout_blended_utility": 0.5,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            115,
+            0,
+            -1
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99021,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 5,
+      "kept_stage": 3,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 1,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 1,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Feather of Flight",
+        "Command Beacon",
+        "Talon Gates of Madara",
+        "Basalt Monolith",
+        "Razorgrass Ambush",
+        "Roaming Throne",
+        "The Mycosynth Gardens"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Preston, the Vanisher",
+            "Urza's Saga",
+            "Bound by Moonsilver"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Eldrazi Confluence",
+            "Krark-Clan Ironworks",
+            "Mishra's Workshop",
+            "The Mycosynth Gardens"
+          ],
+          "heldout_blended_utility": 0.25,
+          "heldout_by_T1": 0.0625,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.4375,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            195,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Preston, the Vanisher",
+            "The Mycosynth Gardens",
+            "Bound by Moonsilver"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Eldrazi Confluence",
+            "Krark-Clan Ironworks",
+            "Mishra's Workshop",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.53125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            195,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Preston, the Vanisher",
+            "Mishra's Workshop",
+            "Bound by Moonsilver"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Eldrazi Confluence",
+            "Krark-Clan Ironworks",
+            "The Mycosynth Gardens",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.53125,
+          "heldout_by_T1": 0.0625,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            195,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Preston, the Vanisher",
+            "The Mycosynth Gardens",
+            "Eldrazi Confluence"
+          ],
+          "candidate_index": 10,
+          "hand": [
+            "Bound by Moonsilver",
+            "Krark-Clan Ironworks",
+            "Mishra's Workshop",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.5,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            115,
+            0,
+            -1
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99022,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 4,
+      "kept_stage": 4,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 3,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 10,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Preston, the Vanisher",
+        "Urza's Saga",
+        "The Mycosynth Gardens",
+        "Mishra's Workshop",
+        "Bound by Moonsilver",
+        "Eldrazi Confluence",
+        "Krark-Clan Ironworks"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Ancient Tomb",
+            "Untaidake, the Cloud Keeper"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Bucknard's Everfull Purse",
+            "Eiganjo, Seat of the Empire",
+            "Gemstone Caverns",
+            "Implements of Sacrifice",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.875,
+          "heldout_by_T3": 0.875,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            90,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Ancient Tomb",
+            "Eiganjo, Seat of the Empire"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Bucknard's Everfull Purse",
+            "Gemstone Caverns",
+            "Implements of Sacrifice",
+            "Plains",
+            "Untaidake, the Cloud Keeper"
+          ],
+          "heldout_blended_utility": 0.78125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.6875,
+          "heldout_by_T3": 0.875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            90,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Ancient Tomb",
+            "Plains"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Bucknard's Everfull Purse",
+            "Eiganjo, Seat of the Empire",
+            "Gemstone Caverns",
+            "Implements of Sacrifice",
+            "Untaidake, the Cloud Keeper"
+          ],
+          "heldout_blended_utility": 0.78125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.6875,
+          "heldout_by_T3": 0.875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            90,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Ancient Tomb",
+            "Implements of Sacrifice"
+          ],
+          "candidate_index": 11,
+          "hand": [
+            "Bucknard's Everfull Purse",
+            "Eiganjo, Seat of the Empire",
+            "Gemstone Caverns",
+            "Plains",
+            "Untaidake, the Cloud Keeper"
+          ],
+          "heldout_blended_utility": 0.84375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.8125,
+          "heldout_by_T3": 0.875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            45,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99023,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 5,
+      "kept_stage": 3,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 2,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 11,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Ancient Tomb",
+        "Untaidake, the Cloud Keeper",
+        "Eiganjo, Seat of the Empire",
+        "Plains",
+        "Bucknard's Everfull Purse",
+        "Implements of Sacrifice",
+        "Gemstone Caverns"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 7,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Void Mirror"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Arcane Signet",
+            "Brainstone",
+            "Emeria's Call",
+            "Enlightened Tutor",
+            "Mishra's Workshop",
+            "Urza's Cave"
+          ],
+          "heldout_blended_utility": 0.625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.375,
+          "heldout_by_T3": 0.875,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": true,
+          "structural_rank": [
+            60,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Emeria's Call"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Arcane Signet",
+            "Brainstone",
+            "Enlightened Tutor",
+            "Mishra's Workshop",
+            "Urza's Cave",
+            "Void Mirror"
+          ],
+          "heldout_blended_utility": 0.625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.3125,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            15,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Mishra's Workshop"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Arcane Signet",
+            "Brainstone",
+            "Emeria's Call",
+            "Enlightened Tutor",
+            "Urza's Cave",
+            "Void Mirror"
+          ],
+          "heldout_blended_utility": 0.5625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.125,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            15,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99026,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 6,
+      "kept_stage": 2,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 2,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 0,
+      "v5_changes_bottom_vs_v14": false,
+      "visible_seven": [
+        "Brainstone",
+        "Void Mirror",
+        "Enlightened Tutor",
+        "Emeria's Call",
+        "Mishra's Workshop",
+        "Arcane Signet",
+        "Urza's Cave"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Mantle of the Ancients",
+            "Mana Tithe",
+            "Unwanted Remake"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Bucknard's Everfull Purse",
+            "Chrome Mox",
+            "Coalition Relic",
+            "Enlightened Tutor"
+          ],
+          "heldout_blended_utility": 0.34375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.1875,
+          "heldout_by_T3": 0.5,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            200,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Mantle of the Ancients",
+            "Mana Tithe",
+            "Enlightened Tutor"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Bucknard's Everfull Purse",
+            "Chrome Mox",
+            "Coalition Relic",
+            "Unwanted Remake"
+          ],
+          "heldout_blended_utility": 0.3125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.1875,
+          "heldout_by_T3": 0.4375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            140,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Mantle of the Ancients",
+            "Mana Tithe",
+            "Coalition Relic"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Bucknard's Everfull Purse",
+            "Chrome Mox",
+            "Enlightened Tutor",
+            "Unwanted Remake"
+          ],
+          "heldout_blended_utility": 0.5,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.375,
+          "heldout_by_T3": 0.625,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            140,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99027,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 4,
+      "kept_stage": 4,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 1,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 1,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Mantle of the Ancients",
+        "Mana Tithe",
+        "Enlightened Tutor",
+        "Coalition Relic",
+        "Chrome Mox",
+        "Bucknard's Everfull Purse",
+        "Unwanted Remake"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 7,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Idolized"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Ancient Tomb",
+            "Disruptor Flute",
+            "Eldrazi Confluence",
+            "Grim Monolith",
+            "Plains",
+            "Soul Partition"
+          ],
+          "heldout_blended_utility": 0.5,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.1875,
+          "heldout_by_T3": 0.8125,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            80,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Soul Partition"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Ancient Tomb",
+            "Disruptor Flute",
+            "Eldrazi Confluence",
+            "Grim Monolith",
+            "Idolized",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.5,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.1875,
+          "heldout_by_T3": 0.8125,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            60,
+            0,
+            -1
+          ]
+        },
+        {
+          "bottom": [
+            "Ancient Tomb"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Disruptor Flute",
+            "Eldrazi Confluence",
+            "Grim Monolith",
+            "Idolized",
+            "Plains",
+            "Soul Partition"
+          ],
+          "heldout_blended_utility": 0.21875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.4375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            15,
+            0,
+            -1
+          ]
+        },
+        {
+          "bottom": [
+            "Disruptor Flute"
+          ],
+          "candidate_index": 4,
+          "hand": [
+            "Ancient Tomb",
+            "Eldrazi Confluence",
+            "Grim Monolith",
+            "Idolized",
+            "Plains",
+            "Soul Partition"
+          ],
+          "heldout_blended_utility": 0.5,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.1875,
+          "heldout_by_T3": 0.8125,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            0,
+            0,
+            -1
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99028,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 6,
+      "kept_stage": 2,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 3,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 4,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Soul Partition",
+        "Disruptor Flute",
+        "Eldrazi Confluence",
+        "Idolized",
+        "Ancient Tomb",
+        "Plains",
+        "Grim Monolith"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Minimus Containment",
+            "Floating Shield"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Enlightened Tutor",
+            "Mind Stone",
+            "Mox Opal",
+            "Plains",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.3125,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            160,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Minimus Containment",
+            "Urza's Saga"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Enlightened Tutor",
+            "Floating Shield",
+            "Mind Stone",
+            "Mox Opal",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.40625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.25,
+          "heldout_by_T3": 0.5625,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            95,
+            0,
+            -1
+          ]
+        },
+        {
+          "bottom": [
+            "Minimus Containment",
+            "Plains"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Enlightened Tutor",
+            "Floating Shield",
+            "Mind Stone",
+            "Mox Opal",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.46875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.1875,
+          "heldout_by_T3": 0.75,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            95,
+            0,
+            -1
+          ]
+        },
+        {
+          "bottom": [
+            "Floating Shield",
+            "Mind Stone"
+          ],
+          "candidate_index": 9,
+          "hand": [
+            "Enlightened Tutor",
+            "Minimus Containment",
+            "Mox Opal",
+            "Plains",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.3125,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            80,
+            0,
+            -1
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99029,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 5,
+      "kept_stage": 3,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 0,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 9,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Mox Opal",
+        "Minimus Containment",
+        "Urza's Saga",
+        "Plains",
+        "Floating Shield",
+        "Mind Stone",
+        "Enlightened Tutor"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Soul Partition",
+            "Mantle of the Ancients",
+            "Ancient Den",
+            "Portable Hole",
+            "Super State"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Plains",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.03125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.0625,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": true,
+          "structural_rank": [
+            295,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Soul Partition",
+            "Mantle of the Ancients",
+            "Plains",
+            "Portable Hole",
+            "Super State"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Ancient Den",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.03125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.0625,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            295,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Soul Partition",
+            "Mantle of the Ancients",
+            "Portable Hole",
+            "Super State",
+            "Plains"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Ancient Den",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.03125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.0625,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            295,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99030,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 2,
+      "kept_stage": 6,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 1,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 0,
+      "v5_changes_bottom_vs_v14": false,
+      "visible_seven": [
+        "Soul Partition",
+        "Mantle of the Ancients",
+        "Ancient Den",
+        "Plains",
+        "Portable Hole",
+        "Super State",
+        "Plains"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 7,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Sheltered by Ghosts"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Enlightened Tutor",
+            "Expedition Map",
+            "Grim Monolith",
+            "Plains",
+            "Plains",
+            "Touch the Spirit Realm"
+          ],
+          "heldout_blended_utility": 1.0,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 1.0,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            80,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Touch the Spirit Realm"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Enlightened Tutor",
+            "Expedition Map",
+            "Grim Monolith",
+            "Plains",
+            "Plains",
+            "Sheltered by Ghosts"
+          ],
+          "heldout_blended_utility": 1.0,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 1.0,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            60,
+            0,
+            -1
+          ]
+        },
+        {
+          "bottom": [
+            "Plains"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Enlightened Tutor",
+            "Expedition Map",
+            "Grim Monolith",
+            "Plains",
+            "Sheltered by Ghosts",
+            "Touch the Spirit Realm"
+          ],
+          "heldout_blended_utility": 0.46875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.25,
+          "heldout_by_T3": 0.6875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            15,
+            0,
+            -1
+          ]
+        },
+        {
+          "bottom": [
+            "Expedition Map"
+          ],
+          "candidate_index": 6,
+          "hand": [
+            "Enlightened Tutor",
+            "Grim Monolith",
+            "Plains",
+            "Plains",
+            "Sheltered by Ghosts",
+            "Touch the Spirit Realm"
+          ],
+          "heldout_blended_utility": 1.0,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 1.0,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            0,
+            0,
+            -1
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99031,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 6,
+      "kept_stage": 2,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 1,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 6,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Grim Monolith",
+        "Plains",
+        "Sheltered by Ghosts",
+        "Enlightened Tutor",
+        "Plains",
+        "Touch the Spirit Realm",
+        "Expedition Map"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Hardlight Containment",
+            "Preston, the Vanisher"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "City of Traitors",
+            "Fellwar Stone",
+            "Grim Monolith",
+            "Mantle of the Ancients",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.625,
+          "heldout_by_T1": 0.0625,
+          "heldout_by_T2": 0.3125,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": true,
+          "structural_rank": [
+            180,
+            0,
+            -1
+          ]
+        },
+        {
+          "bottom": [
+            "Mantle of the Ancients",
+            "Preston, the Vanisher"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "City of Traitors",
+            "Fellwar Stone",
+            "Grim Monolith",
+            "Hardlight Containment",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.625,
+          "heldout_by_T1": 0.0625,
+          "heldout_by_T2": 0.3125,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            180,
+            0,
+            -1
+          ]
+        },
+        {
+          "bottom": [
+            "Hardlight Containment",
+            "Mantle of the Ancients"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "City of Traitors",
+            "Fellwar Stone",
+            "Grim Monolith",
+            "Plains",
+            "Preston, the Vanisher"
+          ],
+          "heldout_blended_utility": 0.03125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.0625,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            160,
+            -1,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99032,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 5,
+      "kept_stage": 3,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 0,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 0,
+      "v5_changes_bottom_vs_v14": false,
+      "visible_seven": [
+        "Hardlight Containment",
+        "Grim Monolith",
+        "Fellwar Stone",
+        "Plains",
+        "City of Traitors",
+        "Mantle of the Ancients",
+        "Preston, the Vanisher"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "City of Traitors",
+            "Portable Hole",
+            "Static Prison",
+            "Preston, the Vanisher"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Basalt Monolith",
+            "Coalition Relic",
+            "Scroll Rack"
+          ],
+          "heldout_blended_utility": 0.0,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.0,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            235,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Basalt Monolith",
+            "Portable Hole",
+            "Static Prison",
+            "Preston, the Vanisher"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "City of Traitors",
+            "Coalition Relic",
+            "Scroll Rack"
+          ],
+          "heldout_blended_utility": 0.21875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            220,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Scroll Rack",
+            "Portable Hole",
+            "Static Prison",
+            "Preston, the Vanisher"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Basalt Monolith",
+            "City of Traitors",
+            "Coalition Relic"
+          ],
+          "heldout_blended_utility": 0.125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.25,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            220,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Basalt Monolith",
+            "Scroll Rack",
+            "Static Prison",
+            "Preston, the Vanisher"
+          ],
+          "candidate_index": 11,
+          "hand": [
+            "City of Traitors",
+            "Coalition Relic",
+            "Portable Hole"
+          ],
+          "heldout_blended_utility": 0.125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.25,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            160,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99033,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 3,
+      "kept_stage": 5,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 1,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 11,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "City of Traitors",
+        "Basalt Monolith",
+        "Scroll Rack",
+        "Portable Hole",
+        "Coalition Relic",
+        "Static Prison",
+        "Preston, the Vanisher"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Mox Opal",
+            "Plains",
+            "Staff of Compleation",
+            "Gift of Immortality",
+            "Portable Hole"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Basalt Monolith",
+            "Lotus Petal"
+          ],
+          "heldout_blended_utility": 0.125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.1875,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": true,
+          "structural_rank": [
+            155,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Mox Opal",
+            "Plains",
+            "Basalt Monolith",
+            "Gift of Immortality",
+            "Portable Hole"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Lotus Petal",
+            "Staff of Compleation"
+          ],
+          "heldout_blended_utility": 0.0625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.125,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            155,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Mox Opal",
+            "Plains",
+            "Lotus Petal",
+            "Gift of Immortality",
+            "Portable Hole"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Basalt Monolith",
+            "Staff of Compleation"
+          ],
+          "heldout_blended_utility": 0.0625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.125,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            155,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99034,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 2,
+      "kept_stage": 6,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 1,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 0,
+      "v5_changes_bottom_vs_v14": false,
+      "visible_seven": [
+        "Mox Opal",
+        "Plains",
+        "Staff of Compleation",
+        "Basalt Monolith",
+        "Lotus Petal",
+        "Gift of Immortality",
+        "Portable Hole"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Sheltered by Ghosts",
+            "Untaidake, the Cloud Keeper"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Bucknard's Everfull Purse",
+            "Enlightened Tutor",
+            "Mox Opal",
+            "Tezzeret, Cruel Captain",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.65625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.5,
+          "heldout_by_T3": 0.8125,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            95,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Sheltered by Ghosts",
+            "Urza's Saga"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Bucknard's Everfull Purse",
+            "Enlightened Tutor",
+            "Mox Opal",
+            "Tezzeret, Cruel Captain",
+            "Untaidake, the Cloud Keeper"
+          ],
+          "heldout_blended_utility": 0.4375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.25,
+          "heldout_by_T3": 0.625,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            95,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Mox Opal",
+            "Sheltered by Ghosts"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Bucknard's Everfull Purse",
+            "Enlightened Tutor",
+            "Tezzeret, Cruel Captain",
+            "Untaidake, the Cloud Keeper",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.6875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.4375,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            80,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Tezzeret, Cruel Captain",
+            "Sheltered by Ghosts"
+          ],
+          "candidate_index": 5,
+          "hand": [
+            "Bucknard's Everfull Purse",
+            "Enlightened Tutor",
+            "Mox Opal",
+            "Untaidake, the Cloud Keeper",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.78125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.5625,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            80,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99035,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 5,
+      "kept_stage": 3,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 2,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 5,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Mox Opal",
+        "Enlightened Tutor",
+        "Bucknard's Everfull Purse",
+        "Tezzeret, Cruel Captain",
+        "Sheltered by Ghosts",
+        "Untaidake, the Cloud Keeper",
+        "Urza's Saga"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Idolized",
+            "Roaming Throne",
+            "Feather of Flight"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Gemstone Caverns",
+            "Jeweled Amulet",
+            "Remote Farm",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.25,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": true,
+          "structural_rank": [
+            260,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Remote Farm",
+            "Idolized",
+            "Roaming Throne"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Feather of Flight",
+            "Gemstone Caverns",
+            "Jeweled Amulet",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.53125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            195,
+            0,
+            -1
+          ]
+        },
+        {
+          "bottom": [
+            "Remote Farm",
+            "Roaming Throne",
+            "Feather of Flight"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Gemstone Caverns",
+            "Idolized",
+            "Jeweled Amulet",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.53125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            195,
+            0,
+            -1
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99036,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 4,
+      "kept_stage": 4,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 2,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 0,
+      "v5_changes_bottom_vs_v14": false,
+      "visible_seven": [
+        "Remote Farm",
+        "Idolized",
+        "Roaming Throne",
+        "Urza's Saga",
+        "Jeweled Amulet",
+        "Feather of Flight",
+        "Gemstone Caverns"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Erode",
+            "Sheltered by Ghosts"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Ancient Tomb",
+            "Bucknard's Everfull Purse",
+            "Emergence Zone",
+            "Great Hall of the Citadel",
+            "March of Otherworldly Light"
+          ],
+          "heldout_blended_utility": 0.9375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.9375,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            140,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "March of Otherworldly Light",
+            "Sheltered by Ghosts"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Ancient Tomb",
+            "Bucknard's Everfull Purse",
+            "Emergence Zone",
+            "Erode",
+            "Great Hall of the Citadel"
+          ],
+          "heldout_blended_utility": 0.90625,
+          "heldout_by_T1": 0.0625,
+          "heldout_by_T2": 0.875,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            140,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Erode",
+            "March of Otherworldly Light"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Ancient Tomb",
+            "Bucknard's Everfull Purse",
+            "Emergence Zone",
+            "Great Hall of the Citadel",
+            "Sheltered by Ghosts"
+          ],
+          "heldout_blended_utility": 0.9375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.9375,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            120,
+            0,
+            -1
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99038,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 5,
+      "kept_stage": 3,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 0,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 1,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Emergence Zone",
+        "Erode",
+        "Bucknard's Everfull Purse",
+        "March of Otherworldly Light",
+        "Sheltered by Ghosts",
+        "Great Hall of the Citadel",
+        "Ancient Tomb"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Void Mirror",
+            "Bucknard's Everfull Purse",
+            "Crystal Vein",
+            "The Mycosynth Gardens",
+            "Blast Zone"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Eldrazi Confluence",
+            "Mana Vault"
+          ],
+          "heldout_blended_utility": 0.125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.25,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            105,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Void Mirror",
+            "Crystal Vein",
+            "Mana Vault",
+            "The Mycosynth Gardens",
+            "Blast Zone"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Bucknard's Everfull Purse",
+            "Eldrazi Confluence"
+          ],
+          "heldout_blended_utility": 0.03125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.0625,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            105,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Void Mirror",
+            "Crystal Vein",
+            "Eldrazi Confluence",
+            "The Mycosynth Gardens",
+            "Blast Zone"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Bucknard's Everfull Purse",
+            "Mana Vault"
+          ],
+          "heldout_blended_utility": 0.3125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.5625,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            105,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Void Mirror",
+            "Bucknard's Everfull Purse",
+            "Eldrazi Confluence",
+            "The Mycosynth Gardens",
+            "Blast Zone"
+          ],
+          "candidate_index": 8,
+          "hand": [
+            "Crystal Vein",
+            "Mana Vault"
+          ],
+          "heldout_blended_utility": 0.4375,
+          "heldout_by_T1": 0.125,
+          "heldout_by_T2": 0.375,
+          "heldout_by_T3": 0.5,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            90,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99039,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 2,
+      "kept_stage": 6,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 0,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 8,
+      "v5_candidate_index": 2,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Void Mirror",
+        "Bucknard's Everfull Purse",
+        "Crystal Vein",
+        "Mana Vault",
+        "Eldrazi Confluence",
+        "The Mycosynth Gardens",
+        "Blast Zone"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Urza's Saga",
+            "Erode",
+            "Crystal Vein",
+            "Feather of Flight"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Plains",
+            "Staff of Compleation",
+            "Urza's Cave"
+          ],
+          "heldout_blended_utility": 0.03125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.0625,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            170,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Urza's Saga",
+            "Erode",
+            "Feather of Flight",
+            "Urza's Cave"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Crystal Vein",
+            "Plains",
+            "Staff of Compleation"
+          ],
+          "heldout_blended_utility": 0.09375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.1875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            170,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Urza's Saga",
+            "Erode",
+            "Feather of Flight",
+            "Plains"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Crystal Vein",
+            "Staff of Compleation",
+            "Urza's Cave"
+          ],
+          "heldout_blended_utility": 0.0625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.125,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            170,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Staff of Compleation",
+            "Erode",
+            "Feather of Flight",
+            "Urza's Cave"
+          ],
+          "candidate_index": 8,
+          "hand": [
+            "Crystal Vein",
+            "Plains",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.46875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            155,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99041,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 3,
+      "kept_stage": 5,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 3,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 8,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Urza's Saga",
+        "Staff of Compleation",
+        "Erode",
+        "Crystal Vein",
+        "Feather of Flight",
+        "Urza's Cave",
+        "Plains"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Plains",
+            "Mantle of the Ancients"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Emergence Zone",
+            "Gleaming Splendor",
+            "Grim Monolith",
+            "Plains",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.46875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": true,
+          "is_v5_choice": true,
+          "structural_rank": [
+            95,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Emergence Zone",
+            "Mantle of the Ancients"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Gleaming Splendor",
+            "Grim Monolith",
+            "Plains",
+            "Plains",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.46875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            95,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Plains",
+            "Mantle of the Ancients"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Emergence Zone",
+            "Gleaming Splendor",
+            "Grim Monolith",
+            "Plains",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.46875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            95,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99042,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 5,
+      "kept_stage": 3,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 0,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 1,
+      "v5_candidate_index": 0,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Plains",
+        "Emergence Zone",
+        "Plains",
+        "Grim Monolith",
+        "Gleaming Splendor",
+        "Plains",
+        "Mantle of the Ancients"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 7,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Super State"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Command Beacon",
+            "Emeria's Call",
+            "Lion's Eye Diamond",
+            "The Mind Stone",
+            "Vexing Bauble",
+            "Void Mirror"
+          ],
+          "heldout_blended_utility": 0.5,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.1875,
+          "heldout_by_T3": 0.8125,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": true,
+          "structural_rank": [
+            80,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Void Mirror"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Command Beacon",
+            "Emeria's Call",
+            "Lion's Eye Diamond",
+            "Super State",
+            "The Mind Stone",
+            "Vexing Bauble"
+          ],
+          "heldout_blended_utility": 0.5,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.1875,
+          "heldout_by_T3": 0.8125,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            60,
+            0,
+            -1
+          ]
+        },
+        {
+          "bottom": [
+            "Vexing Bauble"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Command Beacon",
+            "Emeria's Call",
+            "Lion's Eye Diamond",
+            "Super State",
+            "The Mind Stone",
+            "Void Mirror"
+          ],
+          "heldout_blended_utility": 0.5,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.1875,
+          "heldout_by_T3": 0.8125,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            60,
+            0,
+            -1
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99043,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 6,
+      "kept_stage": 2,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 2,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 0,
+      "v5_changes_bottom_vs_v14": false,
+      "visible_seven": [
+        "Void Mirror",
+        "Command Beacon",
+        "Super State",
+        "Emeria's Call",
+        "The Mind Stone",
+        "Lion's Eye Diamond",
+        "Vexing Bauble"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Trinisphere",
+            "Paladin Class",
+            "Vexing Bauble"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Gemstone Caverns",
+            "Homeward Path",
+            "Lion's Eye Diamond",
+            "Mox Opal"
+          ],
+          "heldout_blended_utility": 0.6875,
+          "heldout_by_T1": 0.1875,
+          "heldout_by_T2": 0.6875,
+          "heldout_by_T3": 0.6875,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            180,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Trinisphere",
+            "Paladin Class",
+            "Gemstone Caverns"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Homeward Path",
+            "Lion's Eye Diamond",
+            "Mox Opal",
+            "Vexing Bauble"
+          ],
+          "heldout_blended_utility": 0.6875,
+          "heldout_by_T1": 0.0625,
+          "heldout_by_T2": 0.6875,
+          "heldout_by_T3": 0.6875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            135,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Trinisphere",
+            "Paladin Class",
+            "Homeward Path"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Gemstone Caverns",
+            "Lion's Eye Diamond",
+            "Mox Opal",
+            "Vexing Bauble"
+          ],
+          "heldout_blended_utility": 0.6875,
+          "heldout_by_T1": 0.1875,
+          "heldout_by_T2": 0.6875,
+          "heldout_by_T3": 0.6875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            135,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Trinisphere",
+            "Mox Opal",
+            "Vexing Bauble"
+          ],
+          "candidate_index": 8,
+          "hand": [
+            "Gemstone Caverns",
+            "Homeward Path",
+            "Lion's Eye Diamond",
+            "Paladin Class"
+          ],
+          "heldout_blended_utility": 0.6875,
+          "heldout_by_T1": 0.0625,
+          "heldout_by_T2": 0.6875,
+          "heldout_by_T3": 0.6875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            120,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99044,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 4,
+      "kept_stage": 4,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 1,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 8,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Trinisphere",
+        "Mox Opal",
+        "Paladin Class",
+        "Gemstone Caverns",
+        "Lion's Eye Diamond",
+        "Homeward Path",
+        "Vexing Bauble"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Plains",
+            "Krark-Clan Ironworks",
+            "Vexing Bauble",
+            "Plains",
+            "Preston, the Vanisher"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Enlightened Tutor",
+            "Lotus Petal"
+          ],
+          "heldout_blended_utility": 0.3125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.625,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            190,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Plains",
+            "Enlightened Tutor",
+            "Vexing Bauble",
+            "Plains",
+            "Preston, the Vanisher"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Krark-Clan Ironworks",
+            "Lotus Petal"
+          ],
+          "heldout_blended_utility": 0.125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.25,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            190,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Plains",
+            "Vexing Bauble",
+            "Plains",
+            "Lotus Petal",
+            "Preston, the Vanisher"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Enlightened Tutor",
+            "Krark-Clan Ironworks"
+          ],
+          "heldout_blended_utility": 0.03125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.0625,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            190,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Plains",
+            "Krark-Clan Ironworks",
+            "Vexing Bauble",
+            "Lotus Petal",
+            "Preston, the Vanisher"
+          ],
+          "candidate_index": 4,
+          "hand": [
+            "Enlightened Tutor",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.40625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.75,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            175,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99045,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 2,
+      "kept_stage": 6,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 3,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 4,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Plains",
+        "Krark-Clan Ironworks",
+        "Enlightened Tutor",
+        "Vexing Bauble",
+        "Plains",
+        "Lotus Petal",
+        "Preston, the Vanisher"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Urza's Cave",
+            "Untaidake, the Cloud Keeper",
+            "Void Mirror"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Chrome Mox",
+            "Gemstone Caverns",
+            "Gleaming Splendor",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.46875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.125,
+          "heldout_by_T3": 0.8125,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            90,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Urza's Cave",
+            "Void Mirror",
+            "Plains"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Chrome Mox",
+            "Gemstone Caverns",
+            "Gleaming Splendor",
+            "Untaidake, the Cloud Keeper"
+          ],
+          "heldout_blended_utility": 0.375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.125,
+          "heldout_by_T3": 0.625,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            90,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Urza's Cave",
+            "Void Mirror",
+            "Gemstone Caverns"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Chrome Mox",
+            "Gleaming Splendor",
+            "Plains",
+            "Untaidake, the Cloud Keeper"
+          ],
+          "heldout_blended_utility": 0.1875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.3125,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            90,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Void Mirror",
+            "Plains",
+            "Chrome Mox"
+          ],
+          "candidate_index": 10,
+          "hand": [
+            "Gemstone Caverns",
+            "Gleaming Splendor",
+            "Untaidake, the Cloud Keeper",
+            "Urza's Cave"
+          ],
+          "heldout_blended_utility": 0.40625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.125,
+          "heldout_by_T3": 0.6875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            75,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99046,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 4,
+      "kept_stage": 4,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 3,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 10,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Urza's Cave",
+        "Untaidake, the Cloud Keeper",
+        "Void Mirror",
+        "Plains",
+        "Chrome Mox",
+        "Gleaming Splendor",
+        "Gemstone Caverns"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Mishra's Workshop",
+            "Plains",
+            "March of Otherworldly Light"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Lotus Petal",
+            "Mind Stone",
+            "Scroll Rack",
+            "The Mind Stone"
+          ],
+          "heldout_blended_utility": 0.0,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            90,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Mind Stone",
+            "Mishra's Workshop",
+            "March of Otherworldly Light"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Lotus Petal",
+            "Plains",
+            "Scroll Rack",
+            "The Mind Stone"
+          ],
+          "heldout_blended_utility": 0.0,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            75,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Mind Stone",
+            "Plains",
+            "March of Otherworldly Light"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Lotus Petal",
+            "Mishra's Workshop",
+            "Scroll Rack",
+            "The Mind Stone"
+          ],
+          "heldout_blended_utility": 0.0,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            75,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Mishra's Workshop",
+            "Scroll Rack",
+            "March of Otherworldly Light"
+          ],
+          "candidate_index": 5,
+          "hand": [
+            "Lotus Petal",
+            "Mind Stone",
+            "Plains",
+            "The Mind Stone"
+          ],
+          "heldout_blended_utility": 0.0,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.0,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            75,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Plains",
+            "Scroll Rack",
+            "March of Otherworldly Light"
+          ],
+          "candidate_index": 7,
+          "hand": [
+            "Lotus Petal",
+            "Mind Stone",
+            "Mishra's Workshop",
+            "The Mind Stone"
+          ],
+          "heldout_blended_utility": 0.0625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.125,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            75,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99047,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 4,
+      "kept_stage": 4,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 0,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 5,
+      "v5_candidate_index": 7,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Mind Stone",
+        "The Mind Stone",
+        "Mishra's Workshop",
+        "Plains",
+        "Scroll Rack",
+        "Lotus Petal",
+        "March of Otherworldly Light"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Orim's Chant",
+            "Super State"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Fellwar Stone",
+            "Gemstone Caverns",
+            "Giant's Boulder",
+            "Lotus Petal",
+            "Ruins of Trokair"
+          ],
+          "heldout_blended_utility": 0.4375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.8125,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            140,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Gemstone Caverns",
+            "Super State"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Fellwar Stone",
+            "Giant's Boulder",
+            "Lotus Petal",
+            "Orim's Chant",
+            "Ruins of Trokair"
+          ],
+          "heldout_blended_utility": 0.21875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            95,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Ruins of Trokair",
+            "Super State"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Fellwar Stone",
+            "Gemstone Caverns",
+            "Giant's Boulder",
+            "Lotus Petal",
+            "Orim's Chant"
+          ],
+          "heldout_blended_utility": 0.25,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.4375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            95,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Giant's Boulder",
+            "Super State"
+          ],
+          "candidate_index": 5,
+          "hand": [
+            "Fellwar Stone",
+            "Gemstone Caverns",
+            "Lotus Petal",
+            "Orim's Chant",
+            "Ruins of Trokair"
+          ],
+          "heldout_blended_utility": 0.375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.75,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            80,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99048,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 5,
+      "kept_stage": 3,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 2,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 5,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Fellwar Stone",
+        "Lotus Petal",
+        "Giant's Boulder",
+        "Orim's Chant",
+        "Gemstone Caverns",
+        "Ruins of Trokair",
+        "Super State"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Feather of Flight",
+            "Thorn of Amethyst",
+            "Vexing Bauble"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Ancient Tomb",
+            "Command Beacon",
+            "Fellwar Stone",
+            "Mind Stone"
+          ],
+          "heldout_blended_utility": 0.46875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.875,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": true,
+          "structural_rank": [
+            200,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Feather of Flight",
+            "Command Beacon",
+            "Thorn of Amethyst"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Ancient Tomb",
+            "Fellwar Stone",
+            "Mind Stone",
+            "Vexing Bauble"
+          ],
+          "heldout_blended_utility": 0.375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.6875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            155,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Feather of Flight",
+            "Command Beacon",
+            "Vexing Bauble"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Ancient Tomb",
+            "Fellwar Stone",
+            "Mind Stone",
+            "Thorn of Amethyst"
+          ],
+          "heldout_blended_utility": 0.375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.6875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            155,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99049,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 4,
+      "kept_stage": 4,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 3,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 0,
+      "v5_changes_bottom_vs_v14": false,
+      "visible_seven": [
+        "Feather of Flight",
+        "Command Beacon",
+        "Thorn of Amethyst",
+        "Mind Stone",
+        "Vexing Bauble",
+        "Ancient Tomb",
+        "Fellwar Stone"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Plains",
+            "Petrified Hamlet",
+            "Static Prison"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Arcane Signet",
+            "Mind Stone",
+            "Plains",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.5,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": true,
+          "structural_rank": [
+            90,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Plains",
+            "Plains",
+            "Static Prison"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Arcane Signet",
+            "Mind Stone",
+            "Petrified Hamlet",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.46875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            90,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Plains",
+            "Urza's Saga",
+            "Static Prison"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Arcane Signet",
+            "Mind Stone",
+            "Petrified Hamlet",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.21875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            90,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99050,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 4,
+      "kept_stage": 4,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 0,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 0,
+      "v5_changes_bottom_vs_v14": false,
+      "visible_seven": [
+        "Plains",
+        "Mind Stone",
+        "Petrified Hamlet",
+        "Plains",
+        "Urza's Saga",
+        "Arcane Signet",
+        "Static Prison"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Preston, the Vanisher",
+            "Mishra's Workshop",
+            "Thorn of Amethyst"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Arcane Signet",
+            "Coalition Relic",
+            "Krark-Clan Ironworks",
+            "Urza's Cave"
+          ],
+          "heldout_blended_utility": 0.125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0625,
+          "heldout_by_T3": 0.1875,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            175,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Preston, the Vanisher",
+            "Thorn of Amethyst",
+            "Urza's Cave"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Arcane Signet",
+            "Coalition Relic",
+            "Krark-Clan Ironworks",
+            "Mishra's Workshop"
+          ],
+          "heldout_blended_utility": 0.9375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.9375,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            175,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Preston, the Vanisher",
+            "Thorn of Amethyst",
+            "Coalition Relic"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Arcane Signet",
+            "Krark-Clan Ironworks",
+            "Mishra's Workshop",
+            "Urza's Cave"
+          ],
+          "heldout_blended_utility": 0.4375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.125,
+          "heldout_by_T3": 0.75,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            160,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Preston, the Vanisher",
+            "Thorn of Amethyst",
+            "Arcane Signet"
+          ],
+          "candidate_index": 3,
+          "hand": [
+            "Coalition Relic",
+            "Krark-Clan Ironworks",
+            "Mishra's Workshop",
+            "Urza's Cave"
+          ],
+          "heldout_blended_utility": 0.9375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.9375,
+          "heldout_by_T3": 0.9375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            160,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99052,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 4,
+      "kept_stage": 4,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 2,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 3,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Preston, the Vanisher",
+        "Mishra's Workshop",
+        "Thorn of Amethyst",
+        "Coalition Relic",
+        "Arcane Signet",
+        "Krark-Clan Ironworks",
+        "Urza's Cave"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Twinblade Blessing",
+            "Void Mirror"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Charitable Levy",
+            "Emeria's Call",
+            "Plains",
+            "Sol Ring",
+            "Staff of Compleation"
+          ],
+          "heldout_blended_utility": 0.59375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.1875,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            140,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Emeria's Call",
+            "Twinblade Blessing"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Charitable Levy",
+            "Plains",
+            "Sol Ring",
+            "Staff of Compleation",
+            "Void Mirror"
+          ],
+          "heldout_blended_utility": 0.46875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.125,
+          "heldout_by_T3": 0.8125,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            95,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Twinblade Blessing",
+            "Plains"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Charitable Levy",
+            "Emeria's Call",
+            "Sol Ring",
+            "Staff of Compleation",
+            "Void Mirror"
+          ],
+          "heldout_blended_utility": 0.46875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.125,
+          "heldout_by_T3": 0.8125,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            95,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Emeria's Call",
+            "Void Mirror"
+          ],
+          "candidate_index": 6,
+          "hand": [
+            "Charitable Levy",
+            "Plains",
+            "Sol Ring",
+            "Staff of Compleation",
+            "Twinblade Blessing"
+          ],
+          "heldout_blended_utility": 0.46875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.125,
+          "heldout_by_T3": 0.8125,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            75,
+            0,
+            -1
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99053,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 5,
+      "kept_stage": 3,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 1,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 6,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Emeria's Call",
+        "Twinblade Blessing",
+        "Void Mirror",
+        "Charitable Levy",
+        "Staff of Compleation",
+        "Sol Ring",
+        "Plains"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Paladin Class",
+            "Boonweaver Giant"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Implements of Sacrifice",
+            "Lion's Eye Diamond",
+            "Petrified Hamlet",
+            "Plains",
+            "Static Prison"
+          ],
+          "heldout_blended_utility": 0.5625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.25,
+          "heldout_by_T3": 0.875,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": true,
+          "structural_rank": [
+            160,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Static Prison",
+            "Boonweaver Giant"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Implements of Sacrifice",
+            "Lion's Eye Diamond",
+            "Paladin Class",
+            "Petrified Hamlet",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.5625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.25,
+          "heldout_by_T3": 0.875,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            160,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Paladin Class",
+            "Static Prison"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Boonweaver Giant",
+            "Implements of Sacrifice",
+            "Lion's Eye Diamond",
+            "Petrified Hamlet",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.0,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            120,
+            -1,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99056,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 5,
+      "kept_stage": 3,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 3,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 0,
+      "v5_changes_bottom_vs_v14": false,
+      "visible_seven": [
+        "Paladin Class",
+        "Petrified Hamlet",
+        "Static Prison",
+        "Lion's Eye Diamond",
+        "Boonweaver Giant",
+        "Plains",
+        "Implements of Sacrifice"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Sheltered by Ghosts",
+            "Deafening Silence"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Ancient Den",
+            "Enlightened Tutor",
+            "Lion's Eye Diamond",
+            "March of Otherworldly Light",
+            "Plains"
+          ],
+          "heldout_blended_utility": 1.0,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 1.0,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": true,
+          "structural_rank": [
+            140,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Sheltered by Ghosts",
+            "March of Otherworldly Light"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Ancient Den",
+            "Deafening Silence",
+            "Enlightened Tutor",
+            "Lion's Eye Diamond",
+            "Plains"
+          ],
+          "heldout_blended_utility": 1.0,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 1.0,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            140,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Deafening Silence",
+            "March of Otherworldly Light"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Ancient Den",
+            "Enlightened Tutor",
+            "Lion's Eye Diamond",
+            "Plains",
+            "Sheltered by Ghosts"
+          ],
+          "heldout_blended_utility": 1.0,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 1.0,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            120,
+            0,
+            -1
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99057,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 5,
+      "kept_stage": 3,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 3,
+      "selected_v5_outside_structural_top3": false,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 0,
+      "v5_changes_bottom_vs_v14": false,
+      "visible_seven": [
+        "Lion's Eye Diamond",
+        "Plains",
+        "Sheltered by Ghosts",
+        "Enlightened Tutor",
+        "Ancient Den",
+        "Deafening Silence",
+        "March of Otherworldly Light"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "The Mycosynth Gardens",
+            "Emeria's Call",
+            "City of Traitors"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Grim Monolith",
+            "Krark-Clan Ironworks",
+            "Plains",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.5,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.125,
+          "heldout_by_T3": 0.875,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            135,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "The Mycosynth Gardens",
+            "Emeria's Call",
+            "Plains"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "City of Traitors",
+            "Grim Monolith",
+            "Krark-Clan Ironworks",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.4375,
+          "heldout_by_T3": 0.8125,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            135,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "The Mycosynth Gardens",
+            "Emeria's Call",
+            "Plains"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "City of Traitors",
+            "Grim Monolith",
+            "Krark-Clan Ironworks",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.4375,
+          "heldout_by_T3": 0.8125,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            135,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "The Mycosynth Gardens",
+            "Krark-Clan Ironworks",
+            "Emeria's Call"
+          ],
+          "candidate_index": 10,
+          "hand": [
+            "City of Traitors",
+            "Grim Monolith",
+            "Plains",
+            "Plains"
+          ],
+          "heldout_blended_utility": 0.6875,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.375,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            90,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99060,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 4,
+      "kept_stage": 4,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 2,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 10,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "The Mycosynth Gardens",
+        "Krark-Clan Ironworks",
+        "Emeria's Call",
+        "City of Traitors",
+        "Plains",
+        "Grim Monolith",
+        "Plains"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "The Mycosynth Gardens",
+            "Gift of Immortality",
+            "Thorn of Amethyst",
+            "City of Traitors",
+            "Crystal Vein"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Enlightened Tutor",
+            "Expedition Map"
+          ],
+          "heldout_blended_utility": 0.0,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.0,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            185,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Expedition Map",
+            "The Mycosynth Gardens",
+            "Gift of Immortality",
+            "Thorn of Amethyst",
+            "City of Traitors"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Crystal Vein",
+            "Enlightened Tutor"
+          ],
+          "heldout_blended_utility": 0.25,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.125,
+          "heldout_by_T3": 0.375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            170,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Expedition Map",
+            "The Mycosynth Gardens",
+            "Gift of Immortality",
+            "Thorn of Amethyst",
+            "Crystal Vein"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "City of Traitors",
+            "Enlightened Tutor"
+          ],
+          "heldout_blended_utility": 0.25,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.125,
+          "heldout_by_T3": 0.375,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            170,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Expedition Map",
+            "Gift of Immortality",
+            "Thorn of Amethyst",
+            "City of Traitors",
+            "Crystal Vein"
+          ],
+          "candidate_index": 3,
+          "hand": [
+            "Enlightened Tutor",
+            "The Mycosynth Gardens"
+          ],
+          "heldout_blended_utility": 0.375,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.1875,
+          "heldout_by_T3": 0.5625,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            170,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99061,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 2,
+      "kept_stage": 6,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 1,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 3,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Expedition Map",
+        "The Mycosynth Gardens",
+        "Gift of Immortality",
+        "Thorn of Amethyst",
+        "Enlightened Tutor",
+        "City of Traitors",
+        "Crystal Vein"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "Urza's Saga",
+            "Paladin Class",
+            "Boonweaver Giant"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Cavern of Souls",
+            "Everflowing Chalice",
+            "Grim Monolith",
+            "Sol Ring"
+          ],
+          "heldout_blended_utility": 0.6875,
+          "heldout_by_T1": 0.0625,
+          "heldout_by_T2": 0.5,
+          "heldout_by_T3": 0.875,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            175,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Paladin Class",
+            "Boonweaver Giant",
+            "Cavern of Souls"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Everflowing Chalice",
+            "Grim Monolith",
+            "Sol Ring",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.5625,
+          "heldout_by_T1": 0.0625,
+          "heldout_by_T2": 0.125,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            175,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Everflowing Chalice",
+            "Paladin Class",
+            "Boonweaver Giant"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Cavern of Souls",
+            "Grim Monolith",
+            "Sol Ring",
+            "Urza's Saga"
+          ],
+          "heldout_blended_utility": 0.8125,
+          "heldout_by_T1": 0.0625,
+          "heldout_by_T2": 0.625,
+          "heldout_by_T3": 1.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            160,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Everflowing Chalice",
+            "Urza's Saga",
+            "Boonweaver Giant"
+          ],
+          "candidate_index": 6,
+          "hand": [
+            "Cavern of Souls",
+            "Grim Monolith",
+            "Paladin Class",
+            "Sol Ring"
+          ],
+          "heldout_blended_utility": 0.625,
+          "heldout_by_T1": 0.0625,
+          "heldout_by_T2": 0.4375,
+          "heldout_by_T3": 0.8125,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            115,
+            0,
+            0
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99062,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 4,
+      "kept_stage": 4,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 3,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 6,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "Everflowing Chalice",
+        "Urza's Saga",
+        "Paladin Class",
+        "Grim Monolith",
+        "Boonweaver Giant",
+        "Cavern of Souls",
+        "Sol Ring"
+      ]
+    },
+    {
+      "actual_unknown_order_permutation_invariance_verified": true,
+      "candidate_count": 12,
+      "candidate_results": [
+        {
+          "bottom": [
+            "The Mycosynth Gardens",
+            "Minimus Containment",
+            "Portable Hole",
+            "March of Otherworldly Light",
+            "Hardlight Containment"
+          ],
+          "candidate_index": 0,
+          "hand": [
+            "Command Beacon",
+            "Mishra's Workshop"
+          ],
+          "heldout_blended_utility": 0.0625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.125,
+          "is_frozen_v14_choice": true,
+          "is_structural_first": true,
+          "is_v5_choice": false,
+          "structural_rank": [
+            295,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Mishra's Workshop",
+            "Minimus Containment",
+            "Portable Hole",
+            "March of Otherworldly Light",
+            "Hardlight Containment"
+          ],
+          "candidate_index": 1,
+          "hand": [
+            "Command Beacon",
+            "The Mycosynth Gardens"
+          ],
+          "heldout_blended_utility": 0.03125,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.0625,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            295,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "Minimus Containment",
+            "Portable Hole",
+            "March of Otherworldly Light",
+            "Hardlight Containment",
+            "Command Beacon"
+          ],
+          "candidate_index": 2,
+          "hand": [
+            "Mishra's Workshop",
+            "The Mycosynth Gardens"
+          ],
+          "heldout_blended_utility": 0.0625,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.125,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": false,
+          "structural_rank": [
+            295,
+            0,
+            0
+          ]
+        },
+        {
+          "bottom": [
+            "The Mycosynth Gardens",
+            "Mishra's Workshop",
+            "Minimus Containment",
+            "Portable Hole",
+            "March of Otherworldly Light"
+          ],
+          "candidate_index": 9,
+          "hand": [
+            "Command Beacon",
+            "Hardlight Containment"
+          ],
+          "heldout_blended_utility": 0.0,
+          "heldout_by_T1": 0.0,
+          "heldout_by_T2": 0.0,
+          "heldout_by_T3": 0.0,
+          "is_frozen_v14_choice": false,
+          "is_structural_first": false,
+          "is_v5_choice": true,
+          "structural_rank": [
+            230,
+            0,
+            -1
+          ]
+        }
+      ],
+      "first_index": 0,
+      "game_id": 99063,
+      "independent_same_future_for_all_candidates": true,
+      "keep_n": 2,
+      "kept_stage": 6,
+      "no_actual_topdeck_as_decision_feature": true,
+      "sampled_independent_futures_per_candidate": 16,
+      "seat": 0,
+      "selected_v5_outside_structural_top3": true,
+      "status": "audited",
+      "teacher_model_used_original_seeded_futures_not_heldout": true,
+      "v14_candidate_index": 0,
+      "v5_candidate_index": 9,
+      "v5_changes_bottom_vs_v14": true,
+      "visible_seven": [
+        "The Mycosynth Gardens",
+        "Mishra's Workshop",
+        "Minimus Containment",
+        "Portable Hole",
+        "March of Otherworldly Light",
+        "Hardlight Containment",
+        "Command Beacon"
+      ]
+    }
+  ],
+  "keep_n_distribution": {
+    "2": 7,
+    "3": 6,
+    "4": 13,
+    "5": 17,
+    "6": 7
+  },
+  "kept7_no_bottom": 14,
+  "limitation": "v5 is a sampled-lookahead policy over hypothetical futures; heldout futures test generalization, not exact EV. Potential full-library visibility inside goldfish gameplay is a separate engine-design question.",
+  "no_model_training_or_99k_tuning": true,
+  "observed_teacher_choice_differs_v14": 35,
+  "observed_teacher_choice_outside_structural_top3": 28,
+  "paired_independent_16_future_comparisons": {
+    "v5_candidate_index_vs_first_index": {
+      "heldout_blended_utility": {
+        "mean_paired_difference": 0.078125,
+        "n_independent_decision_groups": 50,
+        "paired_bootstrap_95ci": [
+          0.029375,
+          0.135625
+        ],
+        "strict_negative_groups": 10,
+        "strict_positive_groups": 15,
+        "tied_groups": 25
+      },
+      "heldout_by_T2": {
+        "mean_paired_difference": 0.045,
+        "n_independent_decision_groups": 50,
+        "paired_bootstrap_95ci": [
+          0.005,
+          0.1
+        ],
+        "strict_negative_groups": 6,
+        "strict_positive_groups": 9,
+        "tied_groups": 35
+      },
+      "heldout_by_T3": {
+        "mean_paired_difference": 0.11125,
+        "n_independent_decision_groups": 50,
+        "paired_bootstrap_95ci": [
+          0.04375,
+          0.18625
+        ],
+        "strict_negative_groups": 8,
+        "strict_positive_groups": 15,
+        "tied_groups": 27
+      }
+    },
+    "v5_candidate_index_vs_v14_candidate_index": {
+      "heldout_blended_utility": {
+        "mean_paired_difference": 0.04625,
+        "n_independent_decision_groups": 50,
+        "paired_bootstrap_95ci": [
+          0.004375,
+          0.09625
+        ],
+        "strict_negative_groups": 12,
+        "strict_positive_groups": 12,
+        "tied_groups": 26
+      },
+      "heldout_by_T2": {
+        "mean_paired_difference": 0.01375,
+        "n_independent_decision_groups": 50,
+        "paired_bootstrap_95ci": [
+          -0.02,
+          0.05875
+        ],
+        "strict_negative_groups": 8,
+        "strict_positive_groups": 6,
+        "tied_groups": 36
+      },
+      "heldout_by_T3": {
+        "mean_paired_difference": 0.07875,
+        "n_independent_decision_groups": 50,
+        "paired_bootstrap_95ci": [
+          0.0175,
+          0.14875
+        ],
+        "strict_negative_groups": 9,
+        "strict_positive_groups": 13,
+        "tied_groups": 28
+      }
+    }
+  },
+  "sampled_independent_game_groups": 64,
+  "schema": "dack_v28_frozen_v5_bottom_hidden_order_and_unseen_utility_N64",
+  "seat_distribution": {
+    "0": 8,
+    "1": 16,
+    "2": 10,
+    "3": 16
+  },
+  "status": "PASS",
+  "teacher_future_samples_are_NOT_actual_realized_topdeck": true,
+  "total_evaluated_candidate_futures": 2896,
+  "v5_actual_hidden_order_invariant_all_groups": true,
+  "v5_struct_first_agreement": 15,
+  "v5_v14_agreement": 15
+}
