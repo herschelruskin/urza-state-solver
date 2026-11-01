@@ -1,0 +1,1 @@
+Predeclared 156000–156191 blind physical source completed and verified: 12 K16 shards, 8 full99 C128 shards, 6144 KEEP plus 1024 shared MULL simulations. Invoke the predeclared single-use training and dev gate; open 157k only if that gate passes. This file is a workflow trigger, not a scientific result.
