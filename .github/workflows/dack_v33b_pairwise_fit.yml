@@ -1,0 +1,44 @@
+name: DACK v33b fit pairwise regret on frozen 112k training ONLY
+on:
+  push:
+    branches: [dack-v33b-capability-regret-20261101]
+    paths:
+      - '.github/workflows/dack_v33b_pairwise_fit.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  train112-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v33b-capability-regret-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile and assert frozen model and legal capability features
+        run: |
+          python -m py_compile dack_mulligan_v33b_capability_regret_features.py dack_mulligan_v33b_pairwise_regret.py dack_simulator/validation/v33b_fit_pairwise_regret.py
+          python dack_mulligan_v33b_capability_regret_features.py
+          python dack_mulligan_v33b_pairwise_regret.py
+      - name: Train on 32 archived 112k physical shards, no 113k/110k
+        run: python -u dack_simulator/validation/v33b_fit_pairwise_regret.py
+      - name: Archive research-only coefficients and checksum
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f models/dack_v33b_ridge_regret_EXPERIMENTAL.json benchmark_results/v33b_ridge_fit_diagnostic.json
+          git commit -m "Archive unapproved v33b pairwise training-only coefficient ensemble"
+          git pull --rebase origin dack-v33b-capability-regret-20261101
+          git push origin HEAD:dack-v33b-capability-regret-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v33b-unapproved-pairwise-ridge-fit
+          path: |
+            models/dack_v33b_ridge_regret_EXPERIMENTAL.json
+            benchmark_results/v33b_ridge_fit_diagnostic.json
+          retention-days: 30
