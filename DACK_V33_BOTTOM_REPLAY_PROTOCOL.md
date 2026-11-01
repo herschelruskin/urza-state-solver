@@ -7,9 +7,11 @@ second bounded investigation after the zero-beam attribution census.
 ## Fixed selection rule, before inspecting new counterfactual outcomes
 
 Read immutable 110k N256 matched v5/v27 results.
-Include ALL physical games with the exact same terminal London stage
+Include ALL physical games with the exact same RECORDED terminal London stage index
 but different final kept-hand multiset between v5 and v27.
-The archival census found **56** such games. Do not select on the
+The original census counted 56 by `keep_n`, but this erroneously
+merged London stages 0 and 1 (both seven cards). The repaired sample
+will use recorded `history[-1].stage` and its validated actual N. Do not select on the
 original 110k T1/T2/T3 outcome, whether v5 was faster, or any other
 observed deployment result.
 
@@ -25,9 +27,10 @@ selected bottom cards (no new v5 lookahead). For each:
   arm. Never access the 110k realized unknown draw order to select.
 * No model fitting, feature selection, policy threshold changes or
   outcome-based selection of which groups to keep.
-* Eight parallel GitHub shards, seven physical groups per shard.
-  Exactly `56 × 2 arms × 8 futures × 2 splits = 1792`
-  new beam160 outcomes. This is bounded, not a full N256 v5 rerun.
+* Eight parallel GitHub shards, partitioning all selected physical
+  groups by index modulo eight. At most `56 × 2 arms × 8 futures × 2 splits
+  = 1792` new beam160 outcomes; actual N is determined after correcting
+  the repeated-seven stage-index ambiguity. This is bounded, not a full N256 v5 rerun.
 
 ## Estimand and reporting
 
@@ -37,7 +40,8 @@ not the global effect of replacing the bottom selector in every game.
 Report T1/T2/T3 and physical-group bootstrap confidence intervals
 separately in the two untouched seed splits and with pooled summaries.
 
-Reevaluate initial 8/56 T2 wins and 0 losses without treating the single
+Reevaluate preliminary same-keep-count comparisons, which included an
+invalid first-versus-second-seven stage classification, without treating the single
 realized 110k deployment of each policy as a value oracle.
 Favorable original realized draws alone cannot establish bottom value.
 Paired chance coupling can still be imperfect if game paths consume
@@ -54,5 +58,5 @@ that compares a deployable policy.
 Test files:
 `dack_simulator/validation/v33_same_stage_bottom_replay.py`
 and `dack_simulator/validation/v33_pool_same_stage_bottom.py`.
-Output: `benchmark_results/v33_bottom_replay_N56_x16.json`.
+Output: `benchmark_results/v33_bottom_replay_actual_stage_x16.json`.
 No change to existing engine or reference policies.
