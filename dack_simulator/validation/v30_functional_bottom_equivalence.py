@@ -8,8 +8,9 @@ marked uncertain. Never collapse canonical game-search states by this key.
 """
 from __future__ import annotations
 from collections import Counter
-import json,math
+import json,math,sys
 from pathlib import Path
+sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 
 import dack_paired_counterfactual_v5_stable_chance_20261031 as teacher
 import dack_mulligan_analytic_policy_v6_20261031 as analytic
