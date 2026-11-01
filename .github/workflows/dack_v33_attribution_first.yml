@@ -4,6 +4,7 @@ on:
     branches: [dack-v33-attribution-first-20261101]
     paths:
       - '.github/workflows/dack_v33_attribution_first.yml'
+      - 'dack_simulator/validation/v33_attribution_first_readonly.py'
   workflow_dispatch:
 permissions:
   contents: write
