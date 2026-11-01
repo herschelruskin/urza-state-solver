@@ -1,0 +1,198 @@
+name: DACK v14 real beam conditional outcomes from 184 genuine v5-kept hands
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v14_teacher_kept_outcome_corpus.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  label:
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        include:
+          - split: train
+            start: 60000
+            games: 16
+            root: datasets/teacher_v13_20261031
+            prefix: distill_v13_train
+          - split: train
+            start: 60016
+            games: 16
+            root: datasets/teacher_v14_expansion
+            prefix: v14_train
+          - split: train
+            start: 60032
+            games: 16
+            root: datasets/teacher_v14_expansion
+            prefix: v14_train
+          - split: train
+            start: 60048
+            games: 16
+            root: datasets/teacher_v14_expansion
+            prefix: v14_train
+          - split: train
+            start: 60064
+            games: 16
+            root: datasets/teacher_v14_expansion
+            prefix: v14_train
+          - split: train
+            start: 60080
+            games: 16
+            root: datasets/teacher_v14_expansion
+            prefix: v14_train
+          - split: train
+            start: 60096
+            games: 16
+            root: datasets/teacher_v14_expansion
+            prefix: v14_train
+          - split: train
+            start: 60112
+            games: 16
+            root: datasets/teacher_v14_expansion
+            prefix: v14_train
+          - split: train
+            start: 60128
+            games: 16
+            root: datasets/teacher_v14_expansion
+            prefix: v14_train
+          - split: validation
+            start: 61000
+            games: 8
+            root: datasets/teacher_v13_20261031
+            prefix: distill_v13_validation
+          - split: validation
+            start: 61008
+            games: 16
+            root: datasets/teacher_v14_expansion
+            prefix: v14_validation
+          - split: validation
+            start: 61024
+            games: 16
+            root: datasets/teacher_v14_expansion
+            prefix: v14_validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Fresh independent beam-160 futures for every originally teacher-kept hand
+        env:
+          DACK_ROOT: ${{ matrix.root }}
+          DACK_PREFIX: ${{ matrix.prefix }}
+          DACK_START: ${{ matrix.start }}
+          DACK_GAMES: ${{ matrix.games }}
+        run: |
+          python -u - <<'PY'
+          import os
+          from pathlib import Path
+          from dack_simulator.validation.label_teacher_kept_futures_v14 import label
+          base=int(os.environ['DACK_START'])
+          count=int(os.environ['DACK_GAMES'])
+          prefix=os.environ['DACK_PREFIX']
+          root=Path(os.environ['DACK_ROOT'])
+          outroot=Path('outcomes')
+          outroot.mkdir(exist_ok=True)
+          for gid in range(base,base+count):
+              source=root/f'{prefix}_{gid}.jsonl.gz'
+              assert source.exists(),str(source)
+              label(source,outroot/f'outcome_{gid}.jsonl.gz',draws=4)
+          print('V14_CONDITIONAL_OUTCOME_BATCH_PASS',base,count,flush=True)
+          PY
+      - name: Ensure correct physical, conditional and independent group labels
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import gzip,json
+          fs=sorted(Path('outcomes').glob('outcome_*.jsonl.gz'))
+          assert len(fs)>=8
+          for p in fs:
+              with gzip.open(p,'rt') as f:
+                  meta=json.loads(next(f));rows=[json.loads(x) for x in f]
+              assert meta['schema']=='dack_v14_exact_teacher_kept_real_future_labels_v1'
+              assert meta['model_input_never_contains_future_order']
+              assert len(rows)==4 and [r['future_index'] for r in rows]==[0,1,2,3]
+              assert len({r['game_id'] for r in rows})==1
+              assert sum(rows[0]['unknown_counts'].values())==92
+              assert all(r['label_turn'] in (0,1,2,3) for r in rows)
+              assert all(not any(k in r for k in ('actual_library','sampled_order','hidden_order','first3')) for r in rows)
+          print('V14_CONDITIONAL_OUTCOME_PHYSICAL_CHECK_PASS',len(fs),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: real-v5-kept-${{ matrix.split }}-${{ matrix.start }}
+          path: outcomes/
+          retention-days: 21
+  aggregate_archive:
+    needs: label
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: real-v5-kept-*
+          merge-multiple: true
+          path: datasets/true_v5_kept_futures_v14/
+      - name: Verify 184 independent physical policy-kept hands and 736 actual rollout outcomes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from collections import Counter
+          import gzip,hashlib,json
+          root=Path('datasets/true_v5_kept_futures_v14')
+          paths=sorted(root.glob('outcome_*.jsonl.gz'))
+          assert len(paths)==184,len(paths)
+          man={'schema':'dack_v14_true_v5_kept_outcome_corpus',
+               'conditional_distribution':'natural_v5_selected_hands',
+               'real_gameplay_beam':160,
+               'no_mulligan_beam_needed_for_repeated_futures':True,
+               'not_population_unconditional_win_rate':True,
+               'per_hand_independent_rollouts':4,
+               'split':{},'files':[]}
+          sets=[]
+          for split,start,n in [('train',60000,144),('validation',61000,40)]:
+              ids=set();cls=Counter();hands=set()
+              for gid in range(start,start+n):
+                  p=root/f'outcome_{gid}.jsonl.gz'
+                  assert p.exists(),p
+                  with gzip.open(p,'rt') as f:
+                      h=json.loads(next(f));r=[json.loads(x) for x in f]
+                  assert h['split']==split and h['actual_gameplay_beam']==160
+                  assert h['model_input_never_contains_future_order']
+                  assert len(r)==4 and len({x['game_id'] for x in r})==1
+                  ids.add(gid)
+                  for x in r:cls[x['label_turn']]+=1
+                  hands.add((tuple(sorted(r[0]['hand'])),tuple(r[0]['bottom']),r[0]['keep_n'],r[0]['seat']))
+                  man['files'].append({'name':p.name,'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'bytes':p.stat().st_size,'split':split})
+              assert ids==set(range(start,start+n))
+              man['split'][split]={'independent_policy_kept_groups':n,
+                   'distinct_phenotypic_hands':len(hands),
+                   'labels':sum(cls.values()),'class_counts':{str(i):cls[i] for i in range(4)}}
+              sets.append(ids)
+          assert sets[0].isdisjoint(sets[1])
+          assert sum(s['labels'] for s in man['split'].values())==736
+          (root/'manifest.json').write_text(json.dumps(man,sort_keys=True,indent=2)+'\n')
+          print('V14_REAL_OUTCOME_CORPUS_736_PASS',json.dumps(man['split'],sort_keys=True),flush=True)
+          PY
+      - name: Archive outcomes separately from teacher-choice training and gameplay holdout
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f datasets/true_v5_kept_futures_v14/
+          git commit -m "Archive 736 real conditional beam outcomes from 184 independent v5-kept London hands"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v14-true-v5-kept-outcomes-manifest
+          path: datasets/true_v5_kept_futures_v14/manifest.json
+          retention-days: 21
