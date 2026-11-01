@@ -1,0 +1,32 @@
+name: DACK v43 readonly new151k maxQ2 benefit by stage vs bottom
+on:
+  push:
+    branches: [dack-v43-v5-candidate-forensics-20261101]
+    paths:
+      - '.github/workflows/dack_v43_151k_stage_bottom_split.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  readonly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v43-v5-candidate-forensics-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Split genuine newly observed maxQ2 gains by stage and bottom difference
+        run: |
+          python -m py_compile dack_simulator/validation/v43_readonly_new151k_outcome_attribution.py
+          python -u dack_simulator/validation/v43_readonly_new151k_outcome_attribution.py
+      - name: Archive descriptive outcome attribution
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v43_151k_maxQ2_stage_bottom_outcome_split.json
+          git commit -m "Archive paired 151k coupled candidate-max deployment gain decomposition by first changed stage and bottom"
+          git pull --rebase origin dack-v43-v5-candidate-forensics-20261101
+          git push origin HEAD:dack-v43-v5-candidate-forensics-20261101
