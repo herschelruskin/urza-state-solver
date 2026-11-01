@@ -1,0 +1,35 @@
+name: DACK v36 124k random pre-outcome complete policy-action census
+on:
+  push:
+    branches: [dack-v36-targeted-keep-value-20261101]
+    paths:
+      - '.github/workflows/dack_v36_124k_freeze_actions.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  census:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate frozen model and exact v33b physical replay
+        run: |
+          test -f models/dack_v36_targeted_real_keep_EXPERIMENTAL.json
+          python -m py_compile dack_simulator/validation/v36_124k_action_census.py
+          python -m dack_simulator.validation.v34_frozen_v33b_continuation
+      - name: Enumerate all 768 124k random stages with ZERO outcome calls
+        run: python -u dack_simulator/validation/v36_124k_action_census.py
+      - name: Archive immutable pre-outcome action census before true counterfactuals
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f datasets/v36_124k_outcome_blind_action_census.json
+          git commit -m "Freeze v36 124k all-768 action census before any physical validation outcomes"
+          git pull --rebase origin dack-v36-targeted-keep-value-20261101
+          git push origin HEAD:dack-v36-targeted-keep-value-20261101
