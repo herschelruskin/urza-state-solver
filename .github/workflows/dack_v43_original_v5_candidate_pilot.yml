@@ -1,0 +1,76 @@
+name: DACK v43 profile actual v5 candidate EV on first four physical disagreements
+on:
+  push:
+    branches: [dack-v43-v5-candidate-forensics-20261101]
+    paths:
+      - '.github/workflows/dack_v43_original_v5_candidate_pilot.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  profile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        gid: [115003,115004,115012,115017]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v43-v5-candidate-forensics-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Original v5 installed scorer parity plus complete finalist EV profiles
+        run: |
+          python -m py_compile dack_simulator/validation/v43_original_v5_candidate_profile.py
+          python -u dack_simulator/validation/v43_original_v5_candidate_profile.py \
+            --gid ${{ matrix.gid }} --out profiles/v43_original_v5_candidates_${{ matrix.gid }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v43-v5-candidates-${{ matrix.gid }}
+          path: profiles/*.json
+          retention-days: 90
+  pool:
+    needs: profile
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v43-v5-candidate-forensics-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v43-v5-candidates-*
+          merge-multiple: true
+          path: collected
+      - name: Verify all four exact original v5 scored choices
+        run: |
+          python - <<'PY'
+          import glob,json
+          files=glob.glob('collected/*.json')
+          assert len(files)==4,files
+          for p in files:
+              q=json.load(open(p))
+              assert q['status']=='PASS'
+              assert q['actual_original_v5_scorer_and_selection_archival_parity']
+              assert q['no_unseen_realized_order_in_candidate_scores']
+              assert len(q['candidates'])>=7
+          print("DACK_V43_FOUR_REAL_V5_CANDIDATE_PROFILES_PASS")
+          PY
+      - name: Archive complete original candidate profiles for forensic comparison
+        run: |
+          mkdir -p benchmark_results/v43_original_v5_candidate_profiles
+          cp collected/*.json benchmark_results/v43_original_v5_candidate_profiles/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v43_original_v5_candidate_profiles/
+          git commit -m "Archive four source-parity real-v5 candidate scores versus v27 and v14 selectors"
+          git pull --rebase origin dack-v43-v5-candidate-forensics-20261101
+          git push origin HEAD:dack-v43-v5-candidate-forensics-20261101
