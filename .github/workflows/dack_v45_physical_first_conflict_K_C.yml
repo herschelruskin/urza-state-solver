@@ -1,0 +1,111 @@
+name: DACK v45 physical QKEEP-QMULL on 44 actual original-v5 v43 first conflicts
+on:
+  push:
+    branches: [dack-v45-v5-v43-earliest-conflict-20261101]
+    paths:
+      - '.github/workflows/dack_v45_physical_first_conflict_K_C.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  K:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        shard: [0,1,2,3,4,5,6,7]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v45-v5-v43-earliest-conflict-20261101
+      - name: Reproduce v43 policy and run new blind 32-future KEEP for selected first conflicts
+        run: |
+          python -u dack_simulator/validation/v45_true_first_conflict_K32.py \
+            --shard ${{ matrix.shard }} --out shards/v45_K_${{ matrix.shard }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v45-K-${{ matrix.shard }}
+          path: shards/v45_K_*.json.gz
+          retention-days: 90
+  C:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        seat: [0,1,2,3]
+        stage: [0,1,2,3,4]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v45-v5-v43-earliest-conflict-20261101
+      - name: Run fully restored 99-card independent v43 futures after first MULL
+        run: |
+          python -u dack_simulator/validation/v45_true_first_conflict_C64.py \
+            --seat ${{ matrix.seat }} --stage ${{ matrix.stage }} \
+            --out shards/v45_C_${{ matrix.seat }}_${{ matrix.stage }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v45-C-${{ matrix.seat }}-${{ matrix.stage }}
+          path: shards/v45_C_*.json.gz
+          retention-days: 90
+  pool:
+    needs: [K,C]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v45-v5-v43-earliest-conflict-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v45-K-*
+          merge-multiple: true
+          path: collected
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v45-C-*
+          merge-multiple: true
+          path: collected
+      - name: Bootstrap independent source groups KEEP futures and shared C full99 lotteries
+        run: |
+          python -u dack_simulator/validation/v45_pool_first_conflict_physical.py \
+            --K 'collected/v45_K_*.json.gz' --C 'collected/v45_C_*.json.gz' \
+            --out benchmark_results/v45_true_v5_v43_first_conflict_new_physics.json
+      - name: Enforce research-only and exact source denominator
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path("benchmark_results/v45_true_v5_v43_first_conflict_new_physics.json").read_text())
+          assert r["status"]=="PASS" and r["selected_outer_source_games"]==44
+          assert r["K_real_games"]==1408
+          assert r["selected_151k_source_ALREADY_CONSUMED"]
+          assert r["exact_v43_downstream_full99_parity"]
+          assert r["not_population_winrate_and_not_policy_approval"]
+          print("DACK_V45_BLIND_CAUSAL_PHYSICAL_RESEARCH_GUARDS_PASS")
+          PY
+      - name: Archive physical original-v5 v43 disagreement trials and conditional result
+        run: |
+          mkdir -p benchmark_results/v45_true_first_conflict_physical_shards
+          cp collected/v45_*.json.gz benchmark_results/v45_true_first_conflict_physical_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v45_true_v5_v43_first_conflict_new_physics.json benchmark_results/v45_true_first_conflict_physical_shards/
+          git commit -m "Archive new strict K32 and full99 C64 action-value physics at 44 actual v5-v43 first conflicts"
+          git pull --rebase origin dack-v45-v5-v43-earliest-conflict-20261101
+          git push origin HEAD:dack-v45-v5-v43-earliest-conflict-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v45-physical-first-conflict-final
+          path: benchmark_results/v45_true_v5_v43_first_conflict_new_physics.json
+          retention-days: 90
