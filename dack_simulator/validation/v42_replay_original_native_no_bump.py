@@ -21,7 +21,8 @@ sys.path.insert(0,str(ROOT))
 import dack_paired_counterfactual_v5_stable_chance_20261031 as teacher
 ref=teacher.reference
 SCHEMA="dack_v42_native_without_assertive_bump_real_physical_counterfactual_1"
-N4=4
+PILOT_N=4
+SHARD_N=32
 def source():
     files=sorted(glob.glob(str(ROOT/"benchmark_results/v33b_prospective_115k_shards/v33b_115k_*.json.gz")))
     assert len(files)==64
@@ -64,9 +65,10 @@ def gameplay(row,stage,seat,orders,seed,deck):
     assert t is None or t in (1,2,3)
     return int(t or 0)
 
-def run(start,out):
-    if start not in range(115000,115256,4):
-        raise ValueError("one four-game replay shard from original 115k")
+def run(start,out,games=4):
+    if not (games==PILOT_N and start==115000 or
+            games==SHARD_N and start in range(115000,115256,32)):
+        raise ValueError("only pilot (115000,4) or eight aligned 32-game shards")
     # Install ONLY original rules and stable dice, not any successor model.
     teacher.install()
     assert tuple(ref.sim.STAGES)==(7,7,6,5,4,3,2,1)
@@ -75,7 +77,7 @@ def run(start,out):
     src=source()
     deck=ref.SLOT_VARIANTS["one_key_34"]
     outrows=[];t0=time.monotonic()
-    for r in src[start-115000:start-115000+N4]:
+    for r in src[start-115000:start-115000+games]:
         gid=int(r["game_id"])
         seed=int(ref.SPEC["seed_base"])+gid*ref.SEED_STRIDE
         seat,orders=ref.stage_slots(seed)
@@ -111,10 +113,10 @@ def run(start,out):
             "v5",original,"native",native,"v27",r["v27_frozen"]["turn"],
             "v5_native_different_stage",sn<s0,
             "seconds",round(time.monotonic()-t0,2),flush=True)
-    assert len(outrows)==4
+    assert len(outrows)==games
     result={
       "schema":SCHEMA,"status":"PASS",
-      "physical_game_ids":[start,start+3],
+      "physical_game_ids":[start,start+games-1],
       "source":"already fixed original v5 115k physical natural London trace",
       "strict_99_real_slots":True,
       "strict_beam160_original_v5_rules_and_stateless_chance":True,
@@ -135,5 +137,6 @@ if __name__=="__main__":
     parser=argparse.ArgumentParser()
     parser.add_argument("--start",type=int,required=True)
     parser.add_argument("--out",required=True)
+    parser.add_argument("--games",type=int,default=4)
     args=parser.parse_args()
-    run(args.start,args.out)
+    run(args.start,args.out,args.games)
