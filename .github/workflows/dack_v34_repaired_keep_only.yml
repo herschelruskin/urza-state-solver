@@ -1,0 +1,65 @@
+name: DACK v34 repaired QKEEP only (reuse completed shared C shards)
+on:
+  push:
+    branches: [dack-v34-consistent-keep-regret-20261101]
+    paths:
+      - '.github/workflows/dack_v34_repaired_keep_only.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  physical_keep:
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        include:
+          - {split: train, start: 116000}
+          - {split: train, start: 116004}
+          - {split: train, start: 116008}
+          - {split: train, start: 116012}
+          - {split: train, start: 116016}
+          - {split: train, start: 116020}
+          - {split: train, start: 116024}
+          - {split: train, start: 116028}
+          - {split: train, start: 116032}
+          - {split: train, start: 116036}
+          - {split: train, start: 116040}
+          - {split: train, start: 116044}
+          - {split: train, start: 116048}
+          - {split: train, start: 116052}
+          - {split: train, start: 116056}
+          - {split: train, start: 116060}
+          - {split: untouched_validation, start: 117000}
+          - {split: untouched_validation, start: 117004}
+          - {split: untouched_validation, start: 117008}
+          - {split: untouched_validation, start: 117012}
+          - {split: untouched_validation, start: 117016}
+          - {split: untouched_validation, start: 117020}
+          - {split: untouched_validation, start: 117024}
+          - {split: untouched_validation, start: 117028}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Frozen-kernel exact stage and library metamorphic tests
+        run: |
+          python -m py_compile dack_simulator/validation/v34_frozen_v33b_continuation.py dack_simulator/validation/v34_true_Qkeep.py
+          python -m dack_simulator.validation.v34_frozen_v33b_continuation
+      - name: Real QKEEP eight physical futures every London stage
+        run: |
+          python -u dack_simulator/validation/v34_true_Qkeep.py \
+            --split ${{ matrix.split }} --start ${{ matrix.start }} \
+            --out shards/v34_K_${{ matrix.split }}_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v34-repaired-K-${{ matrix.split }}-${{ matrix.start }}
+          path: shards/v34_K_*.json.gz
+          retention-days: 30
