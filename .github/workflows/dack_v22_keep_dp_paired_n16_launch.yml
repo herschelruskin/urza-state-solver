@@ -1,0 +1,121 @@
+name: DACK v22 real keep-utility London DP versus v14 and v5 independent paired N16
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v22_keep_dp_paired_n16_launch.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          python -m compileall -q dack_simulator/validation/compare_v22_real_keep_DP.py
+          python dack_paired_counterfactual_v22_all_stage_real_keep_DP_20261101.py --audit
+  pairs:
+    needs: audit
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        include:
+          - start: 86000
+          - start: 86002
+          - start: 86004
+          - start: 86006
+          - start: 86008
+          - start: 86010
+          - start: 86012
+          - start: 86014
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Actual fresh real-beam160 paired 99-slot full-games, original bottoming vs learned keep thresholds
+        run: |
+          python -u dack_simulator/validation/compare_v22_real_keep_DP.py \
+            --start ${{ matrix.start }} --games 2 \
+            --out shards/v22_keep_pair_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v22-real-keep-pair-${{ matrix.start }}
+          path: shards/v22_keep_pair_*.json.gz
+          retention-days: 21
+  pool:
+    needs: pairs
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v22-real-keep-pair-*
+          merge-multiple: true
+          path: paired/
+      - name: Pool exact new physical N16 T1/T2/T3, paired keep behavior and CPU speed
+        run: |
+          python - <<'PY'
+          import glob,gzip,json,math
+          from pathlib import Path
+          files=glob.glob('paired/v22_keep_pair_*.json.gz')
+          assert len(files)==8
+          rows=[]
+          for file in files:
+              with gzip.open(file,'rt') as f:r=json.load(f)
+              assert r['status']=='PASS' and r['model_deployment_approved'] is False
+              rows.extend(r['rows'])
+          rows.sort(key=lambda r:r['game_id'])
+          assert [r['game_id'] for r in rows]==list(range(86000,86016))
+          policies=['v5','v14_128','v22_real_keep_DP']
+          def summary(p):
+              v=[r[p] for r in rows]
+              return {'n':16,
+                      'T1':sum(x['turn']==1 for x in v),
+                      'T2':sum(x['turn'] in (1,2) for x in v),
+                      'T3':sum(x['turn'] in (1,2,3) for x in v),
+                      'avg_keep':sum(x['keep_n'] for x in v)/16,
+                      'runtime_seconds':round(sum(x['seconds'] for x in v),4)}
+          m={p:summary(p) for p in policies}
+          pairs={}
+          for b in ['v5','v14_128']:
+              d=[int(r['v22_real_keep_DP']['turn'] in (1,2))-
+                  int(r[b]['turn'] in (1,2)) for r in rows]
+              delta=sum(d)/16;se=(sum((x-delta)**2 for x in d)/(16*15))**.5
+              pairs['v22_minus_'+b]={
+                  'T2_gains':d.count(1),'T2_losses':d.count(-1),
+                  'T2_delta_percentage_points':100*delta,
+                  'exploratory_normal_95_ci_pp':[100*(delta-1.96*se),100*(delta+1.96*se)]}
+          changed=[r['game_id'] for r in rows
+                   if r['v14_128']['keep_n']!=r['v22_real_keep_DP']['keep_n']]
+          report={'schema':'dack_v22_all_stage_true_keep_DP_paired_N16',
+                  'status':'PASS','fresh_game_ids':[86000,86015],
+                  'model_approved':False,
+                  'metrics':m,'paired_T2':pairs,
+                  'keep_depth_changes':len(changed),
+                  'keep_depth_changed_game_ids':changed,
+                  'runtime_ratio_v5_vs_v22':m['v5']['runtime_seconds']/max(.001,m['v22_real_keep_DP']['runtime_seconds']),
+                  'warning':'N16 cannot establish noninferiority; strict 4-player gameplay not simulated.'}
+          out=Path('benchmark_results/v22_all_stage_real_keep_DP_paired_N16.json')
+          out.parent.mkdir(exist_ok=True)
+          out.write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
+          print('V22_REAL_KEEP_DP_FRESH_N16_PAIRED_PASS',json.dumps(report,sort_keys=True),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v22-real-keep-London-DP-paired-n16
+          path: benchmark_results/v22_all_stage_real_keep_DP_paired_N16.json
+          retention-days: 21
