@@ -1,0 +1,127 @@
+{
+  "experimental_policy_approved": false,
+  "game_ids": [
+    88000,
+    88063
+  ],
+  "goldfish_gameplay_beam": 160,
+  "independent_game_seeds": 64,
+  "metrics": {
+    "v14_128": {
+      "T1": 3,
+      "T2": 29,
+      "T3": 48,
+      "mean_keep_n": 5.28125,
+      "n": 64,
+      "total_gameplay_seconds": 23.8998
+    },
+    "v22_real_keep_DP": {
+      "T1": 2,
+      "T2": 31,
+      "T3": 51,
+      "mean_keep_n": 6.109375,
+      "n": 64,
+      "total_gameplay_seconds": 32.7334
+    },
+    "v5": {
+      "T1": 4,
+      "T2": 32,
+      "T3": 53,
+      "mean_keep_n": 5.1875,
+      "n": 64,
+      "total_gameplay_seconds": 1507.1724
+    }
+  },
+  "paired": {
+    "v14_128_minus_v5_T1": {
+      "delta_percentage_points": -1.5625,
+      "gains": 0,
+      "losses": 1,
+      "paired_bootstrap_95ci_pp": [
+        -4.6875,
+        0.0
+      ]
+    },
+    "v14_128_minus_v5_T2": {
+      "delta_percentage_points": -4.6875,
+      "gains": 4,
+      "losses": 7,
+      "paired_bootstrap_95ci_pp": [
+        -14.0625,
+        6.25
+      ]
+    },
+    "v14_128_minus_v5_T3": {
+      "delta_percentage_points": -7.8125,
+      "gains": 3,
+      "losses": 8,
+      "paired_bootstrap_95ci_pp": [
+        -17.1875,
+        1.5625
+      ]
+    },
+    "v22_real_keep_DP_minus_v14_128_T1": {
+      "delta_percentage_points": -1.5625,
+      "gains": 0,
+      "losses": 1,
+      "paired_bootstrap_95ci_pp": [
+        -4.6875,
+        0.0
+      ]
+    },
+    "v22_real_keep_DP_minus_v14_128_T2": {
+      "delta_percentage_points": 3.125,
+      "gains": 9,
+      "losses": 7,
+      "paired_bootstrap_95ci_pp": [
+        -9.375,
+        15.625
+      ]
+    },
+    "v22_real_keep_DP_minus_v14_128_T3": {
+      "delta_percentage_points": 4.6875,
+      "gains": 6,
+      "losses": 3,
+      "paired_bootstrap_95ci_pp": [
+        -4.6875,
+        14.0625
+      ]
+    },
+    "v22_real_keep_DP_minus_v5_T1": {
+      "delta_percentage_points": -3.125,
+      "gains": 0,
+      "losses": 2,
+      "paired_bootstrap_95ci_pp": [
+        -7.8125,
+        0.0
+      ]
+    },
+    "v22_real_keep_DP_minus_v5_T2": {
+      "delta_percentage_points": -1.5625,
+      "gains": 6,
+      "losses": 7,
+      "paired_bootstrap_95ci_pp": [
+        -12.5,
+        9.375
+      ]
+    },
+    "v22_real_keep_DP_minus_v5_T3": {
+      "delta_percentage_points": -3.125,
+      "gains": 5,
+      "losses": 7,
+      "paired_bootstrap_95ci_pp": [
+        -14.0625,
+        7.8125
+      ]
+    }
+  },
+  "same_bottom_selector_between_student_policies": true,
+  "same_frozen_physical_99_slot_shuffles": true,
+  "schema": "dack_v22_direct_real_keep_DP_vs_v5_N64",
+  "speedup_vs_v5": {
+    "v14_128": 63.06213441116662,
+    "v22_real_keep_DP": 46.04386956442043
+  },
+  "status": "PASS",
+  "warning": "Research-only goldfish deployment; no multiplayer win rate. N64 limits precision and outcomes were selected after earlier model-development comparisons."
+}
