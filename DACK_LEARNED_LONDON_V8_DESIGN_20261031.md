@@ -338,3 +338,113 @@ A JSON research handoff with distinct seed bands and all results is
 archived as benchmark_results/learned_mulligan_v8_v11_v12_research_handoff.json.
 None of these experimental win rates should be presented as actual
 four-player cEDH win probability, or pooled with old stochastic rules.
+
+## October 31 expanded teacher coverage / conditional outcome model (v14–v16)
+
+All work remains on isolated branch `dack-counterfactual-engine-v1-20261030`.
+Exact numerical results, manifest pointers and separate seed bands are saved
+in `benchmark_results/teacher_scale_v14_v15_probability_v16_full_research_handoff.json`.
+The v5 strict/stable-dice beam-based London solver has **not** been replaced.
+
+### Sample-size learning curve (true teacher decisions)
+
+Original v13: 16 independent training games / 55 visited London stages.
+v14 added 128 training games / 483 stages and 32 validation games /
+131 stages, for 144 training games / 538 stages and 40 validation games /
+158 stages total. No student was trained on the distinct 62k, 64k, 65k,
+66k or 69k game-policy holdouts. Model family and hyperparameters were fixed
+across the v14 sample-size curve, with nested 16/32/64/96/128/144 games
+and exactly the same 40 validation groups.
+
+For 16 vs 128 vs 144 training groups, respectively, agreement with the
+v5 teacher on those same validation states:
+- Bottom-choice accuracy: 64.56%, 63.92%, 63.92%. The teacher selected
+  structural first at 63.92%; simply scaling the model did not outperform
+  that baseline.
+- Keep/reject accuracy: 80.38%, **85.44%**, 81.65%.
+- Both correct on a stage: 57.59%, **59.49%**, 57.59%.
+- Expected teacher keep frequency in these visited states: 25.32%.
+  v14-128 predicted 25.95% (compared with v13-small 14.56%).
+
+The 128-game model was selected from developer validation, so it must
+be judged on independent physical games before any deployment claim.
+
+### Paired gameplay, unchanged full beam-160 held-hand search
+
+Two independent cohorts of 16 games each, physical seeds 66000–66015 and
+69000–69015, with the same seat and physical London shuffles paired across
+policies (actual future draws differ when mulligan choices differ).
+
+- v5 baseline cumulative T2: 8/16 and 10/16 = **18/32**.
+- v13 small student T2: 6/16 and 6/16 = **12/32**.
+- frozen v14-128 student T2: 7/16 and 8/16 = **15/32**.
+- v14-128 paired minus v5: 3 T2 gains, 6 T2 losses, net −9.375
+  percentage points; exploratory paired normal 95% CI [−27.75, +9.0].
+- Combined v5 runtime: 1035.061 seconds versus v14-128 15.1771 seconds
+  on these 32 seeds, an observed **68.20× online runtime reduction**.
+  Training computation is excluded from per-game runtime.
+- This does NOT establish noninferiority, nor multiplayer cEDH win rate.
+
+### Student-distribution correction / DAgger pilot (v15)
+
+The first frozen v13 student visited London stages that differed from
+those the teacher would have reached. A separate offline pilot queried
+the actual original v5 evaluator at those states. Expanded corrective data
+comprised 32 training student-game IDs (138 stages) plus 16 validation
+student-game IDs (93 stages), with distinct 67k/68k IDs and a saved
+source-v13 model checksum.
+
+One original CI workflow contained a **verification print typo** (trying
+to access .name on a string) after successful label creation. All 48 true
+label artifacts were recovered, checked, and archived without rerunning
+the expensive teacher (`dack_teacher_v15_recover_fit.yml` passed).
+
+Retraining on 144 natural + 32 student-visited teacher games yielded a
+176-game v15 model. In 16 *student-v13-visited* validation groups:
+keep/reject accuracy improved from v14-128 84.95% to v15 89.25%;
+choice accuracy 45.16% → 43.01%; both correct 39.78% → 40.86%.
+On new 69k complete-game seeds, v15 and v14-128 both made T2 in 8/16,
+versus v5 10/16. Therefore corrective training has NOT demonstrated
+a T2 improvement, and its bottom selector remains weak.
+
+### Actual conditional deployment probability, independently sampled
+
+The separate dataset `datasets/true_v5_kept_futures_v14/manifest.json`
+contains 144 **independent teacher-kept training hands** (576 independent
+future rolls) and 40 independent validation hands (160 independent rolls).
+The teacher is run once to select a hand; repeated real beam-160 futures
+draw only from its 92-card unseen multiset, and the future order is never
+used as a model predictor. The **unit of independence for uncertainty is
+the hand/game ID**, not its four repeated futures. These are conditional
+on **v5 keeping**, and are not population-unconditional deck win rates.
+
+The frozen v16 nonlinear forest fit to these direct T0/T1/T2/T3 labels
+outperformed a constant class-frequency predictor on the unseen 40
+teacher-kept validation groups:
+- Multiclass Brier: **0.55675** versus constant baseline 0.64103.
+- Multiclass log loss: **0.99505** versus 1.14863.
+- Group-bootstrap 95% CI for Brier difference (forest − constant)
+  [−0.18877, +0.01173] crosses zero.
+- Observed by T2 55.0%; forest predicted 50.17%, constant 48.44%.
+- Observed T1 4.375%; forest predicted 3.50%, constant 3.47%.
+- Observed by T3 83.125%; forest predicted 80.94%, constant 82.47%.
+
+There is preliminary evidence of a learnable hand-specific deployment
+signal, but no established external calibration or policy-level equivalence.
+Never use v16 probabilities on all possible counterfactual London bottoms
+as though they were calibrated there; its training support is v5-kept hands.
+
+### Direction after sample coverage assessment
+
+More actual physical hand states helped predict teacher keeps and,
+separately, actual T1/T2/T3 outcomes. Larger sample size did NOT solve
+the final bottom-card choice: choice accuracy remained at the structural
+first-candidate baseline. The next most valuable labels are **paired
+candidate-specific expected deployment outcomes**, including difficult
+near-tied top-12 choices and rare tutor/LED/Gardens/untap lines.
+Train a line-aware candidate-value/ranking head and use DAgger samples
+to represent states the deployed student visits. Evaluate and calibrate
+on fresh outer physical games; do not retune on 66k or 69k holdouts.
+
+All v13/v14/v15/v16 learned policies and outcome models remain
+EXPERIMENTAL and unapproved for normal simulation.
