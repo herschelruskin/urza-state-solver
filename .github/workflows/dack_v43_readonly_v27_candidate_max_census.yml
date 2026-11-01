@@ -1,0 +1,32 @@
+name: DACK v43 read-only 256-game v27 decision-coupling census
+on:
+  push:
+    branches: [dack-v43-v5-candidate-forensics-20261101]
+    paths:
+      - '.github/workflows/dack_v43_readonly_v27_candidate_max_census.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  census:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v43-v5-candidate-forensics-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Score all v27 possible finalists on archived sevens, require exact original v27 parity
+        run: |
+          python -m py_compile dack_simulator/validation/v43_readonly_v27_candidate_max_census.py
+          python -u dack_simulator/validation/v43_readonly_v27_candidate_max_census.py
+      - name: Archive purely read-only inconsistency diagnosis
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v43_v27_candidate_maxQ2_readonly_115k_N256.json
+          git commit -m "Archive actual v27 candidate selector versus own maximum predicted T2 value on 256 historical hands"
+          git pull --rebase origin dack-v43-v5-candidate-forensics-20261101
+          git push origin HEAD:dack-v43-v5-candidate-forensics-20261101
