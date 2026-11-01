@@ -1,0 +1,35 @@
+name: DACK v46 no-lookahead early seven features and source script audit
+on:
+  push:
+    branches: [dack-v46-seven-card-physical-calibration-20261101]
+    paths: ['.github/workflows/dack_v46_runtime_feature_audit.yml']
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v46-seven-card-physical-calibration-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile scripts and check all 7-card identities and score features
+        run: |
+          python -m py_compile dack_mulligan_v46_seven_physical_calibration.py dack_simulator/validation/v46_fit_true_seven_physical.py dack_paired_counterfactual_v46_early_seven_physical_20261101.py dack_simulator/validation/v46_collect_true_seven_K16.py dack_simulator/validation/v46_collect_true_seven_C128.py dack_simulator/validation/v46_new157k_full_game_paired.py dack_simulator/validation/v46_pool_new157k_full_game.py
+          python - <<'PY'
+          from collections import Counter
+          from dack_simulator.validation import v45_frozen_v43_continuation as k
+          import dack_mulligan_v46_seven_physical_calibration as v
+          assert k.selftest()
+          for gid in range(156920,156928):
+              ref=k.ref;deck=ref.SLOT_VARIANTS["one_key_34"]
+              seat,orders=ref.stage_slots(int(ref.SPEC["seed_base"])+gid*ref.SEED_STRIDE)
+              for stage in (0,1):
+                  chosen=k.choose_at(stage,seat,orders[stage],deck)
+                  seven=chosen["seven"]
+                  assert Counter(chosen["hand"])==Counter(seven)
+                  assert chosen["bottom"]==[]
+                  xx=v.features(seven,Counter(deck.values())-Counter(seven),seat,stage,chosen["raw"],chosen["threshold"])
+                  assert len(xx)==len(v.NAMES) and xx[0]==chosen["raw"]
+          print("DACK_V46_EARLY7_ALL_FEATURES_AND_STAGE_PARITY_PASS")
+          PY
