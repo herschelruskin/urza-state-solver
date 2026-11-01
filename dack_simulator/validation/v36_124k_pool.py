@@ -17,7 +17,7 @@ sys.path.insert(0,str(ROOT))
 import dack_mulligan_v36_keep_value as modelrun
 import dack_mulligan_v36_features as feat
 
-GAMES=128
+GAMES=256
 STAGES=(0,1,2)
 K_FUTURES=12
 C_FUTURES=64
@@ -44,7 +44,7 @@ def load(K,C):
         assert d["v36_feature_schema_sha256"]==feat.feature_hash()
         for r in d["rows"]:
             assert r["source_stratum"]=="unconditional_holdout" and r["selection_metadata"] is None
-            assert 124000<=r["game_id"]<124128
+            assert 124000<=r["game_id"]<124256
             assert r["stage"] in STAGES and r["game_id"] in d["game_ids"]
             assert len(r["features"])==len(feat.NAMES)
             assert len(r["true_turns"])==K_FUTURES
@@ -54,7 +54,7 @@ def load(K,C):
                                     r["frozen_v27_old_keep"],r["old_v27_Qkeep"])
             r["v36_new_keep"]=new;r["v36_prediction"]=dec
             groups.setdefault(r["game_id"],[]).append(r)
-    assert sorted(groups)==list(range(124000,124128))
+    assert sorted(groups)==list(range(124000,124256))
     assert all(sorted(r["stage"] for r in rr)==list(STAGES) for rr in groups.values())
     Cvals={}
     for file in cfiles:
@@ -137,12 +137,12 @@ def run(K,C,out):
        "status":"PASS","policy_approved":False,
        "frozen_candidate_sha256":sha,
        "frozen_training_physical_group_ids":[123000,123639],
-       "validation_unconditional_game_ids":[124000,124127],
-       "n_independent_outer_physical_groups":128,
-       "n_early_stage_states":384,
-       "true_K_rollouts":128*3*K_FUTURES,
+       "validation_unconditional_game_ids":[124000,124255],
+       "n_independent_outer_physical_groups":256,
+       "n_early_stage_states":768,
+       "true_K_rollouts":256*3*K_FUTURES,
        "true_full99_C_rollouts":12*C_FUTURES,
-       "total_new_physical_beam160_rollouts":128*3*K_FUTURES+12*C_FUTURES,
+       "total_new_physical_beam160_rollouts":256*3*K_FUTURES+12*C_FUTURES,
        "shared_C_group_and_independent_K_bootstrap":True,
        "all_val_groups_unselected":True,
        "model_frozen_before_124k_outcomes":True,
