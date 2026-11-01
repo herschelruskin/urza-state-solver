@@ -1,0 +1,48 @@
+name: DACK v34c correct cumulative turn predicate and reuse all 8 physical shards
+on:
+  push:
+    branches: [dack-v34c-keep-disagreement-20261101]
+    paths:
+      - '.github/workflows/dack_v34c_corrected_pool.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  correct-original-physical-results:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Reuse exact 8 original v34c successful physical replay shards
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 41275420492
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pattern: dack-v34c-keep-*
+          path: collected
+          merge-multiple: true
+      - name: Assert complete physical sources and monotone cumulative success
+        run: |
+          test "$(find collected -maxdepth 1 -name 'v34c_keep_*.json.gz' | wc -l)" -eq 8
+          test "$(find benchmark_results/v34_consistent_regret_shards -maxdepth 1 -name 'v34_C_*.json.gz' | wc -l)" -eq 28
+          python -m py_compile dack_simulator/validation/v34c_pool_actual_disagreement.py
+          python -u dack_simulator/validation/v34c_pool_actual_disagreement.py
+      - name: Replace invalid first pooled report with corrected read-only result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v34c_actual_keep_mull_disagreement_regret.json
+          git commit -m "CORRECT v34c cumulative T1 T2 T3 action-regret report; reuse physical beams"
+          git pull --rebase origin dack-v34c-keep-disagreement-20261101
+          git push origin HEAD:dack-v34c-keep-disagreement-20261101
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v34c-CORRECTED-two-source-action-regret
+          path: benchmark_results/v34c_actual_keep_mull_disagreement_regret.json
+          retention-days: 30
