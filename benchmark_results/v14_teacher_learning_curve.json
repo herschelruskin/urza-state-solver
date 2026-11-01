@@ -1,0 +1,131 @@
+{
+  "all_students_unapproved": true,
+  "baseline_first_vs_final": {
+    "first_choice_accuracy": 0.6455696202531646,
+    "first_joint_accuracy": 0.5759493670886076,
+    "first_keep_accuracy": 0.8037974683544303,
+    "first_student_keep_rate": 0.14556962025316456,
+    "first_teacher_keep_rate": 0.25316455696202533,
+    "last_choice_accuracy": 0.6392405063291139,
+    "last_joint_accuracy": 0.5759493670886076,
+    "last_keep_accuracy": 0.8164556962025317,
+    "last_student_keep_rate": 0.25949367088607594
+  },
+  "full_gameplay_outcomes_not_used": true,
+  "models": [
+    {
+      "model_path": "models/v14_curve/v14_teacher_groups_16.json",
+      "model_sha256": "fac79376a700d1dfcf8b798a4bf73a2c36baeb554fde31f0087ddfb6dec43308",
+      "train_candidate_rows": 292,
+      "train_groups": 16,
+      "train_stage_rows": 55,
+      "validation": {
+        "candidate_top1_accuracy": 0.6455696202531646,
+        "distinct_game_groups": 40,
+        "joint_stage_accuracy": 0.5759493670886076,
+        "keep_decision_accuracy_under_student_selected_bottom": 0.8037974683544303,
+        "student_keep_rate": 0.14556962025316456,
+        "teacher_keep_rate": 0.25316455696202533,
+        "teacher_selects_structural_first_rate": 0.6392405063291139,
+        "visited_teacher_stages": 158
+      }
+    },
+    {
+      "model_path": "models/v14_curve/v14_teacher_groups_32.json",
+      "model_sha256": "f444075ad4a278611f692cd49587876b8a31832ca0e36e4a5aef402caeaf80b0",
+      "train_candidate_rows": 605,
+      "train_groups": 32,
+      "train_stage_rows": 114,
+      "validation": {
+        "candidate_top1_accuracy": 0.6265822784810127,
+        "distinct_game_groups": 40,
+        "joint_stage_accuracy": 0.5253164556962026,
+        "keep_decision_accuracy_under_student_selected_bottom": 0.7151898734177216,
+        "student_keep_rate": 0.310126582278481,
+        "teacher_keep_rate": 0.25316455696202533,
+        "teacher_selects_structural_first_rate": 0.6392405063291139,
+        "visited_teacher_stages": 158
+      }
+    },
+    {
+      "model_path": "models/v14_curve/v14_teacher_groups_64.json",
+      "model_sha256": "3e6a49615d95e80352bc5c61d11af2f68d1641e10493490d03ac9afd0f62e3c7",
+      "train_candidate_rows": 1296,
+      "train_groups": 64,
+      "train_stage_rows": 241,
+      "validation": {
+        "candidate_top1_accuracy": 0.6329113924050633,
+        "distinct_game_groups": 40,
+        "joint_stage_accuracy": 0.5443037974683544,
+        "keep_decision_accuracy_under_student_selected_bottom": 0.7658227848101266,
+        "student_keep_rate": 0.34810126582278483,
+        "teacher_keep_rate": 0.25316455696202533,
+        "teacher_selects_structural_first_rate": 0.6392405063291139,
+        "visited_teacher_stages": 158
+      }
+    },
+    {
+      "model_path": "models/v14_curve/v14_teacher_groups_96.json",
+      "model_sha256": "9258f4a323dcd2896b2be144ecfa6694209d6fc70a8837e8838b7a25912cf588",
+      "train_candidate_rows": 2061,
+      "train_groups": 96,
+      "train_stage_rows": 367,
+      "validation": {
+        "candidate_top1_accuracy": 0.6455696202531646,
+        "distinct_game_groups": 40,
+        "joint_stage_accuracy": 0.5886075949367089,
+        "keep_decision_accuracy_under_student_selected_bottom": 0.8417721518987342,
+        "student_keep_rate": 0.2848101265822785,
+        "teacher_keep_rate": 0.25316455696202533,
+        "teacher_selects_structural_first_rate": 0.6392405063291139,
+        "visited_teacher_stages": 158
+      }
+    },
+    {
+      "model_path": "models/v14_curve/v14_teacher_groups_128.json",
+      "model_sha256": "19fdbf300afc1e4545b81767f8fbf3bbe6ebd7b33ad139e2aa9231e3215df8ff",
+      "train_candidate_rows": 2679,
+      "train_groups": 128,
+      "train_stage_rows": 484,
+      "validation": {
+        "candidate_top1_accuracy": 0.6392405063291139,
+        "distinct_game_groups": 40,
+        "joint_stage_accuracy": 0.5949367088607594,
+        "keep_decision_accuracy_under_student_selected_bottom": 0.8544303797468354,
+        "student_keep_rate": 0.25949367088607594,
+        "teacher_keep_rate": 0.25316455696202533,
+        "teacher_selects_structural_first_rate": 0.6392405063291139,
+        "visited_teacher_stages": 158
+      }
+    },
+    {
+      "model_path": "models/v14_curve/v14_teacher_groups_144.json",
+      "model_sha256": "1f735063cb289b945d7575560e8d5080012214dbae12743047e47215d2e66d01",
+      "train_candidate_rows": 2932,
+      "train_groups": 144,
+      "train_stage_rows": 538,
+      "validation": {
+        "candidate_top1_accuracy": 0.6392405063291139,
+        "distinct_game_groups": 40,
+        "joint_stage_accuracy": 0.5759493670886076,
+        "keep_decision_accuracy_under_student_selected_bottom": 0.8164556962025317,
+        "student_keep_rate": 0.25949367088607594,
+        "teacher_keep_rate": 0.25316455696202533,
+        "teacher_selects_structural_first_rate": 0.6392405063291139,
+        "visited_teacher_stages": 158
+      }
+    }
+  ],
+  "n_validation_groups": 40,
+  "no_overlap": true,
+  "schema": "dack_v14_teacher_learning_curve",
+  "status": "PASS",
+  "training_group_ids": [
+    60000,
+    60143
+  ],
+  "validation_group_ids": [
+    61000,
+    61039
+  ]
+}
