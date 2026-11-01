@@ -22,6 +22,7 @@ jobs:
           test -f benchmark_results/v39_131k_independent_action_regret.json
           python -m py_compile dack_simulator/validation/v39_utility_readonly_audit.py
           python -u dack_simulator/validation/v39_utility_readonly_audit.py
+          echo DACK_V39_CORRELATED_T2_T3_REUSE_COMPLETE
       - name: Archive descriptive distinct-utility comparison, no new validation claims
         run: |
           git config user.name 'github-actions[bot]'
