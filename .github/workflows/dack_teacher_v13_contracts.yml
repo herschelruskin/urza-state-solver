@@ -1,0 +1,26 @@
+name: DACK v13 teacher-imitation physical-London unit contracts
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_teacher_v13_contracts.yml'
+      - 'dack_mulligan_teacher_features_v13_20261031.py'
+      - 'dack_simulator/validation/collect_teacher_london_v13.py'
+      - 'dack_simulator/validation/train_teacher_distillation_v13.py'
+      - 'dack_simulator/validation/test_teacher_distillation_v13.py'
+      - 'dack_paired_counterfactual_v13_teacher_distill_20261031.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          python -m compileall -q dack_simulator/validation/collect_teacher_london_v13.py dack_simulator/validation/train_teacher_distillation_v13.py dack_mulligan_teacher_features_v13_20261031.py dack_paired_counterfactual_v13_teacher_distill_20261031.py
+          python -m unittest discover -s dack_simulator/validation -p 'test_teacher_distillation_v13.py' -v
