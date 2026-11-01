@@ -1,0 +1,65 @@
+{
+  "N_independent_games": 256,
+  "candidate_maxQ2_out_of_distribution_caution": true,
+  "different_final_bottoms": 102,
+  "different_final_keep_stages": 33,
+  "frozen_model_sha256": {
+    "models/dack_v27_T2_only_continuations_EXPERIMENTAL.json": "4166c2045d66b08f0943900a2d68ec901d7048aca6de057695fc84dee883097b",
+    "models/dack_v27_expanded_T2_only_value_EXPERIMENTAL.json": "a01f46260164342f2f0f6ec15766b341338baa27c51dcf0a3ec3f164492e3134",
+    "models/v14_curve/v14_teacher_groups_128.json": "19fdbf300afc1e4545b81767f8fbf3bbe6ebd7b33ad139e2aa9231e3215df8ff"
+  },
+  "original_v5_reference_not_run_in_new_cohort": true,
+  "paired": {
+    "T1": {
+      "maxQ2_minus_v27_pp": -0.390625,
+      "maxQ2_only": 0,
+      "net_games": -1,
+      "paired_bootstrap_95ci_pp": [
+        -1.171875,
+        0.0
+      ],
+      "v27_only": 1
+    },
+    "T2": {
+      "maxQ2_minus_v27_pp": 4.296875,
+      "maxQ2_only": 15,
+      "net_games": 11,
+      "paired_bootstrap_95ci_pp": [
+        1.171875,
+        7.8125
+      ],
+      "v27_only": 4
+    },
+    "T3": {
+      "maxQ2_minus_v27_pp": 6.640625,
+      "maxQ2_only": 22,
+      "net_games": 17,
+      "paired_bootstrap_95ci_pp": [
+        2.734375,
+        10.546875
+      ],
+      "v27_only": 5
+    }
+  },
+  "same_physical_99_seat_and_shuffle": true,
+  "schema": "dack_v43_frozen_v27_vs_maxQ2_N256_prospective_151k",
+  "scores": {
+    "maxQ2": {
+      "by_T1": 10,
+      "by_T2": 122,
+      "by_T3": 211,
+      "mean_kept_n": 5.4921875,
+      "seconds": 106.697
+    },
+    "v27": {
+      "by_T1": 11,
+      "by_T2": 111,
+      "by_T3": 194,
+      "mean_kept_n": 5.25,
+      "seconds": 103.76
+    }
+  },
+  "status": "PASS",
+  "strict_beam160_goldfish_outcomes": true,
+  "v43_candidate_max_policy_not_approved": true
+}
