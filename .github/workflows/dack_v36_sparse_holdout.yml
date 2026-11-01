@@ -1,0 +1,109 @@
+name: DACK v36 sparse 124k holdout 2 changed actions (192 physical games)
+on:
+  push:
+    branches: [dack-v36-targeted-keep-value-20261101]
+    paths:
+      - '.github/workflows/dack_v36_sparse_holdout.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  physical:
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        include:
+          - {kind: K, shard: 0, seat: 0, stage: 0}
+          - {kind: K, shard: 1, seat: 0, stage: 0}
+          - {kind: K, shard: 2, seat: 0, stage: 0}
+          - {kind: K, shard: 3, seat: 0, stage: 0}
+          - {kind: K, shard: 4, seat: 0, stage: 0}
+          - {kind: K, shard: 5, seat: 0, stage: 0}
+          - {kind: K, shard: 6, seat: 0, stage: 0}
+          - {kind: K, shard: 7, seat: 0, stage: 0}
+          - {kind: K, shard: 8, seat: 0, stage: 0}
+          - {kind: K, shard: 9, seat: 0, stage: 0}
+          - {kind: K, shard: 10, seat: 0, stage: 0}
+          - {kind: K, shard: 11, seat: 0, stage: 0}
+          - {kind: K, shard: 12, seat: 0, stage: 0}
+          - {kind: K, shard: 13, seat: 0, stage: 0}
+          - {kind: K, shard: 14, seat: 0, stage: 0}
+          - {kind: K, shard: 15, seat: 0, stage: 0}
+          - {kind: C, shard: 0, seat: 0, stage: 2}
+          - {kind: C, shard: 0, seat: 2, stage: 1}
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit frozen action census, model and strict physical kernel
+        run: |
+          python -m py_compile dack_simulator/validation/v36_124k_changed_only_keep.py dack_simulator/validation/v36_124k_sparse_regret_pool.py
+          python -m dack_simulator.validation.v34_frozen_v33b_continuation
+          python - <<'PY'
+          import json
+          d=json.load(open('datasets/v36_124k_outcome_blind_action_census.json'))
+          assert d['status']=='PASS' and d['stage_states']==768
+          assert d['changed_actions']==2 and d['computed_before_any_124k_gameplay_outcomes']
+          assert {(x['seat'],x['stage']) for x in d['all_decisions'] if x['keep_changed']}=={(0,2),(2,1)}
+          print('V36_PREOUTCOME_TWO_ACTIONS_AND_TWO_CELLS_FROZEN_PASS',flush=True)
+          PY
+      - name: 32 real unknown92 futures only for changed actions OR 64 full99 shared C
+        run: |
+          if [ "${{ matrix.kind }}" = "K" ]; then
+            python -u dack_simulator/validation/v36_124k_changed_only_keep.py \
+              --shard ${{ matrix.shard }} \
+              --out shards/v36_changed_K_${{ matrix.shard }}.json.gz
+          else
+            python -u dack_simulator/validation/v36_true_mull.py \
+              --split holdout --seat ${{ matrix.seat }} --stage ${{ matrix.stage }} \
+              --out shards/v36_C_${{ matrix.seat }}_${{ matrix.stage }}.json.gz
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v36-124k-${{ matrix.kind }}-${{ matrix.shard }}-${{ matrix.seat }}-${{ matrix.stage }}
+          path: shards/v36_*.json.gz
+          retention-days: 30
+  pool:
+    needs: physical
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v36-124k-*
+          path: collected
+          merge-multiple: true
+      - name: Full 768-state denominator with exact zero contributions, 2 physical C cells
+        run: |
+          test "$(find collected -maxdepth 1 -name 'v36_changed_K_*.json.gz' | wc -l)" -eq 16
+          test "$(find collected -maxdepth 1 -name 'v36_C_*.json.gz' | wc -l)" -eq 2
+          python -u dack_simulator/validation/v36_124k_sparse_regret_pool.py
+      - name: Archive all 192 complete strict physical outcomes and failed independent gate
+        run: |
+          mkdir -p benchmark_results/v36_124k_sparse_physical_shards
+          cp collected/v36_*.json.gz benchmark_results/v36_124k_sparse_physical_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v36_124k_sparse_physical_shards benchmark_results/v36_124k_untouched_validation.json
+          git commit -m "Archive v36 sparse 124k independent 2-action physical regret and exact full-population gate"
+          git pull --rebase origin dack-v36-targeted-keep-value-20261101
+          git push origin HEAD:dack-v36-targeted-keep-value-20261101
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v36-124k-frozen-two-action-physical-validation
+          path: benchmark_results/v36_124k_untouched_validation.json
+          retention-days: 30
