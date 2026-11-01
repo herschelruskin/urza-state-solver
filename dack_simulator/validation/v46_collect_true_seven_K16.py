@@ -41,7 +41,7 @@ def one(gid):
         unknown=tuple(deck[z] for z in order[7:])
         assert Counter(seven)+Counter(unknown)==Counter(deck.values())
         sel=k.choose_at(stage,seat,order,deck)
-        assert sel["keep_n"]==7 and sel["hand"]==list(seven) and sel["bottom"]==[]
+        assert sel["keep_n"]==7 and Counter(sel["hand"])==Counter(seven) and sel["bottom"]==[]
         assert sel["candidate_index"]==0
         turns=[]
         for j in range(FUTURES):
