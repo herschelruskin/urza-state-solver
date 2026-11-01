@@ -105,7 +105,8 @@ def bootstrap(initial,keep,C,t,rep=5000):
     return [out[int(.025*rep)],out[int(.975*rep)-1]]
 
 def main(K,C,out):
-    assert y(1,0)==0 and y(1,1)==1 and y(1,2)==0 and y(2,2)==1 and y(3,3)==1\n    assert all(y(1,turn)<=y(2,turn)<=y(3,turn) for turn in (0,1,2,3))
+    assert y(1,0)==0 and y(1,1)==1 and y(1,2)==0 and y(2,2)==1 and y(3,3)==1
+    assert all(y(1,turn)<=y(2,turn)<=y(3,turn) for turn in (0,1,2,3))
     m,initial,keep,cont=load(K,C)
     rows=contrast(m,initial,keep,cont)
     s={}
