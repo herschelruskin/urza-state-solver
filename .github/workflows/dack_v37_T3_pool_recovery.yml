@@ -1,0 +1,43 @@
+name: DACK v37 RECOVER already completed posthoc physical shards corrected cumulative pool
+on:
+  push:
+    branches: [dack-v37-direct-action-regret-20261101]
+    paths: ['.github/workflows/dack_v37_T3_pool_recovery.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 41317831325
+          github-token: ${{ github.token }}
+          pattern: v37-posthoc-*
+          path: collected
+          merge-multiple: true
+      - name: Assert exact 20 completed physical shards, correct monotone turn helper
+        run: |
+          test "$(find collected -maxdepth 1 -name 'v37_blocked_K_*.json.gz' | wc -l)" -eq 8
+          test "$(find collected -maxdepth 1 -name 'v37_blocked_C_*.json.gz' | wc -l)" -eq 12
+          python -m py_compile dack_simulator/validation/v37_posthoc_T3_pool.py
+          python -u dack_simulator/validation/v37_posthoc_T3_pool.py
+      - name: Archive unchanged original physical labels plus corrected pooled T1 T2 T3
+        run: |
+          mkdir -p benchmark_results/v37_POSTHOC_T3_blocked_physical_shards
+          cp collected/v37_blocked_*.json.gz benchmark_results/v37_POSTHOC_T3_blocked_physical_shards/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f benchmark_results/v37_POSTHOC_T3_blocked_physical_shards benchmark_results/v37_posthoc_T3_blocked_physical_tradeoff.json
+          git commit -m 'Recover 1920 original v37 T3-blocked physical outcomes, corrected cumulative T1 T2 T3 pool'
+          git pull --rebase origin dack-v37-direct-action-regret-20261101
+          git push origin HEAD:dack-v37-direct-action-regret-20261101
