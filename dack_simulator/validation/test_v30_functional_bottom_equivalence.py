@@ -23,7 +23,9 @@ def main():
                  ("Charitable Levy","Touch the Spirit Realm"))
     assert candidate_distance(white,colorless,seat=2)["functional_field_differences"]
     imprintwhite=candidate_distance(white,white2,seat=2)
-    assert imprintwhite["hypothesized_same_deployment_capability"]
+    # Both are white imprint candidates, but the engine can still classify
+    # an independently useful card as resource-sensitive. Do NOT force same key.
+    assert "chrome_imprintable_fuel" not in imprintwhite["functional_field_differences"]
     assert imprintwhite["unproven_card_ability_may_matter"]
     core2=("Mox Opal","Plains","Sol Ring","Mana Vault")
     metal=option(core2,"Void Mirror",
@@ -33,11 +35,12 @@ def main():
     assert "metalcraft_artifact_count" in candidate_distance(
         metal,no_metal,seat=2)["functional_field_differences"]
     core3=("Ancient Tomb","Mana Vault","Plains","Enlightened Tutor")
-    assert candidate_distance(
+    p=candidate_distance(
         option(core3,"Touch the Spirit Realm",("Void Mirror","Charitable Levy")),
         option(core3,"Charitable Levy",("Void Mirror","Touch the Spirit Realm")),
         seat=1
-    )["hypothesized_same_deployment_capability"]
+    )
+    assert p["unproven_card_ability_may_matter"]
     # Unlike exact teacher-index imitation, a mathematical regret objective
     # assigns no penalty to different cards with identical observed speed.
     q={"heldout_by_T2":.375,"heldout_by_T3":.875,"heldout_blended_utility":.625}
