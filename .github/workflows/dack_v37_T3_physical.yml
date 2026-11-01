@@ -1,0 +1,104 @@
+name: DACK v37 posthoc 24 T3-blocked physical action-value tradeoff
+on:
+  push:
+    branches: [dack-v37-direct-action-regret-20261101]
+    paths: ['.github/workflows/dack_v37_T3_physical.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  physical:
+    strategy:
+      fail-fast: false
+      max-parallel: 14
+      matrix:
+        include:
+          - {kind: K, index: 0, seat: 0, stage: 0}
+          - {kind: K, index: 1, seat: 0, stage: 0}
+          - {kind: K, index: 2, seat: 0, stage: 0}
+          - {kind: K, index: 3, seat: 0, stage: 0}
+          - {kind: K, index: 4, seat: 0, stage: 0}
+          - {kind: K, index: 5, seat: 0, stage: 0}
+          - {kind: K, index: 6, seat: 0, stage: 0}
+          - {kind: K, index: 7, seat: 0, stage: 0}
+          - {kind: C, index: 0, seat: 0, stage: 0}
+          - {kind: C, index: 0, seat: 0, stage: 1}
+          - {kind: C, index: 0, seat: 0, stage: 2}
+          - {kind: C, index: 0, seat: 1, stage: 0}
+          - {kind: C, index: 0, seat: 1, stage: 1}
+          - {kind: C, index: 0, seat: 1, stage: 2}
+          - {kind: C, index: 0, seat: 2, stage: 0}
+          - {kind: C, index: 0, seat: 2, stage: 1}
+          - {kind: C, index: 0, seat: 2, stage: 2}
+          - {kind: C, index: 0, seat: 3, stage: 0}
+          - {kind: C, index: 0, seat: 3, stage: 1}
+          - {kind: C, index: 0, seat: 3, stage: 2}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Require archived exploratory manifest, never revised policy
+        run: |
+          python -m py_compile dack_simulator/validation/v37_posthoc_true_keep.py dack_simulator/validation/v37_posthoc_true_mull.py
+          python - <<'PY'
+          import json
+          d=json.load(open('datasets/v37_POSTHOC_T3_blocked_physical_diagnostic_manifest.json'))
+          assert d['status']=='PASS' and d['posthoc_127k_diagnostic_not_independent_validation']
+          assert d['number_T2_gate_passed_T3_only_blocked']==24
+          assert d['no_physical_gameplay_outcomes_generated']
+          print('V37_POSTHOC_ONLY_24_BLOCKED_SELECTION_SEALED',flush=True)
+          PY
+      - name: Real beam160 forced keep or frozen future full99 mulligan
+        run: |
+          if [ "${{ matrix.kind }}" = "K" ]; then
+            python -u dack_simulator/validation/v37_posthoc_true_keep.py \
+              --index ${{ matrix.index }} \
+              --out shards/v37_blocked_K_${{ matrix.index }}.json.gz
+          else
+            python -u dack_simulator/validation/v37_posthoc_true_mull.py \
+              --seat ${{ matrix.seat }} --stage ${{ matrix.stage }} \
+              --out shards/v37_blocked_C_${{ matrix.seat }}_${{ matrix.stage }}.json.gz
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v37-posthoc-${{ matrix.kind }}-${{ matrix.index }}-${{ matrix.seat }}-${{ matrix.stage }}
+          path: shards/v37_blocked_*.json.gz
+          retention-days: 30
+  pool:
+    needs: physical
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v37-posthoc-*
+          path: collected
+          merge-multiple: true
+      - name: Physical grouped 24-case T2/T3/PexactT3 exploratory diagnostic
+        run: |
+          test "$(find collected -maxdepth 1 -name 'v37_blocked_K_*.json.gz' | wc -l)" -eq 8
+          test "$(find collected -maxdepth 1 -name 'v37_blocked_C_*.json.gz' | wc -l)" -eq 12
+          python -u dack_simulator/validation/v37_posthoc_T3_pool.py
+      - name: Archive raw real outcomes and explicit nonvalidation qualifier
+        run: |
+          mkdir -p benchmark_results/v37_POSTHOC_T3_blocked_physical_shards
+          cp collected/v37_blocked_*.json.gz benchmark_results/v37_POSTHOC_T3_blocked_physical_shards/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f benchmark_results/v37_POSTHOC_T3_blocked_physical_shards benchmark_results/v37_posthoc_T3_blocked_physical_tradeoff.json
+          git commit -m 'Archive v37 exploratory true T2/T3 multiobjective tradeoff under frozen continuation'
+          git pull --rebase origin dack-v37-direct-action-regret-20261101
+          git push origin HEAD:dack-v37-direct-action-regret-20261101
