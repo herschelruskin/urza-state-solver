@@ -1,0 +1,84 @@
+{
+  "candidate_table": [
+    {
+      "analytic_T2_index": 0.211314301881,
+      "bottom": [],
+      "hand": [
+        "Ancient Den",
+        "City of Traitors",
+        "Coalition Relic",
+        "Gemstone Caverns",
+        "Mox Diamond",
+        "Plains",
+        "Urza's Saga"
+      ],
+      "index": 0,
+      "original_sampler_beam60_16": {
+        "le2": 1.0,
+        "le3": 1.0,
+        "t1": 0.0,
+        "t2": 1.0,
+        "t3": 0.0,
+        "utility": 1.0
+      },
+      "original_sampler_beam60_8": {
+        "le2": 1.0,
+        "le3": 1.0,
+        "t1": 0.0,
+        "t2": 1.0,
+        "t3": 0.0,
+        "utility": 1.0
+      },
+      "struct_rank": [
+        0,
+        0,
+        0
+      ],
+      "v14_teacher_choice_vote": 1.0,
+      "v18_pred_U": null,
+      "v27_pred_T2_keep_value": 0.25199649481429454
+    }
+  ],
+  "game_id": 115025,
+  "hidden_92_multiset_sha256": "90376a1e512a706b7fe6fb9a786f70aa7ddebe5d7f307b8f2f2cf56ec18b0e5a",
+  "keep_n": 7,
+  "model_candidate_methods": {
+    "analytic_t2": 0,
+    "v14_frozen": 0,
+    "v18_top3": 0,
+    "v27_Qkeep": 0
+  },
+  "no_model_training_or_promotion": true,
+  "opening_seven": [
+    "Gemstone Caverns",
+    "City of Traitors",
+    "Ancient Den",
+    "Urza's Saga",
+    "Mox Diamond",
+    "Plains",
+    "Coalition Relic"
+  ],
+  "original_physical_future_order_not_used_in_candidate_scoring": true,
+  "schema": "dack_v43_real_original_v5_top12_candidate_profile_v1",
+  "seat": 0,
+  "source_historical_115k_previously_inspected": true,
+  "stage": 0,
+  "stage_profile_evaluation_seconds": 2.233,
+  "status": "PASS",
+  "v27_kept": false,
+  "v27_real_selected_index": 0,
+  "v27_stage_raw": 0.2519965,
+  "v27_stage_threshold": 0.3795842,
+  "v5_archived_winner_and_raw_score_reproduced_exactly": true,
+  "v5_full_16_utility_argmax": 0,
+  "v5_full_8_utility_argmax": 0,
+  "v5_kept": true,
+  "v5_lookahead_evaluated_only_on_opening_seven_not_hindsight": true,
+  "v5_raw": 1.0,
+  "v5_real_selected_index": 0,
+  "v5_refined": false,
+  "v5_threshold": 0.75603,
+  "v5_winner_16_full_score": 1.0,
+  "v5_winner_8_full_score": 1.0,
+  "warning": "8/16 small deterministic teacher sampler and max-over-candidates are noisy. Do not interpret teacher scores or predicted q27 values as calibrated or comparable; independent physical K futures required."
+}
