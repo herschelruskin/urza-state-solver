@@ -30,7 +30,7 @@ CHILD=(
     "print('RESEARCH_GAME',json.dumps({'seat':r['seat'],"
     "'win_turn':r['win_turn'],'keep_n':r['keep_n'],"
     "'hand':r['hand'],'history':r['history'],"
-    "'first3':r['first3'],'seconds':round(time.perf_counter()-start,4)}),flush=True)\n"
+    "'first3':r['first3'],'seconds':round(time.perf_counter()-start,4),"\n    "'fallback_stages':int(getattr(p,'STATS',{}).get('beam_fallback_stages',0)),"\n    "'total_london_stages':int(getattr(p,'STATS',{}).get('london_stages',0))}),flush=True)\n"
 )
 
 def one(policy,game_id,variant):
@@ -46,7 +46,7 @@ def one(policy,game_id,variant):
 
 def main(start,games,out,variant="one_key_34"):
     if games<1 or start<43000 or start+games-1>=44000:
-        raise ValueError("V11 second policy evaluation reserved 43000-42999 only")
+        raise ValueError("Hybrid experimental policy evaluation reserved 43000-43999 only")
     rows=[]
     for game_id in range(start,start+games):
         baseline=one("v5",game_id,variant)
