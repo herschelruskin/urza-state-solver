@@ -1,0 +1,65 @@
+name: DACK v43 exact v5 keep-stage versus frozen v14 bottom N256 hybrid
+on:
+  push:
+    branches: [dack-v43-v5-candidate-forensics-20261101]
+    paths:
+      - '.github/workflows/dack_v43_fixed_stage_bottom_N256.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  physical:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        start: [115000,115032,115064,115096,115128,115160,115192,115224]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v43-v5-candidate-forensics-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify original v5 win-turn parity then replay v27 bottom at its frozen v5 stage
+        run: |
+          python -m py_compile dack_simulator/validation/v43_fixed_v5_stage_v14_bottom.py
+          python -u dack_simulator/validation/v43_fixed_v5_stage_v14_bottom.py \
+            --start ${{ matrix.start }} --out shards/v43_v5stage_v14bottom_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v43-v5stage-v14bottom-${{ matrix.start }}
+          path: shards/v43_v5stage_v14bottom_*.json.gz
+          retention-days: 90
+  pool:
+    needs: physical
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v43-v5-candidate-forensics-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v43-v5stage-v14bottom-*
+          merge-multiple: true
+          path: collected
+      - name: Pool all 256 matched games and real bottom-only win turns
+        run: |
+          python -u dack_simulator/validation/v43_pool_fixed_v5_stage_bottom.py
+      - name: Archive old-cohort scientific ablation, no model promotion
+        run: |
+          mkdir -p benchmark_results/v43_fixed_v5_stage_v14_bottom_shards
+          cp collected/*.json.gz benchmark_results/v43_fixed_v5_stage_v14_bottom_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v43_fixed_v5_stage_v14_bottom_N256.json benchmark_results/v43_fixed_v5_stage_v14_bottom_shards
+          git commit -m "Archive exact 256-game original-v5-stage v14-bottom-only physical hybrid"
+          git pull --rebase origin dack-v43-v5-candidate-forensics-20261101
+          git push origin HEAD:dack-v43-v5-candidate-forensics-20261101
