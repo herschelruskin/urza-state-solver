@@ -1,0 +1,2289 @@
+{
+  "schema": "dack_v13_teacher_policy_imitation_metrics_v1",
+  "train_groups": 176,
+  "validation_groups": 56,
+  "frozen_validation_not_full_gameplay": true,
+  "train_metrics": {
+    "visited_teacher_stages": 676,
+    "candidate_top1_accuracy": 0.7144970414201184,
+    "keep_decision_accuracy_under_student_selected_bottom": 0.9319526627218935,
+    "joint_stage_accuracy": 0.6923076923076923,
+    "teacher_selects_structural_first_rate": 0.6568047337278107,
+    "teacher_keep_rate": 0.27514792899408286,
+    "student_keep_rate": 0.2958579881656805,
+    "distinct_game_groups": 176
+  },
+  "validation_metrics": {
+    "visited_teacher_stages": 251,
+    "candidate_top1_accuracy": 0.5657370517928287,
+    "keep_decision_accuracy_under_student_selected_bottom": 0.8565737051792829,
+    "joint_stage_accuracy": 0.5219123505976095,
+    "teacher_selects_structural_first_rate": 0.5577689243027888,
+    "teacher_keep_rate": 0.3107569721115538,
+    "student_keep_rate": 0.30278884462151395,
+    "distinct_game_groups": 56
+  },
+  "validation_stage_examples": [
+    {
+      "id": 61000,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61000,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61000,
+      "stage": 2,
+      "teacher_candidate": 3,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.31245283250850037
+    },
+    {
+      "id": 61000,
+      "stage": 3,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.36063232162861486
+    },
+    {
+      "id": 61001,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": true,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61001,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61001,
+      "stage": 2,
+      "teacher_candidate": 4,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.2897373809199077
+    },
+    {
+      "id": 61001,
+      "stage": 3,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.25757368917264184
+    },
+    {
+      "id": 61001,
+      "stage": 4,
+      "teacher_candidate": 10,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.22750636792538576
+    },
+    {
+      "id": 61002,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61002,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61002,
+      "stage": 2,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.7630552622691068
+    },
+    {
+      "id": 61002,
+      "stage": 3,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.2647407109657687
+    },
+    {
+      "id": 61002,
+      "stage": 4,
+      "teacher_candidate": 6,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.12821893077988877
+    },
+    {
+      "id": 61002,
+      "stage": 5,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.4727521981337639
+    },
+    {
+      "id": 61003,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61004,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61004,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61004,
+      "stage": 2,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.601699840989785
+    },
+    {
+      "id": 61005,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61006,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61006,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61006,
+      "stage": 2,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.761574597324246
+    },
+    {
+      "id": 61006,
+      "stage": 3,
+      "teacher_candidate": 3,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.2409557655660385
+    },
+    {
+      "id": 61007,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61007,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61007,
+      "stage": 2,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": false,
+      "student_score_selected": 0.2245304194343674
+    },
+    {
+      "id": 61008,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61008,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61009,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61009,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61009,
+      "stage": 2,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.23444224993643478
+    },
+    {
+      "id": 61009,
+      "stage": 3,
+      "teacher_candidate": 5,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.7675304239754849
+    },
+    {
+      "id": 61009,
+      "stage": 4,
+      "teacher_candidate": 4,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.17813741747344541
+    },
+    {
+      "id": 61009,
+      "stage": 5,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.191692387736917
+    },
+    {
+      "id": 61010,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61010,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61010,
+      "stage": 2,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.4867966728813754
+    },
+    {
+      "id": 61011,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61011,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61011,
+      "stage": 2,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.1965497198121625
+    },
+    {
+      "id": 61011,
+      "stage": 3,
+      "teacher_candidate": 4,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.28529711933430574
+    },
+    {
+      "id": 61011,
+      "stage": 4,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": false,
+      "student_score_selected": 0.17167065892849862
+    },
+    {
+      "id": 61012,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61012,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61012,
+      "stage": 2,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.2188928810008354
+    },
+    {
+      "id": 61012,
+      "stage": 3,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.20335792623768628
+    },
+    {
+      "id": 61012,
+      "stage": 4,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.25900665591830374
+    },
+    {
+      "id": 61012,
+      "stage": 5,
+      "teacher_candidate": 11,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": false,
+      "student_score_selected": 0.1624093999439168
+    },
+    {
+      "id": 61013,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61013,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61013,
+      "stage": 2,
+      "teacher_candidate": 2,
+      "student_candidate": 1,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.18649548229601784
+    },
+    {
+      "id": 61013,
+      "stage": 3,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.6066082257255451
+    },
+    {
+      "id": 61013,
+      "stage": 4,
+      "teacher_candidate": 9,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.21586722605803
+    },
+    {
+      "id": 61013,
+      "stage": 5,
+      "teacher_candidate": 5,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": true,
+      "student_score_selected": 0.18167898795839685
+    },
+    {
+      "id": 61013,
+      "stage": 6,
+      "teacher_candidate": 5,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.18441536765583533
+    },
+    {
+      "id": 61014,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61015,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61015,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61016,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61016,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61016,
+      "stage": 2,
+      "teacher_candidate": 6,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": false,
+      "student_score_selected": 0.26008674683288346
+    },
+    {
+      "id": 61017,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61017,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61017,
+      "stage": 2,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.27670472686201364
+    },
+    {
+      "id": 61017,
+      "stage": 3,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": true,
+      "student_score_selected": 0.5333806296256006
+    },
+    {
+      "id": 61017,
+      "stage": 4,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.20107579004897205
+    },
+    {
+      "id": 61018,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61018,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61018,
+      "stage": 2,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.2873907132120392
+    },
+    {
+      "id": 61019,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61019,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61019,
+      "stage": 2,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.2923786454125967
+    },
+    {
+      "id": 61020,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61020,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61020,
+      "stage": 2,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": true,
+      "student_score_selected": 0.3669439666387537
+    },
+    {
+      "id": 61020,
+      "stage": 3,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": true,
+      "student_score_selected": 0.3365523414559937
+    },
+    {
+      "id": 61020,
+      "stage": 4,
+      "teacher_candidate": 3,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.36683601818591405
+    },
+    {
+      "id": 61020,
+      "stage": 5,
+      "teacher_candidate": 5,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": true,
+      "student_score_selected": 0.13806525273222567
+    },
+    {
+      "id": 61020,
+      "stage": 6,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.22664471623033577
+    },
+    {
+      "id": 61021,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61022,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61022,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61022,
+      "stage": 2,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.19543855828365955
+    },
+    {
+      "id": 61022,
+      "stage": 3,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.19978596998603623
+    },
+    {
+      "id": 61023,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61023,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61023,
+      "stage": 2,
+      "teacher_candidate": 6,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": true,
+      "student_score_selected": 0.2874509004925388
+    },
+    {
+      "id": 61023,
+      "stage": 3,
+      "teacher_candidate": 4,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.22612897857199063
+    },
+    {
+      "id": 61023,
+      "stage": 4,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.2304856121835636
+    },
+    {
+      "id": 61024,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61025,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61025,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61026,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61026,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61026,
+      "stage": 2,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.2907664022514385
+    },
+    {
+      "id": 61026,
+      "stage": 3,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.3896601672568377
+    },
+    {
+      "id": 61026,
+      "stage": 4,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.6025682419627295
+    },
+    {
+      "id": 61027,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61027,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61027,
+      "stage": 2,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.84387517729316
+    },
+    {
+      "id": 61027,
+      "stage": 3,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": false,
+      "student_score_selected": 0.13101674056124168
+    },
+    {
+      "id": 61028,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61028,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61028,
+      "stage": 2,
+      "teacher_candidate": 5,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.1862310384855483
+    },
+    {
+      "id": 61028,
+      "stage": 3,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.20055479071432328
+    },
+    {
+      "id": 61028,
+      "stage": 4,
+      "teacher_candidate": 9,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.1497047904569969
+    },
+    {
+      "id": 61028,
+      "stage": 5,
+      "teacher_candidate": 3,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.2539365772915528
+    },
+    {
+      "id": 61029,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61029,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61029,
+      "stage": 2,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": true,
+      "student_score_selected": 0.22666167540027474
+    },
+    {
+      "id": 61029,
+      "stage": 3,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": true,
+      "student_score_selected": 0.23680933032485943
+    },
+    {
+      "id": 61029,
+      "stage": 4,
+      "teacher_candidate": 2,
+      "student_candidate": 2,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.14110879205518229
+    },
+    {
+      "id": 61029,
+      "stage": 5,
+      "teacher_candidate": 9,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.18992611086998187
+    },
+    {
+      "id": 61030,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61030,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61030,
+      "stage": 2,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.2450269624722371
+    },
+    {
+      "id": 61031,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61031,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61031,
+      "stage": 2,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.7230615702987572
+    },
+    {
+      "id": 61031,
+      "stage": 3,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.20628310949454784
+    },
+    {
+      "id": 61031,
+      "stage": 4,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.24646437701137688
+    },
+    {
+      "id": 61031,
+      "stage": 5,
+      "teacher_candidate": 9,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.1508458037781592
+    },
+    {
+      "id": 61032,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61032,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61032,
+      "stage": 2,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": true,
+      "student_score_selected": 0.24444922172631078
+    },
+    {
+      "id": 61032,
+      "stage": 3,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.16897682811967987
+    },
+    {
+      "id": 61033,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61033,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61033,
+      "stage": 2,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": true,
+      "student_score_selected": 0.6038484483048807
+    },
+    {
+      "id": 61033,
+      "stage": 3,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": false,
+      "student_score_selected": 0.17896260068075429
+    },
+    {
+      "id": 61034,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61034,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61034,
+      "stage": 2,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.1973282609989345
+    },
+    {
+      "id": 61034,
+      "stage": 3,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.19259517949815483
+    },
+    {
+      "id": 61034,
+      "stage": 4,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": false,
+      "student_score_selected": 0.182536748009724
+    },
+    {
+      "id": 61035,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61035,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61035,
+      "stage": 2,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.8243444819014011
+    },
+    {
+      "id": 61035,
+      "stage": 3,
+      "teacher_candidate": 9,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.32139720812475303
+    },
+    {
+      "id": 61036,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": true,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61036,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61036,
+      "stage": 2,
+      "teacher_candidate": 2,
+      "student_candidate": 1,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.2203448070028112
+    },
+    {
+      "id": 61036,
+      "stage": 3,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": false,
+      "student_score_selected": 0.15869919198417246
+    },
+    {
+      "id": 61037,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61037,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61037,
+      "stage": 2,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.19047601394316563
+    },
+    {
+      "id": 61037,
+      "stage": 3,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.28516538355414833
+    },
+    {
+      "id": 61038,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61038,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61038,
+      "stage": 2,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.905173481778354
+    },
+    {
+      "id": 61038,
+      "stage": 3,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": true,
+      "student_score_selected": 0.38448498409074566
+    },
+    {
+      "id": 61038,
+      "stage": 4,
+      "teacher_candidate": 9,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.15050170381457204
+    },
+    {
+      "id": 61039,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61039,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 61039,
+      "stage": 2,
+      "teacher_candidate": 5,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.3412626840148762
+    },
+    {
+      "id": 61039,
+      "stage": 3,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": true,
+      "student_score_selected": 0.28948541634106817
+    },
+    {
+      "id": 61039,
+      "stage": 4,
+      "teacher_candidate": 9,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": false,
+      "student_score_selected": 0.12939681355101315
+    },
+    {
+      "id": 68100,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68100,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68100,
+      "stage": 2,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.5188809054951157
+    },
+    {
+      "id": 68100,
+      "stage": 3,
+      "teacher_candidate": 3,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.4950568624743755
+    },
+    {
+      "id": 68100,
+      "stage": 4,
+      "teacher_candidate": 3,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": false,
+      "student_score_selected": 0.20804983692995652
+    },
+    {
+      "id": 68100,
+      "stage": 5,
+      "teacher_candidate": 5,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.19405230455916828
+    },
+    {
+      "id": 68100,
+      "stage": 6,
+      "teacher_candidate": 3,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.174644886492371
+    },
+    {
+      "id": 68100,
+      "stage": 7,
+      "teacher_candidate": 4,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.465787554075343
+    },
+    {
+      "id": 68101,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68102,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68102,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68102,
+      "stage": 2,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": false,
+      "student_score_selected": 0.6569013163375836
+    },
+    {
+      "id": 68102,
+      "stage": 3,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.15627396279621225
+    },
+    {
+      "id": 68102,
+      "stage": 4,
+      "teacher_candidate": 7,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.23115832957697238
+    },
+    {
+      "id": 68102,
+      "stage": 5,
+      "teacher_candidate": 4,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.18342874228957065
+    },
+    {
+      "id": 68102,
+      "stage": 6,
+      "teacher_candidate": 5,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.706281187983765
+    },
+    {
+      "id": 68102,
+      "stage": 7,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.5805451145704938
+    },
+    {
+      "id": 68103,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68103,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68103,
+      "stage": 2,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.769623923875917
+    },
+    {
+      "id": 68103,
+      "stage": 3,
+      "teacher_candidate": 4,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.7687819617565395
+    },
+    {
+      "id": 68103,
+      "stage": 4,
+      "teacher_candidate": 4,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": false,
+      "student_score_selected": 0.16798199815743478
+    },
+    {
+      "id": 68103,
+      "stage": 5,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.34629451651927634
+    },
+    {
+      "id": 68103,
+      "stage": 6,
+      "teacher_candidate": 7,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.1794926486585844
+    },
+    {
+      "id": 68103,
+      "stage": 7,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.4621119546076127
+    },
+    {
+      "id": 68104,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68104,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68104,
+      "stage": 2,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.8232433477884116
+    },
+    {
+      "id": 68104,
+      "stage": 3,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": false,
+      "student_score_selected": 0.56195078068842
+    },
+    {
+      "id": 68104,
+      "stage": 4,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.19068413699746406
+    },
+    {
+      "id": 68105,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68105,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68105,
+      "stage": 2,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.40240262246609104
+    },
+    {
+      "id": 68105,
+      "stage": 3,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.250538259212134
+    },
+    {
+      "id": 68105,
+      "stage": 4,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.17020833246409542
+    },
+    {
+      "id": 68105,
+      "stage": 5,
+      "teacher_candidate": 8,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": true,
+      "student_score_selected": 0.528579520713656
+    },
+    {
+      "id": 68105,
+      "stage": 6,
+      "teacher_candidate": 10,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.22909949765730075
+    },
+    {
+      "id": 68105,
+      "stage": 7,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.45506589407482834
+    },
+    {
+      "id": 68106,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68106,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68107,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68107,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68107,
+      "stage": 2,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.2221028150818055
+    },
+    {
+      "id": 68107,
+      "stage": 3,
+      "teacher_candidate": 3,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.16277609464297707
+    },
+    {
+      "id": 68108,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68108,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68108,
+      "stage": 2,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.2958534261212342
+    },
+    {
+      "id": 68108,
+      "stage": 3,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.14924353548653937
+    },
+    {
+      "id": 68108,
+      "stage": 4,
+      "teacher_candidate": 1,
+      "student_candidate": 1,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.2919250637960858
+    },
+    {
+      "id": 68109,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68109,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68109,
+      "stage": 2,
+      "teacher_candidate": 3,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.27506126171363954
+    },
+    {
+      "id": 68109,
+      "stage": 3,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.2021839708761559
+    },
+    {
+      "id": 68109,
+      "stage": 4,
+      "teacher_candidate": 5,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.20493671817608275
+    },
+    {
+      "id": 68109,
+      "stage": 5,
+      "teacher_candidate": 11,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": false,
+      "student_score_selected": 0.12785969169339853
+    },
+    {
+      "id": 68109,
+      "stage": 6,
+      "teacher_candidate": 9,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.17491999515554157
+    },
+    {
+      "id": 68109,
+      "stage": 7,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.5412660865753361
+    },
+    {
+      "id": 68110,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68110,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68110,
+      "stage": 2,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.2448424879788807
+    },
+    {
+      "id": 68110,
+      "stage": 3,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.1874634477870891
+    },
+    {
+      "id": 68110,
+      "stage": 4,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.32677250647923
+    },
+    {
+      "id": 68110,
+      "stage": 5,
+      "teacher_candidate": 4,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": true,
+      "student_score_selected": 0.3310189356203662
+    },
+    {
+      "id": 68110,
+      "stage": 6,
+      "teacher_candidate": 8,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.20088029528966656
+    },
+    {
+      "id": 68110,
+      "stage": 7,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.4962103420369586
+    },
+    {
+      "id": 68111,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68111,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68111,
+      "stage": 2,
+      "teacher_candidate": 4,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.22028098715982777
+    },
+    {
+      "id": 68111,
+      "stage": 3,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.2855622725614978
+    },
+    {
+      "id": 68112,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68112,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68112,
+      "stage": 2,
+      "teacher_candidate": 4,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.2779494517983546
+    },
+    {
+      "id": 68112,
+      "stage": 3,
+      "teacher_candidate": 5,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.5038311829833033
+    },
+    {
+      "id": 68113,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68113,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68113,
+      "stage": 2,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.2221992499215298
+    },
+    {
+      "id": 68113,
+      "stage": 3,
+      "teacher_candidate": 5,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.20769478606322644
+    },
+    {
+      "id": 68114,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68114,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68114,
+      "stage": 2,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.26830384635483745
+    },
+    {
+      "id": 68114,
+      "stage": 3,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.20274410773058296
+    },
+    {
+      "id": 68114,
+      "stage": 4,
+      "teacher_candidate": 6,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.20373540263612686
+    },
+    {
+      "id": 68114,
+      "stage": 5,
+      "teacher_candidate": 8,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": false,
+      "student_score_selected": 0.1560440669759726
+    },
+    {
+      "id": 68114,
+      "stage": 6,
+      "teacher_candidate": 3,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": true,
+      "student_score_selected": 0.17564593155069003
+    },
+    {
+      "id": 68114,
+      "stage": 7,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.4973475601357305
+    },
+    {
+      "id": 68115,
+      "stage": 0,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68115,
+      "stage": 1,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 1.0
+    },
+    {
+      "id": 68115,
+      "stage": 2,
+      "teacher_candidate": 1,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.23472451131316008
+    },
+    {
+      "id": 68115,
+      "stage": 3,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.7671926879464498
+    },
+    {
+      "id": 68115,
+      "stage": 4,
+      "teacher_candidate": 9,
+      "student_candidate": 0,
+      "teacher_keep": false,
+      "student_keep": false,
+      "student_score_selected": 0.16953778476938958
+    },
+    {
+      "id": 68115,
+      "stage": 5,
+      "teacher_candidate": 9,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.15777647217408108
+    },
+    {
+      "id": 68115,
+      "stage": 6,
+      "teacher_candidate": 2,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.2962262293093066
+    },
+    {
+      "id": 68115,
+      "stage": 7,
+      "teacher_candidate": 0,
+      "student_candidate": 0,
+      "teacher_keep": true,
+      "student_keep": true,
+      "student_score_selected": 0.42502254706645975
+    }
+  ],
+  "model_needs_independent_holdout_and_full_gameplay": true,
+  "model_approved": false
+}

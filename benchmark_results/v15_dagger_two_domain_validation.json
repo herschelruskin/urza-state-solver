@@ -1,0 +1,75 @@
+{
+  "models": {
+    "v14_128": {
+      "natural_v5_visited": {
+        "candidate_top1_accuracy": 0.6392405063291139,
+        "distinct_game_groups": 40,
+        "joint_stage_accuracy": 0.5949367088607594,
+        "keep_decision_accuracy_under_student_selected_bottom": 0.8544303797468354,
+        "student_keep_rate": 0.25949367088607594,
+        "teacher_keep_rate": 0.25316455696202533,
+        "teacher_selects_structural_first_rate": 0.6392405063291139,
+        "visited_teacher_stages": 158
+      },
+      "student_v13_visited": {
+        "candidate_top1_accuracy": 0.45161290322580644,
+        "distinct_game_groups": 16,
+        "joint_stage_accuracy": 0.3978494623655914,
+        "keep_decision_accuracy_under_student_selected_bottom": 0.8494623655913979,
+        "student_keep_rate": 0.3655913978494624,
+        "teacher_keep_rate": 0.40860215053763443,
+        "teacher_selects_structural_first_rate": 0.41935483870967744,
+        "visited_teacher_stages": 93
+      }
+    },
+    "v14_144": {
+      "natural_v5_visited": {
+        "candidate_top1_accuracy": 0.6392405063291139,
+        "distinct_game_groups": 40,
+        "joint_stage_accuracy": 0.5759493670886076,
+        "keep_decision_accuracy_under_student_selected_bottom": 0.8164556962025317,
+        "student_keep_rate": 0.25949367088607594,
+        "teacher_keep_rate": 0.25316455696202533,
+        "teacher_selects_structural_first_rate": 0.6392405063291139,
+        "visited_teacher_stages": 158
+      },
+      "student_v13_visited": {
+        "candidate_top1_accuracy": 0.43010752688172044,
+        "distinct_game_groups": 16,
+        "joint_stage_accuracy": 0.3870967741935484,
+        "keep_decision_accuracy_under_student_selected_bottom": 0.8602150537634409,
+        "student_keep_rate": 0.3763440860215054,
+        "teacher_keep_rate": 0.40860215053763443,
+        "teacher_selects_structural_first_rate": 0.41935483870967744,
+        "visited_teacher_stages": 93
+      }
+    },
+    "v15_dagger_176": {
+      "natural_v5_visited": {
+        "candidate_top1_accuracy": 0.6455696202531646,
+        "distinct_game_groups": 40,
+        "joint_stage_accuracy": 0.5886075949367089,
+        "keep_decision_accuracy_under_student_selected_bottom": 0.8354430379746836,
+        "student_keep_rate": 0.26582278481012656,
+        "teacher_keep_rate": 0.25316455696202533,
+        "teacher_selects_structural_first_rate": 0.6392405063291139,
+        "visited_teacher_stages": 158
+      },
+      "student_v13_visited": {
+        "candidate_top1_accuracy": 0.43010752688172044,
+        "distinct_game_groups": 16,
+        "joint_stage_accuracy": 0.40860215053763443,
+        "keep_decision_accuracy_under_student_selected_bottom": 0.8924731182795699,
+        "student_keep_rate": 0.3655913978494624,
+        "teacher_keep_rate": 0.40860215053763443,
+        "teacher_selects_structural_first_rate": 0.41935483870967744,
+        "visited_teacher_stages": 93
+      }
+    }
+  },
+  "natural_validation_groups": 40,
+  "schema": "dack_v15_DAgger_two_domain_validation",
+  "status": "PASS",
+  "student_visited_validation_groups": 16,
+  "these_are_model_validation_not_full_gameplay": true
+}
