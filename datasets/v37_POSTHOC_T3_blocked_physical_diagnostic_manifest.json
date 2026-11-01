@@ -1,0 +1,906 @@
+{
+  "T3_only_posthoc_relaxation_NOT_validated_for_deployment": true,
+  "actual_256_game_complete_London_final_state_changed_by_T2_only_override": 16,
+  "actual_full_London_difference_games": [
+    {
+      "T2_only_final_stage": 3,
+      "altered_reached_stages": [
+        1
+      ],
+      "game_id": 127202,
+      "old_final_stage": 1,
+      "seat": 2
+    },
+    {
+      "T2_only_final_stage": 5,
+      "altered_reached_stages": [
+        2
+      ],
+      "game_id": 127220,
+      "old_final_stage": 2,
+      "seat": 1
+    },
+    {
+      "T2_only_final_stage": 3,
+      "altered_reached_stages": [
+        1
+      ],
+      "game_id": 127221,
+      "old_final_stage": 1,
+      "seat": 3
+    },
+    {
+      "T2_only_final_stage": 1,
+      "altered_reached_stages": [
+        0
+      ],
+      "game_id": 127241,
+      "old_final_stage": 0,
+      "seat": 0
+    },
+    {
+      "T2_only_final_stage": 4,
+      "altered_reached_stages": [
+        2
+      ],
+      "game_id": 127251,
+      "old_final_stage": 2,
+      "seat": 0
+    },
+    {
+      "T2_only_final_stage": 3,
+      "altered_reached_stages": [
+        2
+      ],
+      "game_id": 127260,
+      "old_final_stage": 2,
+      "seat": 3
+    },
+    {
+      "T2_only_final_stage": 3,
+      "altered_reached_stages": [
+        0
+      ],
+      "game_id": 127277,
+      "old_final_stage": 0,
+      "seat": 1
+    },
+    {
+      "T2_only_final_stage": 3,
+      "altered_reached_stages": [
+        2
+      ],
+      "game_id": 127304,
+      "old_final_stage": 2,
+      "seat": 1
+    },
+    {
+      "T2_only_final_stage": 4,
+      "altered_reached_stages": [
+        2
+      ],
+      "game_id": 127335,
+      "old_final_stage": 2,
+      "seat": 3
+    },
+    {
+      "T2_only_final_stage": 3,
+      "altered_reached_stages": [
+        1
+      ],
+      "game_id": 127363,
+      "old_final_stage": 1,
+      "seat": 1
+    },
+    {
+      "T2_only_final_stage": 7,
+      "altered_reached_stages": [
+        2
+      ],
+      "game_id": 127377,
+      "old_final_stage": 2,
+      "seat": 2
+    },
+    {
+      "T2_only_final_stage": 6,
+      "altered_reached_stages": [
+        2
+      ],
+      "game_id": 127400,
+      "old_final_stage": 2,
+      "seat": 1
+    },
+    {
+      "T2_only_final_stage": 3,
+      "altered_reached_stages": [
+        1
+      ],
+      "game_id": 127408,
+      "old_final_stage": 1,
+      "seat": 2
+    },
+    {
+      "T2_only_final_stage": 2,
+      "altered_reached_stages": [
+        1
+      ],
+      "game_id": 127441,
+      "old_final_stage": 1,
+      "seat": 1
+    },
+    {
+      "T2_only_final_stage": 3,
+      "altered_reached_stages": [
+        1
+      ],
+      "game_id": 127453,
+      "old_final_stage": 1,
+      "seat": 2
+    },
+    {
+      "T2_only_final_stage": 3,
+      "altered_reached_stages": [
+        2
+      ],
+      "game_id": 127455,
+      "old_final_stage": 2,
+      "seat": 0
+    }
+  ],
+  "blocked_visible_actions": [
+    {
+      "game_id": 127200,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 0,
+      "stage": 2,
+      "v33b_bottom": [
+        "Twinblade Blessing"
+      ],
+      "v33b_kept_hand": [
+        "Enlightened Tutor",
+        "Mantle of the Ancients",
+        "Plains",
+        "Portable Hole",
+        "Remote Farm",
+        "Void Mirror"
+      ],
+      "v37_pred_T2_lower": -0.1405760854922519,
+      "v37_pred_T2_median": -0.10039113925865452,
+      "v37_pred_T2_upper": -0.05787381105900534,
+      "v37_pred_T3_median": 0.2413231750130206,
+      "visible_seven": [
+        "Twinblade Blessing",
+        "Mantle of the Ancients",
+        "Remote Farm",
+        "Enlightened Tutor",
+        "Plains",
+        "Void Mirror",
+        "Portable Hole"
+      ]
+    },
+    {
+      "game_id": 127202,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 2,
+      "stage": 1,
+      "v33b_bottom": [],
+      "v33b_kept_hand": [
+        "Basalt Monolith",
+        "Crystal Vein",
+        "Feather of Flight",
+        "Giant's Boulder",
+        "Orim's Chant",
+        "Vexing Bauble",
+        "Voltaic Key"
+      ],
+      "v37_pred_T2_lower": -0.14681578362070377,
+      "v37_pred_T2_median": -0.1337363088985607,
+      "v37_pred_T2_upper": -0.09024743425503852,
+      "v37_pred_T3_median": 0.11560209183899615,
+      "visible_seven": [
+        "Feather of Flight",
+        "Orim's Chant",
+        "Vexing Bauble",
+        "Voltaic Key",
+        "Crystal Vein",
+        "Basalt Monolith",
+        "Giant's Boulder"
+      ]
+    },
+    {
+      "game_id": 127220,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 1,
+      "stage": 2,
+      "v33b_bottom": [
+        "Roaming Throne"
+      ],
+      "v33b_kept_hand": [
+        "Hardlight Containment",
+        "Mana Tithe",
+        "Mana Vault",
+        "Plains",
+        "The Mycosynth Gardens",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v37_pred_T2_lower": -0.11541817520002272,
+      "v37_pred_T2_median": -0.08524863955297339,
+      "v37_pred_T2_upper": -0.03245583433228747,
+      "v37_pred_T3_median": 0.15096748425210504,
+      "visible_seven": [
+        "The Mycosynth Gardens",
+        "Hardlight Containment",
+        "Roaming Throne",
+        "Mana Vault",
+        "Plains",
+        "Mana Tithe",
+        "Untaidake, the Cloud Keeper"
+      ]
+    },
+    {
+      "game_id": 127221,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 3,
+      "stage": 1,
+      "v33b_bottom": [],
+      "v33b_kept_hand": [
+        "Basalt Monolith",
+        "Crystal Vein",
+        "Expedition Map",
+        "Great Hall of the Citadel",
+        "Plains",
+        "Plains",
+        "Scroll Rack"
+      ],
+      "v37_pred_T2_lower": -0.22899930509942068,
+      "v37_pred_T2_median": -0.20323337019090684,
+      "v37_pred_T2_upper": -0.16806271658533015,
+      "v37_pred_T3_median": 0.1261621852045887,
+      "visible_seven": [
+        "Crystal Vein",
+        "Basalt Monolith",
+        "Plains",
+        "Scroll Rack",
+        "Expedition Map",
+        "Plains",
+        "Great Hall of the Citadel"
+      ]
+    },
+    {
+      "game_id": 127230,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 2,
+      "stage": 2,
+      "v33b_bottom": [
+        "Unwanted Remake"
+      ],
+      "v33b_kept_hand": [
+        "Cavern of Souls",
+        "Expedition Map",
+        "March of Otherworldly Light",
+        "Plains",
+        "Remote Farm",
+        "Sol Ring"
+      ],
+      "v37_pred_T2_lower": -0.1145945199091042,
+      "v37_pred_T2_median": -0.07134038606995971,
+      "v37_pred_T2_upper": -0.031887898405326194,
+      "v37_pred_T3_median": 0.2928338139885975,
+      "visible_seven": [
+        "Unwanted Remake",
+        "Plains",
+        "Expedition Map",
+        "Cavern of Souls",
+        "Sol Ring",
+        "Remote Farm",
+        "March of Otherworldly Light"
+      ]
+    },
+    {
+      "game_id": 127241,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 0,
+      "stage": 0,
+      "v33b_bottom": [],
+      "v33b_kept_hand": [
+        "Basalt Monolith",
+        "Charitable Levy",
+        "Command Beacon",
+        "Eiganjo, Seat of the Empire",
+        "Fellwar Stone",
+        "Grim Monolith",
+        "Plains"
+      ],
+      "v37_pred_T2_lower": -0.1819431956308682,
+      "v37_pred_T2_median": -0.11717424540608341,
+      "v37_pred_T2_upper": -0.04665885069089359,
+      "v37_pred_T3_median": 0.17892194818497928,
+      "visible_seven": [
+        "Charitable Levy",
+        "Grim Monolith",
+        "Command Beacon",
+        "Eiganjo, Seat of the Empire",
+        "Plains",
+        "Basalt Monolith",
+        "Fellwar Stone"
+      ]
+    },
+    {
+      "game_id": 127241,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 0,
+      "stage": 2,
+      "v33b_bottom": [
+        "Plains"
+      ],
+      "v33b_kept_hand": [
+        "Enlightened Tutor",
+        "Expedition Map",
+        "Mishra's Workshop",
+        "Mox Opal",
+        "Plains",
+        "Tezzeret, Cruel Captain"
+      ],
+      "v37_pred_T2_lower": -0.09552522933791678,
+      "v37_pred_T2_median": -0.07516329116350148,
+      "v37_pred_T2_upper": -0.05513559452053683,
+      "v37_pred_T3_median": 0.2547352132168169,
+      "visible_seven": [
+        "Tezzeret, Cruel Captain",
+        "Expedition Map",
+        "Plains",
+        "Plains",
+        "Mishra's Workshop",
+        "Mox Opal",
+        "Enlightened Tutor"
+      ]
+    },
+    {
+      "game_id": 127243,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 1,
+      "stage": 2,
+      "v33b_bottom": [
+        "Floating Shield"
+      ],
+      "v33b_kept_hand": [
+        "Deafening Silence",
+        "Everflowing Chalice",
+        "Gleaming Splendor",
+        "Sol Ring",
+        "Talon Gates of Madara",
+        "Treasure Vault"
+      ],
+      "v37_pred_T2_lower": -0.1984274204813763,
+      "v37_pred_T2_median": -0.1611377191010497,
+      "v37_pred_T2_upper": -0.11980632504668756,
+      "v37_pred_T3_median": 0.23504524337133287,
+      "visible_seven": [
+        "Everflowing Chalice",
+        "Sol Ring",
+        "Floating Shield",
+        "Gleaming Splendor",
+        "Treasure Vault",
+        "Deafening Silence",
+        "Talon Gates of Madara"
+      ]
+    },
+    {
+      "game_id": 127251,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 0,
+      "stage": 2,
+      "v33b_bottom": [
+        "Lunarch Mantle"
+      ],
+      "v33b_kept_hand": [
+        "Arcane Signet",
+        "Charitable Levy",
+        "Emeria's Call",
+        "Grim Monolith",
+        "Petrified Hamlet",
+        "Plains"
+      ],
+      "v37_pred_T2_lower": -0.20802878701811522,
+      "v37_pred_T2_median": -0.20261517542467686,
+      "v37_pred_T2_upper": -0.15285865358777395,
+      "v37_pred_T3_median": 0.21236839102427413,
+      "visible_seven": [
+        "Emeria's Call",
+        "Arcane Signet",
+        "Grim Monolith",
+        "Petrified Hamlet",
+        "Plains",
+        "Charitable Levy",
+        "Lunarch Mantle"
+      ]
+    },
+    {
+      "game_id": 127260,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 3,
+      "stage": 2,
+      "v33b_bottom": [
+        "Floating Shield"
+      ],
+      "v33b_kept_hand": [
+        "Blast Zone",
+        "Charitable Levy",
+        "Eiganjo, Seat of the Empire",
+        "Prismatic Lens",
+        "Sol Ring",
+        "Urza's Cave"
+      ],
+      "v37_pred_T2_lower": -0.14850701876555178,
+      "v37_pred_T2_median": -0.11099672366255409,
+      "v37_pred_T2_upper": -0.08704533428151877,
+      "v37_pred_T3_median": 0.23753586488451037,
+      "visible_seven": [
+        "Charitable Levy",
+        "Eiganjo, Seat of the Empire",
+        "Floating Shield",
+        "Blast Zone",
+        "Prismatic Lens",
+        "Urza's Cave",
+        "Sol Ring"
+      ]
+    },
+    {
+      "game_id": 127277,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 1,
+      "stage": 0,
+      "v33b_bottom": [],
+      "v33b_kept_hand": [
+        "Disruptor Flute",
+        "Gemstone Caverns",
+        "Mox Opal",
+        "Plains",
+        "The Mind Stone",
+        "Unwanted Remake",
+        "Urza's Cave"
+      ],
+      "v37_pred_T2_lower": -0.2025645061863767,
+      "v37_pred_T2_median": -0.1708737643970202,
+      "v37_pred_T2_upper": -0.15585929129877024,
+      "v37_pred_T3_median": 0.14037204247531232,
+      "visible_seven": [
+        "Gemstone Caverns",
+        "Urza's Cave",
+        "Mox Opal",
+        "Disruptor Flute",
+        "Plains",
+        "The Mind Stone",
+        "Unwanted Remake"
+      ]
+    },
+    {
+      "game_id": 127280,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 3,
+      "stage": 2,
+      "v33b_bottom": [
+        "Bound by Moonsilver"
+      ],
+      "v33b_kept_hand": [
+        "Cavern of Souls",
+        "Enlightened Tutor",
+        "Moonsilver Key",
+        "Mox Opal",
+        "Treasure Vault",
+        "Vexing Bauble"
+      ],
+      "v37_pred_T2_lower": -0.1427974383910456,
+      "v37_pred_T2_median": -0.132290748009073,
+      "v37_pred_T2_upper": -0.10263233630057185,
+      "v37_pred_T3_median": 0.23582570580634765,
+      "visible_seven": [
+        "Moonsilver Key",
+        "Enlightened Tutor",
+        "Mox Opal",
+        "Cavern of Souls",
+        "Bound by Moonsilver",
+        "Vexing Bauble",
+        "Treasure Vault"
+      ]
+    },
+    {
+      "game_id": 127304,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 1,
+      "stage": 2,
+      "v33b_bottom": [
+        "Static Prison"
+      ],
+      "v33b_kept_hand": [
+        "Deafening Silence",
+        "Everflowing Chalice",
+        "Homeward Path",
+        "Plains",
+        "Sol Ring",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v37_pred_T2_lower": -0.18645573101316054,
+      "v37_pred_T2_median": -0.14208381520836044,
+      "v37_pred_T2_upper": -0.07982490446335297,
+      "v37_pred_T3_median": 0.16238503244713368,
+      "visible_seven": [
+        "Static Prison",
+        "Everflowing Chalice",
+        "Deafening Silence",
+        "Untaidake, the Cloud Keeper",
+        "Homeward Path",
+        "Sol Ring",
+        "Plains"
+      ]
+    },
+    {
+      "game_id": 127335,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 3,
+      "stage": 2,
+      "v33b_bottom": [
+        "Erode"
+      ],
+      "v33b_kept_hand": [
+        "Basalt Monolith",
+        "City of Traitors",
+        "Fellwar Stone",
+        "Plains",
+        "Staff of Compleation",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v37_pred_T2_lower": -0.14460462058203905,
+      "v37_pred_T2_median": -0.1095259974621978,
+      "v37_pred_T2_upper": -0.060528857866921804,
+      "v37_pred_T3_median": 0.22157985449783227,
+      "visible_seven": [
+        "Basalt Monolith",
+        "City of Traitors",
+        "Erode",
+        "Fellwar Stone",
+        "Staff of Compleation",
+        "Untaidake, the Cloud Keeper",
+        "Plains"
+      ]
+    },
+    {
+      "game_id": 127350,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 0,
+      "stage": 2,
+      "v33b_bottom": [
+        "Erode"
+      ],
+      "v33b_kept_hand": [
+        "Emeria's Call",
+        "Jeweled Amulet",
+        "Mind Stone",
+        "Moonsilver Key",
+        "Mox Opal",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v37_pred_T2_lower": -0.17091667428440221,
+      "v37_pred_T2_median": -0.14353250979131488,
+      "v37_pred_T2_upper": -0.116614431217681,
+      "v37_pred_T3_median": 0.21810094831071228,
+      "visible_seven": [
+        "Jeweled Amulet",
+        "Moonsilver Key",
+        "Mind Stone",
+        "Mox Opal",
+        "Erode",
+        "Untaidake, the Cloud Keeper",
+        "Emeria's Call"
+      ]
+    },
+    {
+      "game_id": 127363,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 1,
+      "stage": 1,
+      "v33b_bottom": [],
+      "v33b_kept_hand": [
+        "Bound by Moonsilver",
+        "Disruptor Flute",
+        "Idolized",
+        "Lion's Eye Diamond",
+        "March of Otherworldly Light",
+        "Plains",
+        "Trinisphere"
+      ],
+      "v37_pred_T2_lower": -0.17977422168802223,
+      "v37_pred_T2_median": -0.14285139362865926,
+      "v37_pred_T2_upper": -0.08089585218107039,
+      "v37_pred_T3_median": 0.09714627081800302,
+      "visible_seven": [
+        "Plains",
+        "Disruptor Flute",
+        "Bound by Moonsilver",
+        "Trinisphere",
+        "March of Otherworldly Light",
+        "Idolized",
+        "Lion's Eye Diamond"
+      ]
+    },
+    {
+      "game_id": 127364,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 1,
+      "stage": 1,
+      "v33b_bottom": [],
+      "v33b_kept_hand": [
+        "Basalt Monolith",
+        "Enlightened Tutor",
+        "Everflowing Chalice",
+        "Fellwar Stone",
+        "Plains",
+        "Silence",
+        "Void Mirror"
+      ],
+      "v37_pred_T2_lower": -0.14296021075305598,
+      "v37_pred_T2_median": -0.10868563473847359,
+      "v37_pred_T2_upper": -0.07275773086493807,
+      "v37_pred_T3_median": 0.1788694460945153,
+      "visible_seven": [
+        "Enlightened Tutor",
+        "Basalt Monolith",
+        "Fellwar Stone",
+        "Everflowing Chalice",
+        "Silence",
+        "Plains",
+        "Void Mirror"
+      ]
+    },
+    {
+      "game_id": 127377,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 2,
+      "stage": 2,
+      "v33b_bottom": [
+        "Erode"
+      ],
+      "v33b_kept_hand": [
+        "Emeria's Call",
+        "Expedition Map",
+        "Implements of Sacrifice",
+        "Moonsilver Key",
+        "Mox Opal",
+        "The Mind Stone"
+      ],
+      "v37_pred_T2_lower": -0.16693195761833474,
+      "v37_pred_T2_median": -0.1253927578440331,
+      "v37_pred_T2_upper": -0.12030034450968816,
+      "v37_pred_T3_median": 0.13136885154070926,
+      "visible_seven": [
+        "Emeria's Call",
+        "Moonsilver Key",
+        "Mox Opal",
+        "The Mind Stone",
+        "Implements of Sacrifice",
+        "Erode",
+        "Expedition Map"
+      ]
+    },
+    {
+      "game_id": 127389,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 3,
+      "stage": 2,
+      "v33b_bottom": [
+        "Gift of Immortality"
+      ],
+      "v33b_kept_hand": [
+        "Blast Zone",
+        "Eiganjo, Seat of the Empire",
+        "Fellwar Stone",
+        "Mox Opal",
+        "Paladin Class",
+        "The Mind Stone"
+      ],
+      "v37_pred_T2_lower": -0.1381237863148675,
+      "v37_pred_T2_median": -0.11427091812204444,
+      "v37_pred_T2_upper": -0.07169673520391892,
+      "v37_pred_T3_median": 0.20229421202777345,
+      "visible_seven": [
+        "Paladin Class",
+        "The Mind Stone",
+        "Eiganjo, Seat of the Empire",
+        "Fellwar Stone",
+        "Mox Opal",
+        "Gift of Immortality",
+        "Blast Zone"
+      ]
+    },
+    {
+      "game_id": 127400,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 1,
+      "stage": 2,
+      "v33b_bottom": [
+        "Feather of Flight"
+      ],
+      "v33b_kept_hand": [
+        "Ancient Tomb",
+        "Expedition Map",
+        "Implements of Sacrifice",
+        "Jeweled Amulet",
+        "Mox Diamond",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v37_pred_T2_lower": -0.09454581163937799,
+      "v37_pred_T2_median": -0.08163179891822715,
+      "v37_pred_T2_upper": -0.05531253239867813,
+      "v37_pred_T3_median": 0.18216643722720333,
+      "visible_seven": [
+        "Feather of Flight",
+        "Untaidake, the Cloud Keeper",
+        "Ancient Tomb",
+        "Mox Diamond",
+        "Jeweled Amulet",
+        "Implements of Sacrifice",
+        "Expedition Map"
+      ]
+    },
+    {
+      "game_id": 127408,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 2,
+      "stage": 1,
+      "v33b_bottom": [],
+      "v33b_kept_hand": [
+        "Brainstone",
+        "Defense Grid",
+        "Emeria's Call",
+        "Enlightened Tutor",
+        "Mantle of the Ancients",
+        "Talon Gates of Madara",
+        "Urza's Cave"
+      ],
+      "v37_pred_T2_lower": -0.14920927013614554,
+      "v37_pred_T2_median": -0.1167591559126701,
+      "v37_pred_T2_upper": -0.07234971889015668,
+      "v37_pred_T3_median": 0.19841509295965395,
+      "visible_seven": [
+        "Emeria's Call",
+        "Urza's Cave",
+        "Defense Grid",
+        "Mantle of the Ancients",
+        "Brainstone",
+        "Talon Gates of Madara",
+        "Enlightened Tutor"
+      ]
+    },
+    {
+      "game_id": 127441,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 1,
+      "stage": 1,
+      "v33b_bottom": [],
+      "v33b_kept_hand": [
+        "Chrome Mox",
+        "Moonsilver Key",
+        "Plains",
+        "Plains",
+        "Prismatic Lens",
+        "Ruins of Trokair",
+        "Static Prison"
+      ],
+      "v37_pred_T2_lower": -0.08705914305073097,
+      "v37_pred_T2_median": -0.06324963352963497,
+      "v37_pred_T2_upper": -0.024357217517193688,
+      "v37_pred_T3_median": 0.1834840236288983,
+      "visible_seven": [
+        "Prismatic Lens",
+        "Static Prison",
+        "Plains",
+        "Moonsilver Key",
+        "Chrome Mox",
+        "Plains",
+        "Ruins of Trokair"
+      ]
+    },
+    {
+      "game_id": 127453,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 2,
+      "stage": 1,
+      "v33b_bottom": [],
+      "v33b_kept_hand": [
+        "Everflowing Chalice",
+        "Giant's Boulder",
+        "Grim Monolith",
+        "Hardlight Containment",
+        "Implements of Sacrifice",
+        "Mana Vault",
+        "Treasure Vault"
+      ],
+      "v37_pred_T2_lower": -0.14808879515201676,
+      "v37_pred_T2_median": -0.1315235961890905,
+      "v37_pred_T2_upper": -0.0680332869508777,
+      "v37_pred_T3_median": 0.11395156891764788,
+      "visible_seven": [
+        "Hardlight Containment",
+        "Everflowing Chalice",
+        "Mana Vault",
+        "Grim Monolith",
+        "Implements of Sacrifice",
+        "Giant's Boulder",
+        "Treasure Vault"
+      ]
+    },
+    {
+      "game_id": 127455,
+      "new_T2_only_KEEP": false,
+      "old_v27_KEEP": true,
+      "seat": 0,
+      "stage": 2,
+      "v33b_bottom": [
+        "Coalition Relic"
+      ],
+      "v33b_kept_hand": [
+        "Gleaming Splendor",
+        "Mana Vault",
+        "Plains",
+        "Plains",
+        "Plains",
+        "Untaidake, the Cloud Keeper"
+      ],
+      "v37_pred_T2_lower": -0.1020554960963631,
+      "v37_pred_T2_median": -0.06619629539704003,
+      "v37_pred_T2_upper": -0.04992008403621202,
+      "v37_pred_T3_median": 0.24826073871804194,
+      "visible_seven": [
+        "Gleaming Splendor",
+        "Plains",
+        "Mana Vault",
+        "Untaidake, the Cloud Keeper",
+        "Coalition Relic",
+        "Plains",
+        "Plains"
+      ]
+    }
+  ],
+  "no_physical_gameplay_outcomes_generated": true,
+  "number_T2_gate_passed_T3_only_blocked": 24,
+  "original_127k_census_sha256": "5d06fdfc5482c377d4f6d5afcdd7c85396fdf70c0d4f6273d45b9813762a9fda",
+  "policy_approved": false,
+  "posthoc_127k_diagnostic_not_independent_validation": true,
+  "required_C_cells_for_blocked_actions": [
+    "0:0",
+    "0:2",
+    "1:0",
+    "1:1",
+    "1:2",
+    "2:1",
+    "2:2",
+    "3:1",
+    "3:2"
+  ],
+  "schema": "dack_v37_posthoc_127k_T3_only_blocked_action_census_exploratory",
+  "source_model_sha256": "b1aabf15c0f6d7ff8334769d076a505f2cf33848e849232f513499f70e4099c5",
+  "status": "PASS"
+}
