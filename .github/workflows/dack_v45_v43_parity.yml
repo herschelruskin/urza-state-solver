@@ -1,0 +1,14 @@
+name: DACK v45 verify exact frozen v43 continuation
+on:
+  push:
+    branches: [dack-v45-v5-v43-earliest-conflict-20261101]
+    paths: ['.github/workflows/dack_v45_v43_parity.yml']
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v45-v5-v43-earliest-conflict-20261101
+      - name: Verify original frozen v43 retained hand and continuation
+        run: python -m dack_simulator.validation.v45_frozen_v43_continuation
