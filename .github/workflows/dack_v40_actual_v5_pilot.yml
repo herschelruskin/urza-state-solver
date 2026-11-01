@@ -1,0 +1,47 @@
+name: DACK v40 actual-v5 teacher pilot (4 independent deals)
+on:
+  push:
+    branches: [dack-v40-true-disagreement-reassessment-20261101]
+    paths:
+      - '.github/workflows/dack_v40_actual_v5_pilot.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  four_deal_truth_test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v40-true-disagreement-reassessment-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Syntax-check sharded actual v5 and frozen v27 collectors and pool
+        run: |
+          python -m py_compile dack_simulator/validation/v40_collect_actual_v5_teacher.py dack_simulator/validation/v40_collect_frozen_v27_matched.py dack_simulator/validation/v40_pool_true_v5_disagreements.py
+      - name: Verify original v5 teacher hypothetical sampler is independent of unknown92 order
+        run: python -u -m dack_simulator.validation.v40_v5_information_boundary_smoke
+      - name: Four original-v5 independently dealt physical groups, all first-three stages
+        run: |
+          python -u -m dack_simulator.validation.v40_collect_actual_v5_teacher \
+            --split train --start 140000 --games 4 \
+            --out shards/v40_teacher_140000_4.jsonl.gz
+      - name: Frozen v27 and v33b comparison in clean separate interpreter
+        run: |
+          python -u -m dack_simulator.validation.v40_collect_frozen_v27_matched \
+            --split train --start 140000 --games 4 \
+            --out shards/v40_v27_140000_4.jsonl.gz
+      - name: Check original deals, count unique groups, join matching stage/seat/seven
+        run: |
+          python -u -m dack_simulator.validation.v40_pool_true_v5_disagreements \
+            --split train --teacher-glob 'shards/v40_teacher_*.jsonl.gz' \
+            --v27-glob 'shards/v40_v27_*.jsonl.gz' --expected-groups 4 \
+            --out shards/v40_teacher_pilot_4.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v40-actual-v5-4-group-pilot
+          path: shards/
+          retention-days: 30
