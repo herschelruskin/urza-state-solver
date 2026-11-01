@@ -1,0 +1,475 @@
+name: DACK v14 expanded v5 teacher 128 train plus 32 validation and learning curve
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_teacher_v14_expand_curve.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  teacher:
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        include:
+          - split: train
+            start: 60016
+          - split: train
+            start: 60017
+          - split: train
+            start: 60018
+          - split: train
+            start: 60019
+          - split: train
+            start: 60020
+          - split: train
+            start: 60021
+          - split: train
+            start: 60022
+          - split: train
+            start: 60023
+          - split: train
+            start: 60024
+          - split: train
+            start: 60025
+          - split: train
+            start: 60026
+          - split: train
+            start: 60027
+          - split: train
+            start: 60028
+          - split: train
+            start: 60029
+          - split: train
+            start: 60030
+          - split: train
+            start: 60031
+          - split: train
+            start: 60032
+          - split: train
+            start: 60033
+          - split: train
+            start: 60034
+          - split: train
+            start: 60035
+          - split: train
+            start: 60036
+          - split: train
+            start: 60037
+          - split: train
+            start: 60038
+          - split: train
+            start: 60039
+          - split: train
+            start: 60040
+          - split: train
+            start: 60041
+          - split: train
+            start: 60042
+          - split: train
+            start: 60043
+          - split: train
+            start: 60044
+          - split: train
+            start: 60045
+          - split: train
+            start: 60046
+          - split: train
+            start: 60047
+          - split: train
+            start: 60048
+          - split: train
+            start: 60049
+          - split: train
+            start: 60050
+          - split: train
+            start: 60051
+          - split: train
+            start: 60052
+          - split: train
+            start: 60053
+          - split: train
+            start: 60054
+          - split: train
+            start: 60055
+          - split: train
+            start: 60056
+          - split: train
+            start: 60057
+          - split: train
+            start: 60058
+          - split: train
+            start: 60059
+          - split: train
+            start: 60060
+          - split: train
+            start: 60061
+          - split: train
+            start: 60062
+          - split: train
+            start: 60063
+          - split: train
+            start: 60064
+          - split: train
+            start: 60065
+          - split: train
+            start: 60066
+          - split: train
+            start: 60067
+          - split: train
+            start: 60068
+          - split: train
+            start: 60069
+          - split: train
+            start: 60070
+          - split: train
+            start: 60071
+          - split: train
+            start: 60072
+          - split: train
+            start: 60073
+          - split: train
+            start: 60074
+          - split: train
+            start: 60075
+          - split: train
+            start: 60076
+          - split: train
+            start: 60077
+          - split: train
+            start: 60078
+          - split: train
+            start: 60079
+          - split: train
+            start: 60080
+          - split: train
+            start: 60081
+          - split: train
+            start: 60082
+          - split: train
+            start: 60083
+          - split: train
+            start: 60084
+          - split: train
+            start: 60085
+          - split: train
+            start: 60086
+          - split: train
+            start: 60087
+          - split: train
+            start: 60088
+          - split: train
+            start: 60089
+          - split: train
+            start: 60090
+          - split: train
+            start: 60091
+          - split: train
+            start: 60092
+          - split: train
+            start: 60093
+          - split: train
+            start: 60094
+          - split: train
+            start: 60095
+          - split: train
+            start: 60096
+          - split: train
+            start: 60097
+          - split: train
+            start: 60098
+          - split: train
+            start: 60099
+          - split: train
+            start: 60100
+          - split: train
+            start: 60101
+          - split: train
+            start: 60102
+          - split: train
+            start: 60103
+          - split: train
+            start: 60104
+          - split: train
+            start: 60105
+          - split: train
+            start: 60106
+          - split: train
+            start: 60107
+          - split: train
+            start: 60108
+          - split: train
+            start: 60109
+          - split: train
+            start: 60110
+          - split: train
+            start: 60111
+          - split: train
+            start: 60112
+          - split: train
+            start: 60113
+          - split: train
+            start: 60114
+          - split: train
+            start: 60115
+          - split: train
+            start: 60116
+          - split: train
+            start: 60117
+          - split: train
+            start: 60118
+          - split: train
+            start: 60119
+          - split: train
+            start: 60120
+          - split: train
+            start: 60121
+          - split: train
+            start: 60122
+          - split: train
+            start: 60123
+          - split: train
+            start: 60124
+          - split: train
+            start: 60125
+          - split: train
+            start: 60126
+          - split: train
+            start: 60127
+          - split: train
+            start: 60128
+          - split: train
+            start: 60129
+          - split: train
+            start: 60130
+          - split: train
+            start: 60131
+          - split: train
+            start: 60132
+          - split: train
+            start: 60133
+          - split: train
+            start: 60134
+          - split: train
+            start: 60135
+          - split: train
+            start: 60136
+          - split: train
+            start: 60137
+          - split: train
+            start: 60138
+          - split: train
+            start: 60139
+          - split: train
+            start: 60140
+          - split: train
+            start: 60141
+          - split: train
+            start: 60142
+          - split: train
+            start: 60143
+          - split: validation
+            start: 61008
+          - split: validation
+            start: 61009
+          - split: validation
+            start: 61010
+          - split: validation
+            start: 61011
+          - split: validation
+            start: 61012
+          - split: validation
+            start: 61013
+          - split: validation
+            start: 61014
+          - split: validation
+            start: 61015
+          - split: validation
+            start: 61016
+          - split: validation
+            start: 61017
+          - split: validation
+            start: 61018
+          - split: validation
+            start: 61019
+          - split: validation
+            start: 61020
+          - split: validation
+            start: 61021
+          - split: validation
+            start: 61022
+          - split: validation
+            start: 61023
+          - split: validation
+            start: 61024
+          - split: validation
+            start: 61025
+          - split: validation
+            start: 61026
+          - split: validation
+            start: 61027
+          - split: validation
+            start: 61028
+          - split: validation
+            start: 61029
+          - split: validation
+            start: 61030
+          - split: validation
+            start: 61031
+          - split: validation
+            start: 61032
+          - split: validation
+            start: 61033
+          - split: validation
+            start: 61034
+          - split: validation
+            start: 61035
+          - split: validation
+            start: 61036
+          - split: validation
+            start: 61037
+          - split: validation
+            start: 61038
+          - split: validation
+            start: 61039
+    runs-on: ubuntu-latest
+    timeout-minutes: 27
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Frozen exact v5 London teacher on one new independent physical game
+        run: |
+          python -u dack_simulator/validation/collect_teacher_london_v13.py \
+            --split ${{ matrix.split }} --start ${{ matrix.start }} \
+            --games 1 --variant one_key_34 \
+            --out datasets/v14_${{ matrix.split }}_${{ matrix.start }}.jsonl.gz
+      - name: Assert stage-visited teacher choices and no future deck-order leakage
+        run: |
+          python - <<'PY'
+          from collections import Counter
+          from pathlib import Path
+          import gzip,json
+          paths=list(Path('datasets').glob('v14_*.jsonl.gz'))
+          assert len(paths)==1
+          with gzip.open(paths[0],'rt') as f:
+              h=json.loads(next(f));r=[json.loads(x) for x in f]
+          assert h['teacher']=='dack_stable_dice_strict_bounded_witness_v5'
+          assert r and r[-1]['teacher_keep']
+          assert sum(x['teacher_keep'] for x in r)==1
+          assert len({x['game_id'] for x in r})==1
+          for x in r:
+              assert x['type']=='stage' and len(x['seven'])==7
+              assert 0<=x['teacher_chosen_candidate']<len(x['candidate_rows'])<=12
+              assert sum(x['unknown_counts'].values())==92
+              assert not any(k in x for k in ('sampled_order','first3','actual_library'))
+              assert Counter(x['teacher_selected_hand'])+Counter(x['teacher_selected_bottom'])==Counter(x['seven'])
+          print('V14_NEW_TEACHER_STAGE_PASS',paths[0].name,len(r),flush=True)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v14-teacher-${{ matrix.split }}-${{ matrix.start }}
+          path: datasets/v14_*.jsonl.gz
+          retention-days: 21
+  learning_curve:
+    needs: teacher
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v14-teacher-*
+          merge-multiple: true
+          path: datasets/teacher_v14_expansion/
+      - name: Verify exact distinct train/validation game IDs and all teacher labels
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from collections import Counter
+          import gzip,hashlib,json
+          root=Path('datasets/teacher_v14_expansion')
+          files=sorted(root.glob('v14_*.jsonl.gz'))
+          assert len(files)==160,len(files)
+          manifest={'schema':'dack_v14_expanded_v5_teacher_physical_corpus',
+                    'source_teacher':'dack_stable_dice_strict_bounded_witness_v5',
+                    'model_policy_approved':False,
+                    'training_previous_v13_16_plus_new_v14_128':True,
+                    'validation_previous_v13_8_plus_new_v14_32':True,
+                    'no_future_library_orders_in_features':True,
+                    'natural_physical_openings':True,
+                    'files':[],'splits':{}}
+          seen_all=[]
+          for split,start,n in [('train',60016,128),('validation',61008,32)]:
+              paths=[p for p in files if p.name.startswith('v14_'+split+'_')]
+              assert len(paths)==n,(split,len(paths))
+              groups=set();counts=Counter()
+              for path in paths:
+                  with gzip.open(path,'rt') as f:
+                      meta=json.loads(next(f))
+                      assert meta['split']==split and meta['variant']=='one_key_34'
+                      assert meta['teacher']==manifest['source_teacher']
+                      one=[]
+                      for line in f:
+                          x=json.loads(line)
+                          assert x['type']=='stage'
+                          assert 0<=x['teacher_chosen_candidate']<len(x['candidate_rows'])<=12
+                          assert sum(x['unknown_counts'].values())==92
+                          one.append(x);groups.add(x['game_id'])
+                          counts['stages']+=1
+                          counts['candidates']+=len(x['candidate_rows'])
+                          counts['keep']+=int(x['teacher_keep'])
+                          counts['reject']+=int(not x['teacher_keep'])
+                      assert len({x['game_id'] for x in one})==1
+                      assert one[-1]['teacher_keep'] and sum(x['teacher_keep'] for x in one)==1
+                  manifest['files'].append({'name':path.name,
+                     'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),
+                     'bytes':path.stat().st_size,'split':split})
+              assert groups==set(range(start,start+n)),(split,len(groups))
+              assert counts['keep']==n
+              manifest['splits'][split]={'groups':n,'game_ids':[start,start+n-1],
+                                          'counts':dict(counts)}
+              seen_all.append(groups)
+          assert seen_all[0].isdisjoint(seen_all[1])
+          (root/'manifest.json').write_text(json.dumps(manifest,indent=2,sort_keys=True)+'\n')
+          print('V14_EXPANDED_TEACHER_CORPUS_PASS',json.dumps(manifest['splits']),flush=True)
+          PY
+      - name: Training-only dependency
+        run: python -m pip install 'scikit-learn>=1.4,<2'
+      - name: Refit exact same forest at nested 16 32 64 96 128 144 game group sample sizes
+        run: |
+          python -u dack_simulator/validation/train_teacher_learning_curve_v14.py \
+            --train datasets/teacher_v13_20261031/distill_v13_train_*.jsonl.gz datasets/teacher_v14_expansion/v14_train_*.jsonl.gz \
+            --validation datasets/teacher_v13_20261031/distill_v13_validation_*.jsonl.gz datasets/teacher_v14_expansion/v14_validation_*.jsonl.gz \
+            --outdir models/v14_curve/
+      - name: Audit latest larger student uses no mulligan beam with same game solver
+        run: |
+          python dack_paired_counterfactual_v13_teacher_distill_20261031.py \
+            --model models/v14_curve/v14_teacher_groups_144.json --audit
+      - name: Persist independent teacher data, nested curve and frozen experimental models
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f datasets/teacher_v14_expansion/ benchmark_results/v14_teacher_learning_curve.json models/v14_curve/
+          git commit -m "Archive 160 additional physical teacher games and fixed-architecture 16-to-144 training learning curve"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v14-teacher-expanded-curve-and-frozen-students
+          path: |
+            datasets/teacher_v14_expansion/manifest.json
+            benchmark_results/v14_teacher_learning_curve.json
+            models/v14_curve/
+          retention-days: 21
