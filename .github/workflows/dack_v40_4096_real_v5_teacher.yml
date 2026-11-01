@@ -1,0 +1,149 @@
+name: DACK v40 original-v5 teacher data collection 4096 train or 512 dev
+on:
+  workflow_dispatch:
+    inputs:
+      split:
+        description: "Select exactly one independent data partition after pilot passes"
+        required: true
+        type: choice
+        default: train
+        options: [train, dev]
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: dack-v40-real-v5-data-${{ github.event.inputs.split }}
+  cancel-in-progress: false
+jobs:
+  train:
+    if: github.event.inputs.split == 'train'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63]
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v40-true-disagreement-reassessment-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Collect 64 independent train deals using original v5
+        run: |
+          python -u -m dack_simulator.validation.v40_collect_actual_v5_teacher \
+            --split train --start $((140000 + ${{ matrix.shard }} * 64)) --games 64 \
+            --out shards/v40_teacher_train_${{ matrix.shard }}.jsonl.gz
+      - name: Match with frozen v27 and v33b in separate interpreter
+        run: |
+          python -u -m dack_simulator.validation.v40_collect_frozen_v27_matched \
+            --split train --start $((140000 + ${{ matrix.shard }} * 64)) --games 64 \
+            --out shards/v40_v27_train_${{ matrix.shard }}.jsonl.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v40-teacher-train-${{ matrix.shard }}
+          path: shards/v40_*.jsonl.gz
+          retention-days: 90
+  pool_train:
+    if: github.event.inputs.split == 'train'
+    needs: train
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v40-true-disagreement-reassessment-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v40-teacher-train-*
+          merge-multiple: true
+          path: collected
+      - name: Verify all 4096 physical groups and three real-v5 stage decisions each
+        run: |
+          python -u -m dack_simulator.validation.v40_pool_true_v5_disagreements \
+            --split train --teacher-glob 'collected/v40_teacher_train_*.jsonl.gz' \
+            --v27-glob 'collected/v40_v27_train_*.jsonl.gz' \
+            --expected-groups 4096 --out collected/v40_teacher_train_4096_census.json
+      - name: Archive original training shards and read-only comparison
+        run: |
+          mkdir -p datasets/v40_actual_v5_teacher_train_4096 benchmark_results
+          cp collected/v40_*.jsonl.gz datasets/v40_actual_v5_teacher_train_4096/
+          cp collected/v40_teacher_train_4096_census.json benchmark_results/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f datasets/v40_actual_v5_teacher_train_4096 benchmark_results/v40_teacher_train_4096_census.json
+          git commit -m "Archive v40 4096 independent actual-v5 training deals and v27 action census"
+          git pull --rebase origin dack-v40-true-disagreement-reassessment-20261101
+          git push origin HEAD:dack-v40-true-disagreement-reassessment-20261101
+  dev:
+    if: github.event.inputs.split == 'dev'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v40-true-disagreement-reassessment-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Collect 32 independent validation deals using original v5
+        run: |
+          python -u -m dack_simulator.validation.v40_collect_actual_v5_teacher \
+            --split dev --start $((144096 + ${{ matrix.shard }} * 32)) --games 32 \
+            --out shards/v40_teacher_dev_${{ matrix.shard }}.jsonl.gz
+      - name: Match with frozen v27 and v33b in separate interpreter
+        run: |
+          python -u -m dack_simulator.validation.v40_collect_frozen_v27_matched \
+            --split dev --start $((144096 + ${{ matrix.shard }} * 32)) --games 32 \
+            --out shards/v40_v27_dev_${{ matrix.shard }}.jsonl.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v40-teacher-dev-${{ matrix.shard }}
+          path: shards/v40_*.jsonl.gz
+          retention-days: 90
+  pool_dev:
+    if: github.event.inputs.split == 'dev'
+    needs: dev
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v40-true-disagreement-reassessment-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v40-teacher-dev-*
+          merge-multiple: true
+          path: collected
+      - name: Verify all 512 independent dev groups (not used for fitting)
+        run: |
+          python -u -m dack_simulator.validation.v40_pool_true_v5_disagreements \
+            --split dev --teacher-glob 'collected/v40_teacher_dev_*.jsonl.gz' \
+            --v27-glob 'collected/v40_v27_dev_*.jsonl.gz' \
+            --expected-groups 512 --out collected/v40_teacher_dev_512_census.json
+      - name: Archive original dev shards and read-only comparison
+        run: |
+          mkdir -p datasets/v40_actual_v5_teacher_dev_512 benchmark_results
+          cp collected/v40_*.jsonl.gz datasets/v40_actual_v5_teacher_dev_512/
+          cp collected/v40_teacher_dev_512_census.json benchmark_results/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f datasets/v40_actual_v5_teacher_dev_512 benchmark_results/v40_teacher_dev_512_census.json
+          git commit -m "Archive v40 512 independent original-v5 dev deals and v27 comparison"
+          git pull --rebase origin dack-v40-true-disagreement-reassessment-20261101
+          git push origin HEAD:dack-v40-true-disagreement-reassessment-20261101
