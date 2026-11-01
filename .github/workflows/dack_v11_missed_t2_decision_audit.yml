@@ -1,0 +1,147 @@
+name: DACK v11 learned mulligan missed-T2 paired decision audit
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v11_missed_t2_decision_audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 41255014354
+          github-token: ${{ github.token }}
+          pattern: v11-corrective-pair-*
+          merge-multiple: true
+          path: paired/
+      - name: Diagnose each T2 discordance with trained model value for reference hand
+        run: |
+          python - <<'PY'
+          import gzip,glob,json
+          from collections import Counter
+          from pathlib import Path
+          import dack_mulligan_learned_features_v8_20261031 as features
+          import dack_paired_counterfactual_v1_20261030 as ref
+          from dack_simulator.validation.derive_learned_london_dp_v8 import best_candidate
+          paths=glob.glob('paired/v11_pair_*.json.gz')
+          assert len(paths)==8,len(paths)
+          rows=[]
+          for path in paths:
+              with gzip.open(path,'rt') as f:data=json.load(f)
+              assert data['status']=='PASS'
+              rows.extend(data['rows'])
+          rows.sort(key=lambda x:x['game_id'])
+          assert [r['game_id'] for r in rows]==list(range(42000,42016))
+          model=json.loads(Path('models/dack_v11_corrective_EXPERIMENTAL.json').read_text())
+          dp=json.loads(Path('models/v11_dp/dack_london_v8_dp_one_key_34.json').read_text())
+          def model_value(hand,bottom,unknown,seat,keep_n):
+              x=features.extract(hand,bottom,Counter(unknown),seat,keep_n)
+              p=features.probability_from_export(model,x)
+              return {'p0':p[0],'p1':p[1],'p2':p[2],'p3':p[3],
+                      'utility':features.expected_utility(p)}
+          records=[]
+          for r in rows:
+              gid=r['game_id'];v5=r['v5'];learn=r['corrective_v11']
+              seat=v5['seat']
+              assert seat==learn['seat']
+              stage_info={}
+              for name,record in [('v5',v5),('learned',learn)]:
+                  h=record['history'][-1]
+                  assert h['kept']
+                  stage=int(h['stage'])
+                  seed=int(ref.SPEC['seed_base'])+gid*ref.SEED_STRIDE
+                  _,stages=ref.stage_slots(seed)
+                  slotmap=ref.SLOT_VARIANTS['one_key_34']
+                  unknown=tuple(slotmap[s] for s in stages[stage][7:])
+                  assert len(unknown)==92
+                  assert tuple(sorted(h['hand']))==tuple(sorted(record['hand']))
+                  pred=model_value(h['hand'],h['bottom'],unknown,seat,h['keep_n'])
+                  stage_info[name]={
+                    'win_turn':record['win_turn'],'keep_n':record['keep_n'],
+                    'stage':stage,'seven':h['seven'],
+                    'kept_hand':h['hand'],'bottom':h['bottom'],
+                    'predicted_by_v11_model':pred,
+                    'mulligan_history':[
+                      {'stage':x['stage'],'keep_n':x['keep_n'],
+                       'raw':x['raw'],'threshold':x['threshold'],
+                       'kept':x['kept']} for x in record['history']
+                    ]}
+              # If the two kept different stages, this is an upstream keep-vs-
+              # mull discrepancy, not necessarily a wrong bottom choice.
+              stage_info['same_kept_stage']=(
+                  stage_info['v5']['stage']==stage_info['learned']['stage'])
+              stage_info['same_kept_hand']=(
+                  Counter(stage_info['v5']['kept_hand'])==
+                  Counter(stage_info['learned']['kept_hand']))
+              stage_info['learned_minus_reference_model_utility']=(
+                  stage_info['learned']['predicted_by_v11_model']['utility']-
+                  stage_info['v5']['predicted_by_v11_model']['utility'])
+              stage_info['game_id']=gid
+              stage_info['T2_regret_realized']=(
+                  int(0<v5['win_turn']<=2)-int(0<learn['win_turn']<=2))
+              records.append(stage_info)
+          lost=[r for r in records if r['T2_regret_realized']==1]
+          gains=[r for r in records if r['T2_regret_realized']==-1]
+          assert len(lost)==3 and len(gains)==0,(len(lost),len(gains))
+          results={
+            'schema':'dack_v11_learned_policy_missed_T2_diagnostic',
+            'source_workflow':41255014354,
+            'game_seed_range':[42000,42015],
+            'n':len(records),'lost_T2_games':len(lost),'gained_T2_games':len(gains),
+            'model_approved':False,
+            'n_losses_different_keep_stage':sum(not x['same_kept_stage'] for x in lost),
+            'n_losses_same_stage_different_hand':sum(x['same_kept_stage'] and not x['same_kept_hand'] for x in lost),
+            'n_losses_model_values_learner_higher':sum(x['learned_minus_reference_model_utility']>0 for x in lost),
+            'note':'Utilities are model predictions conditional on each distinct keep stage; they are not directly comparable to observed oracle win labels in one game.',
+            'loss_details':lost,
+            'all_games_minimal':[{
+                'game_id':x['game_id'],
+                'v5_win':x['v5']['win_turn'],
+                'learned_win':x['learned']['win_turn'],
+                'v5_keep_n':x['v5']['keep_n'],
+                'learned_keep_n':x['learned']['keep_n'],
+                'same_stage':x['same_kept_stage']
+            } for x in records]
+          }
+          dest=Path('benchmark_results/learned_v11_missed_T2_decision_audit.json')
+          dest.parent.mkdir(exist_ok=True)
+          dest.write_text(json.dumps(results,indent=2)+'\n')
+          print('V11_MISSED_T2_DECISION_AUDIT_PASS',json.dumps({
+              'losses':len(lost),
+              'gains':len(gains),
+              'different_keep_stage':results['n_losses_different_keep_stage'],
+              'same_stage_different_hand':results['n_losses_same_stage_different_hand'],
+              'model_prefers_learned':results['n_losses_model_values_learner_higher'],
+              'loss_hand_details':[{
+                'gid':x['game_id'],
+                'v5_hand':x['v5']['kept_hand'],
+                'learned_hand':x['learned']['kept_hand'],
+                'v5_utility':x['v5']['predicted_by_v11_model']['utility'],
+                'learned_utility':x['learned']['predicted_by_v11_model']['utility'],
+                'v5_stage':x['v5']['stage'],
+                'learned_stage':x['learned']['stage']
+              } for x in lost]
+          }),flush=True)
+          PY
+      - name: Archive causal-policy diagnostic data on isolated branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/learned_v11_missed_T2_decision_audit.json
+          git commit -m "Audit learned V11 missed turn-two games against v5 keep stages and model-valued hands"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v11-missed-t2-policy-decision-traces
+          path: benchmark_results/learned_v11_missed_T2_decision_audit.json
+          retention-days: 14
