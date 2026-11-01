@@ -1,0 +1,71 @@
+name: DACK v40 real-v5 1592 recovered group-split student learning curves
+on:
+  push:
+    branches: [dack-v40-true-disagreement-reassessment-20261101]
+    paths:
+      - '.github/workflows/dack_v40_train_recovered_true_v5_curve.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  fit_and_diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v40-true-disagreement-reassessment-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install frozen lightweight learning dependencies
+        run: python -m pip install 'numpy>=1.26,<3' 'scikit-learn>=1.4,<1.8'
+      - name: Check source corpus sha, syntax and visible feature invariants
+        run: |
+          python -m py_compile dack_simulator/validation/v40_train_recovered_true_v5_curve.py
+          python dack_mulligan_teacher_features_v13_20261031.py
+          python - <<'PY'
+          import hashlib,json,pathlib
+          r=json.loads(pathlib.Path('benchmark_results/v40_recovered_original_v5_1592_summary.json').read_text())
+          a=pathlib.Path('datasets/v40_recovered_original_v5_history_1592.jsonl.gz')
+          assert r['status']=='PASS' and r['group_n']==1592 and r['stage_n']==6101
+          assert hashlib.sha256(a.read_bytes()).hexdigest()==r['data_sha256']
+          print('DACK_V40_1592_CORPUS_SHA_VERIFIED')
+          PY
+      - name: Fit true-v5 group-nested 128 384 768 1288 and validate on separate 115k and DAgger groups
+        run: |
+          python -u -m dack_simulator.validation.v40_train_recovered_true_v5_curve \
+            --out benchmark_results/v40_true_v5_teacher_learning_curve.json \
+            --models-dir models/v40_true_v5_archived
+      - name: Verify no policy approval and test for leaks before archival
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          p=pathlib.Path('benchmark_results/v40_true_v5_teacher_learning_curve.json')
+          r=json.loads(p.read_text())
+          assert r['status']=='PASS' and not r['model_approved']
+          assert len(r['curves'])==8
+          assert r['full_training_groups']==1288 and r['historical_test_groups']==256
+          assert r['student_visited_stress_groups']==48 and r['test_groups_never_in_fit']
+          assert r['internal_historical_test_is_NOT_fresh_prospective_validation']
+          assert r['historical_win_outcomes_not_used']
+          assert {c['feature_mode'] for c in r['curves']}=={'full','portable'}
+          print('DACK_V40_LEARNING_CURVE_ARCHIVE_CONTRACT_PASS')
+          PY
+      - name: Archive experimental reports and both final exported inference forests
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v40_true_v5_teacher_learning_curve.json models/v40_true_v5_archived/*.json
+          git commit -m "Archive v40 group-separated true-v5 1592 historical learning curves and unapproved inference forests"
+          git pull --rebase origin dack-v40-true-disagreement-reassessment-20261101
+          git push origin HEAD:dack-v40-true-disagreement-reassessment-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v40-original-v5-1592-learning-curve-and-models
+          path: |
+            benchmark_results/v40_true_v5_teacher_learning_curve.json
+            models/v40_true_v5_archived/*.json
+          retention-days: 90
