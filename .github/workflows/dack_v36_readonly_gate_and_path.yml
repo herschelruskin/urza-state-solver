@@ -1,0 +1,32 @@
+name: DACK v36 zero-beam 124k action gate and complete London path audit
+on:
+  push:
+    branches: [dack-v36-targeted-keep-value-20261101]
+    paths:
+      - '.github/workflows/dack_v36_readonly_gate_and_path.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  attribution:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit complete physical London parity and two guards without any beams
+        run: |
+          python -m py_compile dack_simulator/validation/v36_readonly_gate_and_path_audit.py
+          python -u dack_simulator/validation/v36_readonly_gate_and_path_audit.py
+      - name: Archive exact zero-beam stage and actual-game bounds
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v36_124k_readonly_gates_and_actual_path.json
+          git commit -m "Archive v36 exact 124k London path equivalence and T2/T3 guard bottleneck"
+          git pull --rebase origin dack-v36-targeted-keep-value-20261101
+          git push origin HEAD:dack-v36-targeted-keep-value-20261101
