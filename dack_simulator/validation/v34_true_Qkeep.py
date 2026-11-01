@@ -31,7 +31,7 @@ def one(gid,split):
         seven=tuple(deck[x] for x in order[:7])
         unseen=tuple(deck[x] for x in order[7:])
         assert len(seven)==7 and len(unseen)==92
-        assert Counter(seven)+Counter(unseen)==Counter(deck)
+        assert Counter(seven)+Counter(unseen)==Counter(deck.values())
         sel=kernel.current(seven,unseen,seat,stage)
         # No path's realized cards can leak to the policy: unknown is
         # available as counts only to current().
