@@ -1,0 +1,131 @@
+name: DACK v22 real keep-utility DP versus strict v5 and v14-128 paired N16
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v22_real_keep_DP_paired_n16.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  pairs:
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        include:
+          - start: 86000
+          - start: 86002
+          - start: 86004
+          - start: 86006
+          - start: 86008
+          - start: 86010
+          - start: 86012
+          - start: 86014
+    runs-on: ubuntu-latest
+    timeout-minutes: 32
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate exact-model-bound DP and unchanged strict full-game beam
+        run: |
+          python -m compileall -q dack_simulator/validation/compare_v22_real_keep_DP.py
+          python dack_paired_counterfactual_v22_all_stage_real_keep_DP_20261101.py --audit
+      - name: Run three truly paired physical goldfish games using new 86k never-trained seeds
+        run: |
+          python -u dack_simulator/validation/compare_v22_real_keep_DP.py \
+            --start ${{ matrix.start }} --games 2 \
+            --out shards/v22_keep_pair_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v22-keep-pair-${{ matrix.start }}
+          path: shards/v22_keep_pair_*.json.gz
+          retention-days: 21
+  pool:
+    needs: pairs
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v22-keep-pair-*
+          merge-multiple: true
+          path: paired/
+      - name: Pool all matched seeds; require complete denominator for runtime and T2
+        run: |
+          python - <<'PY'
+          import gzip,glob,json,math
+          from pathlib import Path
+          paths=sorted(glob.glob('paired/v22_keep_pair_*.json.gz'))
+          assert len(paths)==8,len(paths)
+          rows=[]
+          ps=['v5','v14_128','v22_real_keep_DP']
+          for path in paths:
+              with gzip.open(path,'rt') as f: shard=json.load(f)
+              assert shard['status']=='PASS' and shard['model_deployment_approved'] is False
+              assert shard['actual_gameplay_beam']==160
+              rows.extend(shard['rows'])
+          rows.sort(key=lambda x:x['game_id'])
+          assert [x['game_id'] for x in rows]==list(range(86000,86016))
+          def metrics(policy):
+              r=[x[policy] for x in rows]
+              return {
+                'n':16,'turn_1':sum(z['turn']==1 for z in r),
+                'by_turn_2':sum(z['turn'] in (1,2) for z in r),
+                'by_turn_3':sum(z['turn'] in (1,2,3) for z in r),
+                'mean_keep':sum(z['keep_n'] for z in r)/16,
+                'total_gameplay_seconds':round(sum(z['seconds'] for z in r),4)}
+          m={p:metrics(p) for p in ps}
+          paired={}
+          for p in ('v14_128','v22_real_keep_DP'):
+              for q in (('v5',) if p=='v14_128' else ('v5','v14_128')):
+                  d=[int(x[p]['turn'] in (1,2))-int(x[q]['turn'] in (1,2)) for x in rows]
+                  delta=sum(d)/16
+                  se=math.sqrt(sum((x-delta)**2 for x in d)/(16*15))
+                  paired[p+'_minus_'+q]={
+                    'T2_gain_games':d.count(1),'T2_loss_games':d.count(-1),
+                    'T2_delta_pp':100*delta,
+                    'exploratory_95ci_pp':[100*(delta-1.96*se),100*(delta+1.96*se)]}
+          report={
+            'schema':'dack_v22_real_keep_DP_research_paired_n16',
+            'status':'PASS','game_id_range':[86000,86015],
+            'n_independent_paired_games':16,
+            'model_approved_for_deployment':False,
+            'teacher_v5_gameplay_beam':160,
+            'experiment_uses_identical_v14_128_bottom_choices':True,
+            'no_beam_in_v22_mulligan':True,
+            'metrics':m,'paired':paired,
+            'online_speed_ratio_vs_v5':{
+              p:m['v5']['total_gameplay_seconds']/max(.001,m[p]['total_gameplay_seconds'])
+              for p in ('v14_128','v22_real_keep_DP')},
+            'warning':'Small exploratory N16. Conditional outcome model trained on 64 games, not proof of noninferiority or multiplayer win rate.'
+          }
+          out=Path('benchmark_results/v22_real_keep_DP_paired_n16.json')
+          out.parent.mkdir(exist_ok=True)
+          out.write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
+          print('V22_REAL_KEEP_DP_PAIRED_N16_PASS',json.dumps(report,sort_keys=True),flush=True)
+          PY
+      - name: Archive research report and all paired shards, without promoting v22
+        run: |
+          mkdir -p benchmark_results/v22_real_keep_DP_paired_shards
+          cp paired/v22_keep_pair_*.json.gz benchmark_results/v22_real_keep_DP_paired_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v22_real_keep_DP_paired_n16.json benchmark_results/v22_real_keep_DP_paired_shards/
+          git commit -m "Archive independent matched 86k v22 real keep-value DP versus v5 and v14-128 gameplay"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v22-real-keep-DP-paired-N16-report
+          path: benchmark_results/v22_real_keep_DP_paired_n16.json
+          retention-days: 21
