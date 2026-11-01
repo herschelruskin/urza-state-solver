@@ -1,0 +1,76 @@
+name: DACK v40 retry 1592 true-v5 grouped learning curve (JSON integer fix)
+on:
+  push:
+    branches: [dack-v40-true-disagreement-reassessment-20261101]
+    paths:
+      - '.github/workflows/dack_v40_train_recovered_true_v5_curve_retry.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  retrain_exact_predeclared_design:
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v40-true-disagreement-reassessment-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install sklearn and numpy
+        run: python -m pip install 'numpy>=1.26,<3' 'scikit-learn>=1.4,<1.8'
+      - name: Fix only serialization of NumPy integer feature indices from initial failed run
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('dack_simulator/validation/v40_train_recovered_true_v5_curve.py')
+          before=p.read_text()
+          prior='"feature_indices":list(indices),'
+          newer='"feature_indices":[int(i) for i in indices],'
+          assert before.count(prior)==1
+          p.write_text(before.replace(prior,newer))
+          assert newer in p.read_text()
+          print('V40_SERIALIZATION_ONLY_FIX_PASS')
+          PY
+          python -m py_compile dack_simulator/validation/v40_train_recovered_true_v5_curve.py
+      - name: Repeat original identical group-separated 128,384,768,1288 curves
+        run: |
+          python -u -m dack_simulator.validation.v40_train_recovered_true_v5_curve \
+            --out benchmark_results/v40_true_v5_teacher_learning_curve.json \
+            --models-dir models/v40_true_v5_archived
+      - name: Verify signed fingerprints, partitions and models unapproved
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json,hashlib
+          r=json.loads(Path('benchmark_results/v40_true_v5_teacher_learning_curve.json').read_text())
+          assert r['status']=='PASS' and len(r['curves'])==8
+          assert (r['full_training_groups'],r['historical_test_groups'],r['student_visited_stress_groups'])==(1288,256,48)
+          assert r['test_groups_never_in_fit'] and not r['model_approved']
+          assert r['historical_win_outcomes_not_used']
+          assert not r['internal_historical_test_is_NOT_fresh_prospective_validation'] is False
+          for suffix in ('full','portable'):
+              p=Path('models/v40_true_v5_archived/v40_archived_actual_v5_'+suffix+'_1288_RESEARCH.json')
+              m=json.loads(p.read_text())
+              assert m['policy_approved'] is False
+              assert len(m['feature_indices'])==len(m['feature_names'])
+              assert m['source_corpus_sha256']==r['source_corpus_sha256']
+          print('DACK_V40_TRAINED_STUDENT_EXPORT_PASS')
+          PY
+      - name: Archive experiment only and persistent code repair
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f dack_simulator/validation/v40_train_recovered_true_v5_curve.py benchmark_results/v40_true_v5_teacher_learning_curve.json models/v40_true_v5_archived/*.json
+          git commit -m "Archive v40 grouped v5 imitation curves, JSON models and serializer repair"
+          git pull --rebase origin dack-v40-true-disagreement-reassessment-20261101
+          git push origin HEAD:dack-v40-true-disagreement-reassessment-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v40-1592-real-v5-grouped-learning-retry
+          path: |
+            benchmark_results/v40_true_v5_teacher_learning_curve.json
+            models/v40_true_v5_archived/*.json
+          retention-days: 90
