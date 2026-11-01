@@ -1,0 +1,158 @@
+name: DACK v22 fresh strict-v5 versus value-DP physical game N64
+on:
+  push:
+    branches: [dack-counterfactual-engine-v1-20261030]
+    paths:
+      - '.github/workflows/dack_v22_fresh_v5_paired_n64.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  matched:
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        include:
+          - start: 88000
+          - start: 88002
+          - start: 88004
+          - start: 88006
+          - start: 88008
+          - start: 88010
+          - start: 88012
+          - start: 88014
+          - start: 88016
+          - start: 88018
+          - start: 88020
+          - start: 88022
+          - start: 88024
+          - start: 88026
+          - start: 88028
+          - start: 88030
+          - start: 88032
+          - start: 88034
+          - start: 88036
+          - start: 88038
+          - start: 88040
+          - start: 88042
+          - start: 88044
+          - start: 88046
+          - start: 88048
+          - start: 88050
+          - start: 88052
+          - start: 88054
+          - start: 88056
+          - start: 88058
+          - start: 88060
+          - start: 88062
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit exact model-bound London value DP, full-game beam160, and unapproved experimental status
+        run: |
+          python -m compileall -q dack_simulator/validation/compare_v22_real_keep_DP_n64.py
+          python dack_paired_counterfactual_v22_all_stage_real_keep_DP_20261101.py --audit
+      - name: Independently simulate same two physical 99-card shuffles under v5/v14/v22
+        run: |
+          python -u dack_simulator/validation/compare_v22_real_keep_DP_n64.py \
+            --start ${{ matrix.start }} --games 2 \
+            --out shards/v22_88k_pair_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-88k-v5-v22-${{ matrix.start }}
+          path: shards/v22_88k_pair_*.json.gz
+          retention-days: 21
+  pool_and_archive:
+    needs: matched
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-counterfactual-engine-v1-20261030
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-88k-v5-v22-*
+          merge-multiple: true
+          path: paired/
+      - name: Require complete N64 physical denominator and summarize grouped paired T1 T2 T3
+        run: |
+          python - <<'PY'
+          import gzip,glob,json,math,random
+          from pathlib import Path
+          fs=sorted(glob.glob('paired/v22_88k_pair_*.json.gz'))
+          assert len(fs)==32,len(fs)
+          rows=[]
+          ps=['v5','v14_128','v22_real_keep_DP']
+          for path in fs:
+              with gzip.open(path,'rt') as f:d=json.load(f)
+              assert d['status']=='PASS' and d['model_deployment_approved'] is False
+              assert d['actual_gameplay_beam']==160
+              rows.extend(d['rows'])
+          rows.sort(key=lambda x:x['game_id'])
+          assert [x['game_id'] for x in rows]==list(range(88000,88064))
+          def measures(pol):
+              v=[x[pol] for x in rows]
+              return {'n':64,
+                      'T1':sum(z['turn']==1 for z in v),
+                      'T2':sum(z['turn'] in (1,2) for z in v),
+                      'T3':sum(z['turn'] in (1,2,3) for z in v),
+                      'mean_keep_n':sum(z['keep_n'] for z in v)/64,
+                      'total_gameplay_seconds':round(sum(z['seconds'] for z in v),4)}
+          m={p:measures(p) for p in ps}
+          pairs={}
+          for a,b in [('v22_real_keep_DP','v5'),('v14_128','v5'),
+                      ('v22_real_keep_DP','v14_128')]:
+              for turn in (1,2,3):
+                  d=[int(0<r[a]['turn']<=turn)-int(0<r[b]['turn']<=turn) for r in rows]
+                  mean=sum(d)/64
+                  rng=random.Random(88000+turn+len(a)+len(b))
+                  draws=sorted(sum(d[rng.randrange(64)] for j in range(64))/64
+                               for i in range(4000))
+                  pairs[f'{a}_minus_{b}_T{turn}']={
+                      'gains':d.count(1),'losses':d.count(-1),
+                      'delta_percentage_points':100*mean,
+                      'paired_bootstrap_95ci_pp':[100*draws[100],100*draws[3899]]}
+          report={
+              'schema':'dack_v22_direct_real_keep_DP_vs_v5_N64',
+              'status':'PASS','game_ids':[88000,88063],
+              'independent_game_seeds':64,
+              'goldfish_gameplay_beam':160,
+              'same_frozen_physical_99_slot_shuffles':True,
+              'same_bottom_selector_between_student_policies':True,
+              'experimental_policy_approved':False,
+              'metrics':m,'paired':pairs,
+              'speedup_vs_v5':{
+                  p:m['v5']['total_gameplay_seconds']/max(.0001,m[p]['total_gameplay_seconds'])
+                  for p in ps if p!='v5'},
+              'warning':'Research-only goldfish deployment; no multiplayer win rate. N64 limits precision and outcomes were selected after earlier model-development comparisons.'
+          }
+          out=Path('benchmark_results/v22_88k_vs_v5_paired_N64.json')
+          out.parent.mkdir(exist_ok=True)
+          out.write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
+          print('V22_PAIRED_V5_N64_FULL_GAME_PASS',json.dumps(report,sort_keys=True),flush=True)
+          PY
+      - name: Archive all completed physical-game shards, with no policy promotion
+        run: |
+          mkdir -p benchmark_results/v22_88k_v5_paired_shards
+          cp paired/v22_88k_pair_*.json.gz benchmark_results/v22_88k_v5_paired_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v22_88k_vs_v5_paired_N64.json benchmark_results/v22_88k_v5_paired_shards
+          git commit -m "Archive independent N64 physical beam-v5 versus full-real-outcome London DP comparison"
+          git pull --rebase origin dack-counterfactual-engine-v1-20261030
+          git push origin HEAD:dack-counterfactual-engine-v1-20261030
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dack-v22-fresh-reference-comparison-N64
+          path: benchmark_results/v22_88k_vs_v5_paired_N64.json
+          retention-days: 21
