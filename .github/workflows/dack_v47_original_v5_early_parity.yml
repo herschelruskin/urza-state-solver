@@ -1,4 +1,4 @@
-name: DACK v47 original real v5 seven-card stage0-1 lookahead exact historical parity
+name: DACK v47 true original v5 first-two-seven archived parity corrected source root
 on:
   push:
     branches: [dack-v47-original-v5-first-two-seven-fallback-20261101]
