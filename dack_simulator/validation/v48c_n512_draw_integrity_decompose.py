@@ -58,13 +58,7 @@ def main():
        "mana_witness_top2_core_contaminated_cases":contam,
        "witness_physical_discordances":discord,
        "new_source_verified_tutor_witnesses":tutor_new,
-       "first7_without_combo_natural_two_draw_survival_probability":
-         integ.expose(
-           ["Plains","Ancient Tomb","Sol Ring","Chrome Mox","Silence","Mox Diamond","Enlightened Tutor"],
-           # build valid 92 unknown via source deck below
-           tuple(__import__("collections").Counter(
-              ref.SLOT_VARIANTS["one_key_34"].values()).elements())[:0]
-         ) if False else round((89*88)/(92*91),8),
+       "first7_without_combo_natural_two_draw_survival_probability":round((89*88)/(92*91),8),
        "natural_top2_risk_does_not_model_tutors_scry_repair":True,
        "no_promotion":True}
     path=ROOT/"benchmark_results/v48c_168k_169k_n512_draw_integrity_decomposition.json"
