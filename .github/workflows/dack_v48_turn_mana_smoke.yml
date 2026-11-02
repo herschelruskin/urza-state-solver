@@ -1,0 +1,21 @@
+name: DACK v48 legality-first turn-aware mana witness smoke
+on:
+  push:
+    branches: [dack-v48-turn-aware-legal-mana-features-20261101]
+    paths:
+      - ".github/workflows/dack_v48_turn_mana_smoke.yml"
+      - "dack_turn_aware_legal_mana_features_v48_20261101.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Exact turn-one and turn-two engine witness, blind hidden deck reversal and mana restrictions
+        run: python dack_turn_aware_legal_mana_features_v48_20261101.py
