@@ -1,0 +1,69 @@
+{
+  "N_independent_real_games": 256,
+  "actual_full_game_goldfish_not_population_mull_state_estimate": true,
+  "model_sha256": "4adf5913795fe748f5881698fd3d4977de8d19b02372362f896384b8431271d7",
+  "no_v5_gameplay_lookahead_at_runtime": true,
+  "paired": {
+    "T1": {
+      "net_games": 0,
+      "paired_bootstrap_95ci_pp": [
+        0.0,
+        0.0
+      ],
+      "v43_only": 0,
+      "v46_minus_v43_pp": 0.0,
+      "v46_only": 0
+    },
+    "T2": {
+      "net_games": 0,
+      "paired_bootstrap_95ci_pp": [
+        0.0,
+        0.0
+      ],
+      "v43_only": 0,
+      "v46_minus_v43_pp": 0.0,
+      "v46_only": 0
+    },
+    "T3": {
+      "net_games": 1,
+      "paired_bootstrap_95ci_pp": [
+        0.0,
+        1.171875
+      ],
+      "v43_only": 0,
+      "v46_minus_v43_pp": 0.390625,
+      "v46_only": 1
+    }
+  },
+  "policy_metrics": {
+    "v43": {
+      "by_T1": 12,
+      "by_T2": 121,
+      "by_T3": 204,
+      "mean_cards_kept": 5.47265625,
+      "seconds_gameplay_only": 102.35853999999995
+    },
+    "v46": {
+      "by_T1": 12,
+      "by_T2": 121,
+      "by_T3": 205,
+      "mean_cards_kept": 5.48046875,
+      "seconds_gameplay_only": 102.73227999999996
+    }
+  },
+  "predeclared_dev_gate_verified": true,
+  "research_only_not_promoted": true,
+  "same_physical_source_groups_deck_seat_and_stable_dice": true,
+  "schema": "dack_v46_v43_vs_early_Q2_corrected_161k_N256_paired_full_policy",
+  "stage_0_1_reach_and_change": {
+    "both_same_stage_same_hand": 253,
+    "different_final_london_stage": 3,
+    "same_final_london_stage": 253,
+    "v43_earlier_keep": 1,
+    "v43_n_reaches_second_seven": 212,
+    "v46_earlier_keep": 2,
+    "v46_n_reaches_second_seven": 210
+  },
+  "status": "PASS",
+  "strict_beam160_original_game_engine": true
+}
