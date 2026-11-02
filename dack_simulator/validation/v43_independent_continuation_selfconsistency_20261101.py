@@ -29,49 +29,63 @@ def thresholds(matrix):
 
 def main():
     v43.audit()
-    per_seat=defaultdict(list);runtime=time.monotonic()
+    per_seat=defaultdict(list);per_seat_v27=defaultdict(list);runtime=time.monotonic()
     deck=ref.SLOT_VARIANTS["one_key_34"]
     for gid in range(START,START+GAMES):
         seed=int(ref.SPEC["seed_base"])+gid*ref.SEED_STRIDE
         seat,orders=ref.stage_slots(seed)
-        vals=[]
+        vals=[];vals_v27=[]
         for stage,(kn,order) in enumerate(zip(ref.sim.STAGES,orders)):
             seven=tuple(deck[s] for s in order[:7])
             unknown=tuple(deck[s] for s in order[7:])
             pool=Counter(unknown)
             cand=finalists(seven,kn,unknown)
-            qmax=-1.
+            qmax=-1.;v14_best_vote=-1.;v14_selected_q=None
             for i,c in enumerate(cand):
                 x=f.extract(seven,c["hand"],c["bottom"],pool,seat,kn,stage,c["struct_rank"],i)
                 q=float(v43.v27.original.estimator.predict(v43.v27.original.MODEL,x))
                 qmax=max(qmax,q)
+                vote=f.score_head(v43.v27.original.old.MODEL,"choice_trees",x)
+                if vote>v14_best_vote:
+                    v14_best_vote=vote;v14_selected_q=q
             assert 0<=qmax<=1
             vals.append(qmax)
+            assert v14_selected_q is not None
+            vals_v27.append(v14_selected_q)
         per_seat[str(seat)].append(vals)
+        per_seat_v27[str(seat)].append(vals_v27)
         if (gid-START+1)%128==0:
             print("V43_RECOMPUTE_CONTINUATION_PROGRESS",gid-START+1,round(time.monotonic()-runtime,2),flush=True)
     rng=random.Random(20261101)
     rows={}
     for seat in map(str,range(4)):
-        a=per_seat[seat]
+        a=per_seat[seat];av27=per_seat_v27[seat]
         assert len(a)>=150,(seat,len(a))
         old=[float(z) for z in v43.v27.original.DP["seat_continuations"][seat]["thresholds_by_london_stage"]]
-        now=thresholds(a)
-        bootstrap=[]
+        now=thresholds(a);matched_v27=thresholds(av27)
+        bootstrap=[];bootstrap_delta=[]
         for _ in range(BOOT):
-            sample=[a[rng.randrange(len(a))] for __ in a]
-            bootstrap.append(thresholds(sample))
+            indices=[rng.randrange(len(a)) for __ in a]
+            t43=thresholds([a[i] for i in indices])
+            t27=thresholds([av27[i] for i in indices])
+            bootstrap.append(t43)
+            bootstrap_delta.append([x-y for x,y in zip(t43,t27)])
         data=[]
         for stage in range(8):
             sorted_vals=sorted(boot[stage] for boot in bootstrap)
+            sorted_deltas=sorted(boot[stage] for boot in bootstrap_delta)
             data.append({
               "stage":stage,"keep_n":ref.sim.STAGES[stage],
-              "frozen_v27_threshold":old[stage],"v43_model_self_consistent_threshold":now[stage],
+              "frozen_v27_threshold":old[stage],"v27_same_deals_threshold":matched_v27[stage],
+              "v43_model_self_consistent_threshold":now[stage],
               "change":now[stage]-old[stage],
+              "v27_recalculated_minus_frozen":matched_v27[stage]-old[stage],
+              "v43_minus_v27_same_deals":now[stage]-matched_v27[stage],
+              "v43_minus_v27_paired_bootstrap95":[sorted_deltas[int(BOOT*.025)],sorted_deltas[int(BOOT*.975)-1]],
               "bootstrap_group95":[sorted_vals[int(BOOT*.025)],sorted_vals[int(BOOT*.975)-1]],
               "predicted_keep_mean":statistics.mean(row[stage] for row in a)})
         rows[seat]={"outer_source_groups":len(a),"stage_values":data}
-        print("V43_CONTINUATION_SEAT",seat,len(a),"old",old[:3],"v43",now[:3],flush=True)
+        print("V43_CONTINUATION_SEAT",seat,len(a),"archived_v27",old[:3],"same_deals_v27",matched_v27[:3],"v43",now[:3],flush=True)
     result={
       "schema":"dack_v43_independent_development_model_only_DP_self_consistency_v1",
       "status":"PASS","start_gid":START,"game_ids":[START,START+GAMES-1],
@@ -92,7 +106,9 @@ def main():
       "N":GAMES,"seats":{seat:{"n":z["outer_source_groups"],
           "first_seven_old":z["stage_values"][0]["frozen_v27_threshold"],
           "first_seven_v43":z["stage_values"][0]["v43_model_self_consistent_threshold"],
+          "first_seven_v27_same_deals":z["stage_values"][0]["v27_same_deals_threshold"],
           "second_seven_old":z["stage_values"][1]["frozen_v27_threshold"],
-          "second_seven_v43":z["stage_values"][1]["v43_model_self_consistent_threshold"]}
+          "second_seven_v43":z["stage_values"][1]["v43_model_self_consistent_threshold"],
+          "second_seven_v27_same_deals":z["stage_values"][1]["v27_same_deals_threshold"]}
           for seat,z in rows.items()}},sort_keys=True),flush=True)
 if __name__=="__main__":main()
