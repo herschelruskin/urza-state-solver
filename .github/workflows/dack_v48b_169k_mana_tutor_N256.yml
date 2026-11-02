@@ -1,0 +1,54 @@
+name: DACK v48b independent guaranteed tutor mana 169k N256
+on:
+  push:
+    branches:
+      - dack-v48-turn-aware-legal-mana-features-20261101
+    paths:
+      - ".github/workflows/dack_v48b_169k_mana_tutor_N256.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  physical:
+    strategy:
+      fail-fast: false
+      matrix:
+        start: [169000,169032,169064,169096,169128,169160,169192,169224]
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Matched original legal mana and guaranteed physical tutors vs fresh conditional T1-T3
+        run: |
+          mkdir -p shards
+          python -m dack_simulator.validation.v48b_169k_tutor_mana_physical_N256 --start ${{ matrix.start }} --out shards/mana169k_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v48b-mana169k-${{ matrix.start }}
+          path: shards/mana169k_${{ matrix.start }}.json.gz
+  pool:
+    needs: physical
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v48b-mana169k-*
+          path: shards
+          merge-multiple: true
+      - name: Report true physical gain from known guaranteed tutor lines and false positives
+        run: |
+          python -m dack_simulator.validation.v48b_pool_169k_tutor_mana_N256 --folder shards --out benchmark_results/v48b_169k_tutor_mana_N256_pooled.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v48b-mana169k-N256-pooled
+          path: benchmark_results/v48b_169k_tutor_mana_N256_pooled.json
