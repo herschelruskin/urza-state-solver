@@ -27,8 +27,14 @@ def main(start,out):
         upgraded=tutor.analyze(seven,unknown,seat,beam=32,depth=9)
         cost=time.perf_counter()-t0
         assert upgraded["hand"]==row["feat"]["hand"]
-        assert bool(upgraded["T1_tutor_legal_no_draw_witness"])>=bool(row["feat"]["mana_witness_T1_no_draw"]),(gid,"tutor search lost prior no-draw witness")
-        assert bool(upgraded["T2_tutor_legal_no_draw_witness"])>=bool(row["feat"]["mana_witness_T2_no_draw"]),(gid,"tutor search lost prior no-draw witness")
+        # Bounded beam search is not monotone: adding tutor branches can
+        # crowd an old witness. Record such sensitivity, never assert it away.
+        row["tutor_T1_lost_prior_witness"]=bool(
+            row["feat"]["mana_witness_T1_no_draw"] and
+            not upgraded["T1_tutor_legal_no_draw_witness"])
+        row["tutor_T2_lost_prior_witness"]=bool(
+            row["feat"]["mana_witness_T2_no_draw"] and
+            not upgraded["T2_tutor_legal_no_draw_witness"])
         row["tutor_feat"]=upgraded;row["tutor_feature_seconds"]=cost
         rows.append(row)
         if len(rows)%8==0:
