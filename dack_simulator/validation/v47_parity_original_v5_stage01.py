@@ -11,7 +11,7 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 import dack_paired_counterfactual_v47_v5_early_two_sevens_20261101 as v47
 
-ROOT=Path(__file__).resolve().parent
+ROOT=Path(__file__).resolve().parents[2]
 SRC=ROOT/"benchmark_results/v43_v5_151k_N128_shards/v43_original_v5_151k_151000.json.gz"
 def run():
     with gzip.open(SRC,"rt") as f:src=json.load(f)
