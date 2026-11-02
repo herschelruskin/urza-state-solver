@@ -1,0 +1,29 @@
+name: DACK v43 strict conditional physical candidate-pruning diagnostic
+on:
+  push:
+    branches:
+      - dack-v43-independent-audit-20261101
+    paths:
+      - ".github/workflows/dack_v43_candidate_physical_20261101.yml"
+      - "dack_simulator/validation/v43_conditional_candidate_physical_20261101.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  physical:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Independent strict physical beam160 conditional candidate tests
+        run: |
+          python -m dack_simulator.validation.v43_conditional_candidate_physical_20261101
+      - name: Archive raw conditional physical turns by candidate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dack-v43-pruning-physical-1624xx
+          path: benchmark_results/v43_new_candidate_pruning_physical_selected_1624xx.json
