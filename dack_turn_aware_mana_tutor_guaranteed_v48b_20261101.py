@@ -19,6 +19,7 @@ ROOT=Path(__file__).resolve().parent
 sys.path.insert(0,str(ROOT))
 import dack_turn_aware_legal_mana_features_v48_20261101 as base
 d=base.d;ref=base.ref
+BASE_ACTIONS=base._actions  # capture function BEFORE scoped monkeypatch
 SCHEMA="dack_v48b_legally_searched_mana_futures_without_unseen_draws_v1"
 TUTOR_SOURCES={"Expedition Map","Moonsilver Key","Urza's Cave","Tezzeret, Cruel Captain"}
 def moved_from_deck(before,after,source):
@@ -54,7 +55,7 @@ def moved_from_deck(before,after,source):
     assert len(before.library)==len(after.library)+1
     return target
 def augmented_actions(s):
-    yield from base._actions(s)
+    yield from BASE_ACTIONS(s)
     # In the installed rules some activations depend on the actual top card.
     # Only the specifically source-verified tutor branch enters the frontier.
     for source,fn in (("v03",d.v03_actions),("saga",d.saga_tutor_actions)):
