@@ -5,8 +5,9 @@ Refit deterministic sklearn model on archived train-only physical source,
 compare exported tree paths/scores for 32 source states. Verify frozen v43
 unchanged at all non-seven-card London stages; no prospective test accessed.
 """
-import glob,json,hashlib
+import glob,json,hashlib,sys
 from pathlib import Path
+sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 from dack_simulator.validation import v46_train_early_seven_Q2 as trainer
 import dack_paired_counterfactual_v46_early_seven_Q2_20261101 as runtime
 import dack_mulligan_teacher_features_v13_20261031 as features
