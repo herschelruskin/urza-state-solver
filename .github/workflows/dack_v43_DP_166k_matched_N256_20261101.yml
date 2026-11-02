@@ -1,0 +1,55 @@
+name: DACK v43 consistent DP fresh physical N256 166k
+on:
+  push:
+    branches:
+      - dack-v43-policy-consistent-hybrid-dev-20261101
+    paths:
+      - ".github/workflows/dack_v43_DP_166k_matched_N256_20261101.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  physical:
+    strategy:
+      fail-fast: false
+      matrix:
+        start: [166000, 166032, 166064, 166096, 166128, 166160, 166192, 166224]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Matched independent full99 strict physical goldfish, frozen v43 vs DP only
+        run: |
+          mkdir -p shards
+          python -m dack_simulator.validation.v43_DP_fresh_166k_N256_20261101 --start ${{ matrix.start }} --out shards/v43dp_${{ matrix.start }}.json.gz
+      - name: Persist raw exact deal and London histories
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dack-v43-DP-166k-${{ matrix.start }}
+          path: shards/v43dp_${{ matrix.start }}.json.gz
+  pool:
+    needs: physical
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v43-DP-166k-*
+          path: shards
+          merge-multiple: true
+      - name: Strict N256 independent deal, parity, 8000 bootstrap and predeclared gate
+        run: |
+          python -m dack_simulator.validation.v43_DP_pool_166k_N256_20261101 --folder shards --out benchmark_results/v43_DP_166k_N256_full_matched.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v43-DP-166k-N256-pool
+          path: benchmark_results/v43_DP_166k_N256_full_matched.json
