@@ -1,0 +1,29 @@
+name: DACK v43 read-only candidate/legal information-boundary audit
+on:
+  push:
+    branches:
+      - dack-v43-independent-audit-20261101
+    paths:
+      - ".github/workflows/dack_v43_candidate_integrity_audit_20261101.yml"
+      - "dack_simulator/validation/v43_readonly_candidate_invariants_20261101.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Frozen v43 structural legal candidate and hidden order audit
+        run: |
+          python -m dack_simulator.validation.v43_readonly_candidate_invariants_20261101 --out benchmark_results/v43_new_independent_readonly_candidate_integrity_162400_162411.json
+      - name: Archive generated read-only audit artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dack-v43-new-independent-candidate-audit
+          path: benchmark_results/v43_new_independent_readonly_candidate_integrity_162400_162411.json
