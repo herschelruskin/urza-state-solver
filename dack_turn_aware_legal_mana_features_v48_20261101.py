@@ -141,7 +141,7 @@ def analyze(seven,unknown,seat,keep_n=7,stage=0,bottom=(),beam=BEAM,depth=MAX_DE
     # bottom cards. The feature cannot see the actual order by construction.
     library=tuple(sorted(unknown))+tuple(sorted(bottom))
     if len(hand)+len(library)!=99:raise AssertionError("physical reconstruction")
-    allcards=Counter(ref.SLOT_VARIANTS["one_key_34"])
+    allcards=Counter(ref.SLOT_VARIANTS["one_key_34"].values())
     assert Counter(hand)+Counter(library)==allcards
     assert ref.sim.STAGES[stage]==keep_n
     begin=d.State(1,hand,library)
@@ -204,8 +204,8 @@ def smoke():
     ]
     rows=[]
     for seat,seven in enumerate(cases):
-        assert not (Counter(seven)-Counter(deck))
-        rem=list(deck)
+        assert not (Counter(seven)-Counter(deck.values()))
+        rem=list(deck.values())
         for c in seven:rem.remove(c)
         before=time.perf_counter()
         p=analyze(seven,rem,seat,beam=24,depth=8)
