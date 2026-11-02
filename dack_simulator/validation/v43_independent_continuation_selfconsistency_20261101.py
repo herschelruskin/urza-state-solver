@@ -86,6 +86,7 @@ def main():
               "predicted_keep_mean":statistics.mean(row[stage] for row in a)})
         rows[seat]={"outer_source_groups":len(a),"stage_values":data}
         print("V43_CONTINUATION_SEAT",seat,len(a),"archived_v27",old[:3],"same_deals_v27",matched_v27[:3],"v43",now[:3],flush=True)
+        print("V43_CONTINUATION_SEAT_STAGE_DETAIL",json.dumps({"seat":seat,"stages":data},sort_keys=True),flush=True)
     result={
       "schema":"dack_v43_independent_development_model_only_DP_self_consistency_v1",
       "status":"PASS","start_gid":START,"game_ids":[START,START+GAMES-1],
