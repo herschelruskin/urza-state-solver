@@ -1,0 +1,83 @@
+name: DACK v47 new165k paired N256 early original-v5 hybrid and full v5 reference N128
+on:
+  push:
+    branches: [dack-v47-original-v5-first-two-seven-fallback-20261101]
+    paths: ['.github/workflows/dack_v47_new165k_matched_three_policy.yml']
+permissions:
+  contents: write
+  actions: read
+jobs:
+  real_goldfish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix:
+        start: [165000,165016,165032,165048,165064,165080,165096,165112,165128,165144,165160,165176,165192,165208,165224,165240]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v47-original-v5-first-two-seven-fallback-20261101
+      - name: Exact new 99-slot physical goldfish for frozen v43 and restricted v5 hybrid plus original v5 N128
+        run: |
+          python -m py_compile dack_simulator/validation/v47_fresh_165k_paired.py
+          python -u dack_simulator/validation/v47_fresh_165k_paired.py \
+            --start ${{ matrix.start }} --out shards/v47_165k_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v47-165k-real-${{ matrix.start }}
+          path: shards/v47_165k_*.json.gz
+          retention-days: 90
+  pool:
+    needs: real_goldfish
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v47-original-v5-first-two-seven-fallback-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v47-165k-real-*
+          merge-multiple: true
+          path: collected
+      - name: Compute matched 256 and complete original v5 subset 128 physical T1 T2 T3 and runtime
+        run: |
+          python -u dack_simulator/validation/v47_pool_165k_original_v5_hybrid.py \
+            --source 'collected/v47_165k_*.json.gz' \
+            --out benchmark_results/v47_fresh_165k_N256_original_v5_hybrid.json
+      - name: Enforce exact sample denominator and truthful beam and non-promotion
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          z=json.loads(Path('benchmark_results/v47_fresh_165k_N256_original_v5_hybrid.json').read_text())
+          assert z['status']=='PASS' and z['n_new_outer_deals']==256
+          assert z['n_complete_original_v5_reference']==128
+          assert z['hybrid_true_v5_early_two_sevens_then_frozen_v43']
+          assert z['v47_is_not_a_no_beam_policy'] and z['no_model_or_policy_approved']
+          assert z['no_training_or_development_on_165k']
+          assert z['all_99_physical_cards_strict_beam160_same_seeds']
+          print('DACK_V47_NEW_165K_HYBRID_AND_UNMODIFIED_V5_MATCHED_SAMPLE_AUDIT_PASS')
+          PY
+      - name: Preserve full raw physical traces and predeclared paired report
+        run: |
+          mkdir -p benchmark_results/v47_165k_new_original_v5_hybrid_shards
+          cp collected/v47_165k_*.json.gz benchmark_results/v47_165k_new_original_v5_hybrid_shards/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f benchmark_results/v47_fresh_165k_N256_original_v5_hybrid.json benchmark_results/v47_165k_new_original_v5_hybrid_shards/
+          git commit -m "Archive independent original-v5 early-sevens N256 hybrid versus v43 and N128 complete v5 reference"
+          git pull --rebase origin dack-v47-original-v5-first-two-seven-fallback-20261101
+          git push origin HEAD:dack-v47-original-v5-first-two-seven-fallback-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v47-fresh-new165k-N256-three-policy-results
+          path: benchmark_results/v47_fresh_165k_N256_original_v5_hybrid.json
+          retention-days: 90
