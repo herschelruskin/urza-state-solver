@@ -1,0 +1,21 @@
+name: DACK v48b guaranteed tutor-action mana witness smoke
+on:
+  push:
+    branches: [dack-v48-turn-aware-legal-mana-features-20261101]
+    paths:
+      - ".github/workflows/dack_v48b_tutor_smoke.yml"
+      - "dack_turn_aware_mana_tutor_guaranteed_v48b_20261101.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Verified deck search to hand or battlefield not hidden top draw; source and order invariant
+        run: python dack_turn_aware_mana_tutor_guaranteed_v48b_20261101.py
