@@ -1,0 +1,54 @@
+name: DACK v48 independent observable mana feasibility first-seven 168k N256
+on:
+  push:
+    branches:
+      - dack-v48-turn-aware-legal-mana-features-20261101
+    paths:
+      - ".github/workflows/dack_v48_168k_mana_screen_N256.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  physical:
+    strategy:
+      fail-fast: false
+      matrix:
+        start: [168000,168032,168064,168096,168128,168160,168192,168224]
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Get observable turn aware legal-mana features and separate blind physical forced seven outcome
+        run: |
+          mkdir -p shards
+          python -m dack_simulator.validation.v48_firstseven_168k_turn_mana_physical_N256 --start ${{ matrix.start }} --out shards/mana168k_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v48-mana168k-${{ matrix.start }}
+          path: shards/mana168k_${{ matrix.start }}.json.gz
+  pool:
+    needs: physical
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v48-mana168k-*
+          path: shards
+          merge-multiple: true
+      - name: Pool source-level N256, audit legal witness vs physical and score-conditional descriptive groups
+        run: |
+          python -m dack_simulator.validation.v48_pool_168k_mana_screen_N256 --folder shards --out benchmark_results/v48_168k_mana_firstseven_N256_pooled.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v48-mana168k-N256-pooled
+          path: benchmark_results/v48_168k_mana_firstseven_N256_pooled.json
