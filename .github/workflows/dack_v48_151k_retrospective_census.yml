@@ -1,0 +1,27 @@
+name: DACK v48 retrospective v5 v43 early seven witness coverage (151k already open)
+on:
+  push:
+    branches: [dack-v48-turn-aware-legal-mana-features-20261101]
+    paths:
+      - ".github/workflows/dack_v48_151k_retrospective_census.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  read_only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compute only observable legal mana witness coverage on already analyzed historical v5 conflicts
+        run: python -m dack_simulator.validation.v48_historical_151k_readonly_witness_census
+      - name: Commit retrospective research report on isolated branch only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add benchmark_results/v48_readonly_151k_early_v5_v43_witness_coverage.json
+          git commit -m "Archive non-validation v48 witness coverage of historical first-two-seven v5 conflicts" || true
+          git push origin HEAD:dack-v48-turn-aware-legal-mana-features-20261101
