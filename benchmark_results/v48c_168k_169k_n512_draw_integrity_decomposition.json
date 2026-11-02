@@ -1,0 +1,91 @@
+{
+  "N_independent_physical_source_groups": 512,
+  "T2_tutor_inclusive_no_unknown_draw_mana_witness_positive": 31,
+  "first7_without_combo_natural_two_draw_survival_probability": 0.93549928,
+  "gid_ranges": [
+    [
+      168000,
+      168255
+    ],
+    [
+      169000,
+      169255
+    ]
+  ],
+  "mana_witness_and_physical_t2_success": 30,
+  "mana_witness_and_top2_no_combo_creatures": 29,
+  "mana_witness_top2_clean_and_physical_t2_success": 29,
+  "mana_witness_top2_core_contaminated": 2,
+  "mana_witness_top2_core_contaminated_cases": [
+    {
+      "gid": 168202,
+      "p_unmodified_survival": 0.9354992833253702,
+      "physical_t2_success": true,
+      "q2": 0.6201357,
+      "t2_witness": true,
+      "top2_has_core_creature": true,
+      "top_two_natural_draws": [
+        "Ruins of Trokair",
+        "Preston, the Vanisher"
+      ]
+    },
+    {
+      "gid": 169051,
+      "p_unmodified_survival": 0.9354992833253702,
+      "physical_t2_success": false,
+      "q2": 0.9103334,
+      "t2_witness": true,
+      "top2_has_core_creature": true,
+      "top_two_natural_draws": [
+        "Bound by Moonsilver",
+        "Boonweaver Giant"
+      ]
+    }
+  ],
+  "natural_top2_risk_does_not_model_tutors_scry_repair": true,
+  "new_source_verified_tutor_witnesses": [
+    {
+      "gid": 169036,
+      "p_unmodified_survival": 0.9354992833253702,
+      "physical_t2_success": true,
+      "q2": 0.5594143,
+      "t2_witness": true,
+      "top2_has_core_creature": false,
+      "top_two_natural_draws": [
+        "Plains",
+        "Urza's Cave"
+      ]
+    },
+    {
+      "gid": 169227,
+      "p_unmodified_survival": 0.9354992833253702,
+      "physical_t2_success": true,
+      "q2": 0.8927007,
+      "t2_witness": true,
+      "top2_has_core_creature": false,
+      "top_two_natural_draws": [
+        "Paladin Class",
+        "Chrome Mox"
+      ]
+    }
+  ],
+  "no_model_training": true,
+  "no_promotion": true,
+  "physical_forced_seven_t2_success": 87,
+  "schema": "dack_v48c_mana_vs_combo_draw_integrity_N512_development_postmortem_v1",
+  "untouched_155k_unopened": true,
+  "witness_physical_discordances": [
+    {
+      "gid": 169051,
+      "p_unmodified_survival": 0.9354992833253702,
+      "physical_t2_success": false,
+      "q2": 0.9103334,
+      "t2_witness": true,
+      "top2_has_core_creature": true,
+      "top_two_natural_draws": [
+        "Bound by Moonsilver",
+        "Boonweaver Giant"
+      ]
+    }
+  ]
+}
