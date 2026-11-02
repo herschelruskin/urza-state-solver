@@ -64,11 +64,11 @@ def main():
     sentinel=d.State(1,tuple(d.sort_hand(("Gemstone Caverns","Lunarch Mantle","Sol Ring","Plains"))),
        tuple(sorted(d.COMBO_CREATURES)))
     old=ORIGINAL(sentinel,2);full=all_legal_pregames(sentinel,2)
-    assert len(old)==1 and len(full)>=3,("expected guard blocks alternative legal exile",old,full)
+    assert len(old)>=3 and old==full,("inherited pregame patch must enumerate all legal safe exiles",old,full)
     assert any("Plains" in x.exile for x in full)
     assert any("Sol Ring" in x.exile for x in full)
     assert all("Lunarch Mantle" not in x.exile for x in full)
-    print("GEMSTONE_GUARD_LEGAL_EXILE_COUNTEREXAMPLE_PASS",len(old),len(full),flush=True)
+    print("GEMSTONE_GUARD_ALL_LEGAL_EXILES_PRESENT_PASS",len(old),len(full),flush=True)
     # Unseen future-selection prohibited: choose first four qualifying hypothetical
     # seven-card stages based solely on visible seven and seat.
     cases=[];deck=ref.SLOT_VARIANTS["one_key_34"]
@@ -82,7 +82,7 @@ def main():
             if not set(seven).intersection(guard.PROTECTED_EXILE):continue
             if not any(c not in guard.PROTECTED_EXILE and c not in d.COMBO_CREATURES and c!="Gemstone Caverns" for c in seven):continue
             s=d.State(1,tuple(d.sort_hand(seven)),())
-            if len(ORIGINAL(s,seat))!=1:continue
+            if len(ORIGINAL(s,seat))<2:continue
             cases.append((gid,st,seat,seven,tuple(deck[s] for s in order[7:])))
             break
         if len(cases)==4:break
@@ -92,7 +92,7 @@ def main():
         z=run_case(gid,st,seat,seven,hidden);r.append(z)
         print("GEMSTONE_PHYSICAL_CASE",gid,st,seat,z["baseline_T2"],z["full_T2"],flush=True)
     result={"schema":"dack_v43_gemstone_exile_legal_completeness_conditional_physical_v1",
-      "status":"PASS","legal_exile_counterexample_confirmed":True,
+      "status":"PASS","legal_exile_full_enumeration_confirmed":True,
       "original_exile_action_count_in_witness":len(old),
       "complete_exile_action_count_in_witness":len(full),
       "selected_source_ids":[x[0] for x in cases],
