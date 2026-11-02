@@ -1,0 +1,148 @@
+{
+  "schema": "dack_v43_independent_readonly_audit_summary_20261101",
+  "date_local": "2026-11-01 America/Toronto",
+  "status": "PASS_WITH_UNRESOLVED_STRATEGIC_RISKS",
+  "policy_promoted": false,
+  "branch": "dack-v43-independent-audit-20261101",
+  "baseline_branch": "dack-v43-v5-candidate-forensics-20261101",
+  "preserved_155k_reserved": true,
+  "physical_outcome": "goldfish Dack deployment",
+  "runs": {
+    "london_invariants": {
+      "id": 41374177634,
+      "status": "PASS",
+      "source_deals": 12,
+      "stage_checks": 96,
+      "candidate_legal_checks": 1536,
+      "hidden92_permutation_decision_parity": 12,
+      "naturally_reached_stage_selection_parity": 33
+    },
+    "candidate_physical": {
+      "id": 41374418888,
+      "status": "PASS",
+      "futures_per_case": 32,
+      "selected_hypothetical_gid162403_excluded_bottom_T2_gain": 4,
+      "excluded_bottom_T2_loss": 0,
+      "natural_gid162408_structural_first_T2_loss": 14,
+      "natural_gid162409_structural_first_T2_loss": 3
+    },
+    "gemstone_physical_corrected": {
+      "id": 41374724725,
+      "status": "PASS",
+      "first_test_false_assertion_run_id": 41374623645,
+      "legal_exile_branches_in_runtime": 3,
+      "legal_exile_branches_in_exhaustive_control": 3,
+      "source_states": 4,
+      "futures_per_state": 24,
+      "original_T2": 12,
+      "independent_T2": 12,
+      "discordant_T2": 0
+    },
+    "continuation_model_only": {
+      "id": 41375264582,
+      "status": "PASS",
+      "source_deals": 1024,
+      "seed_start": 163700,
+      "seed_end": 164723,
+      "bootstrap_outer_group_samples_per_seat": 500,
+      "v43_minus_v27_same_deals_C7": [
+        0.045966494923799284,
+        0.05051282902793042,
+        0.04426124939905468,
+        0.04959205333234329
+      ],
+      "v43_minus_v27_same_deals_C6": [
+        0.05674041363122445,
+        0.061729871295950756,
+        0.05697495741334524,
+        0.06163252171505218
+      ],
+      "C7_paired_bootstrap95_by_seat": [
+        [
+          0.03879207877016588,
+          0.05412953071392956
+        ],
+        [
+          0.04203315860714135,
+          0.0594751276342505
+        ],
+        [
+          0.036807382438701186,
+          0.05298698120498274
+        ],
+        [
+          0.041656396701168275,
+          0.05793068216554703
+        ]
+      ],
+      "real_physical_value_claim": false
+    },
+    "DP_real_physical_sensitivity": {
+      "id": 41375350434,
+      "status": "PASS",
+      "source_deals": 64,
+      "seed_start": 164800,
+      "seed_end": 164863,
+      "changed_final_hand_or_stage": 16,
+      "byT1": {
+        "frozen": 4,
+        "alternative": 4,
+        "unique_gain": 0,
+        "unique_loss": 0
+      },
+      "byT2": {
+        "frozen": 32,
+        "alternative": 34,
+        "unique_gain": 3,
+        "unique_loss": 1,
+        "paired_delta_pp": 3.125,
+        "paired_bootstrap95_pp": [
+          -3.125,
+          9.375
+        ]
+      },
+      "byT3": {
+        "frozen": 53,
+        "alternative": 52,
+        "unique_gain": 3,
+        "unique_loss": 4,
+        "paired_delta_pp": -1.5625,
+        "paired_bootstrap95_pp": [
+          -9.375,
+          6.25
+        ]
+      },
+      "mean_keep_frozen": 5.4375,
+      "mean_keep_alternative": 5,
+      "valid_for_promotion": false
+    },
+    "terminal_witness": {
+      "id": 41375444909,
+      "status": "PASS",
+      "source_deals": 24,
+      "seed_start": 162700,
+      "seed_end": 162723,
+      "T1": 1,
+      "byT2": 13,
+      "byT3": 21,
+      "terminal_states_witnessed": true,
+      "exhaustive_combo_completion_certified": false
+    }
+  },
+  "archived_reference": {
+    "v43_vs_v27_151k_N256_T2": {
+      "v27": 111,
+      "v43": 122
+    },
+    "original_v5_vs_v43_151k_N128_T2": {
+      "v5": 73,
+      "v43": 65,
+      "v5_only": 13,
+      "v43_only": 5,
+      "two_sided_exact_McNemar_p_approx": 0.096
+    },
+    "v45_same_london_stage_diff_count": 30,
+    "v45_different_london_stages_count": 44
+  },
+  "interpretation": "Original v43 policy is mechanically coherent at current stage; Q2 max bottom and v27 choice derived DP are inconsistent; model-only recalibrated DP improves 2/64 T2 net but CI spans zero, therefore no model promotion; realistic next test is policy-consistent continuation plus observable legal line feasibility and new untouched full-game gate."
+}
