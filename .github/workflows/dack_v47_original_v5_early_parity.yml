@@ -1,0 +1,17 @@
+name: DACK v47 original real v5 seven-card stage0-1 lookahead exact historical parity
+on:
+  push:
+    branches: [dack-v47-original-v5-first-two-seven-fallback-20261101]
+    paths: ['.github/workflows/dack_v47_original_v5_early_parity.yml']
+jobs:
+  exact_teacher_parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v47-original-v5-first-two-seven-fallback-20261101
+      - name: Compile hybrid and audit 16 real original v5 early natural stage KEEP decisions
+        run: |
+          python -m py_compile dack_paired_counterfactual_v47_v5_early_two_sevens_20261101.py dack_simulator/validation/v47_parity_original_v5_stage01.py
+          python -u dack_simulator/validation/v47_parity_original_v5_stage01.py
