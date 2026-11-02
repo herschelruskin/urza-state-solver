@@ -1,0 +1,83 @@
+name: DACK v46 gated independent N256 first-two-sevens full-game parity retry
+on:
+  push:
+    branches: [dack-v46-early-seven-physical-calibration-20261101]
+    paths:
+      - '.github/workflows/dack_v46_161k_full_policy_after_dev_parity_retry.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v46-early-seven-physical-calibration-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install fixed training dependencies to reconstruct exported forest parity
+        run: python -m pip install 'numpy>=1.26,<3' 'scikit-learn>=1.4,<1.8'
+      - name: Require positive heldout physical gate and exact sklearn forest replay parity
+        run: |
+          python -u dack_simulator/validation/v46_validate_exported_model.py
+          python -u dack_paired_counterfactual_v46_early_seven_Q2_20261101.py --audit
+  matched:
+    needs: parity
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        start: [161000,161032,161064,161096,161128,161160,161192,161224]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v46-early-seven-physical-calibration-20261101
+      - name: Match physical 99-card source v43 and stage0/1-only v46 without teacher beams
+        run: |
+          python -u dack_simulator/validation/v46_prospective_161k_v43_v46_paired.py \
+            --start ${{ matrix.start }} --out shards/v46_161k_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v46-161k-paired-${{ matrix.start }}
+          path: shards/v46_161k_*.json.gz
+          retention-days: 90
+  pool:
+    needs: matched
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v46-early-seven-physical-calibration-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v46-161k-paired-*
+          merge-multiple: true
+          path: collected
+      - name: Pool independent full-game N256 stage0/1 coupled physical policy and preserve no-promotion
+        run: python -u dack_simulator/validation/v46_pool_161k_full_policy.py
+      - name: Archive complete independent full-game source for reproducibility
+        run: |
+          mkdir -p benchmark_results/v46_161k_physical_paired_shards
+          cp collected/*.json.gz benchmark_results/v46_161k_physical_paired_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f benchmark_results/v46_161k_N256_full_policy_paired.json benchmark_results/v46_161k_physical_paired_shards/
+          git commit -m "Archive full N256 physical v43 versus stage0/1-only physically calibrated v46 policy, paired outcomes and runtime"
+          git pull --rebase origin dack-v46-early-seven-physical-calibration-20261101
+          git push origin HEAD:dack-v46-early-seven-physical-calibration-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v46-161k-N256-paired-outcome
+          path: benchmark_results/v46_161k_N256_full_policy_paired.json
+          retention-days: 90
