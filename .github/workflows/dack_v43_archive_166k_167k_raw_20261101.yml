@@ -1,0 +1,72 @@
+name: DACK v43 archive raw independent physical evidence permanently on research branch
+on:
+  push:
+    branches:
+      - dack-v43-policy-consistent-hybrid-dev-20261101
+    paths:
+      - ".github/workflows/dack_v43_archive_166k_167k_raw_20261101.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 41377645268
+          github-token: ${{ github.token }}
+          pattern: dack-v43-DP-166k-166*
+          path: benchmark_results/v43_166k_model_consistent_DP_raw_shards
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 41377645268
+          github-token: ${{ github.token }}
+          name: dack-v43-DP-166k-N256-pool
+          path: benchmark_results/v43_166k_model_consistent_DP_pooled
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 41377978607
+          github-token: ${{ github.token }}
+          pattern: dack-v43-hybrid-167k-167*
+          path: benchmark_results/v43_167k_selective_hybrid_raw_shards
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 41377978607
+          github-token: ${{ github.token }}
+          name: dack-v43-hybrid-167k-N128-pool
+          path: benchmark_results/v43_167k_selective_hybrid_pooled
+      - name: Verify every independent raw source shard present and pooled metadata valid
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json,gzip
+          a=Path("benchmark_results/v43_166k_model_consistent_DP_raw_shards")
+          b=Path("benchmark_results/v43_167k_selective_hybrid_raw_shards")
+          filesA=sorted(a.glob("v43dp_166*.json.gz"))
+          filesB=sorted(b.glob("v43hyb_167*.json.gz"))
+          assert len(filesA)==8 and len(filesB)==4,(len(filesA),len(filesB))
+          for paths,n in ((filesA,32),(filesB,32)):
+              for p in paths:
+                  with gzip.open(p,"rt") as fp:d=json.load(fp)
+                  assert len(d["rows"])==n and d["status"]=="PASS",p
+          p=Path("benchmark_results/v43_166k_model_consistent_DP_pooled/v43_DP_166k_N256_full_matched.json")
+          q=Path("benchmark_results/v43_167k_selective_hybrid_pooled/v43_hybrid_167k_N128_paired_pooled.json")
+          assert json.loads(p.read_text())["N_independent_physical_games"]==256
+          assert json.loads(q.read_text())["N_independent_outer_deals"]==128
+          print("DACK_V43_166K_167K_RAW_PERMANENT_ARCHIVE_VERIFY_PASS",len(filesA),len(filesB))
+          PY
+      - name: Commit source-verified raw result shards and pooled archives
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add benchmark_results/v43_166k_model_consistent_DP_raw_shards benchmark_results/v43_166k_model_consistent_DP_pooled benchmark_results/v43_167k_selective_hybrid_raw_shards benchmark_results/v43_167k_selective_hybrid_pooled
+          git commit -m "Archive raw independent 166k and 167k matched physical v43 DP and hybrid results" || true
+          git push origin HEAD:dack-v43-policy-consistent-hybrid-dev-20261101
