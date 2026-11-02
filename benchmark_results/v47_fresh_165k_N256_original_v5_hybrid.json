@@ -1,0 +1,187 @@
+{
+  "actual_full_v5_over_hybrid_runtime_ratio_on_128": 5.413835756141726,
+  "all_99_physical_cards_strict_beam160_same_seeds": true,
+  "all_N256_counts": {
+    "v43": {
+      "by_T1": 20,
+      "by_T2": 128,
+      "by_T3": 216,
+      "mean_keep_n": 5.48046875,
+      "total_wallclock_seconds": 125.993
+    },
+    "v47": {
+      "by_T1": 22,
+      "by_T2": 137,
+      "by_T3": 215,
+      "mean_keep_n": 5.26953125,
+      "total_wallclock_seconds": 1118.012
+    }
+  },
+  "all_N256_paired": {
+    "T1": {
+      "delta_pp": 0.78125,
+      "net_game_deployments": 2,
+      "new_only": 2,
+      "old_only": 0,
+      "paired_group_bootstrap95_pp": [
+        0.0,
+        1.953125
+      ]
+    },
+    "T2": {
+      "delta_pp": 3.515625,
+      "net_game_deployments": 9,
+      "new_only": 15,
+      "old_only": 6,
+      "paired_group_bootstrap95_pp": [
+        0.0,
+        7.03125
+      ]
+    },
+    "T3": {
+      "delta_pp": -0.390625,
+      "net_game_deployments": -1,
+      "new_only": 5,
+      "old_only": 6,
+      "paired_group_bootstrap95_pp": [
+        -3.125,
+        1.953125
+      ]
+    }
+  },
+  "deployment_outcomes_not_multiplayer_cedh_wins": true,
+  "different_final_stage_first_stages": {
+    "0": 28,
+    "1": 19
+  },
+  "hybrid_true_v5_early_two_sevens_then_frozen_v43": true,
+  "matched_N128_paired": {
+    "v43_minus_original_v5": {
+      "T1": {
+        "delta_pp": -1.5625,
+        "net_game_deployments": -2,
+        "new_only": 1,
+        "old_only": 3,
+        "paired_group_bootstrap95_pp": [
+          -4.6875,
+          1.5625
+        ]
+      },
+      "T2": {
+        "delta_pp": -2.34375,
+        "net_game_deployments": -3,
+        "new_only": 13,
+        "old_only": 16,
+        "paired_group_bootstrap95_pp": [
+          -10.9375,
+          5.46875
+        ]
+      },
+      "T3": {
+        "delta_pp": 0.0,
+        "net_game_deployments": 0,
+        "new_only": 8,
+        "old_only": 8,
+        "paired_group_bootstrap95_pp": [
+          -6.25,
+          6.25
+        ]
+      }
+    },
+    "v47_minus_original_v5": {
+      "T1": {
+        "delta_pp": 0.0,
+        "net_game_deployments": 0,
+        "new_only": 1,
+        "old_only": 1,
+        "paired_group_bootstrap95_pp": [
+          -2.34375,
+          2.34375
+        ]
+      },
+      "T2": {
+        "delta_pp": 0.78125,
+        "net_game_deployments": 1,
+        "new_only": 10,
+        "old_only": 9,
+        "paired_group_bootstrap95_pp": [
+          -6.25,
+          7.03125
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.78125,
+        "net_game_deployments": -1,
+        "new_only": 7,
+        "old_only": 8,
+        "paired_group_bootstrap95_pp": [
+          -6.25,
+          5.46875
+        ]
+      }
+    },
+    "v47_minus_v43": {
+      "T1": {
+        "delta_pp": 1.5625,
+        "net_game_deployments": 2,
+        "new_only": 2,
+        "old_only": 0,
+        "paired_group_bootstrap95_pp": [
+          0.0,
+          3.90625
+        ]
+      },
+      "T2": {
+        "delta_pp": 3.125,
+        "net_game_deployments": 4,
+        "new_only": 8,
+        "old_only": 4,
+        "paired_group_bootstrap95_pp": [
+          -2.34375,
+          8.59375
+        ]
+      },
+      "T3": {
+        "delta_pp": -0.78125,
+        "net_game_deployments": -1,
+        "new_only": 3,
+        "old_only": 4,
+        "paired_group_bootstrap95_pp": [
+          -4.6875,
+          3.125
+        ]
+      }
+    }
+  },
+  "matched_N128_with_full_v5_counts": {
+    "original_v5": {
+      "by_T1": 14,
+      "by_T2": 72,
+      "by_T3": 108,
+      "mean_keep_n": 5.1875,
+      "total_wallclock_seconds": 3216.977
+    },
+    "v43": {
+      "by_T1": 12,
+      "by_T2": 69,
+      "by_T3": 108,
+      "mean_keep_n": 5.4453125,
+      "total_wallclock_seconds": 68.401
+    },
+    "v47": {
+      "by_T1": 14,
+      "by_T2": 73,
+      "by_T3": 107,
+      "mean_keep_n": 5.3046875,
+      "total_wallclock_seconds": 594.214
+    }
+  },
+  "n_complete_original_v5_reference": 128,
+  "n_new_outer_deals": 256,
+  "no_model_or_policy_approved": true,
+  "no_training_or_development_on_165k": true,
+  "original_v5_unchanged_real_beam60_mulligan_and_beam160_gameplay": true,
+  "schema": "dack_v47_165k_new_N256_v43_vs_restricted_early_true_v5_and_N128_complete_v5",
+  "status": "PASS",
+  "v47_is_not_a_no_beam_policy": true
+}
