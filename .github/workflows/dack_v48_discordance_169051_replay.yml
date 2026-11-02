@@ -1,0 +1,19 @@
+name: DACK v48 targeted discordant 169051 physical cause audit
+on:
+  push:
+    branches: [dack-v48-turn-aware-legal-mana-features-20261101]
+    paths:
+      - ".github/workflows/dack_v48_discordance_169051_replay.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m dack_simulator.validation.v48_discordance_169051_physical_replay
