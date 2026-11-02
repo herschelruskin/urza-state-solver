@@ -1,0 +1,54 @@
+name: DACK v43 selective strict physical fallback 167k N128
+on:
+  push:
+    branches:
+      - dack-v43-policy-consistent-hybrid-dev-20261101
+    paths:
+      - ".github/workflows/dack_v43_hybrid_167k_N128_20261101.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  physical:
+    strategy:
+      fail-fast: false
+      matrix:
+        start: [167000, 167032, 167064, 167096]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compare v43, self-consistent DP, and six-future selectively triggered fallback
+        run: |
+          mkdir -p shards
+          python -m dack_simulator.validation.v43_hybrid_fresh_167k_N128_20261101 --start ${{ matrix.start }} --out shards/v43hyb_${{ matrix.start }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v43-hybrid-167k-${{ matrix.start }}
+          path: shards/v43hyb_${{ matrix.start }}.json.gz
+  pool:
+    needs: physical
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v43-hybrid-167k-*
+          path: shards
+          merge-multiple: true
+      - name: Paired source-level N128 estimates and trigger cost analysis
+        run: |
+          python -m dack_simulator.validation.v43_hybrid_pool_167k_N128_20261101 --folder shards --out benchmark_results/v43_hybrid_167k_N128_paired_pooled.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v43-hybrid-167k-N128-pool
+          path: benchmark_results/v43_hybrid_167k_N128_paired_pooled.json
