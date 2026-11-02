@@ -1,0 +1,21 @@
+name: DACK v43 selective T1 T2 physical fallback smoke
+on:
+  push:
+    branches: [dack-v43-policy-consistent-hybrid-dev-20261101]
+    paths:
+      - ".github/workflows/dack_v43_selective_line_smoke_20261101.yml"
+      - "dack_paired_counterfactual_v43_selective_line_20261101.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Exact no-fallback parity and trigger smoke
+        run: python dack_paired_counterfactual_v43_selective_line_20261101.py
