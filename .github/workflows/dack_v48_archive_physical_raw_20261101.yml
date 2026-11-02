@@ -1,0 +1,79 @@
+name: DACK v48 permanently archive 168k and 169k physical feature traces
+on:
+  push:
+    branches:
+      - dack-v48-turn-aware-legal-mana-features-20261101
+    paths:
+      - ".github/workflows/dack_v48_archive_physical_raw_20261101.yml"
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: write
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 41383301505
+          github-token: ${{ github.token }}
+          pattern: dack-v48-mana168k-168*
+          path: benchmark_results/v48_168k_raw
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 41383301505
+          github-token: ${{ github.token }}
+          name: dack-v48-mana168k-N256-pooled
+          path: benchmark_results/v48_168k_pooled
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 41383790146
+          github-token: ${{ github.token }}
+          pattern: dack-v48b-mana169k-169*
+          path: benchmark_results/v48b_169k_raw
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 41383790146
+          github-token: ${{ github.token }}
+          name: dack-v48b-mana169k-N256-pooled
+          path: benchmark_results/v48b_169k_pooled
+      - name: Verify exact data completeness and emit any witness/physical contradictions
+        run: |
+          python - <<'PY'
+          import gzip,json
+          from pathlib import Path
+          a=sorted(Path("benchmark_results/v48_168k_raw").glob("mana168k_*.json.gz"))
+          b=sorted(Path("benchmark_results/v48b_169k_raw").glob("mana169k_*.json.gz"))
+          assert len(a)==len(b)==8,(len(a),len(b))
+          for batch,n in ((a,168000),(b,169000)):
+              rows=[]
+              for path in batch:
+                  with gzip.open(path,"rt") as f:
+                      x=json.load(f)
+                  assert x["status"]=="PASS" and len(x["rows"])==32
+                  rows+=x["rows"]
+              rows.sort(key=lambda x:x["gid"])
+              assert [r["gid"] for r in rows]==list(range(n,n+256))
+              for r in rows:
+                  if r["feat"]["mana_witness_T2_no_draw"] and not r["physical_forced_keep_byT2"]:
+                      print("V48_BASE_WITNESS_PHYSICAL_DISCORDANCE",json.dumps({
+                          "gid":r["gid"],"seat":r["seat"],"seven":r["seven"],
+                          "q2":r["stage0_Q2"],"turn":r["physical_forced_keep_turn"],
+                          "features":r["feat"]},sort_keys=True))
+                  if n==169000 and r["tutor_feat"]["T2_tutor_legal_no_draw_witness"] and not r["physical_forced_keep_byT2"]:
+                      print("V48B_TUTOR_WITNESS_PHYSICAL_DISCORDANCE",json.dumps({
+                          "gid":r["gid"],"seat":r["seat"],"seven":r["seven"],
+                          "turn":r["physical_forced_keep_turn"],"features":r["tutor_feat"]},sort_keys=True))
+          print("DACK_V48_RAW_PHYSICAL_ARCHIVE_VERIFY_PASS",len(a),len(b))
+          PY
+      - name: Permanently retain full physical source traces and model-free feature evidence
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add benchmark_results/v48_168k_raw benchmark_results/v48_168k_pooled benchmark_results/v48b_169k_raw benchmark_results/v48b_169k_pooled
+          git commit -m "Archive 512 fresh independent physical first-seven mana evidence rows and disagreement traces" || true
+          git push origin HEAD:dack-v48-turn-aware-legal-mana-features-20261101
