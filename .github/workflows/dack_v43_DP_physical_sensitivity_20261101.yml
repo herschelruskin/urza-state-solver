@@ -1,0 +1,31 @@
+name: DACK v43 model-only DP strict physical N64 sensitivity
+on:
+  push:
+    branches:
+      - dack-v43-independent-audit-20261101
+    paths:
+      - ".github/workflows/dack_v43_DP_physical_sensitivity_20261101.yml"
+      - "dack_simulator/validation/v43_model_only_DP_physical_sensitivity_20261101.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dp_physical:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Rebuild internally consistent model-only DP and compare physical full-game outcomes
+        run: |
+          python -m dack_simulator.validation.v43_model_only_DP_physical_sensitivity_20261101
+      - name: Archive raw paired physical histories and model-only DP output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dack-v43-model-only-DP-physical-N64-dev
+          path: |
+            benchmark_results/v43_new_model_only_DP_physical_sensitivity_dev_N64.json
+            benchmark_results/v43_independent_model_only_continuation_self_consistency_163700_N1024.json
