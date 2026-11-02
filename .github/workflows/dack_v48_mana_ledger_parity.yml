@@ -1,0 +1,19 @@
+name: DACK v48 exhaustive restricted mana ledger parity
+on:
+  push:
+    branches: [dack-v48-turn-aware-legal-mana-features-20261101]
+    paths:
+      - ".github/workflows/dack_v48_mana_ledger_parity.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m dack_simulator.validation.v48_mana_ledger_exhaustive_parity_20261101
