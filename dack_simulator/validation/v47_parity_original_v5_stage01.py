@@ -6,8 +6,9 @@ T1, threshold, KEEP decision and legal hand at every *actually reached*
 stage0/1, then measure hybrid full-game terminal. Historical 151k is
 already inspected and used ONLY for engineering parity, not acceptance.
 """
-import gzip,json,time
+import gzip,json,time,sys
 from pathlib import Path
+sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 import dack_paired_counterfactual_v47_v5_early_two_sevens_20261101 as v47
 
 ROOT=Path(__file__).resolve().parent
