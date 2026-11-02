@@ -1,0 +1,29 @@
+name: DACK v43 Gemstone Caverns legal action counterexample and strict physical audit
+on:
+  push:
+    branches:
+      - dack-v43-independent-audit-20261101
+    paths:
+      - ".github/workflows/dack_v43_gemstone_legal_audit_20261101.yml"
+      - "dack_simulator/validation/v43_gemstone_pregame_physical_audit_20261101.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  physical:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Deterministic legal exile completeness witness and real physical comparison
+        run: |
+          python -m dack_simulator.validation.v43_gemstone_pregame_physical_audit_20261101
+      - name: Archive raw conditional goldfish outcome traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dack-v43-gemstone-legal-exile-strict-physical
+          path: benchmark_results/v43_new_gemstone_exile_legal_action_physical_dev.json
