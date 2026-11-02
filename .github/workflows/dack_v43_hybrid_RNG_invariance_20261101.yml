@@ -1,0 +1,21 @@
+name: DACK v43 selective hidden-order and RNG guard
+on:
+  push:
+    branches: [dack-v43-policy-consistent-hybrid-dev-20261101]
+    paths:
+      - ".github/workflows/dack_v43_hybrid_RNG_invariance_20261101.yml"
+      - "dack_simulator/validation/v43_hybrid_fallback_independent_order_regression_20261101.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  invariance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Physical six-future policy should be invariant to actual unknown92 arrangement
+        run: python -m dack_simulator.validation.v43_hybrid_fallback_independent_order_regression_20261101
