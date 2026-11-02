@@ -1,0 +1,29 @@
+name: DACK v43 continuation DP read-only self-consistency audit
+on:
+  push:
+    branches:
+      - dack-v43-independent-audit-20261101
+    paths:
+      - ".github/workflows/dack_v43_DP_self_consistency_audit_20261101.yml"
+      - "dack_simulator/validation/v43_independent_continuation_selfconsistency_20261101.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dp_audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Recompute frozen-Q2 max candidate value-consistent continuation on development sources
+        run: |
+          python -m dack_simulator.validation.v43_independent_continuation_selfconsistency_20261101
+      - name: Archive group-level bootstrap continuation table
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dack-v43-model-only-continuation-163700-N1024
+          path: benchmark_results/v43_independent_model_only_continuation_self_consistency_163700_N1024.json
