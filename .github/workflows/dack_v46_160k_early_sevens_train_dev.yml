@@ -1,0 +1,121 @@
+name: DACK v46 independent first two London seven physical K24 C128 and supervised calibration
+on:
+  push:
+    branches: [dack-v46-early-seven-physical-calibration-20261101]
+    paths:
+      - '.github/workflows/dack_v46_160k_early_sevens_train_dev.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  keep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v46-early-seven-physical-calibration-20261101
+      - name: 8 separate physical source deals times 2 original seven-card London stages times 24 unseen92 futures
+        run: |
+          python -u dack_simulator/validation/v46_collect_early_sevens_physical.py \
+            --kind K --shard ${{ matrix.shard }} \
+            --out shards/v46_K_${{ matrix.shard }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v46-K-${{ matrix.shard }}
+          path: shards/v46_K_*.json.gz
+          retention-days: 90
+  continue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        seat: [0,1,2,3]
+        stage: [0,1]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v46-early-seven-physical-calibration-20261101
+      - name: Real 128 independently restored-99 frozen-v43 downstream London continuations
+        run: |
+          python -u dack_simulator/validation/v46_collect_early_sevens_physical.py \
+            --kind C --seat ${{ matrix.seat }} --stage ${{ matrix.stage }} \
+            --out shards/v46_C_${{ matrix.seat }}_${{ matrix.stage }}.json.gz
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v46-C-${{ matrix.seat }}-${{ matrix.stage }}
+          path: shards/v46_C_*.json.gz
+          retention-days: 90
+  train_and_archive:
+    needs: [keep,continue]
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dack-v46-early-seven-physical-calibration-20261101
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pinned scientific dependency families
+        run: python -m pip install 'numpy>=1.26,<3' 'scikit-learn>=1.4,<1.8'
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v46-K-*
+          merge-multiple: true
+          path: collected
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dack-v46-C-*
+          merge-multiple: true
+          path: collected
+      - name: Fit frozen physically labeled Q2 residual from 128 train deals; score untouched 64 dev deals
+        run: |
+          python -m py_compile dack_simulator/validation/v46_collect_early_sevens_physical.py dack_simulator/validation/v46_train_early_seven_Q2.py
+          python -u dack_simulator/validation/v46_train_early_seven_Q2.py \
+            --K 'collected/v46_K_*.json.gz' \
+            --C 'collected/v46_C_*.json.gz' \
+            --model models/v46_first_two_sevens_Q2_residual_RESEARCH.json \
+            --out benchmark_results/v46_first_two_sevens_160k_dev_N64.json
+      - name: Enforce research-only independent group and C evaluation split invariants
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('benchmark_results/v46_first_two_sevens_160k_dev_N64.json').read_text())
+          m=json.loads(Path('models/v46_first_two_sevens_Q2_residual_RESEARCH.json').read_text())
+          assert r['status']=='PASS' and r['N_training_source_deals']==128
+          assert r['N_development_source_deals']==64
+          assert r['N_dev_hypothetical_early_stage_states']==128
+          assert r['C_train_first64_distinct_from_C_dev_eval_last64']
+          assert not r['model_approved'] and not m['policy_approved']
+          print('DACK_V46_REAL_PHYSICAL_FIRST_TWO_SEVENS_RESEARCH_PASS',
+                'dev_gate',r['predeclared_directional_dev_gate_passed'])
+          PY
+      - name: Archive frozen experimental model, separate dev physical labels, complete raw K and C samples
+        run: |
+          mkdir -p benchmark_results/v46_first_two_sevens_160k_physical_shards
+          cp collected/v46_*.json.gz benchmark_results/v46_first_two_sevens_160k_physical_shards/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f models/v46_first_two_sevens_Q2_residual_RESEARCH.json benchmark_results/v46_first_two_sevens_160k_dev_N64.json benchmark_results/v46_first_two_sevens_160k_physical_shards/
+          git commit -m "Archive independent 160k physical KEEP24 and separate C64 train vs C64 dev references, fitted unapproved early-seven model"
+          git pull --rebase origin dack-v46-early-seven-physical-calibration-20261101
+          git push origin HEAD:dack-v46-early-seven-physical-calibration-20261101
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dack-v46-early-sevens-physical-train-dev-report
+          path: |
+            models/v46_first_two_sevens_Q2_residual_RESEARCH.json
+            benchmark_results/v46_first_two_sevens_160k_dev_N64.json
+          retention-days: 90
